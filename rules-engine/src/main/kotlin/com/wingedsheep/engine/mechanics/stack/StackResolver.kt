@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
@@ -834,11 +835,22 @@ class StackResolver(
             }
         } else null
 
-        // Update entity: remove spell components, add permanent components
+        // Update entity: remove spell components, add permanent components.
+        // CR 707.10f: a copy of a permanent spell becomes a token as it resolves.
+        // Distinguish from "enters as a copy" effects (Clone, Mockingbird) which set
+        // originalCardComponent for the revert-on-leave rule; those produce real
+        // permanents, not tokens.
+        val copyOf = state.getEntity(spellId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+        val resolvingAsSpellCopy = copyOf != null && copyOf.originalCardComponent == null
         var newState = state.updateEntity(spellId) { c ->
             var updated = c.without<SpellOnStackComponent>()
                 .without<TargetsComponent>()
                 .with(ControllerComponent(controllerId))
+
+            if (resolvingAsSpellCopy) {
+                updated = updated.with(TokenComponent)
+            }
 
             // If cast face-down (morph), add FaceDownComponent and strip any
             // RevealedToComponent from hand-peek effects (zone change = new object)
@@ -1287,6 +1299,20 @@ class StackResolver(
             newState = applyExileCounters(newState, spellId, exileAfterResolveComp.withCounters, events)
         }
 
+        // Link the exiled spell back to the source permanent (Goliath Daydreamer)
+        // so the UI can display it tethered under the source and so the attack-trigger
+        // free-cast ability can find it via the linked-exile pile.
+        if (destinationZone == Zone.EXILE && exileAfterResolveComp?.linkedSourceId != null) {
+            val sourceId = exileAfterResolveComp.linkedSourceId
+            if (newState.getEntity(sourceId) != null) {
+                newState = newState.updateEntity(sourceId) { c ->
+                    val existing = c.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
+                    val updated = (existing?.exiledIds ?: emptyList()) + spellId
+                    c.with(com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(updated))
+                }
+            }
+        }
+
         redirect.additionalEffect?.let { extra ->
             newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
                 newState, extra, redirect.effectControllerId, spellId
@@ -1521,6 +1547,7 @@ class StackResolver(
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
             xValue = abilityComponent.xValue,
             tappedPermanents = abilityComponent.tappedPermanents,
+            tappedPermanentSnapshots = abilityComponent.tappedPermanentSnapshots,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, activatedTargets))
         )
 
@@ -2054,6 +2081,26 @@ class StackResolver(
                         if (predicateEvaluator.matches(state, spellId, ability.filter, context)) {
                             return true
                         }
+                    }
+                }
+            }
+        }
+
+        // Player-scoped grant: "Creature spells you cast this turn can't be countered" (Domri,
+        // Anarch of Bolas). The granter is the spell's controller, so we evaluate filters from
+        // their SpellsCantBeCounteredComponent against the spell on the stack.
+        val spellController = state.getEntity(spellId)
+            ?.get<SpellOnStackComponent>()
+            ?.casterId
+            ?: state.getEntity(spellId)?.get<ControllerComponent>()?.playerId
+        if (spellController != null) {
+            val component = state.getEntity(spellController)
+                ?.get<com.wingedsheep.engine.state.components.player.SpellsCantBeCounteredComponent>()
+            if (component != null) {
+                val context = PredicateContext(controllerId = spellController, sourceId = spellController)
+                for (filter in component.filters) {
+                    if (predicateEvaluator.matches(state, spellId, filter, context)) {
+                        return true
                     }
                 }
             }

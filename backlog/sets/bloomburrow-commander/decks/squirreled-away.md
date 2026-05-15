@@ -67,7 +67,7 @@
 
 ## Artifacts (9)
 
-- [ ] 1 Arcane Signet
+- [x] 1 Arcane Signet
 - [ ] 1 Chitterspitter
 - [ ] 1 Golgari Signet
 - [ ] 1 Idol of Oblivion

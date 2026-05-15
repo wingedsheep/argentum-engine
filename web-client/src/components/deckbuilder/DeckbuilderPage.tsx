@@ -3645,6 +3645,7 @@ function AddCardSearch({
 
   const handleAdd = (card: CardSummary) => {
     onAdd(card)
+    setHoverCard(null)
     // Keep the input focused but clear the dropdown so subsequent typing starts fresh — most
     // users want to add one card at a time, then move on. They can still arrow back into the
     // input or just keep typing.

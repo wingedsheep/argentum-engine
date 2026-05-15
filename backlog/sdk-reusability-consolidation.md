@@ -188,18 +188,16 @@ the same pattern.)
 
 Pure ergonomics, no behavior change.
 
-### 10. `StatePredicate` exhaustiveness — [HIGH]
+### 10. `StatePredicate` exhaustiveness — [HIGH] ✅ done
 
-Memory's known bug class: the evaluator's `else -> true` path silently makes static
-filters match every entity when an unhandled `StatePredicate` slips through. Predicates
-particularly at risk: `IsEquipped`, `WasDealtDamageThisTurn`, `HasMorphAbility`,
-`HasGreatestPower`, `HasAnyCounter`, `HasCounter`.
-
-**Fix:** split `StatePredicate` into two sub-interfaces — projection-aware
-(tap/combat/face-down/counter, all on the entity itself) and history
-(`WasDealtDamageThisTurn`, `HasDealtDamage`, `HasDealtCombatDamageToPlayer`). Each
-evaluator's `when` becomes exhaustive at compile time, and the `else` branch
-disappears.
+Three sites had `else -> true` for `StatePredicate`:
+`TriggerMatcher.matchesStatePredicateForTrigger` (only handled `IsFaceDown` + combinators),
+`BeginningPhaseManager.matchesStatePredicateForUntap` (only handled `HasCounter` + combinators),
+and `TriggerAbilityResolver` granted-ward filter (only handled `HasAnyCounter`). All three now
+delegate to the single exhaustive `PredicateEvaluator.matchesStatePredicate`. The sub-interface
+split (projection-vs-history) was skipped — the centralised exhaustive evaluator already closes
+the bug class. Future `StatePredicate` cases get picked up by every consumer automatically
+because the central `when` is exhaustive without an `else` branch.
 
 ---
 
@@ -368,7 +366,8 @@ If picking one at a time, by leverage:
 3. **`CostStaticAbilities` consolidation** — cost-modification is the muddiest area.
 4. **TurnTracker + DynamicAmount context-property collapse** ✅ done — kills
    the "one new condition per card" pattern.
-5. **`StatePredicate` exhaustiveness split** — closes a known bug class.
+5. **`StatePredicate` exhaustiveness** ✅ done — closed the known bug class by centralising
+   every `when` through the exhaustive `PredicateEvaluator.matchesStatePredicate`.
 6. **Targeting OR-type collapse** — small, high signal-to-noise.
 7. **`MoveType` unification** + **`AddManaEffect` cluster** + **`ChainCopy` facades** —
    the effect-side cleanups.

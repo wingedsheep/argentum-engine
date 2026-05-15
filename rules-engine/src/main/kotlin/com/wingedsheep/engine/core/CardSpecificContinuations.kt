@@ -143,24 +143,29 @@ data class CopyTriggeredAbilityTargetContinuation(
  * prompt for the next copy's targets.
  *
  * @property remainingCopies Number of copies still to create (including the one being targeted)
- * @property spellEffect The effect of the original spell to copy
+ * @property spellEffect The effect of the original spell to copy. Null when copying a
+ *   permanent spell (creatures, artifacts, etc.) — those resolve into permanents via
+ *   the spell's CardComponent rather than a stack effect.
  * @property spellTargetRequirements Target requirements for each copy
  * @property spellName Name of the original spell
  * @property controllerId The player who controls the copies
  * @property sourceId The source spell entity ID
+ * @property removeLegendary If true, the Legendary supertype is stripped from each copy's
+ *   CardComponent (CR 707.10f token-copy that "isn't legendary", e.g., Jackal).
  */
 @Serializable
 data class StormCopyTargetContinuation(
     override val decisionId: String,
     val remainingCopies: Int,
-    val spellEffect: Effect,
+    val spellEffect: Effect?,
     val spellTargetRequirements: List<TargetRequirement>,
     val spellName: String,
     val controllerId: EntityId,
     val sourceId: EntityId,
     val totalCopies: Int = remainingCopies,  // Original total copies (defaults to remainingCopies for backward compat)
     /** Keyword enum names (e.g., "WITHER") to grant to each copy while it's on the stack. */
-    val keywordsForCopy: Set<String> = emptySet()
+    val keywordsForCopy: Set<String> = emptySet(),
+    val removeLegendary: Boolean = false
 ) : ContinuationFrame
 
 /**
@@ -196,7 +201,11 @@ data class StormCopyModalTargetContinuation(
     val chosenModes: List<Int>,
     val modeTargetRequirements: Map<Int, List<TargetRequirement>>,
     val accumulatedOrdinalTargets: List<List<ChosenTarget>>,
-    val currentOrdinal: Int
+    val currentOrdinal: Int,
+    /** Keyword enum names (e.g., "WITHER") to grant to each copy while it's on the stack. */
+    val keywordsForCopy: Set<String> = emptySet(),
+    /** If true, strip the Legendary supertype from each resulting copy. */
+    val removeLegendary: Boolean = false
 ) : ContinuationFrame
 
 /**

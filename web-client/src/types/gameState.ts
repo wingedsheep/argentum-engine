@@ -182,6 +182,9 @@ export interface ClientCard {
   /** Whether this card is face-down (for morph, manifest, hidden info) */
   readonly isFaceDown: boolean
 
+  /** Whether this permanent is suspected (CR 701.60 — has menace and can't block). Battlefield only. */
+  readonly isSuspected?: boolean
+
   /** Morph cost for face-down creatures (only visible to controller) */
   readonly morphCost?: string | null
 
@@ -257,6 +260,14 @@ export interface ClientCard {
 
   /** Original card name when this permanent is a copy (e.g., "Clever Impersonator") */
   readonly copyOf?: string | null
+
+  /**
+   * True when the printed card is legendary but this permanent's projected type line is not —
+   * a copy effect explicitly stripped legendariness ("except it isn't legendary" /
+   * Impostor Syndrome). The UI badges this so a non-legendary token copy of a legendary
+   * creature is visually distinguishable from the original.
+   */
+  readonly nonLegendaryCopy?: boolean
 
   /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
   readonly damageDistribution?: Record<EntityId, number> | null
@@ -372,6 +383,12 @@ export interface ClientPlayerEffect {
   readonly description?: string
   /** Optional icon identifier for UI rendering */
   readonly icon?: string
+  /**
+   * Optional image URL — typically a Scryfall marker-card image (e.g. the
+   * "City's Blessing" marker). When present, the badge renders this image
+   * in place of the emoji icon.
+   */
+  readonly imageUri?: string
 }
 
 /**

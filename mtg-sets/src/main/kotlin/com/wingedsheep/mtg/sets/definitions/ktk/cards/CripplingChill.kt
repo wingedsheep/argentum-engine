@@ -1,39 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.core.AbilityFlag
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Targets
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * Crippling Chill
- * {2}{U}
- * Instant
- * Tap target creature. It doesn't untap during its controller's next untap step.
- * Draw a card.
+ * Crippling Chill reprint in KTK.
+ *
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
+ * AVR's `cards/` package (the card's earliest real printing). This file contributes
+ * only the KTK-specific presentation row.
  */
-val CripplingChill = card("Crippling Chill") {
-    manaCost = "{2}{U}"
-    colorIdentity = "U"
-    typeLine = "Instant"
-    oracleText = "Tap target creature. It doesn't untap during its controller's next untap step.\nDraw a card."
-
-    spell {
-        target = Targets.Creature
-        effect = Effects.Tap(EffectTarget.ContextTarget(0)) then
-            GrantKeywordEffect(AbilityFlag.DOESNT_UNTAP.name, EffectTarget.ContextTarget(0), Duration.UntilAfterAffectedControllersNextUntap) then
-            Effects.DrawCards(1)
-    }
-
-    metadata {
-        rarity = Rarity.COMMON
-        collectorNumber = "35"
-        artist = "Torstein Nordstrand"
-        flavorText = "\"In the silence of the ice, even dreams become still.\""
-        imageUri = "https://cards.scryfall.io/normal/front/a/c/acf53a79-7573-43c2-bd3a-93abea58ba80.jpg?1562791864"
-    }
-}
+val CripplingChillReprint = Printing(
+    oracleId = "4459117a-d11c-44f4-9aac-caefc5b2d6f2",
+    name = "Crippling Chill",
+    setCode = "KTK",
+    collectorNumber = "35",
+    artist = "Torstein Nordstrand",
+    imageUri = "https://cards.scryfall.io/normal/front/a/c/acf53a79-7573-43c2-bd3a-93abea58ba80.jpg?1562791864",
+    releaseDate = "2014-09-26",
+    rarity = Rarity.COMMON,
+)

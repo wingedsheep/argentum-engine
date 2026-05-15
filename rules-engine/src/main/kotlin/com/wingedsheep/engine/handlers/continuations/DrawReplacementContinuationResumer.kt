@@ -88,17 +88,40 @@ class DrawReplacementContinuationResumer(
                         }
                     }
                 } else {
-                    // Manual selection: tap the chosen sources
+                    // Manual selection: tap (or sacrifice) the chosen sources.
+                    // Tap+sacrifice mana abilities (Treasure tokens) are detected via the
+                    // ManaSolver's source list — selecting them sacrifices the permanent
+                    // instead of just tapping it.
+                    val manaSolver = ManaSolver(services.cardRegistry)
+                    val sacrificeSourceIds = manaSolver.findAvailableManaSources(newState, playerId)
+                        .filter { it.requiresSacrifice }
+                        .map { it.entityId }
+                        .toSet()
+
                     for (sourceId in response.selectedSources) {
                         val sourceEntity = newState.getEntity(sourceId) ?: continue
                         val sourceName = sourceEntity.get<CardComponent>()?.name ?: "Unknown"
 
-                        newState = newState.updateEntity(sourceId) { c ->
-                            c.with(TappedComponent)
+                        if (sourceId in sacrificeSourceIds) {
+                            val sourceController = sourceEntity
+                                .get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
+                                ?.playerId ?: playerId
+                            events.add(TappedEvent(sourceId, sourceName))
+                            val preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                                .trackFoodSacrifice(newState, listOf(sourceId), sourceController)
+                            val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                                .moveToZone(preState, sourceId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+                            newState = transition.state
+                            events.add(PermanentsSacrificedEvent(sourceController, listOf(sourceId)))
+                            events.addAll(transition.events)
+                        } else {
+                            newState = newState.updateEntity(sourceId) { c ->
+                                c.with(TappedComponent)
+                            }
+                            events.add(TappedEvent(sourceId, sourceName))
                         }
-                        events.add(TappedEvent(sourceId, sourceName))
 
-                        // Add mana from the tapped source
+                        // Add mana from the tapped/sacrificed source
                         // For simplicity, add 1 colorless mana per source
                         // (ManaSolver would be more accurate but manual selection implies the player knows what they're doing)
                         currentPool = currentPool.addColorless(1)

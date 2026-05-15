@@ -313,6 +313,28 @@ class BeginningPhaseManager(
         is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(it, container) }
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(it, container) }
         is StatePredicate.Not -> !matchesStatePredicateForUntap(predicate.predicate, container)
-        else -> true // Other state predicates not relevant for untap filtering
+        // Untap-during-other-untap-step filters only meaningfully restrict by counter type
+        // and structural combinators. Tap / combat / face-down / damage-history / equipment
+        // predicates would either be redundant at this point in the turn (e.g. IsTapped is
+        // implied; combat is empty) or would require state we don't have here. Returning
+        // true preserves the historical "no constraint" behavior, but the case is now
+        // explicit so adding a new StatePredicate variant becomes a compile-time decision.
+        StatePredicate.IsTapped,
+        StatePredicate.IsUntapped,
+        StatePredicate.IsAttacking,
+        StatePredicate.IsBlocking,
+        StatePredicate.IsBlocked,
+        StatePredicate.IsUnblocked,
+        StatePredicate.EnteredThisTurn,
+        StatePredicate.WasDealtDamageThisTurn,
+        StatePredicate.HasDealtDamage,
+        StatePredicate.HasDealtCombatDamageToPlayer,
+        StatePredicate.IsFaceDown,
+        StatePredicate.IsFaceUp,
+        StatePredicate.HasMorphAbility,
+        StatePredicate.HasAnyCounter,
+        StatePredicate.HasGreatestPower,
+        StatePredicate.IsEquipped,
+        StatePredicate.IsModified -> true
     }
 }

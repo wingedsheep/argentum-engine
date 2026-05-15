@@ -47,8 +47,13 @@ internal class EffectApplicator(
                     values.toughness = mod.toughness
                 }
                 is Modification.ModifyPowerToughness -> {
-                    values.power = (values.power ?: 0) + mod.powerMod
-                    values.toughness = (values.toughness ?: 0) + mod.toughnessMod
+                    // CR 208.3: noncreature permanents have no power/toughness, even if printed
+                    // values appear on them (e.g., a Vehicle that isn't currently a creature).
+                    // P/T modifications apply only while the affected permanent is a creature.
+                    if ("CREATURE" in values.types) {
+                        values.power = (values.power ?: 0) + mod.powerMod
+                        values.toughness = (values.toughness ?: 0) + mod.toughnessMod
+                    }
                 }
                 is Modification.SwitchPowerToughness -> {
                     val p = values.power
@@ -144,6 +149,9 @@ internal class EffectApplicator(
                 is Modification.SetCantAttack -> {
                     values.cantAttack = true
                 }
+                is Modification.SetSuspected -> {
+                    values.isSuspected = true
+                }
                 is Modification.SetCantBlock -> {
                     values.cantBlock = true
                 }
@@ -165,7 +173,8 @@ internal class EffectApplicator(
                 is Modification.ModifyPowerToughnessDynamic -> {
                     val controllerId = projectedValues[effect.sourceId]?.controllerId
                         ?: state.getEntity(effect.sourceId)?.get<ControllerComponent>()?.playerId
-                    if (controllerId != null) {
+                    // See ModifyPowerToughness above: P/T mods apply only to creatures.
+                    if (controllerId != null && "CREATURE" in values.types) {
                         val context = EffectContext(
                             sourceId = effect.sourceId,
                             controllerId = controllerId,
@@ -359,6 +368,14 @@ internal class EffectApplicator(
                     }
                 }
             }
+        }
+        is SourceProjectionCondition.ControllerHasCitysBlessing -> {
+            val controllerId = sourceValues?.controllerId ?: state.getEntity(effect.sourceId)
+                ?.get<ControllerComponent>()
+                ?.playerId
+            controllerId != null &&
+                state.getEntity(controllerId)
+                    ?.has<com.wingedsheep.engine.state.components.player.PlayerCitysBlessingComponent>() == true
         }
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
         is SourceProjectionCondition.Compare -> {

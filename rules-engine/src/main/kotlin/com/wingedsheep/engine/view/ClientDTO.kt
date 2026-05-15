@@ -190,6 +190,9 @@ data class ClientCard(
     /** Whether this card is face-down (for morph, manifest, hidden info) */
     val isFaceDown: Boolean,
 
+    /** Whether this permanent is suspected (CR 701.60 — has menace and can't block). Battlefield only. */
+    val isSuspected: Boolean = false,
+
     /** Morph cost for face-down creatures (only visible to controller) */
     val morphCost: String? = null,
 
@@ -266,6 +269,14 @@ data class ClientCard(
 
     /** Original card name when this permanent is a copy (e.g., "Clever Impersonator" copying a Wind Drake) */
     val copyOf: String? = null,
+
+    /**
+     * True when this permanent's printed card has the Legendary supertype but its current
+     * type line does not — i.e. a copy effect explicitly stripped legendariness
+     * ("except it isn't legendary" / Impostor Syndrome). Lets the UI flag the difference
+     * between an original legendary creature and a non-legendary token copy of it.
+     */
+    val nonLegendaryCopy: Boolean = false,
 
     /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
     val damageDistribution: Map<EntityId, Int>? = null,
@@ -430,7 +441,13 @@ data class ClientPlayerEffect(
     /** Optional description/tooltip text */
     val description: String? = null,
     /** Optional icon identifier for UI rendering */
-    val icon: String? = null
+    val icon: String? = null,
+    /**
+     * Optional image URL for the badge — typically a Scryfall marker-card image
+     * (e.g., the "City's Blessing" marker). When present, the UI shows the image
+     * in place of the emoji-style [icon].
+     */
+    val imageUri: String? = null
 )
 
 /**

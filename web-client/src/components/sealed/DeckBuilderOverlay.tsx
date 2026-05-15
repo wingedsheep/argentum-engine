@@ -850,7 +850,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                             key={card.name}
                             card={card}
                             count={availableCount}
-                            onClick={() => !isSubmitted && addCardToDeck(card.name)}
+                            onClick={() => {
+                              if (isSubmitted) return
+                              addCardToDeck(card.name)
+                              setHoveredCard(null)
+                            }}
                             onHover={handleHover}
                             disabled={isSubmitted}
                             highlighted={highlightedCards != null ? highlightedCards.has(card.name) : undefined}
@@ -875,7 +879,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                     key={card.name}
                     card={card}
                     count={availableCount}
-                    onClick={() => !isSubmitted && addCardToDeck(card.name)}
+                    onClick={() => {
+                      if (isSubmitted) return
+                      addCardToDeck(card.name)
+                      setHoveredCard(null)
+                    }}
                     onHover={handleHover}
                     disabled={isSubmitted}
                     highlighted={highlightedCards != null ? highlightedCards.has(card.name) : undefined}
@@ -1090,7 +1098,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 key={card.name}
                 card={card}
                 count={count}
-                onClick={() => !isSubmitted && removeCardFromDeck(card.name)}
+                onClick={() => {
+                  if (isSubmitted) return
+                  removeCardFromDeck(card.name)
+                  setHoveredCard(null)
+                }}
                 onHover={handleHover}
                 disabled={isSubmitted}
               />

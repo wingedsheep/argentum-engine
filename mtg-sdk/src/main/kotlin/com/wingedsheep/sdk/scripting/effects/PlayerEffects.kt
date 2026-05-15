@@ -408,6 +408,34 @@ data class GrantSpellKeywordEffect(
 }
 
 /**
+ * Spells matching [spellFilter] that [target] casts can't be countered until [duration].
+ *
+ * Player-scoped counterpart to the permanent-static [com.wingedsheep.sdk.scripting.GrantCantBeCountered]:
+ * grants the same protection but with a duration and a controller scope, so it can be
+ * triggered by activated abilities like Domri, Anarch of Bolas's +1
+ * ("Creature spells you cast this turn can't be countered.").
+ *
+ * @property target Whose spells gain the protection (default: controller).
+ * @property spellFilter Which spell types are protected (defaults to creature spells).
+ * @property duration How long the protection lasts (default: end of turn).
+ */
+@SerialName("GrantSpellsCantBeCountered")
+@Serializable
+data class GrantSpellsCantBeCounteredEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Creature,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String =
+        "${spellFilter.description} spells ${target.description} cast${if (duration == Duration.Permanent) "" else " ${duration.description}"} can't be countered"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
  * Create a permanent emblem that grants a static modification to all permanents matching a filter.
  * Used for planeswalker -X abilities that produce a static-ability emblem
  * (e.g., Oko's "Creatures you control of the chosen type get +3/+3 and have vigilance and hexproof").
@@ -434,6 +462,29 @@ data class CreatePermanentEmblemEffect(
     val emblemDescription: String
 ) : Effect {
     override val description: String = "You get an emblem with \"$emblemDescription\""
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Grants the city's blessing to a player (CR 702.131 / 700.5).
+ *
+ * Once a player has the city's blessing, they have it for the rest of the game and
+ * it can never be removed. Applying this effect to a player who already has the
+ * blessing is a no-op.
+ *
+ * Used as the post-resolution effect of Ascend triggers (typically gated by
+ * [com.wingedsheep.sdk.scripting.conditions.Compare] "you control 10+ permanents").
+ *
+ * @param target The player to grant the city's blessing to. Defaults to the
+ *   ability's controller, matching Ascend's "you get the city's blessing" wording.
+ */
+@SerialName("GainCitysBlessing")
+@Serializable
+data class GainCitysBlessingEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gets the city's blessing"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

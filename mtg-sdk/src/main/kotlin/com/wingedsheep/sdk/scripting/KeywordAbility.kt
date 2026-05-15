@@ -303,15 +303,33 @@ sealed interface KeywordAbility {
     // =========================================================================
 
     /**
-     * Warp with a mana cost.
+     * Warp with a mana cost and an optional additional cost.
      * "Warp {2}{R}" - You may cast this card for its warp cost. Exile it at the
      * beginning of the next end step. You may cast it from exile using its warp
      * ability on a later turn.
+     *
+     * [additionalCost] models warp variants that bundle a non-mana cost
+     * (e.g., "Warp—{B}, Pay 2 life." on Timeline Culler). It is paid only on
+     * the warp cast path.
+     *
+     * [fromGraveyard] permits warp to be paid while the card is in the caster's
+     * graveyard. Default warp (CR 702.185a) is hand-only; cards like Timeline
+     * Culler explicitly grant graveyard access via their oracle text.
+     *
+     * Provisional: if a sibling keyword ever needs the same "you may cast this
+     * from your graveyard using its X ability" wording, extract a generic
+     * cast-from-zone permission rather than duplicating this flag.
      */
     @SerialName("Warp")
     @Serializable
-    data class Warp(val cost: ManaCost) : KeywordAbility {
-        override val description: String = "Warp $cost"
+    data class Warp(
+        val cost: ManaCost,
+        val additionalCost: AdditionalCost? = null,
+        val fromGraveyard: Boolean = false
+    ) : KeywordAbility {
+        override val description: String =
+            if (additionalCost == null) "Warp $cost"
+            else "Warp—$cost, ${additionalCost.description}"
     }
 
     // =========================================================================

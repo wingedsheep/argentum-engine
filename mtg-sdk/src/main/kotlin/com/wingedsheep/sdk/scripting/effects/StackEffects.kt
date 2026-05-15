@@ -417,13 +417,14 @@ data class CopyTargetSpellEffect(
      */
     val keywordsForCopy: List<String> = emptyList(),
     /**
-     * When true, all supertypes (e.g. Legendary) are stripped from the copy's type line.
-     * The copy retains all card types (e.g. Creature) and subtypes.
-     * Used by effects like Jackal Genius that produce a non-legendary copy of a legendary spell.
+     * When true, the Legendary supertype is removed from the copy's type line so the resulting
+     * token is not legendary (e.g., Jackal, Genius Geneticist's "except the copy isn't legendary").
+     * Applied to every copy regardless of which path (no-target, modal-with-targets, single-target
+     * permanent or non-permanent) the executor takes.
      */
-    val stripSupertypes: Boolean = false
+    val removeLegendary: Boolean = false
 ) : Effect {
-    override val description: String = "Copy target instant or sorcery spell"
+    override val description: String = "Copy target spell"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

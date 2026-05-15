@@ -20,6 +20,7 @@ class ManaExecutors(
         AddDynamicManaExecutor(amountEvaluator),
         AddManaOfChosenColorExecutor(amountEvaluator),
         AddManaOfColorAmongExecutor(),
+        AddManaOfColorInCommanderColorIdentityExecutor(cardRegistry),
         AddManaOfColorLandsCouldProduceExecutor(cardRegistry),
         AddOneManaOfEachColorAmongExecutor()
     )

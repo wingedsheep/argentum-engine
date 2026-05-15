@@ -1,58 +1,25 @@
 package com.wingedsheep.mtg.sets.definitions.fdn.cards
 
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
-import com.wingedsheep.sdk.dsl.Targets
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
- * Bushwhack
- * {G}
- * Sorcery
- * Choose one —
- * • Search your library for a basic land card, reveal it, put it into your hand, then shuffle.
- * • Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)
+ * Bushwhack reprint in FDN.
+ *
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
+ * BRO's `cards/` package (the card's earliest real printing). This file contributes only
+ * the FDN-specific presentation row — set, collector number, art — picked up
+ * automatically by `CardDiscovery.findPrintingsIn` and surfaced via the set's
+ * `printings`.
  */
-val Bushwhack = card("Bushwhack") {
-    manaCost = "{G}"
-    colorIdentity = "G"
-    typeLine = "Sorcery"
-    oracleText = "Choose one —\n" +
-        "• Search your library for a basic land card, reveal it, put it into your hand, then shuffle.\n" +
-        "• Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)"
-
-    spell {
-        modal(chooseCount = 1) {
-            mode("Search your library for a basic land card, reveal it, put it into your hand, then shuffle") {
-                effect = EffectPatterns.searchLibrary(
-                    filter = GameObjectFilter.BasicLand,
-                    count = 1,
-                    destination = SearchDestination.HAND,
-                    reveal = true,
-                    shuffleAfter = true
-                )
-            }
-            mode("Target creature you control fights target creature you don't control") {
-                val yourCreature = target("creature you control", TargetCreature(
-                    filter = TargetFilter(GameObjectFilter.Creature.youControl())
-                ))
-                val theirCreature = target("creature you don't control", TargetCreature(
-                    filter = TargetFilter(GameObjectFilter.Creature.opponentControls())
-                ))
-                effect = Effects.Fight(yourCreature, theirCreature)
-            }
-        }
-    }
-
-    metadata {
-        rarity = Rarity.COMMON
-        collectorNumber = "215"
-        artist = "Artur Nakhodkin"
-        imageUri = "https://cards.scryfall.io/normal/front/0/3/03ebdb36-55e0-49dd-a514-785fbeb4ae19.jpg?1730489398"
-    }
-}
+val BushwhackReprint = Printing(
+    oracleId = "c61374e5-a7f6-455e-a40b-a481751b536b",
+    name = "Bushwhack",
+    setCode = "FDN",
+    collectorNumber = "215",
+    scryfallId = "03ebdb36-55e0-49dd-a514-785fbeb4ae19",
+    artist = "Artur Nakhodkin",
+    imageUri = "https://cards.scryfall.io/normal/front/0/3/03ebdb36-55e0-49dd-a514-785fbeb4ae19.jpg?1730489398",
+    releaseDate = "2024-11-15",
+    rarity = Rarity.COMMON,
+)

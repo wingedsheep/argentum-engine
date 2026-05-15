@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -167,6 +168,28 @@ class DynamicAmountEvaluator(
                         else -> { /* fall through */ }
                     }
                     return resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = false)
+                }
+                // Tap-as-cost reads of Power/Toughness mirror the Sacrificed path — the tapped
+                // permanent may have left the battlefield between cost payment and resolution
+                // (Rule 112.7a). Power reads additionally get the Station-using-toughness
+                // substitution: under Tapestry Warden, tapped creatures with toughness > power
+                // contribute toughness to the cost-input formula instead of power.
+                if (amount.entity is EntityReference.TappedAsCost) {
+                    val snapshot = context.tappedPermanentSnapshots.firstOrNull { it.entityId == entityId }
+                    val useSnapshot = snapshot != null && !state.getBattlefield().contains(entityId)
+                    when (amount.numericProperty) {
+                        is EntityNumericProperty.Power -> {
+                            val power = if (useSnapshot) snapshot!!.power ?: 0
+                                else resolveNumericProperty(state, entityId, EntityNumericProperty.Power, context, useProjected = true, explicitProjected = projectedState)
+                            val toughness = if (useSnapshot) snapshot!!.toughness ?: 0
+                                else resolveNumericProperty(state, entityId, EntityNumericProperty.Toughness, context, useProjected = true, explicitProjected = projectedState)
+                            return if (toughness > power &&
+                                controllerHasStationUsingToughness(state, entityId, snapshot?.controllerId)) toughness else power
+                        }
+                        is EntityNumericProperty.Toughness ->
+                            if (useSnapshot) snapshot!!.toughness?.let { return it }
+                        else -> { /* fall through */ }
+                    }
                 }
                 resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = true, explicitProjected = projectedState)
             }
@@ -620,6 +643,34 @@ class DynamicAmountEvaluator(
             is EntityReference.AffectedEntity -> context.affectedEntityId
             is EntityReference.IterationEntity -> context.pipeline.iterationTarget
         }
+
+    // =========================================================================
+    // Station Toughness Override
+    // =========================================================================
+
+    /**
+     * Returns true if any permanent controlled by [entityId]'s controller has the
+     * [GrantsStationUsingToughnessComponent], enabling the creature to station using
+     * toughness instead of power. Reads projected controllers (Rule 613) so the
+     * effect survives control-changing continuous effects on either permanent.
+     *
+     * [fallbackControllerId] is consulted when [entityId] is no longer on the battlefield
+     * (projection has no controller) — typically the snapshot's last-known controller
+     * captured at cost-payment time (Rule 112.7a).
+     */
+    private fun controllerHasStationUsingToughness(
+        state: GameState,
+        entityId: EntityId,
+        fallbackControllerId: EntityId? = null
+    ): Boolean {
+        val projected = state.projectedState
+        val controller = projected.getController(entityId) ?: fallbackControllerId ?: return false
+        return state.getBattlefield().any { permanentId ->
+            val perm = state.getEntity(permanentId) ?: return@any false
+            perm.has<GrantsStationUsingToughnessComponent>() &&
+                projected.getController(permanentId) == controller
+        }
+    }
 
     // =========================================================================
     // Entity Numeric Property Resolution

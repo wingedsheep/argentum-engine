@@ -7,6 +7,7 @@ import { ManaCost } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton } from './SetSynergiesOverlay'
+import { RarityBadge } from './RarityBadge'
 
 /**
  * Draft Pick overlay for draft mode.
@@ -1027,6 +1028,9 @@ function PickedCardRow({
           {count}x
         </span>
       )}
+      <span style={{ marginRight: 6 }}>
+        <RarityBadge rarity={card.rarity} size={11} />
+      </span>
       <span
         style={{
           color: '#ddd',

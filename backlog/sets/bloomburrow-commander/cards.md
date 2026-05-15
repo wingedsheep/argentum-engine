@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 52 / 312
+**Implemented:** 75 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -16,7 +16,7 @@
 
 ---
 
-- [ ] Abrade
+- [x] Abrade
 - [ ] Academy Manufactor
 - [x] Adarkar Wastes
 - [ ] Aether Channeler
@@ -27,7 +27,7 @@
 - [ ] Angel of the Ruins
 - [ ] Ant Queen
 - [ ] Arasta of the Endless Web
-- [ ] Arcane Signet
+- [x] Arcane Signet
 - [ ] Arthur, Marigold Knight
 - [ ] Azorius Signet
 - [x] Baird, Steward of Argive
@@ -35,21 +35,21 @@
 - [x] Barren Moor
 - [ ] Bastion of Remembrance
 - [x] Battlefield Forge
-- [ ] Beast Within
+- [x] Beast Within
 - [x] Beastmaster Ascension
 - [ ] Beledros Witherbloom
 - [x] Bello, Bard of the Brambles
 - [ ] Berserkers' Onslaught
 - [ ] Bident of Thassa
-- [ ] Big Score
+- [x] Big Score
 - [ ] Binding the Old Gods
 - [ ] Birds of Paradise
 - [ ] Blade Splicer
-- [ ] Blasphemous Act
+- [x] Blasphemous Act
 - [ ] Bloodroot Apothecary
 - [ ] Body of Knowledge
 - [ ] Bojuka Bog
-- [ ] Bootleggers' Stash
+- [x] Bootleggers' Stash
 - [ ] Boros Signet
 - [ ] Boss's Chauffeur
 - [x] Brightcap Badger // Fungus Frolic
@@ -61,7 +61,7 @@
 - [ ] Cascade Bluffs
 - [ ] Castle Ardenvale
 - [ ] Casualties of War
-- [ ] Chaos Warp
+- [x] Chaos Warp
 - [ ] Chart a Course
 - [ ] Chasm Skulker
 - [ ] Chatterfang, Squirrel General
@@ -78,11 +78,11 @@
 - [ ] Communal Brewing
 - [x] Copperline Gorge
 - [ ] Coveted Jewel
-- [ ] Cultivate
+- [x] Cultivate
 - [ ] Curiosity Crafter
 - [ ] Cut a Deal
 - [ ] Deadly Dispute
-- [ ] Decimate
+- [x] Decimate
 - [x] Decree of Pain
 - [ ] Deep Forest Hermit
 - [ ] Derevi, Empyrial Tactician
@@ -92,14 +92,14 @@
 - [ ] Echoing Assault
 - [ ] Elspeth, Sun's Champion
 - [ ] End-Raze Forerunners
-- [ ] Esika's Chariot
+- [x] Esika's Chariot
 - [x] Etali, Primal Storm
 - [x] Evercoat Ursine
 - [x] Evolving Wilds
 - [ ] Exotic Orchard
-- [ ] Explore
+- [x] Explore
 - [ ] Faeburrow Elder
-- [ ] Farseek
+- [x] Farseek
 - [x] Fellwar Stone
 - [ ] Ferrous Lake
 - [ ] Fisher's Talent
@@ -127,10 +127,10 @@
 - [ ] Grim Backwoods
 - [x] Grothama, All-Devouring
 - [x] Grumgully, the Generous
-- [ ] Gruul Signet
+- [x] Gruul Signet
 - [ ] Gruul Turf
 - [ ] Hanged Executioner
-- [ ] Harmonize
+- [x] Harmonize
 - [ ] Haunted Mire
 - [ ] Haywire Mite
 - [ ] Hazel of the Rootbloom
@@ -175,7 +175,7 @@
 - [ ] Martial Coup
 - [ ] Martial Impetus
 - [ ] Maskwood Nexus
-- [ ] Mind Stone
+- [x] Mind Stone
 - [ ] Moldervine Reclamation
 - [ ] Moonstone Eulogist
 - [ ] Morbid Opportunist
@@ -208,16 +208,16 @@
 - [ ] Prairie Stream
 - [ ] Primeval Bounty
 - [ ] Promise of Loyalty
-- [ ] Prosperous Bandit
+- [x] Prosperous Bandit
 - [ ] Prosperous Innkeeper
 - [ ] Psychosis Crawler
 - [ ] Pull from Tomorrow
 - [ ] Putrefy
-- [ ] Pyreswipe Hawk
+- [x] Pyreswipe Hawk
 - [ ] Raging Ravine
 - [ ] Rain of Riches
-- [ ] Rampaging Baloths
-- [ ] Rampant Growth
+- [x] Rampaging Baloths
+- [x] Rampant Growth
 - [ ] Rapid Augmenter
 - [ ] Rapid Hybridization
 - [ ] Ravenous Squirrel
@@ -234,7 +234,7 @@
 - [ ] Rose Room Treasurer
 - [ ] Rowdy Research
 - [ ] Rugged Prairie
-- [ ] Sakura-Tribe Elder
+- [x] Sakura-Tribe Elder
 - [ ] Saw in Half
 - [ ] Scurry of Squirrels
 - [x] Seachrome Coast
@@ -293,7 +293,7 @@
 - [x] Temple of Triumph
 - [ ] Tempt with Bunnies
 - [ ] Tempt with Discovery
-- [ ] Tendershoot Dryad
+- [x] Tendershoot Dryad
 - [ ] Tenuous Truce
 - [ ] Terramorphic Expanse
 - [x] Tetsuko Umezawa, Fugitive
@@ -310,7 +310,7 @@
 - [ ] Time Wipe
 - [ ] Tireless Provisioner
 - [ ] Toski, Bearer of Secrets
-- [ ] Trailtracker Scout
+- [x] Trailtracker Scout
 - [x] Tranquil Thicket
 - [ ] Triskaidekaphile
 - [ ] Twenty-Toed Toad
@@ -318,7 +318,7 @@
 - [ ] Unnatural Growth
 - [ ] Viridescent Bog
 - [ ] Warstorm Surge
-- [ ] Wildsear, Scouring Maw
+- [x] Wildsear, Scouring Maw
 - [ ] Windgrace's Judgment
 - [ ] Wizard Class
 - [ ] Woe Strider

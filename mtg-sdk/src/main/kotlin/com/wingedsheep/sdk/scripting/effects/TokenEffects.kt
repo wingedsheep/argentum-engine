@@ -346,7 +346,9 @@ data class CreateTokenCopyOfTargetEffect(
     /** Keywords granted to the token copy in addition to those copied from the source. */
     val addedKeywords: Set<Keyword> = emptySet(),
     /** Supertypes added to the token copy's type line (e.g., LEGENDARY for Adagia, Windswept Bastion). */
-    val addedSupertypes: Set<Supertype> = emptySet()
+    val addedSupertypes: Set<Supertype> = emptySet(),
+    /** Supertypes stripped from the token copy's type line (e.g., LEGENDARY for Impostor Syndrome). */
+    val removedSupertypes: Set<Supertype> = emptySet()
 ) : Effect {
     override val description: String = buildString {
         append("Create ${count.description} token copies of target permanent")
@@ -355,6 +357,11 @@ data class CreateTokenCopyOfTargetEffect(
         }
         if (tapped) append(" tapped")
         if (attacking) append(" and attacking")
+        if (removedSupertypes.isNotEmpty()) {
+            append(", except ${if (count == DynamicAmount.Fixed(1)) "it's" else "they're"} not ${
+                removedSupertypes.joinToString(" ") { it.displayName.lowercase() }
+            }")
+        }
         if (addedSupertypes.isNotEmpty()) {
             append(", except ${if (count == DynamicAmount.Fixed(1)) "it's" else "they're"} ${
                 addedSupertypes.joinToString(" ") { it.displayName.lowercase() }

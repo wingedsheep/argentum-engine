@@ -12,15 +12,56 @@ existing primitives instead of growing a card-specific type per Magic card.
 `$ARGUMENTS` may be a PR number/URL, a branch name, or empty (review the working tree's
 diff vs `main`).
 
-## 1. Establish the diff
+## 1. Establish the diff (with `main` merged in)
 
-- **PR** — `gh pr view <n> --json …`, then `git fetch <fork> <head>:pr-<n>-review &&
-  git checkout pr-<n>-review`. Diff vs `main` (or `baseRefName`).
-- **Branch** — `git diff main...<branch>` (three-dot).
-- **Empty** — `git diff main...HEAD` plus `git status`.
+The review must reflect post-merge reality, so `origin/main` is merged into the review
+branch before diffing. Where the work happens depends on what's already checked out:
+
+- **Already on the PR/branch in the current working tree** (`git rev-parse --abbrev-ref
+  HEAD` matches the branch you were asked to review, working tree clean) → review in
+  place. Skip the worktree step.
+- **Anywhere else** (different branch checked out, dirty tree, PR head not fetched yet,
+  user explicitly asks for a worktree) → use a dedicated worktree under
+  `~/.claude/worktrees/argentum-engine/` (outside the repo, so an untracked worktree
+  directory can't be staged into a commit by accident).
+
+Steps:
+
+1. **Resolve the PR / branch.** For a PR URL/number use
+   `gh pr view <n> --json number,title,headRefName,baseRefName,headRepository,headRepositoryOwner,body`
+   to learn the head repo + ref. For a bare branch name, skip to step 3.
+2. **Fetch the head into a local review branch** (skip if already checked out and
+   up-to-date). If the head is on a fork, fetch via HTTPS (this repo's `origin` is SSH
+   and fetches against forks fail):
+   `git fetch https://github.com/<owner>/<repo>.git <headRef>:pr-<n>-review`.
+   Also refresh `origin/main`:
+   `git fetch https://github.com/wingedsheep/argentum-engine.git main:refs/remotes/origin/main`.
+3. **Pick the workspace.** Already on the branch with a clean tree → continue in place.
+   Otherwise: `git worktree add ~/.claude/worktrees/argentum-engine/pr-<n>-review pr-<n>-review`
+   (or `~/.claude/worktrees/argentum-engine/<branch>-review` for a branch). Create the
+   parent dir first if needed (`mkdir -p ~/.claude/worktrees/argentum-engine`). Run
+   subsequent commands in whichever workspace applies.
+4. **Merge `origin/main` into the review branch** before reading the diff. This catches
+   conflicts the author hasn't seen yet and ensures the review reflects post-merge
+   reality: `git merge origin/main --no-edit`. If conflicts arise, resolve them (prefer
+   main's structure for backlog/index files, then re-apply the PR's intent — e.g. bump
+   the implemented-cards count, check the new card off the list) and commit. Flag the
+   conflict resolution as a finding in the review so the author knows to either pull
+   main themselves or accept the merge commit.
+5. **Diff against `main`.** PR → `git diff origin/main...HEAD --stat` then full diff for
+   source paths. Branch → `git diff main...<branch>` (three-dot). Empty → `git diff
+   main...HEAD` plus `git status`.
 
 Read every changed file in full, not just the hunk. For large diffs, spawn `Explore` for
 unfamiliar areas.
+
+**Worktree lifecycle (only when a worktree was created).** Leave it in place across
+review rounds. Only remove it
+(`git worktree remove ~/.claude/worktrees/argentum-engine/pr-<n>-review`) once the user
+confirms the PR is merged or the review is abandoned. Mention the worktree
+path in the final review output so the user can hand-off, re-enter, or push fixups to
+it. When the review ran in place, the final output just notes that the branch already
+has `origin/main` merged in (and any merge commit that produced).
 
 ## 2. SDK elegance — the central question
 
@@ -49,6 +90,23 @@ more useful than abstract objection.
 
 Reference: `docs/architecture-principles.md` §1.5 (atomic pipelines), §1.2 (AST for
 dynamic values), §1.3 (composable filtering), §1.6 (DSL as abstraction).
+
+## 2b. Printing placement for new / reprinted cards
+
+For every card whose `CardDefinition` or `Printing(...)` row is added or moved in the
+diff, run `just check-card-printing "<Card Name>"`. The script lists all Scryfall
+printings and exits non-zero unless:
+
+- the canonical `card("Name") { ... }` lives in the card's **earliest real-expansion
+  printing** (per Scryfall, skipping `promo` / `token` / `art_series`), and
+- every other scaffolded printing has a `Printing(...)` row in its set's `cards/` package.
+
+If the earliest real set isn't scaffolded under `mtg-sets/.../definitions/<setcode>/`,
+the script reports it as drift. The expectation in that case is to scaffold the earliest
+set (minimal `MtgSet` object + `META-INF/services` entry) and host the canonical there.
+Flag it as **Blocking** if the diff put the canonical in a later set without scaffolding
+the original; the only acceptable miss is when the author documents in the PR body why
+scaffolding the earlier set is out of scope.
 
 ## 3. Correctness — recurring bug classes in this engine
 
@@ -147,4 +205,5 @@ values, layer interactions, "as ~ enters", protection / hexproof / ward).
    test for Z"). If the diff is fine as-is, say so.
 
 This skill writes a review into the conversation. It does not push, post via `gh`, run
-`/ultrareview`, auto-fix, or touch other agents' work.
+`/ultrareview`, auto-fix, or touch other agents' work. The worktree from step 1 stays
+in place after the review so the author (or a follow-up session) can iterate on it.

@@ -19,6 +19,15 @@ data class PermanentSnapshot(
     val power: Int? = null,
     val toughness: Int? = null,
     val subtypes: Set<String> = emptySet(),
+    /**
+     * Controller frozen at capture time, NOT at the eventual zone-leave. If control of
+     * the permanent shifts after the snapshot is taken (e.g. Threaten resolves while
+     * the ability is on the stack) and the permanent then leaves the battlefield, this
+     * field will report the older controller — diverging from a strict reading of "as
+     * it last existed on the battlefield." Acceptable for current callers; revisit if
+     * a card requires control-at-zone-leave fidelity.
+     */
+    val controllerId: EntityId? = null,
 )
 
 /**
@@ -34,6 +43,7 @@ fun capturePermanentSnapshots(
         power = projected.getPower(id),
         toughness = projected.getToughness(id),
         subtypes = projected.getSubtypes(id),
+        controllerId = projected.getController(id),
     )
 }
 

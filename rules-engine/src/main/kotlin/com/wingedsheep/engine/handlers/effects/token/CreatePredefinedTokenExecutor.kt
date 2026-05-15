@@ -9,6 +9,8 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -81,7 +83,9 @@ class CreatePredefinedTokenExecutor(
             var container = ComponentContainer.of(
                 tokenComponent,
                 TokenComponent,
-                ControllerComponent(tokenControllerId)
+                ControllerComponent(tokenControllerId),
+                SummoningSicknessComponent,
+                EnteredThisTurnComponent
             )
 
             if (effect.tapped) {

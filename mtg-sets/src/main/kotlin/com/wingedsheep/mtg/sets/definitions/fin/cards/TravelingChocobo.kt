@@ -37,7 +37,7 @@ val TravelingChocobo = card("Traveling Chocobo") {
 
     staticAbility {
         ability = AdditionalETBTriggers(
-            creatureFilter = GameObjectFilter.Land or GameObjectFilter.Creature.withSubtype("Bird"),
+            enteringFilter = GameObjectFilter.Land or GameObjectFilter.Creature.withSubtype("Bird"),
             description = "If a land or Bird you control entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
         )
     }

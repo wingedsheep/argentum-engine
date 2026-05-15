@@ -1,28 +1,36 @@
 package com.wingedsheep.engine
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CardsDiscardedEvent
+import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.util.UUID
 
@@ -49,24 +57,9 @@ class ConniveTest : FunSpec({
         )
     )
 
-    fun createDriver(): GameTestDriver {
+    fun setupConnive(handCardName: String): Triple<GameTestDriver, EntityId, EntityId> {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all + listOf(ConniveCreature))
-        return driver
-    }
-
-    /**
-     * GIVEN a player controls a creature targeted to connive
-     * AND the library's top card is a known nonland card (draw is deterministic)
-     * AND the player's hand also contains a nonland card to discard
-     * WHEN the engine resolves a ConniveEffect targeting that creature
-     *   with the player choosing to discard the nonland card from hand
-     * THEN the player has drawn exactly one card
-     * AND the chosen nonland card has moved from hand to graveyard
-     * AND the targeted creature has exactly one additional +1/+1 counter
-     */
-    test("connive draws one card, discard of nonland gives targeted creature a +1/+1 counter") {
-        val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Island" to 30, "Forest" to 30),
             startingLife = 20
@@ -74,50 +67,89 @@ class ConniveTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         val player = driver.activePlayer!!
-
-        // GIVEN: a known nonland card on top of the library (deterministic draw)
         driver.putCardOnTopOfLibrary(player, "Grizzly Bears")
-
-        // GIVEN: a nonland card in hand that the player will choose to discard
-        val nonlandToDiscard = driver.putCardInHand(player, "Grizzly Bears")
-        val handSizeBefore = driver.getHandSize(player)
-
-        // GIVEN: the connive creature on the battlefield
+        val handCard = driver.putCardInHand(player, handCardName)
         val creature = driver.putCreatureOnBattlefield(player, "Connive Creature")
         driver.removeSummoningSickness(creature)
-        val countersBefore = driver.state.getEntity(creature)
-            ?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 
-        // WHEN: activate the connive ability — it draws first, then pauses for discard selection
         val activateResult = driver.submit(
             ActivateAbility(playerId = player, sourceId = creature, abilityId = conniveAbilityId)
         )
         activateResult.isSuccess shouldBe true
         driver.bothPass()
 
-        // The engine drew one card before pausing — hand grew by 1
         driver.isPaused shouldBe true
         driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
-        driver.getHandSize(player) shouldBe handSizeBefore + 1
+        return Triple(driver, creature, handCard)
+    }
 
-        // WHEN: player chooses to discard the nonland card
+    test("connive draws one card, discard of nonland gives targeted creature a +1/+1 counter") {
+        val (driver, creature, nonlandToDiscard) = setupConnive("Grizzly Bears")
+        val player = driver.activePlayer!!
+        val countersBefore = driver.state.getEntity(creature)
+            ?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+
         val decision = driver.pendingDecision as SelectCardsDecision
         driver.submitDecision(
             player,
             CardsSelectedResponse(decisionId = decision.id, selectedCards = listOf(nonlandToDiscard))
         )
-
         driver.isPaused shouldBe false
 
-        // THEN: the chosen nonland card is now in the graveyard
         driver.state.getGraveyard(player).contains(nonlandToDiscard) shouldBe true
 
-        // THEN: hand size returned to what it was (drew 1, discarded 1)
-        driver.getHandSize(player) shouldBe handSizeBefore
-
-        // THEN: the creature gained exactly one +1/+1 counter
         val countersAfter = driver.state.getEntity(creature)
             ?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
         countersAfter shouldBe countersBefore + 1
+
+        // Events fire in order: draw → discard → +1/+1 counter.
+        val events = driver.events
+        val drawIdx = events.indexOfFirst { it is CardsDrawnEvent }
+        val discardIdx = events.indexOfFirst { it is CardsDiscardedEvent }
+        val counterIdx = events.indexOfFirst { it is CountersAddedEvent }
+        drawIdx shouldNotBe -1
+        discardIdx shouldNotBe -1
+        counterIdx shouldNotBe -1
+        (drawIdx < discardIdx) shouldBe true
+        (discardIdx < counterIdx) shouldBe true
+
+        val counterEvent = events.filterIsInstance<CountersAddedEvent>().first()
+        counterEvent.entityId shouldBe creature
+        counterEvent.counterType shouldBe Counters.PLUS_ONE_PLUS_ONE
+        counterEvent.amount shouldBe 1
+
+        // A ZoneChangeEvent for the discarded card must fire so madness, dredge, and
+        // "whenever a card is put into a graveyard from your hand" observers can react.
+        val zoneChange = events.filterIsInstance<ZoneChangeEvent>()
+            .firstOrNull { it.entityId == nonlandToDiscard }
+        zoneChange shouldNotBe null
+        zoneChange!!.fromZone shouldBe Zone.HAND
+        zoneChange.toZone shouldBe Zone.GRAVEYARD
+    }
+
+    test("connive does not place a +1/+1 counter when the discarded card is a land") {
+        val (driver, creature, landToDiscard) = setupConnive("Forest")
+        val player = driver.activePlayer!!
+
+        val decision = driver.pendingDecision as SelectCardsDecision
+        driver.submitDecision(
+            player,
+            CardsSelectedResponse(decisionId = decision.id, selectedCards = listOf(landToDiscard))
+        )
+        driver.isPaused shouldBe false
+
+        driver.getGraveyard(player) shouldContain landToDiscard
+
+        val events = driver.events
+        val drawIdx = events.indexOfFirst { it is CardsDrawnEvent }
+        val discardIdx = events.indexOfFirst { it is CardsDiscardedEvent }
+        drawIdx shouldNotBe -1
+        discardIdx shouldNotBe -1
+        (drawIdx < discardIdx) shouldBe true
+
+        events.filterIsInstance<CountersAddedEvent>() shouldBe emptyList()
+
+        val counters = driver.state.getEntity(creature)?.get<CountersComponent>()
+        (counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0) shouldBe 0
     }
 })

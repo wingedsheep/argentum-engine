@@ -97,9 +97,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 ## up to one other target artifact you control becomes an artifact creature with base power and toughness 2/2 and gains flying until end of turn
 - [ ] Synthesizer Labship
 
-## power stations permanents using its toughness rather than its power
-- [ ] Tapestry Warden
-
 ## If the amount of mana spent to cast that spell was less than its mana value, you draw a card.
 - [ ] Unravel
 

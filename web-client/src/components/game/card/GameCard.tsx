@@ -1578,8 +1578,8 @@ export function GameCard({
       })()}
 
       {/* Keyword ability icons (shown for face-up cards, and for face-down cards with granted keywords) */}
-      {battlefield && !hideKeywordIcons && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0) || (card.hexproofFromColors && card.hexproofFromColors.length > 0)) && (
-        <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} hexproofFromColors={card.hexproofFromColors ?? []} size={responsive.badges.keywordIconSize} />
+      {battlefield && !hideKeywordIcons && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0) || (card.hexproofFromColors && card.hexproofFromColors.length > 0) || card.isSuspected) && (
+        <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} hexproofFromColors={card.hexproofFromColors ?? []} isSuspected={card.isSuspected ?? false} size={responsive.badges.keywordIconSize} />
       )}
 
       {/* Revealed face-down eye icon (e.g., peeked via Spy Network) */}
@@ -1669,8 +1669,9 @@ export function GameCard({
       {!faceDown && battlefield && card.isDoubleFaced && (
         <div style={{
           position: 'absolute',
-          top: card.copyOf ? 20 : 4,
-          left: 4,
+          bottom: 4,
+          left: '50%',
+          transform: 'translateX(-50%)',
           backgroundColor: 'rgba(20, 20, 40, 0.9)',
           color: card.currentFace === 'BACK' ? '#b0b8d0' : '#f0d060',
           fontSize: responsive.badges.manaCostFontSize,
@@ -2162,6 +2163,76 @@ export function GameCard({
     )
   })() : null
 
+  // "Not Legendary" chip — pinned to a copy whose printed card is legendary but whose
+  // projected type line had the supertype stripped ("except it isn't legendary" copy
+  // effects, e.g. Impostor Syndrome). The printed card art still shows the legendary
+  // frame, so without this chip a player can't tell the token copy isn't subject to
+  // the legend rule. The server sets `nonLegendaryCopy` after comparing the printed
+  // CardDefinition's supertypes to the live CardComponent's supertypes.
+  const showNonLegendaryChip = battlefield && !faceDown && card.nonLegendaryCopy === true
+  const nonLegendaryChip = showNonLegendaryChip ? (() => {
+    const chipHeight = Math.max(10, Math.round(width * 0.12))
+    const crownW = Math.round(chipHeight * 0.95)
+    const crownH = Math.round(chipHeight * 0.55)
+    return (
+      <div
+        aria-label="Not legendary"
+        title={`Not legendary — copy effect stripped the Legendary supertype (${card.typeLine})`}
+        style={{
+          position: 'absolute',
+          top: -Math.round(chipHeight * 0.55),
+          left: '50%',
+          transform: 'translateX(-50%)',
+          height: chipHeight,
+          padding: `0 ${Math.max(4, Math.round(chipHeight * 0.6))}px`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          background: 'linear-gradient(135deg, #4a4a4a 0%, #6b6b6b 50%, #4a4a4a 100%)',
+          color: '#f0f0f0',
+          fontSize: Math.max(8, Math.round(chipHeight * 0.62)),
+          fontWeight: 800,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          borderRadius: chipHeight,
+          border: '1px solid rgba(0, 0, 0, 0.55)',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
+          pointerEvents: 'none',
+          zIndex: 6,
+          whiteSpace: 'nowrap',
+          lineHeight: 1,
+        }}
+      >
+        {/* Crown silhouette with a diagonal strike-through to read "no crown". */}
+        <span style={{ position: 'relative', width: crownW, height: crownH, display: 'inline-block' }} aria-hidden>
+          <svg
+            viewBox="0 0 24 13"
+            width={crownW}
+            height={crownH}
+            preserveAspectRatio="none"
+            fill="rgba(220, 220, 220, 0.55)"
+            stroke="rgba(0, 0, 0, 0.6)"
+            strokeWidth="0.5"
+            strokeLinejoin="round"
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            <path d="M1.5 12 L1.5 9 L4.5 5 L8 8 L12 2 L16 8 L19.5 5 L22.5 9 L22.5 12 Z" />
+          </svg>
+          <svg
+            viewBox="0 0 24 13"
+            width={crownW}
+            height={crownH}
+            preserveAspectRatio="none"
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            <line x1="2" y1="11.5" x2="22" y2="1.5" stroke="#ff6464" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </span>
+        Not Legendary
+      </div>
+    )
+  })() : null
+
   // Wrap in container for sideways battlefield cards (tapped permanents and Rooms) to
   // prevent overlap with neighbours.
   if (needsLandscapeContainer && battlefield) {
@@ -2178,15 +2249,16 @@ export function GameCard({
         position: 'relative',
       }}>
         {commanderCrown}
+        {nonLegendaryChip}
         {cardElement}
       </div>
       </RenderProfiler>
     )
   }
 
-  // Commander gets a relative-positioned wrapper so the crown can float above the card without
-  // being clipped by the card's `overflow: hidden`.
-  if (showCommanderCrown) {
+  // Commander OR non-legendary-copy permanents need a relative-positioned wrapper so the chip
+  // can float above the card without being clipped by the card's `overflow: hidden`.
+  if (showCommanderCrown || nonLegendaryChip) {
     return (
       <RenderProfiler id={profilerId}>
         <div style={{
@@ -2196,6 +2268,7 @@ export function GameCard({
           pointerEvents: 'none',
         }}>
           {commanderCrown}
+          {nonLegendaryChip}
           {cardElement}
         </div>
       </RenderProfiler>

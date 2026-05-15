@@ -57,7 +57,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
         enumerateGraveyardCreaturesWithForage(context, result)
         enumerateFlashback(context, result)
         enumerateGraveyardWithLifeCost(context, result)
-        enumerateWarpFromHand(context, result)
+        enumerateWarp(context, result)
         enumerateCommandZone(context, result)
         enumerateKickerForZoneCasts(context, result)
 
@@ -1153,18 +1153,28 @@ class CastFromZoneEnumerator : ActionEnumerator {
     }
 
     // =========================================================================
-    // Warp from hand
+    // Warp from hand (and graveyard for warp abilities that opt in)
     // =========================================================================
 
-    private fun enumerateWarpFromHand(
+    private fun enumerateWarp(
         context: EnumerationContext,
         result: MutableList<LegalAction>
     ) {
+        enumerateWarpFromZone(context, result, Zone.HAND)
+        enumerateWarpFromZone(context, result, Zone.GRAVEYARD)
+    }
+
+    private fun enumerateWarpFromZone(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>,
+        zone: Zone
+    ) {
         val state = context.state
         val playerId = context.playerId
-        val handCards = state.getZone(ZoneKey(playerId, Zone.HAND))
+        val zoneCards = state.getZone(ZoneKey(playerId, zone))
+        val sourceZoneLabel = zone.name
 
-        for (cardId in handCards) {
+        for (cardId in zoneCards) {
             val container = state.getEntity(cardId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
@@ -1176,6 +1186,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val warpAbility = cardDef.keywordAbilities
                 .filterIsInstance<KeywordAbility.Warp>()
                 .firstOrNull() ?: continue
+
+            // Graveyard casts are only legal for warp abilities that explicitly opt in
+            // (CR 702.185a — default warp is hand-only).
+            if (zone == Zone.GRAVEYARD && !warpAbility.fromGraveyard) continue
 
             // Warp permanents at sorcery speed, instants at instant speed
             val isInstant = cardComponent.typeLine.isInstant
@@ -1189,7 +1203,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId, useAlternativeCost = true),
                         affordable = false,
                         manaCostString = warpAbility.cost.toString(),
-                        sourceZone = "HAND"
+                        sourceZone = sourceZoneLabel
                     )
                 )
                 continue
@@ -1213,7 +1227,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId, useAlternativeCost = true),
                         affordable = false,
                         manaCostString = costString,
-                        sourceZone = "HAND"
+                        sourceZone = sourceZoneLabel
                     )
                 )
                 continue
@@ -1248,7 +1262,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             targetRequirements = if (targetInfos.size > 1) targetInfos else null,
                             manaCostString = costString,
                             autoTapPreview = autoTapPreview,
-                            sourceZone = "HAND"
+                            sourceZone = sourceZoneLabel
                         )
                     )
                 }
@@ -1260,7 +1274,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId, useAlternativeCost = true),
                         manaCostString = costString,
                         autoTapPreview = autoTapPreview,
-                        sourceZone = "HAND"
+                        sourceZone = sourceZoneLabel
                     )
                 )
             }
@@ -1569,7 +1583,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
                 hasXInCost = cardComponent.manaCost.hasX,
-                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                cardTypes = cardComponent.typeLine.cardTypes,
             )
             val canAffordKickedMana = context.manaSolver.canPay(
                 state, playerId, kickedCost,

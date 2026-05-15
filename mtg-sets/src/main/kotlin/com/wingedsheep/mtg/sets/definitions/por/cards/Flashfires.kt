@@ -1,38 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 
 /**
- * Flashfires
- * {3}{R}
- * Sorcery
- * Destroy all Plains.
+ * Flashfires reprint in POR.
+ *
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
+ * LEA's `cards/` package (the card's earliest real printing). This file contributes
+ * only the POR-specific presentation row.
  */
-val Flashfires = card("Flashfires") {
-    manaCost = "{3}{R}"
-    colorIdentity = "R"
-    typeLine = "Sorcery"
-
-    spell {
-        effect = ForEachInGroupEffect(
-            GroupFilter(GameObjectFilter.Land.withSubtype(Subtype.PLAINS)),
-            MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
-        )
-    }
-
-    metadata {
-        rarity = Rarity.UNCOMMON
-        collectorNumber = "129"
-        artist = "Dameon Willich"
-        flavorText = "The prairies burn bright and fast."
-        imageUri = "https://cards.scryfall.io/normal/front/a/9/a9e88867-6acb-43f8-806b-21480aaa1afc.jpg"
-    }
-}
+val FlashfiresReprint = Printing(
+    oracleId = "c281f436-8c77-48f7-b31c-d40cd7f9ed6a",
+    name = "Flashfires",
+    setCode = "POR",
+    collectorNumber = "129",
+    artist = "Dameon Willich",
+    imageUri = "https://cards.scryfall.io/normal/front/a/9/a9e88867-6acb-43f8-806b-21480aaa1afc.jpg",
+    releaseDate = "1997-05-01",
+    rarity = Rarity.UNCOMMON,
+)

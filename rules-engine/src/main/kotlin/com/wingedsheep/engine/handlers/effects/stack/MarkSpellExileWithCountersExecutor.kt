@@ -35,15 +35,21 @@ class MarkSpellExileWithCountersExecutor : EffectExecutor<MarkSpellExileWithCoun
         val counterType = resolveCounterType(effect.counterType)
         val counters = List(effect.count.coerceAtLeast(0)) { counterType }
 
+        val sourceId = context.sourceId
         val newState = state.updateEntity(targetId) { container ->
             val existing = container.get<ExileAfterResolveComponent>()
             val merged = if (existing != null) {
                 existing.copy(
                     withCounters = existing.withCounters + counters,
-                    onlyIfResolved = existing.onlyIfResolved || true
+                    onlyIfResolved = existing.onlyIfResolved || true,
+                    linkedSourceId = existing.linkedSourceId ?: sourceId
                 )
             } else {
-                ExileAfterResolveComponent(withCounters = counters, onlyIfResolved = true)
+                ExileAfterResolveComponent(
+                    withCounters = counters,
+                    onlyIfResolved = true,
+                    linkedSourceId = sourceId
+                )
             }
             container.with(merged)
         }

@@ -333,15 +333,9 @@ class TriggerAbilityResolver(
                 }
                 if (!matchesAll) continue
 
-                // Check state predicates (e.g., HasAnyCounter)
+                // Check state predicates
                 val matchesState = filter.statePredicates.all { predicate ->
-                    when (predicate) {
-                        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasAnyCounter -> {
-                            val counters = targetContainer.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                            counters != null && counters.counters.values.any { it > 0 }
-                        }
-                        else -> true
-                    }
+                    predicateEvaluator.matchesStatePredicate(state, entityId, predicate)
                 }
                 if (!matchesState) continue
 

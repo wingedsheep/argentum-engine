@@ -53,8 +53,9 @@ data object TokenComponent : Component
  *
  * [originalCardComponent] is the pre-copy [CardComponent] snapshot. Permanent-level
  * copy effects (Clone, Mockingbird, "X becomes a copy of Y") populate it so the
- * card can revert to its printed identity when it leaves the battlefield
- * (CR 707.2, CR 400.7). Stack-only copies (Storm and friends) leave it null.
+ * card can revert to its printed identity when it leaves the battlefield (CR 400.7
+ * — moving zones makes a new object with no memory of the prior copy). Stack-only
+ * copies (Storm and friends) leave it null.
  */
 @Serializable
 data class CopyOfComponent(

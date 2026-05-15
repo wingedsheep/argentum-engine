@@ -188,19 +188,24 @@ class CastZoneResolver(
     }
 
     /**
-     * Check if a card in the hand has a Warp keyword ability,
-     * allowing it to be cast for its warp cost.
+     * Check if a card has an active Warp keyword ability that can be used from
+     * its current zone. By default warp is hand-only (CR 702.185a); a Warp whose
+     * `fromGraveyard` flag is set (e.g., Timeline Culler) also lets the card be
+     * cast for its warp cost from the caster's graveyard.
      */
     fun hasWarpPermission(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
     ): Boolean {
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        if (cardId !in state.getZone(handZone)) return false
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
-        return cardDef.keywordAbilities.any { it is KeywordAbility.Warp }
+        val warp = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Warp>().firstOrNull()
+            ?: return false
+
+        if (cardId in state.getZone(ZoneKey(playerId, Zone.HAND))) return true
+        if (warp.fromGraveyard && cardId in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return true
+        return false
     }
 
     /**

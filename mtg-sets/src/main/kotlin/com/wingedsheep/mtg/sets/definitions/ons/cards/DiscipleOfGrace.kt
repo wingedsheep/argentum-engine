@@ -1,35 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.ProtectionScope
 
 /**
- * Disciple of Grace
- * {1}{W}
- * Creature — Human Cleric
- * 1/2
- * Protection from black
- * Cycling {2}
+ * Disciple of Grace reprint in ONS.
+ *
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
+ * USG's `cards/` package (the card's earliest real printing). This file contributes
+ * only the ONS-specific presentation row.
  */
-val DiscipleOfGrace = card("Disciple of Grace") {
-    manaCost = "{1}{W}"
-    colorIdentity = "W"
-    typeLine = "Creature — Human Cleric"
-    power = 1
-    toughness = 2
-    oracleText = "Protection from black\nCycling {2}"
-
-    keywordAbility(KeywordAbility.Protection(ProtectionScope.Color(Color.BLACK)))
-    keywordAbility(KeywordAbility.cycling("{2}"))
-
-    metadata {
-        rarity = Rarity.COMMON
-        collectorNumber = "25"
-        artist = "Thomas M. Baxa"
-        flavorText = "Dread was as foreign to her as the landscape ahead."
-        imageUri = "https://cards.scryfall.io/normal/front/1/d/1d1790cb-34e4-4f23-8a13-1906fd9a956f.jpg?1562901832"
-    }
-}
+val DiscipleOfGraceReprint = Printing(
+    oracleId = "7f4ceca9-0f55-4fa6-8e64-befbc4303d4e",
+    name = "Disciple of Grace",
+    setCode = "ONS",
+    collectorNumber = "25",
+    artist = "Thomas M. Baxa",
+    imageUri = "https://cards.scryfall.io/normal/front/1/d/1d1790cb-34e4-4f23-8a13-1906fd9a956f.jpg?1562901832",
+    releaseDate = "2002-10-07",
+    rarity = Rarity.COMMON,
+)

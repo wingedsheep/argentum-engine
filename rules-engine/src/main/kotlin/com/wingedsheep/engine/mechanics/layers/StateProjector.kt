@@ -248,6 +248,7 @@ class StateProjector(
                 subtypes = v.subtypes.toSet(),
                 controllerId = v.controllerId,
                 isFaceDown = v.isFaceDown,
+                isSuspected = v.isSuspected,
                 cantAttack = v.cantAttack,
                 cantBlock = v.cantBlock,
                 mustAttack = v.mustAttack,
@@ -365,6 +366,12 @@ class StateProjector(
                 val sourceId = floating.sourceId
                 if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
                     state.getEntity(sourceId)?.has<TappedComponent>() != true) {
+                    continue
+                }
+            }
+            if (floating.duration is Duration.WhileSourceOnBattlefield) {
+                val sourceId = floating.sourceId
+                if (sourceId == null || !state.getBattlefield().contains(sourceId)) {
                     continue
                 }
             }

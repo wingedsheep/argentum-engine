@@ -282,6 +282,27 @@ data class AddManaOfColorLandsCouldProduceEffect(
 }
 
 /**
+ * Add one mana of any color in the controller's commander's color identity.
+ *
+ * Used for cards like Arcane Signet and Command Tower. The set of available colors is the
+ * union of the [com.wingedsheep.sdk.model.CardDefinition.colorIdentity] of every commander
+ * registered to the controller (Partner / Background sums them). If the controller has no
+ * commander (non-Commander format), no mana is produced.
+ */
+@SerialName("AddManaOfColorInCommanderColorIdentity")
+@Serializable
+data class AddManaOfColorInCommanderColorIdentityEffect(
+    val restriction: ManaRestriction? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Add one mana of any color in your commander's color identity")
+        if (restriction != null) append(". ${restriction.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Add one mana of each color found among permanents matching a filter.
  * "{T}: For each color among permanents you control, add one mana of that color."
  *

@@ -71,6 +71,13 @@ fix-backlog-implementations:
     scripts/check-backlog-implementations.py --fix
     scripts/check-card-counts.py --fix
 
+# Validate a single card's printings against Scryfall: canonical must live in the
+# card's earliest real-expansion printing; every other scaffolded printing must
+# have a reprint row. Strict — if the earliest set isn't scaffolded, that's drift.
+[group: 'build']
+check-card-printing CARD:
+    scripts/check-card-printing.py "{{CARD}}"
+
 # Start the game server (loads .env if present)
 [group: 'dev']
 server:

@@ -57,8 +57,8 @@
 
 ## Sorceries (7)
 
-- [ ] 1 Cultivate
-- [ ] 1 Farseek
+- [x] 1 Cultivate
+- [x] 1 Farseek
 - [ ] 1 Promise of Loyalty
 - [ ] 1 Secret Rendezvous
 - [ ] 1 Tempt with Bunnies
@@ -67,7 +67,7 @@
 
 ## Artifacts (8)
 
-- [ ] 1 Arcane Signet
+- [x] 1 Arcane Signet
 - [ ] 1 Coveted Jewel
 - [x] 1 Fellwar Stone
 - [ ] 1 Ghirapur Orrery

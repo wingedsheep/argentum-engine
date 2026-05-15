@@ -33,6 +33,18 @@ just server | client                # Run game server / web client dev
 Direct gradle: `./gradlew :rules-engine:test --tests "CreatureStatsTest"` ·
 Web client: `cd web-client && npm run dev | build | typecheck` (dev at localhost:5173).
 
+## Card status script
+
+Reports which cards in a set are implemented vs missing by diffing Kotlin source against Scryfall's
+canonical list. Cards are partitioned into Draft (Scryfall `booster: true`) and Extra (starter-deck
+exclusives, Special Guests, bonus sheets) so booster-relevant progress is distinguishable from completionist work.
+
+```bash
+scripts/card-status --set BLB              # summary table renders, extras column populated
+scripts/card-status --list --set BLB       # missing cards grouped under Extra:
+scripts/card-status --cards BLB            # full listing split into Draft: / Extra: sections
+```
+
 ## Module Layout
 
 | Module | Purpose | Deps |

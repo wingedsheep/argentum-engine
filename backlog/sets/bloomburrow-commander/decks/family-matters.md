@@ -71,7 +71,7 @@
 
 ## Artifacts (9)
 
-- [ ] 1 Arcane Signet
+- [x] 1 Arcane Signet
 - [ ] 1 Azorius Signet
 - [ ] 1 Bident of Thassa
 - [ ] 1 Boros Signet

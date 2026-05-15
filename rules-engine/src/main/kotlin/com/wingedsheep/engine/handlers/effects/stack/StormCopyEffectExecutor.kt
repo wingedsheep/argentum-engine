@@ -225,7 +225,9 @@ class StormCopyEffectExecutor(
             currentOrdinal: Int,
             remainingCopies: Int,
             totalCopies: Int,
-            priorEvents: List<GameEvent>
+            priorEvents: List<GameEvent>,
+            keywordsForCopy: Set<String> = emptySet(),
+            removeLegendary: Boolean = false
         ): ExecutionResult {
             var currentState = state
             val allEvents = priorEvents.toMutableList()
@@ -299,7 +301,9 @@ class StormCopyEffectExecutor(
                         chosenModes = chosenModes,
                         modeTargetRequirements = modeTargetRequirements,
                         accumulatedOrdinalTargets = accumulated,
-                        currentOrdinal = ordinal
+                        currentOrdinal = ordinal,
+                        keywordsForCopy = keywordsForCopy,
+                        removeLegendary = removeLegendary
                     )
 
                     val pausedState = currentState
@@ -320,7 +324,9 @@ class StormCopyEffectExecutor(
                     controllerId = controllerId
                 )
                 if (!copyResult.isSuccess) return copyResult
-                currentState = copyResult.newState
+                currentState = applyCopyMutations(
+                    copyResult.newState, copyResult.events, keywordsForCopy, removeLegendary
+                )
                 allEvents.addAll(copyResult.events)
 
                 copiesLeft--
@@ -329,6 +335,42 @@ class StormCopyEffectExecutor(
             }
 
             return ExecutionResult.success(currentState, allEvents)
+        }
+
+        /**
+         * After a [StackResolver.putSpellCopy] result, patch the new copy entity:
+         * - strip the Legendary supertype if [removeLegendary] (CR 707.10f token-copy clause)
+         * - record granted spell keywords (e.g., wither, lifelink) on the copy
+         */
+        internal fun applyCopyMutations(
+            state: GameState,
+            events: List<GameEvent>,
+            keywordsForCopy: Set<String>,
+            removeLegendary: Boolean
+        ): GameState {
+            if (keywordsForCopy.isEmpty() && !removeLegendary) return state
+            val copyId = events.asReversed()
+                .firstNotNullOfOrNull { e ->
+                    if (e is com.wingedsheep.engine.core.SpellCopiedEvent) e.copyEntityId else null
+                } ?: return state
+            return state.updateEntity(copyId) { container ->
+                var updated = container
+                if (removeLegendary) {
+                    val card = updated.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                    if (card != null) {
+                        updated = updated.with(card.copy(typeLine = card.typeLine.withoutLegendary()))
+                    }
+                }
+                if (keywordsForCopy.isNotEmpty()) {
+                    val existing = updated.get<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
+                    updated = updated.with(
+                        com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent(
+                            (existing?.keywords ?: emptySet()) + keywordsForCopy
+                        )
+                    )
+                }
+                updated
+            }
         }
     }
 }

@@ -195,14 +195,55 @@ data class CounterUnlessPaysLifeContinuation(
 
 /**
  * Information about a mana source available for manual selection.
+ *
+ * @property requiresSacrifice Selecting this source also sacrifices the permanent
+ *   (e.g. Treasure tokens — "{T}, Sacrifice this artifact: Add one mana of any color").
+ *   Auto-pay never picks these; the manual-selection resumer performs the sacrifice
+ *   when the player explicitly opts in.
+ * @property requiresTappingAnotherPermanent Selecting this source also requires tapping
+ *   another permanent (e.g. Springleaf Drum — "{T}, Tap an untapped creature you
+ *   control: Add one mana of any color"). Auto-pay never picks these; the
+ *   manual-selection resumer pauses for the player to pick which permanent to tap.
  */
 @Serializable
 data class ManaSourceOption(
     val entityId: EntityId,
     val name: String,
     val producesColors: Set<Color>,
-    val producesColorless: Boolean
+    val producesColorless: Boolean,
+    val requiresSacrifice: Boolean = false,
+    val requiresTappingAnotherPermanent: Boolean = false
 )
+
+/**
+ * Resume after the player picks which permanent to tap to satisfy the secondary
+ * tap-permanents sub-cost of a mana ability selected during ward payment
+ * (e.g. Springleaf Drum's "Tap an untapped creature you control").
+ *
+ * Pushed by [com.wingedsheep.engine.handlers.continuations.ManaPaymentContinuationResumer]
+ * when the player's manual ward-payment selection contains one or more sources with
+ * [ManaSourceOption.requiresTappingAnotherPermanent]. The resumer pre-tapped any
+ * non-sub-cost sources before pushing this, so [currentPool]-style state already lives
+ * on the player's mana pool component.
+ *
+ * Head of [pendingSubCostSources] is the source the current prompt is targeting; on
+ * response, that source is tapped, the chosen creature is tapped, and its mana is added
+ * to the pool. If more sub-cost sources remain, a new prompt is pushed; otherwise we
+ * attempt to pay the ward cost and either resolve the spell or counter it.
+ */
+@Serializable
+data class WardTapPermanentsSubCostContinuation(
+    override val decisionId: String,
+    val payingPlayerId: EntityId,
+    val spellEntityId: EntityId,
+    val manaCost: com.wingedsheep.sdk.core.ManaCost,
+    val exileOnCounter: Boolean,
+    val controllerId: EntityId?,
+    /** Source IDs still to process. Head is the one the current prompt is for. */
+    val pendingSubCostSources: List<EntityId>,
+    /** Original mana-source menu, kept for source-name lookups when emitting events. */
+    val availableSources: List<ManaSourceOption>
+) : ContinuationFrame
 
 /**
  * Continuation for AddDynamicManaEffect.
@@ -226,5 +267,27 @@ data class AddDynamicManaContinuation(
     val totalAmount: Int,
     val firstColor: Color,
     val secondColor: Color,
+    val restriction: ManaRestriction? = null
+) : ContinuationFrame
+
+/**
+ * Continuation for [com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect] when the
+ * effect's allowed-color palette has 3 or more entries — "Add N mana in any combination of
+ * colors". The player picks each pip's color independently via a sequence of
+ * [ChooseColorDecision]s; this frame is repushed once per remaining pip.
+ *
+ * @property remainingPips How many pips are still owed at the time the current decision was created
+ *   (decrements by 1 per resume; the loop ends when this reaches 0)
+ * @property allowedColors The palette the player chooses from for each pip
+ * @property restriction Optional restriction stamped onto every pip added to the pool
+ */
+@Serializable
+data class AddManaPipsContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val remainingPips: Int,
+    val allowedColors: Set<Color>,
     val restriction: ManaRestriction? = null
 ) : ContinuationFrame

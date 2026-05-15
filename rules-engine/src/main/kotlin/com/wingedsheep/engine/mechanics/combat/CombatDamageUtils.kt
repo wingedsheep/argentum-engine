@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -20,6 +22,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
  */
 internal object CombatDamageUtils {
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     /**
      * Returns the combat damage amount that [creatureId] assigns this step.
      *
@@ -37,7 +41,7 @@ internal object CombatDamageUtils {
         if (cardRegistry == null) return power
 
         val toughness = projected.getToughness(creatureId) ?: 0
-        return if (assignsDamageAsToughness(state, creatureId, cardRegistry, power, toughness)) {
+        return if (assignsDamageAsToughness(state, projected, creatureId, cardRegistry, power, toughness)) {
             toughness.coerceAtLeast(0)
         } else {
             power
@@ -46,6 +50,7 @@ internal object CombatDamageUtils {
 
     private fun assignsDamageAsToughness(
         state: GameState,
+        projected: ProjectedState,
         creatureId: EntityId,
         cardRegistry: CardRegistry,
         power: Int,
@@ -66,6 +71,41 @@ internal object CombatDamageUtils {
             if (matches(abilities, Scope.AttachedTo, power, toughness)) return true
         }
 
+        // Global permanents with Scope.Battlefield (e.g., Tapestry Warden: "creatures you control")
+        // The source may equal the creature (e.g., Tapestry Warden applying to itself).
+        for (permanentId in state.getBattlefield()) {
+            val permCardId = state.getEntity(permanentId)?.get<CardComponent>()?.cardDefinitionId ?: continue
+            val abilities = cardRegistry.getCard(permCardId)?.staticAbilities.orEmpty()
+            if (matchesBattlefield(state, projected, permanentId, creatureId, abilities, power, toughness)) return true
+        }
+
+        return false
+    }
+
+    private fun matchesBattlefield(
+        state: GameState,
+        projected: ProjectedState,
+        sourceId: EntityId,
+        creatureId: EntityId,
+        abilities: List<StaticAbility>,
+        power: Int,
+        toughness: Int,
+    ): Boolean {
+        val sourceController = projected.getController(sourceId) ?: return false
+        val predicateContext = PredicateContext(controllerId = sourceController, sourceId = sourceId)
+        for (ability in abilities) {
+            val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
+            if (unwrapped !is AssignDamageEqualToToughness) continue
+            if (unwrapped.filter.scope !is Scope.Battlefield) continue
+            // Honor excludeSelf: skip if this ability excludes the source and creature is the source
+            if (unwrapped.filter.excludeSelf && sourceId == creatureId) continue
+            if (unwrapped.onlyWhenToughnessGreaterThanPower && toughness <= power) continue
+            // Defer the full filter check (controller, type, subtype, keywords, state) to the
+            // shared PredicateEvaluator so new battlefield-scope uses (e.g. "Each Equipment-
+            // bearing creature you control") are honored without per-call special-casing.
+            if (!predicateEvaluator.matchesWithProjection(state, projected, creatureId, unwrapped.filter.baseFilter, predicateContext)) continue
+            return true
+        }
         return false
     }
 

@@ -496,4 +496,25 @@ data class RedirectCombatDamageToControllerEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
+/**
+ * The target creature becomes suspected.
+ *
+ * A suspected creature gains menace and can't block. This status is a first-class
+ * named mechanic (unlike independently granting menace + can't block) so that
+ * future cards can query, remove, or react to the suspected status specifically.
+ *
+ * Duration defaults to Permanent because suspect status in MTG lasts until
+ * explicitly removed (e.g. via another card effect).
+ */
+@SerialName("Suspect")
+@Serializable
+data class SuspectEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = "${target.description} becomes suspected"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 

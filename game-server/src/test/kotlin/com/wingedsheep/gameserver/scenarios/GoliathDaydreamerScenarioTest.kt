@@ -2,11 +2,13 @@ package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -54,6 +56,51 @@ class GoliathDaydreamerScenarioTest : ScenarioTestBase() {
 
                 // Player 2 took 2 damage (Shock resolved before it was exiled).
                 game.getLifeTotal(2) shouldBe 18
+            }
+
+            test("exiled spell is linked to Goliath Daydreamer for UI tethering") {
+                val game = scenario()
+                    .withPlayers("Player 1", "Player 2")
+                    .withCardOnBattlefield(1, "Goliath Daydreamer")
+                    .withCardInHand(1, "Shock")
+                    .withCardInHand(1, "Shock")
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withLifeTotal(2, 20)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val goliathId = game.state.getBattlefield(game.player1Id).single { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Goliath Daydreamer"
+                }
+
+                // Cast Shock at player 2; resolves, then ends up in exile with a dream counter.
+                game.castSpellTargetingPlayer(1, "Shock", 2)
+                game.resolveStack()
+
+                val firstShockId = game.state.getExile(game.player1Id).single { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Shock"
+                }
+
+                // The exiled Shock should be recorded on Goliath Daydreamer's LinkedExileComponent.
+                val linkedAfterFirst = game.state.getEntity(goliathId)?.get<LinkedExileComponent>()
+                linkedAfterFirst shouldNotBe null
+                linkedAfterFirst!!.exiledIds shouldContain firstShockId
+
+                // A second cast should append, not replace.
+                game.castSpellTargetingPlayer(1, "Shock", 2)
+                game.resolveStack()
+
+                val exiledShocks = game.state.getExile(game.player1Id).filter { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Shock"
+                }
+                exiledShocks.size shouldBe 2
+                val secondShockId = exiledShocks.first { it != firstShockId }
+
+                val linkedAfterSecond = game.state.getEntity(goliathId)?.get<LinkedExileComponent>()
+                linkedAfterSecond shouldNotBe null
+                linkedAfterSecond!!.exiledIds shouldContain firstShockId
+                linkedAfterSecond.exiledIds shouldContain secondShockId
             }
 
             test("attacking grants free-cast permission on the exiled dream-counter card") {

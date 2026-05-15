@@ -1258,11 +1258,11 @@ class TriggerDetector(
                 val damageEvents = combatDamageByController[controllerId] ?: continue
 
                 // Check if any damage source matches the sourceFilter (using projected state for subtypes)
-                val hasMatch = damageEvents.any { info ->
-                    val sourceContainer = state.getEntity(info.sourceId) ?: return@any false
-                    val sourceCard = sourceContainer.get<CardComponent>() ?: return@any false
-                    if (!sourceCard.typeLine.isCreature) return@any false
-                    if (sourceContainer.has<FaceDownComponent>()) return@any false
+                val firstMatchingInfo = damageEvents.firstOrNull { info ->
+                    val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
+                    sourceContainer.get<CardComponent>() ?: return@firstOrNull false
+                    if (!projected.isCreature(info.sourceId)) return@firstOrNull false
+                    if (sourceContainer.has<FaceDownComponent>()) return@firstOrNull false
 
                     // Check card predicates from the sourceFilter
                     trigger.sourceFilter.cardPredicates.all { predicate ->
@@ -1270,19 +1270,24 @@ class TriggerDetector(
                             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> true
                             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                                 projected.hasSubtype(info.sourceId, predicate.subtype.value)
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken ->
+                                !sourceContainer.has<TokenComponent>()
                             else -> true
                         }
                     }
                 }
 
-                if (hasMatch) {
+                if (firstMatchingInfo != null) {
+                    // Batch trigger fires once regardless of how many sources dealt damage.
+                    // triggeringEntityId is an arbitrary matching source (the first one we found);
+                    // cards that need per-source dispatch must use a singular trigger event instead.
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
                             sourceId = entry.entityId,
                             sourceName = entry.cardComponent.name,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext()
+                            triggerContext = TriggerContext(triggeringEntityId = firstMatchingInfo.sourceId)
                         )
                     )
                 }
@@ -1543,7 +1548,7 @@ class TriggerDetector(
      * Duplicate ETB triggers for "additional time" static abilities (Naban, Panharmonicon).
      *
      * For each ZoneChangeEvent(to=BATTLEFIELD) in the events, checks if any permanent on
-     * the battlefield has AdditionalETBTriggers whose creatureFilter matches the entering entity.
+     * the battlefield has AdditionalETBTriggers whose enteringFilter matches the entering entity.
      * If so, duplicates all triggers that fired from that ETB event for the controller's permanents.
      *
      * Multiple copies are additive: N copies add N extra copies of each trigger.
@@ -1561,7 +1566,12 @@ class TriggerDetector(
         if (etbEvents.isEmpty()) return
 
         // Collect all AdditionalETBTriggers static abilities from battlefield permanents
-        data class ETBDoubler(val controllerId: EntityId, val filter: GameObjectFilter, val sourceId: EntityId)
+        data class ETBDoubler(
+            val controllerId: EntityId,
+            val filter: GameObjectFilter,
+            val sourceId: EntityId,
+            val enteringMustBeYouControl: Boolean,
+        )
         val doublers = mutableListOf<ETBDoubler>()
 
         for (permanentId in state.getBattlefield()) {
@@ -1574,7 +1584,14 @@ class TriggerDetector(
             val classLevel = container.get<ClassLevelComponent>()?.currentLevel
             for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is AdditionalETBTriggers) {
-                    doublers.add(ETBDoubler(controllerId, ability.creatureFilter, permanentId))
+                    doublers.add(
+                        ETBDoubler(
+                            controllerId = controllerId,
+                            filter = ability.enteringFilter,
+                            sourceId = permanentId,
+                            enteringMustBeYouControl = ability.enteringMustBeYouControl,
+                        )
+                    )
                 }
             }
         }
@@ -1588,9 +1605,12 @@ class TriggerDetector(
             val enteringEntityId = etbEvent.entityId
 
             for (doubler in doublers) {
-                // The entering creature must be controlled by the doubler's controller
-                val enteringController = projected.getController(enteringEntityId) ?: etbEvent.ownerId
-                if (enteringController != doubler.controllerId) continue
+                if (doubler.enteringMustBeYouControl) {
+                    // The entering permanent must be controlled by the doubler's controller
+                    // (matches "X you control entering" wording — Naban, Traveling Chocobo, etc.)
+                    val enteringController = projected.getController(enteringEntityId) ?: etbEvent.ownerId
+                    if (enteringController != doubler.controllerId) continue
+                }
 
                 // Check if the entering creature matches the filter
                 if (doubler.filter != GameObjectFilter.Any) {

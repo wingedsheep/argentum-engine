@@ -114,3 +114,31 @@ data class ExileLibraryUntilManaValueEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
+/**
+ * Cascade (CR 702.85a). Resolves the cascade ability of the triggering spell:
+ * 1. Exile cards from the top of the controller's library one at a time.
+ * 2. Stop when a nonland card with mana value strictly less than the triggering
+ *    spell's mana value is exiled. That card becomes the "cascade card".
+ * 3. The controller is asked whether to cast the cascade card without paying
+ *    its mana cost. On yes the cast is synthesized immediately (still during
+ *    cascade resolution); on no the cascade card stays uncast.
+ * 4. Every exiled card that wasn't cast is put on the bottom of the library
+ *    in a random order.
+ *
+ * The threshold is read at execution time from the triggering spell pointed at
+ * by the engine's trigger context. If the triggering entity is missing or has
+ * no mana value, the cascade trigger fizzles (does nothing). If no qualifying
+ * card is found (library exhausted), no may-cast decision is offered and every
+ * exiled card is put on the bottom.
+ */
+@SerialName("Cascade")
+@Serializable
+data object CascadeEffect : Effect {
+    override val description: String =
+        "Exile cards from the top of your library until you exile a nonland card " +
+            "with mana value less than this spell's. You may cast it without paying its " +
+            "mana cost. Put the exiled cards on the bottom in a random order."
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+

@@ -23,51 +23,51 @@
 - [x] 1 Llanowar Loamspeaker
 - [x] 1 Lotus Cobra
 - [x] 1 Prosperous Bandit
-- [ ] 1 Pyreswipe Hawk
-- [ ] 1 Rampaging Baloths
-- [ ] 1 Sakura-Tribe Elder
-- [ ] 1 Teapot Slinger
-- [ ] 1 Tendershoot Dryad
-- [ ] 1 Trailtracker Scout
-- [ ] 1 Wandertale Mentor
-- [ ] 1 Wildsear, Scouring Maw
+- [x] 1 Pyreswipe Hawk
+- [x] 1 Rampaging Baloths
+- [x] 1 Sakura-Tribe Elder
+- [x] 1 Teapot Slinger
+- [x] 1 Tendershoot Dryad
+- [x] 1 Trailtracker Scout
+- [x] 1 Wandertale Mentor
+- [x] 1 Wildsear, Scouring Maw
 
 ## Planeswalkers (1)
 
-- [ ] 1 Domri, Anarch of Bolas
+- [x] 1 Domri, Anarch of Bolas
 
 ## Instants (5)
 
-- [ ] 1 Abrade
-- [ ] 1 Beast Within
-- [ ] 1 Big Score
-- [ ] 1 Chaos Warp
-- [x] 1 Starstorm
+- [x] 1 Abrade
+- [x] 1 Beast Within
+- [x] 1 Big Score
+- [x] 1 Chaos Warp
+- [x] 1 Starsto/rm
 
 ## Sorceries (7)
 
-- [ ] 1 Blasphemous Act
-- [ ] 1 Cultivate
-- [ ] 1 Decimate
-- [ ] 1 Explore
-- [ ] 1 Farseek
-- [ ] 1 Harmonize
-- [ ] 1 Rampant Growth
+- [x] 1 Blasphemous Act
+- [x] 1 Cultivate
+- [x] 1 Decimate
+- [x] 1 Explore
+- [x] 1 Farseek
+- [x] 1 Harmonize
+- [x] 1 Rampant Growth
 
 ## Artifacts (14)
 
-- [ ] 1 Arcane Signet
-- [ ] 1 Bootleggers' Stash
-- [ ] 1 Esika's Chariot
+- [x] 1 Arcane Signet
+- [x] 1 Bootleggers' Stash
+- [x] 1 Esika's Chariot
 - [x] 1 Fellwar Stone
 - [x] 1 Gilded Lotus
-- [ ] 1 Gruul Signet
-- [ ] 1 Hedron Archive
-- [ ] 1 Mind Stone
-- [ ] 1 Rolling Hamsphere
-- [ ] 1 Sol Ring
-- [ ] 1 Spine of Ish Sah
-- [ ] 1 Talisman of Impulse
+- [x] 1 Gruul Signet
+- [x] 1 Hedron Archive
+- [x] 1 Mind Stone
+- [x] 1 Rolling Hamsphere
+- [x] 1 Sol Ring
+- [x] 1 Spine of Ish Sah
+- [x] 1 Talisman of Impulse
 - [ ] 1 Thought Vessel
 - [ ] 1 Thran Dynamo
 

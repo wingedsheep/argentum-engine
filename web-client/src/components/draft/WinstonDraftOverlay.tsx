@@ -7,6 +7,7 @@ import { ManaCost } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton } from './SetSynergiesOverlay'
+import { RarityBadge } from './RarityBadge'
 
 /**
  * Winston Draft overlay for 2-player Winston Draft mode.
@@ -597,6 +598,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
                         }}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                          <RarityBadge rarity={card.rarity} size={11} />
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {count > 1 ? `${count}x ` : ''}{card.name}
                           </span>
@@ -868,6 +870,7 @@ function OpponentKnownCardsOverlay({ opponentName, knownCards, unknownCount, onC
                     }}
                   >
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                      <RarityBadge rarity={card.rarity} size={11} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {count > 1 ? `${count}x ` : ''}{card.name}
                       </span>

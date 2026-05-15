@@ -24,6 +24,56 @@ Implement the card specified in `$ARGUMENTS`. The card name is the main argument
 
 3. Parse oracle text: card type, abilities (spell/triggered/activated/static/replacement), targeting, keywords, conditions.
 
+4. **Check for earlier printings — decide canonical set before writing any code.**
+   Many cards in newer sets are reprints. The canonical `CardDefinition` must live in the
+   card's **earliest real-expansion printing** (per Scryfall, skipping promo / token /
+   art_series). The asked-for set gets only a `Printing` row. Decision flow:
+
+   a. **Is the card already implemented somewhere?**
+      `grep -rn "name = \"<Card Name>\"" mtg-sets/src/main/kotlin/` — if a
+      `CardDefinition` exists in another set, skip to Step 10b (add a reprint in the
+      asked-for set; do **not** duplicate the script). Still run the verifier in 4d to
+      confirm the existing canonical is in the right set.
+
+   b. **Otherwise, list all printings on Scryfall:** follow `prints_search_uri` from the
+      Step 1 response (or `https://api.scryfall.com/cards/search?q=%21%22<Card+Name>%22&unique=prints&order=released&dir=asc`).
+      Take the *first* real-expansion-type printing (skip `promo`, `token`,
+      `art_series`, `memorabilia`). Call that the **earliest real set**.
+
+   c. **Place the canonical CardDefinition.** Three cases:
+
+      - **Earliest real set == asked-for set** → proceed with Steps 2–10 normally in
+        that set.
+      - **Earliest real set is already scaffolded** under
+        `mtg-sets/.../definitions/<setcode>/` → implement the full `CardDefinition`
+        in *that* set (re-fetch Scryfall data with `&set=<earliest-code>` for
+        authoritative metadata), and add a `Printing` row in the asked-for set via
+        Step 10b.
+      - **Earliest real set is NOT scaffolded** → scaffold it. Create a minimal
+        `MtgSet` object under
+        `mtg-sets/.../definitions/<earliest-code>/<EarliestSet>Set.kt` following the
+        same pattern as existing sets (e.g. Tempest's
+        `mtg-sets/.../definitions/tmp/TempestSet.kt`), wire it into
+        `META-INF/services/com.wingedsheep.sdk.MtgSet`, then implement the canonical
+        `CardDefinition` there. The asked-for set still gets a `Printing` row via
+        Step 10b.
+
+      If scaffolding the earliest set is out of scope for this PR (e.g. it would
+      balloon the change set), document the deviation in the commit message and ask
+      the user before falling back to a later set as canonical.
+
+   d. **Backlog bookkeeping.** If the canonical set differs from the asked-for set, check
+      off the card in **both** backlogs that list it (e.g. canonical set's `cards.md`
+      and the reprinting set's deck/booster checklist), so neither tracker shows it as
+      missing.
+
+   e. **Verify after finishing.** Once the canonical file (and any reprint row) is in
+      place, run `just check-card-printing "<Card Name>"`. The script lists every
+      Scryfall printing alongside which sets are scaffolded in the repo, and exits
+      non-zero if the canonical isn't in the earliest real printing's set, the earliest
+      real set isn't scaffolded, or a scaffolded printing is missing a `Printing(...)`
+      row. Fix any drift it reports before committing.
+
 ## Step 2: Check Existing Effects
 
 **Always prefer atomic effects over monolithic effects** for reusability.
@@ -260,8 +310,9 @@ Re-fetch the Scryfall card data and systematically compare it against your imple
 
 ## Step 10b: Adding Another Printing of an Existing Card (reprints)
 
-**Use this only if the card is already implemented in another set** and you're adding a
-reprint (different art / set code / collector number, same oracle behavior). Skip otherwise.
+**Use this when** either (a) the card is already implemented in another set and you're
+adding a reprint, or (b) Step 1.4 routed the canonical `CardDefinition` to an earlier set
+and the asked-for set needs only a `Printing` row. Skip otherwise.
 
 The engine treats cards by name (oracle identity), not by printing — the canonical
 `CardDefinition` (script, types, P/T) lives in **one** set's package and is registered

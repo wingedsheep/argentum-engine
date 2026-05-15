@@ -429,6 +429,8 @@ export function getEffectIcon(icon: string): string {
       return '🛡️'
     case 'shield':
       return '⚡'
+    case 'no-counter':
+      return '🚫'
     case 'skip':
       return '⏭️'
     case 'lock':

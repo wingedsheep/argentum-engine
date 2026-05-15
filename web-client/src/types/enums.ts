@@ -186,6 +186,7 @@ export enum Keyword {
   EVOKE = 'EVOKE',
   CONSPIRE = 'CONSPIRE',
   HIDEAWAY = 'HIDEAWAY',
+  CASCADE = 'CASCADE',
   // Creature mechanics
   OFFSPRING = 'OFFSPRING',
   // Damage modification
@@ -193,6 +194,8 @@ export enum Keyword {
   TOXIC = 'TOXIC',
   // Death replacement
   PERSIST = 'PERSIST',
+  // Resolution-time city's blessing grant (Ixalan)
+  ASCEND = 'ASCEND',
   // Ability words
   EERIE = 'EERIE',
 }
@@ -236,10 +239,12 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.EVOKE]: 'Evoke',
   [Keyword.CONSPIRE]: 'Conspire',
   [Keyword.HIDEAWAY]: 'Hideaway',
+  [Keyword.CASCADE]: 'Cascade',
   [Keyword.OFFSPRING]: 'Offspring',
   [Keyword.WITHER]: 'Wither',
   [Keyword.TOXIC]: 'Toxic',
   [Keyword.PERSIST]: 'Persist',
+  [Keyword.ASCEND]: 'Ascend',
   [Keyword.EERIE]: 'Eerie',
 }
 

@@ -1,72 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.fdn.cards
 
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Targets
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.TargetOpponent
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
- * Duress
- * {B}
- * Sorcery
+ * Duress reprint in FDN.
  *
- * Target opponent reveals their hand. You choose a noncreature, nonland card from it.
- * That player discards that card.
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
+ * USG's `cards/` package (the card's earliest real printing). This file contributes
+ * only the FDN-specific presentation row.
  */
-val Duress = card("Duress") {
-    manaCost = "{B}"
-    colorIdentity = "B"
-    typeLine = "Sorcery"
-    oracleText = "Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card."
-
-    spell {
-        val opponent = target("target opponent", TargetOpponent())
-        effect = CompositeEffect(
-            listOf(
-                RevealHandEffect(opponent),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                    storeAs = "opponentHand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "opponentHand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    filter = GameObjectFilter.Noncreature and GameObjectFilter.Nonland,
-                    storeSelected = "toDiscard",
-                    prompt = "Choose a noncreature, nonland card to discard",
-                    alwaysPrompt = true,
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "toDiscard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                    moveType = MoveType.Discard
-                )
-            )
-        )
-    }
-
-    metadata {
-        rarity = Rarity.COMMON
-        collectorNumber = "606"
-        artist = "PINDURSKI"
-        flavorText = "\"Give of yourself, for *compleation* awaits the cleansed.\"\n—Nokar, priest of Sheoldred"
-        imageUri = "https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899"
-    }
-}
+val DuressReprint = Printing(
+    oracleId = "33d405ea-7a9a-4970-b70f-9c05d90dd6f0",
+    name = "Duress",
+    setCode = "FDN",
+    collectorNumber = "606",
+    artist = "PINDURSKI",
+    imageUri = "https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899",
+    releaseDate = "2024-11-15",
+    rarity = Rarity.COMMON,
+)

@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 167 / 261
+**Implemented:** 174 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -127,7 +127,7 @@
 - [x] Lightless Evangel
 - [ ] Lightstall Inquisitor
 - [ ] Lithobraking
-- [ ] Loading Zone
+- [x] Loading Zone
 - [x] Lost in Space
 - [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
@@ -160,9 +160,9 @@
 - [x] Ouroboroid
 - [ ] Pain for All
 - [ ] Perigee Beckoner
-- [ ] Pinnacle Emissary
+- [x] Pinnacle Emissary
 - [x] Pinnacle Kill-Ship
-- [ ] Pinnacle Starcage
+- [x] Pinnacle Starcage
 - [x] Plasma Bolt
 - [x] Possibility Technician
 - [ ] Pull Through the Weft
@@ -205,12 +205,12 @@
 - [x] Squire's Lightblade
 - [x] Starbreach Whale
 - [x] Starfield Shepherd
-- [ ] Starfield Vocalist
+- [x] Starfield Vocalist
 - [x] Starfighter Pilot
 - [ ] Starport Security
 - [ ] Starwinder
 - [ ] Station Monitor
-- [ ] Steelswarm Operator
+- [x] Steelswarm Operator
 - [x] Stomping Ground
 - [x] Sunset Saboteur
 - [ ] Sunstar Chaplain
@@ -227,7 +227,7 @@
 - [x] Systems Override
 - [x] Tannuk, Memorial Ensign
 - [ ] Tannuk, Steadfast Second
-- [ ] Tapestry Warden
+- [x] Tapestry Warden
 - [x] Temporal Intervention
 - [ ] Terminal Velocity
 - [ ] Terrapact Intimidator
@@ -241,7 +241,7 @@
 - [ ] The Eternity Elevator
 - [ ] The Seriema
 - [ ] Thrumming Hivepool
-- [ ] Timeline Culler
+- [x] Timeline Culler
 - [ ] Tractor Beam
 - [x] Tragic Trajectory
 - [x] Umbral Collar Zealot

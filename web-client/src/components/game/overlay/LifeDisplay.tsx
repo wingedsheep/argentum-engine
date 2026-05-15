@@ -3,6 +3,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import type { EntityId, ClientPlayerEffect } from '@/types'
 import { useResponsiveContext, getEffectIcon } from '../board/shared'
 import { styles } from '../board/styles'
+import { HoverCardPreview } from '../../ui/HoverCardPreview'
 
 /**
  * Life total display - interactive when in targeting mode or when a pending decision requires player targeting.
@@ -342,8 +343,14 @@ export function LifeDisplay({
 export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlayerEffect[] | undefined }) {
   const responsive = useResponsiveContext()
   const [hoveredEffect, setHoveredEffect] = React.useState<string | null>(null)
+  const [hoverPos, setHoverPos] = React.useState<{ x: number; y: number } | null>(null)
 
   if (!effects || effects.length === 0) return null
+
+  const hovered = effects.find(e => e.effectId === hoveredEffect)
+  // Image-backed effects (e.g. City's Blessing marker) get a full card preview on hover;
+  // plain-text effects keep the small tooltip below.
+  const showCardPreview = hovered?.imageUri && hoverPos
 
   return (
     <div style={styles.effectBadgesContainer}>
@@ -355,18 +362,34 @@ export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlaye
             padding: responsive.isMobile ? '2px 6px' : '4px 8px',
             fontSize: responsive.fontSize.small,
           }}
-          onMouseEnter={() => setHoveredEffect(effect.effectId)}
-          onMouseLeave={() => setHoveredEffect(null)}
+          onMouseEnter={(e) => {
+            setHoveredEffect(effect.effectId)
+            setHoverPos({ x: e.clientX, y: e.clientY })
+          }}
+          onMouseMove={(e) => {
+            if (effect.imageUri) setHoverPos({ x: e.clientX, y: e.clientY })
+          }}
+          onMouseLeave={() => {
+            setHoveredEffect(null)
+            setHoverPos(null)
+          }}
         >
           {effect.icon && <span style={styles.effectBadgeIcon}>{getEffectIcon(effect.icon)}</span>}
           <span style={styles.effectBadgeName}>{effect.name}</span>
-          {hoveredEffect === effect.effectId && effect.description && (
+          {hoveredEffect === effect.effectId && effect.description && !effect.imageUri && (
             <div style={styles.effectTooltip}>
               {effect.description}
             </div>
           )}
         </div>
       ))}
+      {showCardPreview && (
+        <HoverCardPreview
+          name={hovered!.name}
+          imageUri={hovered!.imageUri!}
+          pos={hoverPos}
+        />
+      )}
     </div>
   )
 }

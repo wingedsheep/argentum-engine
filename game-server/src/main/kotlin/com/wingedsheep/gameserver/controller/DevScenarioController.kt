@@ -412,6 +412,7 @@ class DevScenarioController(
             // Set up player 1
             request.player1?.let { config ->
                 config.lifeTotal?.let { builder.withLifeTotal(1, it) }
+                config.commanders?.forEach { builder.withCommander(1, it) }
                 config.hand?.forEach { builder.withCardInHand(1, it) }
                 config.battlefield?.forEach { card ->
                     builder.withCardOnBattlefield(
@@ -433,6 +434,7 @@ class DevScenarioController(
             // Set up player 2
             request.player2?.let { config ->
                 config.lifeTotal?.let { builder.withLifeTotal(2, it) }
+                config.commanders?.forEach { builder.withCommander(2, it) }
                 config.hand?.forEach { builder.withCardInHand(2, it) }
                 config.battlefield?.forEach { card ->
                     builder.withCardOnBattlefield(
@@ -604,7 +606,7 @@ class DevScenarioController(
 
             // Initialize empty zones for both players
             for (playerId in listOf(player1Id!!, player2Id!!)) {
-                for (zoneType in listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.BATTLEFIELD)) {
+                for (zoneType in listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.BATTLEFIELD, Zone.COMMAND)) {
                     val zoneKey = ZoneKey(playerId, zoneType)
                     state = state.copy(zones = state.zones + (zoneKey to emptyList()))
                 }
@@ -730,6 +732,24 @@ class DevScenarioController(
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
             state = state.addToZone(ZoneKey(playerId, Zone.LIBRARY), cardId)
+            return this
+        }
+
+        /**
+         * Designate a card as the player's commander, placing it in the command zone with a
+         * [CommanderComponent] and appending it to the player's [CommanderRegistryComponent].
+         * Supports multiple calls per player (Partner / Background).
+         */
+        fun withCommander(playerNumber: Int, cardName: String): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val cardId = createCard(cardName, playerId)
+            state = state.updateEntity(cardId) { it.with(CommanderComponent(ownerId = playerId)) }
+            state = state.addToZone(ZoneKey(playerId, Zone.COMMAND), cardId)
+            state = state.updateEntity(playerId) { container ->
+                val existing = container.get<CommanderRegistryComponent>()
+                val ids = (existing?.commanderIds ?: emptyList()) + cardId
+                container.with(CommanderRegistryComponent(ids))
+            }
             return this
         }
 
@@ -873,7 +893,13 @@ data class PlayerConfig(
     val hand: List<String>? = null,
     val battlefield: List<BattlefieldCardConfig>? = null,
     val graveyard: List<String>? = null,
-    val library: List<String>? = null
+    val library: List<String>? = null,
+    /**
+     * Commander card names. Each name becomes a card in the player's command zone with
+     * [CommanderComponent] attached and registered in [CommanderRegistryComponent].
+     * Provide one name for a standard commander, two for Partner / Background.
+     */
+    val commanders: List<String>? = null
 )
 
 /**

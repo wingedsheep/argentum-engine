@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped as SourceIsUnta
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn as IsYourTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn as IsNotYourTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase as IsInPhaseCondition
+import com.wingedsheep.sdk.scripting.conditions.YouHaveCitysBlessing as YouHaveCitysBlessingCondition
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
@@ -132,6 +133,17 @@ object Conditions {
     fun BasicLandTypesAtLeast(count: Int): ConditionInterface =
         Compare(
             DynamicAmounts.domain(Player.You),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
+
+    /**
+     * If you control N or more permanents (any type).
+     * Used as the intervening-if for Ascend triggers (10+ permanents → city's blessing).
+     */
+    fun ControlPermanentsAtLeast(count: Int): ConditionInterface =
+        Compare(
+            DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Any),
             ComparisonOperator.GTE,
             DynamicAmount.Fixed(count)
         )
@@ -563,6 +575,15 @@ object Conditions {
      */
     val IsYourMainPhase: ConditionInterface =
         IsInPhaseCondition(listOf(Phase.PRECOMBAT_MAIN, Phase.POSTCOMBAT_MAIN), yoursOnly = true)
+
+    /**
+     * If you have the city's blessing (CR 702.131 / 700.5).
+     *
+     * Granted by Ascend triggers once the controller controls 10+ permanents on
+     * ETB; once granted, never lost for the rest of the game.
+     */
+    val YouHaveCitysBlessing: ConditionInterface =
+        YouHaveCitysBlessingCondition
 
     // =========================================================================
     // Trigger Entity Conditions

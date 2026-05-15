@@ -77,7 +77,9 @@ import com.wingedsheep.sdk.scripting.conditions.YouCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
 import com.wingedsheep.engine.handlers.triggers.CreatureDiedThisTurnConditionEvaluator
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
+import com.wingedsheep.sdk.scripting.conditions.YouHaveCitysBlessing
 import com.wingedsheep.sdk.scripting.conditions.VoidCondition
+import com.wingedsheep.engine.state.components.player.PlayerCitysBlessingComponent
 
 /**
  * Evaluates conditions from the SDK against the game state.
@@ -148,6 +150,9 @@ class ConditionEvaluator {
             // Void (Edge of Eternities ability word)
             is VoidCondition ->
                 state.nonlandPermanentLeftBattlefieldThisTurn || state.spellWarpedThisTurn
+
+            // City's blessing (Ixalan, CR 702.131 / 700.5)
+            is YouHaveCitysBlessing -> evaluateYouHaveCitysBlessing(state, context)
 
             // Stack conditions
             is OpponentSpellOnStack -> evaluateOpponentSpellOnStack(state, context)
@@ -605,6 +610,10 @@ class ConditionEvaluator {
             ?.get<com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent>()
             ?: return false
         return component.count == condition.count
+    }
+
+    private fun evaluateYouHaveCitysBlessing(state: GameState, context: EffectContext): Boolean {
+        return state.getEntity(context.controllerId)?.has<PlayerCitysBlessingComponent>() == true
     }
 
     private fun evaluateCollectionContainsMatch(

@@ -377,7 +377,10 @@ class PredicateEvaluator {
             is CardPredicate.HasSubtypeFromVariable -> {
                 val chosenType = context?.chosenValues?.get(predicate.variableName) ?: return false
                 val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
-                entitySubtypes.any { it.equals(chosenType, ignoreCase = true) }
+                entitySubtypes.any { it.equals(chosenType, ignoreCase = true) } ||
+                    // Changeling: has all creature types in all zones
+                    (Keyword.CHANGELING in card.baseKeywords &&
+                        chosenType in Subtype.ALL_CREATURE_TYPES)
             }
 
             is CardPredicate.HasSubtypeInStoredList -> {
@@ -667,7 +670,10 @@ class PredicateEvaluator {
             // Context-relative predicates (pipeline variable references)
             is CardPredicate.HasSubtypeFromVariable -> {
                 val chosenType = context?.chosenValues?.get(predicate.variableName) ?: return false
-                card.typeLine.subtypes.any { it.value.equals(chosenType, ignoreCase = true) }
+                card.typeLine.subtypes.any { it.value.equals(chosenType, ignoreCase = true) } ||
+                    // Changeling: has all creature types in all zones
+                    (Keyword.CHANGELING in card.baseKeywords &&
+                        chosenType in Subtype.ALL_CREATURE_TYPES)
             }
 
             is CardPredicate.HasSubtypeInStoredList -> {
