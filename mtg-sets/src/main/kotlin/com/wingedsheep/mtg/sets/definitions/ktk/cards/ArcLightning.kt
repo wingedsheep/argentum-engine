@@ -1,36 +1,25 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
-import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
- * Arc Lightning
- * {2}{R}
- * Sorcery
- * Arc Lightning deals 3 damage divided as you choose among one, two, or three targets.
+ * Arc Lightning reprint in KTK.
+ *
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
+ * USG's `cards/` package (the card's earliest real printing). This file contributes
+ * only the KTK-specific presentation row — set, collector number, art — picked up
+ * automatically by `CardDiscovery.findPrintingsIn` and surfaced via the set's
+ * `printings`.
  */
-val ArcLightning = card("Arc Lightning") {
-    manaCost = "{2}{R}"
-    colorIdentity = "R"
-    typeLine = "Sorcery"
-    oracleText = "Arc Lightning deals 3 damage divided as you choose among one, two, or three targets."
-
-    spell {
-        target = AnyTarget(count = 3, minCount = 1)
-        effect = DividedDamageEffect(
-            totalDamage = 3,
-            minTargets = 1,
-            maxTargets = 3
-        )
-    }
-
-    metadata {
-        rarity = Rarity.UNCOMMON
-        collectorNumber = "97"
-        artist = "Seb McKinnon"
-        flavorText = "Lightning burns its own path."
-        imageUri = "https://cards.scryfall.io/normal/front/3/5/35c7c392-6782-40c8-bb24-6aad24f14660.jpg?1562784760"
-    }
-}
+val ArcLightningReprint = Printing(
+    oracleId = "5acc8b39-3c3e-4012-8cfd-ac3c2c4ca982",
+    name = "Arc Lightning",
+    setCode = "KTK",
+    collectorNumber = "97",
+    scryfallId = "35c7c392-6782-40c8-bb24-6aad24f14660",
+    artist = "Seb McKinnon",
+    imageUri = "https://cards.scryfall.io/normal/front/3/5/35c7c392-6782-40c8-bb24-6aad24f14660.jpg?1562784760",
+    releaseDate = "2014-09-26",
+    rarity = Rarity.UNCOMMON,
+)
