@@ -24,6 +24,7 @@ import com.wingedsheep.mtg.sets.definitions.one.PhyrexiaAllWillBeOneSet
 import com.wingedsheep.mtg.sets.definitions.ons.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scg.ScourgeSet
+import com.wingedsheep.mtg.sets.definitions.tmp.TempestSet
 import com.wingedsheep.mtg.sets.definitions.otj.OutlawsOfThunderJunctionSet
 import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
 import com.wingedsheep.mtg.sets.definitions.tdm.TarkirDragonstormSet
@@ -43,6 +44,7 @@ object MtgSetCatalog {
 
     val all: List<MtgSet> = listOf(
         PortalSet,
+        TempestSet,
         InvasionSet,
         OnslaughtSet,
         ScourgeSet,
