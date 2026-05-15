@@ -58,7 +58,7 @@
 
 - [x] 1 Arcane Signet
 - [x] 1 Bootleggers' Stash
-- [ ] 1 Esika's Chariot
+- [x] 1 Esika's Chariot
 - [x] 1 Fellwar Stone
 - [x] 1 Gilded Lotus
 - [ ] 1 Gruul Signet
