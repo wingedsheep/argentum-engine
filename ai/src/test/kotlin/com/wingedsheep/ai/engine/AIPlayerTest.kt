@@ -5,8 +5,8 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.sdk.core.Phase
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -19,8 +19,10 @@ class AIPlayerTest : FunSpec({
 
     fun createCardRegistry(): CardRegistry {
         val registry = CardRegistry()
-        registry.register(PortalSet.cards)
-        registry.register(PortalSet.basicLands)
+        for (set in MtgSetCatalog.all) {
+            registry.register(set.cards)
+            registry.register(set.basicLands)
+        }
         return registry
     }
 
