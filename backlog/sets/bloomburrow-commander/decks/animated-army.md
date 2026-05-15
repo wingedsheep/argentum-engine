@@ -50,7 +50,7 @@
 - [x] 1 Cultivate
 - [x] 1 Decimate
 - [x] 1 Explore
-- [ ] 1 Farseek
+- [x] 1 Farseek
 - [ ] 1 Harmonize
 - [ ] 1 Rampant Growth
 
