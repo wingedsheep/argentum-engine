@@ -125,8 +125,9 @@ class SteelswarmOperatorTest : FunSpec({
         val chromeCompanion = driver.putPermanentOnBattlefield(caster, "Chrome Companion")
         val graveyardCard = driver.putCardInGraveyard(caster, "Bombard")
 
-        // Use Steelswarm Operator's SECOND mana ability (artifact-source-ability-only).
-        // It's the second activatedAbility in the card definition.
+        // Activate Chrome Companion's {2},{T} ability — the auto-tap solver should fund
+        // the {2} from Steelswarm Operator's second mana ability (the {U}{U} restricted to
+        // abilities of artifact sources), since Chrome Companion is itself an artifact.
         val abilityToPayFor = ChromeCompanion.activatedAbilities.first().id
 
         val activateResult = driver.submit(
