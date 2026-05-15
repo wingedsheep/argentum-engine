@@ -414,16 +414,19 @@ class TriggerMatcher(
             }
             // Check state predicates (face-down, tapped, etc.)
             for (predicate in trigger.filter.statePredicates) {
-                if (!matchesStatePredicateForTrigger(predicate, state, event.entityId)) return false
+                if (!matchesStatePredicateForZoneChangeTrigger(predicate, state, event)) return false
             }
-            // Check controller predicate (youControl)
+            // Check controller predicate (youControl). Prefer the dying creature's last-known
+            // controller over its owner so stolen creatures (Threaten / Mind Control) and
+            // tokens whose creator owns them but doesn't control them group correctly.
             if (trigger.filter.controllerPredicate != null) {
+                val effectiveController = event.lastKnownController ?: event.ownerId
                 when (trigger.filter.controllerPredicate) {
                     is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
-                        if (event.ownerId != controllerId) return false
+                        if (effectiveController != controllerId) return false
                     }
                     is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
-                        if (event.ownerId == controllerId) return false
+                        if (effectiveController == controllerId) return false
                     }
                     else -> {}
                 }
@@ -849,6 +852,51 @@ class TriggerMatcher(
         return playerOrder.flatMap { playerId ->
             byController[playerId] ?: emptyList()
         }
+    }
+
+    /**
+     * Evaluate a [StatePredicate] in the zone-change trigger gating path, with last-known
+     * info taken from the event so the dying / leaving entity can still be evaluated after
+     * it has left the battlefield. Falls back to [matchesStatePredicateForTrigger] for
+     * predicates that don't need event-side LKI.
+     */
+    private fun matchesStatePredicateForZoneChangeTrigger(
+        predicate: com.wingedsheep.sdk.scripting.predicates.StatePredicate,
+        state: GameState,
+        event: ZoneChangeEvent
+    ): Boolean = when (predicate) {
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasGreatestPower -> {
+            // For permanents leaving the battlefield we need the dying entity's power +
+            // controller from the event's last-known info (the entity is no longer on the
+            // battlefield by the time the trigger gates). For ETB triggers (to=BATTLEFIELD)
+            // the entity is live and the projected path applies.
+            val leavingBattlefield = event.fromZone == Zone.BATTLEFIELD
+            if (leavingBattlefield) {
+                val dyingPower = event.lastKnownPower
+                val dyingController = event.lastKnownController ?: event.ownerId
+                if (dyingPower == null) false
+                else {
+                    val projected = state.projectedState
+                    val maxSurvivorPower = state.getBattlefield()
+                        .filter { id ->
+                            projected.getController(id) == dyingController && projected.isCreature(id)
+                        }
+                        .maxOfOrNull { projected.getPower(it) ?: Int.MIN_VALUE }
+                    // Singleton case (no survivors under same controller): the dying
+                    // creature is trivially its own maximum and qualifies.
+                    maxSurvivorPower == null || dyingPower >= maxSurvivorPower
+                }
+            } else {
+                matchesStatePredicateForTrigger(predicate, state, event.entityId)
+            }
+        }
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
+            predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event) }
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.And ->
+            predicate.predicates.all { matchesStatePredicateForZoneChangeTrigger(it, state, event) }
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Not ->
+            !matchesStatePredicateForZoneChangeTrigger(predicate.predicate, state, event)
+        else -> matchesStatePredicateForTrigger(predicate, state, event.entityId)
     }
 
     private fun matchesStatePredicateForTrigger(
