@@ -1,35 +1,31 @@
 package com.wingedsheep.mtg.sets.definitions.spm.cards
 
-import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TimingRule
 
-/**
- * Hot Dog Cart
- * {3}
- * Artifact
- * {T}: Add one mana of any color.
- * {2}, {T}: Create a Food token.
- */
 val HotDogCart = card("Hot Dog Cart") {
     manaCost = "{3}"
     colorIdentity = ""
     typeLine = "Artifact"
-    oracleText = "{T}: Add one mana of any color.\n{2}, {T}: Create a Food token."
+    oracleText = "When this artifact enters, create a Food token. " +
+        "(It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\n" +
+        "{T}: Add one mana of any color."
+
+    triggeredAbility {
+        trigger = Triggers.EntersBattlefield
+        effect = Effects.CreateFood()
+        description = "When this artifact enters, create a Food token."
+    }
 
     activatedAbility {
         cost = AbilityCost.Tap
         effect = Effects.AddAnyColorMana()
         manaAbility = true
         timing = TimingRule.ManaAbility
-    }
-
-    activatedAbility {
-        cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap)
-        effect = Effects.CreateFood()
     }
 
     metadata {

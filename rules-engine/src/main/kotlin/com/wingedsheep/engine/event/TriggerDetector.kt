@@ -1260,8 +1260,8 @@ class TriggerDetector(
                 // Check if any damage source matches the sourceFilter (using projected state for subtypes)
                 val firstMatchingInfo = damageEvents.firstOrNull { info ->
                     val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
-                    val sourceCard = sourceContainer.get<CardComponent>() ?: return@firstOrNull false
-                    if (!sourceCard.typeLine.isCreature) return@firstOrNull false
+                    sourceContainer.get<CardComponent>() ?: return@firstOrNull false
+                    if (!projected.isCreature(info.sourceId)) return@firstOrNull false
                     if (sourceContainer.has<FaceDownComponent>()) return@firstOrNull false
 
                     // Check card predicates from the sourceFilter
@@ -1278,6 +1278,9 @@ class TriggerDetector(
                 }
 
                 if (firstMatchingInfo != null) {
+                    // Batch trigger fires once regardless of how many sources dealt damage.
+                    // triggeringEntityId is an arbitrary matching source (the first one we found);
+                    // cards that need per-source dispatch must use a singular trigger event instead.
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
