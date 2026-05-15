@@ -69,7 +69,7 @@
 - [x] 1 Spine of Ish Sah
 - [x] 1 Talisman of Impulse
 - [x] 1 Thought Vessel
-- [ ] 1 Thran Dynamo
+- [x] 1 Thran Dynamo
 
 ## Enchantments (13)
 

@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 76 / 312
+**Implemented:** 77 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -302,7 +302,7 @@
 - [ ] Thickest in the Thicket
 - [ ] Thopter Engineer
 - [x] Thought Vessel
-- [ ] Thran Dynamo
+- [x] Thran Dynamo
 - [ ] Thriving Bluff
 - [ ] Thriving Grove
 - [ ] Thriving Heath
