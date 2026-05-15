@@ -48,7 +48,7 @@
 
 - [x] 1 Blasphemous Act
 - [x] 1 Cultivate
-- [ ] 1 Decimate
+- [x] 1 Decimate
 - [ ] 1 Explore
 - [ ] 1 Farseek
 - [ ] 1 Harmonize
