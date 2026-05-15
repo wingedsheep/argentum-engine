@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 169 / 261
+**Implemented:** 173 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -127,7 +127,7 @@
 - [x] Lightless Evangel
 - [ ] Lightstall Inquisitor
 - [ ] Lithobraking
-- [ ] Loading Zone
+- [x] Loading Zone
 - [x] Lost in Space
 - [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
@@ -160,9 +160,9 @@
 - [x] Ouroboroid
 - [ ] Pain for All
 - [ ] Perigee Beckoner
-- [ ] Pinnacle Emissary
+- [x] Pinnacle Emissary
 - [x] Pinnacle Kill-Ship
-- [ ] Pinnacle Starcage
+- [x] Pinnacle Starcage
 - [x] Plasma Bolt
 - [x] Possibility Technician
 - [ ] Pull Through the Weft

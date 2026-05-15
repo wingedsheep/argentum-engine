@@ -294,7 +294,8 @@ class DrawReplacementDispatcher(
                         entityId = source.entityId,
                         name = source.name,
                         producesColors = source.producesColors,
-                        producesColorless = source.producesColorless
+                        producesColorless = source.producesColorless,
+                        requiresSacrifice = source.requiresSacrifice
                     )
                 }
 

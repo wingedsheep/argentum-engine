@@ -1,0 +1,44 @@
+{
+  "_description": "Loading Zone counter-doubling sweep. Alice has Loading Zone resolved on the battlefield, plus a Seedship Agrarian (creature with landfall) and a Synthesizer Labship (Spacecraft) to exercise both branches of the recipient filter. Sequence: (1) Play the Forest from hand — Seedship Agrarian's landfall trigger would put one +1/+1 counter on it; Loading Zone doubles → two +1/+1 counters. (2) Activate Station on Synthesizer Labship, tapping Glory Seeker (power 2) — would put 2 CHARGE counters on the Spacecraft; Loading Zone doubles → 4 CHARGE counters. Bonus: cast another Loading Zone from the Warp pile to verify the ruling that two Loading Zones multiply by 4x (1 counter → 4 counters).",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Forest"],
+    "battlefield": [
+      {"name": "Loading Zone"},
+      {"name": "Seedship Agrarian", "summoningSickness": false},
+      {"name": "Wedgelight Rammer", "summoningSickness": false},
+      {"name": "Glory Seeker", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

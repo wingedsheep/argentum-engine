@@ -2,7 +2,8 @@
 
 **Set Size:** 188 booster cards (excluding basic lands and tokens)
 **Release Date:** September 26, 2025
-**Implemented:** 19 / 189
+**Implemented:** 21 / 189
+
 - [x] Agent Venom
 - [x] Angry Rabble
 - [x] Amazing Acrobatics
@@ -52,7 +53,7 @@
 - [ ] Inner Demons Gangsters
 - [x] Interdimensional Web Watch
 - [ ] Iron Spider, Stark Upgrade
-- [ ] J. Jonah Jameson
+- [x] J. Jonah Jameson
 - [ ] Jackal, Genius Geneticist
 - [x] Kapow!
 - [ ] Kraven the Hunter
@@ -90,7 +91,7 @@
 - [ ] Peter Parker's Camera
 - [ ] Pictures of Spider-Man
 - [ ] Prison Break
-- [ ] Professional Wrestler
+- [x] Professional Wrestler
 - [x] Prowler, Clawed Thief
 - [ ] Pumpkin Bombardment
 - [ ] Radioactive Spider

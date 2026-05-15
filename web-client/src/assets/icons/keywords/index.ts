@@ -46,6 +46,10 @@ export const keywordManaClass: Record<string, string> = {
   TOXIC: 'ability-toxic',
   CANT_BE_BLOCKED: 'ability-unblockable',
   CHANGELING: 'ability-changeling',
+  /** Suspect status (CR 701.60). Rendered via the synthetic SUSPECTED pseudo-keyword from
+   *  ProjectedState.isSuspected — the status itself isn't a keyword, but reusing this
+   *  icon table keeps the badge rendering uniform. */
+  SUSPECTED: 'ability-suspect',
 }
 
 export const displayableKeywords = new Set([

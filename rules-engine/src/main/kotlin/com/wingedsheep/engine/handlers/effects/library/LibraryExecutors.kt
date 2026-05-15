@@ -22,6 +22,7 @@ class LibraryExecutors(
         RevealCollectionExecutor(),
         ExileFromTopRepeatingExecutor(),
         ExileLibraryUntilManaValueExecutor(),
+        CascadeExecutor(),
         GatherSubtypesExecutor(),
         ChooseCreatureTypePipelineExecutor(),
         ChooseOptionPipelineExecutor(),

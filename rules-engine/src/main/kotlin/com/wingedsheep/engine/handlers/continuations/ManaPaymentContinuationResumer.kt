@@ -1,13 +1,17 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 
 class ManaPaymentContinuationResumer(
@@ -72,7 +76,8 @@ class ManaPaymentContinuationResumer(
                     entityId = source.entityId,
                     name = source.name,
                     producesColors = source.producesColors,
-                    producesColorless = source.producesColorless
+                    producesColorless = source.producesColorless,
+                    requiresSacrifice = source.requiresSacrifice
                 )
             }
 
@@ -267,22 +272,16 @@ class ManaPaymentContinuationResumer(
                     }
                 }
             } else {
-                val sourceMap = continuation.availableSources.associateBy { it.entityId }
-                for (sourceId in response.selectedSources) {
-                    val source = sourceMap[sourceId]
-                        ?: return ExecutionResult.error(state, "Selected source $sourceId is not a valid mana source")
-
-                    currentState = currentState.updateEntity(sourceId) { c ->
-                        c.with(TappedComponent)
-                    }
-                    events.add(TappedEvent(sourceId, source.name))
-
-                    if (source.producesColors.isNotEmpty()) {
-                        currentPool = currentPool.add(source.producesColors.first())
-                    } else if (source.producesColorless) {
-                        currentPool = currentPool.addColorless(1)
-                    }
-                }
+                val manual = applyManualSourceSelection(
+                    currentState,
+                    currentPool,
+                    continuation.availableSources,
+                    response.selectedSources,
+                    fallbackControllerId = playerId
+                ) ?: return ExecutionResult.error(state, "Selected source is not a valid mana source")
+                currentState = manual.state
+                currentPool = manual.pool
+                events.addAll(manual.events)
             }
         }
 
@@ -412,7 +411,8 @@ class ManaPaymentContinuationResumer(
                 entityId = source.entityId,
                 name = source.name,
                 producesColors = source.producesColors,
-                producesColorless = source.producesColorless
+                producesColorless = source.producesColorless,
+                requiresSacrifice = source.requiresSacrifice
             )
         }
 
@@ -520,22 +520,16 @@ class ManaPaymentContinuationResumer(
                     }
                 }
             } else {
-                val sourceMap = continuation.availableSources.associateBy { it.entityId }
-                for (sourceId in response.selectedSources) {
-                    val source = sourceMap[sourceId]
-                        ?: return ExecutionResult.error(state, "Selected source $sourceId is not a valid mana source")
-
-                    currentState = currentState.updateEntity(sourceId) { c ->
-                        c.with(TappedComponent)
-                    }
-                    events.add(TappedEvent(sourceId, source.name))
-
-                    if (source.producesColors.isNotEmpty()) {
-                        currentPool = currentPool.add(source.producesColors.first())
-                    } else if (source.producesColorless) {
-                        currentPool = currentPool.addColorless(1)
-                    }
-                }
+                val manual = applyManualSourceSelection(
+                    currentState,
+                    currentPool,
+                    continuation.availableSources,
+                    response.selectedSources,
+                    fallbackControllerId = playerId
+                ) ?: return ExecutionResult.error(state, "Selected source is not a valid mana source")
+                currentState = manual.state
+                currentPool = manual.pool
+                events.addAll(manual.events)
             }
         }
 
@@ -592,7 +586,8 @@ class ManaPaymentContinuationResumer(
                 entityId = source.entityId,
                 name = source.name,
                 producesColors = source.producesColors,
-                producesColorless = source.producesColorless
+                producesColorless = source.producesColorless,
+                requiresSacrifice = source.requiresSacrifice
             )
         }
 
@@ -804,27 +799,16 @@ class ManaPaymentContinuationResumer(
                     }
                 }
             } else {
-                // Manual selection: tap the selected sources
-                // Use the available sources stored in the continuation (already validated when decision was created)
-                val sourceMap = continuation.availableSources.associateBy { it.entityId }
-
-                for (sourceId in response.selectedSources) {
-                    val source = sourceMap[sourceId]
-                        ?: return ExecutionResult.error(state, "Selected source $sourceId is not a valid mana source")
-
-                    currentState = currentState.updateEntity(sourceId) { c ->
-                        c.with(TappedComponent)
-                    }
-                    events.add(TappedEvent(sourceId, source.name))
-
-                    // Add mana from this source to the pool
-                    // For simplicity, produce the first color or colorless
-                    if (source.producesColors.isNotEmpty()) {
-                        currentPool = currentPool.add(source.producesColors.first())
-                    } else if (source.producesColorless) {
-                        currentPool = currentPool.addColorless(1)
-                    }
-                }
+                val manual = applyManualSourceSelection(
+                    currentState,
+                    currentPool,
+                    continuation.availableSources,
+                    response.selectedSources,
+                    fallbackControllerId = playerId
+                ) ?: return ExecutionResult.error(state, "Selected source is not a valid mana source")
+                currentState = manual.state
+                currentPool = manual.pool
+                events.addAll(manual.events)
             }
         }
 
@@ -872,5 +856,72 @@ class ManaPaymentContinuationResumer(
 
         // Target was auto-selected - check for more continuations
         return checkForMore(result.newState, events + result.events.toList())
+    }
+
+    /**
+     * Applies a player's manual mana-source selection: taps each source (sacrificing
+     * those with [ManaSourceOption.requiresSacrifice] — e.g. Treasure tokens) and
+     * adds the produced mana to [pool]. For tap+sacrifice sources we route the zone
+     * move through [ZoneTransitionService] so dies/leaves triggers and Food trackers
+     * stay consistent with [com.wingedsheep.engine.handlers.CostHandler]'s payment of
+     * the same cost.
+     *
+     * For "any color" producers (treasures' `AddAnyColorMana`) the resumer picks the
+     * first listed color; for paying generic costs (ward {N}, may-pay {N}) any color
+     * suffices.
+     *
+     * @return null when [selectedSourceIds] references a source not in [availableSources].
+     */
+    private data class ManualSourceTapResult(
+        val state: GameState,
+        val pool: ManaPool,
+        val events: List<GameEvent>
+    )
+
+    private fun applyManualSourceSelection(
+        state: GameState,
+        pool: ManaPool,
+        availableSources: List<ManaSourceOption>,
+        selectedSourceIds: List<EntityId>,
+        fallbackControllerId: EntityId
+    ): ManualSourceTapResult? {
+        val sourceMap = availableSources.associateBy { it.entityId }
+        var currentState = state
+        var currentPool = pool
+        val events = mutableListOf<GameEvent>()
+
+        for (sourceId in selectedSourceIds) {
+            val source = sourceMap[sourceId] ?: return null
+
+            if (source.requiresSacrifice) {
+                val sourceController = currentState.getEntity(sourceId)
+                    ?.get<ControllerComponent>()?.playerId
+                    ?: fallbackControllerId
+                // Emit a TappedEvent for parity with the tap sub-cost on the ability
+                // (some triggers care about "becomes tapped"), then sacrifice. The
+                // permanent is about to leave the battlefield so we skip setting
+                // TappedComponent on it.
+                events.add(TappedEvent(sourceId, source.name))
+                val preState = ZoneTransitionService
+                    .trackFoodSacrifice(currentState, listOf(sourceId), sourceController)
+                val transition = ZoneTransitionService.moveToZone(
+                    preState, sourceId, Zone.GRAVEYARD
+                )
+                currentState = transition.state
+                events.add(PermanentsSacrificedEvent(sourceController, listOf(sourceId)))
+                events.addAll(transition.events)
+            } else {
+                currentState = currentState.updateEntity(sourceId) { c -> c.with(TappedComponent) }
+                events.add(TappedEvent(sourceId, source.name))
+            }
+
+            if (source.producesColors.isNotEmpty()) {
+                currentPool = currentPool.add(source.producesColors.first())
+            } else if (source.producesColorless) {
+                currentPool = currentPool.addColorless(1)
+            }
+        }
+
+        return ManualSourceTapResult(currentState, currentPool, events)
     }
 }

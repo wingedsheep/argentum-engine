@@ -143,6 +143,21 @@ data class KeywordGrantedEvent(
 ) : GameEvent
 
 /**
+ * A player gained the city's blessing (CR 702.131 / 700.5).
+ *
+ * Fired by Ascend triggers when their controller controls 10+ permanents on
+ * resolution. The blessing is permanent for the rest of the game — this event
+ * fires at most once per player per game.
+ */
+@Serializable
+@SerialName("CitysBlessingGainedEvent")
+data class CitysBlessingGainedEvent(
+    val playerId: EntityId,
+    val playerName: String,
+    val sourceName: String
+) : GameEvent
+
+/**
  * A player chose a creature type (e.g., "Choose a creature type" for Walking Desecration).
  * This is a public announcement visible to all players.
  */

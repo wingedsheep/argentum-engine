@@ -190,6 +190,9 @@ data class ClientCard(
     /** Whether this card is face-down (for morph, manifest, hidden info) */
     val isFaceDown: Boolean,
 
+    /** Whether this permanent is suspected (CR 701.60 — has menace and can't block). Battlefield only. */
+    val isSuspected: Boolean = false,
+
     /** Morph cost for face-down creatures (only visible to controller) */
     val morphCost: String? = null,
 
@@ -438,7 +441,13 @@ data class ClientPlayerEffect(
     /** Optional description/tooltip text */
     val description: String? = null,
     /** Optional icon identifier for UI rendering */
-    val icon: String? = null
+    val icon: String? = null,
+    /**
+     * Optional image URL for the badge — typically a Scryfall marker-card image
+     * (e.g., the "City's Blessing" marker). When present, the UI shows the image
+     * in place of the emoji-style [icon].
+     */
+    val imageUri: String? = null
 )
 
 /**

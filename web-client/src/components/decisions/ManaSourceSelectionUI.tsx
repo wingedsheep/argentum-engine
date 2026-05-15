@@ -90,6 +90,14 @@ export function ManaSourceSelectionUI({
   const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
   const selectedOptions = decisionSelectionState?.selectedOptions
 
+  const sacrificedSources = useMemo(() => {
+    if (!selectedOptions) return []
+    const byId = new Map(decision.availableSources.map((s) => [s.entityId, s]))
+    return selectedOptions
+      .map((id) => byId.get(id))
+      .filter((s): s is ManaSourceOption => !!s && !!s.requiresSacrifice)
+  }, [selectedOptions, decision.availableSources])
+
   const costSymbols = useMemo(
     () => parseManaCost(decision.requiredCost),
     [decision.requiredCost],
@@ -139,6 +147,11 @@ export function ManaSourceSelectionUI({
       {!isSelectionSufficient && (
         <div className={styles.effectHint}>
           Not enough mana selected
+        </div>
+      )}
+      {sacrificedSources.length > 0 && (
+        <div className={styles.effectHint}>
+          Will sacrifice: {sacrificedSources.map((s) => s.name).join(', ')}
         </div>
       )}
 

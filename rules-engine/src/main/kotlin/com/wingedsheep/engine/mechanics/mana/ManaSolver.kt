@@ -104,7 +104,15 @@ data class ManaSource(
      * every color maps to 1 because the only ability producing colors costs {1}.
      * Colors not present in this map can be produced for free (or not at all).
      */
-    val colorActivationManaCost: Map<Color, Int> = emptyMap()
+    val colorActivationManaCost: Map<Color, Int> = emptyMap(),
+    /**
+     * Tapping this source also requires sacrificing it (e.g. Treasure tokens —
+     * "{T}, Sacrifice this artifact: Add one mana of any color"). The auto-pay
+     * solver (`solve()`) refuses to pick these because silently sacrificing a
+     * permanent would surprise the player; manual mana-source selection menus
+     * may offer them so the choice is explicit.
+     */
+    val requiresSacrifice: Boolean = false
 ) {
     /**
      * Returns the set of colors this source can produce for a given spell context.
@@ -224,6 +232,10 @@ class ManaSolver(
         }
         val availableSources = rawSources
             .filter { it.entityId !in excludeSources }
+            // Auto-pay must not silently sacrifice permanents (e.g. Treasure tokens).
+            // The bonus-mana accounting in canPay() still counts these via
+            // calculateSacrificeSelfBonusMana(), but the solver itself never picks them.
+            .filter { !it.requiresSacrifice }
             .filter { source ->
                 if (source.restriction == null || spellContext == null) true
                 else source.restriction.isSatisfiedBy(spellContext)
@@ -663,6 +675,11 @@ class ManaSolver(
             var maxManaAmount = 1
             var anyAbilityHasNoPainCost = false
             var minPainAmount = Int.MAX_VALUE
+            // Track which accepted abilities required sacrificing the source (e.g. Treasure).
+            // The source is marked `requiresSacrifice` only when every accepted mana ability
+            // requires sacrifice — if any accepted ability is non-sac, prefer that path.
+            var anyAcceptedWithSac = false
+            var anyAcceptedWithoutSac = false
             // Track restrictions: if any ability is unrestricted, the source is unrestricted
             var hasUnrestrictedAbility = false
             var commonRestriction: ManaRestriction? = null
@@ -692,6 +709,7 @@ class ManaSolver(
                 var abilityHasPainCost = false
                 var abilityPainAmount = 0
                 var abilityActivationManaCost = 0
+                var abilityRequiresSacrifice = false
                 val abilityCanBeUsed = when (val cost = ability.cost) {
                     is AbilityCost.Tap -> true
                     is AbilityCost.PayLife -> {
@@ -712,9 +730,13 @@ class ManaSolver(
                                 is AbilityCost.Mana -> {
                                     abilityActivationManaCost += subCost.cost.cmc
                                 }
-                                // Choice costs (Forage, Sacrifice, etc.) require explicit player opt-in.
-                                // Treat such abilities as non-auto-tappable; the player must activate
-                                // them directly via ActivateAbility so the cost is properly paid.
+                                // SacrificeSelf (Treasure: "{T}, Sacrifice this artifact: Add …").
+                                // Auto-tap won't pick these (filtered in solve()), but they appear
+                                // in `findAvailableManaSources` so manual-selection UIs can offer
+                                // them; selecting one triggers an explicit sacrifice in the resumer.
+                                is AbilityCost.SacrificeSelf -> abilityRequiresSacrifice = true
+                                // Other choice costs (Forage, sacrifice-something-else, etc.) still
+                                // require explicit ActivateAbility entry.
                                 else -> hasUnsupportedSubCost = true
                             }
                         }
@@ -724,6 +746,8 @@ class ManaSolver(
                 }
 
                 if (!abilityCanBeUsed) continue
+
+                if (abilityRequiresSacrifice) anyAcceptedWithSac = true else anyAcceptedWithoutSac = true
 
                 // Check summoning sickness for creatures (non-lands)
                 if (!card.typeLine.isLand && isCreature) {
@@ -914,6 +938,11 @@ class ManaSolver(
                 val colorActivationCosts = perColorActivationCost
                     .filter { (_, cost) -> cost > 0 }
 
+                // Mark the source as sacrifice-required only when every accepted ability
+                // demanded sacrifice. If any non-sac ability was accepted, that path is
+                // preferred and the source is offered without sacrifice.
+                val requiresSacrifice = anyAcceptedWithSac && !anyAcceptedWithoutSac
+
                 return@mapNotNull ManaSource(
                     entityId = entityId,
                     name = card.name,
@@ -931,6 +960,7 @@ class ManaSolver(
                     colorRiders = perColorRiders.mapValues { (_, v) -> v.toSet() },
                     colorRestrictions = restrictedColors,
                     colorActivationManaCost = colorActivationCosts,
+                    requiresSacrifice = requiresSacrifice,
                     hasContextSensitiveAbilities = hasMixedRestrictions,
                 )
             }
@@ -1410,8 +1440,12 @@ class ManaSolver(
             0
         }
 
-        // Add untapped mana sources (including bonus mana from auras and multi-mana sources)
-        val sourceMana = (precomputedSources ?: findAvailableManaSources(state, playerId)).sumOf { it.manaAmount + it.bonusManaPerTap }
+        // Add untapped mana sources (including bonus mana from auras and multi-mana sources).
+        // Sacrifice-self sources (treasures) are already counted via
+        // calculateSacrificeSelfBonusMana below, so skip them here to avoid double-counting.
+        val sourceMana = (precomputedSources ?: findAvailableManaSources(state, playerId))
+            .filter { !it.requiresSacrifice }
+            .sumOf { it.manaAmount + it.bonusManaPerTap }
 
         // Add extra mana from "extras" abilities the solver doesn't pick:
         //  - TapPermanents (e.g., Birchlore Rangers)

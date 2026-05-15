@@ -248,6 +248,7 @@ class StateProjector(
                 subtypes = v.subtypes.toSet(),
                 controllerId = v.controllerId,
                 isFaceDown = v.isFaceDown,
+                isSuspected = v.isSuspected,
                 cantAttack = v.cantAttack,
                 cantBlock = v.cantBlock,
                 mustAttack = v.mustAttack,

@@ -53,12 +53,15 @@ export function KeywordIcons({
   abilityFlags,
   protections,
   hexproofFromColors,
+  isSuspected,
   size,
 }: {
   keywords: readonly Keyword[]
   abilityFlags?: readonly AbilityFlag[]
   protections: readonly Color[]
   hexproofFromColors?: readonly Color[]
+  /** Whether the permanent currently has the suspected status (CR 701.60). */
+  isSuspected?: boolean
   size: number
 }) {
   // Filter out PROTECTION (rendered via protections array) and FIRST_STRIKE when DOUBLE_STRIKE is present.
@@ -77,11 +80,17 @@ export function KeywordIcons({
   const hasProtections = protections.length > 0
   const hasHexproofFrom = hexproofFromList.length > 0
   const hasKeywords = filteredKeywords.length > 0 || displayableFlags.length > 0
+  const hasSuspected = isSuspected === true
 
-  if (!hasKeywords && !hasProtections && !hasHexproofFrom) return null
+  if (!hasKeywords && !hasProtections && !hasHexproofFrom && !hasSuspected) return null
 
   return (
     <div style={styles.keywordIconsContainer}>
+      {hasSuspected && (
+        <div key="suspected" style={styles.keywordIconWrapper} title="Suspected (has menace and can't block)">
+          <KeywordGlyph name="SUSPECTED" size={size} />
+        </div>
+      )}
       {filteredKeywords.map((keyword) => (
         <div key={keyword} style={styles.keywordIconWrapper} title={keyword.replace(/_/g, ' ')}>
           <KeywordGlyph name={keyword} size={size} />

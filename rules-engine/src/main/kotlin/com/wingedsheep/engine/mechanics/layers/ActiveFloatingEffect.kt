@@ -270,6 +270,14 @@ sealed interface SerializableModification {
     data object SetCantBlock : SerializableModification
 
     /**
+     * Suspect status: marks a permanent as suspected.
+     * Applied atomically with GrantKeyword(MENACE) and SetCantBlock by SuspectEffectHandler.
+     * Stored as a distinct modification so future cards can query the status independently.
+     */
+    @Serializable
+    data object SetSuspected : SerializableModification
+
+    /**
      * Damage prevention: prevent all damage that affected creature(s) would deal this turn.
      * Used by Chain of Silence and similar effects.
      * The affected entities are the creatures whose damage is prevented.
@@ -434,6 +442,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetCantAttack -> Modification.SetCantAttack
     // SetCantBlock maps to the layer modification for "can't block" projection
     is SerializableModification.SetCantBlock -> Modification.SetCantBlock
+    // SetSuspected maps to the layer modification for the "suspected" status projection
+    is SerializableModification.SetSuspected -> Modification.SetSuspected
     // PreventAllDamageDealtBy doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventAllDamageDealtBy -> Modification.NoOp
     // RedirectNextDamage doesn't map to a layer modification - it's checked during damage resolution directly

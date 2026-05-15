@@ -2073,6 +2073,26 @@ class StackResolver(
                 }
             }
         }
+
+        // Player-scoped grant: "Creature spells you cast this turn can't be countered" (Domri,
+        // Anarch of Bolas). The granter is the spell's controller, so we evaluate filters from
+        // their SpellsCantBeCounteredComponent against the spell on the stack.
+        val spellController = state.getEntity(spellId)
+            ?.get<SpellOnStackComponent>()
+            ?.casterId
+            ?: state.getEntity(spellId)?.get<ControllerComponent>()?.playerId
+        if (spellController != null) {
+            val component = state.getEntity(spellController)
+                ?.get<com.wingedsheep.engine.state.components.player.SpellsCantBeCounteredComponent>()
+            if (component != null) {
+                val context = PredicateContext(controllerId = spellController, sourceId = spellController)
+                for (filter in component.filters) {
+                    if (predicateEvaluator.matches(state, spellId, filter, context)) {
+                        return true
+                    }
+                }
+            }
+        }
         return false
     }
 

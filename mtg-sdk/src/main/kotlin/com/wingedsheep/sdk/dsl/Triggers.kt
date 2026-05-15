@@ -698,6 +698,18 @@ object Triggers {
     )
 
     /**
+     * Whenever you cast an enchantment spell from your hand.
+     */
+    val YouCastEnchantmentFromHand: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(
+            spellFilter = GameObjectFilter.Enchantment,
+            player = Player.You,
+            castFromZone = com.wingedsheep.sdk.core.Zone.HAND
+        ),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever you cast a historic spell.
      * Historic = artifact, legendary, or Saga.
      */

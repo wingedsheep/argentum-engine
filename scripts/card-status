@@ -8,8 +8,10 @@ For each set folder under `mtg-sets/.../definitions/<code>/`:
   - scans `.kt` files in `<code>/cards/` for implemented names
     (matches both `card("Name") { }` DSL calls and `name = "..."` Printing rows)
   - loads the canonical name list from Scryfall, cached under
-    `~/.cache/scryfall/<code>.json`
-  - diffs the two to compute what's missing
+    `~/.cache/scryfall/<code>.json`, partitioned into draft cards
+    (Scryfall `booster: true`) and extras (starter-deck exclusives,
+    Special Guests, bonus sheets, etc.)
+  - diffs the two to compute what's missing, reported per partition
 
 Cache strategy: a cached payload is "fresh" (no re-fetch) once its set's
 Scryfall `released_at` is more than 30 days in the past — MTG sets are
@@ -45,7 +47,7 @@ SCRYFALL_BASE = "https://api.scryfall.com"
 USER_AGENT = "argentum-engine-card-status/1.0"
 REQUEST_DELAY_SEC = 0.15  # Scryfall asks for 50–100ms between requests; pad for bursty paginations
 REFRESH_WINDOW_DAYS = 30
-CACHE_SCHEMA_VERSION = 3
+CACHE_SCHEMA_VERSION = 4
 
 # A set is in current Standard if both:
 #   (a) its set_type is one of these (excludes commander, masters, alchemy, etc.), AND
@@ -74,17 +76,30 @@ class SetInfo:
 class Report:
     info: SetInfo
     implemented: set[str]
-    canonical: set[str]
+    draft_canonical: set[str]
+    extra_canonical: set[str]
     released_at: str | None
     standard_legal: bool
 
     @property
-    def hits(self) -> set[str]:
-        return self.implemented & self.canonical
+    def canonical(self) -> set[str]:
+        return self.draft_canonical | self.extra_canonical
 
     @property
-    def missing(self) -> set[str]:
-        return self.canonical - self.implemented
+    def draft_hits(self) -> set[str]:
+        return self.implemented & self.draft_canonical
+
+    @property
+    def draft_missing(self) -> set[str]:
+        return self.draft_canonical - self.implemented
+
+    @property
+    def extra_hits(self) -> set[str]:
+        return self.implemented & self.extra_canonical
+
+    @property
+    def extra_missing(self) -> set[str]:
+        return self.extra_canonical - self.implemented
 
 
 def front_face(name: str) -> str:
@@ -168,7 +183,7 @@ def scryfall_get(url: str, *, max_retries: int = 5) -> dict:
 def is_standard_legal(payload: dict) -> bool:
     if payload.get("set_type") not in STANDARD_SET_TYPES:
         return False
-    total = len(payload.get("names", []))
+    total = len(payload.get("draft_names", [])) + len(payload.get("extra_names", []))
     if total == 0:
         return False
     return payload.get("standard_legal_count", 0) >= total * STANDARD_LEGAL_RATIO
@@ -179,7 +194,8 @@ def fetch_from_scryfall(code: str) -> dict:
     set_meta = scryfall_get(f"{SCRYFALL_BASE}/sets/{code.lower()}")
     released_at = set_meta.get("released_at")
     set_type = set_meta.get("set_type")
-    names: list[str] = []
+    draft_names: list[str] = []
+    extra_names: list[str] = []
     standard_legal_count = 0
     url = (
         f"{SCRYFALL_BASE}/cards/search"
@@ -189,7 +205,11 @@ def fetch_from_scryfall(code: str) -> dict:
     while url:
         data = scryfall_get(url)
         for card in data.get("data", []):
-            names.append(card["name"])
+            name = card["name"]
+            if card.get("booster", False):
+                draft_names.append(name)
+            else:
+                extra_names.append(name)
             if card.get("legalities", {}).get("standard") == "legal":
                 standard_legal_count += 1
         url = data.get("next_page") if data.get("has_more") else None
@@ -197,7 +217,8 @@ def fetch_from_scryfall(code: str) -> dict:
         "_v": CACHE_SCHEMA_VERSION,
         "released_at": released_at,
         "set_type": set_type,
-        "names": names,
+        "draft_names": draft_names,
+        "extra_names": extra_names,
         "standard_legal_count": standard_legal_count,
     }
 
@@ -231,12 +252,14 @@ def build_report(info: SetInfo, *, force_refresh: bool) -> Report | None:
     payload = load_canonical(info.code, force_refresh=force_refresh)
     if payload is None:
         return None
-    canonical = {front_face(n) for n in payload["names"]}
+    draft_canonical = {front_face(n) for n in payload["draft_names"]}
+    extra_canonical = {front_face(n) for n in payload["extra_names"]} - draft_canonical
     implemented = {front_face(n) for n in scan_implementations(info.cards_dir)}
     return Report(
         info=info,
         implemented=implemented,
-        canonical=canonical,
+        draft_canonical=draft_canonical,
+        extra_canonical=extra_canonical,
         released_at=payload.get("released_at"),
         standard_legal=is_standard_legal(payload),
     )
@@ -245,13 +268,17 @@ def build_report(info: SetInfo, *, force_refresh: bool) -> Report | None:
 def print_table(reports: list[Report]) -> None:
     rows = []
     for r in reports:
-        impl = len(r.hits)
-        total = len(r.canonical)
+        impl = len(r.draft_hits)
+        total = len(r.draft_canonical)
         pct = (impl / total * 100.0) if total else 0.0
+        extra_impl = len(r.extra_hits)
+        extra_total = len(r.extra_canonical)
+        extra_display = f"{extra_impl}/{extra_total}" if extra_total else "—"
         released = r.released_at or "?"
         standard = "Yes" if r.standard_legal else ""
         rows.append(
-            (r.info.code, r.info.display_name, released, standard, impl, total, total - impl, pct)
+            (r.info.code, r.info.display_name, released, standard,
+             impl, total, total - impl, pct, extra_display)
         )
     rows.sort(key=lambda row: (row[2], row[0]), reverse=True)
 
@@ -259,37 +286,59 @@ def print_table(reports: list[Report]) -> None:
     name_w = max(4, max((len(r[1]) for r in rows), default=4))
     rel_w = max(len("Released"), max((len(r[2]) for r in rows), default=8))
     std_w = max(len("Std"), 3)
+    extra_w = max(len("+Extra"), max((len(r[8]) for r in rows), default=6))
     header = (
         f"{'Set':<{code_w}}  {'Name':<{name_w}}  {'Released':<{rel_w}}  "
-        f"{'Std':<{std_w}}  {'Done':>5}  {'Total':>5}  {'Missing':>7}  {'%':>5}"
+        f"{'Std':<{std_w}}  {'Done':>5}  {'Total':>5}  {'Missing':>7}  "
+        f"{'%':>5}  {'+Extra':<{extra_w}}"
     )
     print(header)
     print("-" * len(header))
-    for code, name, released, standard, impl, total, missing, pct in rows:
+    for code, name, released, standard, impl, total, missing, pct, extra in rows:
         print(
             f"{code:<{code_w}}  {name:<{name_w}}  {released:<{rel_w}}  "
-            f"{standard:<{std_w}}  {impl:>5}  {total:>5}  {missing:>7}  {pct:>4.0f}%"
+            f"{standard:<{std_w}}  {impl:>5}  {total:>5}  {missing:>7}  "
+            f"{pct:>4.0f}%  {extra:<{extra_w}}"
         )
 
 
 def print_set_cards(report: Report) -> None:
-    impl = len(report.hits)
-    total = len(report.canonical)
-    print(f"== {report.info.code} {report.info.display_name} — {impl}/{total} ==")
-    for name in sorted(report.canonical):
+    draft_impl = len(report.draft_hits)
+    draft_total = len(report.draft_canonical)
+    extra_impl = len(report.extra_hits)
+    extra_total = len(report.extra_canonical)
+    summary = f"{draft_impl}/{draft_total} draft"
+    if extra_total:
+        summary += f", {extra_impl}/{extra_total} extra"
+    print(f"== {report.info.code} {report.info.display_name} — {summary} ==")
+    print("Draft:")
+    for name in sorted(report.draft_canonical):
         marker = "[x]" if name in report.implemented else "[ ]"
         print(f"  {marker} {name}")
+    if extra_total:
+        print("Extra:")
+        for name in sorted(report.extra_canonical):
+            marker = "[x]" if name in report.implemented else "[ ]"
+            print(f"  {marker} {name}")
 
 
 def print_missing_lists(reports: list[Report]) -> None:
     for r in sorted(reports, key=lambda r: r.info.code):
-        missing = sorted(r.missing)
-        if not missing:
+        draft_missing = sorted(r.draft_missing)
+        extra_missing = sorted(r.extra_missing)
+        if not draft_missing and not extra_missing:
             continue
+        total = len(draft_missing) + len(extra_missing)
         print()
-        print(f"== {r.info.code} {r.info.display_name} — {len(missing)} missing ==")
-        for n in missing:
-            print(f"  - {n}")
+        print(f"== {r.info.code} {r.info.display_name} — {total} missing ==")
+        if draft_missing:
+            print("Draft:")
+            for n in draft_missing:
+                print(f"  - {n}")
+        if extra_missing:
+            print("Extra:")
+            for n in extra_missing:
+                print(f"  - {n}")
 
 
 def main() -> int:

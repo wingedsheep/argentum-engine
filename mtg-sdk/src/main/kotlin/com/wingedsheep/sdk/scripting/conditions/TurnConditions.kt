@@ -205,3 +205,26 @@ data object CreatureDiedThisTurnCondition : Condition {
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
+// =============================================================================
+// City's Blessing (Ixalan, CR 702.131 / 700.5)
+// =============================================================================
+
+/**
+ * Intervening-if / static condition: "if you have the city's blessing".
+ *
+ * The city's blessing is a permanent player designation (once gained, never lost
+ * for the rest of the game per CR 702.131c). Granted by Ascend abilities when the
+ * controller controls ten or more permanents on resolution.
+ *
+ * Used by spell triggers/effects and by [ConditionalStaticAbility]
+ * (e.g. Tendershoot Dryad's "Saprolings you control get +2/+2 as long as you have
+ * the city's blessing"). The static-ability path goes through
+ * `SourceProjectionCondition.ControllerHasCitysBlessing`.
+ */
+@SerialName("YouHaveCitysBlessing")
+@Serializable
+data object YouHaveCitysBlessing : Condition {
+    override val description: String = "if you have the city's blessing"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+

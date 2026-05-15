@@ -226,6 +226,15 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             is Player.TargetPlayer -> context.targets.firstOrNull()?.let { TargetResolutionUtils.run { it.toEntityId() } }
             is Player.ContextPlayer -> context.targets.getOrNull(player.index)?.let { TargetResolutionUtils.run { it.toEntityId() } }
             is Player.TriggeringPlayer -> context.triggeringEntityId
+            is Player.OwnerOf -> context.targets.firstOrNull()?.let {
+                val eid = TargetResolutionUtils.run { it.toEntityId() }
+                state.getEntity(eid)?.get<CardComponent>()?.ownerId
+            }
+            is Player.ControllerOf -> context.targets.firstOrNull()?.let {
+                val eid = TargetResolutionUtils.run { it.toEntityId() }
+                state.getEntity(eid)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                    ?: state.getEntity(eid)?.get<CardComponent>()?.ownerId
+            }
             else -> context.controllerId
         }
     }

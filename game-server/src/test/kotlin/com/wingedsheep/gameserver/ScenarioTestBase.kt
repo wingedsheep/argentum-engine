@@ -25,6 +25,7 @@ import com.wingedsheep.mtg.sets.definitions.one.PhyrexiaAllWillBeOneSet
 import com.wingedsheep.mtg.sets.definitions.otj.OutlawsOfThunderJunctionSet
 import com.wingedsheep.mtg.sets.definitions.scg.ScourgeSet
 import com.wingedsheep.mtg.sets.definitions.vow.InnistradCrimsonVowSet
+import com.wingedsheep.mtg.sets.definitions.war.WarOfTheSparkSet
 import com.wingedsheep.mtg.sets.definitions.mid.InnistradMidnightHuntSet
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.engine.state.ComponentContainer
@@ -94,6 +95,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(InnistradCrimsonVowSet.cards)
         register(InnistradMidnightHuntSet.cards)
         register(OutlawsOfThunderJunctionSet.cards)
+        register(WarOfTheSparkSet.cards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)
