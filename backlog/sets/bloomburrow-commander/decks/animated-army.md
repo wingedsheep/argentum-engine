@@ -63,7 +63,7 @@
 - [x] 1 Gilded Lotus
 - [x] 1 Gruul Signet
 - [x] 1 Hedron Archive
-- [ ] 1 Mind Stone
+- [x] 1 Mind Stone
 - [ ] 1 Rolling Hamsphere
 - [ ] 1 Sol Ring
 - [ ] 1 Spine of Ish Sah

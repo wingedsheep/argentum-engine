@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 74 / 312
+**Implemented:** 75 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -175,7 +175,7 @@
 - [ ] Martial Coup
 - [ ] Martial Impetus
 - [ ] Maskwood Nexus
-- [ ] Mind Stone
+- [x] Mind Stone
 - [ ] Moldervine Reclamation
 - [ ] Moonstone Eulogist
 - [ ] Morbid Opportunist
