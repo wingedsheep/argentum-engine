@@ -326,6 +326,7 @@ object ZoneTransitionService {
                 fromZone = fromZone,
                 toZone = actualDestZone,
                 ownerId = ownerId,
+                lastKnownController = if (leavingBattlefield) controllerId else null,
                 lastKnownCounterCount = lastKnownCounterCount,
                 lastKnownMinusOneMinusOneCounterCount = lastKnownMinusOneMinusOneCounterCount,
                 lastKnownTotalCounterCount = lastKnownTotalCounterCount,
