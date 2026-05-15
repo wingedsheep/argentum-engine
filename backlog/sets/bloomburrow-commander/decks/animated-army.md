@@ -49,7 +49,7 @@
 - [x] 1 Blasphemous Act
 - [x] 1 Cultivate
 - [x] 1 Decimate
-- [ ] 1 Explore
+- [x] 1 Explore
 - [ ] 1 Farseek
 - [ ] 1 Harmonize
 - [ ] 1 Rampant Growth
