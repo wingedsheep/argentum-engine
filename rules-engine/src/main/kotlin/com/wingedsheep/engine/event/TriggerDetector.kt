@@ -1548,7 +1548,7 @@ class TriggerDetector(
      * Duplicate ETB triggers for "additional time" static abilities (Naban, Panharmonicon).
      *
      * For each ZoneChangeEvent(to=BATTLEFIELD) in the events, checks if any permanent on
-     * the battlefield has AdditionalETBTriggers whose creatureFilter matches the entering entity.
+     * the battlefield has AdditionalETBTriggers whose enteringFilter matches the entering entity.
      * If so, duplicates all triggers that fired from that ETB event for the controller's permanents.
      *
      * Multiple copies are additive: N copies add N extra copies of each trigger.
@@ -1566,7 +1566,12 @@ class TriggerDetector(
         if (etbEvents.isEmpty()) return
 
         // Collect all AdditionalETBTriggers static abilities from battlefield permanents
-        data class ETBDoubler(val controllerId: EntityId, val filter: GameObjectFilter, val sourceId: EntityId)
+        data class ETBDoubler(
+            val controllerId: EntityId,
+            val filter: GameObjectFilter,
+            val sourceId: EntityId,
+            val enteringMustBeYouControl: Boolean,
+        )
         val doublers = mutableListOf<ETBDoubler>()
 
         for (permanentId in state.getBattlefield()) {
@@ -1579,7 +1584,14 @@ class TriggerDetector(
             val classLevel = container.get<ClassLevelComponent>()?.currentLevel
             for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is AdditionalETBTriggers) {
-                    doublers.add(ETBDoubler(controllerId, ability.creatureFilter, permanentId))
+                    doublers.add(
+                        ETBDoubler(
+                            controllerId = controllerId,
+                            filter = ability.enteringFilter,
+                            sourceId = permanentId,
+                            enteringMustBeYouControl = ability.enteringMustBeYouControl,
+                        )
+                    )
                 }
             }
         }
@@ -1593,9 +1605,12 @@ class TriggerDetector(
             val enteringEntityId = etbEvent.entityId
 
             for (doubler in doublers) {
-                // The entering creature must be controlled by the doubler's controller
-                val enteringController = projected.getController(enteringEntityId) ?: etbEvent.ownerId
-                if (enteringController != doubler.controllerId) continue
+                if (doubler.enteringMustBeYouControl) {
+                    // The entering permanent must be controlled by the doubler's controller
+                    // (matches "X you control entering" wording — Naban, Traveling Chocobo, etc.)
+                    val enteringController = projected.getController(enteringEntityId) ?: etbEvent.ownerId
+                    if (enteringController != doubler.controllerId) continue
+                }
 
                 // Check if the entering creature matches the filter
                 if (doubler.filter != GameObjectFilter.Any) {
