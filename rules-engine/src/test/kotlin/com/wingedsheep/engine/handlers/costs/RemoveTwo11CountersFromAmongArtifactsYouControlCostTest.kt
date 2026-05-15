@@ -117,4 +117,35 @@ class RemoveTwo11CountersFromAmongArtifactsYouControlCostTest : FunSpec({
             ?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
         nonArtifactCounters shouldBe 2
     }
+
+    test("activation is rejected when filter-matching permanents have insufficient counters") {
+        // GIVEN the source artifact is in play but no other artifact has +1/+1 counters,
+        // AND a non-artifact creature has two +1/+1 counters (which must not satisfy the cost)
+        val driver = createDriver()
+        val controller = driver.activePlayer!!
+        val source = driver.putCreatureOnBattlefield(controller, "Artifact Ability Source")
+        val nonArtifact = driver.putCreatureOnBattlefield(controller, "Centaur Courser")
+        driver.replaceState(
+            driver.state.updateEntity(nonArtifact) { c ->
+                c.with(CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 2)))
+            }
+        )
+
+        // WHEN the player attempts to activate the ability, distributing the removal onto
+        // the non-artifact creature (the only entity with counters available)
+        val result = driver.submit(
+            ActivateAbility(
+                playerId = controller,
+                sourceId = source,
+                abilityId = abilityId,
+                costPayment = AdditionalCostPayment(
+                    counterRemovals = mapOf(nonArtifact to 2)
+                )
+            )
+        )
+
+        // THEN the engine rejects the activation: the filter restricts the cost to
+        // artifacts, and no artifact has the required counters
+        result.isSuccess shouldBe false
+    }
 })

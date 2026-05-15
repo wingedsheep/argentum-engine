@@ -77,7 +77,6 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
-import com.wingedsheep.engine.handlers.costs.AlternativeCostPayLifeEqualToManaValueInsteadOfManaCostHandler
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -1114,12 +1113,6 @@ class CastSpellHandler(
                         }
                     }
                 }
-                is AdditionalCost.PayLife -> {
-                    val error = AlternativeCostPayLifeEqualToManaValueInsteadOfManaCostHandler.canPay(
-                        state, action.playerId, additionalCost.amount
-                    )
-                    if (error != null) return error
-                }
                 else -> {}
             }
         }
@@ -1759,19 +1752,6 @@ class CastSpellHandler(
                 events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.PAYMENT))
                 currentState = DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
             }
-        }
-
-        // Pay life costs declared in a self-alternative cost (e.g., pay life equal to mana value)
-        if (action.useAlternativeCost && cardDef != null) {
-            cardDef.script.selfAlternativeCost?.additionalCosts
-                ?.filterIsInstance<AdditionalCost.PayLife>()
-                ?.forEach { lifeCost ->
-                    val (newState, lifeEvents) = AlternativeCostPayLifeEqualToManaValueInsteadOfManaCostHandler.apply(
-                        currentState, action.playerId, lifeCost.amount
-                    )
-                    currentState = newState
-                    events.addAll(lifeEvents)
-                }
         }
 
         // Compute target requirements for resolution-time re-validation (Rule 608.2b).

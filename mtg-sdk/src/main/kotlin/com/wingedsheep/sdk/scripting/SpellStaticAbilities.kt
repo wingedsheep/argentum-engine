@@ -210,4 +210,3 @@ data class MayCastFromGraveyardWithLifeCost(
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
-

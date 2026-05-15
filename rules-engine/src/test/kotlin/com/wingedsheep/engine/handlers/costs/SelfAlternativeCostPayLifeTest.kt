@@ -13,18 +13,13 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * BDD tests for the alternative-cost primitive: "pay life equal to a spell's mana value
- * rather than pay its mana cost."
+ * Coverage for the existing [SelfAlternativeCost] + [AdditionalCost.PayLife] pipeline used to
+ * model "pay life instead of mana" — e.g. a spell with mana value 5 cast for "{0}, pay 5 life".
  *
- * A spell may declare [SelfAlternativeCost] with [AdditionalCost.PayLife] equal to its mana
- * value and an empty mana component, modelling the "pay life instead of mana" substitution.
- * The engine must deduct the declared life amount when the alternative cost is chosen, and must
- * reject the cast when the caster's life total is below the required payment.
- *
- * These tests are RED until AlternativeCostPayLifeEqualToManaValueInsteadOfManaCostHandler
- * is wired into the cast-spell execution path.
+ * CastSpellHandler's auto-pay loop already deducts life for any [AdditionalCost.PayLife] on the
+ * self-alternative cost; these tests pin that behavior.
  */
-class AlternativeCostPayLifeEqualToManaValueInsteadOfManaCostTest : FunSpec({
+class SelfAlternativeCostPayLifeTest : FunSpec({
 
     // Spell with mana value 5. Its self-alternative cost declares "pay no mana, pay 5 life"
     // — the life amount intentionally equals the spell's mana value to model the mechanic.

@@ -3,11 +3,10 @@ package com.wingedsheep.engine.handlers.costs
 import com.wingedsheep.engine.handlers.CostPaymentResult
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 
@@ -23,10 +22,9 @@ object RemoveCountersFromAmongFilteredPermanentsCostHandler {
         val counterType = resolveCounterType(cost.counterType)
         val context = PredicateContext(controllerId = controllerId)
         val projected = state.projectedState
-        val total = state.entities.entries.sumOf { (entityId, container) ->
-            if (container.get<ControllerComponent>()?.playerId != controllerId) return@sumOf 0
+        val total = projected.getBattlefieldControlledBy(controllerId).sumOf { entityId ->
             if (!predicateEvaluator.matchesWithProjection(state, projected, entityId, cost.filter, context)) return@sumOf 0
-            container.get<CountersComponent>()?.getCount(counterType) ?: 0
+            state.getEntity(entityId)?.get<CountersComponent>()?.getCount(counterType) ?: 0
         }
         return total >= cost.count
     }
@@ -52,7 +50,7 @@ object RemoveCountersFromAmongFilteredPermanentsCostHandler {
             if (toRemove <= 0) continue
             val container = state.getEntity(permanentId)
                 ?: return CostPaymentResult.failure("Permanent not found for counter removal: $permanentId")
-            if (container.get<ControllerComponent>()?.playerId != controllerId) {
+            if (projected.getController(permanentId) != controllerId) {
                 return CostPaymentResult.failure("Cannot remove counters from a permanent you do not control")
             }
             if (!predicateEvaluator.matchesWithProjection(state, projected, permanentId, cost.filter, context)) {
@@ -70,13 +68,5 @@ object RemoveCountersFromAmongFilteredPermanentsCostHandler {
             }
         }
         return CostPaymentResult.success(newState, manaPool)
-    }
-
-    private fun resolveCounterType(counterType: String): CounterType = when (counterType) {
-        "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
-        "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
-        else -> CounterType.entries.firstOrNull {
-            it.name.equals(counterType.uppercase().replace("-", "_").replace("+", "PLUS_").replace("/", "_"), ignoreCase = true)
-        } ?: CounterType.CHARGE
     }
 }

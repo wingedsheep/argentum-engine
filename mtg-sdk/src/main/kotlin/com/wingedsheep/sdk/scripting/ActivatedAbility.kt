@@ -454,7 +454,10 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         val filter: GameObjectFilter
     ) : AbilityCost {
         override val description: String =
-            "Remove $count $counterType counter${if (count == 1) "" else "s"} from among permanents you control"
-        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
+            "Remove $count $counterType counter${if (count == 1) "" else "s"} from among ${filter.description}s you control"
+        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 }
