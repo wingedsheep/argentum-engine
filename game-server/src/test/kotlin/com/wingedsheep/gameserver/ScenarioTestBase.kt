@@ -3,31 +3,46 @@ package com.wingedsheep.gameserver
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.mtg.sets.definitions.avr.AvacynRestoredSet
 import com.wingedsheep.mtg.sets.definitions.blb.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.blc.BloomburrowCommanderSet
 import com.wingedsheep.mtg.sets.definitions.bro.BrothersWarSet
 import com.wingedsheep.mtg.sets.definitions.c15.Commander2015Set
-import com.wingedsheep.mtg.sets.definitions.dsk.DuskmournSet
-import com.wingedsheep.mtg.sets.definitions.fin.FinalFantasySet
-import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
-import com.wingedsheep.mtg.sets.definitions.woe.WildsOfEldrainSet
-import com.wingedsheep.mtg.sets.definitions.eoe.EdgeOfEternitiesSet
+import com.wingedsheep.mtg.sets.definitions.dft.AetherdriftSet
+import com.wingedsheep.mtg.sets.definitions.dmu.DominariaUnitedSet
 import com.wingedsheep.mtg.sets.definitions.dom.DominariaSet
-import com.wingedsheep.mtg.sets.definitions.ktk.KhansOfTarkirSet
-import com.wingedsheep.mtg.sets.definitions.lgn.LegionsSet
-import com.wingedsheep.mtg.sets.definitions.ons.OnslaughtSet
-import com.wingedsheep.mtg.sets.definitions.por.PortalSet
+import com.wingedsheep.mtg.sets.definitions.dsk.DuskmournSet
 import com.wingedsheep.mtg.sets.definitions.ecl.LorwynEclipsedSet
-import com.wingedsheep.mtg.sets.definitions.lci.LostCavernsOfIxalanSet
+import com.wingedsheep.mtg.sets.definitions.eoe.EdgeOfEternitiesSet
 import com.wingedsheep.mtg.sets.definitions.fdn.FoundationsSet
+import com.wingedsheep.mtg.sets.definitions.fin.FinalFantasySet
+import com.wingedsheep.mtg.sets.definitions.inr.InnistradRemasteredSet
 import com.wingedsheep.mtg.sets.definitions.inv.InvasionSet
+import com.wingedsheep.mtg.sets.definitions.khm.KaldheimSet
+import com.wingedsheep.mtg.sets.definitions.ktk.KhansOfTarkirSet
+import com.wingedsheep.mtg.sets.definitions.lci.LostCavernsOfIxalanSet
+import com.wingedsheep.mtg.sets.definitions.lea.AlphaSet
+import com.wingedsheep.mtg.sets.definitions.lgn.LegionsSet
+import com.wingedsheep.mtg.sets.definitions.lrw.LorwynSet
+import com.wingedsheep.mtg.sets.definitions.mbs.MirrodinBesiegedSet
+import com.wingedsheep.mtg.sets.definitions.mid.InnistradMidnightHuntSet
+import com.wingedsheep.mtg.sets.definitions.mkm.MurdersAtKarlovManorSet
 import com.wingedsheep.mtg.sets.definitions.mom.MarchOfTheMachineSet
+import com.wingedsheep.mtg.sets.definitions.mrd.MirrodinSet
 import com.wingedsheep.mtg.sets.definitions.one.PhyrexiaAllWillBeOneSet
+import com.wingedsheep.mtg.sets.definitions.ons.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.otj.OutlawsOfThunderJunctionSet
+import com.wingedsheep.mtg.sets.definitions.por.PortalSet
+import com.wingedsheep.mtg.sets.definitions.roe.RiseOfTheEldraziSet
 import com.wingedsheep.mtg.sets.definitions.scg.ScourgeSet
+import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
+import com.wingedsheep.mtg.sets.definitions.tdm.TarkirDragonstormSet
+import com.wingedsheep.mtg.sets.definitions.tla.AvatarTheLastAirbenderSet
+import com.wingedsheep.mtg.sets.definitions.tmp.TempestSet
+import com.wingedsheep.mtg.sets.definitions.usg.UrzasSagaSet
 import com.wingedsheep.mtg.sets.definitions.vow.InnistradCrimsonVowSet
 import com.wingedsheep.mtg.sets.definitions.war.WarOfTheSparkSet
-import com.wingedsheep.mtg.sets.definitions.mid.InnistradMidnightHuntSet
+import com.wingedsheep.mtg.sets.definitions.woe.WildsOfEldrainSet
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -73,31 +88,46 @@ abstract class ScenarioTestBase : FunSpec() {
 
     protected val cardRegistry = CardRegistry().apply {
         register(PredefinedTokens.allTokens)
-        register(PortalSet.cards); register(PortalSet.basicLands)
-        register(OnslaughtSet.cards); register(OnslaughtSet.basicLands)
-        register(ScourgeSet.cards)
-        register(LegionsSet.cards)
-        register(KhansOfTarkirSet.cards); register(KhansOfTarkirSet.basicLands)
-        register(DominariaSet.cards); register(DominariaSet.basicLands)
+        register(AlphaSet.cards); register(AlphaSet.basicLands)
+        register(AetherdriftSet.cards)
+        register(AvacynRestoredSet.cards); register(AvacynRestoredSet.basicLands)
+        register(AvatarTheLastAirbenderSet.cards)
         register(BloomburrowSet.cards); register(BloomburrowSet.basicLands)
         register(BloomburrowCommanderSet.cards); register(BloomburrowCommanderSet.basicLands)
         register(BrothersWarSet.cards)
         register(Commander2015Set.cards)
+        register(DominariaSet.cards); register(DominariaSet.basicLands)
+        register(DominariaUnitedSet.cards)
         register(DuskmournSet.cards)
-        register(FinalFantasySet.cards)
-        register(SpiderManSet.cards)
-        register(WildsOfEldrainSet.cards)
         register(EdgeOfEternitiesSet.cards); register(EdgeOfEternitiesSet.basicLands)
-        register(LorwynEclipsedSet.cards); register(LorwynEclipsedSet.basicLands)
-        register(LostCavernsOfIxalanSet.cards)
+        register(FinalFantasySet.cards)
         register(FoundationsSet.cards)
-        register(InvasionSet.cards)
-        register(MarchOfTheMachineSet.cards)
-        register(PhyrexiaAllWillBeOneSet.cards)
         register(InnistradCrimsonVowSet.cards)
         register(InnistradMidnightHuntSet.cards)
+        register(InnistradRemasteredSet.cards)
+        register(InvasionSet.cards)
+        register(KaldheimSet.cards); register(KaldheimSet.basicLands)
+        register(KhansOfTarkirSet.cards); register(KhansOfTarkirSet.basicLands)
+        register(LegionsSet.cards); register(LegionsSet.basicLands)
+        register(LorwynEclipsedSet.cards); register(LorwynEclipsedSet.basicLands)
+        register(LorwynSet.cards); register(LorwynSet.basicLands)
+        register(LostCavernsOfIxalanSet.cards)
+        register(MarchOfTheMachineSet.cards)
+        register(MirrodinBesiegedSet.cards); register(MirrodinBesiegedSet.basicLands)
+        register(MirrodinSet.cards); register(MirrodinSet.basicLands)
+        register(MurdersAtKarlovManorSet.cards)
+        register(OnslaughtSet.cards); register(OnslaughtSet.basicLands)
         register(OutlawsOfThunderJunctionSet.cards)
+        register(PhyrexiaAllWillBeOneSet.cards)
+        register(PortalSet.cards); register(PortalSet.basicLands)
+        register(RiseOfTheEldraziSet.cards); register(RiseOfTheEldraziSet.basicLands)
+        register(ScourgeSet.cards)
+        register(SpiderManSet.cards)
+        register(TarkirDragonstormSet.cards)
+        register(TempestSet.cards); register(TempestSet.basicLands)
+        register(UrzasSagaSet.cards); register(UrzasSagaSet.basicLands)
         register(WarOfTheSparkSet.cards)
+        register(WildsOfEldrainSet.cards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)

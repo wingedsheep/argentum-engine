@@ -40,6 +40,21 @@ function parseColorsFromManaCost(manaCost: string): string[] {
   return [...set]
 }
 
+/** Compute mana value from a "{2}{R}{R}" string. {X} contributes 0 (CR 202.3e). */
+function manaValueFromCost(manaCost: string): number {
+  let total = 0
+  const re = /\{([^}]+)\}/g
+  let match: RegExpExecArray | null
+  while ((match = re.exec(manaCost)) !== null) {
+    const sym = match[1] ?? ''
+    const num = parseInt(sym, 10)
+    if (!isNaN(num)) total += num
+    else if (sym === 'X' || sym === 'Y' || sym === 'Z') total += 0
+    else total += 1 // any single-letter pip (W/U/B/R/G/C/S, hybrid, phyrexian)
+  }
+  return total
+}
+
 /**
  * Card selection decision - select cards from a list.
  */
@@ -115,6 +130,21 @@ export function CardSelectionDecision({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decision.onePerColor, decision.cardInfo, selectedCards, gameState?.cards])
 
+  /** Read a card's mana value: prefer gameState (server-computed), fall back to parsing the cost string. */
+  const manaValueForCard = (cardId: EntityId): number => {
+    const fromState = gameState?.cards[cardId]?.manaValue
+    if (typeof fromState === 'number') return fromState
+    const cost = decision.cardInfo?.[cardId]?.manaCost ?? gameState?.cards[cardId]?.manaCost ?? ''
+    return manaValueFromCost(typeof cost === 'string' ? cost : '')
+  }
+
+  // TotalManaValueAtMost: running sum of selected cards' mana values.
+  const totalManaValueSelected = useMemo(() => {
+    if (decision.maxTotalManaValue == null) return 0
+    return selectedCards.reduce((sum, id) => sum + manaValueForCard(id), 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decision.maxTotalManaValue, selectedCards, decision.cardInfo, gameState?.cards])
+
   /** Check if a card is disabled by an active selection restriction. */
   const isCardDisabled = (cardId: EntityId): boolean => {
     if (selectedCards.includes(cardId)) return false // already selected — can deselect
@@ -127,6 +157,9 @@ export function CardSelectionDecision({
       const colors = colorsForCard(cardId)
       // Colourless cards are unconstrained.
       if (colors.length > 0 && colors.some((c) => claimedColors.has(c))) return true
+    }
+    if (decision.maxTotalManaValue != null) {
+      if (totalManaValueSelected + manaValueForCard(cardId) > decision.maxTotalManaValue) return true
     }
     return false
   }
@@ -243,6 +276,18 @@ export function CardSelectionDecision({
               </span>
             )
           })}
+        </div>
+      )}
+
+      {decision.maxTotalManaValue != null && (
+        <div
+          style={{
+            margin: '0 0 8px',
+            fontSize: 12,
+            opacity: 0.85,
+          }}
+        >
+          Total mana value: {totalManaValueSelected} / {decision.maxTotalManaValue}
         </div>
       )}
 

@@ -149,7 +149,14 @@ data class SelectCardsDecision(
      */
     val availableColors: List<String>? = null,
     /** When true, at most one card of each name may be selected */
-    val onePerCardName: Boolean = false
+    val onePerCardName: Boolean = false,
+    /**
+     * Maximum sum of mana values across selected cards (Scout for Survivors). null
+     * means no cap. {X} contributes 0 (CR 202.3e for cards not on the stack). The
+     * UI is expected to disable cards whose mana value would push the running total
+     * over the cap; the server also trims oversubmits in selection order.
+     */
+    val maxTotalManaValue: Int? = null
 ) : PendingDecision
 
 /**

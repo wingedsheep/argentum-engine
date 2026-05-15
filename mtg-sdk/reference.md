@@ -920,6 +920,7 @@ Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, pl
 Destinations: `CardDestination.ToZone(zone, player, placement)`
 Placements: `ZonePlacement.Top`, `.Bottom`, `.Shuffled`, `.Default`, `.Tapped`
 Selection: `SelectionMode.ChooseExactly(count)`, `.ChooseUpTo(count)`, `.All`, `.Random(count)`, `.ChooseAnyNumber`
+Restrictions (pass via `SelectFromCollectionEffect.restrictions`): `SelectionRestriction.OnePerCardType`, `.OnePerColor(matchControllerPermanentColors)`, `.OnePerCardName`, `.TotalManaValueAtMost(max)` — sum of selected cards' mana value must be ≤ max (Scout for Survivors). {X} contributes 0 outside the stack.
 Chooser: `Chooser.Controller`, `.Opponent`, `.TargetPlayer`, `.TriggeringPlayer`, `.SourceController` (resolves through `sourceId` -> projected controller, ignoring per-iteration controller swaps inside `ForEachPlayerEffect`)
 Ordering: `CardOrder.ControllerChooses`, `.Random`, `.Preserve`
 MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`

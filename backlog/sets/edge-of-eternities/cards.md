@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 175 / 261
+**Implemented:** 176 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -185,7 +185,7 @@
 - [ ] Sami, Ship's Engineer
 - [ ] Sami, Wildcat Captain
 - [x] Scour for Scrap
-- [ ] Scout for Survivors
+- [x] Scout for Survivors
 - [x] Scrounge for Eternity
 - [x] Seam Rip
 - [x] Secluded Starforge

@@ -300,6 +300,20 @@ sealed interface SelectionRestriction {
     data object OnePerCardName : SelectionRestriction {
         override val description: String = "at most one card of each name"
     }
+
+    /**
+     * The sum of selected cards' mana values must not exceed [max]. {X} contributes 0
+     * (per CR 202.3e for cards not on the stack). Used for "with total mana value N or
+     * less" wording like Scout for Survivors.
+     *
+     * The executor enforces this server-side: any selection whose total exceeds [max]
+     * has cards trimmed (in response order) until the cap is met.
+     */
+    @SerialName("TotalManaValueAtMost")
+    @Serializable
+    data class TotalManaValueAtMost(val max: Int) : SelectionRestriction {
+        override val description: String = "with total mana value $max or less"
+    }
 }
 
 /**

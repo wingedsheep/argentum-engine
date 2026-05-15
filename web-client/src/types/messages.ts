@@ -301,6 +301,11 @@ export interface SelectCardsDecision extends PendingDecisionBase {
    * undefined or empty, the UI shows the generic five-colour list.
    */
   readonly availableColors?: readonly string[] | null
+  /**
+   * Maximum total mana value across selected cards (Scout for Survivors). When set, the
+   * UI tracks the running total and disables cards whose mana value would push it over.
+   */
+  readonly maxTotalManaValue?: number | null
 }
 
 /**

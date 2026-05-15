@@ -259,6 +259,22 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                         state.getEntity(cardId)?.get<CardComponent>()?.name
                     }.toSet().size.coerceAtLeast(0)
                 }
+                is SelectionRestriction.TotalManaValueAtMost -> {
+                    // Greedy upper bound: how many cards fit under the cap when picking
+                    // the cheapest first. Any selection of more cards than this is
+                    // unsatisfiable, since even the cheapest combination would exceed.
+                    val sortedMvs = eligibleCards
+                        .map { state.getEntity(it)?.get<CardComponent>()?.manaValue ?: 0 }
+                        .sorted()
+                    var running = 0
+                    var picked = 0
+                    for (mv in sortedMvs) {
+                        if (running + mv > restriction.max) break
+                        running += mv
+                        picked++
+                    }
+                    picked
+                }
             }
             if (limit < ceiling) ceiling = limit
         }
@@ -330,7 +346,16 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             onePerCardType = effect.restrictions.any { it is SelectionRestriction.OnePerCardType },
             onePerColor = effect.restrictions.any { it is SelectionRestriction.OnePerColor },
             availableColors = controllerPermanentColors?.map { it.name },
-            onePerCardName = effect.restrictions.any { it is SelectionRestriction.OnePerCardName }
+            onePerCardName = effect.restrictions.any { it is SelectionRestriction.OnePerCardName },
+            maxTotalManaValue = effect.restrictions
+                .filterIsInstance<SelectionRestriction.TotalManaValueAtMost>()
+                .also {
+                    require(it.size <= 1) {
+                        "SelectFromCollectionEffect has multiple TotalManaValueAtMost restrictions; " +
+                            "compose a single cap instead."
+                    }
+                }
+                .singleOrNull()?.max
         )
 
         val continuation = SelectFromCollectionContinuation(

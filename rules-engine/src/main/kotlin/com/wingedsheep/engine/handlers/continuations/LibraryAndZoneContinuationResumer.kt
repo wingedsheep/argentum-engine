@@ -379,6 +379,7 @@ class LibraryAndZoneContinuationResumer(
             val claimedTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
             val claimedColors = mutableSetOf<com.wingedsheep.sdk.core.Color>()
             val claimedNames = mutableSetOf<String>()
+            var runningManaValue = 0
             for (cardId in response.selectedCards) {
                 val acceptsAllRestrictions = continuation.restrictions.all { restriction ->
                     when (restriction) {
@@ -400,6 +401,12 @@ class LibraryAndZoneContinuationResumer(
                                 ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
                                 ?.name
                             cardName == null || cardName !in claimedNames
+                        }
+                        is SelectionRestriction.TotalManaValueAtMost -> {
+                            val mv = state.getEntity(cardId)
+                                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                ?.manaValue ?: 0
+                            runningManaValue + mv <= restriction.max
                         }
                     }
                 }
@@ -423,6 +430,11 @@ class LibraryAndZoneContinuationResumer(
                                     ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
                                     ?.name
                                 if (cardName != null) claimedNames += cardName
+                            }
+                            is SelectionRestriction.TotalManaValueAtMost -> {
+                                runningManaValue += state.getEntity(cardId)
+                                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                    ?.manaValue ?: 0
                             }
                         }
                     }
