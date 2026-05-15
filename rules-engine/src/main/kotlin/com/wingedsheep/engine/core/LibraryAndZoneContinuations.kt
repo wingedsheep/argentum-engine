@@ -229,3 +229,34 @@ data class ReturnFromLinkedExileContinuation(
     val sourceId: EntityId,
     val eligibleCards: List<EntityId>
 ) : ContinuationFrame
+
+/**
+ * Resume after the controller answers "cast this card without paying its mana cost?"
+ * during the resolution of a cascade trigger (CR 702.85a).
+ *
+ * The cascade executor has already exiled cards from the top of the controller's
+ * library and found a nonland card with lower mana value (the cascade hit). The
+ * pause asks the controller whether to cast it for free. The resumer then:
+ *
+ * - **Yes**: bottom-randomize every *other* exiled card, grant the cascade card a
+ *   free-cast permission + [com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent],
+ *   and synthesize a [CastSpell] action so normal cast machinery (targets, modes,
+ *   additional costs) flows through [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler].
+ *   If the cast fails to initiate, the cascade card is bottomed too (it wasn't cast).
+ * - **No**: bottom-randomize **all** exiled cards (the lands and the cascade card)
+ *   in a random order — per the second sentence of CR 702.85a.
+ *
+ * @property playerId The cascade controller (also the decision-maker)
+ * @property sourceId The cascading permanent (Wildsear, etc.); null only for synthetic sources
+ * @property exiledCards Every card exiled by the cascade walk, in exile order
+ * @property cascadeCardId The nonland card with mana value strictly less than the
+ *   triggering spell's — the one offered for free cast
+ */
+@Serializable
+data class CascadeMayCastContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val exiledCards: List<EntityId>,
+    val cascadeCardId: EntityId
+) : ContinuationFrame

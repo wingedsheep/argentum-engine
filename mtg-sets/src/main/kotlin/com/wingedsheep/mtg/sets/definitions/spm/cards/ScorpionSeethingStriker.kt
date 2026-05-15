@@ -38,6 +38,7 @@ val ScorpionSeethingStriker = card("Scorpion, Seething Striker") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "64"
         artist = "Simon Dominic"
-        imageUri = "https://cards.scryfall.io/large/normal/c/f/cf407e08-b27f-42ba-b824-75846a80e238.jpg?1757377158"
+        flavorText = "The scorpion is the natural predator of the spider, and so Mac Gargan hunts."
+        imageUri = "https://cards.scryfall.io/normal/front/c/f/cf407e08-b27f-42ba-b824-75846a80e238.jpg?1757377158"
     }
 }

@@ -339,6 +339,14 @@ sealed interface SourceProjectionCondition {
         val filter: GameObjectFilter,
         val atLeast: Int
     ) : SourceProjectionCondition
+
+    /**
+     * The source permanent's controller has the city's blessing (CR 702.131 / 700.5).
+     * Used for static abilities gated on the blessing, e.g. Tendershoot Dryad:
+     * "Saprolings you control get +2/+2 as long as you have the city's blessing."
+     */
+    @Serializable
+    data object ControllerHasCitysBlessing : SourceProjectionCondition
 }
 
 /**
@@ -546,6 +554,17 @@ sealed interface Modification {
         override val layer get() = Layer.ABILITY
     }
 
+    /**
+     * Marks a permanent as suspected — the first-class named status for the suspect mechanic.
+     * Applied together with [GrantKeyword](Menace) and [SetCantBlock] by [SuspectEffectHandler].
+     * Stored as a distinct modification so future cards can query or remove the status
+     * independently of the granted abilities.
+     */
+    @Serializable
+    data object SetSuspected : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
     @Serializable
     data object SetMustAttack : Modification {
         override val layer get() = Layer.ABILITY
@@ -645,6 +664,7 @@ internal data class MutableProjectedValues(
     val subtypes: MutableSet<String> = mutableSetOf(),
     var controllerId: EntityId? = null,
     var isFaceDown: Boolean = false,
+    var isSuspected: Boolean = false,
     var cantAttack: Boolean = false,
     var cantBlock: Boolean = false,
     var mustAttack: Boolean = false,

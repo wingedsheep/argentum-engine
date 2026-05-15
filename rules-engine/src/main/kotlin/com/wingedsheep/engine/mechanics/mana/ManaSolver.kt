@@ -90,13 +90,29 @@ data class ManaSource(
     /** Per-color mana restrictions. Colors not in this map are unrestricted. */
     val colorRestrictions: Map<Color, ManaRestriction> = emptyMap(),
     /**
+     * True when this source has multiple mana abilities with mutually-different
+     * restrictions (e.g. Steelswarm Operator's two abilities), so the cached aggregate
+     * collapses to "unrestricted" and is only correct without a spell/ability payment
+     * context. The solver re-runs [findAvailableManaSources] with the context when any
+     * cached source carries this flag.
+     */
+    val hasContextSensitiveAbilities: Boolean = false,
+    /**
      * Additional mana cost required (beyond tapping) to produce each color.
      * Entries reflect the *cheapest* ability producing that color on this permanent.
      * For filter lands like Hidden Grotto ({1}, {T}: Add one mana of any color),
      * every color maps to 1 because the only ability producing colors costs {1}.
      * Colors not present in this map can be produced for free (or not at all).
      */
-    val colorActivationManaCost: Map<Color, Int> = emptyMap()
+    val colorActivationManaCost: Map<Color, Int> = emptyMap(),
+    /**
+     * Tapping this source also requires sacrificing it (e.g. Treasure tokens —
+     * "{T}, Sacrifice this artifact: Add one mana of any color"). The auto-pay
+     * solver (`solve()`) refuses to pick these because silently sacrificing a
+     * permanent would surprise the player; manual mana-source selection menus
+     * may offer them so the choice is explicit.
+     */
+    val requiresSacrifice: Boolean = false
 ) {
     /**
      * Returns the set of colors this source can produce for a given spell context.
@@ -120,8 +136,14 @@ data class ManaSource(
 data class ManaSolution(
     val sources: List<ManaSource>,
     val manaProduced: Map<EntityId, ManaProduction>,
-    /** Bonus mana remaining after the solver consumed some to pay the cost */
-    val remainingBonusMana: Map<Color, Int> = emptyMap(),
+    /**
+     * Bonus mana remaining after the solver consumed some to pay the cost. Entries that
+     * came from a restricted mana ability retain the restriction so callers can
+     * preserve it when adding the leftover to the player's pool — losing the
+     * restriction would let an artifact-only or creature-spell-only mana be spent
+     * arbitrarily on the next action.
+     */
+    val remainingBonusMana: List<BonusManaEntry> = emptyList(),
     /**
      * Spell riders consumed by this solution — the union of riders attached to the
      * specific (source, color) slots actually tapped (e.g. Cavern of Souls' colored
@@ -129,6 +151,17 @@ data class ManaSolution(
      * a color, but its colorless `{T}: Add {C}` ability does not).
      */
     val consumedRiders: Set<ManaSpellRider> = emptySet()
+)
+
+/**
+ * A unit of bonus mana that wasn't consumed by the current solve. Carries the source's
+ * mana restriction (when any) so the caller can route it back into the floating pool
+ * via [ManaPool.addRestricted] instead of [ManaPool.add].
+ */
+data class BonusManaEntry(
+    val color: Color,
+    val amount: Int = 1,
+    val restriction: ManaRestriction? = null,
 )
 
 /**
@@ -179,10 +212,30 @@ class ManaSolver(
         spellContext: SpellPaymentContext? = null,
         precomputedSources: List<ManaSource>? = null
     ): ManaSolution? {
-        // Get all untapped mana sources controlled by the player
-        // Filter out restricted sources that are ineligible for the spell being cast
-        val availableSources = (precomputedSources ?: findAvailableManaSources(state, playerId))
+        // Get all untapped mana sources controlled by the player.
+        //
+        // The cached `precomputedSources` is built without a payment context, so for
+        // sources that have multiple mana abilities with mismatched restrictions
+        // (e.g. Steelswarm Operator) the cached aggregate collapses to "unrestricted"
+        // and over-states what the source can produce for a specific spend. When such
+        // a source is present and a context is provided, re-run findAvailableManaSources
+        // with the context to filter abilities accurately. Otherwise reuse the cache.
+        val cachedSources = precomputedSources
+        val needsContextRebuild = spellContext != null && (
+            cachedSources == null ||
+                cachedSources.any { it.hasContextSensitiveAbilities }
+            )
+        val rawSources = if (needsContextRebuild) {
+            findAvailableManaSources(state, playerId, spellContext)
+        } else {
+            cachedSources ?: findAvailableManaSources(state, playerId)
+        }
+        val availableSources = rawSources
             .filter { it.entityId !in excludeSources }
+            // Auto-pay must not silently sacrifice permanents (e.g. Treasure tokens).
+            // The bonus-mana accounting in canPay() still counts these via
+            // calculateSacrificeSelfBonusMana(), but the solver itself never picks them.
+            .filter { !it.requiresSacrifice }
             .filter { source ->
                 if (source.restriction == null || spellContext == null) true
                 else source.restriction.isSatisfiedBy(spellContext)
@@ -206,8 +259,10 @@ class ManaSolver(
         val manaProduced = mutableMapOf<EntityId, ManaProduction>()
         var remainingSources = availableSources.toMutableList()
 
-        // Track bonus mana from auras and excess mana from multi-mana sources
-        var bonusManaPool = mutableMapOf<Color, Int>()
+        // Track bonus mana from auras and excess mana from multi-mana sources. The list
+        // preserves the originating restriction (if any) per entry so unconsumed bonus
+        // mana retains its restriction when it lands in the player's pool.
+        val bonusManaPool = mutableListOf<BonusManaEntry>()
 
         // Helper to update available counts when a source is used
         fun useSource(source: ManaSource, colorUsed: Color?) {
@@ -216,31 +271,41 @@ class ManaSolver(
             for (color in source.producesColors) {
                 availableSourcesByColor[color] = (availableSourcesByColor[color] ?: 1) - 1
             }
-            // Track excess mana from multi-mana sources (e.g., Elvish Aberration produces 3 green)
+            // Track excess mana from multi-mana sources (e.g., Elvish Aberration produces 3 green).
+            // Inherit the source's restriction for that color so leftover restricted mana
+            // remains restricted in the pool.
             if (source.manaAmount > 1 && colorUsed != null) {
-                bonusManaPool[colorUsed] = (bonusManaPool[colorUsed] ?: 0) + (source.manaAmount - 1)
+                val restrictionForExcess = source.colorRestrictions[colorUsed] ?: source.restriction
+                bonusManaPool.add(BonusManaEntry(colorUsed, source.manaAmount - 1, restrictionForExcess))
             }
-            // Collect bonus mana from auras attached to this source
+            // Collect bonus mana from auras attached to this source (no restriction —
+            // the aura grants extra mana on top of the source's printed ability).
             if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
-                bonusManaPool[source.bonusManaColor] =
-                    (bonusManaPool[source.bonusManaColor] ?: 0) + source.bonusManaPerTap
+                bonusManaPool.add(BonusManaEntry(source.bonusManaColor, source.bonusManaPerTap, null))
             }
         }
 
-        // Helper to spend bonus mana for a colored cost
+        // Helper to spend one bonus mana of a specific color for a colored cost. The
+        // restriction was already checked when the source was admitted into
+        // `availableSources`, so any matching-color entry is eligible for this payment.
+        // Consumption is FIFO over `bonusManaPool` (insertion order = tap order); for the
+        // current solve any order is correct, and the choice affects only which
+        // restrictions land back in [ManaSolution.remainingBonusMana] for the caller.
         fun spendBonusMana(color: Color): Boolean {
-            val available = bonusManaPool[color] ?: 0
-            if (available > 0) {
-                bonusManaPool[color] = available - 1
-                return true
-            }
-            return false
+            val idx = bonusManaPool.indexOfFirst { it.color == color && it.amount > 0 }
+            if (idx < 0) return false
+            val entry = bonusManaPool[idx]
+            bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
+            return true
         }
 
-        // Helper to spend any bonus mana for generic cost
+        // Helper to spend one bonus mana of any color for a generic cost. Same FIFO
+        // policy as [spendBonusMana].
         fun spendAnyBonusMana(): Boolean {
-            val entry = bonusManaPool.entries.firstOrNull { it.value > 0 } ?: return false
-            bonusManaPool[entry.key] = entry.value - 1
+            val idx = bonusManaPool.indexOfFirst { it.amount > 0 }
+            if (idx < 0) return false
+            val entry = bonusManaPool[idx]
+            bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
             return true
         }
 
@@ -391,7 +456,7 @@ class ManaSolver(
             val color = manaProduced[source.entityId]?.color ?: return@flatMapTo emptySet()
             source.colorRiders[color] ?: emptySet()
         }
-        return ManaSolution(usedSources, manaProduced, bonusManaPool.filter { it.value > 0 }, consumedRiders)
+        return ManaSolution(usedSources, manaProduced, bonusManaPool.filter { it.amount > 0 }, consumedRiders)
     }
 
     /**
@@ -512,7 +577,11 @@ class ManaSolver(
      * - hasPainCost/painAmount: true if the mana ability costs life
      * - canAttack: true for creatures that can attack (no summoning sickness or has haste)
      */
-    fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
+    fun findAvailableManaSources(
+        state: GameState,
+        playerId: EntityId,
+        spellContext: SpellPaymentContext? = null,
+    ): List<ManaSource> {
         // Project state once to get all keywords and projected controllers
         val projected = state.projectedState
 
@@ -538,7 +607,22 @@ class ManaSolver(
             // Include mana abilities granted by static effects from other permanents
             // (e.g., Clement, the Worrywort granting {T}: Add {G} or {U} to Frogs)
             val staticGrantedManaAbilities = getStaticGrantedManaAbilities(entityId, card, state)
-            val manaAbilities = allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities
+            val rawManaAbilities = allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities
+
+            // When a spell/ability payment context is provided, drop mana abilities whose
+            // restriction is incompatible. Otherwise the combiner below would treat a
+            // source with two mutually-exclusive restricted abilities (e.g. Steelswarm
+            // Operator's "spells only" + "abilities only" variants of
+            // CardTypeSpellsOrAbilitiesOnly) as unrestricted and over-produce mana for the
+            // actual spend.
+            val manaAbilities = if (spellContext != null) {
+                rawManaAbilities.filter { ability ->
+                    val r = extractManaRestriction(ability.effect)
+                    r == null || r.isSatisfiedBy(spellContext)
+                }
+            } else {
+                rawManaAbilities
+            }
 
             // Detect non-mana activated abilities (utility land/creature)
             val hasNonManaAbilities = allAbilities.any { !it.isManaAbility }
@@ -591,10 +675,19 @@ class ManaSolver(
             var maxManaAmount = 1
             var anyAbilityHasNoPainCost = false
             var minPainAmount = Int.MAX_VALUE
+            // Track which accepted abilities required sacrificing the source (e.g. Treasure).
+            // The source is marked `requiresSacrifice` only when every accepted mana ability
+            // requires sacrifice — if any accepted ability is non-sac, prefer that path.
+            var anyAcceptedWithSac = false
+            var anyAcceptedWithoutSac = false
             // Track restrictions: if any ability is unrestricted, the source is unrestricted
             var hasUnrestrictedAbility = false
             var commonRestriction: ManaRestriction? = null
             var firstRestrictionSeen = false
+            // Set when two abilities on this source have different non-null restrictions —
+            // the cached aggregate then mis-represents what the source can produce for a
+            // specific context, and the solver re-runs us with a context to disambiguate.
+            var hasMixedRestrictions = false
             // Track per-color restrictions (for sources with mixed restricted/unrestricted abilities)
             val perColorRestrictions = mutableMapOf<Color, ManaRestriction?>()
             // Track the minimum mana-cost-to-activate per color (cheapest ability producing it)
@@ -616,6 +709,7 @@ class ManaSolver(
                 var abilityHasPainCost = false
                 var abilityPainAmount = 0
                 var abilityActivationManaCost = 0
+                var abilityRequiresSacrifice = false
                 val abilityCanBeUsed = when (val cost = ability.cost) {
                     is AbilityCost.Tap -> true
                     is AbilityCost.PayLife -> {
@@ -636,9 +730,13 @@ class ManaSolver(
                                 is AbilityCost.Mana -> {
                                     abilityActivationManaCost += subCost.cost.cmc
                                 }
-                                // Choice costs (Forage, Sacrifice, etc.) require explicit player opt-in.
-                                // Treat such abilities as non-auto-tappable; the player must activate
-                                // them directly via ActivateAbility so the cost is properly paid.
+                                // SacrificeSelf (Treasure: "{T}, Sacrifice this artifact: Add …").
+                                // Auto-tap won't pick these (filtered in solve()), but they appear
+                                // in `findAvailableManaSources` so manual-selection UIs can offer
+                                // them; selecting one triggers an explicit sacrifice in the resumer.
+                                is AbilityCost.SacrificeSelf -> abilityRequiresSacrifice = true
+                                // Other choice costs (Forage, sacrifice-something-else, etc.) still
+                                // require explicit ActivateAbility entry.
                                 else -> hasUnsupportedSubCost = true
                             }
                         }
@@ -648,6 +746,8 @@ class ManaSolver(
                 }
 
                 if (!abilityCanBeUsed) continue
+
+                if (abilityRequiresSacrifice) anyAcceptedWithSac = true else anyAcceptedWithoutSac = true
 
                 // Check summoning sickness for creatures (non-lands)
                 if (!card.typeLine.isLand && isCreature) {
@@ -796,8 +896,12 @@ class ManaSolver(
                         // First ability for this color — record its restriction
                         perColorRestrictions[color] = effectRestriction
                     } else if (existing != null && existing != effectRestriction) {
-                        // Different restriction — treat as unrestricted (player can choose)
+                        // Different restriction — collapse for the cached aggregate
+                        // (player can choose which ability to activate) and flag this
+                        // source as context-sensitive so solve() re-runs us with the
+                        // payment context.
                         perColorRestrictions[color] = null
+                        hasMixedRestrictions = true
                     }
                 }
 
@@ -809,8 +913,10 @@ class ManaSolver(
                     firstRestrictionSeen = true
                 } else if (commonRestriction != effectRestriction) {
                     // Different restrictions across abilities — treat as unrestricted
-                    // (player can choose which ability to activate)
+                    // (player can choose which ability to activate); flag for the
+                    // context-aware re-solve.
                     hasUnrestrictedAbility = true
+                    hasMixedRestrictions = true
                 }
             }
 
@@ -832,6 +938,11 @@ class ManaSolver(
                 val colorActivationCosts = perColorActivationCost
                     .filter { (_, cost) -> cost > 0 }
 
+                // Mark the source as sacrifice-required only when every accepted ability
+                // demanded sacrifice. If any non-sac ability was accepted, that path is
+                // preferred and the source is offered without sacrifice.
+                val requiresSacrifice = anyAcceptedWithSac && !anyAcceptedWithoutSac
+
                 return@mapNotNull ManaSource(
                     entityId = entityId,
                     name = card.name,
@@ -848,7 +959,9 @@ class ManaSolver(
                     restriction = sourceRestriction,
                     colorRiders = perColorRiders.mapValues { (_, v) -> v.toSet() },
                     colorRestrictions = restrictedColors,
-                    colorActivationManaCost = colorActivationCosts
+                    colorActivationManaCost = colorActivationCosts,
+                    requiresSacrifice = requiresSacrifice,
+                    hasContextSensitiveAbilities = hasMixedRestrictions,
                 )
             }
 
@@ -937,6 +1050,38 @@ class ManaSolver(
      * Evaluates a DynamicAmount for a mana ability, returning the actual mana count.
      * Returns 0 when the amount evaluates to zero (e.g., no creatures of the chosen type).
      */
+    /**
+     * Extract the [ManaRestriction] (if any) attached to the mana-producing effect of a
+     * mana ability. Used to filter abilities by spell/ability payment context before
+     * combining multiple abilities on the same source.
+     */
+    private fun extractManaRestriction(effect: com.wingedsheep.sdk.scripting.effects.Effect): ManaRestriction? {
+        val manaEffect = when (effect) {
+            is CompositeEffect -> effect.effects.firstOrNull {
+                it is AddManaEffect ||
+                    it is AddColorlessManaEffect ||
+                    it is AddAnyColorManaEffect ||
+                    it is AddManaOfColorAmongEffect ||
+                    it is AddManaOfColorLandsCouldProduceEffect ||
+                    it is AddManaOfChosenColorEffect ||
+                    it is AddDynamicManaEffect
+            } ?: effect
+            else -> effect
+        }
+        return when (manaEffect) {
+            is AddManaEffect -> manaEffect.restriction
+            is AddColorlessManaEffect -> manaEffect.restriction
+            is AddAnyColorManaEffect -> manaEffect.restriction
+            is AddManaOfColorAmongEffect -> manaEffect.restriction
+            is AddManaOfColorLandsCouldProduceEffect -> manaEffect.restriction
+            is AddManaOfChosenColorEffect -> manaEffect.restriction
+            is AddDynamicManaEffect -> manaEffect.restriction
+            // AddAnyColorManaSpendOnChosenTypeEffect derives its restriction at resolution
+            // time from the source's ChosenCreatureTypeComponent, so we don't pre-filter it.
+            else -> null
+        }
+    }
+
     private fun evaluateManaAmount(
         amount: DynamicAmount,
         state: GameState,
@@ -1295,8 +1440,12 @@ class ManaSolver(
             0
         }
 
-        // Add untapped mana sources (including bonus mana from auras and multi-mana sources)
-        val sourceMana = (precomputedSources ?: findAvailableManaSources(state, playerId)).sumOf { it.manaAmount + it.bonusManaPerTap }
+        // Add untapped mana sources (including bonus mana from auras and multi-mana sources).
+        // Sacrifice-self sources (treasures) are already counted via
+        // calculateSacrificeSelfBonusMana below, so skip them here to avoid double-counting.
+        val sourceMana = (precomputedSources ?: findAvailableManaSources(state, playerId))
+            .filter { !it.requiresSacrifice }
+            .sumOf { it.manaAmount + it.bonusManaPerTap }
 
         // Add extra mana from "extras" abilities the solver doesn't pick:
         //  - TapPermanents (e.g., Birchlore Rangers)

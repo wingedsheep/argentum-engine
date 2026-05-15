@@ -28,6 +28,7 @@ import com.wingedsheep.mtg.sets.definitions.otj.OutlawsOfThunderJunctionSet
 import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
 import com.wingedsheep.mtg.sets.definitions.tdm.TarkirDragonstormSet
 import com.wingedsheep.mtg.sets.definitions.tla.AvatarTheLastAirbenderSet
+import com.wingedsheep.mtg.sets.definitions.war.WarOfTheSparkSet
 import com.wingedsheep.mtg.sets.definitions.woe.WildsOfEldrainSet
 import com.wingedsheep.sdk.model.MtgSet
 
@@ -70,6 +71,7 @@ object MtgSetCatalog {
         SpiderManSet,
         TarkirDragonstormSet,
         AvatarTheLastAirbenderSet,
+        WarOfTheSparkSet,
     )
 
     private val byCode: Map<String, MtgSet> = all.associateBy { it.code }

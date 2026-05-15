@@ -349,6 +349,24 @@ class CostCalculator(
             }
             is CostReductionSource.DifferentlyNamedPermanentsYouControl ->
                 countDifferentlyNamedPermanents(state, playerId, source.filter)
+            is CostReductionSource.PermanentsOnBattlefieldMatching ->
+                countBattlefieldPermanentsMatching(state, playerId, source.filter)
+        }
+    }
+
+    /**
+     * Count permanents on the battlefield (across all players) matching the filter.
+     * Uses projected state for type/subtype checks to honor continuous effects.
+     */
+    private fun countBattlefieldPermanentsMatching(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): Int {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId)
+        return state.getBattlefield().count { entityId ->
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, context)
         }
     }
 

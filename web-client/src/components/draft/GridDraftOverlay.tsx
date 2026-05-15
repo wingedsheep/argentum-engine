@@ -297,7 +297,31 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
     setHoveredSelection(null)
   }, [gridState.isYourTurn, availableSet, gridDraftPick])
 
-  const cardSize = isMobile ? 100 : 140
+  // Dynamic card size: fit a 3x3 grid into the available area (viewport minus
+  // header, picked-cards sidebar, row/column headers, and the surrounding
+  // turn indicator / player-order / last-action rows). Clamp so cards stay
+  // legible on tiny screens and don't get cartoonishly large on 4K.
+  const sidebarWidth = !isMobile || !showPickedCards ? (showPickedCards ? 280 : 0) : 0
+  const gridAreaWidth = responsive.viewportWidth - sidebarWidth - (isMobile ? 24 : 40)
+  const rowHeaderWidth = 40
+  const cellPadding = 8 // 4px per side
+  const widthForCards = gridAreaWidth - rowHeaderWidth - cellPadding * 3
+  const widthPerCard = Math.floor(widthForCards / 3)
+
+  // Reserve vertical chrome around the grid: top header (~48), turn indicator
+  // (~32), last action (~24 when present), player order (~32), column headers
+  // (28), grid area padding (~40), and breathing room.
+  const verticalChrome = isMobile ? 200 : 240
+  const heightForCards = responsive.viewportHeight - verticalChrome
+  const heightPerCard = Math.floor(heightForCards / 3)
+  const widthFromHeight = Math.floor(heightPerCard / 1.4)
+
+  const minCardSize = isMobile ? 80 : 120
+  const maxCardSize = 200
+  // Apply a small headroom factor so the grid doesn't fill every last pixel —
+  // leaves breathing room around the cards for better overview.
+  const fittedSize = Math.floor(Math.min(widthPerCard, widthFromHeight) * 0.88)
+  const cardSize = Math.max(minCardSize, Math.min(maxCardSize, fittedSize))
 
   return (
     <div style={{

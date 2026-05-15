@@ -17,10 +17,13 @@ import kotlin.reflect.KClass
  * Executor for AddDynamicManaEffect.
  * "Add X mana in any combination of {R} and/or {G}."
  *
- * When there is only one allowed color, adds all mana as that color.
- * When there are multiple allowed colors, presents a [ChooseNumberDecision]
- * asking how much of the first color to add (the rest goes to the second color).
- * Pushes an [AddDynamicManaContinuation] for the decision response.
+ * Resolution branches on the size of [AddDynamicManaEffect.allowedColors]:
+ *  - 1 color: add all mana as that color.
+ *  - 2 colors: a single [ChooseNumberDecision] asks how much of the first color; the
+ *    remainder goes to the second. Pushes [AddDynamicManaContinuation].
+ *  - 3+ colors ("any combination of colors"): pip-by-pip [ChooseColorDecision] sequence.
+ *    Pushes [AddManaPipsContinuation]; each resume adds one pip and re-pauses if more
+ *    pips remain.
  */
 class AddDynamicManaExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
@@ -48,13 +51,27 @@ class AddDynamicManaExecutor(
             return EffectResult.success(newState)
         }
 
-        // Two+ colors — ask the player how to split
-        val firstColor = colors[0]
-        val secondColor = colors[1]
-
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
+
+        // 3+ colors — pip-by-pip color choice ("any combination of colors")
+        if (colors.size >= 3) {
+            return pausePipDecision(
+                state = state,
+                playerId = context.controllerId,
+                sourceId = context.sourceId,
+                sourceName = sourceName,
+                remainingPips = amount,
+                allowedColors = effect.allowedColors,
+                restriction = effect.restriction,
+                decisionHandler = decisionHandler
+            )
+        }
+
+        // Two colors — ask the player how to split
+        val firstColor = colors[0]
+        val secondColor = colors[1]
 
         val decisionResult = decisionHandler.createNumberDecision(
             state = state,
@@ -88,6 +105,47 @@ class AddDynamicManaExecutor(
     }
 
     companion object {
+        /**
+         * Create a [ChooseColorDecision] over [allowedColors] and push an
+         * [AddManaPipsContinuation] carrying the remaining pip count. Used both for the
+         * initial pause (from [execute]) and for re-pausing between successive pips
+         * (from the resumer).
+         */
+        fun pausePipDecision(
+            state: GameState,
+            playerId: com.wingedsheep.sdk.model.EntityId,
+            sourceId: com.wingedsheep.sdk.model.EntityId?,
+            sourceName: String?,
+            remainingPips: Int,
+            allowedColors: Set<Color>,
+            restriction: ManaRestriction?,
+            decisionHandler: DecisionHandler = DecisionHandler()
+        ): EffectResult {
+            val decisionResult = decisionHandler.createColorDecision(
+                state = state,
+                playerId = playerId,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                prompt = "Choose a color of mana to add ($remainingPips remaining)",
+                phase = DecisionPhase.RESOLUTION,
+                availableColors = allowedColors
+            )
+            val continuation = AddManaPipsContinuation(
+                decisionId = decisionResult.pendingDecision!!.id,
+                playerId = playerId,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                remainingPips = remainingPips,
+                allowedColors = allowedColors,
+                restriction = restriction
+            )
+            return EffectResult.paused(
+                decisionResult.state.pushContinuation(continuation),
+                decisionResult.pendingDecision,
+                decisionResult.events
+            )
+        }
+
         fun addMana(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId, amounts: Map<Color, Int>, restriction: ManaRestriction? = null): GameState {
             return state.updateEntity(playerId) { container ->
                 var manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()

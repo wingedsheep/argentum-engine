@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.CardType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -87,6 +88,50 @@ sealed interface ManaRestriction {
             "Spend this mana only to cast a creature spell of the chosen type"
         } else {
             "Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type"
+        }
+    }
+
+    @SerialName("CastFromExileOnly")
+    @Serializable
+    data object CastFromExileOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast spells from exile"
+    }
+
+    /**
+     * "Spend this mana only to cast [cardType] spells [or activate abilities of [cardType] sources]."
+     *
+     * Parameterized over card type so the same restriction shape covers Steelswarm Operator
+     * (artifact), hypothetical land/creature/planeswalker variants, and future printings. The
+     * two booleans cover the three printed shapes:
+     *   - `allowSpells=true,  allowAbilities=false` — Steelswarm Operator's first ability
+     *   - `allowSpells=false, allowAbilities=true`  — Steelswarm Operator's second ability
+     *   - `allowSpells=true,  allowAbilities=true`  — hypothetical "spells or abilities" mana
+     *
+     * Per the printed ruling, "[cardType] source" includes any object with that card type in
+     * any zone (battlefield, hand, graveyard, etc.) — the engine evaluates source type from
+     * the activating source's [com.wingedsheep.sdk.core.TypeLine] (plus projected types for
+     * battlefield permanents) at payment time.
+     */
+    @SerialName("CardTypeSpellsOrAbilitiesOnly")
+    @Serializable
+    data class CardTypeSpellsOrAbilitiesOnly(
+        val cardType: CardType,
+        val allowSpells: Boolean = true,
+        val allowAbilities: Boolean = false,
+    ) : ManaRestriction {
+        init {
+            require(allowSpells || allowAbilities) {
+                "CardTypeSpellsOrAbilitiesOnly must allow at least one of spells or abilities"
+            }
+        }
+
+        override val description: String = buildString {
+            append("Spend this mana only to ")
+            val clauses = buildList {
+                if (allowSpells) add("cast ${cardType.displayName.lowercase()} spells")
+                if (allowAbilities) add("activate abilities of ${cardType.displayName.lowercase()} sources")
+            }
+            append(clauses.joinToString(" or "))
         }
     }
 }

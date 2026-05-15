@@ -21,6 +21,8 @@ import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
+import com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -252,7 +254,9 @@ class ActivateAbilityHandler(
             } else effectiveCost
         } else effectiveCost
 
-        if (action.paymentStrategy !is PaymentStrategy.Explicit && !canPayAbilityCostWithSources(state, costAfterConvokeReduction, action.sourceId, action.playerId)) {
+        val abilityPaymentContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId)
+
+        if (action.paymentStrategy !is PaymentStrategy.Explicit && !canPayAbilityCostWithSources(state, costAfterConvokeReduction, action.sourceId, action.playerId, abilityPaymentContext)) {
             return when (effectiveCost) {
                 is AbilityCost.Tap -> "This permanent is already tapped"
                 is AbilityCost.TapAttachedCreature -> "Enchanted creature is tapped"
@@ -345,6 +349,8 @@ class ActivateAbilityHandler(
         // "{X} less, where X is this creature's power"). Locked in before payment.
         val effectiveCost = applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId)
 
+        val executeAbilityContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId)
+
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
@@ -409,7 +415,7 @@ class ActivateAbilityHandler(
                     }
                 }
                 else -> {
-                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue, selfExcludedSources)
+                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue, selfExcludedSources, executeAbilityContext)
                         ?: return ExecutionResult.error(state, "Not enough mana to activate this ability")
                     currentState = autoTapResult.newState
                     manaPool = autoTapResult.newPool
@@ -435,6 +441,11 @@ class ActivateAbilityHandler(
         // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
         val sacrificeTargetIds = action.costPayment?.sacrificedPermanents ?: emptyList()
         val sacrificedSnapshots = capturePermanentSnapshots(sacrificeTargetIds, currentState.projectedState)
+
+        // Mirror sacrifice snapshots for tapped-as-cost permanents — they may leave the
+        // battlefield in response while the ability is on the stack.
+        val tappedTargetIds = action.costPayment?.tappedPermanents ?: emptyList()
+        val tappedSnapshots = capturePermanentSnapshots(tappedTargetIds, currentState.projectedState)
 
         // When using Explicit payment, mana sources were already tapped above —
         // strip the Mana portion so payAbilityCost doesn't try to deduct from the pool.
@@ -462,7 +473,8 @@ class ActivateAbilityHandler(
             action.sourceId,
             action.playerId,
             manaPool,
-            costChoices
+            costChoices,
+            executeAbilityContext,
         )
 
         if (!costResult.success) {
@@ -855,6 +867,7 @@ class ActivateAbilityHandler(
             sacrificedPermanents = sacrificedSnapshots,
             xValue = action.xValue,
             tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList(),
+            tappedPermanentSnapshots = tappedSnapshots,
             descriptionOverride = ability.descriptionOverride
         )
 
@@ -889,7 +902,7 @@ class ActivateAbilityHandler(
 
                 // Auto-tap for mana cost
                 if (manaCost != null) {
-                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, repeatPool, manaCost, cardComponent.name, 0)
+                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, repeatPool, manaCost, cardComponent.name, 0, abilityContext = executeAbilityContext)
                         ?: break // Can't afford — stop early
                     currentState = autoTapResult.newState
                     repeatPool = autoTapResult.newPool
@@ -898,7 +911,7 @@ class ActivateAbilityHandler(
 
                 // Pay the cost
                 val repeatCostResult = costHandler.payAbilityCost(
-                    currentState, effectiveCost, action.sourceId, action.playerId, repeatPool, CostPaymentChoices()
+                    currentState, effectiveCost, action.sourceId, action.playerId, repeatPool, CostPaymentChoices(), executeAbilityContext
                 )
                 if (!repeatCostResult.success) break // Can't pay — stop early
 
@@ -970,7 +983,8 @@ class ActivateAbilityHandler(
         state: GameState,
         cost: AbilityCost,
         sourceId: com.wingedsheep.sdk.model.EntityId,
-        playerId: com.wingedsheep.sdk.model.EntityId
+        playerId: com.wingedsheep.sdk.model.EntityId,
+        abilityContext: SpellPaymentContext? = null,
     ): Boolean {
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
         val manaPool = ManaPool(
@@ -979,21 +993,22 @@ class ActivateAbilityHandler(
             black = poolComponent.black,
             red = poolComponent.red,
             green = poolComponent.green,
-            colorless = poolComponent.colorless
+            colorless = poolComponent.colorless,
+            restrictedMana = poolComponent.restrictedMana,
         )
         return when (cost) {
-            is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost)
+            is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost, spellContext = abilityContext)
             is AbilityCost.Composite -> {
                 // If composite cost includes Tap, the source itself can't also be used as a mana source
                 val excludeSources = if (hasTapCost(cost)) setOf(sourceId) else emptySet()
                 cost.costs.all { subCost ->
                     when (subCost) {
-                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeSources)
-                        else -> costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool)
+                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeSources, spellContext = abilityContext)
+                        else -> costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool, abilityContext)
                     }
                 }
             }
-            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool)
+            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext)
         }
     }
 
@@ -1072,19 +1087,22 @@ class ActivateAbilityHandler(
         cost: ManaCost,
         sourceName: String,
         xValue: Int = 0,
-        excludeSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet()
+        excludeSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet(),
+        abilityContext: SpellPaymentContext? = null,
     ): AutoTapResult? {
-        // Determine what the floating pool can cover
-        val partialResult = pool.payPartial(cost)
+        // Determine what the floating pool can cover (with the ability context so restricted
+        // mana eligible for this activation counts toward coverage)
+        val partialResult = pool.payPartial(cost, abilityContext)
         val remainingCost = partialResult.remainingCost
 
-        // If floating pool covers everything (and no X to pay), no tapping needed
+        // If floating pool covers everything (and no X to pay), no tapping needed.
+        // Return the original pool unchanged — `payAbilityCost` performs the actual deduction.
         if (remainingCost.isEmpty() && xValue == 0) {
             return AutoTapResult(state, pool, emptyList())
         }
 
         // Tap sources for the remaining cost (xValue is treated as additional generic mana)
-        val solution = manaSolver.solve(state, playerId, remainingCost, xValue, excludeSources = excludeSources)
+        val solution = manaSolver.solve(state, playerId, remainingCost, xValue, excludeSources = excludeSources, spellContext = abilityContext)
             ?: return null
 
         var currentState = state
@@ -1098,12 +1116,28 @@ class ActivateAbilityHandler(
             events.add(TappedEvent(source.entityId, source.name))
         }
 
-        // Add produced mana to floating pool so costHandler.payAbilityCost can consume it
-        for ((_, production) in solution.manaProduced) {
-            currentPool = if (production.color != null) {
-                currentPool.add(production.color, production.amount)
-            } else {
-                currentPool.addColorless(production.colorless)
+        // Add produced mana to floating pool so costHandler.payAbilityCost can consume it.
+        // When the source's ability is restricted (e.g. Steelswarm Operator's
+        // {T}: Add {U}{U} restricted to artifact-source ability activations), tag the
+        // produced mana with that restriction. payAbilityCost will preferentially spend
+        // the eligible restricted mana for the cost — and any unconsumed remainder stays
+        // restricted in the pool instead of laundering into unrestricted mana.
+        for (source in solution.sources) {
+            // ManaSolver always emits a manaProduced entry per tapped source; a missing
+            // entry would indicate a solver bug, not a runtime gap to swallow silently.
+            val production = solution.manaProduced[source.entityId]
+                ?: error("solution.sources contains ${source.name} without a matching manaProduced entry")
+            val color = production.color
+            val restriction = if (color != null) {
+                source.colorRestrictions[color] ?: source.restriction
+            } else source.restriction
+            currentPool = when {
+                color != null && restriction != null ->
+                    currentPool.addRestricted(color, production.amount, restriction)
+                color != null ->
+                    currentPool.add(color, production.amount)
+                else ->
+                    currentPool.addColorless(production.colorless)
             }
         }
 
@@ -1114,13 +1148,16 @@ class ActivateAbilityHandler(
         // the cost via payAbilityCost, so the *total* bonus from tapping must land in the
         // pool. solution.remainingBonusMana would drop any bonus consumed during solve.
         // (Multi-mana excess is already included via manaProduced.amount above.)
+        // Aura bonus mana is unrestricted — the source's restriction belongs to the
+        // printed ability, not to the aura-granted extras.
         for (source in solution.sources) {
             if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
                 currentPool = currentPool.add(source.bonusManaColor, source.bonusManaPerTap)
             }
         }
 
-        // Update state with enriched pool
+        // Update state with enriched pool — carry restrictedMana through so the
+        // ability-payment context can spend (and the leftover can stay) restricted.
         currentState = currentState.updateEntity(playerId) { c ->
             c.with(ManaPoolComponent(
                 white = currentPool.white,
@@ -1128,7 +1165,8 @@ class ActivateAbilityHandler(
                 black = currentPool.black,
                 red = currentPool.red,
                 green = currentPool.green,
-                colorless = currentPool.colorless
+                colorless = currentPool.colorless,
+                restrictedMana = currentPool.restrictedMana,
             ))
         }
 

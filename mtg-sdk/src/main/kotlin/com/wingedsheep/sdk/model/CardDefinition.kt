@@ -29,7 +29,13 @@ data class ScryfallMetadata(
     val imageUri: String? = null,
     val scryfallId: String? = null,
     val releaseDate: String? = null,
-    val rulings: List<Ruling> = emptyList()
+    val rulings: List<Ruling> = emptyList(),
+    /**
+     * Whether this printing appears in the set's draft/sealed boosters. Mirrors Scryfall's
+     * `booster` field — false for Special Guests, The List, promos, and other non-draft slots.
+     * Drives [com.wingedsheep.engine.limited.BoosterGenerator]'s pool filter.
+     */
+    val inBooster: Boolean = true
 )
 
 /**

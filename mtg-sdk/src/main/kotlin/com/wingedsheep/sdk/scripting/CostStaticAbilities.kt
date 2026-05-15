@@ -410,4 +410,19 @@ sealed interface CostReductionSource {
         override val description: String =
             "the number of differently named ${filter.description} you control"
     }
+
+    /**
+     * Reduces cost by the number of permanents on the battlefield matching a filter,
+     * regardless of who controls them. Used for cards like Blasphemous Act
+     * ("This spell costs {1} less to cast for each creature on the battlefield") via
+     * `PermanentsOnBattlefieldMatching(Filters.Creature)`.
+     */
+    @SerialName("PermanentsOnBattlefieldMatching")
+    @Serializable
+    data class PermanentsOnBattlefieldMatching(
+        val filter: GameObjectFilter
+    ) : CostReductionSource {
+        override val description: String =
+            "the number of ${filter.description} on the battlefield"
+    }
 }

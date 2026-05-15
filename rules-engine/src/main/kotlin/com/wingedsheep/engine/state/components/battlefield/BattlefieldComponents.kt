@@ -381,6 +381,16 @@ data object GrantsControllerHexproofComponent : Component
 data object GrantsCantLoseGameComponent : Component
 
 /**
+ * Marks a permanent as granting the Station-using-toughness effect to creatures its
+ * controller controls. When a creature with this component's controller taps for a
+ * Station ability and its toughness > power, it contributes toughness instead of power.
+ *
+ * Created by [StaticAbilityHandler] from [StationUsingToughness] static abilities.
+ */
+@Serializable
+data object GrantsStationUsingToughnessComponent : Component
+
+/**
  * Marks a permanent as unable to be targeted by abilities opponents control.
  * Unlike hexproof, spells can still target this permanent.
  * Used for Shanna, Sisay's Legacy: "Shanna can't be the target of abilities your opponents control."

@@ -144,6 +144,9 @@ internal class EffectApplicator(
                 is Modification.SetCantAttack -> {
                     values.cantAttack = true
                 }
+                is Modification.SetSuspected -> {
+                    values.isSuspected = true
+                }
                 is Modification.SetCantBlock -> {
                     values.cantBlock = true
                 }
@@ -359,6 +362,14 @@ internal class EffectApplicator(
                     }
                 }
             }
+        }
+        is SourceProjectionCondition.ControllerHasCitysBlessing -> {
+            val controllerId = sourceValues?.controllerId ?: state.getEntity(effect.sourceId)
+                ?.get<ControllerComponent>()
+                ?.playerId
+            controllerId != null &&
+                state.getEntity(controllerId)
+                    ?.has<com.wingedsheep.engine.state.components.player.PlayerCitysBlessingComponent>() == true
         }
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
         is SourceProjectionCondition.Compare -> {

@@ -1081,6 +1081,7 @@ is PermanentsSacrificedEvent -> {
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
+            is CitysBlessingGainedEvent,
             is TurnedFaceDownEvent,
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,

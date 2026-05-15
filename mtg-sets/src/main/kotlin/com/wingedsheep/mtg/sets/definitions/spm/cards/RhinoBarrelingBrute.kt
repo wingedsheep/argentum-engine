@@ -33,6 +33,10 @@ val RhinoBarrelingBrute = card("Rhino, Barreling Brute") {
     }
 
     metadata {
-        rarity = Rarity.RARE
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "140"
+        artist = "Filipe Pagliuso"
+        flavorText = "\"I'm Rhino. I knock things down. That's what I do. That's who I am.\"\n—Rhino, Aleksei Sytsevich"
+        imageUri = "https://cards.scryfall.io/normal/front/4/b/4b8ac400-1e98-49fc-94be-00386d15f2ae.jpg?1757377784"
     }
 }

@@ -80,6 +80,7 @@ constructors.
 - `Effects.ModifyStats(power, toughness, target = ContextTarget(0))` — until end of turn
 - `Effects.ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target)` — dynamic P/T
 - `Effects.GrantHexproof(target = Controller, duration = EndOfTurn)` — grant hexproof to player or permanent
+- `Effects.GainCitysBlessing(target = Controller)` — grant the city's blessing (CR 702.131); permanent, idempotent
 - `Effects.GrantKeyword(keyword, target = ContextTarget(0), duration = EndOfTurn)` — grant a keyword for a duration
 - `Effects.GrantKeywordToAttackersBlockedBy(keyword, target, duration)` — grant keyword to attackers blocked by target
 - `Effects.GrantExileOnLeave(target)` — exile instead of leaving battlefield (Kheru Lich Lord, Whip of Erebos)
@@ -636,6 +637,7 @@ constructors.
 ### Spell Keyword Grants
 
 - `Effects.GrantSpellKeyword(keyword: Keyword, spellFilter: SpellTypeFilter)` — permanently grant a keyword to spells of a type the controller casts. Used for Ral's storm emblem. Adds `GrantedSpellKeywordsComponent` to the player.
+- `Effects.GrantSpellsCantBeCountered(target = Controller, spellFilter = Creature, duration = EndOfTurn)` — player-scoped, time-bounded counterpart to the `GrantCantBeCountered` static ability: spells the target casts matching `spellFilter` can't be countered for `duration`. Stacks additively (multiple grants on the same player append filters). Used for Domri, Anarch of Bolas's +1.
 
 ### Life
 
@@ -777,6 +779,8 @@ constructors.
 - `Conditions.IsYourTurn` / `.IsNotYourTurn`
 - `Conditions.IsInPhase(vararg phases, yoursOnly = true)` — true if the current phase is one of the listed phases; with `yoursOnly` also requires the controller's turn (Dose of Dawnglow)
 - `Conditions.IsYourMainPhase` — convenience for `IsInPhase(PRECOMBAT_MAIN, POSTCOMBAT_MAIN, yoursOnly = true)`
+- `Conditions.YouHaveCitysBlessing` — true if you have the city's blessing (CR 702.131 / 700.5). Static-ability path goes through `SourceProjectionCondition.ControllerHasCitysBlessing`
+- `Conditions.ControlPermanentsAtLeast(count)` — true if you control N+ permanents of any type. Primary use is the Ascend ETB intervening-if (10+)
 - `Conditions.YouGainedLifeThisTurn` — true if you gained life this turn
 - `Conditions.YouGainedOrLostLifeThisTurn` — true if you gained or lost life this turn
 - `Conditions.YouLostLifeThisTurn` — true if you lost life this turn (for conditional static abilities)
@@ -998,6 +1002,11 @@ reveal creatures, create tokens
 
 `STORM`
 
+### City's Blessing
+
+`ASCEND` — Ixalan keyword (CR 702.131). On a permanent spell, conventionally wired
+per card as `triggeredAbility { trigger = Triggers.EntersBattlefield; effect = ConditionalEffect(Conditions.ControlPermanentsAtLeast(10), Effects.GainCitysBlessing()) }`. The blessing is a permanent player designation; once granted it persists for the rest of the game. Test via `Conditions.YouHaveCitysBlessing`.
+
 ### Damage Modification
 
 `WITHER` — Damage dealt to creatures by this source is dealt in the form of -1/-1 counters (CR 702.79)
@@ -1086,7 +1095,8 @@ Set via `staticAbility { ability = ... }`:
 
 ### Damage
 
-- `AssignDamageEqualToToughness(target, onlyWhenToughnessGreaterThanPower)` — Doran
+- `AssignDamageEqualToToughness(filter, onlyWhenToughnessGreaterThanPower)` — assigns combat damage as toughness; use `Scope.Self` for the creature itself, `Scope.AttachedTo` for equipment/aura, `Scope.Battlefield` for global permanents (Tapestry Warden)
+- `StationUsingToughness` — while a permanent with this is in play, creatures its controller controls with toughness > power contribute toughness instead of power when tapped to pay a Station cost. Applies automatically to any Station ability whose cost-input formula reads `EntityProperty(TappedAsCost, Power)` (Tapestry Warden)
 - `DivideCombatDamageFreely(target)` — divide damage freely
 - `AssignCombatDamageAsUnblocked(target)` — may assign combat damage as though unblocked (Thorn Elemental)
 
@@ -1155,7 +1165,7 @@ Set via `staticAbility { ability = ... }`:
 
 ### CostReductionSource values
 
-`ColorsAmongPermanentsYouControl`, `Fixed(amount)`, `CreaturesYouControl`, `TotalPowerYouControl`, `ArtifactsYouControl`, `FixedIfControlFilter(amount, filter)` — fixed reduction if you control a permanent matching the GameObjectFilter (e.g., "costs {1} less if you control a Wizard"), `CardsInGraveyardMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card in your graveyard matching the filter (e.g., "costs {1} less for each instant and sorcery card in your graveyard"), `CardsInGraveyardAndExileMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card you own in exile and in your graveyard matching the filter (e.g., "costs {1} less for each creature card you own in exile and in your graveyard"), `PermanentsWithCounterYouControl(filter, counterType)` — reduces by number of permanents you control matching filter that have the specified counter (e.g., "for each land you control with a flood counter"), `FixedIfAnyTargetMatches(amount, filter)` — fixed reduction if any of the spell's chosen targets match the filter (e.g., Dire Downdraft: "costs {1} less if it targets an attacking or tapped creature"), `FixedIfCreatureAttackingYou(amount)` — fixed reduction if any creature on the battlefield is currently attacking the caster (or a planeswalker they control), e.g., Swat Away: "costs {2} less if a creature is attacking you", `DifferentlyNamedPermanentsYouControl(filter)` — reduces cost by the number of differently named permanents the caster controls matching the filter (e.g., Fungal Colossus uses `Filters.Land`)
+`ColorsAmongPermanentsYouControl`, `Fixed(amount)`, `CreaturesYouControl`, `TotalPowerYouControl`, `ArtifactsYouControl`, `FixedIfControlFilter(amount, filter)` — fixed reduction if you control a permanent matching the GameObjectFilter (e.g., "costs {1} less if you control a Wizard"), `CardsInGraveyardMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card in your graveyard matching the filter (e.g., "costs {1} less for each instant and sorcery card in your graveyard"), `CardsInGraveyardAndExileMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card you own in exile and in your graveyard matching the filter (e.g., "costs {1} less for each creature card you own in exile and in your graveyard"), `PermanentsWithCounterYouControl(filter, counterType)` — reduces by number of permanents you control matching filter that have the specified counter (e.g., "for each land you control with a flood counter"), `FixedIfAnyTargetMatches(amount, filter)` — fixed reduction if any of the spell's chosen targets match the filter (e.g., Dire Downdraft: "costs {1} less if it targets an attacking or tapped creature"), `FixedIfCreatureAttackingYou(amount)` — fixed reduction if any creature on the battlefield is currently attacking the caster (or a planeswalker they control), e.g., Swat Away: "costs {2} less if a creature is attacking you", `DifferentlyNamedPermanentsYouControl(filter)` — reduces cost by the number of differently named permanents the caster controls matching the filter (e.g., Fungal Colossus uses `Filters.Land`), `PermanentsOnBattlefieldMatching(filter)` — reduces cost by the number of permanents on the battlefield (any controller) matching the filter (e.g., Blasphemous Act uses `Filters.Creature` for "costs {1} less for each creature on the battlefield")
 
 ---
 

@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantToxicEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.SuspectEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -63,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.ExchangeLifeAndPowerEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantSpellKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantSpellsCantBeCounteredEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantExileOnLeaveEffect
@@ -492,6 +494,16 @@ object Effects {
     )
 
     /**
+     * Grants the city's blessing to a player (CR 702.131 / 700.5).
+     *
+     * Once granted, never lost — applying again is a no-op. Used as the
+     * resolution effect of Ascend triggers, typically gated by an intervening-if
+     * such as `Conditions.ControlPermanentsAtLeast(10)`.
+     */
+    fun GainCitysBlessing(target: EffectTarget = EffectTarget.Controller): Effect =
+        com.wingedsheep.sdk.scripting.effects.GainCitysBlessingEffect(target)
+
+    /**
      * Return to hand.
      */
     fun ReturnToHand(target: EffectTarget): Effect =
@@ -657,6 +669,15 @@ object Effects {
         threshold = DynamicAmount.Fixed(threshold),
         storeAs = storeAs
     )
+
+    /**
+     * Cascade (CR 702.85). Resolves the cascade ability of the triggering spell.
+     * Reads the triggering spell's mana value from the trigger context, then
+     * exiles top of library until a nonland card with lower mana value is
+     * exiled, lets the controller cast it for free, and puts the remaining
+     * exiled cards on the bottom of the library in a random order.
+     */
+    val Cascade: Effect = com.wingedsheep.sdk.scripting.effects.CascadeEffect
 
     // =========================================================================
     // Stat Modification Effects
@@ -960,6 +981,26 @@ object Effects {
         AddDynamicManaEffect(amount, allowedColors, restriction)
 
     /**
+     * Add N mana in any combination of the given colors. Player picks each pip's color
+     * independently at resolution. Defaults to all five colors — "Add N mana in any
+     * combination of colors" (e.g., Interdimensional Web Watch).
+     *
+     * For one or two allowed colors the executor falls back to its bulk/two-color split
+     * paths; with three or more colors it prompts pip-by-pip.
+     */
+    fun AddManaInAnyCombination(
+        amount: Int,
+        allowedColors: Set<Color> = Color.entries.toSet(),
+        restriction: ManaRestriction? = null
+    ): Effect = AddDynamicManaEffect(DynamicAmount.Fixed(amount), allowedColors, restriction)
+
+    fun AddManaInAnyCombination(
+        amount: DynamicAmount,
+        allowedColors: Set<Color> = Color.entries.toSet(),
+        restriction: ManaRestriction? = null
+    ): Effect = AddDynamicManaEffect(amount, allowedColors, restriction)
+
+    /**
      * Add one mana of the color chosen when this permanent entered the battlefield.
      * Used for cards like Uncharted Haven.
      */
@@ -1057,7 +1098,8 @@ object Effects {
         attacking: Boolean = false,
         triggeredAbilities: List<TriggeredAbility> = emptyList(),
         addedKeywords: Set<com.wingedsheep.sdk.core.Keyword> = emptySet(),
-        addedSupertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet()
+        addedSupertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet(),
+        removedSupertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet()
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -1067,7 +1109,8 @@ object Effects {
         attacking = attacking,
         triggeredAbilities = triggeredAbilities,
         addedKeywords = addedKeywords,
-        addedSupertypes = addedSupertypes
+        addedSupertypes = addedSupertypes,
+        removedSupertypes = removedSupertypes
     )
 
     /**
@@ -1533,6 +1576,15 @@ object Effects {
     fun CantAttackOrBlock(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
         CompositeEffect(listOf(CantAttackEffect(target, duration), CantBlockEffect(target, duration)))
 
+    /**
+     * Target creature becomes suspected (gains menace, can't block).
+     *
+     * Suspect is a first-class named status — use this instead of independently granting
+     * menace + can't block so that future cards can query or react to the status directly.
+     */
+    fun Suspect(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.Permanent): Effect =
+        SuspectEffect(target, duration)
+
     // =========================================================================
     // Special Effects
     // =========================================================================
@@ -1986,4 +2038,14 @@ object Effects {
         keyword: com.wingedsheep.sdk.core.Keyword,
         spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter
     ): Effect = GrantSpellKeywordEffect(keyword, spellFilter)
+
+    /**
+     * Spells matching [spellFilter] that [target] casts can't be countered for [duration].
+     * Used for Domri, Anarch of Bolas's +1 ("Creature spells you cast this turn can't be countered.").
+     */
+    fun GrantSpellsCantBeCountered(
+        target: com.wingedsheep.sdk.scripting.targets.EffectTarget = com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller,
+        spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Creature,
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
+    ): Effect = GrantSpellsCantBeCounteredEffect(target, spellFilter, duration)
 }

@@ -94,6 +94,10 @@ class ManaAbilityEnumerator : ActionEnumerator {
             // Apply text-changing effects to mana ability costs
             val manaTextReplacement = container.get<TextReplacementComponent>()
 
+            val manaAbilityContext = com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext(
+                cardComponent, projected, entityId
+            )
+
             for (ability in manaAbilities) {
                 // Apply text replacement to cost filters
                 val effectiveCost = if (manaTextReplacement != null) {
@@ -160,7 +164,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
                                     }
                                 }
                                 is AbilityCost.Mana -> {
-                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana, precomputedSources = context.availableManaSources)) {
+                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana, precomputedSources = context.availableManaSources, spellContext = manaAbilityContext)) {
                                         affordable = false; break
                                     }
                                 }

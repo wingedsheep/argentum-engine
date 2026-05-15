@@ -303,12 +303,18 @@ class CastPaymentProcessor(
                 }
             }
 
-            // Add only the bonus mana that wasn't consumed by the solver to the floating pool
+            // Add only the bonus mana that wasn't consumed by the solver to the floating pool.
+            // Bonus mana from a restricted ability keeps its restriction so the player can't
+            // launder e.g. Steelswarm Operator's artifact-only mana into unrestricted blue.
             if (solution.remainingBonusMana.isNotEmpty()) {
                 currentState = currentState.updateEntity(playerId) { container ->
                     var pool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                    for ((color, amount) in solution.remainingBonusMana) {
-                        pool = pool.add(color, amount)
+                    for (entry in solution.remainingBonusMana) {
+                        pool = if (entry.restriction != null) {
+                            pool.addRestricted(entry.color, entry.amount, entry.restriction)
+                        } else {
+                            pool.add(entry.color, entry.amount)
+                        }
                     }
                     container.with(pool)
                 }

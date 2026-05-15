@@ -210,3 +210,4 @@ data class ExploreEffect(
     override val description: String = "${target.description} explores"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+

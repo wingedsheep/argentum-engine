@@ -1303,6 +1303,7 @@ class MetadataBuilder {
     var artist: String? = null
     var flavorText: String? = null
     var imageUri: String? = null
+    var inBooster: Boolean = true
     private val _rulings = mutableListOf<Ruling>()
 
     /**
@@ -1320,7 +1321,8 @@ class MetadataBuilder {
         artist = artist,
         flavorText = flavorText,
         imageUri = imageUri,
-        rulings = _rulings.toList()
+        rulings = _rulings.toList(),
+        inBooster = inBooster
     )
 }
 

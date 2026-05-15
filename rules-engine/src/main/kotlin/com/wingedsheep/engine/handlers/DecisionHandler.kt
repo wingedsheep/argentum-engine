@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import java.util.UUID
 
@@ -200,7 +201,8 @@ class DecisionHandler {
         sourceId: EntityId?,
         sourceName: String?,
         prompt: String,
-        phase: DecisionPhase = DecisionPhase.RESOLUTION
+        phase: DecisionPhase = DecisionPhase.RESOLUTION,
+        availableColors: Set<Color> = Color.entries.toSet()
     ): ExecutionResult {
         val decision = ChooseColorDecision(
             id = generateDecisionId(),
@@ -210,7 +212,8 @@ class DecisionHandler {
                 sourceId = sourceId,
                 sourceName = sourceName,
                 phase = phase
-            )
+            ),
+            availableColors = availableColors
         )
 
         val newState = state.withPendingDecision(decision)

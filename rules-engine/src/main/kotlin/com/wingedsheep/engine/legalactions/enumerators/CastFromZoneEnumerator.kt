@@ -1569,7 +1569,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
                 hasXInCost = cardComponent.manaCost.hasX,
-                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                cardTypes = cardComponent.typeLine.cardTypes,
             )
             val canAffordKickedMana = context.manaSolver.canPay(
                 state, playerId, kickedCost,

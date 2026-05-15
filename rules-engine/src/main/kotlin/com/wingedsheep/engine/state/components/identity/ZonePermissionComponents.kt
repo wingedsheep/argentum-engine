@@ -94,6 +94,11 @@ data class PlayWithCostIncreaseComponent(
  *
  * @param withCounters Counter types to add to the card after it is exiled (one of each).
  *   Used by Goliath Daydreamer's "exile that card with a dream counter on it" wording.
+ * @param linkedSourceId When set, the spell is added to this permanent's
+ *   [com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent] once
+ *   it actually lands in exile, so the UI can show the exiled cards tethered under
+ *   the source permanent (e.g. Goliath Daydreamer's "exile that card with a dream
+ *   counter on it" pile). Only applied when the spell actually resolves into exile.
  */
 @Serializable
 data class ExileAfterResolveComponent(
@@ -104,5 +109,6 @@ data class ExileAfterResolveComponent(
      * Goliath Daydreamer per ruling: "If a spell is countered or otherwise fails
      * to resolve, Goliath Daydreamer's first ability won't exile it."
      */
-    val onlyIfResolved: Boolean = false
+    val onlyIfResolved: Boolean = false,
+    val linkedSourceId: EntityId? = null
 ) : Component

@@ -405,6 +405,19 @@ object Triggers {
     )
 
     /**
+     * Whenever a nontoken creature you control deals combat damage to a player.
+     * Uses ANY binding — fires for each nontoken creature you control that connects.
+     */
+    val NontokenCreatureYouControlDealsCombatDamageToPlayer: TriggerSpec = TriggerSpec(
+        event = DealsDamageEvent(
+            damageType = DamageType.Combat,
+            recipient = RecipientFilter.AnyPlayer,
+            sourceFilter = GameObjectFilter.Creature.youControl().nontoken()
+        ),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * When this creature deals combat damage to a creature.
      */
     val DealsCombatDamageToCreature: TriggerSpec = TriggerSpec(
@@ -681,6 +694,18 @@ object Triggers {
      */
     val YouCastEnchantment: TriggerSpec = TriggerSpec(
         event = SpellCastEvent(spellFilter = GameObjectFilter.Enchantment, player = Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you cast an enchantment spell from your hand.
+     */
+    val YouCastEnchantmentFromHand: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(
+            spellFilter = GameObjectFilter.Enchantment,
+            player = Player.You,
+            castFromZone = com.wingedsheep.sdk.core.Zone.HAND
+        ),
         binding = TriggerBinding.ANY
     )
 

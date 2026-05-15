@@ -30,6 +30,7 @@ class MiscContinuationResumer(
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
+        resumer(AddManaPipsContinuation::class, ::resumeAddManaPip),
         resumer(ReturnFromLinkedExileContinuation::class) { state, continuation, response, checkForMore ->
             resumeReturnFromLinkedExile(state, continuation, response, checkForMore)
         }
@@ -603,5 +604,64 @@ class MiscContinuationResumer(
         )
 
         return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * Per-pip resumer for "Add N mana in any combination of [3+ colors]". Each fire:
+     *  1. Adds one mana of the chosen color (carrying any [ManaRestriction] from the continuation).
+     *  2. Emits one [ManaAddedEvent] so the client log / animations are accurate per pip.
+     *  3. If pips remain, re-pauses with a fresh [ChooseColorDecision]; otherwise completes.
+     */
+    private fun resumeAddManaPip(
+        state: GameState,
+        continuation: AddManaPipsContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color chosen response for AddManaPips")
+        }
+
+        val color = response.color
+        val newState = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.addMana(
+            state, continuation.playerId,
+            mapOf(color to 1),
+            continuation.restriction
+        )
+
+        val event = ManaAddedEvent(
+            playerId = continuation.playerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            white = if (color == com.wingedsheep.sdk.core.Color.WHITE) 1 else 0,
+            blue = if (color == com.wingedsheep.sdk.core.Color.BLUE) 1 else 0,
+            black = if (color == com.wingedsheep.sdk.core.Color.BLACK) 1 else 0,
+            red = if (color == com.wingedsheep.sdk.core.Color.RED) 1 else 0,
+            green = if (color == com.wingedsheep.sdk.core.Color.GREEN) 1 else 0,
+            colorless = 0
+        )
+
+        val remaining = continuation.remainingPips - 1
+        if (remaining <= 0) {
+            return checkForMore(newState, listOf(event))
+        }
+
+        // Pause for the next pip's color choice by re-using the executor's helper, so the
+        // prompt format and continuation shape stay in one place.
+        val nextResult = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.pausePipDecision(
+            state = newState,
+            playerId = continuation.playerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            remainingPips = remaining,
+            allowedColors = continuation.allowedColors,
+            restriction = continuation.restriction
+        )
+
+        return ExecutionResult.paused(
+            nextResult.state,
+            nextResult.pendingDecision!!,
+            listOf(event) + nextResult.events
+        )
     }
 }

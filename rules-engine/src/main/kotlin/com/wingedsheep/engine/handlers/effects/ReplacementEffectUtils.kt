@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
@@ -18,6 +19,8 @@ import com.wingedsheep.sdk.scripting.events.RecipientFilter
  * before they produce events (counter placement modifiers, extra turn prevention).
  */
 object ReplacementEffectUtils {
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Check if extra turns are prevented by any PreventExtraTurns replacement effect
@@ -130,6 +133,12 @@ object ReplacementEffectUtils {
             state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
         }
         is RecipientFilter.You -> targetId == sourceControllerId
+        is RecipientFilter.Matching -> {
+            val context = PredicateContext(controllerId = sourceControllerId, sourceId = sourceEntityId)
+            predicateEvaluator.matchesWithProjection(
+                state, state.projectedState, targetId, recipient.filter, context
+            )
+        }
         else -> false
     }
 }

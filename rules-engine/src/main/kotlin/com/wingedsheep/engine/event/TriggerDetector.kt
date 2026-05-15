@@ -1258,11 +1258,11 @@ class TriggerDetector(
                 val damageEvents = combatDamageByController[controllerId] ?: continue
 
                 // Check if any damage source matches the sourceFilter (using projected state for subtypes)
-                val hasMatch = damageEvents.any { info ->
-                    val sourceContainer = state.getEntity(info.sourceId) ?: return@any false
-                    val sourceCard = sourceContainer.get<CardComponent>() ?: return@any false
-                    if (!sourceCard.typeLine.isCreature) return@any false
-                    if (sourceContainer.has<FaceDownComponent>()) return@any false
+                val firstMatchingInfo = damageEvents.firstOrNull { info ->
+                    val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
+                    sourceContainer.get<CardComponent>() ?: return@firstOrNull false
+                    if (!projected.isCreature(info.sourceId)) return@firstOrNull false
+                    if (sourceContainer.has<FaceDownComponent>()) return@firstOrNull false
 
                     // Check card predicates from the sourceFilter
                     trigger.sourceFilter.cardPredicates.all { predicate ->
@@ -1270,19 +1270,24 @@ class TriggerDetector(
                             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> true
                             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                                 projected.hasSubtype(info.sourceId, predicate.subtype.value)
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken ->
+                                !sourceContainer.has<TokenComponent>()
                             else -> true
                         }
                     }
                 }
 
-                if (hasMatch) {
+                if (firstMatchingInfo != null) {
+                    // Batch trigger fires once regardless of how many sources dealt damage.
+                    // triggeringEntityId is an arbitrary matching source (the first one we found);
+                    // cards that need per-source dispatch must use a singular trigger event instead.
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
                             sourceId = entry.entityId,
                             sourceName = entry.cardComponent.name,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext()
+                            triggerContext = TriggerContext(triggeringEntityId = firstMatchingInfo.sourceId)
                         )
                     )
                 }

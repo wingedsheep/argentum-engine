@@ -62,6 +62,8 @@ data class EffectContext(
     val additionalCostBlightAmount: Int = 0,
     /** Permanents tapped as part of an activated ability's cost (e.g., Cryptic Gateway) */
     val tappedPermanents: List<EntityId> = emptyList(),
+    /** LKI snapshots for [tappedPermanents] (Rule 112.7a). See [PermanentSnapshot]. */
+    val tappedPermanentSnapshots: List<PermanentSnapshot> = emptyList(),
     // --- Trigger state ---
     /** Amount of damage from a trigger context (e.g., "Whenever ~ is dealt damage") */
     val triggerDamageAmount: Int? = null,

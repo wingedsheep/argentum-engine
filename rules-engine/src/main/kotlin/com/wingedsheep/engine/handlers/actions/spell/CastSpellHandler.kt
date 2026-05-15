@@ -523,7 +523,9 @@ class CastSpellHandler(
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
                 hasXInCost = cardComponent.manaCost.hasX,
-                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                isFromExile = isCastFromExile(state, action.cardId),
+                cardTypes = cardComponent.typeLine.cardTypes,
             )
         } else null
 
@@ -610,6 +612,9 @@ class CastSpellHandler(
         return state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator)
             .any { it.withAnyManaType }
     }
+
+    private fun isCastFromExile(state: GameState, cardId: EntityId): Boolean =
+        state.turnOrder.any { ownerId -> cardId in state.getZone(ZoneKey(ownerId, Zone.EXILE)) }
 
     private fun validateConspire(
         state: GameState,
@@ -1652,7 +1657,9 @@ class CastSpellHandler(
             isCreature = cardComponent.typeLine.isCreature,
             manaValue = cardComponent.manaCost.cmc,
             hasXInCost = cardComponent.manaCost.hasX,
-            subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
+            subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+            isFromExile = isCastFromExile(currentState, action.cardId),
+            cardTypes = cardComponent.typeLine.cardTypes,
         )
 
         // "Mana of any type can be spent" — relax colored requirements for cast-from-exile

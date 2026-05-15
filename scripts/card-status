@@ -1,0 +1,396 @@
+#!/usr/bin/env python3
+"""
+Report cards yet to implement, per set, by diffing the Kotlin source against
+Scryfall's canonical card list.
+
+For each set folder under `mtg-sets/.../definitions/<code>/`:
+  - reads `<X>Set.kt` for the set's `code` and `displayName`
+  - scans `.kt` files in `<code>/cards/` for implemented names
+    (matches both `card("Name") { }` DSL calls and `name = "..."` Printing rows)
+  - loads the canonical name list from Scryfall, cached under
+    `~/.cache/scryfall/<code>.json`, partitioned into draft cards
+    (Scryfall `booster: true`) and extras (starter-deck exclusives,
+    Special Guests, bonus sheets, etc.)
+  - diffs the two to compute what's missing, reported per partition
+
+Cache strategy: a cached payload is "fresh" (no re-fetch) once its set's
+Scryfall `released_at` is more than 30 days in the past — MTG sets are
+frozen after release. Sets still in spoiler season (released_at in the
+future, or within the last 30 days) re-fetch on every run.
+
+Usage:
+  scripts/card-status                 # summary table
+  scripts/card-status --list          # also list missing card names
+  scripts/card-status --refresh       # force re-fetch all sets
+  scripts/card-status --set BLB       # report a single set
+  scripts/card-status --cards BLB     # list every card in a set, marked [x]/[ ]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from dataclasses import dataclass
+from datetime import date, timedelta
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFINITIONS_ROOT = REPO_ROOT / "mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
+CACHE_ROOT = Path.home() / ".cache" / "scryfall"
+SCRYFALL_BASE = "https://api.scryfall.com"
+USER_AGENT = "argentum-engine-card-status/1.0"
+REQUEST_DELAY_SEC = 0.15  # Scryfall asks for 50–100ms between requests; pad for bursty paginations
+REFRESH_WINDOW_DAYS = 30
+CACHE_SCHEMA_VERSION = 4
+
+# A set is in current Standard if both:
+#   (a) its set_type is one of these (excludes commander, masters, alchemy, etc.), AND
+#   (b) most of its cards are Standard-legal per Scryfall. (Reprint sets like
+#       Innistrad Remastered fail (b); rotated-out sets fail (b) once their cards
+#       leave Standard; sets that haven't released yet pass (b) on previews.)
+STANDARD_SET_TYPES = {"core", "expansion", "draft_innovation"}
+STANDARD_LEGAL_RATIO = 0.5
+
+SET_CODE_RE = re.compile(r'override\s+val\s+code\s*=\s*"([^"]+)"')
+DISPLAY_NAME_RE = re.compile(r'override\s+val\s+displayName\s*=\s*"([^"]+)"')
+CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"([^"]+)"')
+PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"([^"]+)"')
+
+SKIP_FOLDERS = {"custom"}
+
+
+@dataclass
+class SetInfo:
+    code: str
+    display_name: str
+    cards_dir: Path
+
+
+@dataclass
+class Report:
+    info: SetInfo
+    implemented: set[str]
+    draft_canonical: set[str]
+    extra_canonical: set[str]
+    released_at: str | None
+    standard_legal: bool
+
+    @property
+    def canonical(self) -> set[str]:
+        return self.draft_canonical | self.extra_canonical
+
+    @property
+    def draft_hits(self) -> set[str]:
+        return self.implemented & self.draft_canonical
+
+    @property
+    def draft_missing(self) -> set[str]:
+        return self.draft_canonical - self.implemented
+
+    @property
+    def extra_hits(self) -> set[str]:
+        return self.implemented & self.extra_canonical
+
+    @property
+    def extra_missing(self) -> set[str]:
+        return self.extra_canonical - self.implemented
+
+
+def front_face(name: str) -> str:
+    """Strip ` // back` suffix from DFC / adventure names."""
+    return name.split(" // ", 1)[0].strip()
+
+
+def discover_sets() -> list[SetInfo]:
+    out: list[SetInfo] = []
+    for dir_ in sorted(DEFINITIONS_ROOT.iterdir()):
+        if not dir_.is_dir() or dir_.name in SKIP_FOLDERS:
+            continue
+        set_kt = next((p for p in dir_.glob("*Set.kt") if p.is_file()), None)
+        if set_kt is None:
+            continue
+        text = set_kt.read_text(encoding="utf-8")
+        m_code = SET_CODE_RE.search(text)
+        if not m_code:
+            print(f"warning: no `code` field in {set_kt.relative_to(REPO_ROOT)}", file=sys.stderr)
+            continue
+        m_name = DISPLAY_NAME_RE.search(text)
+        cards_dir = dir_ / "cards"
+        out.append(
+            SetInfo(
+                code=m_code.group(1),
+                display_name=m_name.group(1) if m_name else m_code.group(1),
+                cards_dir=cards_dir if cards_dir.is_dir() else dir_,
+            )
+        )
+    return out
+
+
+def scan_implementations(cards_dir: Path) -> set[str]:
+    names: set[str] = set()
+    if not cards_dir.is_dir():
+        return names
+    for kt in cards_dir.glob("*.kt"):
+        text = kt.read_text(encoding="utf-8")
+        names.update(CARD_DSL_RE.findall(text))
+        names.update(PRINTING_NAME_RE.findall(text))
+    return names
+
+
+def cache_path(code: str) -> Path:
+    return CACHE_ROOT / f"{code.lower()}.json"
+
+
+def is_cache_fresh(payload: dict) -> bool:
+    if payload.get("_v") != CACHE_SCHEMA_VERSION:
+        return False  # schema mismatch — refetch to repopulate added fields
+    released = payload.get("released_at")
+    if not released:
+        return False
+    try:
+        released_date = date.fromisoformat(released)
+    except ValueError:
+        return False
+    return date.today() - released_date >= timedelta(days=REFRESH_WINDOW_DAYS)
+
+
+def scryfall_get(url: str, *, max_retries: int = 5) -> dict:
+    """GET a Scryfall URL with polite pacing and 429-aware exponential backoff."""
+    for attempt in range(max_retries):
+        time.sleep(REQUEST_DELAY_SEC)
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or attempt == max_retries - 1:
+                raise
+            retry_after = e.headers.get("Retry-After") if e.headers else None
+            wait = float(retry_after) if retry_after and retry_after.isdigit() else 2 ** attempt
+            time.sleep(wait)
+    raise RuntimeError("unreachable")  # loop either returns or raises
+
+
+def is_standard_legal(payload: dict) -> bool:
+    if payload.get("set_type") not in STANDARD_SET_TYPES:
+        return False
+    total = len(payload.get("draft_names", [])) + len(payload.get("extra_names", []))
+    if total == 0:
+        return False
+    return payload.get("standard_legal_count", 0) >= total * STANDARD_LEGAL_RATIO
+
+
+def fetch_from_scryfall(code: str) -> dict:
+    """Metadata + paginated card search for one set, returned as a cache payload."""
+    set_meta = scryfall_get(f"{SCRYFALL_BASE}/sets/{code.lower()}")
+    released_at = set_meta.get("released_at")
+    set_type = set_meta.get("set_type")
+    draft_names: list[str] = []
+    extra_names: list[str] = []
+    standard_legal_count = 0
+    url = (
+        f"{SCRYFALL_BASE}/cards/search"
+        f"?q={urllib.parse.quote(f'set:{code.lower()} -is:rebalanced')}"
+        f"&unique=cards&order=name"
+    )
+    while url:
+        data = scryfall_get(url)
+        for card in data.get("data", []):
+            name = card["name"]
+            if card.get("booster", False):
+                draft_names.append(name)
+            else:
+                extra_names.append(name)
+            if card.get("legalities", {}).get("standard") == "legal":
+                standard_legal_count += 1
+        url = data.get("next_page") if data.get("has_more") else None
+    return {
+        "_v": CACHE_SCHEMA_VERSION,
+        "released_at": released_at,
+        "set_type": set_type,
+        "draft_names": draft_names,
+        "extra_names": extra_names,
+        "standard_legal_count": standard_legal_count,
+    }
+
+
+def load_canonical(code: str, *, force_refresh: bool) -> dict | None:
+    path = cache_path(code)
+    if not force_refresh and path.is_file():
+        try:
+            cached = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            cached = None
+        if cached and is_cache_fresh(cached):
+            return cached
+    try:
+        payload = fetch_from_scryfall(code)
+    except urllib.error.HTTPError as e:
+        if path.is_file():
+            print(
+                f"warning: refresh for {code} failed ({e}); using stale cache",
+                file=sys.stderr,
+            )
+            return json.loads(path.read_text(encoding="utf-8"))
+        print(f"warning: failed to fetch {code}: {e}", file=sys.stderr)
+        return None
+    CACHE_ROOT.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return payload
+
+
+def build_report(info: SetInfo, *, force_refresh: bool) -> Report | None:
+    payload = load_canonical(info.code, force_refresh=force_refresh)
+    if payload is None:
+        return None
+    draft_canonical = {front_face(n) for n in payload["draft_names"]}
+    extra_canonical = {front_face(n) for n in payload["extra_names"]} - draft_canonical
+    implemented = {front_face(n) for n in scan_implementations(info.cards_dir)}
+    return Report(
+        info=info,
+        implemented=implemented,
+        draft_canonical=draft_canonical,
+        extra_canonical=extra_canonical,
+        released_at=payload.get("released_at"),
+        standard_legal=is_standard_legal(payload),
+    )
+
+
+def print_table(reports: list[Report]) -> None:
+    rows = []
+    for r in reports:
+        impl = len(r.draft_hits)
+        total = len(r.draft_canonical)
+        pct = (impl / total * 100.0) if total else 0.0
+        extra_impl = len(r.extra_hits)
+        extra_total = len(r.extra_canonical)
+        extra_display = f"{extra_impl}/{extra_total}" if extra_total else "—"
+        released = r.released_at or "?"
+        standard = "Yes" if r.standard_legal else ""
+        rows.append(
+            (r.info.code, r.info.display_name, released, standard,
+             impl, total, total - impl, pct, extra_display)
+        )
+    rows.sort(key=lambda row: (row[2], row[0]), reverse=True)
+
+    code_w = max(3, max((len(r[0]) for r in rows), default=3))
+    name_w = max(4, max((len(r[1]) for r in rows), default=4))
+    rel_w = max(len("Released"), max((len(r[2]) for r in rows), default=8))
+    std_w = max(len("Std"), 3)
+    extra_w = max(len("+Extra"), max((len(r[8]) for r in rows), default=6))
+    header = (
+        f"{'Set':<{code_w}}  {'Name':<{name_w}}  {'Released':<{rel_w}}  "
+        f"{'Std':<{std_w}}  {'Done':>5}  {'Total':>5}  {'Missing':>7}  "
+        f"{'%':>5}  {'+Extra':<{extra_w}}"
+    )
+    print(header)
+    print("-" * len(header))
+    for code, name, released, standard, impl, total, missing, pct, extra in rows:
+        print(
+            f"{code:<{code_w}}  {name:<{name_w}}  {released:<{rel_w}}  "
+            f"{standard:<{std_w}}  {impl:>5}  {total:>5}  {missing:>7}  "
+            f"{pct:>4.0f}%  {extra:<{extra_w}}"
+        )
+
+
+def print_set_cards(report: Report) -> None:
+    draft_impl = len(report.draft_hits)
+    draft_total = len(report.draft_canonical)
+    extra_impl = len(report.extra_hits)
+    extra_total = len(report.extra_canonical)
+    summary = f"{draft_impl}/{draft_total} draft"
+    if extra_total:
+        summary += f", {extra_impl}/{extra_total} extra"
+    print(f"== {report.info.code} {report.info.display_name} — {summary} ==")
+    print("Draft:")
+    for name in sorted(report.draft_canonical):
+        marker = "[x]" if name in report.implemented else "[ ]"
+        print(f"  {marker} {name}")
+    if extra_total:
+        print("Extra:")
+        for name in sorted(report.extra_canonical):
+            marker = "[x]" if name in report.implemented else "[ ]"
+            print(f"  {marker} {name}")
+
+
+def print_missing_lists(reports: list[Report]) -> None:
+    for r in sorted(reports, key=lambda r: r.info.code):
+        draft_missing = sorted(r.draft_missing)
+        extra_missing = sorted(r.extra_missing)
+        if not draft_missing and not extra_missing:
+            continue
+        total = len(draft_missing) + len(extra_missing)
+        print()
+        print(f"== {r.info.code} {r.info.display_name} — {total} missing ==")
+        if draft_missing:
+            print("Draft:")
+            for n in draft_missing:
+                print(f"  - {n}")
+        if extra_missing:
+            print("Extra:")
+            for n in extra_missing:
+                print(f"  - {n}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--list", action="store_true", help="also list missing card names per set"
+    )
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="force re-fetch from Scryfall, ignoring the cache",
+    )
+    parser.add_argument(
+        "--set",
+        metavar="CODE",
+        help="report only the named set (e.g. BLB)",
+    )
+    parser.add_argument(
+        "--cards",
+        metavar="CODE",
+        help="list every card in the named set, marked [x] implemented or [ ] missing",
+    )
+    args = parser.parse_args()
+
+    sets = discover_sets()
+    target_code = args.cards or args.set
+    if target_code:
+        wanted = target_code.upper()
+        sets = [s for s in sets if s.code == wanted]
+        if not sets:
+            print(f"no set found with code {target_code.upper()}", file=sys.stderr)
+            return 1
+
+    reports = [
+        r
+        for r in (build_report(s, force_refresh=args.refresh) for s in sets)
+        if r is not None
+    ]
+    if not reports:
+        print("no sets reported", file=sys.stderr)
+        return 1
+
+    if args.cards:
+        print_set_cards(reports[0])
+        return 0
+
+    print_table(reports)
+    if args.list:
+        print_missing_lists(reports)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

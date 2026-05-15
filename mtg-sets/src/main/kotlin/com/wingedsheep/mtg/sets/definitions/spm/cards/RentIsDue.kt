@@ -59,9 +59,10 @@ val RentIsDue = card("Rent Is Due") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
-        collectorNumber = "20"
-        artist = "Kekai Kotaki"
+        rarity = Rarity.RARE
+        collectorNumber = "11"
+        artist = "Gal Or"
+        flavorText = "\"You're a month late again, Parker! Give me my money or you're out on the street!\""
         imageUri = "https://cards.scryfall.io/normal/front/b/3/b3f8d221-081f-49f5-a501-07e5eb21a840.jpg?1757376808"
     }
 }

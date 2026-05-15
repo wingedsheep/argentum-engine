@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOppon
 import com.wingedsheep.engine.state.components.battlefield.GrantCantBeBlockedToSmallCreaturesComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.battlefield.SuppressesHexproofForGroupComponent
@@ -51,6 +52,7 @@ import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
+import com.wingedsheep.sdk.scripting.StationUsingToughness
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
@@ -139,6 +141,11 @@ class StaticAbilityHandler(
         // Add tag component for "you can't lose the game"
         if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.GrantCantLoseGame }) {
             result = result.with(GrantsCantLoseGameComponent)
+        }
+
+        // Add tag component for "station using toughness"
+        if (allStaticAbilities.any { it is StationUsingToughness }) {
+            result = result.with(GrantsStationUsingToughnessComponent)
         }
 
         // Add tag component for "can't be the target of abilities your opponents control"
@@ -542,6 +549,8 @@ class StaticAbilityHandler(
                 SourceProjectionCondition.ControllerAttackedWithCreaturesThisTurn(condition.filter, condition.atLeast)
             is com.wingedsheep.sdk.scripting.conditions.YouCastSpellsThisTurn ->
                 SourceProjectionCondition.ControllerCastSpellsThisTurn(condition.filter, condition.atLeast)
+            is com.wingedsheep.sdk.scripting.conditions.YouHaveCitysBlessing ->
+                SourceProjectionCondition.ControllerHasCitysBlessing
             is com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn -> SourceProjectionCondition.SourceEnteredThisTurn
             is com.wingedsheep.sdk.scripting.conditions.SourceIsModified -> SourceProjectionCondition.SourceIsModified
             is Compare -> SourceProjectionCondition.Compare(condition.left, condition.operator, condition.right)

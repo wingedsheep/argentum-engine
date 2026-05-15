@@ -39,6 +39,7 @@ import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
+import com.wingedsheep.engine.state.components.player.SpellsCantBeCounteredComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -305,6 +306,10 @@ class CleanupPhaseManager(
                 val cantCast = result.get<CantCastSpellsComponent>()
                 if (cantCast?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<CantCastSpellsComponent>()
+                }
+                val spellsUncounterable = result.get<SpellsCantBeCounteredComponent>()
+                if (spellsUncounterable?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<SpellsCantBeCounteredComponent>()
                 }
                 val graveyardForage = result.get<MayCastCreaturesFromGraveyardWithForageComponent>()
                 if (graveyardForage?.removeOn == PlayerEffectRemoval.EndOfTurn) {

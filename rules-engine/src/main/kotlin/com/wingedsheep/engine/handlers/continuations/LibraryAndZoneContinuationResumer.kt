@@ -1,11 +1,16 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
+import com.wingedsheep.engine.handlers.effects.library.CascadeExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.state.permissions.MayPlayPermission
+import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
@@ -16,6 +21,8 @@ class LibraryAndZoneContinuationResumer(
     private val services: com.wingedsheep.engine.core.EngineServices
 ) : ContinuationResumerModule {
 
+    private val castSpellHandler: CastSpellHandler by lazy { CastSpellHandler.create(services) }
+
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ReturnFromGraveyardContinuation::class, ::resumeReturnFromGraveyard),
         resumer(MoveCollectionOrderContinuation::class, ::resumeMoveCollectionOrder),
@@ -25,7 +32,8 @@ class LibraryAndZoneContinuationResumer(
         resumer(ChoosePileContinuation::class, ::resumeChoosePile),
         resumer(SelectTargetPipelineContinuation::class, ::resumeSelectTargetPipeline),
         resumer(MoveCollectionAuraTargetContinuation::class, ::resumeMoveCollectionAuraTarget),
-        resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom)
+        resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom),
+        resumer(CascadeMayCastContinuation::class, ::resumeCascadeMayCast)
     )
 
     fun resumeReturnFromGraveyard(
@@ -650,5 +658,98 @@ class LibraryAndZoneContinuationResumer(
             )
         )
         return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume cascade resolution (CR 702.85a) after the controller answers
+     * "cast this card without paying its mana cost?".
+     *
+     * On **No** every exiled card — including the would-be cascade card — is
+     * shuffled onto the bottom of the controller's library.
+     *
+     * On **Yes** the other exiled cards (the lands and any other non-hit cards
+     * skipped past during the walk) are bottomed first. The cascade card is
+     * granted [MayPlayPermission] + [PlayWithoutPayingCostComponent] so the
+     * synthesized cast resolves to a free cast, then [CastSpellHandler] is
+     * invoked directly to put the spell on the stack. If the cast pauses for
+     * targets / X / modes, that pause is bubbled up unchanged — the leftover
+     * bottoming has already happened, so the cascade resolution is effectively
+     * complete. If the cast errors (no legal targets, etc.) the cascade card
+     * is bottomed too, since it ultimately wasn't cast.
+     */
+    fun resumeCascadeMayCast(
+        state: GameState,
+        continuation: CascadeMayCastContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for cascade may-cast")
+        }
+
+        if (!response.choice) {
+            var newState = state
+            val events = CascadeExecutor.bottomRandomize(
+                state = state,
+                playerId = continuation.playerId,
+                cards = continuation.exiledCards
+            ) { newState = it }
+            return checkForMore(newState, events)
+        }
+
+        // Yes — bottom the other exiled cards now, then attempt the free cast.
+        val others = continuation.exiledCards.filter { it != continuation.cascadeCardId }
+        var afterBottom = state
+        val bottomEvents = CascadeExecutor.bottomRandomize(
+            state = state,
+            playerId = continuation.playerId,
+            cards = others
+        ) { afterBottom = it }
+
+        // Grant free-cast permission so the synthesized cast pays nothing.
+        var stateWithGrant = afterBottom.updateEntity(continuation.cascadeCardId) { container ->
+            container.with(PlayWithoutPayingCostComponent(controllerId = continuation.playerId))
+        }
+        stateWithGrant = stateWithGrant.addMayPlayPermission(
+            MayPlayPermission(
+                id = EntityId.generate(),
+                cardIds = setOf(continuation.cascadeCardId),
+                controllerId = continuation.playerId,
+                sourceId = continuation.sourceId,
+                timestamp = stateWithGrant.timestamp,
+            )
+        )
+
+        // Hand priority to the cascade controller for the synthesized cast. The cast
+        // happens *during* cascade resolution (CR 702.85a) rather than on a normal
+        // priority window, so we override the priorityPlayerId for this single call.
+        val stateForCast = stateWithGrant.copy(priorityPlayerId = continuation.playerId)
+        val castAction = CastSpell(continuation.playerId, continuation.cascadeCardId)
+        val castResult = castSpellHandler.execute(stateForCast, castAction)
+
+        if (castResult.error != null) {
+            // Cast couldn't initiate (no legal targets, etc.) — the cascade card
+            // wasn't cast, so it joins the leftovers on the bottom of the library.
+            var finalState = stateWithGrant
+            val tailEvents = CascadeExecutor.bottomRandomize(
+                state = stateWithGrant,
+                playerId = continuation.playerId,
+                cards = listOf(continuation.cascadeCardId)
+            ) { finalState = it }
+            return checkForMore(finalState, bottomEvents + tailEvents)
+        }
+
+        if (castResult.pendingDecision != null) {
+            // The cast paused (for target / X / mode selection). The leftover
+            // bottoming is already done; let the cast's own continuations finish
+            // the cast on resume.
+            return ExecutionResult.paused(
+                castResult.state,
+                castResult.pendingDecision,
+                bottomEvents + castResult.events
+            )
+        }
+
+        return checkForMore(castResult.state, bottomEvents + castResult.events)
     }
 }

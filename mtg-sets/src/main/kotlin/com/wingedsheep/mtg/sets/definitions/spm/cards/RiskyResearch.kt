@@ -23,9 +23,10 @@ val RiskyResearch = card("Risky Research") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
-        collectorNumber = "84"
-        artist = "David Rapoza"
+        rarity = Rarity.COMMON
+        collectorNumber = "62"
+        artist = "Rafater"
+        flavorText = "\"Though others fear radiation, I alone am able to make it my servant!\""
         imageUri = "https://cards.scryfall.io/normal/front/1/f/1f8aa705-6177-42e9-95cb-e7f880c186e3.jpg?1757377145"
     }
 }

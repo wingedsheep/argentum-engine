@@ -102,6 +102,8 @@ data class ActivatedAbilityOnStackComponent(
     val sacrificedPermanents: List<PermanentSnapshot> = emptyList(),
     val xValue: Int? = null,
     val tappedPermanents: List<EntityId> = emptyList(),
+    /** LKI snapshots for [tappedPermanents] — see [sacrificedPermanents]. */
+    val tappedPermanentSnapshots: List<PermanentSnapshot> = emptyList(),
     /** Optional human-readable description from `ActivatedAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
     val descriptionOverride: String? = null

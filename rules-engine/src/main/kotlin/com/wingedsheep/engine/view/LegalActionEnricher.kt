@@ -90,7 +90,12 @@ class LegalActionEnricher(
     )
 
     private fun buildManaSourceInfos(state: GameState, playerId: EntityId): List<ManaSourceInfo>? {
+        // Sacrifice-requiring sources (e.g. Treasure tokens) are excluded from the
+        // spell-cast pre-cast picker because the cast/payment pipeline doesn't yet
+        // sacrifice on selection. They remain selectable in resolution-time mana
+        // menus (ward, may-pay), which do sacrifice — see ManaPaymentContinuationResumer.
         val sources = manaSolver.findAvailableManaSources(state, playerId)
+            .filter { !it.requiresSacrifice }
         if (sources.isEmpty()) return null
         return sources.map { source ->
             val card = state.getEntity(source.entityId)?.get<CardComponent>()

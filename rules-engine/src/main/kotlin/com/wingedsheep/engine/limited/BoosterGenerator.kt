@@ -337,7 +337,10 @@ class BoosterGenerator(
         return getAllBasicLandVariants(setCodes.first())
     }
 
-    /** Strip basic lands; strategies operate on the booster pool only. */
+    /**
+     * Strip basic lands and non-booster cards (Special Guests / The List / promos);
+     * strategies operate on the booster pool only.
+     */
     private fun boosterPool(allCards: List<CardDefinition>): List<CardDefinition> =
-        allCards.filter { !it.typeLine.isBasicLand }
+        allCards.filter { !it.typeLine.isBasicLand && it.metadata.inBooster }
 }

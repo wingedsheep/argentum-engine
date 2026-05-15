@@ -2,7 +2,8 @@
 
 **Set Size:** 188 booster cards (excluding basic lands and tokens)
 **Release Date:** September 26, 2025
-**Implemented:** 16 / 189
+**Implemented:** 21 / 189
+
 - [x] Agent Venom
 - [x] Angry Rabble
 - [x] Amazing Acrobatics
@@ -48,19 +49,19 @@
 - [ ] Hobgoblin, Mantled Marauder
 - [ ] Hot Dog Cart
 - [ ] Hydro-Man, Fluid Felon
-- [ ] Impostor Syndrome
+- [x] Impostor Syndrome
 - [ ] Inner Demons Gangsters
-- [ ] Interdimensional Web Watch
+- [x] Interdimensional Web Watch
 - [ ] Iron Spider, Stark Upgrade
-- [ ] J. Jonah Jameson
+- [x] J. Jonah Jameson
 - [ ] Jackal, Genius Geneticist
-- [ ] Kapow!
+- [x] Kapow!
 - [ ] Kraven the Hunter
 - [ ] Kraven's Cats
 - [ ] Kraven's Last Hunt
 - [ ] Kraven, Proud Predator
 - [ ] Lady Octopus, Inspired Inventor
-- [ ] Living Brain, Mechanical Marvel
+- [x] Living Brain, Mechanical Marvel
 - [ ] Lizard, Connors's Curse
 - [ ] Lurking Lizards
 - [ ] Madame Web, Clairvoyant
@@ -91,8 +92,6 @@
 - [ ] Pictures of Spider-Man
 - [ ] Prison Break
 - [x] Professional Wrestler
-- [ ] Prowler, Clawed Thief
-- [ ] Professional Wrestler
 - [x] Prowler, Clawed Thief
 - [ ] Pumpkin Bombardment
 - [ ] Radioactive Spider

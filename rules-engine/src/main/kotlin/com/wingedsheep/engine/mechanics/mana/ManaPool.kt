@@ -13,7 +13,14 @@ import kotlinx.serialization.Serializable
  * Tracks available mana that can be spent on costs.
  */
 /**
- * Context about the spell being cast, used to evaluate mana spending restrictions.
+ * Context about the spell being cast or the ability being activated, used to evaluate
+ * mana spending restrictions.
+ *
+ * Spell-cast fields (isInstantOrSorcery, isKicked, isCreature, manaValue, hasXInCost,
+ * subtypes, isFromExile, [cardTypes]) describe a spell being cast. When [isAbilityActivation]
+ * is true, the context instead describes an activated ability being paid for, and
+ * [abilitySourceCardTypes] (plus [subtypes] of the source) carry the source's type
+ * information for restrictions that check it.
  */
 data class SpellPaymentContext(
     val isInstantOrSorcery: Boolean = false,
@@ -21,21 +28,32 @@ data class SpellPaymentContext(
     val isCreature: Boolean = false,
     val manaValue: Int = 0,
     val hasXInCost: Boolean = false,
-    val subtypes: Set<String> = emptySet()
+    val subtypes: Set<String> = emptySet(),
+    val isFromExile: Boolean = false,
+    /** Card types of the spell being cast (empty for non-spell contexts). */
+    val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
+    val isAbilityActivation: Boolean = false,
+    /** Card types of the source whose ability is being activated (empty for spell-cast contexts). */
+    val abilitySourceCardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
 )
 
 /**
- * Check whether a mana restriction is satisfied by the spell being cast.
+ * Check whether a mana restriction is satisfied by the spell being cast or ability being activated.
  */
 fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when (this) {
-    is ManaRestriction.InstantOrSorceryOnly -> context.isInstantOrSorcery
-    is ManaRestriction.KickedSpellsOnly -> context.isKicked
-    is ManaRestriction.CreatureMV4OrXCost -> context.isCreature && (context.manaValue >= 4 || context.hasXInCost)
-    is ManaRestriction.SpellsMV4OrGreater -> context.manaValue >= 4
-    is ManaRestriction.CreatureSpellsOnly -> context.isCreature
+    is ManaRestriction.InstantOrSorceryOnly -> !context.isAbilityActivation && context.isInstantOrSorcery
+    is ManaRestriction.KickedSpellsOnly -> !context.isAbilityActivation && context.isKicked
+    is ManaRestriction.CreatureMV4OrXCost ->
+        !context.isAbilityActivation && context.isCreature && (context.manaValue >= 4 || context.hasXInCost)
+    is ManaRestriction.SpellsMV4OrGreater -> !context.isAbilityActivation && context.manaValue >= 4
+    is ManaRestriction.CreatureSpellsOnly -> !context.isAbilityActivation && context.isCreature
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
-        (!creatureOnly || context.isCreature) &&
+        (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
             context.subtypes.any { it.equals(subtype, ignoreCase = true) }
+    is ManaRestriction.CastFromExileOnly -> !context.isAbilityActivation && context.isFromExile
+    is ManaRestriction.CardTypeSpellsOrAbilitiesOnly ->
+        if (context.isAbilityActivation) allowAbilities && cardType in context.abilitySourceCardTypes
+        else allowSpells && cardType in context.cardTypes
 }
 
 @Serializable
