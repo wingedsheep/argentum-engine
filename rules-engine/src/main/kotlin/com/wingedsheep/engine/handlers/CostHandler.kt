@@ -166,6 +166,14 @@ class CostHandler(
                 // maxAffordableX is capped by total +1/+1 counters in LegalActionsCalculator
                 true
             }
+            is AbilityCost.RemovePlusOnePlusOneCounters -> {
+                val available = findMatchingPermanentsUnified(state, controllerId, cost.filter)
+                    .sumOf {
+                        state.getEntity(it)?.get<CountersComponent>()
+                            ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+                    }
+                available >= cost.count
+            }
             is AbilityCost.RemoveCounterFromSelf -> {
                 val counters = state.getEntity(sourceId)?.get<CountersComponent>()
                 val counterType = resolveNamedCounterType(cost.counterType)
@@ -495,6 +503,15 @@ class CostHandler(
                     removeCountersFromCreaturesWithChoices(state, controllerId, xCount, choices.counterRemovalChoices, manaPool)
                 } else {
                     removeCountersFromCreatures(state, controllerId, xCount, manaPool)
+                }
+            }
+            is AbilityCost.RemovePlusOnePlusOneCounters -> {
+                if (choices.counterRemovalChoices.isNotEmpty()) {
+                    removeCountersFromPermanentsWithChoices(
+                        state, controllerId, cost.filter, cost.count, choices.counterRemovalChoices, manaPool
+                    )
+                } else {
+                    removeCountersFromPermanents(state, controllerId, cost.filter, cost.count, manaPool)
                 }
             }
             is AbilityCost.RemoveCounterFromSelf -> {
@@ -843,6 +860,88 @@ class CostHandler(
             }
         }
 
+        return CostPaymentResult.success(newState, manaPool)
+    }
+
+    /**
+     * Fixed-count counter removal across permanents you control matching [filter].
+     * Auto-distributes when the player did not supply a choice map, preferring
+     * permanents with the most counters first.
+     */
+    private fun removeCountersFromPermanents(
+        state: GameState,
+        controllerId: EntityId,
+        filter: GameObjectFilter,
+        count: Int,
+        manaPool: ManaPool
+    ): CostPaymentResult {
+        val candidates = findMatchingPermanentsUnified(state, controllerId, filter)
+            .mapNotNull { id ->
+                val n = state.getEntity(id)?.get<CountersComponent>()
+                    ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+                if (n > 0) id to n else null
+            }
+            .sortedByDescending { it.second }
+
+        val available = candidates.sumOf { it.second }
+        if (available < count) {
+            return CostPaymentResult.failure(
+                "Not enough +1/+1 counters to remove (need $count, have $available)"
+            )
+        }
+
+        var newState = state
+        var remaining = count
+        for ((id, have) in candidates) {
+            if (remaining <= 0) break
+            val toRemove = minOf(remaining, have)
+            newState = newState.updateEntity(id) { c ->
+                val counters = c.get<CountersComponent>() ?: CountersComponent()
+                c.with(counters.withRemoved(CounterType.PLUS_ONE_PLUS_ONE, toRemove))
+            }
+            remaining -= toRemove
+        }
+        return CostPaymentResult.success(newState, manaPool)
+    }
+
+    private fun removeCountersFromPermanentsWithChoices(
+        state: GameState,
+        controllerId: EntityId,
+        filter: GameObjectFilter,
+        count: Int,
+        choices: Map<EntityId, Int>,
+        manaPool: ManaPool
+    ): CostPaymentResult {
+        val totalChosen = choices.values.sum()
+        if (totalChosen != count) {
+            return CostPaymentResult.failure(
+                "Counter removal total ($totalChosen) does not match required count ($count)"
+            )
+        }
+        val context = PredicateContext(controllerId = controllerId)
+        val projected = state.projectedState
+        var newState = state
+        for ((permId, toRemove) in choices) {
+            if (toRemove <= 0) continue
+            val container = state.getEntity(permId)
+                ?: return CostPaymentResult.failure("Permanent not found for counter removal")
+            if (container.get<ControllerComponent>()?.playerId != controllerId) {
+                return CostPaymentResult.failure("Cannot remove counters from a permanent you don't control")
+            }
+            if (!predicateEvaluator.matchesWithProjection(state, projected, permId, filter, context)) {
+                return CostPaymentResult.failure("Permanent does not match the cost's filter")
+            }
+            val available = container.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+            if (available < toRemove) {
+                return CostPaymentResult.failure(
+                    "Permanent does not have enough +1/+1 counters (need $toRemove, have $available)"
+                )
+            }
+            newState = newState.updateEntity(permId) { c ->
+                val counters = c.get<CountersComponent>() ?: CountersComponent()
+                c.with(counters.withRemoved(CounterType.PLUS_ONE_PLUS_ONE, toRemove))
+            }
+        }
         return CostPaymentResult.success(newState, manaPool)
     }
 

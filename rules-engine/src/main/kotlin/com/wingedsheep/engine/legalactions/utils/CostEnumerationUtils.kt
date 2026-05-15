@@ -349,6 +349,38 @@ class CostEnumerationUtils(
     }
 
     /**
+     * Build counter removal info for the filtered-fixed-count
+     * [AbilityCost.RemovePlusOnePlusOneCounters] variant. Surfaces every permanent the
+     * player controls that matches [filter] and has at least one +1/+1 counter,
+     * using projected state so type-changing effects (e.g., a Vehicle that became
+     * an artifact creature) are honored.
+     */
+    fun buildCounterRemovalPermanents(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): List<CounterRemovalCreatureData> {
+        val context = PredicateContext(controllerId = playerId)
+        val projected = state.projectedState
+        return state.entities.mapNotNull { (eid, c) ->
+            if (c.get<ControllerComponent>()?.playerId != playerId) return@mapNotNull null
+            if (!predicateEvaluator.matchesWithProjection(state, projected, eid, filter, context)) {
+                return@mapNotNull null
+            }
+            val counters = c.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+            if (counters <= 0) return@mapNotNull null
+            val card = c.get<CardComponent>() ?: return@mapNotNull null
+            CounterRemovalCreatureData(
+                entityId = eid,
+                name = card.name,
+                availableCounters = counters,
+                availableCountersByType = mapOf(com.wingedsheep.sdk.core.Counters.PLUS_ONE_PLUS_ONE to counters),
+                imageUri = card.imageUri
+            )
+        }
+    }
+
+    /**
      * Calculate max affordable X for activated abilities, considering various X cost types.
      */
     fun calculateMaxAffordableX(

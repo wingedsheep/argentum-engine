@@ -400,6 +400,26 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     }
 
     /**
+     * Remove a fixed number of +1/+1 counters from among permanents you control matching
+     * a filter. Used for fixed-count costs that aren't creature-only — e.g., Iron Spider,
+     * Stark Upgrade's "Remove two +1/+1 counters from among artifacts you control."
+     *
+     * The player chooses how to distribute the removal across matching permanents. Use
+     * [RemoveXPlusOnePlusOneCounters] instead when the count is a player-chosen X.
+     */
+    @SerialName("CostRemovePlusOnePlusOneCounters")
+    @Serializable
+    data class RemovePlusOnePlusOneCounters(val filter: GameObjectFilter, val count: Int) : AbilityCost {
+        override val description: String =
+            "Remove $count +1/+1 counters from among ${filter.description}s you control"
+
+        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Remove one or more counters of the specified type from this permanent.
      * Used for artifacts with charge/gem counters as activation costs.
      *

@@ -2,7 +2,7 @@
 
 **Set Size:** 188 booster cards (excluding basic lands and tokens)
 **Release Date:** September 26, 2025
-**Implemented:** 25 / 189
+**Implemented:** 26 / 189
 - [x] Agent Venom
 - [x] Angry Rabble
 - [x] Amazing Acrobatics
@@ -51,7 +51,7 @@
 - [x] Impostor Syndrome
 - [ ] Inner Demons Gangsters
 - [x] Interdimensional Web Watch
-- [ ] Iron Spider, Stark Upgrade
+- [x] Iron Spider, Stark Upgrade
 - [x] J. Jonah Jameson
 - [x] Jackal, Genius Geneticist
 - [x] Kapow!

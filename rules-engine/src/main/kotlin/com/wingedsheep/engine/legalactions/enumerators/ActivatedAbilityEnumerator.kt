@@ -388,6 +388,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                 is AbilityCost.RemoveXPlusOnePlusOneCounters -> {
                                     // RemoveXPlusOnePlusOneCounters: validated via maxAffordableX cap below
                                 }
+                                is AbilityCost.RemovePlusOnePlusOneCounters -> {
+                                    val available = context.costUtils.buildCounterRemovalPermanents(
+                                        state, playerId, subCost.filter
+                                    ).sumOf { it.availableCounters }
+                                    if (available < subCost.count) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
                                 is AbilityCost.TapXPermanents -> {
                                     // TapXPermanents: validated via maxAffordableX cap below
                                     // Also provide tap targets for the UI
@@ -457,10 +466,21 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     else -> false
                 }
 
-                // Build counter removal creature info if ability has RemoveXPlusOnePlusOneCounters cost
-                val counterRemovalCreatures = if (hasRemoveXCountersCostEarly) {
-                    context.costUtils.buildCounterRemovalCreatures(state, playerId)
-                } else emptyList()
+                // Build counter removal creature info if ability has RemoveXPlusOnePlusOneCounters
+                // (creature-only X-variable) OR RemovePlusOnePlusOneCounters (filtered fixed-count).
+                val fixedRemoveCost: AbilityCost.RemovePlusOnePlusOneCounters? = when (ability.cost) {
+                    is AbilityCost.RemovePlusOnePlusOneCounters -> ability.cost as AbilityCost.RemovePlusOnePlusOneCounters
+                    is AbilityCost.Composite -> (ability.cost as AbilityCost.Composite).costs
+                        .filterIsInstance<AbilityCost.RemovePlusOnePlusOneCounters>().firstOrNull()
+                    else -> null
+                }
+                val counterRemovalCreatures = when {
+                    hasRemoveXCountersCostEarly -> context.costUtils.buildCounterRemovalCreatures(state, playerId)
+                    fixedRemoveCost != null -> context.costUtils.buildCounterRemovalPermanents(
+                        state, playerId, fixedRemoveCost.filter
+                    )
+                    else -> emptyList()
+                }
 
                 // Build additional cost info for sacrifice, tap, bounce, or counter removal costs
                 val costInfo = buildAdditionalCostInfo(

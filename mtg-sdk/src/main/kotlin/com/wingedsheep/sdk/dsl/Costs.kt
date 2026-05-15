@@ -209,6 +209,15 @@ object Costs {
     val RemoveXPlusOnePlusOneCounters: AbilityCost = AbilityCost.RemoveXPlusOnePlusOneCounters
 
     /**
+     * Remove a fixed number of +1/+1 counters from among permanents you control matching
+     * [filter]. Use this for fixed-count costs that aren't creature-only (e.g., Iron Spider:
+     * "Remove two +1/+1 counters from among artifacts you control"). Use
+     * [RemoveXPlusOnePlusOneCounters] for player-chosen X.
+     */
+    fun RemovePlusOnePlusOneCounters(filter: GameObjectFilter, count: Int): AbilityCost =
+        AbilityCost.RemovePlusOnePlusOneCounters(filter, count)
+
+    /**
      * Remove one or more counters of the specified type from this permanent.
      * Used for artifacts with charge/gem counters as activation costs.
      */
