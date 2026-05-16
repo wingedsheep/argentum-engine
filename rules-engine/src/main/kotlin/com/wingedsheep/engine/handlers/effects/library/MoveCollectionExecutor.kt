@@ -689,6 +689,16 @@ class MoveCollectionExecutor(
             val sourceName = context.sourceId?.let { sourceId ->
                 newState.getEntity(sourceId)?.get<CardComponent>()?.name
             }
+            // Look up each card's pre-move zone from the *original* state so the client can
+            // distinguish a zone-transition reveal (Cultivate puts a basic land onto the
+            // battlefield) from a hidden-zone reveal (Behold reveals a card in hand). Without
+            // these zones the client treats the reveal as in-place and flashes a "Beheld"
+            // pulse on whatever permanent the card became — wrong for tutor-and-play effects.
+            val sourceZones = cards.mapNotNull { cardId ->
+                val ownerId = state.getEntity(cardId)?.get<OwnerComponent>()?.playerId
+                if (ownerId != null) findCurrentZone(state, cardId, ownerId) else null
+            }
+            val sharedFromZone = sourceZones.distinct().singleOrNull()
             events.add(
                 CardsRevealedEvent(
                     revealingPlayerId = context.controllerId,
@@ -696,7 +706,9 @@ class MoveCollectionExecutor(
                     cardNames = cardNames,
                     imageUris = imageUris,
                     source = sourceName,
-                    revealToSelf = revealToSelf
+                    revealToSelf = revealToSelf,
+                    fromZone = sharedFromZone,
+                    toZone = destZone,
                 )
             )
         }
