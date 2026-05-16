@@ -11,14 +11,11 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -132,11 +129,8 @@ class ManaAbilitySideEffectExecutor(
     private fun effectProduces(effect: Effect, color: Color?): Boolean = when (effect) {
         is AddManaEffect -> effect.color == color
         is AddColorlessManaEffect -> color == null
-        is AddAnyColorManaEffect,
-        is AddAnyColorManaSpendOnChosenTypeEffect,
-        is AddManaOfColorAmongEffect,
-        is AddManaOfColorLandsCouldProduceEffect,
-        is AddManaOfChosenColorEffect -> color != null  // any non-null color
+        is AddManaOfChoiceEffect,
+        is AddAnyColorManaSpendOnChosenTypeEffect -> color != null  // any non-null color
         is AddDynamicManaEffect -> color != null && color in effect.allowedColors
         else -> false
     }
@@ -153,11 +147,8 @@ class ManaAbilitySideEffectExecutor(
 
     private fun isManaEffect(effect: Effect): Boolean = effect is AddManaEffect ||
         effect is AddColorlessManaEffect ||
-        effect is AddAnyColorManaEffect ||
+        effect is AddManaOfChoiceEffect ||
         effect is AddAnyColorManaSpendOnChosenTypeEffect ||
-        effect is AddManaOfColorAmongEffect ||
-        effect is AddManaOfColorLandsCouldProduceEffect ||
-        effect is AddManaOfChosenColorEffect ||
         effect is AddDynamicManaEffect
 
     companion object {

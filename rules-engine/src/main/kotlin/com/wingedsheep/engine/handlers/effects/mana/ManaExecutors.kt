@@ -15,13 +15,9 @@ class ManaExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AddManaExecutor(amountEvaluator),
         AddColorlessManaExecutor(amountEvaluator),
-        AddAnyColorManaExecutor(amountEvaluator),
+        AddManaOfChoiceExecutor(cardRegistry, amountEvaluator),
         AddAnyColorManaSpendOnChosenTypeExecutor(amountEvaluator),
         AddDynamicManaExecutor(amountEvaluator),
-        AddManaOfChosenColorExecutor(amountEvaluator),
-        AddManaOfColorAmongExecutor(),
-        AddManaOfColorInCommanderColorIdentityExecutor(cardRegistry),
-        AddManaOfColorLandsCouldProduceExecutor(cardRegistry),
         AddOneManaOfEachColorAmongExecutor()
     )
 }

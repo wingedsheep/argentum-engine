@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -360,7 +360,7 @@ object TestCards {
             ActivatedAbility(
                 id = AbilityId(UUID.randomUUID().toString()),
                 cost = AbilityCost.Tap,
-                effect = AddAnyColorManaEffect(1),
+                effect = Effects.AddAnyColorMana(1),
                 isManaAbility = true
             )
         )

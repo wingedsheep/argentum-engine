@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 
 /**
  * Gilded Lotus
@@ -20,7 +20,7 @@ val GildedLotus = card("Gilded Lotus") {
 
     activatedAbility {
         cost = Costs.Tap
-        effect = AddAnyColorManaEffect(3)
+        effect = Effects.AddAnyColorMana(3)
         manaAbility = true
         timing = TimingRule.ManaAbility
     }

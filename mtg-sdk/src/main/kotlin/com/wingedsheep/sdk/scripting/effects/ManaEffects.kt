@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -75,29 +76,46 @@ data class AddColorlessManaEffect(
 }
 
 /**
- * Add one mana of any color effect.
- * "{T}: Add one mana of any color."
+ * Add mana of a color the player chooses from a [ManaColorSet] resolved at resolution time.
  *
- * The player chooses the color when this ability resolves.
- * Supports both fixed and dynamic amounts via [DynamicAmount].
+ * This is the atomic "add mana of a constrained-choice color" primitive — it replaces a
+ * family of older monolithic effects (AnyColor, CommanderIdentity, AmongPermanents,
+ * LandsCouldProduce, SourceChosenColor) with one effect composed from a [ManaColorSet]
+ * and a [DynamicAmount].
+ *
+ * Resolution:
+ *   1. The engine resolves [colorSet] to a concrete `Set<Color>`. If empty, no mana
+ *      is produced.
+ *   2. If the resolved set has exactly one color, that color is used directly.
+ *   3. Otherwise, the engine reads `EffectContext.manaColorChoice` (set by activated
+ *      mana abilities when the player picked at activation time) or
+ *      `EffectContext.chosenColor` (set by a wrapping `ChooseColorThenEffect`). If
+ *      neither is present, the engine pauses for a `ChooseManaColorContinuation`.
+ *   4. The chosen color is added to the controller's mana pool [amount] times.
+ *
+ * Example bindings:
+ *   - "Add one mana of any color" → `AddManaOfChoiceEffect(ManaColorSet.AnyColor)`
+ *   - Command Tower → `AddManaOfChoiceEffect(ManaColorSet.CommanderIdentity)`
+ *   - Mox Amber → `AddManaOfChoiceEffect(ManaColorSet.AmongPermanents(filter))`
+ *   - Fellwar Stone → `AddManaOfChoiceEffect(ManaColorSet.LandsCouldProduce(OPPONENTS))`
+ *   - Uncharted Haven → `AddManaOfChoiceEffect(ManaColorSet.SourceChosenColor)`
  */
-@SerialName("AddAnyColorMana")
+@SerialName("AddManaOfChoice")
 @Serializable
-data class AddAnyColorManaEffect(
+data class AddManaOfChoiceEffect(
+    val colorSet: ManaColorSet = ManaColorSet.AnyColor,
     val amount: DynamicAmount = DynamicAmount.Fixed(1),
-    val restriction: ManaRestriction? = null
+    val restriction: ManaRestriction? = null,
 ) : Effect {
-    constructor(amount: Int, restriction: ManaRestriction? = null) : this(DynamicAmount.Fixed(amount), restriction)
+    constructor(colorSet: ManaColorSet, amount: Int, restriction: ManaRestriction? = null) :
+        this(colorSet, DynamicAmount.Fixed(amount), restriction)
 
     override val description: String = buildString {
-        append(when (val a = amount) {
-            is DynamicAmount.Fixed -> if (a.amount == 1) {
-                "Add one mana of any color"
-            } else {
-                "Add ${a.amount} mana of any color"
-            }
-            else -> "Add ${a.description} mana of any color"
-        })
+        val amountText = when (val a = amount) {
+            is DynamicAmount.Fixed -> if (a.amount == 1) "one mana of" else "${a.amount} mana of"
+            else -> "${a.description} mana of"
+        }
+        append("Add $amountText ${colorSet.description}")
         if (restriction != null) append(". ${restriction.description}")
     }
 
@@ -107,6 +125,10 @@ data class AddAnyColorManaEffect(
 /**
  * Add dynamic mana effect where the amount is determined at resolution time.
  * "Add X mana in any combination of {G} and/or {W}, where X is the number of other creatures you control."
+ *
+ * Distinct from [AddManaOfChoiceEffect]: this effect distributes the entire X total
+ * across allowed colors per the player's choice (e.g., 2{G} + 1{W} for X=3), rather
+ * than producing X copies of a single chosen color.
  *
  * @property amountSource What determines the amount of mana to add
  * @property allowedColors The colors of mana that can be produced (player chooses distribution)
@@ -175,128 +197,6 @@ data class AddAnyColorManaSpendOnChosenTypeEffect(
             append(". Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type")
         }
         for (rider in riders) append(". ${rider.description}")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
- * Add one mana of the color chosen as the permanent entered the battlefield.
- * "{T}: Add one mana of the chosen color."
- *
- * At resolution, the executor reads the [ChosenColorComponent] from the source permanent
- * and produces mana of that color. If no color was chosen (shouldn't happen in practice),
- * no mana is produced.
- */
-@SerialName("AddManaOfChosenColor")
-@Serializable
-data class AddManaOfChosenColorEffect(
-    val amount: DynamicAmount = DynamicAmount.Fixed(1),
-    val restriction: ManaRestriction? = null
-) : Effect {
-    constructor(amount: Int, restriction: ManaRestriction? = null) : this(DynamicAmount.Fixed(amount), restriction)
-
-    override val description: String = buildString {
-        append(when (val a = amount) {
-            is DynamicAmount.Fixed -> if (a.amount == 1) {
-                "Add one mana of the chosen color"
-            } else {
-                "Add ${a.amount} mana of the chosen color"
-            }
-            else -> "Add ${a.description} mana of the chosen color"
-        })
-        if (restriction != null) append(". ${restriction.description}")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
- * Add one mana of any color among permanents matching a filter that you control.
- * "{T}: Add one mana of any color among legendary creatures and planeswalkers you control."
- *
- * At resolution, the executor examines the controller's battlefield for permanents matching [filter],
- * collects the union of their colors, and lets the player choose one. If no colors are available
- * (no matching permanents, or all are colorless), no mana is produced.
- *
- * @property filter The filter to match permanents whose colors determine the available mana colors
- */
-@SerialName("AddManaOfColorAmong")
-@Serializable
-data class AddManaOfColorAmongEffect(
-    val filter: GameObjectFilter,
-    val restriction: ManaRestriction? = null
-) : Effect {
-    override val description: String = buildString {
-        append("Add one mana of any color among matching permanents you control")
-        if (restriction != null) append(". ${restriction.description}")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
- * Scope used by [AddManaOfColorLandsCouldProduceEffect] to determine which lands' producible
- * colors are available.
- */
-@Serializable
-enum class LandControllerScope {
-    /** Lands controlled by an opponent of the source's controller (e.g., Fellwar Stone, Exotic Orchard). */
-    OPPONENTS,
-    /** Lands controlled by the source's controller (e.g., Reflecting Pool). */
-    YOU,
-    /** Lands controlled by any player. */
-    ANY,
-}
-
-/**
- * Add one mana of any color that a land in the given scope could produce.
- *
- * The available colors are the union of all colors that any matching land's mana abilities
- * could produce, regardless of whether the lands are tapped or whether any activation cost
- * could currently be paid (CR 106.7 / Fellwar Stone rulings). Colorless mana production is
- * ignored — Fellwar Stone-style abilities produce only colored mana.
- *
- * Used for cards like Fellwar Stone (OPPONENTS), Exotic Orchard (OPPONENTS), Reflecting Pool (YOU).
- *
- * @property scope Which players' lands to inspect.
- */
-@SerialName("AddManaOfColorLandsCouldProduce")
-@Serializable
-data class AddManaOfColorLandsCouldProduceEffect(
-    val scope: LandControllerScope,
-    val restriction: ManaRestriction? = null
-) : Effect {
-    override val description: String = buildString {
-        append(
-            when (scope) {
-                LandControllerScope.OPPONENTS -> "Add one mana of any color that a land an opponent controls could produce"
-                LandControllerScope.YOU -> "Add one mana of any color that a land you control could produce"
-                LandControllerScope.ANY -> "Add one mana of any color that a land could produce"
-            }
-        )
-        if (restriction != null) append(". ${restriction.description}")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
- * Add one mana of any color in the controller's commander's color identity.
- *
- * Used for cards like Arcane Signet and Command Tower. The set of available colors is the
- * union of the [com.wingedsheep.sdk.model.CardDefinition.colorIdentity] of every commander
- * registered to the controller (Partner / Background sums them). If the controller has no
- * commander (non-Commander format), no mana is produced.
- */
-@SerialName("AddManaOfColorInCommanderColorIdentity")
-@Serializable
-data class AddManaOfColorInCommanderColorIdentityEffect(
-    val restriction: ManaRestriction? = null
-) : Effect {
-    override val description: String = buildString {
-        append("Add one mana of any color in your commander's color identity")
-        if (restriction != null) append(". ${restriction.description}")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

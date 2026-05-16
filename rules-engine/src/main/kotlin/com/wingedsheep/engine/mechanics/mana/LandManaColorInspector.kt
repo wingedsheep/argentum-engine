@@ -4,18 +4,16 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
 /**
  * Inspects what colors a land's mana abilities *could* produce, regardless of whether
@@ -102,17 +100,38 @@ object LandManaColorInspector {
         when (effect) {
             is AddManaEffect -> out.add(effect.color)
             is AddColorlessManaEffect -> Unit
-            is AddAnyColorManaEffect,
-            is AddAnyColorManaSpendOnChosenTypeEffect,
-            is AddManaOfColorAmongEffect -> out.addAll(Color.entries)
-            is AddManaOfChosenColorEffect -> {
-                sourceContainer.get<ChosenColorComponent>()?.color?.let { out.add(it) }
-            }
+            is AddManaOfChoiceEffect -> collectChoiceColors(effect.colorSet, sourceContainer, out)
+            is AddAnyColorManaSpendOnChosenTypeEffect -> out.addAll(Color.entries)
             is AddDynamicManaEffect -> out.addAll(effect.allowedColors)
             is CompositeEffect -> {
                 for (sub in effect.effects) collectColors(sub, sourceContainer, out)
             }
             else -> Unit
+        }
+    }
+
+    /**
+     * Stateless approximation of [ManaColorSetResolver] used here because we only have a
+     * source container, not full game state. For color sets that need state to resolve
+     * (commander identity, colors among permanents, lands could produce), we
+     * conservatively report all five colors — matches the legacy `AddManaOfColorAmong`
+     * behavior and is the safe choice for "could this land produce X?" lookups.
+     */
+    private fun collectChoiceColors(
+        colorSet: ManaColorSet,
+        sourceContainer: com.wingedsheep.engine.state.ComponentContainer,
+        out: MutableSet<Color>,
+    ) {
+        when (colorSet) {
+            is ManaColorSet.AnyColor -> out.addAll(Color.entries)
+            is ManaColorSet.Specific -> out.addAll(colorSet.colors)
+            is ManaColorSet.SourceChosenColor -> {
+                sourceContainer.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()
+                    ?.color?.let { out.add(it) }
+            }
+            is ManaColorSet.CommanderIdentity,
+            is ManaColorSet.AmongPermanents,
+            is ManaColorSet.LandsCouldProduce -> out.addAll(Color.entries)
         }
     }
 }

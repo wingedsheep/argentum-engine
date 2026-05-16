@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.LandControllerScope
+import com.wingedsheep.sdk.scripting.values.LandControllerScope
 
 /**
  * Fellwar Stone

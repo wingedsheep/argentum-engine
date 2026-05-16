@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
@@ -29,7 +29,7 @@ val DivergentGrowth = card("Divergent Growth") {
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = AbilityCost.Tap,
-                effect = AddAnyColorManaEffect(1),
+                effect = Effects.AddAnyColorMana(1),
                 isManaAbility = true,
                 timing = TimingRule.ManaAbility
             ),

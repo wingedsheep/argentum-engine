@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 
 /**
  * Patchwork Banner
@@ -37,7 +37,7 @@ val PatchworkBanner = card("Patchwork Banner") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = AddAnyColorManaEffect(1)
+        effect = Effects.AddAnyColorMana(1)
         manaAbility = true
         timing = TimingRule.ManaAbility
     }

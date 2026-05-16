@@ -2,11 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 
 /**
  * Wirewood Channeler
@@ -25,8 +25,8 @@ val WirewoodChanneler = card("Wirewood Channeler") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = AddAnyColorManaEffect(
-            amount = DynamicAmounts.creaturesWithSubtype(Subtype.ELF)
+        effect = Effects.AddAnyColorMana(
+            DynamicAmounts.creaturesWithSubtype(Subtype.ELF)
         )
         manaAbility = true
         timing = TimingRule.ManaAbility

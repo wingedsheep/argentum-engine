@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.EffectPatterns
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -11,7 +12,6 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
@@ -45,7 +45,7 @@ val SongOfFreyalise = card("Song of Freyalise") {
         ability = ActivatedAbility(
             id = AbilityId.generate(),
             cost = AbilityCost.Tap,
-            effect = AddAnyColorManaEffect(1),
+            effect = Effects.AddAnyColorMana(1),
             isManaAbility = true,
             timing = TimingRule.ManaAbility
         ),

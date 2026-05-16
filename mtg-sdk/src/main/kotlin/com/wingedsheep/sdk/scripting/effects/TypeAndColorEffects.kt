@@ -289,7 +289,7 @@ data class ChooseColorForTargetEffect(
  * mana ability that produces one mana of any color (i.e. the value supplied via
  * [com.wingedsheep.engine.handlers.EffectContext.manaColorChoice]).
  *
- * Pairs with [AddAnyColorManaEffect] inside a [CompositeEffect] so that the
+ * Pairs with [AddManaOfChoiceEffect] inside a [CompositeEffect] so that the
  * same color choice powers both the mana produced and the temporary color
  * change. If no color was chosen at activation, no effect is created.
  *

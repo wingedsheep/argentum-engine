@@ -24,16 +24,13 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffect
-import com.wingedsheep.sdk.scripting.effects.LandControllerScope
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.ActivatedAbility
@@ -836,11 +833,8 @@ class ManaSolver(
                     is CompositeEffect -> effect.effects.firstOrNull {
                         it is AddManaEffect ||
                             it is AddColorlessManaEffect ||
-                            it is AddAnyColorManaEffect ||
+                            it is AddManaOfChoiceEffect ||
                             it is AddAnyColorManaSpendOnChosenTypeEffect ||
-                            it is AddManaOfColorAmongEffect ||
-                            it is AddManaOfColorLandsCouldProduceEffect ||
-                            it is AddManaOfChosenColorEffect ||
                             it is AddDynamicManaEffect
                     } ?: effect
                     else -> effect
@@ -859,11 +853,21 @@ class ManaSolver(
                         maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         effect.restriction
                     }
-                    is AddAnyColorManaEffect -> {
-                        combinedColors.addAll(Color.entries)
-                        effectColors.addAll(Color.entries)
-                        val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
-                        maxManaAmount = maxOf(maxManaAmount, manaAmount)
+                    is AddManaOfChoiceEffect -> {
+                        val resolved = ManaColorSetResolver.resolve(
+                            colorSet = effect.colorSet,
+                            state = state,
+                            projected = state.projectedState,
+                            sourceId = entityId,
+                            controllerId = playerId,
+                            cardRegistry = cardRegistry,
+                        )
+                        combinedColors.addAll(resolved)
+                        effectColors.addAll(resolved)
+                        if (resolved.isNotEmpty()) {
+                            val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
+                            maxManaAmount = maxOf(maxManaAmount, manaAmount)
+                        }
                         effect.restriction
                     }
                     is AddAnyColorManaSpendOnChosenTypeEffect -> {
@@ -881,58 +885,6 @@ class ManaSolver(
                             }
                             ManaRestriction.SubtypeSpellsOrAbilitiesOnly(chosenType, effect.creatureOnly)
                         } else null
-                    }
-                    is AddManaOfColorAmongEffect -> {
-                        // Determine available colors from matching permanents
-                        val projected = state.projectedState
-                        val predCtx = PredicateContext(controllerId = playerId)
-                        for (bfId in state.getBattlefield()) {
-                            if (predicateEvaluator.matchesWithProjection(state, projected, bfId, effect.filter, predCtx)) {
-                                val colors = projected.getColors(bfId)
-                                for (colorName in colors) {
-                                    Color.entries.find { it.name == colorName }?.let {
-                                        combinedColors.add(it)
-                                        effectColors.add(it)
-                                    }
-                                }
-                            }
-                        }
-                        if (combinedColors.isNotEmpty()) {
-                            maxManaAmount = maxOf(maxManaAmount, 1)
-                        }
-                        effect.restriction
-                    }
-                    is AddManaOfColorLandsCouldProduceEffect -> {
-                        val projected = state.projectedState
-                        val targetPlayers: Set<EntityId> = when (effect.scope) {
-                            LandControllerScope.YOU -> setOf(playerId)
-                            LandControllerScope.OPPONENTS -> state.turnOrder.filter { it != playerId }.toSet()
-                            LandControllerScope.ANY -> state.turnOrder.toSet()
-                        }
-                        val landIds = state.getBattlefield().filter { permId ->
-                            val c = state.getEntity(permId) ?: return@filter false
-                            val cc = c.get<CardComponent>() ?: return@filter false
-                            cc.typeLine.isLand && projected.getController(permId) in targetPlayers
-                        }
-                        val producible = LandManaColorInspector
-                            .colorsLandsCouldProduce(state, projected, landIds, cardRegistry)
-                        combinedColors.addAll(producible)
-                        effectColors.addAll(producible)
-                        if (producible.isNotEmpty()) {
-                            maxManaAmount = maxOf(maxManaAmount, 1)
-                        }
-                        effect.restriction
-                    }
-                    is AddManaOfChosenColorEffect -> {
-                        val chosenColor = state.getEntity(entityId)
-                            ?.get<ChosenColorComponent>()?.color
-                        if (chosenColor != null) {
-                            combinedColors.add(chosenColor)
-                            effectColors.add(chosenColor)
-                            val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
-                            maxManaAmount = maxOf(maxManaAmount, manaAmount)
-                        }
-                        effect.restriction
                     }
                     is AddDynamicManaEffect -> {
                         combinedColors.addAll(effect.allowedColors)
@@ -1137,10 +1089,7 @@ class ManaSolver(
             is CompositeEffect -> effect.effects.firstOrNull {
                 it is AddManaEffect ||
                     it is AddColorlessManaEffect ||
-                    it is AddAnyColorManaEffect ||
-                    it is AddManaOfColorAmongEffect ||
-                    it is AddManaOfColorLandsCouldProduceEffect ||
-                    it is AddManaOfChosenColorEffect ||
+                    it is AddManaOfChoiceEffect ||
                     it is AddDynamicManaEffect
             } ?: effect
             else -> effect
@@ -1148,10 +1097,7 @@ class ManaSolver(
         return when (manaEffect) {
             is AddManaEffect -> manaEffect.restriction
             is AddColorlessManaEffect -> manaEffect.restriction
-            is AddAnyColorManaEffect -> manaEffect.restriction
-            is AddManaOfColorAmongEffect -> manaEffect.restriction
-            is AddManaOfColorLandsCouldProduceEffect -> manaEffect.restriction
-            is AddManaOfChosenColorEffect -> manaEffect.restriction
+            is AddManaOfChoiceEffect -> manaEffect.restriction
             is AddDynamicManaEffect -> manaEffect.restriction
             // AddAnyColorManaSpendOnChosenTypeEffect derives its restriction at resolution
             // time from the source's ChosenCreatureTypeComponent, so we don't pre-filter it.
@@ -1616,7 +1562,7 @@ class ManaSolver(
 
                 // Accumulate mana production
                 when (val effect = ability.effect) {
-                    is AddAnyColorManaEffect -> {
+                    is AddManaOfChoiceEffect -> if (effect.colorSet is ManaColorSet.AnyColor) {
                         val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
                         anyColorTotal += activationCount * amount
                     }
@@ -1698,7 +1644,7 @@ class ManaSolver(
                 if (!activationRestrictionsSatisfied(state, playerId, entityId, ability)) continue
 
                 when (val effect = ability.effect) {
-                    is AddAnyColorManaEffect -> {
+                    is AddManaOfChoiceEffect -> if (effect.colorSet is ManaColorSet.AnyColor) {
                         val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
                         anyColorTotal += amount
                     }
@@ -1809,7 +1755,7 @@ class ManaSolver(
                 consumedIds.addAll(matchingTapTargets.take(tapPermanentsCost.count))
 
                 when (val effect = ability.effect) {
-                    is AddAnyColorManaEffect -> {
+                    is AddManaOfChoiceEffect -> if (effect.colorSet is ManaColorSet.AnyColor) {
                         val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
                         anyColorTotal += amount
                     }

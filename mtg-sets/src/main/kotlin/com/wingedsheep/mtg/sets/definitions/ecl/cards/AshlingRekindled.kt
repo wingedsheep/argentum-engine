@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorForTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
 /**
  * Ashling, Rekindled // Ashling, Rimebound
@@ -44,7 +45,8 @@ private val addRimeboundMana = CompositeEffect(
             target = EffectTarget.Self,
             prompt = "Choose a color for Ashling's mana"
         ),
-        AddManaOfChosenColorEffect(
+        AddManaOfChoiceEffect(
+            colorSet = ManaColorSet.SourceChosenColor,
             amount = 2,
             restriction = ManaRestriction.SpellsMV4OrGreater
         )

@@ -8,15 +8,12 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorInCommanderColorIdentityEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffect
-import com.wingedsheep.sdk.scripting.effects.LandControllerScope
+import com.wingedsheep.sdk.scripting.values.LandControllerScope
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
@@ -942,17 +939,32 @@ object Effects {
         AddColorlessManaEffect(amount, restriction)
 
     /**
-     * Add one mana of any color.
+     * Add mana of a color the player chooses from a [ManaColorSet] resolved at resolution
+     * time. The unified "choose-from-set" primitive — see [AddManaOfChoiceEffect].
+     *
+     * Defaults to all five colors and one mana, matching the legacy "Add one mana of any
+     * color" shape.
      */
-    fun AddAnyColorMana(amount: Int = 1, restriction: ManaRestriction? = null): Effect =
-        AddAnyColorManaEffect(amount, restriction)
+    fun AddManaOfChoice(
+        colorSet: ManaColorSet = ManaColorSet.AnyColor,
+        amount: Int = 1,
+        restriction: ManaRestriction? = null,
+    ): Effect = AddManaOfChoiceEffect(colorSet, DynamicAmount.Fixed(amount), restriction)
 
-    /**
-     * Add a dynamic amount of mana of any one color.
-     * "Add X mana of any one color, where X is..."
-     */
+    /** Dynamic-amount variant of [AddManaOfChoice]. */
+    fun AddManaOfChoice(
+        colorSet: ManaColorSet,
+        amount: DynamicAmount,
+        restriction: ManaRestriction? = null,
+    ): Effect = AddManaOfChoiceEffect(colorSet, amount, restriction)
+
+    /** Add one mana of any color — the original "any-color" shape, kept for readability. */
+    fun AddAnyColorMana(amount: Int = 1, restriction: ManaRestriction? = null): Effect =
+        AddManaOfChoiceEffect(ManaColorSet.AnyColor, DynamicAmount.Fixed(amount), restriction)
+
+    /** Dynamic-amount variant of [AddAnyColorMana]. */
     fun AddAnyColorMana(amount: DynamicAmount, restriction: ManaRestriction? = null): Effect =
-        AddAnyColorManaEffect(amount, restriction)
+        AddManaOfChoiceEffect(ManaColorSet.AnyColor, amount, restriction)
 
     /**
      * Add one mana of any color, restricted to spells (and optionally activated abilities)
@@ -1003,17 +1015,19 @@ object Effects {
 
     /**
      * Add one mana of the color chosen when this permanent entered the battlefield.
-     * Used for cards like Uncharted Haven.
+     * Used for cards like Uncharted Haven. Sugar for
+     * `AddManaOfChoice(ManaColorSet.SourceChosenColor, amount)`.
      */
     fun AddManaOfChosenColor(amount: Int = 1, restriction: ManaRestriction? = null): Effect =
-        AddManaOfChosenColorEffect(amount, restriction)
+        AddManaOfChoiceEffect(ManaColorSet.SourceChosenColor, DynamicAmount.Fixed(amount), restriction)
 
     /**
      * Add one mana of any color among permanents matching a filter that you control.
-     * Used for cards like Mox Amber.
+     * Used for cards like Mox Amber. Sugar for
+     * `AddManaOfChoice(ManaColorSet.AmongPermanents(filter))`.
      */
     fun AddManaOfColorAmong(filter: GameObjectFilter, restriction: ManaRestriction? = null): Effect =
-        AddManaOfColorAmongEffect(filter, restriction)
+        AddManaOfChoiceEffect(ManaColorSet.AmongPermanents(filter), DynamicAmount.Fixed(1), restriction)
 
     /**
      * For each color among permanents matching a filter, add one mana of that color.
@@ -1025,22 +1039,22 @@ object Effects {
     /**
      * Add one mana of any color that a land in the given scope could produce.
      * Used for cards like Fellwar Stone (OPPONENTS), Exotic Orchard (OPPONENTS),
-     * Reflecting Pool (YOU). The available colors are derived from the union of all
-     * colored mana that any matching land's mana abilities could produce, regardless of
-     * whether those lands are tapped or whether their activation costs could be paid.
+     * Reflecting Pool (YOU). Sugar for
+     * `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`.
      */
     fun AddManaOfColorLandsCouldProduce(
         scope: LandControllerScope,
         restriction: ManaRestriction? = null
-    ): Effect = AddManaOfColorLandsCouldProduceEffect(scope, restriction)
+    ): Effect = AddManaOfChoiceEffect(ManaColorSet.LandsCouldProduce(scope), DynamicAmount.Fixed(1), restriction)
 
     /**
      * Add one mana of any color in your commander's color identity. Used by Arcane Signet
-     * and Command Tower. With no commander (non-Commander formats), produces no mana.
+     * and Command Tower. Sugar for
+     * `AddManaOfChoice(ManaColorSet.CommanderIdentity)`.
      */
     fun AddManaOfColorInCommanderColorIdentity(
         restriction: ManaRestriction? = null
-    ): Effect = AddManaOfColorInCommanderColorIdentityEffect(restriction)
+    ): Effect = AddManaOfChoiceEffect(ManaColorSet.CommanderIdentity, DynamicAmount.Fixed(1), restriction)
 
     // =========================================================================
     // Token Effects

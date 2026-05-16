@@ -54,13 +54,10 @@ import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
-import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
@@ -686,21 +683,9 @@ class ActivateAbilityHandler(
                         colorless = amount
                     )
                 }
-                is AddAnyColorManaEffect -> {
-                    val chosenColor = action.manaColorChoice ?: Color.GREEN
-                    val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
-                    ManaAddedEvent(
-                        playerId = action.playerId,
-                        sourceId = action.sourceId,
-                        sourceName = cardComponent.name,
-                        white = if (chosenColor == Color.WHITE) amount else 0,
-                        blue = if (chosenColor == Color.BLUE) amount else 0,
-                        black = if (chosenColor == Color.BLACK) amount else 0,
-                        red = if (chosenColor == Color.RED) amount else 0,
-                        green = if (chosenColor == Color.GREEN) amount else 0,
-                        colorless = 0
-                    )
-                }
+                is AddManaOfChoiceEffect -> manaAddedEventFromPoolDelta(
+                    state, currentState, action, cardComponent
+                )
                 is AddAnyColorManaSpendOnChosenTypeEffect -> {
                     val chosenColor = action.manaColorChoice ?: Color.GREEN
                     val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
@@ -716,64 +701,11 @@ class ActivateAbilityHandler(
                         colorless = 0
                     )
                 }
-                is AddManaOfChosenColorEffect -> {
-                    val chosenColor = state.getEntity(action.sourceId)
-                        ?.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
-                    if (chosenColor != null) {
-                        val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
-                        ManaAddedEvent(
-                            playerId = action.playerId,
-                            sourceId = action.sourceId,
-                            sourceName = cardComponent.name,
-                            white = if (chosenColor == Color.WHITE) amount else 0,
-                            blue = if (chosenColor == Color.BLUE) amount else 0,
-                            black = if (chosenColor == Color.BLACK) amount else 0,
-                            red = if (chosenColor == Color.RED) amount else 0,
-                            green = if (chosenColor == Color.GREEN) amount else 0,
-                            colorless = 0
-                        )
-                    } else {
-                        null
-                    }
-                }
-                is AddManaOfColorAmongEffect,
-                is AddManaOfColorLandsCouldProduceEffect -> {
-                    // Determine what color was actually added by comparing mana pools
-                    val oldPool = state.getEntity(action.playerId)?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
-                    val newPool = currentState.getEntity(action.playerId)?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
-                    if (oldPool != null && newPool != null && oldPool != newPool) {
-                        ManaAddedEvent(
-                            playerId = action.playerId,
-                            sourceId = action.sourceId,
-                            sourceName = cardComponent.name,
-                            white = newPool.white - oldPool.white,
-                            blue = newPool.blue - oldPool.blue,
-                            black = newPool.black - oldPool.black,
-                            red = newPool.red - oldPool.red,
-                            green = newPool.green - oldPool.green,
-                            colorless = newPool.colorless - oldPool.colorless
-                        )
-                    } else if (oldPool == null && newPool != null) {
-                        ManaAddedEvent(
-                            playerId = action.playerId,
-                            sourceId = action.sourceId,
-                            sourceName = cardComponent.name,
-                            white = newPool.white,
-                            blue = newPool.blue,
-                            black = newPool.black,
-                            red = newPool.red,
-                            green = newPool.green,
-                            colorless = newPool.colorless
-                        )
-                    } else {
-                        null
-                    }
-                }
                 is CompositeEffect -> {
                     when (val manaEffect = effect.effects.firstOrNull {
                         it is AddManaEffect ||
                             it is AddColorlessManaEffect ||
-                            it is AddAnyColorManaEffect ||
+                            it is AddManaOfChoiceEffect ||
                             it is AddAnyColorManaSpendOnChosenTypeEffect
                     }) {
                         is AddManaEffect -> {
@@ -799,21 +731,9 @@ class ActivateAbilityHandler(
                                 colorless = amount
                             )
                         }
-                        is AddAnyColorManaEffect -> {
-                            val chosenColor = action.manaColorChoice ?: Color.GREEN
-                            val amount = dynamicAmountEvaluator.evaluate(state, manaEffect.amount, context)
-                            ManaAddedEvent(
-                                playerId = action.playerId,
-                                sourceId = action.sourceId,
-                                sourceName = cardComponent.name,
-                                white = if (chosenColor == Color.WHITE) amount else 0,
-                                blue = if (chosenColor == Color.BLUE) amount else 0,
-                                black = if (chosenColor == Color.BLACK) amount else 0,
-                                red = if (chosenColor == Color.RED) amount else 0,
-                                green = if (chosenColor == Color.GREEN) amount else 0,
-                                colorless = 0
-                            )
-                        }
+                        is AddManaOfChoiceEffect -> manaAddedEventFromPoolDelta(
+                            state, currentState, action, cardComponent
+                        )
                         is AddAnyColorManaSpendOnChosenTypeEffect -> {
                             val chosenColor = action.manaColorChoice ?: Color.GREEN
                             val amount = dynamicAmountEvaluator.evaluate(state, manaEffect.amount, context)
@@ -1673,5 +1593,35 @@ class ActivateAbilityHandler(
                 services.triggerProcessor
             )
         }
+    }
+
+    /**
+     * Build a [ManaAddedEvent] by diffing the controller's mana pool before and after
+     * the effect executed. Used for [AddManaOfChoiceEffect]: the executor already
+     * resolved the color set, picked the color, and added the mana — we just need to
+     * report what changed for client display.
+     */
+    private fun manaAddedEventFromPoolDelta(
+        oldState: GameState,
+        newState: GameState,
+        action: ActivateAbility,
+        cardComponent: CardComponent,
+    ): ManaAddedEvent? {
+        val oldPool = oldState.getEntity(action.playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+        val newPool = newState.getEntity(action.playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
+            ?: return null
+        return ManaAddedEvent(
+            playerId = action.playerId,
+            sourceId = action.sourceId,
+            sourceName = cardComponent.name,
+            white = newPool.white - (oldPool?.white ?: 0),
+            blue = newPool.blue - (oldPool?.blue ?: 0),
+            black = newPool.black - (oldPool?.black ?: 0),
+            red = newPool.red - (oldPool?.red ?: 0),
+            green = newPool.green - (oldPool?.green ?: 0),
+            colorless = newPool.colorless - (oldPool?.colorless ?: 0),
+        ).takeIf { it.white + it.blue + it.black + it.red + it.green + it.colorless > 0 }
     }
 }

@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 
 /**
  * Birchlore Rangers
@@ -24,7 +24,7 @@ val BirchloreRangers = card("Birchlore Rangers") {
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature.withSubtype("Elf"))
-        effect = AddAnyColorManaEffect(1)
+        effect = Effects.AddAnyColorMana(1)
         manaAbility = true
     }
 

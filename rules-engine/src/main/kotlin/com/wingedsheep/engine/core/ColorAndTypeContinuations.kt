@@ -71,7 +71,7 @@ data class ChooseColorThenContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after the controller of an [com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect]
+ * Resume after the controller of an [com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect]
  * picks the mana color. The resumer re-runs the effect via the executor registry with
  * `manaColorChoice` populated on [baseContext], so dynamic amounts evaluate consistently.
  */

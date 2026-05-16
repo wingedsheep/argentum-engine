@@ -165,7 +165,7 @@ class ColorChoiceContinuationResumer(
         checkForMore: CheckForMore
     ): ExecutionResult {
         if (response !is ColorChosenResponse) {
-            return ExecutionResult.error(state, "Expected color choice response for AddAnyColorMana effect")
+            return ExecutionResult.error(state, "Expected color choice response for AddManaOfChoice effect")
         }
 
         val contextWithColor = continuation.baseContext.copy(manaColorChoice = response.color)
