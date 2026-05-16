@@ -228,7 +228,7 @@ sealed interface ClientMessage {
     @SerialName("updateLobbySettings")
     data class UpdateLobbySettings(
         val setCodes: List<String>? = null,
-        val format: String? = null,           // "SEALED" or "DRAFT"
+        val format: String? = null,           // "SEALED" / "DRAFT" / "COMMANDER_DRAFT" / "COMMANDER_SEALED" / etc.
         val boosterCount: Int? = null,
         val boosterDistribution: Map<String, Int>? = null,  // Per-set booster counts
         val maxPlayers: Int? = null,
@@ -240,7 +240,13 @@ sealed interface ClientMessage {
          * Deck-construction format restriction (Standard/Modern/Commander/...). String form of
          * [com.wingedsheep.sdk.core.DeckFormat]; "" or "NONE" clears the restriction.
          */
-        val deckFormat: String? = null
+        val deckFormat: String? = null,
+        /** Commander Draft/Sealed only — minimum deck size (default 60). */
+        val deckSizeMin: Int? = null,
+        /** Commander Draft/Sealed only — singleton toggle (default true = duplicates allowed). */
+        val allowDuplicates: Boolean? = null,
+        /** Commander Draft/Sealed only — "BRAWL" or "COMMANDER". */
+        val commanderPreset: String? = null,
     ) : ClientMessage
 
     /**

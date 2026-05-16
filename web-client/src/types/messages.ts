@@ -910,9 +910,24 @@ export interface LobbySettings {
   readonly isPublic: boolean
   /** Optional deck-construction format restriction (Standard/Modern/Commander/...). */
   readonly deckFormat?: DeckFormat | null
+  /** Commander Draft/Sealed only — minimum deck size enforced by the validator (default 60). */
+  readonly deckSizeMin: number
+  /** Commander Draft/Sealed only — when true, drafted/sealed decks may include duplicates. */
+  readonly allowDuplicates: boolean
+  /** Commander Draft/Sealed only — preset shape ('BRAWL' = 25 life / 16 cmdr damage; 'COMMANDER' = 30/21). */
+  readonly commanderPreset: CommanderPreset
 }
 
-export type TournamentFormat = 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT' | 'PREMADE_DECKS'
+export type TournamentFormat =
+  | 'SEALED'
+  | 'DRAFT'
+  | 'WINSTON_DRAFT'
+  | 'GRID_DRAFT'
+  | 'COMMANDER_DRAFT'
+  | 'COMMANDER_SEALED'
+  | 'PREMADE_DECKS'
+
+export type CommanderPreset = 'BRAWL' | 'COMMANDER'
 
 export interface LobbyCreatedMessage {
   readonly type: 'lobbyCreated'
@@ -1763,6 +1778,12 @@ export interface UpdateLobbySettingsMessage {
   readonly isPublic?: boolean
   /** Deck-construction format. Empty string (or 'NONE') clears the restriction. */
   readonly deckFormat?: DeckFormat | '' | null
+  /** Commander Draft/Sealed only — minimum deck size (default 60). */
+  readonly deckSizeMin?: number
+  /** Commander Draft/Sealed only — singleton toggle (default true = duplicates allowed). */
+  readonly allowDuplicates?: boolean
+  /** Commander Draft/Sealed only — 'BRAWL' or 'COMMANDER'. */
+  readonly commanderPreset?: CommanderPreset
 }
 
 // Tournament Client Messages

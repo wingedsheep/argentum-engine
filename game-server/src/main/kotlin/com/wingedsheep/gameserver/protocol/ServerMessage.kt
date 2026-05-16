@@ -387,7 +387,7 @@ sealed interface ServerMessage {
         val setCodes: List<String>,
         val setNames: List<String>,
         val availableSets: List<AvailableSet> = emptyList(),  // For UI dropdown
-        val format: String = "SEALED",      // "SEALED" or "DRAFT"
+        val format: String = "SEALED",      // "SEALED" / "DRAFT" / "COMMANDER_DRAFT" / "COMMANDER_SEALED" / etc.
         val boosterCount: Int,
         val boosterDistribution: Map<String, Int> = emptyMap(),  // Per-set booster counts (e.g., {"ONS": 2, "LGN": 2, "SCG": 2})
         val maxPlayers: Int,
@@ -396,7 +396,13 @@ sealed interface ServerMessage {
         val gamesPerMatch: Int = 1,
         val isPublic: Boolean = false,
         /** Optional deck-construction format (Standard/Modern/Commander/...). Null = no restriction. */
-        val deckFormat: String? = null
+        val deckFormat: String? = null,
+        /** Commander Draft/Sealed only — minimum deck size enforced by the validator. */
+        val deckSizeMin: Int = 60,
+        /** Commander Draft/Sealed only — when true, drafted/sealed decks may include duplicates. */
+        val allowDuplicates: Boolean = true,
+        /** Commander Draft/Sealed only — "BRAWL" (25 life / 16 cmdr damage) or "COMMANDER" (30/21). */
+        val commanderPreset: String = "BRAWL",
     )
 
     /**

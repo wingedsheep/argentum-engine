@@ -3,6 +3,8 @@ package com.wingedsheep.gameserver.lobby
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.gameserver.session.PlayerIdentity
+import com.wingedsheep.sdk.limited.BoosterStrategy
+import com.wingedsheep.sdk.limited.CommanderDraftBooster
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import java.util.UUID
@@ -18,10 +20,33 @@ enum class TournamentFormat {
     WINSTON_DRAFT,
     GRID_DRAFT,
     /**
+     * Drafted 1v1 commander format using Commander-Legends-shaped 20-card boosters
+     * ([com.wingedsheep.sdk.limited.CommanderDraftBooster]). After the draft, players pick a
+     * commander from their pool and build a 60-card deck under their commander's colour identity.
+     * Game runs as [com.wingedsheep.sdk.core.Format.Commander] using the lobby's selected
+     * [com.wingedsheep.sdk.core.CommanderPreset] (Brawl life vs. classic Commander life).
+     */
+    COMMANDER_DRAFT,
+    /**
+     * Sealed-pool sibling of [COMMANDER_DRAFT]: each player opens N Commander-Legends-shaped
+     * boosters, then picks a commander from their pool and builds a 60-card deck. Skips the
+     * [LobbyState.DRAFTING] phase.
+     */
+    COMMANDER_SEALED,
+    /**
      * Players bring their own pre-built decks (saved or pasted) directly in the lobby.
      * Lobby skips DECK_BUILDING / DRAFTING entirely: WAITING_FOR_PLAYERS → TOURNAMENT_ACTIVE.
      */
     PREMADE_DECKS
+    ;
+
+    /** True if this format produces a Commander-shaped match (Brawl / Commander 1v1). */
+    val isCommanderFormat: Boolean
+        get() = this == COMMANDER_DRAFT || this == COMMANDER_SEALED
+
+    /** True if this format opens [com.wingedsheep.sdk.limited.CommanderDraftBooster]-shaped packs. */
+    val usesCommanderDraftBooster: Boolean
+        get() = isCommanderFormat
 }
 
 /**
@@ -188,7 +213,25 @@ class TournamentLobby(
      * limited formats (Sealed/Draft) play out of the generated pool and ignore this. Null = no
      * restriction.
      */
-    var deckFormat: com.wingedsheep.sdk.core.DeckFormat? = null
+    var deckFormat: com.wingedsheep.sdk.core.DeckFormat? = null,
+    /**
+     * Minimum deck size enforced by the deck validator for [TournamentFormat.COMMANDER_DRAFT] and
+     * [TournamentFormat.COMMANDER_SEALED]. Defaults to 60 (Brawl shape). Has no effect on other
+     * formats.
+     */
+    var deckSizeMin: Int = 60,
+    /**
+     * Singleton toggle for Commander Draft / Sealed: when true (default), the deck validator
+     * accepts multiple copies of non-basic cards (drafted pools can't sustain singleton). Set
+     * false to enforce paper-Commander singleton rules. Ignored by non-commander formats.
+     */
+    var allowDuplicates: Boolean = true,
+    /**
+     * Commander preset (Brawl vs. classic Commander) for Commander Draft / Sealed formats. Maps
+     * to a [com.wingedsheep.sdk.core.Format.Commander] instance at match start.
+     */
+    var commanderPreset: com.wingedsheep.sdk.core.CommanderPreset =
+        com.wingedsheep.sdk.core.CommanderPreset.BRAWL,
 ) {
 
     /**
@@ -467,13 +510,15 @@ class TournamentLobby(
 
     /**
      * Generate sealed pools for all players and transition to DECK_BUILDING.
-     * Only the host can trigger this. Only valid for SEALED format.
+     * Only the host can trigger this. Valid for SEALED and COMMANDER_SEALED formats.
      */
     fun startDeckBuilding(requestingPlayerId: EntityId): Boolean {
         if (!isHost(requestingPlayerId)) return false
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
         if (players.size < 2) return false
-        if (format != TournamentFormat.SEALED) return false
+        if (format != TournamentFormat.SEALED && format != TournamentFormat.COMMANDER_SEALED) return false
+
+        val strategy = strategyOverrideForFormat()
 
         // Generate unique pools for each player
         // Use explicit distribution if set, otherwise fall back to even distribution
@@ -481,7 +526,7 @@ class TournamentLobby(
 
         if (effectiveDistribution != null) {
             players.forEach { (playerId, playerState) ->
-                val pool = boosterGenerator.generateSealedPool(effectiveDistribution)
+                val pool = boosterGenerator.generateSealedPool(effectiveDistribution, strategy)
                 players[playerId] = playerState.copy(cardPool = pool)
             }
         } else {
@@ -489,7 +534,12 @@ class TournamentLobby(
             // set distribution (e.g., all get 3 Portal + 2 Onslaught boosters)
             val distributionSeed = System.currentTimeMillis()
             players.forEach { (playerId, playerState) ->
-                val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount, distributionSeed)
+                val pool = boosterGenerator.generateSealedPool(
+                    setCodes,
+                    boosterCount,
+                    distributionSeed,
+                    strategy,
+                )
                 players[playerId] = playerState.copy(cardPool = pool)
             }
         }
@@ -499,6 +549,14 @@ class TournamentLobby(
     }
 
     /**
+     * Returns the booster strategy this lobby's format should use, or null to fall back to each
+     * set's configured strategy. Currently only Commander Draft / Sealed override; everything
+     * else uses the set's default.
+     */
+    private fun strategyOverrideForFormat(): BoosterStrategy? =
+        if (format.usesCommanderDraftBooster) CommanderDraftBooster() else null
+
+    /**
      * Start the draft phase. Only the host can trigger this.
      * Generates initial packs and distributes them to players.
      */
@@ -506,7 +564,7 @@ class TournamentLobby(
         if (!isHost(requestingPlayerId)) return false
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
         if (players.size < 2) return false
-        if (format != TournamentFormat.DRAFT) return false
+        if (format != TournamentFormat.DRAFT && format != TournamentFormat.COMMANDER_DRAFT) return false
 
         // Set up player order (for pack passing)
         playerOrder = players.keys.toList().shuffled()
@@ -537,11 +595,13 @@ class TournamentLobby(
         // Pick the set for this pack round (1-indexed currentPackNumber)
         val packSetCode = setSequence?.getOrNull(currentPackNumber - 1)
 
+        val strategy = strategyOverrideForFormat()
+
         players.forEach { (_, playerState) ->
             val newPack = if (packSetCode != null) {
-                boosterGenerator.generateBooster(packSetCode)
+                boosterGenerator.generateBooster(packSetCode, strategy)
             } else {
-                boosterGenerator.generateBooster(setCodes)
+                boosterGenerator.generateBooster(setCodes, strategy)
             }
             playerState.currentPack = newPack
             playerState.packQueue.clear()
@@ -1342,7 +1402,10 @@ class TournamentLobby(
                 picksPerRound = picksPerRound,
                 gamesPerMatch = gamesPerMatch,
                 isPublic = isPublic,
-                deckFormat = deckFormat?.name
+                deckFormat = deckFormat?.name,
+                deckSizeMin = deckSizeMin,
+                allowDuplicates = allowDuplicates,
+                commanderPreset = commanderPreset.name,
             ),
             isHost = isHost(forPlayerId)
         )

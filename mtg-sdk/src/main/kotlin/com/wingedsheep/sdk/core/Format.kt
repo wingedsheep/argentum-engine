@@ -40,3 +40,28 @@ sealed interface Format {
         val alwaysDivertToCommand: Boolean = true,
     ) : Format
 }
+
+/**
+ * Preset shapes for drafted/sealed 1v1 commander formats. Each preset selects a
+ * [Format.Commander] configuration tuned for 60-card limited play (paper Brawl life vs. classic
+ * Commander life). The lobby host picks one of these when creating a Commander Draft or Sealed
+ * lobby; the match builder converts it to a [Format.Commander] instance at game start.
+ */
+@Serializable
+enum class CommanderPreset(
+    val deckSize: Int,
+    val startingLife: Int,
+    val commanderDamage: Int,
+) {
+    /** Paper Brawl life total, faster 1v1 games. */
+    BRAWL(deckSize = 60, startingLife = 25, commanderDamage = 16),
+
+    /** Closer to Commander Legends' template — slower, more recursive games. */
+    COMMANDER(deckSize = 60, startingLife = 30, commanderDamage = 21);
+
+    fun toFormat(): Format.Commander = Format.Commander(
+        commanderDamageThreshold = commanderDamage,
+        deckSize = deckSize,
+        startingLife = startingLife,
+    )
+}

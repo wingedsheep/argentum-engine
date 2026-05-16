@@ -174,34 +174,32 @@ values.
 
 ### 2.2 Lobby-level config
 
-Add Brawl/Commander-specific knobs to `TournamentLobby` as constructor fields with safe defaults:
+`TournamentLobby` already carries `boosterCount` (Draft: packs/player; Sealed: boosters in pool) and
+`picksPerRound: Int = 1` (drafted pick batch size). **Reuse both** — no parallel `packsPerPlayer` / `pickSize`
+fields. Phase 2 adds only three new knobs:
 
 ```kotlin
-var packsPerPlayer: Int = 3,                              // Draft default 3, Sealed default 4
-var pickSize: Int = 2,                                    // Draft only; 1 / 2 / 3
-var deckSizeMin: Int = 60,                                // Brawl shape
+var deckSizeMin: Int = 60,                                // Brawl shape, host-configurable 40..100
 var allowDuplicates: Boolean = true,                      // singleton OFF by default
-var commanderPreset: CommanderPreset = CommanderPreset.BRAWL, // BRAWL or COMMANDER
+var commanderPreset: CommanderPreset = CommanderPreset.BRAWL, // BRAWL (25/16) or COMMANDER (30/21)
 ```
 
-`CommanderPreset` is a small enum on the SDK side:
+Format-default `boosterCount` is set in `LobbyHandler.handleCreateTournamentLobby` and
+`handleUpdateLobbySettings` when the format switches: 3 for `COMMANDER_DRAFT`, 4 for `COMMANDER_SEALED`.
+`picksPerRound` defaults to its existing 1; the host bumps it to 2 via `UpdateLobbySettings` — the doc's
+recommendation of "pick 2 by default for Commander Draft" should be applied at the lobby-create defaults
+later (deferred to Phase 5 UI so the host explicitly opts in).
 
-```kotlin
-enum class CommanderPreset(val deckSize: Int, val startingLife: Int, val commanderDamage: Int) {
-    BRAWL(60, 25, 16),
-    COMMANDER(60, 30, 21),
-}
-```
+`CommanderPreset` is a small enum on the SDK side (`mtg-sdk/.../core/Format.kt`) carrying `(deckSize,
+startingLife, commanderDamage)` and a `toFormat()` builder that yields a `Format.Commander` instance for
+Phase 4 to feed into `GameInitializer.GameConfig`.
 
 ### 2.3 Draft path (`COMMANDER_DRAFT`) — pick-N support
 
-`BoosterDraftHandler` today picks 1 card at a time. Extend to support arbitrary `pickSize`:
-
-- New protocol message: `MakePicks(picks: List<CardId>)` replaces the existing `MakePick(card: CardId)` for this
-  format. (Keep `MakePick` for legacy 1-pick formats; `MakePicks` is the general form.)
-- Server validates `picks.size == lobby.pickSize` (or `picks.size == pack.size` when the pack is drained mid-batch).
-- All picked cards move to the player's pool atomically; the pack passes to the next seat.
-- Pack-passing direction alternates each pack (standard draft rule).
+**Already wired.** `BoosterDraftHandler.handleMakePick` consumes `ClientMessage.MakePick(cardNames:
+List<String>)` (plural). `TournamentLobby.makePick(playerId, cardNames)` validates
+`cardNames.size == picksPerRound`, applies all picks atomically, and passes the remainder. Pick-2 (or any N)
+"just works" by setting `picksPerRound` on the lobby. No new code in Phase 2.
 
 ### 2.4 Sealed path (`COMMANDER_SEALED`)
 
@@ -221,12 +219,24 @@ prompt).
 
 ### 2.6 Definition of done (Phase 2)
 
-- [ ] Host can create a `COMMANDER_DRAFT` lobby: choose ≥1 sets, pick-size 1/2/3, packs/player 3/4/5,
-      duplicates on/off, commander preset (Brawl/Commander).
-- [ ] Host can create a `COMMANDER_SEALED` lobby with the same knobs minus pick-size.
-- [ ] Draft proceeds with pick-2 by default; UI shows "2 of 2 selected" before confirm.
-- [ ] Sealed pool is generated and revealed to each player.
-- [ ] Both paths transition to `COMMANDER_SELECTION` at the end.
+- [x] `TournamentFormat.COMMANDER_DRAFT` and `COMMANDER_SEALED` enum entries with `isCommanderFormat` helper.
+- [x] `TournamentLobby` fields: `deckSizeMin`, `allowDuplicates`, `commanderPreset`. (`boosterCount` and
+      `picksPerRound` reused for "packs per player" and "pick batch size".)
+- [x] `LobbySettings` DTO + `UpdateLobbySettings` client message extended; `buildLobbyUpdate` populates the
+      new fields.
+- [x] `LobbyHandler.handleCreateTournamentLobby` defaults `boosterCount` to 3 (Draft) / 4 (Sealed) for the
+      new formats; `handleUpdateLobbySettings` applies `deckSizeMin` / `allowDuplicates` / `commanderPreset`
+      changes (silently ignored on non-commander formats).
+- [x] `startDeckBuilding()` accepts `COMMANDER_SEALED` and threads `CommanderDraftBooster` through every
+      `generateSealedPool` overload.
+- [x] `startDraft()` accepts `COMMANDER_DRAFT`; `distributeNewPacks()` uses `CommanderDraftBooster`.
+- [x] TS protocol mirror in `web-client/src/types/messages.ts` — new format strings, `CommanderPreset`
+      union, three new `LobbySettings` fields, three new optional fields on `UpdateLobbySettingsMessage`.
+- [ ] Both paths transition to `COMMANDER_SELECTION` at the end. **(Deferred to Phase 3 — Phase 2 routes to
+      `DECK_BUILDING` directly; the commander pick step is inserted before deckbuilding in Phase 3.)**
+- [ ] One Kotest integration test exercising the lobby end-to-end (lobby create →
+      `startDeckBuilding`/`startDraft` → pool inspection). **(Deferred — `game-server` has no unit-test
+      harness today per `game-server/CLAUDE.md`. Will be covered by the Phase 4 e2e scenario instead.)**
 
 ---
 

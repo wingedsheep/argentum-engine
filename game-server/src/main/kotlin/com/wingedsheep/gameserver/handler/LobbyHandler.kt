@@ -561,6 +561,14 @@ class LobbyHandler(
             TournamentFormat.DRAFT -> {
                 if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
             }
+            TournamentFormat.COMMANDER_DRAFT -> {
+                // 3 packs × 20 cards = 60-card draft pool (CMR-2020 paper default).
+                if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)
+            }
+            TournamentFormat.COMMANDER_SEALED -> {
+                // 4 packs × 20 cards = 80-card sealed pool (CMR-2020 paper default).
+                if (message.boosterCount == 6) 4 else message.boosterCount.coerceIn(1, 8)
+            }
             TournamentFormat.SEALED, TournamentFormat.WINSTON_DRAFT -> {
                 message.boosterCount.coerceIn(1, 16)
             }
@@ -1814,6 +1822,8 @@ class LobbyHandler(
                 }
                 lobby.boosterCount = when (newFormat) {
                     TournamentFormat.DRAFT -> 3
+                    TournamentFormat.COMMANDER_DRAFT -> 3
+                    TournamentFormat.COMMANDER_SEALED -> 4
                     TournamentFormat.SEALED -> 6
                     TournamentFormat.WINSTON_DRAFT -> 6
                     TournamentFormat.GRID_DRAFT -> gridDraftHandler.gridDraftDefaultBoosters(lobby.players.size)
@@ -1830,6 +1840,8 @@ class LobbyHandler(
             message.boosterCount?.let {
                 val maxCount = when (lobby.format) {
                     TournamentFormat.DRAFT -> 6
+                    TournamentFormat.COMMANDER_DRAFT -> 6
+                    TournamentFormat.COMMANDER_SEALED -> 8
                     TournamentFormat.SEALED -> 16
                     TournamentFormat.WINSTON_DRAFT -> 16
                     TournamentFormat.GRID_DRAFT -> 24 // unreachable
@@ -1876,6 +1888,17 @@ class LobbyHandler(
             } else {
                 runCatching { com.wingedsheep.sdk.core.DeckFormat.valueOf(value.uppercase()) }
                     .getOrNull() ?: lobby.deckFormat
+            }
+        }
+
+        // Commander Draft / Sealed knobs. Silently ignored on non-commander formats so a
+        // client sending stale settings can't break the lobby.
+        if (lobby.format.isCommanderFormat) {
+            message.deckSizeMin?.let { lobby.deckSizeMin = it.coerceIn(40, 100) }
+            message.allowDuplicates?.let { lobby.allowDuplicates = it }
+            message.commanderPreset?.let { value ->
+                runCatching { com.wingedsheep.sdk.core.CommanderPreset.valueOf(value.uppercase()) }
+                    .getOrNull()?.let { lobby.commanderPreset = it }
             }
         }
 
