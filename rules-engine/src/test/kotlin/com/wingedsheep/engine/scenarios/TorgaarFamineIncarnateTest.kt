@@ -182,14 +182,15 @@ class TorgaarFamineIncarnateTest : FunSpec({
         driver.getLifeTotal(activePlayer) shouldBe 10
     }
 
-    test("ETB can target self to set own life total to 10") {
+    test("ETB sets life to half of starting life total (commander: 30 -> 15)") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Swamp" to 20),
-            startingLife = 5 // Start at 5 life
+            startingLife = 30 // Commander-style starting life
         )
 
         val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
 
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
@@ -208,14 +209,47 @@ class TorgaarFamineIncarnateTest : FunSpec({
         // Resolve Torgaar
         driver.bothPass()
 
-        // ETB trigger - target self
+        // ETB trigger - target opponent
         driver.isPaused shouldBe true
-        driver.submitTargetSelection(activePlayer, listOf(activePlayer))
+        driver.submitTargetSelection(activePlayer, listOf(opponent))
         driver.bothPass()
 
-        // Life should go UP to 10 (half of 20 starting, even though starting life was set to 5)
-        // Actually the effect sets to Fixed(10), so it's always 10
-        driver.getLifeTotal(activePlayer) shouldBe 10
+        // Opponent's life should be 15 (half of 30 starting, rounded down)
+        driver.getLifeTotal(opponent) shouldBe 15
+    }
+
+    test("ETB sets life to half of starting life total (brawl: 25 -> 12, rounded down)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Swamp" to 20),
+            startingLife = 25 // Brawl-style starting life
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val torgaar = driver.putCardInHand(activePlayer, "Torgaar, Famine Incarnate")
+        driver.giveMana(activePlayer, Color.BLACK, 8)
+
+        driver.submit(
+            CastSpell(
+                playerId = activePlayer,
+                cardId = torgaar,
+                additionalCostPayment = AdditionalCostPayment(),
+                paymentStrategy = PaymentStrategy.FromPool
+            )
+        )
+
+        driver.bothPass()
+
+        driver.isPaused shouldBe true
+        driver.submitTargetSelection(activePlayer, listOf(opponent))
+        driver.bothPass()
+
+        // 25 / 2 = 12 (rounded down)
+        driver.getLifeTotal(opponent) shouldBe 12
     }
 
     test("ETB with optional target - can choose no target") {

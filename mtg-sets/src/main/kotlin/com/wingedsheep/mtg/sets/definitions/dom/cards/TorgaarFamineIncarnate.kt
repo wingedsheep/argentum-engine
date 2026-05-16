@@ -6,7 +6,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Torgaar, Famine Incarnate
@@ -31,7 +33,14 @@ val TorgaarFamineIncarnate = card("Torgaar, Famine Incarnate") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val player = target("player", TargetPlayer(optional = true))
-        effect = Effects.SetLifeTotal(10, player)
+        effect = Effects.SetLifeTotal(
+            amount = DynamicAmount.Divide(
+                numerator = DynamicAmount.StartingLifeTotal(Player.ContextPlayer(0)),
+                denominator = DynamicAmount.Fixed(2),
+                roundUp = false,
+            ),
+            target = player,
+        )
     }
 
     metadata {
