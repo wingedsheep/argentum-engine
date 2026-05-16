@@ -104,7 +104,15 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     // pre-selection honest about what will actually tap.
     if (result.type === 'delve') {
       const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
-      const remainingSymbols = getRemainingCostSymbols(originalSymbols, result.delvedCards.length)
+      // If X was resolved earlier, expand each {X} symbol to its numeric value so
+      // getRemainingCostSymbols can reduce that generic via delve.
+      const xValue =
+        mergedAction.type === 'CastSpell' ? mergedAction.xValue ?? 0 : 0
+      const resolvedSymbols =
+        xValue > 0
+          ? originalSymbols.map((s) => (s === 'X' ? String(xValue) : s))
+          : originalSymbols
+      const remainingSymbols = getRemainingCostSymbols(resolvedSymbols, result.delvedCards.length)
       const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
       const trimmedPreview: readonly EntityId[] | undefined =
         actionInfo.autoTapPreview && actionInfo.availableManaSources

@@ -431,9 +431,12 @@ class CastSpellEnumerator : ActionEnumerator {
             val hasXCost = effectiveCost.hasX
             val maxAffordableX: Int? = if (hasXCost) {
                 val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
+                // Each delve card pays for one generic mana, so it raises the
+                // X ceiling exactly like an additional mana source would.
+                val delveAvailable = if (hasDelve && delveCards != null) delveCards.size else 0
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                ((availableSources + delveAvailable - fixedCost) / xSymbolCount).coerceAtLeast(0)
             } else null
 
             // Always include mana cost string for cast actions

@@ -69,6 +69,11 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
   }
 
   // 2. Delve
+  //    Push when there's any generic mana that delve could pay for — either
+  //    printed generic (Murderous Cut's {4}{B}) or generic that appears once an X
+  //    cost has been resolved by xSelection (Empty the Pits' {X}{X}{B}{B}{B}{B}
+  //    becomes {6}{B}{B}{B}{B} for X=3). `maxDelve` is recomputed against the
+  //    merged action's xValue in enterPhase('delve').
   if (
     actionInfo.action.type === 'CastSpell' &&
     actionInfo.hasDelve &&
@@ -77,9 +82,9 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
   ) {
     const manaCostStr = actionInfo.manaCostString ?? ''
     const genericMatch = manaCostStr.match(/\{(\d+)\}/)
-    const genericAmount = genericMatch ? parseInt(genericMatch[1]!, 10) : 0
-    const maxDelve = Math.min(genericAmount, actionInfo.validDelveCards.length)
-    if (maxDelve > 0) {
+    const printedGeneric = genericMatch ? parseInt(genericMatch[1]!, 10) : 0
+    const hasXGeneric = !!actionInfo.hasXCost && (actionInfo.maxAffordableX ?? 0) > 0
+    if (printedGeneric > 0 || hasXGeneric) {
       phases.push({ type: 'delve' })
     }
   }
@@ -435,7 +440,12 @@ export function enterPhase(
     case 'delve': {
       const manaCostStr = actionInfo.manaCostString ?? ''
       const genericMatch = manaCostStr.match(/\{(\d+)\}/)
-      const genericAmount = genericMatch ? parseInt(genericMatch[1]!, 10) : 0
+      const printedGeneric = genericMatch ? parseInt(genericMatch[1]!, 10) : 0
+      // X mana resolves to xValue per {X} of generic, which delve can pay for like
+      // any other generic. xValue is set by the preceding xSelection phase.
+      const xCount = (manaCostStr.match(/\{X\}/g) ?? []).length
+      const xValue = action.type === 'CastSpell' ? action.xValue ?? 0 : 0
+      const genericAmount = printedGeneric + xCount * xValue
       const maxDelve = Math.min(genericAmount, actionInfo.validDelveCards!.length)
       store.startDelveSelection({
         actionInfo,
