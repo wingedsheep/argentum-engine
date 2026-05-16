@@ -140,7 +140,7 @@ EffectPatterns.revealUntilCreatureTypeToBattlefield()             // Riptide Sha
 ```
 
 If your mechanic fits the gather/select/move pattern, add a new factory method to `EffectPatterns.kt` and wire it
-through `Effects.kt`. See `card-definition-guide.md` §7 for the full pipeline reference.
+through `Effects.kt`. See `card-sdk-language-reference.md` §5 (Effect patterns) for the full pipeline reference.
 
 ### Fallback: New Effect Executor
 

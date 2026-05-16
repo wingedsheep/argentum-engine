@@ -135,7 +135,7 @@ scaffolding the earlier set is out of scope.
 
 Consult the relevant doc when the change touches an area:
 `continuous-effect-dependency-system.md`, `engine-server-interface.md`,
-`data-contracts.md`, `card-definition-guide.md`, `api-guide.md`.
+`data-contracts.md`, `card-sdk-language-reference.md`, `api-guide.md`.
 
 ## 4. MTG rules accuracy — verify every cited rule
 

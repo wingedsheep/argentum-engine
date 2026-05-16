@@ -84,8 +84,11 @@ anti-corruption layer between engine and clients.
 - **Adding a mechanic** → prefer composing in `EffectPatterns.kt` first; only add a new `Effect` type + executor in
   `rules-engine/handlers/effects/` when atomic primitives don't suffice.
 
-Detailed DSL reference: [`docs/card-definition-guide.md`](docs/card-definition-guide.md). Architectural reasoning
-(ECS, continuations, layer system, mana, priority): [`docs/architecture-principles.md`](docs/architecture-principles.md).
+Detailed DSL reference: [`docs/card-sdk-language-reference.md`](docs/card-sdk-language-reference.md) — a complete
+catalog of every building block (effects, triggers, conditions, filters, costs, keywords, dynamic amounts, etc.).
+**When you add or change anything in the SDK — a new effect, trigger, condition, keyword, dynamic amount, modal
+shape, replacement effect, etc. — update this document in the same change.** Architectural reasoning (ECS,
+continuations, layer system, mana, priority): [`docs/architecture-principles.md`](docs/architecture-principles.md).
 
 ## Testing
 
@@ -100,7 +103,7 @@ Detailed DSL reference: [`docs/card-definition-guide.md`](docs/card-definition-g
 |-----|-------|
 | [`architecture-principles.md`](docs/architecture-principles.md) | Core design (ECS, continuations, layer system, mana, priority) |
 | [`api-guide.md`](docs/api-guide.md) | Adding cards/mechanics step-by-step |
-| [`card-definition-guide.md`](docs/card-definition-guide.md) | Full card DSL reference |
+| [`card-sdk-language-reference.md`](docs/card-sdk-language-reference.md) | Full card SDK / DSL reference — update on any SDK change |
 | [`continuous-effect-dependency-system.md`](docs/continuous-effect-dependency-system.md) | Rule 613.8 dependency resolution |
 | [`managing-complex-and-rare-abilities.md`](docs/managing-complex-and-rare-abilities.md) | Patterns for complex abilities |
 | [`engine-server-interface.md`](docs/engine-server-interface.md) | Engine ↔ API contract |

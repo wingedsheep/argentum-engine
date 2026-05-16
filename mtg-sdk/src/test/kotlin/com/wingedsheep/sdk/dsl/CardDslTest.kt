@@ -51,7 +51,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * Tests for the Card Definition DSL.
  *
  * These tests verify that we can define cards using the fluent DSL syntax
- * described in card-definition-guide.md.
+ * described in docs/card-sdk-language-reference.md.
  */
 class CardDslTest : DescribeSpec({
 

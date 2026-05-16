@@ -79,7 +79,7 @@ Implement the card specified in `$ARGUMENTS`. The card name is the main argument
 **Always prefer atomic effects over monolithic effects** for reusability.
 
 1. **Read [docs/architecture-principles.md](../../../docs/architecture-principles.md)** — understand the application architecture, design decisions, and how effects/executors/continuations fit together before implementing anything.
-2. **Read [mtg-sdk/reference.md](../../../mtg-sdk/reference.md)** — complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmounts.*`, `EffectPatterns.*`), raw effect types, keywords, static abilities, replacement effects, and more.
+2. **Read [docs/card-sdk-language-reference.md](../../../docs/card-sdk-language-reference.md)** — complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmount.*`, `EffectPatterns.*`), raw effect types, keywords, static abilities, replacement effects, and more.
 3. **Search existing cards** with similar mechanics: `grep -r "<keyword-or-effect>" mtg-sets/src/main/kotlin/`
 
 ## Step 3: Model the Card
@@ -152,10 +152,14 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 - **4.7 Add Replacement Effect** (if needed) in `mtg-sdk/.../scripting/ReplacementEffect.kt`
 - **4.8 Add Trigger** (if needed) in `mtg-sdk/.../scripting/trigger/` + facade in `mtg-sdk/.../dsl/Triggers.kt`
 - **4.9 Add Condition** (if needed) in `mtg-sdk/.../scripting/condition/` + facade in `mtg-sdk/.../dsl/Conditions.kt`
-- **4.10 Update [reference.md](../../../mtg-sdk/reference.md)** with all new types added
+- **4.10 Update [docs/card-sdk-language-reference.md](../../../docs/card-sdk-language-reference.md)** with every new
+  building block — effect, trigger, condition, filter, cost, keyword, dynamic amount, modal shape, replacement
+  effect, etc. This document is the canonical SDK catalog; **any SDK addition or change must update it in the same
+  change**, in the appropriate section (§4 Effects, §5 Effect patterns, §7 Filters, §8 Triggers, §9 Static
+  abilities, §11 Keywords, §12 Conditions, §13 Dynamic amounts, §14 Modal & choice, §15 Replacement effects, etc.).
 
 For code templates, see [examples.md](examples.md).
-Refer back to [architecture-principles.md](../../../docs/architecture-principles.md) and [reference.md](../../../mtg-sdk/reference.md) from Step 2 as needed.
+Refer back to [architecture-principles.md](../../../docs/architecture-principles.md) and [card-sdk-language-reference.md](../../../docs/card-sdk-language-reference.md) from Step 2 as needed.
 
 ## Step 5: Write Scenario Tests for New Effects
 
@@ -164,7 +168,7 @@ Refer back to [architecture-principles.md](../../../docs/architecture-principles
 **File**: `game-server/src/test/kotlin/com/wingedsheep/gameserver/scenarios/{CardName}ScenarioTest.kt`
 
 - Set up minimal board state, exercise new effect in isolation, verify state changes, cover edge cases
-- See [examples.md](examples.md) and [reference.md](../../../mtg-sdk/reference.md) for test templates and helpers
+- See [examples.md](examples.md) and [card-sdk-language-reference.md](../../../docs/card-sdk-language-reference.md) for test templates and helpers
 
 ## Step 6: Player Experience Review
 

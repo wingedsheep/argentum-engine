@@ -2,9 +2,15 @@
 
 A complete catalog of every building block available to card authors in the Argentum
 Engine `mtg-sdk`, with a one-line description for each. Designed to be scanned and
-searched. For prose and worked examples, see
-[`card-definition-guide.md`](card-definition-guide.md) and
+searched. For step-by-step authoring workflow see [`api-guide.md`](api-guide.md) and
+[`adding-new-cards-workflow.md`](adding-new-cards-workflow.md); for hard cases see
 [`managing-complex-and-rare-abilities.md`](managing-complex-and-rare-abilities.md).
+
+**Maintenance rule:** this document is the canonical SDK catalog. **Every change to the
+SDK — new effect, trigger, condition, filter, cost, keyword, dynamic amount, modal
+shape, replacement effect, etc. — must update the matching section here in the same
+change.** If the entry doesn't fit cleanly in an existing section, add or rename a
+section; do not let SDK additions land without a corresponding doc update.
 
 ---
 
@@ -13,7 +19,8 @@ searched. For prose and worked examples, see
 **Entry points**
 
 - `card("Name") { ... }` — open the builder for a standard card.
-- `basicLand("Plains" | "Island" | "Swamp" | "Mountain" | "Forest")` — shortcut for basic lands (sets type line, intrinsic mana ability, supertype).
+- `basicLand("Plains" | "Island" | "Swamp" | "Mountain" | "Forest")` — shortcut for basic lands (sets type line,
+  intrinsic mana ability, supertype).
 
 **Card builder properties**
 
@@ -54,8 +61,10 @@ searched. For prose and worked examples, see
 **`CardLayout`**
 
 - `NORMAL` — standard single face (default).
-- `SPLIT` — two or more halves on one card; combined characteristics apply off-battlefield (CR 709.4c). Used for Rooms, Fuse, Aftermath.
-- `ADVENTURE` — primary face is a creature, `cardFaces[0]` is an instant/sorcery Adventure (CR 715). Resolving the Adventure exiles the card and grants permission to cast the creature from exile.
+- `SPLIT` — two or more halves on one card; combined characteristics apply off-battlefield (CR 709.4c). Used for Rooms,
+  Fuse, Aftermath.
+- `ADVENTURE` — primary face is a creature, `cardFaces[0]` is an instant/sorcery Adventure (CR 715). Resolving the
+  Adventure exiles the card and grants permission to cast the creature from exile.
 
 **`CardFace` (SPLIT / ADVENTURE)**
 
@@ -77,7 +86,8 @@ searched. For prose and worked examples, see
 - `inBooster: Boolean` — appears in draft boosters (default `true`; `false` for Special Guests / starter exclusives).
 - `oracleTextOverride: String?` — bypass auto-generated oracle text.
 
-**Reprints** — add a `Printing` row in the new set's `Reprints.kt` and wire it into `MtgSet.printings`. Never duplicate the `CardDefinition`.
+**Reprints** — add a `Printing` row in the new set's `Reprints.kt` and wire it into `MtgSet.printings`. Never duplicate
+the `CardDefinition`.
 
 ---
 
@@ -103,7 +113,8 @@ searched. For prose and worked examples, see
 
 **`AdditionalCost`** — extra costs paid alongside the mana cost.
 
-- `AdditionalCost.BlightVariable` — "as you cast, you may pay X life" (Blight X); X exposed via `DynamicAmount.AdditionalCostBlightAmount`.
+- `AdditionalCost.BlightVariable` — "as you cast, you may pay X life" (Blight X); X exposed via
+  `DynamicAmount.AdditionalCostBlightAmount`.
 
 ---
 
@@ -142,7 +153,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Destruction & exile
 
 - `Destroy(target)` — destroy target (respects indestructible).
-- `DestroyAll(filter, noRegenerate?, storeDestroyedAs?)` — destroy all matching; optionally save the ID list for follow-up.
+- `DestroyAll(filter, noRegenerate?, storeDestroyedAs?)` — destroy all matching; optionally save the ID list for
+  follow-up.
 - `DestroyAllAndAttached(filter, noRegenerate?)` — also destroys auras/equipment on the matching permanents.
 - `DestroyAllEquipmentOnTarget(target)` — wreck the gear attached to a creature.
 - `Exile(target)` — exile target.
@@ -198,7 +210,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `RemoveAnyNumberOfCounters(target)` — player removes 0 or more.
 - `RemoveAllCounters(target)` — wipe every counter.
 - `RemoveAllCountersOfType(type, target)` — wipe one kind.
-- `MoveAllLastKnownCounters(target)` — Hooded Hydra / Essence Channeler — move every counter kind from source's last-known state.
+- `MoveAllLastKnownCounters(target)` — Hooded Hydra / Essence Channeler — move every counter kind from source's
+  last-known state.
 - `DistributeCountersFromSelf(type?, count?)` — split source's counters among creatures you control.
 - `DistributeCountersAmongTargets(total, type?, minPerTarget?)` — divvy N counters among chosen targets.
 - `Proliferate()` — add one counter of each kind already present on chosen permanents/players (CR 701.27).
@@ -321,7 +334,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `SelectTargetEffect(...)` — have a player pick from a valid set.
 - `SeparatePermanentsIntoPilesEffect(filter, piles)` — divvy into piles (Fact-or-Fiction shape).
 
-> **Authoring rule:** prefer composing primitives over adding parameters to an existing effect. Use `CompositeEffect` and the gather/select/move pipeline before writing a new executor.
+> **Authoring rule:** prefer composing primitives over adding parameters to an existing effect. Use `CompositeEffect`
+> and the gather/select/move pipeline before writing a new executor.
 
 ---
 
@@ -416,8 +430,10 @@ Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` sh
 - `EffectTarget.Self` — the source permanent.
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger to fire.
 - `EffectTarget.PlayerRef(...)` — a player slot: `You`, `Each`, `Opponent`, etc.
-- `EffectTarget.ContextProperty(key)` — value plumbed into `EffectContext` (damage amount, life gained, blight amount, …).
-- `EnchantedCreature` / `EquippedCreature` — resolve via `AttachedToComponent`; requires the state-aware `resolveTarget(state, target)` overload.
+- `EffectTarget.ContextProperty(key)` — value plumbed into `EffectContext` (damage amount, life gained, blight
+  amount, …).
+- `EnchantedCreature` / `EquippedCreature` — resolve via `AttachedToComponent`; requires the state-aware
+  `resolveTarget(state, target)` overload.
 
 ### Cast-time (`Targets.*` / `TargetRequirement`)
 
@@ -437,7 +453,9 @@ Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` sh
 - `Targets.TappedCreature` / `UntappedCreature` — state-restricted.
 - `Targets.InstantOrSorcery` — instant-or-sorcery card.
 
-**Chained predicates** — `.youControl()`, `.controlledByOpponent()`, `.opponent()`, `.withSubtype(...)`, `.withKeyword(...)`, `.ofColor(...)`, `.tapped()`, `.untapped()`, `.power(n)`, `.minPower(n)`, `.maxPower(n)`; plus `TargetFilter.excludeSelf` to exclude the source.
+**Chained predicates** — `.youControl()`, `.controlledByOpponent()`, `.opponent()`, `.withSubtype(...)`,
+`.withKeyword(...)`, `.ofColor(...)`, `.tapped()`, `.untapped()`, `.power(n)`, `.minPower(n)`, `.maxPower(n)`; plus
+`TargetFilter.excludeSelf` to exclude the source.
 
 ### Named multi-target binding
 
@@ -452,7 +470,8 @@ spell {
 }
 ```
 
-For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; per-mode targets route via `modeTargetsOrdered`.
+For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; per-mode targets route via
+`modeTargetsOrdered`.
 
 ---
 
@@ -482,7 +501,8 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 - `.faceDown()` — face-down state.
 - `.card(filter)` — defer to a card-shape filter for off-battlefield checks.
 
-**Explicit constructor**: `GameObjectFilter(cardPredicates, controllerPredicate, colorPredicate, keywordPredicate, powerToughnessPredicate, subtypePredicate)`.
+**Explicit constructor**:
+`GameObjectFilter(cardPredicates, controllerPredicate, colorPredicate, keywordPredicate, powerToughnessPredicate, subtypePredicate)`.
 
 ### `GroupFilter` — static-ability scope
 
@@ -490,7 +510,8 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 - `GroupFilter.CreaturesOpponentControls` — their creatures.
 - `GroupFilter.AllCreatures` — every creature on the battlefield.
 - `GroupFilter.All(filter)` — custom group.
-- Chained: `.withColor`, `.withoutColor`, `.withKeyword`, `.withoutKeyword`, `.withSubtype`, `.withoutSubtype`, `.minPower`, `.maxPower`, `.power`.
+- Chained: `.withColor`, `.withoutColor`, `.withKeyword`, `.withoutKeyword`, `.withSubtype`, `.withoutSubtype`,
+  `.minPower`, `.maxPower`, `.power`.
 
 ### `StatePredicate` — battlefield state checks
 
@@ -506,7 +527,9 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 - `OtherCreaturesWithSubtype` — lord scope (other creatures of subtype).
 - `CreaturesWithCounter` — creatures with at least one counter (Aurification).
 
-> **Load-bearing rule:** filtering battlefield permanents by type/subtype/color/keyword/P-T MUST use `predicateEvaluator.matchesWithProjection(state, projected, ...)`. Use `projected.isCreature(entityId)` rather than `cardComponent.typeLine.isCreature`. Non-battlefield zones may read base state.
+> **Load-bearing rule:** filtering battlefield permanents by type/subtype/color/keyword/P-T MUST use
+`predicateEvaluator.matchesWithProjection(state, projected, ...)`. Use `projected.isCreature(entityId)` rather than
+`cardComponent.typeLine.isCreature`. Non-battlefield zones may read base state.
 
 ---
 
@@ -657,7 +680,8 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 ### Delayed & granted triggers
 
 - `DelayedTriggeredAbility` — registered now, fires at a specific future step (Astral Slide).
-- `Effects.GrantTriggeredAbilityEffect` — grant a triggered ability for a duration; `GrantTriggeredAbilityExecutor` uses projected state and supports leaves-battlefield-to-zone triggers.
+- `Effects.GrantTriggeredAbilityEffect` — grant a triggered ability for a duration; `GrantTriggeredAbilityExecutor` uses
+  projected state and supports leaves-battlefield-to-zone triggers.
 
 ---
 
@@ -665,10 +689,10 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 
 ```kotlin
 staticAbility {
-    ability   = Modification.GrantKeyword(Keyword.FLYING)
-    filter    = GroupFilter.CreaturesYouControl.withSubtype("Soldier")
-    duration  = Duration.Permanent
-    layer     = Layer.PT_POWER_TOUGHNESS    // optional; usually inferred
+    ability = Modification.GrantKeyword(Keyword.FLYING)
+    filter = GroupFilter.CreaturesYouControl.withSubtype("Soldier")
+    duration = Duration.Permanent
+    layer = Layer.PT_POWER_TOUGHNESS    // optional; usually inferred
     condition = Conditions.YouControl(Filters.Swamp)
 }
 ```
@@ -703,13 +727,13 @@ staticAbility {
 
 ```kotlin
 activatedAbility {
-    cost          = Costs.Tap
-    effect        = Effects.DrawCards(1)
-    target        = Targets.Creature
-    optional      = false
-    timing        = TimingRule.Normal
+    cost = Costs.Tap
+    effect = Effects.DrawCards(1)
+    target = Targets.Creature
+    optional = false
+    timing = TimingRule.Normal
     isManaAbility = false
-    restriction   = ActivationRestriction.MaxPerTurn(1)
+    restriction = ActivationRestriction.MaxPerTurn(1)
 }
 ```
 
@@ -738,7 +762,11 @@ activatedAbility {
 
 **`Keyword` enum (display-level)**
 
-Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all landwalks (Plainswalk … Forestwalk), First Strike, Double Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Defender, Indestructible, Hexproof, Shroud, Haste, Flash, Prowess, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Conspire, Hideaway, Cascade, Offspring, Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or composite abilities).
+Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all landwalks (Plainswalk … Forestwalk), First Strike, Double
+Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Defender, Indestructible, Hexproof, Shroud, Haste,
+Flash, Prowess, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Conspire, Hideaway, Cascade, Offspring,
+Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
+composite abilities).
 
 **Parameterized `KeywordAbility.*`**
 
@@ -974,7 +1002,7 @@ EntersWithChoice(
 ```kotlin
 replacementEffect {
     condition = Conditions.YouControl(Filters.Swamp)
-    effect    = ReplacementEffect.PreventDamage(1)
+    effect = ReplacementEffect.PreventDamage(1)
 }
 ```
 
@@ -983,17 +1011,22 @@ replacementEffect {
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - Custom — implement the `ReplacementEffect` interface directly.
 
-Amount-modifying replacements expose **both** `multiplier` (×) and `modifier` (±) on the same type — do not split into `DoubleX` + `ModifyXAmount`.
+Amount-modifying replacements expose **both** `multiplier` (×) and `modifier` (±) on the same type — do not split into
+`DoubleX` + `ModifyXAmount`.
 
 ---
 
 ## 16. Counters
 
-String-keyed counter types — resolve via the central `resolveCounterType` helper rather than per-executor character substitution.
+String-keyed counter types — resolve via the central `resolveCounterType` helper rather than per-executor character
+substitution.
 
 - `+1/+1`, `-1/-1` — power/toughness counters.
 - `loyalty` — planeswalker loyalty.
-- `charge`, `time`, `level`, `quest`, `shield`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`, `blood`, `cage`, `doom`, `storage`, `divinity`, `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`, `hour`, `energy`, `scry`, `aura`, `chapter`, `citation`, `rune`, `scar`, `crux`, `omen`, `secret` — assorted printed counter kinds.
+- `charge`, `time`, `level`, `quest`, `shield`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
+  `blood`, `cage`, `doom`, `storage`, `divinity`, `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,
+  `hour`, `energy`, `scry`, `aura`, `chapter`, `citation`, `rune`, `scar`, `crux`, `omen`, `secret` — assorted printed
+  counter kinds.
 
 Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `MoveAllLastKnownCounters`, etc.).
 
@@ -1006,9 +1039,11 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 **Primitives**
 
 - `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move.
-- `MoveCollectionEffect(collectionName, zone, faceDown?, linkToSource?, asOwner?, likelyPosition?)` — pipeline move of a stored collection.
+- `MoveCollectionEffect(collectionName, zone, faceDown?, linkToSource?, asOwner?, likelyPosition?)` — pipeline move of a
+  stored collection.
 - `GatherCardsEffect(source, filter, into)` — pipeline gather from a zone into a named collection.
-- `SelectFromCollectionEffect(from, into, selectCount?, allowZero?, alwaysPrompt?)` — let a player pick from a collection.
+- `SelectFromCollectionEffect(from, into, selectCount?, allowZero?, alwaysPrompt?)` — let a player pick from a
+  collection.
 
 **Linked exile**
 
@@ -1064,53 +1099,64 @@ Card authors rarely reference these directly; they are created/updated by the ma
 
 ## 19. Named-mechanic composites
 
-- **Cycling / Typecycling / Basic landcycling** — `KeywordAbility.Cycling(cost)`, `Typecycling(type, cost)`, `BasicLandcycling(cost)`; unified via `TypecyclingVariant(cost, searchFilter, description)` in `TypecycleCardHandler`.
-- **Adventure (CR 715)** — `layout = ADVENTURE` + `cardFaces[0]` Adventure spell; DSL: `card { adventure("Name") { spell { … } } }`.
-- **Hideaway** — `Keyword.HIDEAWAY` (display) + `MoveCollectionEffect(faceDown = true, linkToSource = true)` + `CardSource.FromLinkedExile()`; no special engine plumbing needed.
-- **Ascend / City's Blessing** — `Keyword.ASCEND` + `Effects.GainCitysBlessing()` + `Conditions.YouHaveCitysBlessing` / `SourceProjectionCondition.ControllerHasCitysBlessing` + `PlayerCitysBlessingComponent`.
+- **Cycling / Typecycling / Basic landcycling** — `KeywordAbility.Cycling(cost)`, `Typecycling(type, cost)`,
+  `BasicLandcycling(cost)`; unified via `TypecyclingVariant(cost, searchFilter, description)` in `TypecycleCardHandler`.
+- **Adventure (CR 715)** — `layout = ADVENTURE` + `cardFaces[0]` Adventure spell; DSL:
+  `card { adventure("Name") { spell { … } } }`.
+- **Hideaway** — `Keyword.HIDEAWAY` (display) + `MoveCollectionEffect(faceDown = true, linkToSource = true)` +
+  `CardSource.FromLinkedExile()`; no special engine plumbing needed.
+- **Ascend / City's Blessing** — `Keyword.ASCEND` + `Effects.GainCitysBlessing()` + `Conditions.YouHaveCitysBlessing` /
+  `SourceProjectionCondition.ControllerHasCitysBlessing` + `PlayerCitysBlessingComponent`.
 - **Siege (named-mode entry)** — `EntersWithChoice(ChoiceType.MODE, modeOptions = ...)` + `SourceChosenModeIs("id")`.
 - **Morph** — `morph = "{2}{U}"` (top-level) + `morphFaceUpEffect` for "as it turns face up".
 - **Warp** — `warp = "{1}{R}"`; alt-cost that exiles end of turn.
 - **Evoke** — `evoke = "{U}"`; pay alt cost, sacrifice on ETB.
-- **Earthbend** — `Effects.Earthbend` composes AnimateLand + GrantKeyword + AddCounters + granted self-triggers (no fake keyword).
+- **Earthbend** — `Effects.Earthbend` composes AnimateLand + GrantKeyword + AddCounters + granted self-triggers (no fake
+  keyword).
 - **Forage** — `EffectPatterns.forage`; cast-from-graveyard permissions need a branch in `CastSpellHandler.validate`.
-- **Blight X** — `AdditionalCost.BlightVariable` + `DynamicAmount.AdditionalCostBlightAmount` + `Conditions.BlightWasPaid(n)`.
+- **Blight X** — `AdditionalCost.BlightVariable` + `DynamicAmount.AdditionalCostBlightAmount` +
+  `Conditions.BlightWasPaid(n)`.
 - **Divvy (Fact-or-Fiction)** — `EffectPatterns.factOrFiction(...)`; `SplitPilesDecision` stays dormant until N > 2.
 - **Astral Slide / delayed return** — `ExileUntilEndStepEffect` + `DelayedTriggeredAbility`.
-- **Lord effects** — multiple `staticAbility { }` blocks + `ModifyStatsForCreatureGroup` / `AffectsFilter.OtherCreaturesWithSubtype`.
-- **Player-scoped uncounterable grant** — `Effects.GrantSpellsCantBeCountered(target, filter, duration)` + `SpellsCantBeCounteredComponent`.
+- **Lord effects** — multiple `staticAbility { }` blocks + `ModifyStatsForCreatureGroup` /
+  `AffectsFilter.OtherCreaturesWithSubtype`.
+- **Player-scoped uncounterable grant** — `Effects.GrantSpellsCantBeCountered(target, filter, duration)` +
+  `SpellsCantBeCounteredComponent`.
 - **Static emblems** — `Effects.CreatePermanentEmblem(...)` for planeswalker emblems with static abilities.
 
 ---
 
 ## 20. Miscellaneous author-facing knobs
 
-- `triggeredAbility { controlledByTriggeringEntityController = true }` — the triggered ability is controlled by the triggering entity's controller (not source's). Useful for ETB-on-creature triggers and Death Match-style shapes.
+- `triggeredAbility { controlledByTriggeringEntityController = true }` — the triggered ability is controlled by the
+  triggering entity's controller (not source's). Useful for ETB-on-creature triggers and Death Match-style shapes.
 - `metadata.oracleTextOverride` — bypass auto-generated oracle text when needed.
 - `metadata.inBooster = false` — Special Guests, starter exclusives, bonus sheets.
 - `colorIdentity` override is authoritative — never run `:mtg-sets:syncColorIdentityFromDump`.
-- Layer dependencies (CR 613.8) — same-layer effects sort by dependency (trial application) before falling back to timestamp.
-- Server is authoritative; never compute legal actions in the client. Every state change emits a `GameEvent` so triggers and animations can react.
+- Layer dependencies (CR 613.8) — same-layer effects sort by dependency (trial application) before falling back to
+  timestamp.
+- Server is authoritative; never compute legal actions in the client. Every state change emits a `GameEvent` so triggers
+  and animations can react.
 
 ---
 
 ## Authoritative source files
 
-| Area | Path |
-|---|---|
-| Card DSL | `mtg-sdk/src/main/kotlin/.../dsl/CardBuilder.kt` |
-| Effects | `mtg-sdk/src/main/kotlin/.../dsl/Effects.kt` |
-| Effect patterns | `mtg-sdk/src/main/kotlin/.../dsl/EffectPatterns.kt` |
-| Triggers | `mtg-sdk/src/main/kotlin/.../dsl/Triggers.kt` |
-| Costs | `mtg-sdk/src/main/kotlin/.../dsl/Costs.kt` |
-| Conditions | `mtg-sdk/src/main/kotlin/.../dsl/Conditions.kt` |
-| Filters | `mtg-sdk/src/main/kotlin/.../dsl/Filters.kt` |
-| Targets | `mtg-sdk/src/main/kotlin/.../dsl/Targets.kt` |
-| Keywords | `mtg-sdk/src/main/kotlin/.../core/Keyword.kt` |
-| Card model | `mtg-sdk/src/main/kotlin/.../model/CardDefinition.kt` |
-| Dynamic amounts | `mtg-sdk/src/main/kotlin/.../scripting/values/DynamicAmount.kt` |
-| Real card examples | `mtg-sets/src/main/kotlin/.../definitions/blb/cards/` |
+| Area               | Path                                                            |
+|--------------------|-----------------------------------------------------------------|
+| Card DSL           | `mtg-sdk/src/main/kotlin/.../dsl/CardBuilder.kt`                |
+| Effects            | `mtg-sdk/src/main/kotlin/.../dsl/Effects.kt`                    |
+| Effect patterns    | `mtg-sdk/src/main/kotlin/.../dsl/EffectPatterns.kt`             |
+| Triggers           | `mtg-sdk/src/main/kotlin/.../dsl/Triggers.kt`                   |
+| Costs              | `mtg-sdk/src/main/kotlin/.../dsl/Costs.kt`                      |
+| Conditions         | `mtg-sdk/src/main/kotlin/.../dsl/Conditions.kt`                 |
+| Filters            | `mtg-sdk/src/main/kotlin/.../dsl/Filters.kt`                    |
+| Targets            | `mtg-sdk/src/main/kotlin/.../dsl/Targets.kt`                    |
+| Keywords           | `mtg-sdk/src/main/kotlin/.../core/Keyword.kt`                   |
+| Card model         | `mtg-sdk/src/main/kotlin/.../model/CardDefinition.kt`           |
+| Dynamic amounts    | `mtg-sdk/src/main/kotlin/.../scripting/values/DynamicAmount.kt` |
+| Real card examples | `mtg-sets/src/main/kotlin/.../definitions/blb/cards/`           |
 
-For step-by-step authoring workflow see [`api-guide.md`](api-guide.md);
-for full DSL prose see [`card-definition-guide.md`](card-definition-guide.md);
+For step-by-step authoring workflow see [`api-guide.md`](api-guide.md) and
+[`adding-new-cards-workflow.md`](adding-new-cards-workflow.md);
 for hard cases see [`managing-complex-and-rare-abilities.md`](managing-complex-and-rare-abilities.md).
