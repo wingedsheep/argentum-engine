@@ -53,7 +53,7 @@ section). Confirmed with the host on 2026-05-16.
 | Pack shape | **CMR-2020: 20 cards** — 13C / 3U / 2 legendary / 1 non-leg R/M / 1 bonus | Direct copy of the paper format |
 | Bonus slot | Any rarity, weighted like CMR's foil slot (mostly C, sometimes R/M) | We don't model foils as gameplay-relevant; bonus card replaces the foil slot. Keeps the 20-card count. |
 | Pack synthesis | Apply CMR shape to **any** chosen set, synthesising legendary slots from whatever legendaries the set has | Lets players draft/seal with current sets (BLB, MOM, DSK, …), not just CMR/CMM. Sparse-legendary fallback documented below. |
-| Packs per player | Draft default **3** (60 cards drafted), Sealed default **4** (80 cards). Host-configurable. | Matches CMR 2020 paper |
+| Packs per player | Draft default **3** (60 cards drafted), Sealed default **6** (120 cards). Host-configurable. | Draft mirrors CMR 2020; Sealed bumps past CMR's 4-pack default so 60-card decks have real depth |
 | Pick size | Default **2**. Host-configurable (1 / 2 / 3). | Pick-2 is the CMR default; speeds the draft |
 | Deck size | **60 minimum**, host-configurable | Brawl shape; 1v1 doesn't need 99 cards |
 | Singleton | **OFF by default**. Host toggle. | A drafted pool can't sustain singleton without a much larger pack count |

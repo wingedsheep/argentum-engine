@@ -147,6 +147,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const [searchText, setSearchText] = useState('')
   const [creatureTypeFilter, setCreatureTypeFilter] = useState<string | null>(null)
   const [archetypeFilter, setArchetypeFilter] = useState<Archetype | null>(null)
+  // Restrict the pool view to cards inside the chosen commander's colour identity. Defaults to
+  // true and resets to true each time a fresh commander is designated — that matches how a
+  // player thinks ("only show me things I can actually play"). Hidden / inert when no commander
+  // is chosen.
+  const [restrictToCommanderIdentity, setRestrictToCommanderIdentity] = useState(true)
 
   const dfc = useDfcHoverFlip(hoveredCard)
   const resetDfcFlip = dfc.resetFlip
@@ -180,26 +185,73 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
 
   // Pool-filtered eligible commanders for the limited commander formats. Matches the backend's
   // CommanderEligibility: legendary creature, legendary planeswalker, or any card with an
-  // explicit "can be your commander" override clause in the oracle text.
-  const eligibleCommanders = useMemo<readonly SealedCardInfo[]>(() => {
-    if (!isCommanderShape) return []
+  // explicit "can be your commander" override clause in the oracle text. Returned as a Set so
+  // each deck row can check eligibility in O(1) when deciding whether to enable its crown.
+  const eligibleCommanderNames = useMemo<Set<string>>(() => {
+    const out = new Set<string>()
+    if (!isCommanderShape) return out
     const re = /can be your commander/i
-    const seen = new Set<string>()
-    const out: SealedCardInfo[] = []
     for (const card of state.cardPool) {
-      if (seen.has(card.name)) continue
       const tl = card.typeLine.toLowerCase()
       const isLegendary = tl.includes('legendary')
       const isCreature = tl.includes('creature')
       const isPlaneswalker = tl.includes('planeswalker')
       const override = re.test(card.oracleText ?? '')
       if ((isLegendary && (isCreature || isPlaneswalker)) || override) {
-        seen.add(card.name)
-        out.push(card)
+        out.add(card.name)
       }
     }
-    return out.sort((a, b) => a.name.localeCompare(b.name))
+    return out
   }, [state.cardPool, isCommanderShape])
+
+  // The chosen commander's colour identity. Empty = colourless. Null = no commander chosen.
+  // Used to decide which deck rows are off-identity.
+  const commanderIdentity = useMemo<ReadonlySet<string> | null>(() => {
+    if (!isCommanderShape || state.commander == null) return null
+    const card = state.cardPool.find((c) => c.name === state.commander)
+    return new Set(card?.colorIdentity ?? [])
+  }, [state.cardPool, state.commander, isCommanderShape])
+
+  // Reset the identity filter to ON whenever a new commander is designated, so picking a
+  // commander immediately restricts the pool view. Clearing the commander leaves the toggle's
+  // last value alone — it goes inert because the UI hides the chip.
+  useEffect(() => {
+    if (state.commander != null) setRestrictToCommanderIdentity(true)
+  }, [state.commander])
+
+  // If the designated commander is no longer in the deck (the user removed the last copy via
+  // the deck-row click), clear the designation. The identity-filter chip is gated on
+  // [commanderIdentity], so it disappears automatically as soon as state.commander goes null.
+  // Mirrors the standalone /deckbuilder's "clear commander when removed from deckCards" effect.
+  useEffect(() => {
+    if (state.commander != null && !state.deck.includes(state.commander)) {
+      setCommander(null)
+    }
+  }, [state.commander, state.deck, setCommander])
+
+  // Deck cards (and chosen commander) whose colour identity escapes the commander's identity.
+  // Matches the server's COLOR_IDENTITY_VIOLATION check; surfaced as a red left border on the
+  // deck-list row so users get the same visual hint the standalone /deckbuilder shows.
+  const offIdentityNames = useMemo<Set<string>>(() => {
+    const out = new Set<string>()
+    if (!commanderIdentity) return out
+    const namesToCheck = new Set<string>(state.deck)
+    if (state.commander != null) namesToCheck.add(state.commander)
+    for (const name of namesToCheck) {
+      const card = state.cardPool.find((c) => c.name === name)
+      if (!card) continue
+      // The commander itself is always within its own identity — skip it.
+      if (name === state.commander) continue
+      const id = card.colorIdentity ?? []
+      for (const color of id) {
+        if (!commanderIdentity.has(color)) {
+          out.add(name)
+          break
+        }
+      }
+    }
+    return out
+  }, [state.cardPool, state.deck, state.commander, commanderIdentity])
 
   // Deck analytics
   const deckAnalytics = useMemo(() => {
@@ -332,6 +384,18 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           const cardColors = getCardColors(card)
           if (!matchesColorIdentityFilter(cardColors, colorFilter, colorMode)) continue
         }
+        // Commander-identity restriction: every colour in the card's identity must appear in
+        // the commander's identity. Mirrors the server's COLOR_IDENTITY_VIOLATION check.
+        if (commanderIdentity != null && restrictToCommanderIdentity) {
+          let outside = false
+          for (const color of card.colorIdentity ?? []) {
+            if (!commanderIdentity.has(color)) {
+              outside = true
+              break
+            }
+          }
+          if (outside) continue
+        }
         if (typeFilter) {
           if (!matchesTypeFilter(card, typeFilter)) continue
         }
@@ -354,7 +418,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
-  }, [state.cardPool, state.deck, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchText, archetypeFilter])
+  }, [state.cardPool, state.deck, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchText, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
 
   const totalPoolCards = poolCardGroups.reduce((sum, g) => sum + g.availableCount, 0)
 
@@ -486,13 +550,41 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           >
             {totalCount} / {requiredSize}
           </div>
-          {isCommanderShape && !isSubmitted && (
-            <CommanderPickerControl
-              eligible={eligibleCommanders}
-              selected={state.commander}
-              onSelect={setCommander}
-              compact={responsive.isMobile}
-            />
+          {isCommanderShape && !isSubmitted && state.commander == null && (
+            <div
+              title="Click the crown next to a legendary creature in your deck to designate it as your commander."
+              style={{
+                padding: responsive.isMobile ? '4px 10px' : '6px 14px',
+                fontSize: responsive.isMobile ? 11 : 12,
+                backgroundColor: '#3a2b00',
+                color: '#ffb300',
+                border: '1px solid #b8860b',
+                borderRadius: 6,
+                fontWeight: 600,
+              }}
+            >
+              ♛ Pick a commander
+            </div>
+          )}
+          {isCommanderShape && !isSubmitted && state.commander != null && (
+            <div
+              title={`Commander: ${state.commander}`}
+              style={{
+                padding: responsive.isMobile ? '4px 10px' : '6px 14px',
+                fontSize: responsive.isMobile ? 11 : 12,
+                backgroundColor: '#3a2b00',
+                color: '#ffd76b',
+                border: '1px solid #daa520',
+                borderRadius: 6,
+                fontWeight: 600,
+                maxWidth: responsive.isMobile ? 160 : 240,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ♛ {state.commander}
+            </div>
           )}
 
           {isSubmitted ? (
@@ -515,6 +607,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             <button
               onClick={submitSealedDeck}
               disabled={!isValidDeck}
+              title={
+                isValidDeck
+                  ? undefined
+                  : isCommanderShape && state.commander == null
+                  ? 'Designate a commander first — click the crown ♛ on a legendary creature in your deck'
+                  : `Deck needs at least ${requiredSize} cards`
+              }
               style={{
                 padding: responsive.isMobile ? '6px 14px' : '8px 20px',
                 fontSize: responsive.fontSize.normal,
@@ -674,6 +773,28 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 </button>
               )
             })}
+            {commanderIdentity != null && (
+              <button
+                onClick={() => setRestrictToCommanderIdentity((v) => !v)}
+                title={
+                  restrictToCommanderIdentity
+                    ? `Showing only cards inside ${state.commander}'s colour identity. Click to show the full pool.`
+                    : `Restrict the pool to cards inside ${state.commander}'s colour identity.`
+                }
+                style={{
+                  padding: '3px 10px',
+                  fontSize: 11,
+                  backgroundColor: restrictToCommanderIdentity ? '#3a2b00' : '#444',
+                  color: restrictToCommanderIdentity ? '#ffd76b' : '#ccc',
+                  border: restrictToCommanderIdentity ? '1px solid #daa520' : '1px solid #555',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                ♛ Identity {restrictToCommanderIdentity ? 'on' : 'off'}
+              </button>
+            )}
             {colorFilter.size > 0 && (
               <button
                 onClick={() => setColorFilter(new Set())}
@@ -1146,6 +1267,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 }}
                 onHover={handleHover}
                 disabled={isSubmitted}
+                showCommanderControls={isCommanderShape && !isSubmitted}
+                isCommander={state.commander === card.name}
+                canBeCommander={eligibleCommanderNames.has(card.name)}
+                offIdentity={offIdentityNames.has(card.name)}
+                onToggleCommander={() => {
+                  setCommander(state.commander === card.name ? null : card.name)
+                }}
               />
             ))}
 
@@ -1230,133 +1358,6 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       )}
 
       <DeckbuilderChatPanel state={state} />
-    </div>
-  )
-}
-
-/**
- * Inline commander picker — surfaced in the deck-builder header for Commander Draft / Sealed
- * lobbies. Renders the chosen commander as a chip; clicking opens a dropdown listing the pool's
- * eligible commanders. Selecting a card calls [onSelect] with the card name (null to clear).
- *
- * Eligibility is computed by the parent ([eligible]) — see CommanderEligibility in the backend
- * for the canonical rule.
- */
-function CommanderPickerControl({
-  eligible,
-  selected,
-  onSelect,
-  compact,
-}: {
-  eligible: readonly SealedCardInfo[]
-  selected: string | null
-  onSelect: (cardName: string | null) => void
-  compact: boolean
-}) {
-  const [open, setOpen] = useState(false)
-
-  if (eligible.length === 0 && !selected) {
-    return (
-      <div
-        title="No legendary creatures or override commanders in your pool"
-        style={{
-          padding: compact ? '4px 10px' : '6px 14px',
-          fontSize: compact ? 12 : 13,
-          backgroundColor: '#c0392b',
-          color: 'white',
-          border: 'none',
-          borderRadius: 6,
-          fontWeight: 600,
-        }}
-      >
-        No eligible commanders
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          padding: compact ? '4px 10px' : '6px 14px',
-          fontSize: compact ? 12 : 13,
-          backgroundColor: selected ? '#b8860b' : '#444',
-          color: 'white',
-          border: '1px solid ' + (selected ? '#daa520' : '#666'),
-          borderRadius: 6,
-          cursor: 'pointer',
-          fontWeight: 600,
-          maxWidth: compact ? 180 : 260,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-        title={selected ? `Commander: ${selected}` : 'Pick your commander'}
-      >
-        {selected ? `♕ ${selected}` : 'Pick commander'}
-      </button>
-      {open && (
-        <div
-          role="listbox"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 4px)',
-            right: 0,
-            zIndex: 30,
-            minWidth: 220,
-            maxHeight: 320,
-            overflowY: 'auto',
-            backgroundColor: '#1f1f1f',
-            border: '1px solid #555',
-            borderRadius: 6,
-            boxShadow: '0 6px 18px rgba(0, 0, 0, 0.5)',
-            padding: 4,
-          }}
-        >
-          {selected && (
-            <button
-              onClick={() => { onSelect(null); setOpen(false) }}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: '6px 10px',
-                fontSize: 12,
-                backgroundColor: 'transparent',
-                color: '#bbb',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-                fontStyle: 'italic',
-              }}
-            >
-              Clear commander
-            </button>
-          )}
-          {eligible.map((card) => (
-            <button
-              key={card.name}
-              onClick={() => { onSelect(card.name); setOpen(false) }}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: '6px 10px',
-                fontSize: 13,
-                backgroundColor: card.name === selected ? '#3d2f00' : 'transparent',
-                color: 'white',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
-            >
-              {card.name}
-              <span style={{ marginLeft: 6, color: '#888', fontSize: 11 }}>{card.typeLine}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -1481,12 +1482,22 @@ function DeckListRow({
   onClick,
   onHover,
   disabled,
+  showCommanderControls,
+  isCommander,
+  canBeCommander,
+  offIdentity,
+  onToggleCommander,
 }: {
   card: SealedCardInfo
   count: number
   onClick: () => void
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
   disabled: boolean
+  showCommanderControls?: boolean
+  isCommander?: boolean
+  canBeCommander?: boolean
+  offIdentity?: boolean
+  onToggleCommander?: () => void
 }) {
   const cmc = getCmc(card)
 
@@ -1506,13 +1517,18 @@ function DeckListRow({
         position: 'relative',
         overflow: 'hidden',
         borderBottom: '1px solid #2a2a2a',
+        // Off-identity rows get a red left strip + faint red tint, matching the standalone
+        // /deckbuilder's deckRowViolation visual treatment.
+        borderLeft: offIdentity ? '3px solid #ef5350' : '3px solid transparent',
+        backgroundColor: offIdentity ? 'rgba(239, 83, 80, 0.06)' : undefined,
       }}
       onMouseOver={(e) => {
         if (!disabled) e.currentTarget.style.backgroundColor = 'rgba(79, 195, 247, 0.1)'
       }}
       onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent'
+        e.currentTarget.style.backgroundColor = offIdentity ? 'rgba(239, 83, 80, 0.06)' : 'transparent'
       }}
+      title={offIdentity ? `${card.name} is outside the commander's colour identity` : undefined}
     >
       {/* Count */}
       <span
@@ -1529,7 +1545,7 @@ function DeckListRow({
       </span>
       {/* Card name */}
       <span style={{
-        color: '#ddd',
+        color: offIdentity ? '#ef9a9a' : '#ddd',
         fontSize: 12,
         flex: 1,
         whiteSpace: 'nowrap',
@@ -1538,6 +1554,42 @@ function DeckListRow({
       }}>
         {card.name}
       </span>
+      {/* Commander crown — only in commander-shape lobbies */}
+      {showCommanderControls && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            if (canBeCommander && onToggleCommander) onToggleCommander()
+          }}
+          disabled={!canBeCommander}
+          aria-pressed={!!isCommander}
+          aria-label={isCommander ? `Unset ${card.name} as commander` : `Set ${card.name} as commander`}
+          title={
+            !canBeCommander
+              ? 'Only legendary creatures or planeswalkers can be commanders'
+              : isCommander
+              ? 'Commander — click to unset'
+              : 'Set as commander'
+          }
+          style={{
+            marginLeft: 4,
+            marginRight: 4,
+            padding: '0 4px',
+            fontSize: 14,
+            backgroundColor: 'transparent',
+            color: isCommander ? '#ffd76b' : canBeCommander ? '#666' : '#333',
+            border: 'none',
+            borderRadius: 3,
+            cursor: canBeCommander ? 'pointer' : 'default',
+            opacity: !canBeCommander ? 0.35 : isCommander ? 1 : 0.7,
+            flexShrink: 0,
+            lineHeight: 1,
+          }}
+        >
+          ♛
+        </button>
+      )}
       {/* Mana cost */}
       <span style={{ marginLeft: 4, flexShrink: 0 }}>
         {card.manaCost ? <ManaCost cost={card.manaCost} size={12} /> : <span style={{ color: '#666', fontSize: 10 }}>({cmc})</span>}
@@ -1686,6 +1738,10 @@ const TYPE_FILTER_OPTIONS = [
   { key: 'sorcery', label: 'Sorcery' },
   { key: 'enchantment', label: 'Enchantment' },
   { key: 'artifact', label: 'Artifact' },
+  // Substring filter against the type line — matches "Legendary Creature ...",
+  // "Legendary Planeswalker — ...", "Legendary Artifact", etc. Useful as a
+  // commander-shortlist filter in Commander Draft / Sealed lobbies.
+  { key: 'legendary', label: 'Legendary' },
 ]
 
 const MANA_COLORS: Record<string, string> = {

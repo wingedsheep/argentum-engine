@@ -712,6 +712,10 @@ function LobbyOverlay({
   // "Draft-shape" — anything that hands packs around at pick time. Commander Draft fits the
   // shape (same per-pick UI / timer / pack-passing) so it inherits Draft-only settings.
   const isAnyDraft = isDraft || isWinston || isGridDraft || isCommanderDraft
+  // Paper-Draft variants only (Normal / Winston / Grid). Drives the "Draft" top-level button's
+  // active state and the Normal/Winston/Grid sub-selector visibility — neither of which should
+  // light up when Commander Draft is the active format.
+  const isPaperDraft = isDraft || isWinston || isGridDraft
   const hasSelectedSets = lobbyState.settings.setCodes.length > 0
   const playerCount = lobbyState.players.length
   const canSwitchToNormalDraft = playerCount <= 8
@@ -815,9 +819,9 @@ function LobbyOverlay({
                 </button>
                 <button
                   onClick={() => {
-                    if (!isAnyDraft) updateLobbySettings({ format: 'DRAFT' })
+                    if (!isPaperDraft) updateLobbySettings({ format: 'DRAFT' })
                   }}
-                  className={`${styles.settingsButton} ${isAnyDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
+                  className={`${styles.settingsButton} ${isPaperDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                 >
                   Draft
                 </button>
@@ -846,8 +850,8 @@ function LobbyOverlay({
                 </button>
               </div>
             </div>
-            {/* Draft type sub-selection - only when Draft is selected */}
-            {(isAnyDraft) && (
+            {/* Draft type sub-selection - only when paper Draft is selected (not Commander Draft) */}
+            {isPaperDraft && (
               <div className={styles.settingsRow} style={{ alignItems: 'flex-start' }}>
                 <span className={styles.settingsLabel} style={{ paddingTop: 6 }}>Draft Type</span>
                 <div className={styles.draftTypeOptions}>

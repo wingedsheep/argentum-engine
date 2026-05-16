@@ -566,8 +566,10 @@ class LobbyHandler(
                 if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)
             }
             TournamentFormat.COMMANDER_SEALED -> {
-                // 4 packs × 20 cards = 80-card sealed pool (CMR-2020 paper default).
-                if (message.boosterCount == 6) 4 else message.boosterCount.coerceIn(1, 8)
+                // 6 packs × 20 cards = 120-card sealed pool. Roomier than the CMR-2020 paper
+                // default (4 packs) — 60-card decks need real depth across five colours plus
+                // the legendary slot to feel like a build.
+                message.boosterCount.coerceIn(1, 8)
             }
             TournamentFormat.SEALED, TournamentFormat.WINSTON_DRAFT -> {
                 message.boosterCount.coerceIn(1, 16)
@@ -579,6 +581,12 @@ class LobbyHandler(
         }
 
         val codes = setConfigs.map { it.setCode }
+        // Pick-2 is the default for Draft and Commander Draft — speeds the draft and matches the
+        // paper Commander Legends template. Other formats stay at the lobby's pick-1 default.
+        val initialPicksPerRound = when (format) {
+            TournamentFormat.DRAFT, TournamentFormat.COMMANDER_DRAFT -> 2
+            else -> 1
+        }
         val lobby = TournamentLobby(
             setCodes = codes,
             setNames = setConfigs.map { it.setName },
@@ -588,7 +596,8 @@ class LobbyHandler(
             boosterDistribution = TournamentLobby.calculateDefaultDistribution(codes, boosterCount),
             maxPlayers = maxPlayers,
             pickTimeSeconds = message.pickTimeSeconds.coerceIn(15, 120),
-            isPublic = message.isPublic
+            picksPerRound = initialPicksPerRound,
+            isPublic = message.isPublic,
         )
         lobby.addPlayer(identity)
         lobbyRepository.saveLobby(lobby)
@@ -1823,11 +1832,17 @@ class LobbyHandler(
                 lobby.boosterCount = when (newFormat) {
                     TournamentFormat.DRAFT -> 3
                     TournamentFormat.COMMANDER_DRAFT -> 3
-                    TournamentFormat.COMMANDER_SEALED -> 4
+                    TournamentFormat.COMMANDER_SEALED -> 6
                     TournamentFormat.SEALED -> 6
                     TournamentFormat.WINSTON_DRAFT -> 6
                     TournamentFormat.GRID_DRAFT -> gridDraftHandler.gridDraftDefaultBoosters(lobby.players.size)
                     TournamentFormat.PREMADE_DECKS -> 0
+                }
+                // Reset picksPerRound to a sensible default for the new format. Draft / Commander
+                // Draft default to Pick 2 (speeds the draft); all others go back to Pick 1.
+                lobby.picksPerRound = when (newFormat) {
+                    TournamentFormat.DRAFT, TournamentFormat.COMMANDER_DRAFT -> 2
+                    else -> 1
                 }
                 lobby.recalculateDistribution()
             }

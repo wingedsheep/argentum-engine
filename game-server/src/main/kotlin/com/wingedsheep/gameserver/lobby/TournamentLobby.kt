@@ -204,8 +204,8 @@ class TournamentLobby(
     var boosterDistribution: Map<String, Int> = emptyMap(),  // Per-set booster counts (e.g., {"ONS": 2, "LGN": 2, "SCG": 2})
     var maxPlayers: Int = 8,
     var pickTimeSeconds: Int = 45,    // Draft only
-    var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2)
-    var gamesPerMatch: Int = 1,
+    var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2); 2 is the default for new Draft / Commander Draft lobbies (see LobbyHandler.handleCreateTournamentLobby)
+    var gamesPerMatch: Int = 3,
     var isPublic: Boolean = false,
     /**
      * Optional deck-construction format (Standard, Modern, Commander, …) used to restrict which
