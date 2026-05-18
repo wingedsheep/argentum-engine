@@ -63,13 +63,16 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 advanceToCombat(game)
 
                 // P2 tries to attack with Hill Giant but has no mana (1 Cleric = costs {1})
-                val attackResult = game.execute(
+                // The engine pauses to confirm before tapping mana; on yes, payment fails.
+                val declared = game.execute(
                     DeclareAttackers(game.player2Id, mapOf(hillGiantId to game.player1Id))
                 )
+                declared.isPaused shouldBe true
 
+                val paid = game.answerYesNo(true)
                 withClue("Attack should fail - no mana to pay tax") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "tax"
+                    paid.error shouldNotBe null
+                    paid.error!! shouldContainIgnoringCase "tax"
                 }
             }
 
@@ -107,12 +110,14 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 advanceToCombat(game)
 
                 // P2 has 1 Mountain, 1 Cleric on battlefield = tax is {1}
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player2Id, mapOf(hillGiantId to game.player1Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attack should succeed - can pay {1} tax: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                val paid = game.answerYesNo(true)
+                withClue("Attack should succeed - can pay {1} tax: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
 
@@ -151,13 +156,15 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 advanceToCombat(game)
 
                 // P2 has 1 Mountain but needs {2} (2 Clerics: Whipgrass Entangler + Akroma's Devoted)
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player2Id, mapOf(hillGiantId to game.player1Id))
                 )
+                declared.isPaused shouldBe true
 
+                val paid = game.answerYesNo(true)
                 withClue("Attack should fail - only 1 mana for 2 Clerics (needs {2})") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "tax"
+                    paid.error shouldNotBe null
+                    paid.error!! shouldContainIgnoringCase "tax"
                 }
             }
 
@@ -233,13 +240,16 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 game.passPriority() // P2 passes → moves to declare blockers
 
                 // P2 tries to block with Glory Seeker but has no mana (1 Cleric = costs {1})
-                val blockResult = game.execute(
+                // Block tax now pauses for confirmation too.
+                val declaredBlock = game.execute(
                     DeclareBlockers(game.player2Id, mapOf(glorySeekerIdOnP2 to listOf(hillGiantId)))
                 )
+                declaredBlock.isPaused shouldBe true
 
+                val paidBlock = game.answerYesNo(true)
                 withClue("Block should fail - no mana to pay tax") {
-                    blockResult.error shouldNotBe null
-                    blockResult.error!! shouldContainIgnoringCase "tax"
+                    paidBlock.error shouldNotBe null
+                    paidBlock.error!! shouldContainIgnoringCase "tax"
                 }
             }
         }

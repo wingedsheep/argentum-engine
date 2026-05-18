@@ -29,6 +29,7 @@ class ContinuationHandler(
 
         // Specialized resumer modules
         registerModule(CombatContinuationResumer(services))
+        registerModule(CombatTaxContinuationResumer(services))
         registerModule(ColorChoiceContinuationResumer(services, effectRunner))
         val chainResumer = ChainSpellContinuationResumer(services)
         registerModule(chainResumer)

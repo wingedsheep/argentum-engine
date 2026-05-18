@@ -98,21 +98,40 @@ internal class AttackPhaseManager(
             return ExecutionResult.error(state, projectedMustAttackValidation)
         }
 
-        // Check and pay attack taxes (e.g., Ghostly Prison, Windborn Muse)
-        val taxResult = validateAndPayAttackTaxes(state, attackingPlayer, attackers, projected)
-        if (!taxResult.isSuccess) {
-            return taxResult
+        // Calculate (but don't pay) the attack tax. If non-zero, pause for the attacking
+        // player to confirm before we tap any of their mana — otherwise auto-tapping the
+        // pool would steal sources they were saving for instants/post-combat plays.
+        val totalTax = calculateTotalAttackTax(state, attackingPlayer, attackers, projected)
+        if (totalTax > 0) {
+            return pauseForAttackTaxConfirmation(state, attackingPlayer, attackers, totalTax)
         }
 
-        // Apply attacker components and tap attacking creatures
-        var newState = taxResult.newState
-        val taxEvents = taxResult.events.toMutableList()
+        return commitAttackDeclaration(state, attackingPlayer, attackers, projected, taxEvents = emptyList())
+    }
+
+    /**
+     * Apply the post-tax commitment for a declared attack: stamp [AttackingComponent],
+     * tap attackers (unless vigilance), mark tracking components, and emit the
+     * [AttackersDeclaredEvent]. Callable both from the synchronous (no-tax) path in
+     * [declareAttackers] and from [com.wingedsheep.engine.handlers.continuations.CombatTaxContinuationResumer]
+     * after the player confirms and the tax is paid.
+     *
+     * @param taxEvents Events from the tax payment (auto-tap [TappedEvent]s, etc.) to emit
+     *   before the [AttackersDeclaredEvent].
+     */
+    internal fun commitAttackDeclaration(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState,
+        taxEvents: List<com.wingedsheep.engine.core.GameEvent>
+    ): ExecutionResult {
+        var newState = state
         val tapEvents = mutableListOf<TappedEvent>()
         for ((attackerId, defenderId) in attackers) {
             val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
             newState = newState.updateEntity(attackerId) { container ->
                 var updated = container.with(AttackingComponent(defenderId))
-                // Tap attacking creatures (unless they have vigilance)
                 if (!hasVigilance) {
                     updated = updated.with(TappedComponent)
                 }
@@ -124,13 +143,10 @@ internal class AttackPhaseManager(
             }
         }
 
-        // Mark that attackers have been declared this combat (even if empty)
         newState = newState.updateEntity(attackingPlayer) { container ->
             var updated = container.with(AttackersDeclaredThisCombatComponent)
-            // Track that this player attacked this turn (for Raid and similar mechanics)
             if (attackers.isNotEmpty()) {
                 updated = updated.with(PlayerAttackedThisTurnComponent)
-                // Track each individual attacker for filter-based "attacked with N <type>" checks.
                 val previous = container.get<PlayerAttackersThisTurnComponent>()?.attackerIds ?: emptySet()
                 updated = updated.with(PlayerAttackersThisTurnComponent(previous + attackers.keys))
             }
@@ -141,6 +157,44 @@ internal class AttackPhaseManager(
         return ExecutionResult.success(
             newState,
             taxEvents + tapEvents + listOf(AttackersDeclaredEvent(attackers.keys.toList(), attackerNames, attackingPlayer))
+        )
+    }
+
+    private fun pauseForAttackTaxConfirmation(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        totalTax: Int,
+    ): ExecutionResult {
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val attackerNames = attackers.keys.mapNotNull { state.getEntity(it)?.get<CardComponent>()?.name }
+        val attackerListing = when (attackerNames.size) {
+            0 -> "your attackers"
+            1 -> attackerNames.single()
+            else -> attackerNames.dropLast(1).joinToString(", ") + " and " + attackerNames.last()
+        }
+        val decision = com.wingedsheep.engine.core.YesNoDecision(
+            id = decisionId,
+            playerId = attackingPlayer,
+            prompt = "Pay {$totalTax} to attack with $attackerListing?",
+            context = com.wingedsheep.engine.core.DecisionContext(
+                sourceId = null,
+                sourceName = "Attack tax",
+                phase = com.wingedsheep.engine.core.DecisionPhase.COMBAT,
+            ),
+            yesText = "Pay {$totalTax}",
+            noText = "Cancel attack",
+            hint = "If you decline, your attack declaration is cancelled.",
+        )
+        val continuation = com.wingedsheep.engine.core.AttackTaxConfirmationContinuation(
+            decisionId = decisionId,
+            attackingPlayer = attackingPlayer,
+            attackers = attackers,
+            totalTax = totalTax,
+        )
+        return ExecutionResult.paused(
+            state.withPendingDecision(decision).pushContinuation(continuation),
+            decision,
         )
     }
 
@@ -331,6 +385,66 @@ internal class AttackPhaseManager(
     // =========================================================================
     // Attack Taxes
     // =========================================================================
+
+    /**
+     * Compute the total generic-mana attack tax owed for [attackers] without paying it.
+     * Used by [declareAttackers] to decide whether to pause for player confirmation
+     * before tapping any mana.
+     */
+    internal fun calculateTotalAttackTax(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState
+    ): Int {
+        if (attackers.isEmpty()) return 0
+        val attackersPerDefender = mutableMapOf<EntityId, Int>()
+        for ((_, defenderId) in attackers) {
+            val defenderPlayerId = if (state.turnOrder.contains(defenderId)) {
+                defenderId
+            } else {
+                projected.getController(defenderId)
+            }
+            if (defenderPlayerId != null) {
+                attackersPerDefender[defenderPlayerId] = (attackersPerDefender[defenderPlayerId] ?: 0) + 1
+            }
+        }
+
+        var totalGenericTax = 0
+        for ((defenderId, attackerCount) in attackersPerDefender) {
+            val defenderPermanents = projected.getBattlefieldControlledBy(defenderId)
+            for (entityId in defenderPermanents) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+                for (ability in cardDef.staticAbilities) {
+                    if (ability is AttackTax) {
+                        val ctx = com.wingedsheep.engine.handlers.EffectContext(
+                            sourceId = entityId,
+                            controllerId = defenderId,
+                            opponentId = attackingPlayer,
+                        )
+                        val taxPerAttacker = maxOf(0, dynamicAmountEvaluator.evaluate(state, ability.amountPerAttacker, ctx, projected))
+                        totalGenericTax += taxPerAttacker * attackerCount
+                    }
+                }
+            }
+        }
+
+        totalGenericTax += calculatePerCreatureTax(state, attackers.keys, projected)
+        return totalGenericTax
+    }
+
+    /**
+     * Pay an already-confirmed [totalTax] for an attack declaration. Returns the new
+     * state plus any auto-tap [TappedEvent]s.
+     */
+    internal fun payConfirmedAttackTax(
+        state: GameState,
+        attackingPlayer: EntityId,
+        totalTax: Int,
+    ): ExecutionResult =
+        payManaTax(state, attackingPlayer, totalTax, "attack", cardRegistry, manaAbilitySideEffectExecutor)
 
     /**
      * Validate and pay attack taxes from effects like Ghostly Prison and Windborn Muse.

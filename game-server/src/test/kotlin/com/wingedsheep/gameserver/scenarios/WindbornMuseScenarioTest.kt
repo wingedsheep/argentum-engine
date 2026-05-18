@@ -16,13 +16,17 @@ import io.kotest.matchers.string.shouldContainIgnoringCase
  * Flying
  * Creatures can't attack you unless their controller pays {2} for each creature
  * they control that's attacking you.
+ *
+ * Per the engine's attack-tax UX: the attacker is prompted with a yes/no decision
+ * before any mana is auto-tapped. `Yes` pays and the attack proceeds; `No` cancels
+ * the attack declaration so the attacker can re-declare with different attackers.
  */
 class WindbornMuseScenarioTest : ScenarioTestBase() {
 
     init {
         context("Windborn Muse attack tax") {
 
-            test("attack succeeds when attacker can pay the tax") {
+            test("attack succeeds when attacker confirms and can pay the tax") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -34,16 +38,21 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                withClue("Attack should succeed - attacker has enough mana: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                withClue("Engine pauses for attack-tax confirmation before tapping mana") {
+                    declared.isPaused shouldBe true
+                }
+
+                val paid = game.answerYesNo(true)
+                withClue("Tax {2} payable from 2 untapped Mountains: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
 
-            test("attack fails when attacker cannot pay the tax") {
+            test("attack fails after confirming when attacker cannot pay the tax") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -55,20 +64,23 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attack should fail - not enough mana to pay tax") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "attack tax"
+                val paid = game.answerYesNo(true)
+                withClue("Only 1 Mountain available for {2} tax") {
+                    paid.error shouldNotBe null
+                    paid.error!! shouldContainIgnoringCase "attack tax"
                 }
             }
 
-            test("attack fails when attacker has no mana at all") {
+            test("declining the tax cancels the attack") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
+                    .withLandsOnBattlefield(1, "Mountain", 5)
                     .withCardOnBattlefield(2, "Windborn Muse")
                     .withActivePlayer(1)
                     .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
@@ -76,13 +88,20 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attack should fail - no mana available") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "attack tax"
+                val declined = game.answerYesNo(false)
+                withClue("Decline is a clean no-op: no error, no pause, player stays in declare-attackers") {
+                    declined.error shouldBe null
+                    declined.isPaused shouldBe false
+                }
+                withClue("Attacker should not have committed to attacking") {
+                    val attackerComponent = game.state.getEntity(hillGiantId)
+                        ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+                    attackerComponent shouldBe null
                 }
             }
 
@@ -100,15 +119,17 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                 val hillGiantId = game.findPermanent("Hill Giant")!!
                 val goblinId = game.findPermanent("Raging Goblin")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(
                         game.player1Id,
                         mapOf(hillGiantId to game.player2Id, goblinId to game.player2Id)
                     )
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attack should succeed - has 4 mana for 2 attackers: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                val paid = game.answerYesNo(true)
+                withClue("4 Mountains cover the 2×{2} tax: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
 
@@ -126,20 +147,22 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                 val hillGiantId = game.findPermanent("Hill Giant")!!
                 val goblinId = game.findPermanent("Raging Goblin")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(
                         game.player1Id,
                         mapOf(hillGiantId to game.player2Id, goblinId to game.player2Id)
                     )
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attack should fail - only 3 mana for 2 attackers needing {4}") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "attack tax"
+                val paid = game.answerYesNo(true)
+                withClue("Only 3 Mountains for {4} tax") {
+                    paid.error shouldNotBe null
+                    paid.error!! shouldContainIgnoringCase "attack tax"
                 }
             }
 
-            test("no tax required when attacking with zero creatures") {
+            test("no tax required when attacking with zero creatures (no pause)") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -152,12 +175,13 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, emptyMap())
                 )
 
-                withClue("Empty attack declaration should succeed: ${attackResult.error}") {
+                withClue("No tax ⇒ no pause: ${attackResult.error}") {
                     attackResult.error shouldBe null
+                    attackResult.isPaused shouldBe false
                 }
             }
 
-            test("no tax when Windborn Muse is not on the battlefield") {
+            test("no tax when Windborn Muse is not on the battlefield (no pause)") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -171,8 +195,9 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                withClue("Attack should succeed - no Windborn Muse: ${attackResult.error}") {
+                withClue("No Muse ⇒ no pause: ${attackResult.error}") {
                     attackResult.error shouldBe null
+                    attackResult.isPaused shouldBe false
                 }
             }
         }

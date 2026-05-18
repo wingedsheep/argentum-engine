@@ -18,14 +18,15 @@ import io.kotest.matchers.string.shouldContainIgnoringCase
  * types among lands you control.
  *
  * Exercises [com.wingedsheep.sdk.scripting.AttackTax] with a [DynamicAmount] amount,
- * with the source permanent's controller as "you" for the domain count.
+ * with the source permanent's controller as "you" for the domain count. The attacker
+ * is prompted before any mana is auto-tapped.
  */
 class CollectiveRestraintScenarioTest : ScenarioTestBase() {
 
     init {
         context("Collective Restraint domain-scaled attack tax") {
 
-            test("zero basic land types — no tax, attack succeeds with no mana") {
+            test("zero basic land types — no tax, attack succeeds without a prompt") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -40,8 +41,9 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
 
-                withClue("Defender has no lands ⇒ X = 0 ⇒ no tax: ${attackResult.error}") {
+                withClue("Defender has no lands ⇒ X = 0 ⇒ no pause: ${attackResult.error}") {
                     attackResult.error shouldBe null
+                    attackResult.isPaused shouldBe false
                 }
             }
 
@@ -58,16 +60,50 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attacker has {R} for the {1} tax: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                val paid = game.answerYesNo(true)
+                withClue("Mountain pays the {1} tax: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
 
-            test("three basic types controlled by defender — tax is {3} per attacker, insufficient mana fails") {
+            test("three basic types — tax is {3}, declining cancels the attack") {
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardOnBattlefield(2, "Collective Restraint")
+                    .withLandsOnBattlefield(2, "Plains", 1)
+                    .withLandsOnBattlefield(2, "Island", 1)
+                    .withLandsOnBattlefield(2, "Swamp", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val hillGiantId = game.findPermanent("Hill Giant")!!
+
+                val declared = game.execute(
+                    DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
+                )
+                declared.isPaused shouldBe true
+
+                val declined = game.answerYesNo(false)
+                withClue("Decline is a clean no-op (no error banner): ${declined.error}") {
+                    declined.error shouldBe null
+                    declined.isPaused shouldBe false
+                }
+                withClue("Hill Giant should not be attacking after decline") {
+                    val attackerComponent = game.state.getEntity(hillGiantId)
+                        ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+                    attackerComponent shouldBe null
+                }
+            }
+
+            test("three basic types — tax is {3}, insufficient mana fails after confirmation") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -82,13 +118,15 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attacker has only {2} but tax is {3}") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "attack tax"
+                val paid = game.answerYesNo(true)
+                withClue("Only {2} available for {3} tax") {
+                    paid.error shouldNotBe null
+                    paid.error!! shouldContainIgnoringCase "attack tax"
                 }
             }
 
@@ -107,12 +145,14 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attacker has {3} for the {3} tax: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                val paid = game.answerYesNo(true)
+                withClue("3 Mountains for the {3} tax: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
 
@@ -135,19 +175,21 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 val hillGiantId = game.findPermanent("Hill Giant")!!
                 val goblinId = game.findPermanent("Raging Goblin")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(
                         game.player1Id,
                         mapOf(hillGiantId to game.player2Id, goblinId to game.player2Id)
                     )
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Attacker has {10} for 2×{5} tax: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                val paid = game.answerYesNo(true)
+                withClue("10 Mountains pay 2×{5} tax: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
 
-            test("five basic types — two attackers with only {9} fails") {
+            test("five basic types — two attackers with only {9} fails after confirmation") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hill Giant")
@@ -166,16 +208,18 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 val hillGiantId = game.findPermanent("Hill Giant")!!
                 val goblinId = game.findPermanent("Raging Goblin")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(
                         game.player1Id,
                         mapOf(hillGiantId to game.player2Id, goblinId to game.player2Id)
                     )
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Only {9} mana available for {10} tax") {
-                    attackResult.error shouldNotBe null
-                    attackResult.error!! shouldContainIgnoringCase "attack tax"
+                val paid = game.answerYesNo(true)
+                withClue("Only {9} available for {10} tax") {
+                    paid.error shouldNotBe null
+                    paid.error!! shouldContainIgnoringCase "attack tax"
                 }
             }
 
@@ -197,12 +241,14 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
 
                 val hillGiantId = game.findPermanent("Hill Giant")!!
 
-                val attackResult = game.execute(
+                val declared = game.execute(
                     DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
                 )
+                declared.isPaused shouldBe true
 
-                withClue("Domain reads defender's lands, not attacker's: ${attackResult.error}") {
-                    attackResult.error shouldBe null
+                val paid = game.answerYesNo(true)
+                withClue("Domain reads defender's lands, not attacker's: ${paid.error}") {
+                    paid.error shouldBe null
                 }
             }
         }

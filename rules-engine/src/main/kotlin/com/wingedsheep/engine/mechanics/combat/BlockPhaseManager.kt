@@ -97,14 +97,34 @@ internal class BlockPhaseManager(
             return ExecutionResult.error(state, projectedMustBlockValidation)
         }
 
-        // Check and pay block taxes from floating effects (Whipgrass Entangler)
-        val blockTaxResult = validateAndPayBlockTaxes(state, blockingPlayer, blockers)
-        if (!blockTaxResult.isSuccess) {
-            return blockTaxResult
+        // Calculate (but don't pay) the block tax. If non-zero, pause for the blocking
+        // player to confirm — same reasoning as attack taxes: don't tap their mana
+        // without consent.
+        val projected = state.projectedState
+        val totalBlockTax = calculatePerCreatureTax(state, blockers.keys, projected)
+        if (totalBlockTax > 0) {
+            return pauseForBlockTaxConfirmation(state, blockingPlayer, blockers, totalBlockTax)
         }
 
-        // Apply blocker components
-        var newState = blockTaxResult.newState
+        return commitBlockDeclaration(state, blockingPlayer, blockers, taxEvents = emptyList())
+    }
+
+    /**
+     * Apply the post-tax commitment for a declared block: stamp [BlockingComponent] /
+     * [BlockedComponent], mark the blockers-declared tracking component, emit the
+     * [BlockersDeclaredEvent], and queue any blocker-order / attacker-order decisions.
+     *
+     * Callable from the synchronous (no-tax) path in [declareBlockers] and from
+     * [com.wingedsheep.engine.handlers.continuations.CombatTaxContinuationResumer] after
+     * the player confirms the tax.
+     */
+    internal fun commitBlockDeclaration(
+        state: GameState,
+        blockingPlayer: EntityId,
+        blockers: Map<EntityId, List<EntityId>>,
+        taxEvents: List<com.wingedsheep.engine.core.GameEvent>,
+    ): ExecutionResult {
+        var newState = state
         for ((blockerId, attackerIds) in blockers) {
             newState = newState.updateEntity(blockerId) { container ->
                 container.with(BlockingComponent(attackerIds))
@@ -127,7 +147,7 @@ internal class BlockPhaseManager(
         val blockerNameMap = blockers.keys.associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         val attackerNameMap = blockers.values.flatten().distinct().associateWith { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         val blockersEvent = BlockersDeclaredEvent(blockers, blockerNameMap, attackerNameMap)
-        val blockTaxEvents = blockTaxResult.events
+        val blockTaxEvents = taxEvents
 
         // Per MTG CR 510.1c: An attacker blocked by 2+ creatures has its damage divided
         // among them as its controller chooses; the engine collects this as an explicit order
@@ -928,21 +948,46 @@ internal class BlockPhaseManager(
     // =========================================================================
 
     /**
-     * Validate and pay block taxes from per-creature floating effects (Whipgrass Entangler).
+     * Pay an already-confirmed [totalTax] for a block declaration. Mirror of
+     * [com.wingedsheep.engine.mechanics.combat.AttackPhaseManager.payConfirmedAttackTax].
      */
-    private fun validateAndPayBlockTaxes(
+    internal fun payConfirmedBlockTax(
         state: GameState,
         blockingPlayer: EntityId,
-        blockers: Map<EntityId, List<EntityId>>
+        totalTax: Int,
+    ): ExecutionResult =
+        payManaTax(state, blockingPlayer, totalTax, "block", cardRegistry, manaAbilitySideEffectExecutor)
+
+    private fun pauseForBlockTaxConfirmation(
+        state: GameState,
+        blockingPlayer: EntityId,
+        blockers: Map<EntityId, List<EntityId>>,
+        totalTax: Int,
     ): ExecutionResult {
-        if (blockers.isEmpty()) return ExecutionResult.success(state)
-
-        val projected = state.projectedState
-        val totalGenericTax = calculatePerCreatureTax(state, blockers.keys, projected)
-
-        if (totalGenericTax <= 0) return ExecutionResult.success(state)
-
-        return payManaTax(state, blockingPlayer, totalGenericTax, "block", cardRegistry, manaAbilitySideEffectExecutor)
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = com.wingedsheep.engine.core.YesNoDecision(
+            id = decisionId,
+            playerId = blockingPlayer,
+            prompt = "Pay {$totalTax} to block with the declared creatures?",
+            context = com.wingedsheep.engine.core.DecisionContext(
+                sourceId = null,
+                sourceName = "Block tax",
+                phase = com.wingedsheep.engine.core.DecisionPhase.COMBAT,
+            ),
+            yesText = "Pay {$totalTax}",
+            noText = "Cancel block",
+            hint = "If you decline, your block declaration is cancelled.",
+        )
+        val continuation = com.wingedsheep.engine.core.BlockTaxConfirmationContinuation(
+            decisionId = decisionId,
+            blockingPlayer = blockingPlayer,
+            blockers = blockers,
+            totalTax = totalTax,
+        )
+        return ExecutionResult.paused(
+            state.withPendingDecision(decision).pushContinuation(continuation),
+            decision,
+        )
     }
 
     /**

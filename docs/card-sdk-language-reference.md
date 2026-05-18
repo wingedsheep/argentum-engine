@@ -859,6 +859,10 @@ staticAbility {
   Collective Restraint. Per-attacker generic-mana tax for attacking the source's controller; the
   amount is a `DynamicAmount` so it can scale with state (e.g., `DynamicAmounts.domain()` for
   "{X} where X is your domain"). Evaluated with the source permanent's controller as "you".
+  When `totalTax > 0`, the engine pauses `DeclareAttackers` for a `YesNoDecision` *before* tapping
+  any mana — declining is a clean no-op that leaves the player in `DECLARE_ATTACKERS` to re-declare.
+  The same prompt/cancel pattern applies to block-tax floating effects (e.g. Whipgrass Entangler)
+  via `AttackBlockTaxPerCreatureType`.
 - `CantBeAttackedWithout(keyword)` — Form of the Dragon-style "Creatures without flying can't
   attack you." defender-side restriction.
 
@@ -1301,7 +1305,22 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 - `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move.
 - `MoveCollectionEffect(collectionName, zone, faceDown?, linkToSource?, asOwner?, likelyPosition?)` — pipeline move of a
   stored collection.
-- `GatherCardsEffect(source, filter, into)` — pipeline gather from a zone into a named collection.
+- `GatherCardsEffect(source, filter, into)` — pipeline gather from a zone into a named collection. `CardSource`
+  variants include zones (`FromZone`, `FromMultipleZones`), battlefield queries (`BattlefieldMatching`,
+  `ControlledPermanents`), linked exile (`FromLinkedExile`), tapped-as-cost (`TappedAsCost`), and the resolved
+  spell/ability targets (`ChosenTargets`).
+- `CaptureControllersEffect(from, storeAs)` — snapshot each entity's current controller into a parallel
+  `List<EntityId>` under `storedCollections[storeAs]`. Required when a later step needs "who controlled
+  this card before it left the battlefield" — `ControllerComponent` is stripped on move-out.
+- `ForEachCapturedControllerEffect(collection, originalCollection, controllerSnapshot, countVariable?, effects)` —
+  cross-references a post-move `collection` against an `originalCollection` + parallel `controllerSnapshot` to
+  build per-controller tallies, then runs `effects` once per controller (turn order from the active player). Each
+  iteration sets `context.controllerId` to the controller (so `Player.You` / `EffectTarget.Controller` resolve to
+  them) and writes the tally into `storedNumbers[countVariable]` (default `"iterationCount"`) for
+  `DynamicAmount.VariableReference` to read. Outer `storedCollections` are preserved (unlike
+  `ForEachPlayerEffect`). Used by Builder's Bane via the
+  `GatherCards(ChosenTargets) → CaptureControllers → MoveCollection(Destroy, storeMovedAs) → ForEachCapturedController`
+  shape.
 - `SelectFromCollectionEffect(from, into, selectCount?, allowZero?, alwaysPrompt?)` — let a player pick from a
   collection.
 
