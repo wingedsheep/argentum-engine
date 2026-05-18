@@ -300,7 +300,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `CantBlockEffect(target, unless?)` — target can't block.
 - `CantAttackGroupEffect(filter, condition?)` — group-scoped can't-attack.
 - `CantBlockGroupEffect(filter, condition?)` — group-scoped can't-block.
-- `SuspectEffect(target)` — target becomes Suspected (MKM keyword).
+- `Effects.Suspect(target)` — target becomes Suspected (MKM keyword). Composite: `SetSuspectedEffect` (named status, CR 701.60d dedup) + `GrantKeywordEffect(MENACE)` + `CantBlockEffect`.
 - `RemoveFromCombatEffect(target)` — yank target out of combat.
 - `SkipNextTurnEffect(target)` — target skips their next turn.
 - `HijackNextTurnEffect(target)` — you control target's next turn.

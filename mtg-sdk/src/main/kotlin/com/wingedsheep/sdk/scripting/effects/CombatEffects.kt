@@ -497,18 +497,22 @@ data class RedirectCombatDamageToControllerEffect(
 }
 
 /**
- * The target creature becomes suspected.
+ * Atomic: mark the target as carrying the "suspected" status (CR 701.60).
  *
- * A suspected creature gains menace and can't block. This status is a first-class
- * named mechanic (unlike independently granting menace + can't block) so that
- * future cards can query, remove, or react to the suspected status specifically.
+ * This is the named-status layer modification only — it does NOT grant menace or
+ * apply the "can't block" restriction. Suspect's full mechanical effect is composed
+ * by [com.wingedsheep.sdk.dsl.Effects.Suspect] which pairs this with
+ * [GrantKeywordEffect] (MENACE) and [CantBlockEffect].
+ *
+ * Other status-flag mechanics (e.g. a future "investigated" tag) can reuse this
+ * primitive with their own keyword/restriction composition.
  *
  * Duration defaults to Permanent because suspect status in MTG lasts until
- * explicitly removed (e.g. via another card effect).
+ * explicitly removed.
  */
-@SerialName("Suspect")
+@SerialName("SetSuspected")
 @Serializable
-data class SuspectEffect(
+data class SetSuspectedEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
     val duration: Duration = Duration.Permanent
 ) : Effect {

@@ -39,7 +39,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantToxicEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
-import com.wingedsheep.sdk.scripting.effects.SuspectEffect
+import com.wingedsheep.sdk.scripting.effects.SetSuspectedEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -1623,13 +1623,23 @@ object Effects {
         CompositeEffect(listOf(CantAttackEffect(target, duration), CantBlockEffect(target, duration)))
 
     /**
-     * Target creature becomes suspected (gains menace, can't block).
+     * Target creature becomes suspected (CR 701.60): atomic composite of the
+     * named "suspected" status, granted menace, and "can't block".
      *
-     * Suspect is a first-class named status — use this instead of independently granting
-     * menace + can't block so that future cards can query or react to the status directly.
+     * Sub-effects share a timestamp because [CompositeEffect] doesn't tick
+     * `state.timestamp` between children, so Rule 613 layer ordering treats them
+     * as one application. The named status is carried by [SetSuspectedEffect] so
+     * future cards can still query or react to "becomes suspected" specifically.
      */
     fun Suspect(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.Permanent): Effect =
-        SuspectEffect(target, duration)
+        CompositeEffect(
+            effects = listOf(
+                SetSuspectedEffect(target, duration),
+                GrantKeywordEffect(Keyword.MENACE, target, duration),
+                CantBlockEffect(target, duration)
+            ),
+            descriptionOverride = "${target.description} becomes suspected"
+        )
 
     // =========================================================================
     // Special Effects
