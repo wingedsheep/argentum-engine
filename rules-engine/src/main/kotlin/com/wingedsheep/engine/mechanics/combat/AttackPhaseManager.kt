@@ -41,6 +41,8 @@ internal class AttackPhaseManager(
     private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
 ) {
 
+    private val dynamicAmountEvaluator = com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
+
     /**
      * Validate and declare attackers.
      *
@@ -355,7 +357,9 @@ internal class AttackPhaseManager(
             }
         }
 
-        // Calculate total tax from all AttackTax permanents (Ghostly Prison, Windborn Muse)
+        // Calculate total tax from all AttackTax permanents (Ghostly Prison, Windborn Muse,
+        // Collective Restraint). Per-attacker amount may be a DynamicAmount (e.g., domain),
+        // evaluated with the source permanent's controller as "you".
         var totalGenericTax = 0
         if (attackersPerDefender.isNotEmpty()) {
             for ((defenderId, attackerCount) in attackersPerDefender) {
@@ -366,8 +370,13 @@ internal class AttackPhaseManager(
                     val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
                     for (ability in cardDef.staticAbilities) {
                         if (ability is AttackTax) {
-                            val taxPerAttacker = ManaCost.parse(ability.manaCostPerAttacker)
-                            totalGenericTax += taxPerAttacker.cmc * attackerCount
+                            val ctx = com.wingedsheep.engine.handlers.EffectContext(
+                                sourceId = entityId,
+                                controllerId = defenderId,
+                                opponentId = attackingPlayer,
+                            )
+                            val taxPerAttacker = maxOf(0, dynamicAmountEvaluator.evaluate(state, ability.amountPerAttacker, ctx, projected))
+                            totalGenericTax += taxPerAttacker * attackerCount
                         }
                     }
                 }

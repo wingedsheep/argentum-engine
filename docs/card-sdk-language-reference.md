@@ -855,6 +855,12 @@ staticAbility {
 - `AddCreatureTypeByCounter` — subtype based on counters present.
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`.
 - `Effects.CreatePermanentEmblem(...)` — emblem with static abilities (planeswalker ultimates).
+- `AttackTax(amountPerAttacker: DynamicAmount)` — Propaganda / Ghostly Prison / Windborn Muse /
+  Collective Restraint. Per-attacker generic-mana tax for attacking the source's controller; the
+  amount is a `DynamicAmount` so it can scale with state (e.g., `DynamicAmounts.domain()` for
+  "{X} where X is your domain"). Evaluated with the source permanent's controller as "you".
+- `CantBeAttackedWithout(keyword)` — Form of the Dragon-style "Creatures without flying can't
+  attack you." defender-side restriction.
 
 **Global denial statics** (no `filter`/`duration` block — they're singleton-style)
 

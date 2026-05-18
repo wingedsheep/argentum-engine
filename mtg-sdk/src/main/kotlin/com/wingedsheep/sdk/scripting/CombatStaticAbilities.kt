@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -209,21 +210,26 @@ data class CantBlockUnless(
 }
 
 /**
- * Creatures can't attack you unless their controller pays a mana cost for each
- * attacking creature. Used for Ghostly Prison, Propaganda, Windborn Muse.
+ * Creatures can't attack you unless their controller pays generic mana for each
+ * attacking creature. Used for Ghostly Prison, Propaganda, Windborn Muse, and
+ * Domain-scaled variants like Collective Restraint.
  *
  * Only applies when attacking the controller of this permanent (not their planeswalkers).
  * Multiple AttackTax effects from different permanents stack additively.
  *
- * @property manaCostPerAttacker The mana cost that must be paid per attacking creature (e.g., "{2}")
+ * The per-attacker amount is a [DynamicAmount] so it can scale with game state
+ * (e.g., [com.wingedsheep.sdk.dsl.DynamicAmounts.domain] for "{X} where X is your
+ * domain"). Evaluated with the source permanent's controller as "you".
+ *
+ * @property amountPerAttacker Generic mana to pay per attacking creature.
  */
 @SerialName("AttackTax")
 @Serializable
 data class AttackTax(
-    val manaCostPerAttacker: String
+    val amountPerAttacker: DynamicAmount
 ) : StaticAbility {
     override val description: String =
-        "Creatures can't attack you unless their controller pays $manaCostPerAttacker for each creature they control that's attacking you"
+        "Creatures can't attack you unless their controller pays {${amountPerAttacker.description}} for each creature they control that's attacking you"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
