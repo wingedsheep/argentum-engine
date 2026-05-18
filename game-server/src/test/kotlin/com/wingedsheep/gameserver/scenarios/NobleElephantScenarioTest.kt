@@ -108,6 +108,44 @@ class NobleElephantScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("a band may contain any number of banding creatures (CR 702.21c)") {
+                // The "at most one" restriction in CR 702.21c applies only to creatures
+                // *without* banding: "one or more attacking creatures with banding and
+                // up to one attacking creature without banding are all in a band". A
+                // band of three banding creatures is therefore legal.
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Noble Elephant")
+                    .withCardOnBattlefield(1, "Noble Elephant")
+                    .withCardOnBattlefield(1, "Noble Elephant")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val elephants = game.findAllPermanents("Noble Elephant")
+                elephants.size shouldBe 3
+                val (e1, e2, e3) = Triple(elephants[0], elephants[1], elephants[2])
+
+                val result = game.execute(
+                    DeclareAttackers(
+                        game.player1Id,
+                        mapOf(e1 to game.player2Id, e2 to game.player2Id, e3 to game.player2Id),
+                        bands = listOf(setOf(e1, e2, e3)),
+                    )
+                )
+                withClue("Three banding creatures should be allowed in one band: ${result.error}") {
+                    result.error shouldBe null
+                }
+
+                val bandIds = elephants.mapNotNull {
+                    game.state.getEntity(it)?.get<AttackingComponent>()?.bandId
+                }
+                withClue("All three should share the same bandId") {
+                    bandIds.size shouldBe 3
+                    bandIds.toSet().size shouldBe 1
+                }
+            }
+
             test("a band with two non-banding members is rejected") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
