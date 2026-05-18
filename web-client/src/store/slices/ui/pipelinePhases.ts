@@ -611,16 +611,18 @@ export function enterPhase(
       }
 
       // When a requirement's max-count is X-driven (TargetObject.dynamicMaxCount =
-      // XValue server-side), the static `count` field is just a placeholder. After
-      // the user picks X via the cast-time xSelection phase, clamp maxTargets to X.
-      const clampMaxByX = (max: number, constrained: boolean | undefined): number => {
-        if (!constrained || chosenX == null) return max
-        return Math.min(max, chosenX)
+      // XValue server-side), the static `count` field is just a placeholder (often
+      // its default of 1). After the user picks X via the cast-time xSelection
+      // phase, the chosen X *replaces* the placeholder as the max — not min(static, X).
+      const resolveMaxByX = (staticMax: number, constrained: boolean | undefined): number => {
+        if (!constrained) return staticMax
+        if (chosenX == null) return staticMax
+        return chosenX
       }
 
       if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
         const firstReq = actionInfo.targetRequirements[0]!
-        const maxTargets = clampMaxByX(firstReq.maxTargets, firstReq.xConstrainsCount)
+        const maxTargets = resolveMaxByX(firstReq.maxTargets, firstReq.xConstrainsCount)
         store.startTargeting({
           action,
           validTargets: filterByX(firstReq.validTargets, firstReq.xConstrainsManaValue),
@@ -637,7 +639,7 @@ export function enterPhase(
         })
       } else {
         const rawMax = actionInfo.targetCount ?? 1
-        const maxTargets = clampMaxByX(rawMax, actionInfo.xConstrainsTargetCount)
+        const maxTargets = resolveMaxByX(rawMax, actionInfo.xConstrainsTargetCount)
         const rawMin = actionInfo.minTargets ?? rawMax
         store.startTargeting({
           action,
