@@ -610,14 +610,23 @@ export function enterPhase(
         })
       }
 
+      // When a requirement's max-count is X-driven (TargetObject.dynamicMaxCount =
+      // XValue server-side), the static `count` field is just a placeholder. After
+      // the user picks X via the cast-time xSelection phase, clamp maxTargets to X.
+      const clampMaxByX = (max: number, constrained: boolean | undefined): number => {
+        if (!constrained || chosenX == null) return max
+        return Math.min(max, chosenX)
+      }
+
       if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
         const firstReq = actionInfo.targetRequirements[0]!
+        const maxTargets = clampMaxByX(firstReq.maxTargets, firstReq.xConstrainsCount)
         store.startTargeting({
           action,
           validTargets: filterByX(firstReq.validTargets, firstReq.xConstrainsManaValue),
           selectedTargets: [],
-          minTargets: firstReq.minTargets,
-          maxTargets: firstReq.maxTargets,
+          minTargets: Math.min(firstReq.minTargets, maxTargets),
+          maxTargets,
           currentRequirementIndex: 0,
           allSelectedTargets: [],
           targetRequirements: actionInfo.targetRequirements,
@@ -627,12 +636,15 @@ export function enterPhase(
           ...(actionInfo.requiresDamageDistribution ? { requiresDamageDistribution: true } : {}),
         })
       } else {
+        const rawMax = actionInfo.targetCount ?? 1
+        const maxTargets = clampMaxByX(rawMax, actionInfo.xConstrainsTargetCount)
+        const rawMin = actionInfo.minTargets ?? rawMax
         store.startTargeting({
           action,
           validTargets: filterByX(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue),
           selectedTargets: [],
-          minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
-          maxTargets: actionInfo.targetCount ?? 1,
+          minTargets: Math.min(rawMin, maxTargets),
+          maxTargets,
           ...(actionInfo.requiresDamageDistribution ? { requiresDamageDistribution: true } : {}),
         })
       }

@@ -138,6 +138,17 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                 }
             }
 
+            is CardSource.ChosenTargets -> {
+                context.targets.mapNotNull { chosen ->
+                    when (chosen) {
+                        is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> chosen.entityId
+                        is com.wingedsheep.engine.state.components.stack.ChosenTarget.Card -> chosen.cardId
+                        is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> chosen.spellEntityId
+                        is com.wingedsheep.engine.state.components.stack.ChosenTarget.Player -> null
+                    }
+                }
+            }
+
             is CardSource.FromLinkedExile -> {
                 val sourceId = context.sourceId
                     ?: return EffectResult.error(state, "No source entity for FromLinkedExile")

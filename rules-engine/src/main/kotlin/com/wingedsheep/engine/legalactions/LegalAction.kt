@@ -35,6 +35,17 @@ data class LegalAction(
      * [TargetInfo.xConstrainsManaValue] on each requirement instead.
      */
     val xConstrainsTargetManaValue: Boolean = false,
+    /**
+     * True when the (single) target requirement's max-count is dynamically driven by the
+     * chosen X (i.e. [TargetObject.dynamicMaxCount] is [DynamicAmount.XValue]).
+     *
+     * At enumeration time X is unbound, so [targetCount] is a placeholder (the static
+     * `count` field, typically 1 or 20 from the legacy workaround). After the player
+     * picks X via the cast-time `xSelection` phase, the client must clamp selectable
+     * targets to that X. For multi-requirement spells, see [TargetInfo.xConstrainsCount]
+     * on each requirement.
+     */
+    val xConstrainsTargetCount: Boolean = false,
 
     // Combat
     val validAttackers: List<EntityId>? = null,
@@ -167,7 +178,13 @@ data class TargetInfo(
      * True when this requirement's filter contains [CardPredicate.ManaValueAtMostX].
      * The client re-filters [validTargets] by the chosen X after X selection.
      */
-    val xConstrainsManaValue: Boolean = false
+    val xConstrainsManaValue: Boolean = false,
+    /**
+     * True when this requirement's max-count is dynamically driven by the chosen X
+     * (`TargetObject.dynamicMaxCount == DynamicAmount.XValue`). The client should
+     * clamp selectable targets to the chosen X after X selection.
+     */
+    val xConstrainsCount: Boolean = false
 )
 
 /**

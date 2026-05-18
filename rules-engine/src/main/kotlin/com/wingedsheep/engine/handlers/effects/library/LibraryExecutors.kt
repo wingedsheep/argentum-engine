@@ -49,6 +49,7 @@ class LibraryExecutors(
             targetFinder = targetFinder ?: TargetFinder(),
         ),
         GatherSubtypesExecutor(),
+        CaptureControllersExecutor(),
         ChooseCreatureTypePipelineExecutor(),
         ChooseOptionPipelineExecutor(),
         GatherCardsExecutor(),

@@ -29,7 +29,13 @@ data class LegalActionTargetInfo(
      * by the chosen X after X selection — the engine builds [validTargets]
      * permissively because X is unbound at legal-action enumeration time.
      */
-    val xConstrainsManaValue: Boolean = false
+    val xConstrainsManaValue: Boolean = false,
+    /**
+     * True when this requirement's max-count is dynamically driven by the chosen X
+     * (`TargetObject.dynamicMaxCount == DynamicAmount.XValue`). The client must
+     * cap selectable targets at the chosen X after the cast-time `xSelection` phase.
+     */
+    val xConstrainsCount: Boolean = false
 )
 
 @Serializable
@@ -51,6 +57,13 @@ data class LegalActionInfo(
      * must re-filter [validTargets] by the chosen X after X selection.
      */
     val xConstrainsTargetManaValue: Boolean = false,
+    /**
+     * True when the (single) target requirement's max-count is dynamically driven by the
+     * chosen X. The client must cap selectable targets at the chosen X after the cast-time
+     * `xSelection` phase. For multi-requirement spells the per-requirement flag on
+     * [LegalActionTargetInfo.xConstrainsCount] is used instead.
+     */
+    val xConstrainsTargetCount: Boolean = false,
     val validAttackers: List<EntityId>? = null,
     val mandatoryAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,

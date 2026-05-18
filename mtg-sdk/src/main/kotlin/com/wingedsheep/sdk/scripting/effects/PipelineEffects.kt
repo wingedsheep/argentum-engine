@@ -132,6 +132,24 @@ sealed interface CardSource {
      * @property count When set, only gather the first [count] cards from the ordered pile.
      *   When null (default), gather all linked exile cards.
      */
+    /**
+     * The spell or ability's resolved targets, taken from [EffectContext.targets].
+     *
+     * Yields the entity ids of every [ChosenTarget] whose underlying object is a
+     * permanent / card / spell on the stack (Player targets are skipped — they aren't
+     * cards). The cards are NOT moved or modified; the gather only references them so
+     * subsequent pipeline steps (Capture, Move, …) can operate on the set.
+     *
+     * Pair with [CaptureControllersEffect] before any move-out-of-battlefield step
+     * when downstream logic needs to know who controlled each card before it left,
+     * since `ControllerComponent` is stripped on the way to the graveyard.
+     */
+    @SerialName("ChosenTargets")
+    @Serializable
+    data object ChosenTargets : CardSource {
+        override val description: String = "the targets"
+    }
+
     @SerialName("FromLinkedExile")
     @Serializable
     data class FromLinkedExile(
@@ -379,6 +397,90 @@ data class GatherCardsEffect(
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Snapshot the current controller of each entity in a stored collection, writing the
+ * controller ids to `storedCollections[storeAs]` as a parallel list (entry _i_ in
+ * `storeAs` is the controller of entry _i_ in `from`).
+ *
+ * Lives in the pipeline because `ControllerComponent` is stripped when a permanent
+ * leaves the battlefield, so any "this way"-style downstream step (Builder's Bane:
+ * "deals damage to each player equal to the number of artifacts they controlled that
+ * were put into a graveyard this way") must capture the controller before the move.
+ *
+ * Pair with [CardSource.ChosenTargets] → [MoveCollectionEffect] (Destroy) → a
+ * controller-aware consumer like [ForEachCapturedControllerEffect].
+ *
+ * Entries whose entity has no `ControllerComponent` (already off the battlefield)
+ * fall back to the card's owner; permanents always have an owner, so the captured
+ * list is the same length as [from] and indices line up 1:1.
+ *
+ * @property from Stored collection whose entities' controllers to capture.
+ * @property storeAs Stored collection key under which the parallel controller list lives.
+ */
+@SerialName("CaptureControllers")
+@Serializable
+data class CaptureControllersEffect(
+    val from: String,
+    val storeAs: String
+) : Effect {
+    override val description: String = "Capture the controllers of the $from cards"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Iterate the unique controllers captured by [CaptureControllersEffect] for cards that
+ * appear in a follow-on collection (e.g. cards that actually died after a destroy),
+ * running [effects] once per controller with:
+ *
+ *   - `context.controllerId` set to the iterating controller, so `Player.You` and
+ *     `EffectTarget.Controller` resolve to that player inside the sub-effects.
+ *   - `context.pipeline.storedNumbers[countVariable]` set to the tally for that
+ *     controller, so sub-effects can scale via `DynamicAmount.VariableReference`.
+ *   - The outer pipeline collections preserved (unlike [ForEachPlayerEffect], which
+ *     deliberately wipes them) so sub-effects can still reference the dead pile,
+ *     the captured snapshot, etc.
+ *
+ * Cross-references three pipeline lists:
+ *   - [collection]: cards that survived the move-out step (e.g. `storeMovedAs` output).
+ *     Only these contribute to per-controller tallies.
+ *   - [originalCollection]: the gather-time list; the index space for [controllerSnapshot].
+ *   - [controllerSnapshot]: parallel controller-id list aligned with [originalCollection].
+ *
+ * Order: iterates in turn order, starting from the active player, so deterministic
+ * sequencing of any sub-effects that mutate shared state (life loss, damage, draws).
+ *
+ * General enough for any "for each player, do X scaled by how many of their permanents
+ * went this way" payoff — Builder's Bane (deal damage), `lose life`, `discard a card
+ * for each`, `mill`, etc.
+ *
+ * @property collection Post-action collection (e.g. "destroyed" cards) that gates the tally.
+ * @property originalCollection Pre-action collection; defines the index space.
+ * @property controllerSnapshot Parallel controller-id list (same length as [originalCollection]).
+ * @property countVariable Variable name under which per-iteration count is stored in
+ *   `storedNumbers`. Defaults to `"iterationCount"`.
+ * @property effects Sub-effects executed once per controller.
+ */
+@SerialName("ForEachCapturedController")
+@Serializable
+data class ForEachCapturedControllerEffect(
+    val collection: String,
+    val originalCollection: String,
+    val controllerSnapshot: String,
+    val countVariable: String = "iterationCount",
+    val effects: List<Effect>
+) : Effect {
+    override val description: String = buildString {
+        append("For each player who controlled at least one of the $collection cards, ")
+        append(effects.joinToString(". ") { it.description.replaceFirstChar { c -> c.lowercase() } })
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        var changed = false
+        val newEffects = effects.map { val n = it.applyTextReplacement(replacer); if (n !== it) changed = true; n }
+        return if (changed) copy(effects = newEffects) else this
+    }
 }
 
 /**

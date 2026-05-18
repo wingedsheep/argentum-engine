@@ -562,6 +562,12 @@ export interface LegalActionTargetInfo {
    * since the server enumerates targets permissively before X is bound.
    */
   readonly xConstrainsManaValue?: boolean
+  /**
+   * True when this requirement's max-count scales with the chosen X
+   * (TargetObject.dynamicMaxCount == XValue server-side). The client must clamp
+   * selectable targets to the X chosen at cast time.
+   */
+  readonly xConstrainsCount?: boolean
 }
 
 /**
@@ -590,6 +596,13 @@ export interface LegalActionInfo {
    * [validTargets] by the chosen X after X selection.
    */
   readonly xConstrainsTargetManaValue?: boolean
+  /**
+   * True when the (single) target requirement's max-count scales with the chosen X
+   * (e.g. Builder's Bane: "Destroy X target artifacts"). The client must clamp the
+   * targeting overlay's max selection to the X chosen at cast time. For multi-
+   * requirement spells, see the per-requirement [LegalActionTargetInfo.xConstrainsCount].
+   */
+  readonly xConstrainsTargetCount?: boolean
   /** Valid attacker IDs for DeclareAttackers action */
   readonly validAttackers?: readonly EntityId[]
   /** Creature IDs that must attack this combat (from MustAttack, Taunt, etc.) */

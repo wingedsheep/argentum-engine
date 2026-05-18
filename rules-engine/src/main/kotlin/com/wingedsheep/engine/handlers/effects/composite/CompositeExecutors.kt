@@ -28,6 +28,7 @@ class CompositeExecutors(
     private val createDelayedTriggerExecutor by lazy { CreateDelayedTriggerExecutor() }
     private val forEachTargetExecutor by lazy { ForEachTargetExecutor(effectExecutor) }
     private val forEachPlayerExecutor by lazy { ForEachPlayerExecutor(effectExecutor) }
+    private val forEachCapturedControllerExecutor by lazy { ForEachCapturedControllerExecutor(effectExecutor) }
     private val ifYouDoEffectExecutor by lazy { IfYouDoEffectExecutor(effectExecutor) }
     private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
     private val mayRevealCardFromHandEffectExecutor by lazy { MayRevealCardFromHandEffectExecutor(effectExecutor) }
@@ -62,6 +63,7 @@ class CompositeExecutors(
         createDelayedTriggerExecutor,
         forEachTargetExecutor,
         forEachPlayerExecutor,
+        forEachCapturedControllerExecutor,
         forEachInGroupExecutor,
         ifYouDoEffectExecutor,
         mayEffectExecutor,

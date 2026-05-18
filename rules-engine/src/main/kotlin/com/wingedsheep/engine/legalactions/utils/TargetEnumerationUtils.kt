@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Extracted target-finding helpers from LegalActionsCalculator.
@@ -205,7 +206,8 @@ class TargetEnumerationUtils(
                 maxTargets = req.count,
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
-                xConstrainsManaValue = requirementUsesManaValueAtMostX(req)
+                xConstrainsManaValue = requirementUsesManaValueAtMostX(req),
+                xConstrainsCount = requirementXConstrainsCount(req)
             )
         }
     }
@@ -219,6 +221,16 @@ class TargetEnumerationUtils(
      * at enumeration time) and would otherwise let the player click an over-MV
      * target that the server then rejects on cast.
      */
+    /**
+     * True when [requirement] is a [TargetObject] whose `dynamicMaxCount` is the
+     * [DynamicAmount.XValue] sentinel. Surfaced to the client so the targeting UI
+     * caps selectable targets at the X chosen for the spell's cost.
+     */
+    fun requirementXConstrainsCount(requirement: TargetRequirement): Boolean {
+        val target = requirement as? TargetObject ?: return false
+        return target.dynamicMaxCount == DynamicAmount.XValue
+    }
+
     fun requirementUsesManaValueAtMostX(requirement: TargetRequirement): Boolean {
         val filter = (requirement as? TargetObject)?.filter ?: return false
         return filter.baseFilter.cardPredicates.any { containsManaValueAtMostX(it) }

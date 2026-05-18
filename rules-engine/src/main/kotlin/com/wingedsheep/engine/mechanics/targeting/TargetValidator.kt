@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Validates that chosen targets match their target requirements.
@@ -57,16 +58,29 @@ class TargetValidator {
         // Use the game state for validation
         // StateProjector is used for P/T checks to account for continuous effects
 
-        // Match targets to requirements (assuming targets are in order of requirements)
+        // Match targets to requirements (assuming targets are in order of requirements).
+        // For TargetObject with dynamicMaxCount = XValue, the chosen X clamps the per-req
+        // max count (the static `count` field is just a placeholder at enumeration time).
+        fun effectiveMaxCount(req: TargetRequirement): Int {
+            if (req is TargetObject && req.dynamicMaxCount == DynamicAmount.XValue && xValue != null) {
+                return xValue
+            }
+            return req.count
+        }
         for ((index, requirement) in requirements.withIndex()) {
             // Get targets for this requirement (handle multi-target requirements)
-            val targetCount = requirement.count
-            val startIdx = requirements.take(index).sumOf { it.count }
+            val targetCount = effectiveMaxCount(requirement)
+            val startIdx = requirements.take(index).sumOf { effectiveMaxCount(it) }
             val endIdx = startIdx + targetCount
             val targetsForReq = targets.subList(
                 startIdx.coerceAtMost(targets.size),
                 endIdx.coerceAtMost(targets.size)
             )
+
+            // Reject if too many targets were declared for this requirement
+            if (targets.size > requirements.sumOf { effectiveMaxCount(it) }) {
+                return "Too many targets for ${requirement.description}"
+            }
 
             // Check minimum targets
             if (targetsForReq.size < requirement.effectiveMinCount) {

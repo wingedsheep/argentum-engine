@@ -109,8 +109,15 @@ fun TargetPermanent(
     count: Int = 1,
     optional: Boolean = false,
     filter: TargetFilter = TargetFilter.Permanent,
-    id: String? = null
-): TargetObject = TargetObject(count = count, optional = optional, filter = filter, id = id)
+    id: String? = null,
+    dynamicMaxCount: DynamicAmount? = null
+): TargetObject = TargetObject(
+    count = count,
+    optional = optional,
+    filter = filter,
+    id = id,
+    dynamicMaxCount = dynamicMaxCount
+)
 
 // =============================================================================
 // Combined Targeting
