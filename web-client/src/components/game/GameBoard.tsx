@@ -52,7 +52,6 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const clearAttackers = useGameStore((state) => state.clearAttackers)
   const clearBlockerAssignments = useGameStore((state) => state.clearBlockerAssignments)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
-  const formBand = useGameStore((state) => state.formBand)
   const removeBand = useGameStore((state) => state.removeBand)
   const priorityMode = useGameStore(selectPriorityMode)
   const nextStopPoint = useGameStore((state) => state.nextStopPoint)
@@ -830,150 +829,131 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Combat buttons (bottom-right) */}
       {isInCombatMode && combatState?.mode === 'declareAttackers' && (
+        <div style={styles.combatButtonContainer}>
+          {combatState.selectedAttackers.length === 0 ? (
+            <>
+              <button
+                onClick={attackWithAll}
+                disabled={combatState.validCreatures.length === 0}
+                style={{
+                  ...styles.floatingBarButton,
+                  ...styles.combatActionButton,
+                  backgroundColor: '#c62828',
+                  border: '1px solid #ef5350',
+                  opacity: combatState.validCreatures.length === 0 ? 0.5 : 1,
+                }}
+              >
+                Attack All
+              </button>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.floatingBarButton,
+                  ...styles.combatPassButton,
+                }}
+              >
+                Skip Attacking
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={confirmCombat}
+                style={{
+                  ...styles.floatingBarButton,
+                  ...styles.combatActionButton,
+                  backgroundColor: '#c62828',
+                  border: '1px solid #ef5350',
+                }}
+              >
+                Attack with {combatState.selectedAttackers.length}
+              </button>
+              <button
+                onClick={clearAttackers}
+                style={{
+                  ...styles.floatingBarButton,
+                  ...styles.combatActionButton,
+                  backgroundColor: '#424242',
+                  border: '1px solid #757575',
+                }}
+              >
+                Clear Attackers
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/*
+        Banding panel — fixed at bottom-left during declare-attackers, mirroring the
+        combat-buttons placement on the bottom-right. Visible whenever there's at
+        least one banding-capable attacker selected, or one or more declared bands.
+        Drag-to-band on the battlefield is the primary input; this panel exists to
+        review declared bands and to surface the rule + the illegal-selection reason.
+      */}
+      {isInCombatMode &&
+        combatState?.mode === 'declareAttackers' &&
+        (combatState.bands.length > 0 ||
+          (combatState.selectedAttackers.length > 0 && bandingAnalysis?.anySelectedHasBanding)) && (
         <div
           style={{
-            ...styles.combatButtonContainer,
-            // Stack the banding panel on top of the button row so the panel can grow
-            // wider without pushing buttons off-screen or overlapping the priority-mode
-            // toggle on the right edge.
+            position: 'fixed',
+            bottom: 16,
+            left: 16,
+            display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-end',
+            gap: 6,
+            padding: '8px 10px',
+            background: 'rgba(74, 20, 140, 0.45)',
+            border: '1px solid #7b1fa2',
+            borderRadius: 6,
+            fontSize: 12,
+            maxWidth: 460,
+            color: 'white',
+            zIndex: 100,
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
           }}
         >
-          {/* Banding panel sits above the button row. */}
-          {(combatState.bands.length > 0 ||
-            (combatState.selectedAttackers.length > 0 && bandingAnalysis?.anySelectedHasBanding)) && (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-                padding: '6px 8px',
-                background: 'rgba(74, 20, 140, 0.35)',
-                border: '1px solid #7b1fa2',
-                borderRadius: 4,
-                fontSize: 11,
-                maxWidth: 420,
-              }}
-            >
-              <div style={{ color: '#e1bee7', fontWeight: 600 }}>
-                Banding (CR 702.21)
-                <span style={{ fontWeight: 400, color: '#d1c4e9', marginLeft: 6 }}>
-                  · block one band member, block them all
-                </span>
-              </div>
-              {combatState.bands.length === 0 ? (
-                <div style={{ color: '#d1c4e9', fontStyle: 'italic' }}>
-                  {bandingAnalysis?.illegalReason
-                    ?? `Click "Form Band" to group the ${bandingAnalysis?.selectedCount ?? 0} selected attackers.`}
-                </div>
-              ) : (
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {combatState.bands.map((band, i) => {
-                    const color = bandColorFor(i)
-                    const names = band.map((id) => bandingAnalysis?.nameOf(id) ?? 'Unknown')
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => removeBand(i)}
-                        title={`Click to disband. Members: ${names.join(', ')}`}
-                        style={{
-                          background: color.chipBg,
-                          color: 'white',
-                          border: `1px solid ${color.border}`,
-                          borderRadius: 3,
-                          padding: '2px 6px',
-                          cursor: 'pointer',
-                          fontSize: 11,
-                          maxWidth: 340,
-                          textAlign: 'left',
-                        }}
-                      >
-                        <span style={{ fontWeight: 700, marginRight: 4 }}>B{i + 1}</span>
-                        <span>{names.join(' · ')}</span>
-                        <span style={{ marginLeft: 6, opacity: 0.7 }}>✕</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Button row */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {combatState.selectedAttackers.length === 0 ? (
-              <>
-                <button
-                  onClick={attackWithAll}
-                  disabled={combatState.validCreatures.length === 0}
-                  style={{
-                    ...styles.floatingBarButton,
-                    ...styles.combatActionButton,
-                    backgroundColor: '#c62828',
-                    border: '1px solid #ef5350',
-                    opacity: combatState.validCreatures.length === 0 ? 0.5 : 1,
-                  }}
-                >
-                  Attack All
-                </button>
-                <button
-                  onClick={confirmCombat}
-                  style={{
-                    ...styles.floatingBarButton,
-                    ...styles.combatPassButton,
-                  }}
-                >
-                  Skip Attacking
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={confirmCombat}
-                  style={{
-                    ...styles.floatingBarButton,
-                    ...styles.combatActionButton,
-                    backgroundColor: '#c62828',
-                    border: '1px solid #ef5350',
-                  }}
-                >
-                  Attack with {combatState.selectedAttackers.length}
-                </button>
-                {bandingAnalysis?.anySelectedHasBanding && (
+          <div style={{ color: '#e1bee7', fontWeight: 600, fontSize: 12 }}>
+            Banding (CR 702.21)
+            <span style={{ fontWeight: 400, color: '#d1c4e9', marginLeft: 6 }}>
+              · block one band member, block them all
+            </span>
+          </div>
+          <div style={{ color: '#d1c4e9', fontSize: 11, fontStyle: 'italic' }}>
+            {bandingAnalysis?.illegalReason
+              ?? 'Drag a banding attacker onto another attacker to form a band.'}
+          </div>
+          {combatState.bands.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {combatState.bands.map((band, i) => {
+                const color = bandColorFor(i)
+                const names = band.map((id) => bandingAnalysis?.nameOf(id) ?? 'Unknown')
+                return (
                   <button
-                    onClick={() => formBand(combatState.selectedAttackers)}
-                    disabled={bandingAnalysis.illegalReason != null}
-                    title={
-                      bandingAnalysis.illegalReason
-                        ?? `Group these ${bandingAnalysis.selectedCount} attackers into a band. Blocking any band member blocks them all; the defender controls damage assignment among blockers.`
-                    }
+                    key={i}
+                    onClick={() => removeBand(i)}
+                    title={`Click to disband. Members: ${names.join(', ')}`}
                     style={{
-                      ...styles.floatingBarButton,
-                      ...styles.combatActionButton,
-                      backgroundColor: bandingAnalysis.illegalReason ? '#311b3f' : '#4a148c',
-                      border: `1px solid ${bandingAnalysis.illegalReason ? '#5c3a6e' : '#ab47bc'}`,
-                      opacity: bandingAnalysis.illegalReason ? 0.55 : 1,
-                      cursor: bandingAnalysis.illegalReason ? 'not-allowed' : 'pointer',
+                      background: color.chipBg,
+                      color: 'white',
+                      border: `1px solid ${color.border}`,
+                      borderRadius: 3,
+                      padding: '3px 7px',
+                      cursor: 'pointer',
+                      fontSize: 11,
+                      maxWidth: 380,
+                      textAlign: 'left',
                     }}
                   >
-                    Form Band ({bandingAnalysis.selectedCount})
+                    <span style={{ fontWeight: 700, marginRight: 4 }}>B{i + 1}</span>
+                    <span>{names.join(' · ')}</span>
+                    <span style={{ marginLeft: 6, opacity: 0.7 }}>✕</span>
                   </button>
-                )}
-                <button
-                  onClick={clearAttackers}
-                  style={{
-                    ...styles.floatingBarButton,
-                    ...styles.combatActionButton,
-                    backgroundColor: '#424242',
-                    border: '1px solid #757575',
-                  }}
-                >
-                  Clear Attackers
-                </button>
-              </>
-            )}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 
