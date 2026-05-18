@@ -132,23 +132,23 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
   const attackerName = attackerCard?.name ?? 'Attacker'
 
   // Banding context (CR 702.21). When the attacker is part of a band, we surface the
-  // band's color, members, and — when applicable — the reason this player is the one
-  // assigning damage (defender by default; banding inverts that to the defender when
-  // any blocker has banding, per CR 702.21e).
+  // band's color, members (as small card thumbnails), and — when applicable — the
+  // reason this player is the one assigning damage (defender by default; banding
+  // inverts that to the defender when any blocker has banding, per CR 702.21e).
   const attackers = gameState?.combat?.attackers ?? []
   const ownAttackerInfo = attackers.find((a) => a.creatureId === decision.attackerId)
   const bandId = ownAttackerInfo?.bandId ?? null
   let bandIndex = -1
-  let bandSiblings: string[] = []
+  let bandMembers: { id: EntityId; name: string }[] = []
   if (bandId) {
     const seen: string[] = []
     for (const a of attackers) {
       if (a.bandId && !seen.includes(a.bandId)) seen.push(a.bandId)
     }
     bandIndex = seen.indexOf(bandId)
-    bandSiblings = attackers
-      .filter((a) => a.bandId === bandId && a.creatureId !== decision.attackerId)
-      .map((a) => a.creatureName)
+    bandMembers = attackers
+      .filter((a) => a.bandId === bandId)
+      .map((a) => ({ id: a.creatureId, name: a.creatureName }))
   }
   const blockerHasBanding = ownAttackerInfo?.blockedBy.some((id) => {
     return gameState?.cards[id]?.keywords.includes(Keyword.BANDING) ?? false
@@ -205,35 +205,60 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
         </p>
       </div>
 
-      {/* Banding context banner (CR 702.21). */}
+      {/* Banding context: a single compact row showing each band member as a
+        * thumbnail. The attacker the player is currently assigning damage for gets
+        * a brighter ring; siblings render dimmer. A small caption explains the
+        * inversion when CR 702.21e is the reason this player is choosing. */}
       {bandIndex >= 0 && (() => {
         const color = bandColorFor(bandIndex)
+        const thumbHeight = responsive.isMobile ? 70 : 90
+        const thumbWidth = Math.round(thumbHeight / 1.4)
         return (
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
+              alignItems: 'center',
               gap: 4,
-              padding: '10px 14px',
-              background: color.chipBg,
-              border: `1px solid ${color.border}`,
-              borderRadius: 6,
-              maxWidth: 600,
-              boxShadow: `0 0 20px ${color.glow}`,
             }}
           >
-            <div style={{ color: 'white', fontWeight: 700, fontSize: responsive.fontSize.normal }}>
-              Band B{bandIndex + 1} · {attackerName}
-              {bandSiblings.length > 0 && (
-                <span style={{ fontWeight: 400, opacity: 0.92 }}>
-                  {' '}+ {bandSiblings.join(', ')}
+            <div style={{ color: color.border, fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>
+              BAND B{bandIndex + 1}
+              {blockerHasBanding && (
+                <span style={{ marginLeft: 8, fontWeight: 400, color: '#d1c4e9' }}>
+                  · defender divides (CR 702.21e)
                 </span>
               )}
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: responsive.fontSize.small }}>
-              {blockerHasBanding
-                ? 'You divide this damage because a defending creature with banding is blocking (CR 702.21e).'
-                : 'Each attacker in a band is blocked as a group; damage is assigned per attacker.'}
+            <div style={{ display: 'flex', gap: 6 }}>
+              {bandMembers.map((m) => {
+                const card = gameState?.cards[m.id]
+                const isActive = m.id === decision.attackerId
+                return (
+                  <div
+                    key={m.id}
+                    onMouseEnter={(e) => hoverCard(m.id, { x: e.clientX, y: e.clientY })}
+                    onMouseLeave={() => hoverCard(null)}
+                    title={m.name}
+                    style={{
+                      width: thumbWidth,
+                      height: thumbHeight,
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      border: `2px solid ${isActive ? color.border : '#444'}`,
+                      opacity: isActive ? 1 : 0.55,
+                      boxShadow: isActive ? `0 0 12px ${color.glow}` : 'none',
+                      background: '#1a1a1a',
+                    }}
+                  >
+                    <img
+                      src={getCardImageUrl(m.name, card?.imageUri)}
+                      alt={m.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                )
+              })}
             </div>
           </div>
         )
