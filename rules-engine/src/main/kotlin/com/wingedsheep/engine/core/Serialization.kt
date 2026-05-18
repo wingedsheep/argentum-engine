@@ -245,7 +245,6 @@ val engineSerializersModule = SerializersModule {
         subclass(CreateTokenCopyOfChosenContinuation::class)
         subclass(DistributeDamageContinuation::class)
         subclass(EachPlayerDiscardsOrLoseLifeContinuation::class)
-        subclass(ConniveContinuation::class)
         subclass(ManaSourceSelectionContinuation::class)
         subclass(MayPayManaContinuation::class)
         subclass(MayPayManaSelectionContinuation::class)

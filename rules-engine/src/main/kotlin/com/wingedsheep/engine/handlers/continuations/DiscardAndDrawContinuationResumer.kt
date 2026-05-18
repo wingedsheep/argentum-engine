@@ -2,7 +2,6 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
-import com.wingedsheep.engine.handlers.effects.ConniveEffectHandler
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseLifeExecutor
 import com.wingedsheep.engine.state.GameState
@@ -16,8 +15,7 @@ class DiscardAndDrawContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(HandSizeDiscardContinuation::class, ::resumeHandSizeDiscard),
-        resumer(EachPlayerDiscardsOrLoseLifeContinuation::class, ::resumeEachPlayerDiscardsOrLoseLife),
-        resumer(ConniveContinuation::class, ::resumeConnive)
+        resumer(EachPlayerDiscardsOrLoseLifeContinuation::class, ::resumeEachPlayerDiscardsOrLoseLife)
     )
 
     fun resumeHandSizeDiscard(
@@ -227,40 +225,6 @@ class DiscardAndDrawContinuationResumer(
             decisionResult.pendingDecision,
             priorEvents + decisionResult.events
         )
-    }
-
-    fun resumeConnive(
-        state: GameState,
-        continuation: ConniveContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for Connive")
-        }
-
-        val selectedCards = response.selectedCards
-        val controllerId = continuation.controllerId
-        var newState = state
-        val events = mutableListOf<GameEvent>()
-
-        var discardedNonland = false
-        for (cardId in selectedCards) {
-            val isNonland = state.getEntity(cardId)?.get<CardComponent>()?.isLand == false
-            val discardResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                .discardCard(newState, controllerId, cardId)
-            newState = discardResult.state
-            events.addAll(discardResult.events)
-            if (isNonland) discardedNonland = true
-        }
-
-        if (discardedNonland) {
-            val (counterState, counterEvents) = ConniveEffectHandler.addPlusOnePlusOne(newState, continuation.targetCreatureId)
-            newState = counterState
-            events.addAll(counterEvents)
-        }
-
-        return checkForMore(newState, events)
     }
 
 }

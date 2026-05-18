@@ -2,9 +2,12 @@ package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlin.reflect.KClass
@@ -12,14 +15,16 @@ import kotlin.reflect.KClass
 /**
  * Executor for ConditionalOnCollectionEffect.
  *
- * Checks whether a named collection in the pipeline context is non-empty,
- * then delegates to the appropriate sub-effect.
+ * Measures a named collection (raw size, distinct card type count, or filtered size)
+ * against the configured minimum and delegates to the appropriate sub-effect.
  */
 class ConditionalOnCollectionExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ConditionalOnCollectionEffect> {
 
     override val effectType: KClass<ConditionalOnCollectionEffect> = ConditionalOnCollectionEffect::class
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun execute(
         state: GameState,
@@ -28,12 +33,19 @@ class ConditionalOnCollectionExecutor(
     ): EffectResult {
         val collection = context.pipeline.storedCollections[effect.collection] ?: emptyList()
 
-        val measuredSize = if (effect.countDistinctCardTypes) {
-            collection.flatMap { entityId ->
+        val measuredSize = when {
+            effect.countDistinctCardTypes -> collection.flatMap { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes ?: emptySet()
             }.toSet().size
-        } else {
-            collection.size
+
+            effect.filter != GameObjectFilter.Any -> {
+                val predicateContext = PredicateContext.fromEffectContext(context)
+                collection.count { entityId ->
+                    predicateEvaluator.matches(state, state.projectedState, entityId, effect.filter, predicateContext)
+                }
+            }
+
+            else -> collection.size
         }
 
         val elseEffect = effect.ifEmpty

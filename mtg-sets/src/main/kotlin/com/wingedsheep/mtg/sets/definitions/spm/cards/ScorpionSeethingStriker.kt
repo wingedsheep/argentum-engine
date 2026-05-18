@@ -2,11 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.spm.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 
 val ScorpionSeethingStriker = card("Scorpion, Seething Striker") {
     manaCost = "{3}{B}"
@@ -22,7 +22,7 @@ val ScorpionSeethingStriker = card("Scorpion, Seething Striker") {
         trigger = Triggers.YourEndStep
         triggerCondition = Conditions.CreatureDiedThisTurn
         val creature = target("target creature you control", Targets.CreatureYouControl)
-        effect = ConniveEffect(target = creature)
+        effect = Effects.Connive(target = creature)
     }
 
     metadata {

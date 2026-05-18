@@ -941,15 +941,20 @@ data class ConditionalOnCollectionEffect(
     /** When true, [minSize] is compared against the count of distinct card types across all
      *  cards in the collection rather than the raw collection size. An Artifact Creature in
      *  the collection contributes both Artifact and Creature to the count. */
-    val countDistinctCardTypes: Boolean = false
+    val countDistinctCardTypes: Boolean = false,
+    /** Restrict the collection to cards matching this filter before measuring against
+     *  [minSize]. Used for "if the discarded card is a nonland" style guards. Defaults to
+     *  [GameObjectFilter.Any] (no restriction). Ignored when [countDistinctCardTypes] is true. */
+    val filter: GameObjectFilter = GameObjectFilter.Companion.Any
 ) : Effect {
     override val description: String = buildString {
+        val restrict = if (filter == GameObjectFilter.Companion.Any) "" else " ${filter.description}"
         if (minSize <= 1) {
-            append("If $collection is not empty, ")
+            append("If $collection contains a$restrict card, ")
         } else if (countDistinctCardTypes) {
             append("If $collection covers at least $minSize card types, ")
         } else {
-            append("If $collection has at least $minSize cards, ")
+            append("If $collection has at least $minSize$restrict cards, ")
         }
         append(ifNotEmpty.description.replaceFirstChar { it.lowercase() })
         if (ifEmpty != null) {
@@ -961,8 +966,9 @@ data class ConditionalOnCollectionEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newIfNotEmpty = ifNotEmpty.applyTextReplacement(replacer)
         val newIfEmpty = ifEmpty?.applyTextReplacement(replacer)
-        return if (newIfNotEmpty !== ifNotEmpty || newIfEmpty !== ifEmpty)
-            copy(ifNotEmpty = newIfNotEmpty, ifEmpty = newIfEmpty) else this
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newIfNotEmpty !== ifNotEmpty || newIfEmpty !== ifEmpty || newFilter !== filter)
+            copy(ifNotEmpty = newIfNotEmpty, ifEmpty = newIfEmpty, filter = newFilter) else this
     }
 }
 

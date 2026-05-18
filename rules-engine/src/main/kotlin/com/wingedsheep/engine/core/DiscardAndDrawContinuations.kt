@@ -228,18 +228,3 @@ enum class ReadTheRunesPhase {
     DISCARD_CHOICE
 }
 
-/**
- * Resume after the player selects a card to discard for a Connive effect.
- *
- * After the discard, if the discarded card is not a land, place a +1/+1 counter on
- * [targetCreatureId].
- *
- * @property controllerId The player who is conniving
- * @property targetCreatureId The creature that receives the +1/+1 counter on nonland discard
- */
-@Serializable
-data class ConniveContinuation(
-    override val decisionId: String,
-    val controllerId: EntityId,
-    val targetCreatureId: EntityId
-) : ContinuationFrame

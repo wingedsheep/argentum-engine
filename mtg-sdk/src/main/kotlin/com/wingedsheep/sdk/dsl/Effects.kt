@@ -318,6 +318,15 @@ object Effects {
         EffectPatterns.discardCards(count, target)
 
     /**
+     * Connive (CR 702.166): draw a card, then discard a card. If the discarded card
+     * is a nonland, put a +1/+1 counter on [target].
+     *
+     * Composed entirely from atomic pipeline primitives — see [EffectPatterns.connive].
+     */
+    fun Connive(target: EffectTarget = EffectTarget.Self): Effect =
+        EffectPatterns.connive(target)
+
+    /**
      * Each opponent discards N cards.
      * Delegates to the EffectPatterns pipeline: ForEachPlayer(EachOpponent) → Gather → Select → Move.
      */
@@ -1434,6 +1443,23 @@ object Effects {
      */
     fun CounterAbility(): Effect =
         CounterEffect(target = CounterTarget.Ability)
+
+    /**
+     * Counter target spell or activated/triggered ability. Used by cards like
+     * Teferi's Response that can target either a spell or an ability on the stack.
+     */
+    fun CounterSpellOrAbility(filter: com.wingedsheep.sdk.scripting.filters.unified.TargetFilter? = null): Effect =
+        CounterEffect(target = CounterTarget.SpellOrAbility, filter = filter)
+
+    /**
+     * If the spell/ability being countered is an activated or triggered ability whose
+     * source is a permanent on the battlefield, destroy that permanent. Atomic step for
+     * "If a permanent's ability is countered this way, destroy that permanent" — compose
+     * via `CompositeEffect` with [CounterSpellOrAbility] (place this step *before* the
+     * counter so the stack entity's ability component is still readable).
+     */
+    fun DestroySourceOfTargetedAbility(): Effect =
+        com.wingedsheep.sdk.scripting.effects.DestroySourceOfTargetedAbilityEffect
 
     /**
      * Return target spell to its owner's hand.

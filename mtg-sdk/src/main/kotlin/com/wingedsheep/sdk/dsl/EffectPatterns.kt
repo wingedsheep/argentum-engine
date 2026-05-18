@@ -161,6 +161,9 @@ object EffectPatterns {
     fun loot(draw: Int = 1, discard: Int = 1): CompositeEffect =
         HandPatterns.loot(draw, discard)
 
+    fun connive(target: EffectTarget = EffectTarget.Self): CompositeEffect =
+        HandPatterns.connive(target)
+
     fun rummage(count: Int = 1): CompositeEffect =
         HandPatterns.rummage(count)
 

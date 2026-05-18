@@ -24,8 +24,8 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -52,7 +52,7 @@ class ConniveTest : FunSpec({
             ActivatedAbility(
                 id = conniveAbilityId,
                 cost = AbilityCost.Tap,
-                effect = ConniveEffect(target = EffectTarget.Self)
+                effect = Effects.Connive(target = EffectTarget.Self)
             )
         )
     )

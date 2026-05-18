@@ -245,17 +245,3 @@ data class RevealHandEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
-/**
- * Connive — draw a card, discard a card; if the discarded card is not a land,
- * put a +1/+1 counter on the target permanent.
- *
- * @property target The permanent that receives the +1/+1 counter on a nonland discard
- */
-@SerialName("Connive")
-@Serializable
-data class ConniveEffect(
-    val target: EffectTarget = EffectTarget.Self
-) : Effect {
-    override val description: String = "Connive"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
