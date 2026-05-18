@@ -830,79 +830,17 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Combat buttons (bottom-right) */}
       {isInCombatMode && combatState?.mode === 'declareAttackers' && (
-        <div style={styles.combatButtonContainer}>
-          {combatState.selectedAttackers.length === 0 ? (
-            <>
-              <button
-                onClick={attackWithAll}
-                disabled={combatState.validCreatures.length === 0}
-                style={{
-                  ...styles.floatingBarButton,
-                  ...styles.combatActionButton,
-                  backgroundColor: '#c62828',
-                  border: '1px solid #ef5350',
-                  opacity: combatState.validCreatures.length === 0 ? 0.5 : 1,
-                }}
-              >
-                Attack All
-              </button>
-              <button
-                onClick={confirmCombat}
-                style={{
-                  ...styles.floatingBarButton,
-                  ...styles.combatPassButton,
-                }}
-              >
-                Skip Attacking
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={confirmCombat}
-                style={{
-                  ...styles.floatingBarButton,
-                  ...styles.combatActionButton,
-                  backgroundColor: '#c62828',
-                  border: '1px solid #ef5350',
-                }}
-              >
-                Attack with {combatState.selectedAttackers.length}
-              </button>
-              {bandingAnalysis?.anySelectedHasBanding && (
-                <button
-                  onClick={() => formBand(combatState.selectedAttackers)}
-                  disabled={bandingAnalysis.illegalReason != null}
-                  title={
-                    bandingAnalysis.illegalReason
-                      ?? `Group these ${bandingAnalysis.selectedCount} attackers into a band. Blocking any band member blocks them all; the defender controls damage assignment among blockers.`
-                  }
-                  style={{
-                    ...styles.floatingBarButton,
-                    ...styles.combatActionButton,
-                    backgroundColor: bandingAnalysis.illegalReason ? '#311b3f' : '#4a148c',
-                    border: `1px solid ${bandingAnalysis.illegalReason ? '#5c3a6e' : '#ab47bc'}`,
-                    opacity: bandingAnalysis.illegalReason ? 0.55 : 1,
-                    cursor: bandingAnalysis.illegalReason ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  Form Band ({bandingAnalysis.selectedCount})
-                </button>
-              )}
-              <button
-                onClick={clearAttackers}
-                style={{
-                  ...styles.floatingBarButton,
-                  ...styles.combatActionButton,
-                  backgroundColor: '#424242',
-                  border: '1px solid #757575',
-                }}
-              >
-                Clear Attackers
-              </button>
-            </>
-          )}
-          {/* Banding panel: chips list each declared band with member names, click to remove. */}
+        <div
+          style={{
+            ...styles.combatButtonContainer,
+            // Stack the banding panel on top of the button row so the panel can grow
+            // wider without pushing buttons off-screen or overlapping the priority-mode
+            // toggle on the right edge.
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+          }}
+        >
+          {/* Banding panel sits above the button row. */}
           {(combatState.bands.length > 0 ||
             (combatState.selectedAttackers.length > 0 && bandingAnalysis?.anySelectedHasBanding)) && (
             <div
@@ -910,13 +848,12 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 4,
-                marginTop: 8,
                 padding: '6px 8px',
                 background: 'rgba(74, 20, 140, 0.35)',
                 border: '1px solid #7b1fa2',
                 borderRadius: 4,
                 fontSize: 11,
-                maxWidth: 360,
+                maxWidth: 420,
               }}
             >
               <div style={{ color: '#e1bee7', fontWeight: 600 }}>
@@ -962,6 +899,81 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               )}
             </div>
           )}
+
+          {/* Button row */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {combatState.selectedAttackers.length === 0 ? (
+              <>
+                <button
+                  onClick={attackWithAll}
+                  disabled={combatState.validCreatures.length === 0}
+                  style={{
+                    ...styles.floatingBarButton,
+                    ...styles.combatActionButton,
+                    backgroundColor: '#c62828',
+                    border: '1px solid #ef5350',
+                    opacity: combatState.validCreatures.length === 0 ? 0.5 : 1,
+                  }}
+                >
+                  Attack All
+                </button>
+                <button
+                  onClick={confirmCombat}
+                  style={{
+                    ...styles.floatingBarButton,
+                    ...styles.combatPassButton,
+                  }}
+                >
+                  Skip Attacking
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={confirmCombat}
+                  style={{
+                    ...styles.floatingBarButton,
+                    ...styles.combatActionButton,
+                    backgroundColor: '#c62828',
+                    border: '1px solid #ef5350',
+                  }}
+                >
+                  Attack with {combatState.selectedAttackers.length}
+                </button>
+                {bandingAnalysis?.anySelectedHasBanding && (
+                  <button
+                    onClick={() => formBand(combatState.selectedAttackers)}
+                    disabled={bandingAnalysis.illegalReason != null}
+                    title={
+                      bandingAnalysis.illegalReason
+                        ?? `Group these ${bandingAnalysis.selectedCount} attackers into a band. Blocking any band member blocks them all; the defender controls damage assignment among blockers.`
+                    }
+                    style={{
+                      ...styles.floatingBarButton,
+                      ...styles.combatActionButton,
+                      backgroundColor: bandingAnalysis.illegalReason ? '#311b3f' : '#4a148c',
+                      border: `1px solid ${bandingAnalysis.illegalReason ? '#5c3a6e' : '#ab47bc'}`,
+                      opacity: bandingAnalysis.illegalReason ? 0.55 : 1,
+                      cursor: bandingAnalysis.illegalReason ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Form Band ({bandingAnalysis.selectedCount})
+                  </button>
+                )}
+                <button
+                  onClick={clearAttackers}
+                  style={{
+                    ...styles.floatingBarButton,
+                    ...styles.combatActionButton,
+                    backgroundColor: '#424242',
+                    border: '1px solid #757575',
+                  }}
+                >
+                  Clear Attackers
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
