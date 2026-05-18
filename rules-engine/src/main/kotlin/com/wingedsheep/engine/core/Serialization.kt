@@ -213,7 +213,6 @@ val engineSerializersModule = SerializersModule {
         subclass(DrawReplacementRemainingDrawsContinuation::class)
         subclass(DrawReplacementActivationContinuation::class)
         subclass(DrawReplacementTargetContinuation::class)
-        subclass(ReadTheRunesContinuation::class)
         subclass(ForEachTargetContinuation::class)
         subclass(ForEachPlayerContinuation::class)
         subclass(DrawUpToContinuation::class)

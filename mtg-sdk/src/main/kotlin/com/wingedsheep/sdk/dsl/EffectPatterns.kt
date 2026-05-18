@@ -164,6 +164,8 @@ object EffectPatterns {
     fun connive(target: EffectTarget = EffectTarget.Self): CompositeEffect =
         HandPatterns.connive(target)
 
+    fun readTheRunes(): CompositeEffect = HandPatterns.readTheRunes()
+
     fun rummage(count: Int = 1): CompositeEffect =
         HandPatterns.rummage(count)
 

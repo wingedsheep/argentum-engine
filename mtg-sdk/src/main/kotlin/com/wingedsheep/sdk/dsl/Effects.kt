@@ -90,7 +90,6 @@ import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTu
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
-import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import com.wingedsheep.sdk.scripting.effects.RepeatCondition
 import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
@@ -306,9 +305,9 @@ object Effects {
 
     /**
      * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
-     * Used for Read the Runes.
+     * Composed from atomic pipeline primitives — see [EffectPatterns.readTheRunes].
      */
-    fun ReadTheRunes(): Effect = ReadTheRunesEffect
+    fun ReadTheRunes(): Effect = EffectPatterns.readTheRunes()
 
     /**
      * Target player discards N cards (controller chooses, mandatory).

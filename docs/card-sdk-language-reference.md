@@ -439,6 +439,7 @@ Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` sh
 - `loot(draw?, discard?)` — "draw N, discard M" loop.
 - `rummage(count?)` — discard then draw.
 - `connive(target?)` — draw 1, discard 1, then put a +1/+1 counter on `target` if the discard was a nonland (CR 702.166). Also exposed as `Effects.Connive(target)`.
+- `readTheRunes()` — "draw X cards; for each, discard a card unless you sacrifice a permanent." Composes `RepeatDynamicTimesEffect(XValue, ChooseActionEffect(...))` with feasibility guards. Exposed as `Effects.ReadTheRunes()`.
 - `drain(amount, target)` — deal N damage, gain N life.
 - `eachOpponentMayPutFromHand(filter?)` — each opponent may dump a matching card.
 - `putFromHand(filter?, count?, entersTapped?)` — you may put N from hand onto battlefield.

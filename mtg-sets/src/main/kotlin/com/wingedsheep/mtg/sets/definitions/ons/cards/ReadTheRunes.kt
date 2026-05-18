@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
 
 /**
  * Read the Runes
@@ -17,7 +17,7 @@ val ReadTheRunes = card("Read the Runes") {
     oracleText = "Draw X cards. For each card drawn this way, discard a card unless you sacrifice a permanent."
 
     spell {
-        effect = ReadTheRunesEffect
+        effect = Effects.ReadTheRunes()
     }
 
     metadata {

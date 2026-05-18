@@ -6,17 +6,21 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
+import com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
@@ -277,6 +281,58 @@ object HandPatterns {
             DrawCardsEffect(draw, EffectTarget.Controller),
             discardCards(discard)
         )
+    )
+
+    /**
+     * Read the Runes-style "draw X, then for each card drawn discard a card unless
+     * you sacrifice a permanent" pipeline. Loops X times via [RepeatDynamicTimesEffect]
+     * (iteration count = the X paid for the spell); each iteration presents a
+     * [ChooseActionEffect] whose feasibility checks auto-skip the sacrifice option
+     * when no permanents are controlled and the discard option when the hand is
+     * empty, with the choice itself auto-resolving when only one of the two is feasible.
+     */
+    fun readTheRunes(): CompositeEffect = CompositeEffect(
+        listOf(
+            DrawCardsEffect(DynamicAmount.XValue, EffectTarget.Controller),
+            RepeatDynamicTimesEffect(
+                amount = DynamicAmount.XValue,
+                body = ChooseActionEffect(
+                    choices = listOf(
+                        EffectChoice(
+                            label = "Sacrifice a permanent",
+                            effect = CompositeEffect(
+                                listOf(
+                                    GatherCardsEffect(
+                                        source = CardSource.ControlledPermanents(Player.You),
+                                        storeAs = "rtr_perms"
+                                    ),
+                                    SelectFromCollectionEffect(
+                                        from = "rtr_perms",
+                                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                                        chooser = Chooser.Controller,
+                                        storeSelected = "rtr_sacrificed",
+                                        prompt = "Choose a permanent to sacrifice",
+                                        useTargetingUI = true
+                                    ),
+                                    MoveCollectionEffect(
+                                        from = "rtr_sacrificed",
+                                        destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                                        moveType = MoveType.Sacrifice
+                                    )
+                                )
+                            ),
+                            feasibilityCheck = FeasibilityCheck.ControlsPermanentMatching(GameObjectFilter.Permanent)
+                        ),
+                        EffectChoice(
+                            label = "Discard a card",
+                            effect = discardCards(1, EffectTarget.Controller),
+                            feasibilityCheck = FeasibilityCheck.HasCardsInZone(Zone.HAND)
+                        )
+                    )
+                )
+            )
+        ),
+        descriptionOverride = "Draw X cards. For each card drawn this way, discard a card unless you sacrifice a permanent."
     )
 
     /**

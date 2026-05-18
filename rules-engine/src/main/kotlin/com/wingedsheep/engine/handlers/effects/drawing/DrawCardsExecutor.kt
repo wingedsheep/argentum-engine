@@ -68,8 +68,7 @@ class DrawCardsExecutor(
      *    when auto-resuming `DrawReplacementRemainingDrawsContinuation` and
      *    `CycleDrawContinuation`,
      *  - [com.wingedsheep.engine.handlers.actions.ability.CycleCardHandler]
-     *    for the draw that follows cycling,
-     *  - [ReadTheRunesExecutor] for the initial "draw X cards" phase.
+     *    for the draw that follows cycling.
      *
      * @param skipPrompts historical flag meaning "this resumption has already
      *     handled decisions for the draw — skip both the static replacement

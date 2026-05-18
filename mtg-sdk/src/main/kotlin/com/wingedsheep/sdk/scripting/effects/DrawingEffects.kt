@@ -172,19 +172,6 @@ data class ReplaceNextDrawWithEffect(
 }
 
 /**
- * Draw X cards, then for each card drawn this way, discard a card unless you sacrifice a permanent.
- * Used for Read the Runes.
- */
-@SerialName("ReadTheRunes")
-@Serializable
-data object ReadTheRunesEffect : Effect {
-    override val description: String =
-        "Draw X cards. For each card drawn this way, discard a card unless you sacrifice a permanent."
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
  * Draw up to N cards effect.
  * "Draw up to N cards" - the player chooses how many (0 to maxCards).
  *

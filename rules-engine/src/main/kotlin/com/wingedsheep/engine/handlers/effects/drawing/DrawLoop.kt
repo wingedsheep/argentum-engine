@@ -32,9 +32,8 @@ object DrawLoop {
      *
      * @param primitive physical single-card draw
      * @param dispatcher replacement-effect dispatcher (null = no replacement
-     *     checks whatsoever, used by lightweight call sites like
-     *     [com.wingedsheep.engine.handlers.effects.drawing.ReadTheRunesExecutor]
-     *     that construct a bare [DrawCardsExecutor] without an effect executor)
+     *     checks whatsoever, used by lightweight call sites that construct a
+     *     bare [DrawCardsExecutor] without an effect executor)
      * @param isDrawStep `true` when this is the active player's draw-step
      *     draw, `false` for spell/ability draws
      * @param skipStaticReplacement skip the Parallel Thoughts-style static
