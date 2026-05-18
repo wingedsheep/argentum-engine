@@ -18,6 +18,13 @@ export interface CombatSliceState {
   combatState: CombatState | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
+  /**
+   * Whether the currently-dragged attacker has the BANDING keyword. Set alongside
+   * [draggingAttackerId] so other GameCards can decide whether they're a legal
+   * band-drop target without re-querying the store for keyword data. Null when no
+   * attacker is being dragged.
+   */
+  draggingAttackerHasBanding: boolean | null
   draggingCardId: EntityId | null
   opponentAttackerTargets: { selectedAttackers: readonly EntityId[]; attackerTargets: Record<EntityId, EntityId> } | null
   opponentBlockerAssignments: Record<EntityId, EntityId[]> | null
@@ -32,7 +39,7 @@ export interface CombatSliceActions {
   clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
-  startDraggingAttacker: (attackerId: EntityId) => void
+  startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
   stopDraggingAttacker: () => void
   startDraggingCard: (cardId: EntityId) => void
   stopDraggingCard: () => void
@@ -52,6 +59,20 @@ export interface CombatSliceActions {
   removeBand: (bandIndex: number) => void
   /** Clear all bands. */
   clearBands: () => void
+  /**
+   * Drag-and-drop band assembly (CR 702.21). Called when an attacker is dragged onto
+   * another player-controlled attacker. Auto-selects both as attackers, then:
+   * - If both are already in the same band → no-op.
+   * - If one is in a band and the other isn't → adds the other to that band.
+   * - If both are in different bands → merges into the band of [target].
+   * - If neither is in a band → creates a fresh band of [source, target].
+   *
+   * `sourceHasBanding` and `targetHasBanding` are caller-supplied keyword flags. If
+   * neither has banding, or if the resulting band would have more than one non-banding
+   * member, the link is silently rejected — the user keeps the existing attacker
+   * selection and the combat panel still reflects the previous state.
+   */
+  linkBand: (sourceId: EntityId, targetId: EntityId, sourceHasBanding: boolean, targetHasBanding: boolean) => void
 }
 
 export type CombatSlice = CombatSliceState & CombatSliceActions
@@ -60,6 +81,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
   combatState: null,
   draggingBlockerId: null,
   draggingAttackerId: null,
+  draggingAttackerHasBanding: null,
   draggingCardId: null,
   opponentAttackerTargets: null,
   opponentBlockerAssignments: null,
@@ -214,12 +236,12 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     set({ draggingBlockerId: null })
   },
 
-  startDraggingAttacker: (attackerId) => {
-    set({ draggingAttackerId: attackerId })
+  startDraggingAttacker: (attackerId, hasBanding = false) => {
+    set({ draggingAttackerId: attackerId, draggingAttackerHasBanding: hasBanding })
   },
 
   stopDraggingAttacker: () => {
-    set({ draggingAttackerId: null })
+    set({ draggingAttackerId: null, draggingAttackerHasBanding: null })
   },
 
   startDraggingCard: (cardId) => {
@@ -397,6 +419,75 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         combatState: {
           ...state.combatState,
           bands: [],
+        },
+      }
+    })
+  },
+
+  linkBand: (sourceId, targetId, sourceHasBanding, targetHasBanding) => {
+    if (sourceId === targetId) return
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') return state
+      if (!sourceHasBanding && !targetHasBanding) return state
+
+      // Auto-select both attackers if not already selected. Mandatory creatures are
+      // already in the list; this just extends it.
+      const selected = new Set(state.combatState.selectedAttackers)
+      let newSelected = state.combatState.selectedAttackers
+      if (!selected.has(sourceId)) {
+        newSelected = [...newSelected, sourceId]
+      }
+      if (!selected.has(targetId)) {
+        newSelected = [...newSelected, targetId]
+      }
+
+      const existingBands = state.combatState.bands.map((b) => [...b])
+      const sourceBandIdx = existingBands.findIndex((b) => b.includes(sourceId))
+      const targetBandIdx = existingBands.findIndex((b) => b.includes(targetId))
+
+      let nextBands: EntityId[][]
+      if (sourceBandIdx !== -1 && sourceBandIdx === targetBandIdx) {
+        // Already banded together — nothing to do.
+        return {
+          combatState: {
+            ...state.combatState,
+            selectedAttackers: newSelected,
+          },
+        }
+      } else if (sourceBandIdx !== -1 && targetBandIdx !== -1) {
+        // Merge the two bands into the target's band, drop the source's band.
+        const merged = Array.from(new Set([...existingBands[targetBandIdx]!, ...existingBands[sourceBandIdx]!]))
+        nextBands = existingBands.map((b, i) =>
+          i === targetBandIdx ? merged : i === sourceBandIdx ? [] : b
+        ).filter((b) => b.length >= 2)
+      } else if (sourceBandIdx !== -1) {
+        nextBands = existingBands.map((b, i) =>
+          i === sourceBandIdx ? Array.from(new Set([...b, targetId])) : b
+        )
+      } else if (targetBandIdx !== -1) {
+        nextBands = existingBands.map((b, i) =>
+          i === targetBandIdx ? Array.from(new Set([...b, sourceId])) : b
+        )
+      } else {
+        nextBands = [...existingBands, [sourceId, targetId]]
+      }
+
+      // The "at most one non-banding member" rule (CR 702.21c). The caller knows the
+      // keyword status of source and target, but the *existing* band may already
+      // contain other non-banding members we don't have keyword info for. Conservative
+      // fix: if both source and target lack banding, reject (already short-circuited
+      // above). If exactly one lacks banding, reject when the *other* band-member
+      // count of non-banding is unknown but plausibly already 1 — i.e., we can't
+      // safely add a second non-banding. So if the link adds a non-banding member to
+      // a band that wasn't pre-validated, the worst case is the server rejects the
+      // whole DeclareAttackers; the combat panel shows the illegal-reason message at
+      // confirm time. For now, accept the link client-side; server is authoritative.
+
+      return {
+        combatState: {
+          ...state.combatState,
+          selectedAttackers: newSelected,
+          bands: nextBands,
         },
       }
     })

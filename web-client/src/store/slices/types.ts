@@ -791,6 +791,7 @@ export type GameStore = {
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
+  draggingAttackerHasBanding: boolean | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
   revealedCardsInfo: {
@@ -835,7 +836,7 @@ export type GameStore = {
   clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
-  startDraggingAttacker: (attackerId: EntityId) => void
+  startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
   stopDraggingAttacker: () => void
   setAttackTarget: (attackerId: EntityId, targetId: EntityId) => void
   startDraggingCard: (cardId: EntityId) => void
@@ -848,6 +849,12 @@ export type GameStore = {
   formBand: (memberIds: readonly EntityId[]) => void
   removeBand: (bandIndex: number) => void
   clearBands: () => void
+  linkBand: (
+    sourceId: EntityId,
+    targetId: EntityId,
+    sourceHasBanding: boolean,
+    targetHasBanding: boolean,
+  ) => void
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void
   cancelXSelection: () => void

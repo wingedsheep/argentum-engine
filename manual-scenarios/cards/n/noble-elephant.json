@@ -6,6 +6,9 @@
     "hand": [],
     "battlefield": [
       {"name": "Noble Elephant"},
+      {"name": "Noble Elephant"},
+      {"name": "Noble Elephant"},
+      {"name": "Grizzly Bears"},
       {"name": "Grizzly Bears"},
       {"name": "Plains"},
       {"name": "Plains"},
@@ -20,6 +23,9 @@
     "hand": [],
     "battlefield": [
       {"name": "Hill Giant"},
+      {"name": "Hill Giant"},
+      {"name": "Grizzly Bears"},
+      {"name": "Mountain"},
       {"name": "Mountain"},
       {"name": "Mountain"}
     ],
