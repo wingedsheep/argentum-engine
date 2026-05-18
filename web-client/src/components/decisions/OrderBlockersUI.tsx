@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { EntityId, OrderObjectsDecision, SearchCardInfo, ClientCard } from '@/types'
+import { Keyword } from '@/types/enums'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { bandColorFor } from '../game/board/styles'
 
 interface OrderBlockersUIProps {
   decision: OrderObjectsDecision
@@ -36,6 +38,28 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
   // Get the attacker card from game state using sourceId from decision context
   const attackerId = decision.context.sourceId
   const attackerCard = attackerId && gameState ? gameState.cards[attackerId] : null
+
+  // Banding context (CR 702.21). Surface band membership so the player understands
+  // *why* they're ordering blockers when the attacker is part of a band, and — when
+  // the player is the defender — that the inversion comes from a banding blocker.
+  const attackers = gameState?.combat?.attackers ?? []
+  const ownAttackerInfo = attackerId ? attackers.find((a) => a.creatureId === attackerId) : null
+  const bandId = ownAttackerInfo?.bandId ?? null
+  let bandIndex = -1
+  let bandSiblings: string[] = []
+  if (bandId) {
+    const seen: string[] = []
+    for (const a of attackers) {
+      if (a.bandId && !seen.includes(a.bandId)) seen.push(a.bandId)
+    }
+    bandIndex = seen.indexOf(bandId)
+    bandSiblings = attackers
+      .filter((a) => a.bandId === bandId && a.creatureId !== attackerId)
+      .map((a) => a.creatureName)
+  }
+  const blockerHasBanding = ownAttackerInfo?.blockedBy.some((id) => {
+    return gameState?.cards[id]?.keywords.includes(Keyword.BANDING) ?? false
+  }) ?? false
 
   // Calculate card size that fits available width
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 64
@@ -163,6 +187,41 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
           Order Damage Assignment
         </h2>
       </div>
+
+      {/* Banding context banner (CR 702.21). */}
+      {bandIndex >= 0 && (() => {
+        const color = bandColorFor(bandIndex)
+        const attackerName = attackerCard?.name ?? 'Attacker'
+        return (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+              padding: '10px 14px',
+              background: color.chipBg,
+              border: `1px solid ${color.border}`,
+              borderRadius: 6,
+              maxWidth: 600,
+              boxShadow: `0 0 20px ${color.glow}`,
+            }}
+          >
+            <div style={{ color: 'white', fontWeight: 700, fontSize: responsive.fontSize.normal }}>
+              Band B{bandIndex + 1} · {attackerName}
+              {bandSiblings.length > 0 && (
+                <span style={{ fontWeight: 400, opacity: 0.92 }}>
+                  {' '}+ {bandSiblings.join(', ')}
+                </span>
+              )}
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: responsive.fontSize.small }}>
+              {blockerHasBanding
+                ? 'You order these blockers because a defending creature with banding is blocking (CR 702.21e).'
+                : 'Each attacker in a band is blocked as a group; order is set per attacker.'}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Attacker Card Display */}
       {attackerCard && (

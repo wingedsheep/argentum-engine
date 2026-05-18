@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { AssignDamageDecision } from '@/types'
 import type { EntityId } from '@/types'
+import { Keyword } from '@/types/enums'
 import { useResponsive } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { bandColorFor } from '../game/board/styles'
 
 interface TargetInfo {
   id: EntityId
@@ -129,6 +131,29 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
   const attackerCard = gameState?.cards[decision.attackerId]
   const attackerName = attackerCard?.name ?? 'Attacker'
 
+  // Banding context (CR 702.21). When the attacker is part of a band, we surface the
+  // band's color, members, and — when applicable — the reason this player is the one
+  // assigning damage (defender by default; banding inverts that to the defender when
+  // any blocker has banding, per CR 702.21e).
+  const attackers = gameState?.combat?.attackers ?? []
+  const ownAttackerInfo = attackers.find((a) => a.creatureId === decision.attackerId)
+  const bandId = ownAttackerInfo?.bandId ?? null
+  let bandIndex = -1
+  let bandSiblings: string[] = []
+  if (bandId) {
+    const seen: string[] = []
+    for (const a of attackers) {
+      if (a.bandId && !seen.includes(a.bandId)) seen.push(a.bandId)
+    }
+    bandIndex = seen.indexOf(bandId)
+    bandSiblings = attackers
+      .filter((a) => a.bandId === bandId && a.creatureId !== decision.attackerId)
+      .map((a) => a.creatureName)
+  }
+  const blockerHasBanding = ownAttackerInfo?.blockedBy.some((id) => {
+    return gameState?.cards[id]?.keywords.includes(Keyword.BANDING) ?? false
+  }) ?? false
+
   const cardWidth = responsive.isMobile ? 100 : 140
   const cardHeight = Math.round(cardWidth * 1.4)
 
@@ -179,6 +204,40 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
           )}
         </p>
       </div>
+
+      {/* Banding context banner (CR 702.21). */}
+      {bandIndex >= 0 && (() => {
+        const color = bandColorFor(bandIndex)
+        return (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+              padding: '10px 14px',
+              background: color.chipBg,
+              border: `1px solid ${color.border}`,
+              borderRadius: 6,
+              maxWidth: 600,
+              boxShadow: `0 0 20px ${color.glow}`,
+            }}
+          >
+            <div style={{ color: 'white', fontWeight: 700, fontSize: responsive.fontSize.normal }}>
+              Band B{bandIndex + 1} · {attackerName}
+              {bandSiblings.length > 0 && (
+                <span style={{ fontWeight: 400, opacity: 0.92 }}>
+                  {' '}+ {bandSiblings.join(', ')}
+                </span>
+              )}
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: responsive.fontSize.small }}>
+              {blockerHasBanding
+                ? 'You divide this damage because a defending creature with banding is blocking (CR 702.21e).'
+                : 'Each attacker in a band is blocked as a group; damage is assigned per attacker.'}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Remaining indicator */}
       <div
