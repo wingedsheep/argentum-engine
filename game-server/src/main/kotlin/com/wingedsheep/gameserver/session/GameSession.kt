@@ -539,10 +539,16 @@ class GameSession(
             }
         }
 
-        // If the opponent takes any action, invalidate the undo checkpoint.
-        // The opponent has seen the game state after the undoable action, so allowing undo
-        // would revert information the opponent has already processed.
-        if (undoCheckpoint != null && undoCheckpointOwner != null && playerId != undoCheckpointOwner) {
+        // If the opponent takes a substantive action, invalidate the undo checkpoint —
+        // the opponent has seen the game state after the undoable action and made a decision
+        // based on it. A bare `PassPriority` is benign (no information revealed, no real
+        // decision), so it preserves the checkpoint; the engine's [UndoPolicyComputer] already
+        // returns PRESERVE for it. Keeping the checkpoint through opponent passes is what lets
+        // the active player undo back to precombat main when they auto-passed into
+        // declare-attackers by accident.
+        if (undoCheckpoint != null && undoCheckpointOwner != null
+            && playerId != undoCheckpointOwner
+            && action !is PassPriority) {
             clearCheckpoint()
         }
 
@@ -910,8 +916,12 @@ class GameSession(
             return ActionResult.Failure(error)
         }
 
-        // Opponent auto-passing invalidates checkpoint (opponent has acted)
-        if (undoCheckpoint != null && undoCheckpointOwner != null && playerId != undoCheckpointOwner) {
+        // Same rule as executeAction: a bare PassPriority from the opponent is benign and
+        // preserves the checkpoint. The auto-pass path may instead submit an empty
+        // DeclareAttackers/DeclareBlockers — those are real combat declarations and do clear.
+        if (undoCheckpoint != null && undoCheckpointOwner != null
+            && playerId != undoCheckpointOwner
+            && action !is PassPriority) {
             clearCheckpoint()
         }
 
