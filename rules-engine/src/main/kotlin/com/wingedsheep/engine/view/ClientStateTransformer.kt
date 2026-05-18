@@ -2356,7 +2356,8 @@ class ClientStateTransformer(
                         blockedBy = blockedComponent?.blockerIds ?: emptyList(),
                         mustBeBlockedByAll = entityId in mustBeBlockedCreatures,
                         damageAssignmentOrder = damageOrderComponent?.orderedBlockers,
-                        damageAssignments = damageAssignmentComponent?.assignments
+                        damageAssignments = damageAssignmentComponent?.assignments,
+                        bandId = attackingComponent.bandId
                     )
                 )
             }

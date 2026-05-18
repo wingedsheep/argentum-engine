@@ -515,6 +515,12 @@ export interface ClientAttacker {
   readonly damageAssignmentOrder?: readonly EntityId[]
   /** Damage assigned to each target (blocker ID or player ID -> damage amount). Null if not yet assigned. */
   readonly damageAssignments?: Readonly<Record<EntityId, number>>
+  /**
+   * Banding group identifier (CR 702.21). Attackers in the same band share the same
+   * id; null when this attacker is not part of a band. Used by the client to render
+   * band badges and rings during both declare-attackers and declare-blockers.
+   */
+  readonly bandId?: string | null
 }
 
 /**

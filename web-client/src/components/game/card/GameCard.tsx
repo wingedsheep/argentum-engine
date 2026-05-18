@@ -101,6 +101,10 @@ export function GameCard({
   const voidActive = useGameStore(
     (state) => (state.spectatingState?.gameState ?? state.gameState)?.voidActive ?? false
   )
+  // Server-side combat attackers (used to render bands during declare-blockers).
+  const serverCombatAttackers = useGameStore(
+    (state) => (state.spectatingState?.gameState ?? state.gameState)?.combat?.attackers ?? null
+  )
   const selectCard = useGameStore((state) => state.selectCard)
   const selectedCardId = useGameStore((state) => state.selectedCardId)
   const hoverCard = useGameStore((state) => state.hoverCard)
@@ -302,12 +306,26 @@ export function GameCard({
   const isValidAttacker = isInAttackerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
   const isSelectedAsAttacker = isInAttackerMode && combatState.selectedAttackers.includes(card.id)
 
-  // Banding (CR 702.21): when this attacker is part of a declared band, surface a colored
-  // ring + corner badge so the player can verify at a glance which creatures will be
-  // blocked as a group.
-  const bandIndex = isInAttackerMode
-    ? combatState.bands.findIndex((band) => band.includes(card.id))
-    : -1
+  // Banding (CR 702.21): surface a colored ring + corner badge on every banded
+  // attacker so the player can see which creatures will be blocked as a group, both
+  // during their own declare-attackers (client-side combatState.bands) and during
+  // the defender's declare-blockers (server-side combat.attackers[].bandId).
+  const bandIndex = (() => {
+    if (isInAttackerMode) {
+      const localIdx = combatState.bands.findIndex((band) => band.includes(card.id))
+      if (localIdx !== -1) return localIdx
+    }
+    const serverAttacker = serverCombatAttackers?.find((a) => a.creatureId === card.id)
+    const serverBandId = serverAttacker?.bandId
+    if (!serverBandId) return -1
+    // Order bands by the *first* appearance of each unique bandId in attacker order,
+    // so band coloring is stable and matches what the attacker submitted.
+    const seen: string[] = []
+    for (const att of serverCombatAttackers ?? []) {
+      if (att.bandId && !seen.includes(att.bandId)) seen.push(att.bandId)
+    }
+    return seen.indexOf(serverBandId)
+  })()
   const isBanded = bandIndex >= 0
 
   // Banding drag-and-drop: while another player's attacker is being dragged, this card
@@ -857,9 +875,16 @@ export function GameCard({
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
   } else if (isAttackingInBlockerMode) {
-    // Orange glow for attackers that can be blocked
+    // Orange glow for attackers that can be blocked. Layer the band-color ring on
+    // top when the attacker is part of a band so the defender sees the grouping
+    // alongside the standard blockable indicator.
     borderStyle = '3px solid #ff8800'
-    boxShadow = '0 0 12px rgba(255, 136, 0, 0.6), 0 0 24px rgba(255, 136, 0, 0.3)'
+    if (isBanded) {
+      const band = bandColorFor(bandIndex)
+      boxShadow = `0 0 12px rgba(255, 136, 0, 0.6), 0 0 0 4px ${band.base}, 0 0 22px ${band.glow}`
+    } else {
+      boxShadow = '0 0 12px rgba(255, 136, 0, 0.6), 0 0 24px rgba(255, 136, 0, 0.3)'
+    }
   } else if (isSelectedTarget) {
     // Green highlight for selected targets (already chosen in targeting mode)
     borderStyle = `3px solid ${SELECTED_COLOR}`

@@ -571,7 +571,14 @@ data class ClientAttacker(
     /** Ordered list of blockers for damage assignment (first receives damage first). Null if not yet ordered. */
     val damageAssignmentOrder: List<EntityId>? = null,
     /** Damage assigned to each target (blocker ID or player ID -> damage amount). Null if not yet assigned. */
-    val damageAssignments: Map<EntityId, Int>? = null
+    val damageAssignments: Map<EntityId, Int>? = null,
+    /**
+     * Banding group identifier (CR 702.21). Attackers in the same band share the same
+     * [bandId]; null when this attacker is not part of a band. Clients use this to render
+     * band badges and rings during both declare-attackers and declare-blockers so the
+     * defender can see the band groupings while assigning blockers.
+     */
+    val bandId: String? = null
 )
 
 /**

@@ -181,6 +181,42 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     }
   }, [combatState, battlefieldCards, opponent])
 
+  // Unified bands view that works in both declare-attackers (client-side bands
+  // captured pre-submission) and declare-blockers (server-side bandId on each
+  // attacker). Each entry is an ordered list of {id, name} pairs. Empty when no
+  // bands are declared. Used to drive the banding panel and chip labels.
+  const bandsForDisplay = useMemo(() => {
+    const allCards = [
+      ...battlefieldCards.playerCreatures,
+      ...battlefieldCards.playerLands,
+      ...battlefieldCards.playerOther,
+      ...battlefieldCards.opponentCreatures,
+      ...battlefieldCards.opponentLands,
+      ...battlefieldCards.opponentOther,
+    ]
+    const cardsById = new Map(allCards.map((c) => [c.id, c] as const))
+    const nameOf = (id: EntityId) => cardsById.get(id)?.name ?? 'Unknown'
+
+    if (combatState?.mode === 'declareAttackers' && combatState.bands.length > 0) {
+      return combatState.bands.map((band) =>
+        band.map((id) => ({ id, name: nameOf(id) }))
+      )
+    }
+
+    const attackers = gameState?.combat?.attackers ?? []
+    const banded = attackers.filter((a) => a.bandId != null)
+    if (banded.length === 0) return []
+
+    const byBand = new Map<string, { id: EntityId; name: string }[]>()
+    for (const a of banded) {
+      if (!a.bandId) continue
+      const list = byBand.get(a.bandId) ?? []
+      list.push({ id: a.creatureId, name: a.creatureName })
+      byBand.set(a.bandId, list)
+    }
+    return Array.from(byBand.values())
+  }, [combatState, gameState, battlefieldCards])
+
   // Mindslaver-style hijack indicators (Phase 2C). Spectators don't get the UX promotions.
   const youAreHijacking = !spectatorMode ? (gameState?.youAreHijacking ?? null) : null
   const youAreHijackedBy = !spectatorMode ? (gameState?.youAreHijackedBy ?? null) : null
@@ -885,16 +921,19 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       )}
 
       {/*
-        Banding panel — fixed at bottom-left during declare-attackers, mirroring the
-        combat-buttons placement on the bottom-right. Visible whenever there's at
-        least one banding-capable attacker selected, or one or more declared bands.
-        Drag-to-band on the battlefield is the primary input; this panel exists to
-        review declared bands and to surface the rule + the illegal-selection reason.
+        Banding panel — fixed at bottom-left, sitting above the GameLog toggle.
+        Visible in both combat modes: during declare-attackers it shows the bands
+        the player is assembling client-side; during declare-blockers it shows the
+        bands the attacker submitted, so the defender can see which creatures will
+        be blocked as a group. Drag-to-band on the battlefield is the primary
+        input during declare-attackers; the chips are removable (× button) only
+        in that mode since the band assignment is locked once attacks resolve.
       */}
       {isInCombatMode &&
-        combatState?.mode === 'declareAttackers' &&
-        (combatState.bands.length > 0 ||
-          (combatState.selectedAttackers.length > 0 && bandingAnalysis?.anySelectedHasBanding)) && (
+        (bandsForDisplay.length > 0 ||
+          (combatState?.mode === 'declareAttackers' &&
+            combatState.selectedAttackers.length > 0 &&
+            bandingAnalysis?.anySelectedHasBanding)) && (
         <div
           style={{
             position: 'fixed',
@@ -921,27 +960,35 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               · block one band member, block them all
             </span>
           </div>
-          <div style={{ color: '#d1c4e9', fontSize: 11, fontStyle: 'italic' }}>
-            {bandingAnalysis?.illegalReason
-              ?? 'Drag a banding attacker onto another attacker to form a band.'}
-          </div>
-          {combatState.bands.length > 0 && (
+          {bandsForDisplay.length === 0 && combatState?.mode === 'declareAttackers' && (
+            <div style={{ color: '#d1c4e9', fontSize: 11, fontStyle: 'italic' }}>
+              {bandingAnalysis?.illegalReason
+                ?? 'Drag a banding attacker onto another attacker to form a band.'}
+            </div>
+          )}
+          {bandsForDisplay.length > 0 && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {combatState.bands.map((band, i) => {
+              {bandsForDisplay.map((band, i) => {
                 const color = bandColorFor(i)
-                const names = band.map((id) => bandingAnalysis?.nameOf(id) ?? 'Unknown')
+                const names = band.map((m) => m.name)
+                const canDisband = combatState?.mode === 'declareAttackers'
                 return (
                   <button
                     key={i}
-                    onClick={() => removeBand(i)}
-                    title={`Click to disband. Members: ${names.join(', ')}`}
+                    onClick={canDisband ? () => removeBand(i) : undefined}
+                    disabled={!canDisband}
+                    title={
+                      canDisband
+                        ? `Click to disband. Members: ${names.join(', ')}`
+                        : `Members: ${names.join(', ')}`
+                    }
                     style={{
                       background: color.chipBg,
                       color: 'white',
                       border: `1px solid ${color.border}`,
                       borderRadius: 3,
                       padding: '3px 7px',
-                      cursor: 'pointer',
+                      cursor: canDisband ? 'pointer' : 'default',
                       fontSize: 11,
                       maxWidth: 380,
                       textAlign: 'left',
@@ -949,7 +996,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                   >
                     <span style={{ fontWeight: 700, marginRight: 4 }}>B{i + 1}</span>
                     <span>{names.join(' · ')}</span>
-                    <span style={{ marginLeft: 6, opacity: 0.7 }}>✕</span>
+                    {canDisband && <span style={{ marginLeft: 6, opacity: 0.7 }}>✕</span>}
                   </button>
                 )
               })}
