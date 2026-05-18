@@ -94,7 +94,11 @@ class GrantedKeywordResolver(
                 is CardPredicate.HasAnyOfSubtypes -> cardDef.typeLine.subtypes.any { predicate.subtypes.contains(it) }
                 is CardPredicate.HasColor -> cardDef.colors.contains(predicate.color)
                 CardPredicate.IsColorless -> cardDef.colors.isEmpty()
-                else -> true
+                // Fail closed: an unhandled predicate cannot be evaluated against a
+                // CardDefinition alone, so we conservatively refuse to grant the keyword
+                // rather than silently match every spell. Add explicit handling here when
+                // a new spell-filter predicate is needed (e.g. ManaValue, NameEquals).
+                else -> false
             }
             if (!matches) return false
         }

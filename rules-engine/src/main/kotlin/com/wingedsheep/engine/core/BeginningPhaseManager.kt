@@ -282,7 +282,11 @@ class BeginningPhaseManager(
                 CardPredicate.IsLand -> projected.hasType(entityId, "LAND")
                 CardPredicate.IsArtifact -> projected.hasType(entityId, "ARTIFACT")
                 CardPredicate.IsEnchantment -> projected.hasType(entityId, "ENCHANTMENT")
-                else -> true // Other card predicates not relevant for untap filtering
+                // Fail closed: an unhandled predicate (e.g. HasSubtype, IsLegendary,
+                // HasColor) would silently match every entity if we fell through to
+                // `true`, causing a filtered-untap ability to untap permanents it
+                // shouldn't. Add explicit handling here when a new predicate is needed.
+                else -> false
             }
             if (!matches) return false
         }
