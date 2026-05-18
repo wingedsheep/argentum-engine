@@ -607,6 +607,31 @@ export function GameCard({
           const sourceHasBanding = card.keywords.includes('BANDING' as Keyword)
           const targetHasBanding = cardEl.getAttribute('data-banding') === 'true'
           if (sourceHasBanding || targetHasBanding) {
+            // CR 702.21c: a band may contain at most one creature without banding.
+            // Reject the drag client-side when the resulting band would exceed that.
+            // We read banding status of existing band members via the data-banding
+            // attribute set on each card element; missing attribute = no banding.
+            const hasBandingFor = (memberId: EntityId): boolean => {
+              if (memberId === draggingAttackerId) return sourceHasBanding
+              if (memberId === targetCardId) return targetHasBanding
+              const el = document.querySelector(`[data-card-id="${memberId}"]`)
+              return el?.getAttribute('data-banding') === 'true'
+            }
+            const bands = combatState.bands
+            const sourceBand = bands.find((b) => b.includes(draggingAttackerId)) ?? []
+            const targetBand = bands.find((b) => b.includes(targetCardId)) ?? []
+            const merged = new Set<EntityId>([
+              draggingAttackerId,
+              targetCardId,
+              ...sourceBand,
+              ...targetBand,
+            ])
+            const nonBandingCount = Array.from(merged).filter((id) => !hasBandingFor(id)).length
+            if (nonBandingCount > 1) {
+              // Illegal band — silently no-op. The banding panel's illegal-reason
+              // text already explains the rule when there's a single live selection.
+              return
+            }
             linkBand(draggingAttackerId, targetCardId, sourceHasBanding, targetHasBanding)
             return
           }
