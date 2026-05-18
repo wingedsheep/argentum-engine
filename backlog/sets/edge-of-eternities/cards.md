@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 188 / 261
+**Implemented:** 191 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -169,8 +169,8 @@
 - [x] Pulsar Squadron Ace
 - [ ] Quantum Riddler
 - [x] Radiant Strike
-- [ ] Ragost, Deft Gastronaut
-- [ ] Rayblade Trooper
+- [x] Ragost, Deft Gastronaut
+- [x] Rayblade Trooper
 - [x] Red Tiger Mechan
 - [x] Remnant Elemental
 - [x] Requiem Monolith
@@ -239,7 +239,7 @@
 - [x] The Dominion Bracelet
 - [ ] The Endstone
 - [ ] The Eternity Elevator
-- [ ] The Seriema
+- [x] The Seriema
 - [ ] Thrumming Hivepool
 - [x] Timeline Culler
 - [ ] Tractor Beam
