@@ -4,7 +4,6 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
@@ -121,24 +120,27 @@ object ReplacementEffectUtils {
         targetId: EntityId,
         sourceEntityId: EntityId,
         sourceControllerId: EntityId
-    ): Boolean = when (recipient) {
-        is RecipientFilter.CreatureYouControl -> {
-            val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
-            val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
-            isCreature && isControlled
+    ): Boolean {
+        val projected = state.projectedState
+        return when (recipient) {
+            is RecipientFilter.CreatureYouControl -> {
+                val isCreature = projected.isCreature(targetId)
+                val isControlled = projected.getController(targetId) == sourceControllerId
+                isCreature && isControlled
+            }
+            is RecipientFilter.Any -> true
+            is RecipientFilter.Self -> targetId == sourceEntityId
+            is RecipientFilter.PermanentYouControl -> {
+                projected.getController(targetId) == sourceControllerId
+            }
+            is RecipientFilter.You -> targetId == sourceControllerId
+            is RecipientFilter.Matching -> {
+                val context = PredicateContext(controllerId = sourceControllerId, sourceId = sourceEntityId)
+                predicateEvaluator.matches(
+                    state, projected, targetId, recipient.filter, context
+                )
+            }
+            else -> false
         }
-        is RecipientFilter.Any -> true
-        is RecipientFilter.Self -> targetId == sourceEntityId
-        is RecipientFilter.PermanentYouControl -> {
-            state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
-        }
-        is RecipientFilter.You -> targetId == sourceControllerId
-        is RecipientFilter.Matching -> {
-            val context = PredicateContext(controllerId = sourceControllerId, sourceId = sourceEntityId)
-            predicateEvaluator.matches(
-                state, state.projectedState, targetId, recipient.filter, context
-            )
-        }
-        else -> false
     }
 }

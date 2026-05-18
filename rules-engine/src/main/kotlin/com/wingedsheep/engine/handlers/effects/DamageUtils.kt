@@ -669,8 +669,8 @@ object DamageUtils {
                         predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
                     }
                     is RecipientFilter.CreatureYouControl -> {
-                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        val isCreature = projected.isCreature(targetId)
+                        val isControlled = projected.getController(targetId) == sourceControllerId
                         isCreature && isControlled
                     }
                     is RecipientFilter.Any -> true
@@ -746,8 +746,8 @@ object DamageUtils {
                         predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
                     }
                     is RecipientFilter.CreatureYouControl -> {
-                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        val isCreature = projected.isCreature(targetId)
+                        val isControlled = projected.getController(targetId) == sourceControllerId
                         isCreature && isControlled
                     }
                     else -> false
@@ -792,8 +792,8 @@ object DamageUtils {
                         predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
                     }
                     is RecipientFilter.CreatureYouControl -> {
-                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        val isCreature = projected.isCreature(targetId)
+                        val isControlled = projected.getController(targetId) == sourceControllerId
                         isCreature && isControlled
                     }
                     else -> false
