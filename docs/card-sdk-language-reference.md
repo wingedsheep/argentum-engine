@@ -939,10 +939,18 @@ activatedAbility {
 **`Keyword` enum (display-level)**
 
 Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all landwalks (Plainswalk … Forestwalk), First Strike, Double
-Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
+Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Banding, Defender, Indestructible, Hexproof, Shroud, Haste,
 Flash, Prowess, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Conspire, Hideaway, Cascade, Offspring,
 Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
 composite abilities).
+
+**Banding (CR 702.21).** Engine-supported via the [`DeclareAttackers.bands`](#) action field. Each
+band is a `Set<EntityId>` whose members all appear in `attackers`, all attack the same defender, and
+include at most one creature without `Keyword.BANDING`. The engine validates and stamps each banded
+creature's `AttackingComponent.bandId` to a shared UUID. Once stamped, the block phase expands every
+declared block on a band member to cover the whole band (CR 702.21g), and the damage phase routes
+the multi-blocker damage-assignment order / division to the *defending* player when any blocker has
+banding (CR 702.21e). "Bands with other" is not implemented; out-of-scope for now.
 
 **Parameterized `KeywordAbility.*`**
 

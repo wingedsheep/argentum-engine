@@ -29,6 +29,7 @@ data class AttackTaxManaSelectionContinuation(
     val manaCost: ManaCost,
     val availableSources: List<ManaSourceOption>,
     val autoPaySuggestion: List<EntityId>,
+    val bands: List<Set<EntityId>> = emptyList(),
 ) : ContinuationFrame
 
 /**

@@ -235,7 +235,13 @@ internal class CombatDamageManager(
             val blockedBy = attackerContainer.get<BlockedComponent>()
             if (blockedBy == null || blockedBy.blockerIds.isEmpty()) continue
 
-            if (!damageCalculator.requiresManualAssignment(state, attackerId)) continue
+            // CR 702.21e: when a banding blocker is present and there are multiple blockers,
+            // force a manual assignment decision so the *defender* can choose the division —
+            // the normal auto-distribution skips creatures with exact lethal damage.
+            val liveBlockerIds = blockedBy.blockerIds.filter { it in state.getBattlefield() }
+            val bandingOverride = liveBlockerIds.size >= 2 &&
+                liveBlockerIds.any { projected.hasKeyword(it, Keyword.BANDING) }
+            if (!damageCalculator.requiresManualAssignment(state, attackerId) && !bandingOverride) continue
 
             val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue
@@ -251,13 +257,19 @@ internal class CombatDamageManager(
             val defenderId = attackingComponent.defenderId
             val attackingPlayer = projected.getController(attackerId) ?: continue
 
+            // CR 702.21e: when a defending creature with banding is blocking, the *defending*
+            // player divides the attacker's combat damage among the blockers.
+            val chooser = CombatDamageUtils.damageAssignmentChooser(
+                state, projected, attackerId, defaultChooser = attackingPlayer
+            )
+
             val minimumAssignments = damageCalculator.getMinimumAssignments(state, attackerId)
             val autoDistribution = damageCalculator.calculateAutoDamageDistribution(state, attackerId)
 
             val decisionId = UUID.randomUUID().toString()
             val decision = AssignDamageDecision(
                 id = decisionId,
-                playerId = attackingPlayer,
+                playerId = chooser,
                 prompt = "Assign ${attackerCard.name}'s $attackerPower combat damage to blockers" +
                     if (hasTrample) " (trample)" else "",
                 context = DecisionContext(

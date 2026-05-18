@@ -49,6 +49,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const clearAttackers = useGameStore((state) => state.clearAttackers)
   const clearBlockerAssignments = useGameStore((state) => state.clearBlockerAssignments)
   const attackWithAll = useGameStore((state) => state.attackWithAll)
+  const formBand = useGameStore((state) => state.formBand)
+  const removeBand = useGameStore((state) => state.removeBand)
   const priorityMode = useGameStore(selectPriorityMode)
   const nextStopPoint = useGameStore((state) => state.nextStopPoint)
   const serverPriorityMode = useGameStore((state) => state.priorityMode)
@@ -815,6 +817,20 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               >
                 Attack with {combatState.selectedAttackers.length}
               </button>
+              {combatState.selectedAttackers.length >= 2 && (
+                <button
+                  onClick={() => formBand(combatState.selectedAttackers)}
+                  title="Group selected attackers into a band (CR 702.21). Requires at least one creature with banding; at most one creature without."
+                  style={{
+                    ...styles.floatingBarButton,
+                    ...styles.combatActionButton,
+                    backgroundColor: '#4a148c',
+                    border: '1px solid #7b1fa2',
+                  }}
+                >
+                  Form Band ({combatState.selectedAttackers.length})
+                </button>
+              )}
               <button
                 onClick={clearAttackers}
                 style={{
@@ -827,6 +843,41 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 Clear Attackers
               </button>
             </>
+          )}
+          {combatState.bands.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                gap: 6,
+                flexWrap: 'wrap',
+                marginTop: 8,
+                padding: '4px 6px',
+                background: 'rgba(74, 20, 140, 0.4)',
+                border: '1px solid #7b1fa2',
+                borderRadius: 4,
+                fontSize: 11,
+              }}
+            >
+              <span style={{ alignSelf: 'center', color: '#e1bee7' }}>Bands:</span>
+              {combatState.bands.map((band, i) => (
+                <button
+                  key={i}
+                  onClick={() => removeBand(i)}
+                  title="Click to remove this band"
+                  style={{
+                    background: '#6a1b9a',
+                    color: 'white',
+                    border: '1px solid #ab47bc',
+                    borderRadius: 3,
+                    padding: '2px 6px',
+                    cursor: 'pointer',
+                    fontSize: 11,
+                  }}
+                >
+                  Band {i + 1} ({band.length}) ✕
+                </button>
+              ))}
+            </div>
           )}
         </div>
       )}

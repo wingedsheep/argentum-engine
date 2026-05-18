@@ -46,8 +46,9 @@ class CombatManager(
     fun declareAttackers(
         state: GameState,
         attackingPlayer: EntityId,
-        attackers: Map<EntityId, EntityId>
-    ): ExecutionResult = attackPhase.declareAttackers(state, attackingPlayer, attackers)
+        attackers: Map<EntityId, EntityId>,
+        bands: List<Set<EntityId>> = emptyList()
+    ): ExecutionResult = attackPhase.declareAttackers(state, attackingPlayer, attackers, bands)
 
     fun isValidAttacker(state: GameState, attackerId: EntityId, attackingPlayer: EntityId): Boolean =
         attackPhase.isValidAttacker(state, attackerId, attackingPlayer)

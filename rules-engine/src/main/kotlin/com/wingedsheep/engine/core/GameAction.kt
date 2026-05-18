@@ -214,12 +214,19 @@ data class PlayLand(
 
 /**
  * Player declares attackers.
+ *
+ * @property attackers Map from attacker entity id to its defender (player or planeswalker).
+ * @property bands Optional band groupings (CR 702.21). Each entry is the set of creatures
+ *   in one band. Every creature in a band must also appear as a key in [attackers], with
+ *   the same defender, and at most one creature per band may lack the BANDING keyword.
+ *   Bands of size < 2 are rejected. Empty by default — no bands declared.
  */
 @Serializable
 @SerialName("DeclareAttackers")
 data class DeclareAttackers(
     override val playerId: EntityId,
-    val attackers: Map<EntityId, EntityId>  // attacker -> defending player
+    val attackers: Map<EntityId, EntityId>,
+    val bands: List<Set<EntityId>> = emptyList()
 ) : GameAction
 
 /**

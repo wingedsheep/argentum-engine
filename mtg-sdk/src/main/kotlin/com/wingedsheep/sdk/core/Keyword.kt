@@ -30,6 +30,20 @@ enum class Keyword(val displayName: String) {
     PROVOKE("Provoke"),
     FLANKING("Flanking"),
 
+    /**
+     * Banding (CR 702.21). As a player declares attackers, they may declare that one or more
+     * attacking creatures with banding and up to one attacking creature without banding are
+     * in a "band". Bands attack the same defender and are blocked as a group: if any creature
+     * in the band is blocked, the whole band is blocked.
+     *
+     * Damage assignment inverts the usual ownership:
+     * - If a defending creature with banding is blocking, the *defending* player divides the
+     *   attacker's combat damage among the blockers (CR 702.21e).
+     * - If an attacking creature with banding is in a band, the *attacking* player divides
+     *   the blocker's damage among the attackers it's blocking (CR 702.21f).
+     */
+    BANDING("Banding"),
+
     // ── Defense ──────────────────────────────────────────────
     DEFENDER("Defender"),
     INDESTRUCTIBLE("Indestructible"),

@@ -178,10 +178,20 @@ class CombatContinuationResumer(
                 }
             }
 
+            // CR 702.21e: recompute the chooser per attacker — banding blockers on the
+            // *next* attacker may swap control of the order decision to the defender even
+            // if the previous attacker's order was made by the attacking player (and vice
+            // versa). Default chooser is the active player (= attacking player).
+            val activePlayer = newState.activePlayerId ?: continuation.attackingPlayerId
+            val nextChooser = com.wingedsheep.engine.mechanics.combat.CombatDamageUtils.damageAssignmentChooser(
+                newState, newState.projectedState, nextAttacker,
+                defaultChooser = activePlayer,
+            )
+
             val decisionId = java.util.UUID.randomUUID().toString()
             val decision = OrderObjectsDecision(
                 id = decisionId,
-                playerId = continuation.attackingPlayerId,
+                playerId = nextChooser,
                 prompt = "Order damage assignment for $attackerDisplayName",
                 context = DecisionContext(
                     sourceId = nextAttacker,
@@ -194,7 +204,7 @@ class CombatContinuationResumer(
 
             val nextContinuation = BlockerOrderContinuation(
                 decisionId = decisionId,
-                attackingPlayerId = continuation.attackingPlayerId,
+                attackingPlayerId = nextChooser,
                 attackerId = nextAttacker,
                 attackerName = attackerDisplayName,
                 remainingAttackers = nextRemaining
@@ -207,7 +217,7 @@ class CombatContinuationResumer(
             events.add(
                 DecisionRequestedEvent(
                     decisionId = decision.id,
-                    playerId = continuation.attackingPlayerId,
+                    playerId = nextChooser,
                     decisionType = "ORDER_BLOCKERS",
                     prompt = decision.prompt
                 )

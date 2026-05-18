@@ -41,6 +41,17 @@ export interface CombatSliceActions {
   attackWithAll: () => void
   clearAttackers: () => void
   clearCombat: () => void
+  /**
+   * Form a new band from the given attacker IDs (CR 702.21). Caller is responsible for
+   * checking the band's legality before invoking — at least two members, at most one
+   * without BANDING, and all attacking the same defender. Members are also re-selected
+   * as attackers if they weren't already.
+   */
+  formBand: (memberIds: readonly EntityId[]) => void
+  /** Remove the band at [bandIndex] (does not affect attacker selection). */
+  removeBand: (bandIndex: number) => void
+  /** Clear all bands. */
+  clearBands: () => void
 }
 
 export type CombatSlice = CombatSliceState & CombatSliceActions
@@ -84,6 +95,14 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         delete newTargets[creatureId]
       }
 
+      // Prune bands when an attacker is deselected: drop the creature from every band,
+      // then discard any band that fell below 2 members.
+      const newBands = isSelected
+        ? state.combatState.bands
+            .map((band) => band.filter((id) => id !== creatureId))
+            .filter((band) => band.length >= 2)
+        : state.combatState.bands
+
       getWebSocket()?.send(createUpdateAttackerTargetsMessage(newAttackers, newTargets))
 
       return {
@@ -91,6 +110,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
           ...state.combatState,
           selectedAttackers: newAttackers,
           attackerTargets: newTargets,
+          bands: newBands,
         },
       }
     })
@@ -227,10 +247,24 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         attackers[attackerId] = combatState.attackerTargets[attackerId] ?? opponent.playerId
       }
 
+      // Drop bands that no longer satisfy CR 702.21 (after attacker deselection /
+      // target changes). Bands must have ≥2 members, all selected, all attacking the
+      // same defender. Legality re-checked server-side; this just avoids sending
+      // obviously stale data.
+      const selectedSet = new Set(combatState.selectedAttackers)
+      const validBands = combatState.bands
+        .map((band) => band.filter((id) => selectedSet.has(id)))
+        .filter((band) => {
+          if (band.length < 2) return false
+          const target = attackers[band[0]!]
+          return band.every((id) => attackers[id] === target)
+        })
+
       const action = {
         type: 'DeclareAttackers' as const,
         playerId,
         attackers,
+        ...(validBands.length > 0 ? { bands: validBands } : {}),
       }
       getWebSocket()?.send(createSubmitActionMessage(action))
     } else if (combatState.mode === 'declareBlockers') {
@@ -297,6 +331,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
           ...state.combatState,
           selectedAttackers: [...state.combatState.mandatoryAttackers],
           attackerTargets: {},
+          bands: [],
         },
       }
     })
@@ -304,5 +339,66 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
 
   clearCombat: () => {
     set({ combatState: null, draggingBlockerId: null })
+  },
+
+  formBand: (memberIds) => {
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
+        return state
+      }
+      if (memberIds.length < 2) return state
+
+      // Re-select members that aren't already selected attackers.
+      const selected = new Set(state.combatState.selectedAttackers)
+      let newSelected = state.combatState.selectedAttackers
+      for (const id of memberIds) {
+        if (!selected.has(id)) {
+          newSelected = [...newSelected, id]
+          selected.add(id)
+        }
+      }
+
+      // Drop these members from any previously-formed band, then append the new band.
+      const memberSet = new Set(memberIds)
+      const remainingBands = state.combatState.bands
+        .map((band) => band.filter((id) => !memberSet.has(id)))
+        .filter((band) => band.length >= 2)
+
+      return {
+        combatState: {
+          ...state.combatState,
+          selectedAttackers: newSelected,
+          bands: [...remainingBands, [...memberIds]],
+        },
+      }
+    })
+  },
+
+  removeBand: (bandIndex) => {
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
+        return state
+      }
+      if (bandIndex < 0 || bandIndex >= state.combatState.bands.length) return state
+      const newBands = state.combatState.bands.filter((_, i) => i !== bandIndex)
+      return {
+        combatState: {
+          ...state.combatState,
+          bands: newBands,
+        },
+      }
+    })
+  },
+
+  clearBands: () => {
+    set((state) => {
+      if (!state.combatState) return state
+      return {
+        combatState: {
+          ...state.combatState,
+          bands: [],
+        },
+      }
+    })
   },
 })

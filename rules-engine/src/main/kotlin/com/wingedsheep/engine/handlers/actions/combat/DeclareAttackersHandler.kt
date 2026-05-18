@@ -36,7 +36,7 @@ class DeclareAttackersHandler(
     }
 
     override fun execute(state: GameState, action: DeclareAttackers): ExecutionResult {
-        val result = combatManager.declareAttackers(state, action.playerId, action.attackers)
+        val result = combatManager.declareAttackers(state, action.playerId, action.attackers, action.bands)
 
         if (!result.isSuccess) {
             return result

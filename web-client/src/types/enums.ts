@@ -162,6 +162,7 @@ export enum Keyword {
   REACH = 'REACH',
   PROVOKE = 'PROVOKE',
   FLANKING = 'FLANKING',
+  BANDING = 'BANDING',
   // ETB modification
   AMPLIFY = 'AMPLIFY',
   // Defense
@@ -222,6 +223,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.REACH]: 'Reach',
   [Keyword.PROVOKE]: 'Provoke',
   [Keyword.FLANKING]: 'Flanking',
+  [Keyword.BANDING]: 'Banding',
   [Keyword.AMPLIFY]: 'Amplify',
   [Keyword.DEFENDER]: 'Defender',
   [Keyword.INDESTRUCTIBLE]: 'Indestructible',

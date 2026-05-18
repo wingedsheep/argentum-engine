@@ -6,10 +6,14 @@ import kotlinx.serialization.Serializable
 
 /**
  * Marks a creature as attacking.
+ *
+ * @property bandId If non-null, this attacker is part of a band (CR 702.21). All attackers
+ *   in the same band share the same id, attack the same defender, and are blocked as a group.
  */
 @Serializable
 data class AttackingComponent(
-    val defenderId: EntityId  // Player or planeswalker being attacked
+    val defenderId: EntityId,  // Player or planeswalker being attacked
+    val bandId: String? = null
 ) : Component
 
 /**

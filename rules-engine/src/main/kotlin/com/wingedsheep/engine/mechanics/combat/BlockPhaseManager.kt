@@ -124,8 +124,24 @@ internal class BlockPhaseManager(
         blockers: Map<EntityId, List<EntityId>>,
         taxEvents: List<com.wingedsheep.engine.core.GameEvent>,
     ): ExecutionResult {
+        // CR 702.21g: an attacking band is blocked when any creature in the band is blocked,
+        // and a blocker assigned to a band member is treated as blocking the whole band.
+        // Expand declared block assignments to cover every member of each banded attacker.
+        val bandMembers: Map<String, Set<EntityId>> = collectBands(state)
+        val expandedBlockers: Map<EntityId, List<EntityId>> = blockers.mapValues { (_, attackerIds) ->
+            val expanded = LinkedHashSet<EntityId>()
+            for (attackerId in attackerIds) {
+                expanded += attackerId
+                val bandId = state.getEntity(attackerId)?.get<AttackingComponent>()?.bandId
+                if (bandId != null) {
+                    expanded += bandMembers[bandId] ?: emptySet()
+                }
+            }
+            expanded.toList()
+        }
+
         var newState = state
-        for ((blockerId, attackerIds) in blockers) {
+        for ((blockerId, attackerIds) in expandedBlockers) {
             newState = newState.updateEntity(blockerId) { container ->
                 container.with(BlockingComponent(attackerIds))
             }
@@ -134,7 +150,8 @@ internal class BlockPhaseManager(
             for (attackerId in attackerIds) {
                 newState = newState.updateEntity(attackerId) { container ->
                     val existing = container.get<BlockedComponent>()?.blockerIds ?: emptyList()
-                    container.with(BlockedComponent(existing + blockerId))
+                    if (blockerId in existing) container
+                    else container.with(BlockedComponent(existing + blockerId))
                 }
             }
         }
@@ -246,6 +263,20 @@ internal class BlockPhaseManager(
         }
 
         return result.filterValues { it.isNotEmpty() }
+    }
+
+    /**
+     * Collect all current attacking bands, keyed by [AttackingComponent.bandId]. Used when
+     * expanding declared block assignments to cover every member of a band (CR 702.21g).
+     */
+    private fun collectBands(state: GameState): Map<String, Set<EntityId>> {
+        val result = mutableMapOf<String, MutableSet<EntityId>>()
+        for ((entityId, container) in state.entities) {
+            val attacking = container.get<AttackingComponent>() ?: continue
+            val bandId = attacking.bandId ?: continue
+            result.getOrPut(bandId) { mutableSetOf() }.add(entityId)
+        }
+        return result
     }
 
     // =========================================================================
@@ -662,6 +693,9 @@ internal class BlockPhaseManager(
 
     /**
      * Create a pending decision for the attacking player to order blockers.
+     *
+     * CR 702.21e: if any defending creature blocking [firstAttacker] has banding, the
+     * decision is routed to the *defending* player rather than the attacking player.
      */
     private fun createBlockerOrderDecision(
         state: GameState,
@@ -676,6 +710,10 @@ internal class BlockPhaseManager(
         val attackerDisplayName = if (attackerIsFaceDown) "Face-down creature" else attackerCard.name
         val blockedComponent = attackerContainer.get<BlockedComponent>()!!
         val blockerIds = blockedComponent.blockerIds
+
+        val chooser = CombatDamageUtils.damageAssignmentChooser(
+            state, state.projectedState, firstAttacker, defaultChooser = attackingPlayer
+        )
 
         val cardInfo = blockerIds.associateWith { blockerId ->
             val blockerContainer = state.getEntity(blockerId)
@@ -699,7 +737,7 @@ internal class BlockPhaseManager(
         val decisionId = UUID.randomUUID().toString()
         val decision = OrderObjectsDecision(
             id = decisionId,
-            playerId = attackingPlayer,
+            playerId = chooser,
             prompt = "Order damage assignment for $attackerDisplayName",
             context = DecisionContext(
                 sourceId = firstAttacker,
@@ -712,7 +750,7 @@ internal class BlockPhaseManager(
 
         val continuation = BlockerOrderContinuation(
             decisionId = decisionId,
-            attackingPlayerId = attackingPlayer,
+            attackingPlayerId = chooser,
             attackerId = firstAttacker,
             attackerName = attackerCard.name,
             remainingAttackers = remainingAttackers
@@ -728,7 +766,7 @@ internal class BlockPhaseManager(
             precedingEvents + listOf(
                 DecisionRequestedEvent(
                     decisionId = decision.id,
-                    playerId = attackingPlayer,
+                    playerId = chooser,
                     decisionType = "ORDER_BLOCKERS",
                     prompt = decision.prompt
                 )

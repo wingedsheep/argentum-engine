@@ -6,7 +6,10 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -107,6 +110,36 @@ internal object CombatDamageUtils {
             return true
         }
         return false
+    }
+
+    /**
+     * Who chooses the damage-assignment order / division for [attackerId]'s combat damage
+     * among its blockers?
+     *
+     * Default: the attacker's controller (CR 510.1c). Inverted to the defending player when
+     * any defending creature blocking [attackerId] has banding (CR 702.21e). When no
+     * inversion applies, returns [defaultChooser].
+     *
+     * The "defender" is the controller of `AttackingComponent.defenderId` — either the
+     * defending player directly or the controller of the attacked planeswalker.
+     */
+    fun damageAssignmentChooser(
+        state: GameState,
+        projected: ProjectedState,
+        attackerId: EntityId,
+        defaultChooser: EntityId,
+    ): EntityId {
+        val attackerContainer = state.getEntity(attackerId) ?: return defaultChooser
+        val blockedBy = attackerContainer.get<BlockedComponent>() ?: return defaultChooser
+        val blockerHasBanding = blockedBy.blockerIds.any { blockerId ->
+            projected.hasKeyword(blockerId, Keyword.BANDING)
+        }
+        if (!blockerHasBanding) return defaultChooser
+
+        val attacking = attackerContainer.get<AttackingComponent>() ?: return defaultChooser
+        val defenderId = attacking.defenderId
+        return if (state.turnOrder.contains(defenderId)) defenderId
+            else projected.getController(defenderId) ?: defaultChooser
     }
 
     private fun matches(

@@ -205,6 +205,12 @@ export interface DeclareAttackersAction {
   readonly type: 'DeclareAttackers'
   readonly playerId: EntityId
   readonly attackers: Record<EntityId, EntityId>  // attacker -> defending player
+  /**
+   * Optional banding groupings (CR 702.21). Each entry is the set of attacker IDs forming
+   * one band. All band members must also appear as keys in [attackers] with the same defender,
+   * and at most one creature per band may lack the BANDING keyword.
+   */
+  readonly bands?: ReadonlyArray<ReadonlyArray<EntityId>>
 }
 
 export interface DeclareBlockersAction {

@@ -124,6 +124,12 @@ export interface CombatState {
   mustBeBlockedAttackers: readonly EntityId[]
   /** Max block counts for blockers that can block more than one attacker (blocker ID -> max attackers) */
   blockerMaxBlockCounts: Readonly<Record<EntityId, number>>
+  /**
+   * Banding groups (CR 702.21). Each entry is the set of attacker IDs forming one band.
+   * All members of a band must be in [selectedAttackers] and share the same attack target.
+   * Empty when no bands are declared.
+   */
+  bands: ReadonlyArray<readonly EntityId[]>
 }
 
 /**
@@ -839,6 +845,9 @@ export type GameStore = {
   attackWithAll: () => void
   clearAttackers: () => void
   clearCombat: () => void
+  formBand: (memberIds: readonly EntityId[]) => void
+  removeBand: (bandIndex: number) => void
+  clearBands: () => void
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void
   cancelXSelection: () => void
