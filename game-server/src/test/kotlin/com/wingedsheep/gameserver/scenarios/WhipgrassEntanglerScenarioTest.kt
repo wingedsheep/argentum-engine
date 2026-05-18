@@ -69,7 +69,7 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Attack should fail - no mana to pay tax") {
                     paid.error shouldNotBe null
                     paid.error!! shouldContainIgnoringCase "tax"
@@ -115,7 +115,7 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Attack should succeed - can pay {1} tax: ${paid.error}") {
                     paid.error shouldBe null
                 }
@@ -161,7 +161,7 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Attack should fail - only 1 mana for 2 Clerics (needs {2})") {
                     paid.error shouldNotBe null
                     paid.error!! shouldContainIgnoringCase "tax"
@@ -246,7 +246,7 @@ class WhipgrassEntanglerScenarioTest : ScenarioTestBase() {
                 )
                 declaredBlock.isPaused shouldBe true
 
-                val paidBlock = game.answerYesNo(true)
+                val paidBlock = game.submitManaSourcesAutoPay()
                 withClue("Block should fail - no mana to pay tax") {
                     paidBlock.error shouldNotBe null
                     paidBlock.error!! shouldContainIgnoringCase "tax"

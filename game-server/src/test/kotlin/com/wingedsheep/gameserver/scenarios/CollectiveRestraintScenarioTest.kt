@@ -65,7 +65,7 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Mountain pays the {1} tax: ${paid.error}") {
                     paid.error shouldBe null
                 }
@@ -91,7 +91,7 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val declined = game.answerYesNo(false)
+                val declined = game.submitManaSourcesDecision() // empty selection + autoPay=false = cancel
                 withClue("Decline is a clean no-op (no error banner): ${declined.error}") {
                     declined.error shouldBe null
                     declined.isPaused shouldBe false
@@ -123,7 +123,7 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Only {2} available for {3} tax") {
                     paid.error shouldNotBe null
                     paid.error!! shouldContainIgnoringCase "attack tax"
@@ -150,7 +150,7 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("3 Mountains for the {3} tax: ${paid.error}") {
                     paid.error shouldBe null
                 }
@@ -183,7 +183,7 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("10 Mountains pay 2×{5} tax: ${paid.error}") {
                     paid.error shouldBe null
                 }
@@ -216,7 +216,7 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Only {9} available for {10} tax") {
                     paid.error shouldNotBe null
                     paid.error!! shouldContainIgnoringCase "attack tax"
@@ -246,9 +246,64 @@ class CollectiveRestraintScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Domain reads defender's lands, not attacker's: ${paid.error}") {
                     paid.error shouldBe null
+                }
+            }
+
+            test("player can manually pick specific lands to tap instead of auto-pay") {
+                // Defender has 3 basic types → tax {3}. Attacker has 4 Mountains; pick the
+                // 3 they want to tap explicitly and verify only those end up tapped.
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withCardOnBattlefield(2, "Collective Restraint")
+                    .withLandsOnBattlefield(2, "Plains", 1)
+                    .withLandsOnBattlefield(2, "Island", 1)
+                    .withLandsOnBattlefield(2, "Swamp", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val hillGiantId = game.findPermanent("Hill Giant")!!
+
+                val declared = game.execute(
+                    DeclareAttackers(game.player1Id, mapOf(hillGiantId to game.player2Id))
+                )
+                declared.isPaused shouldBe true
+
+                val decision = game.getPendingDecision()
+                check(decision is com.wingedsheep.engine.core.SelectManaSourcesDecision) {
+                    "Expected SelectManaSourcesDecision, got $decision"
+                }
+                withClue("Auto-pay suggestion should pre-populate 3 sources") {
+                    decision.autoPaySuggestion.size shouldBe 3
+                }
+
+                // Pick the first three Mountains explicitly (not auto-pay) and confirm.
+                val mountainIds = decision.availableSources
+                    .filter { it.name == "Mountain" }
+                    .map { it.entityId }
+                val chosen = mountainIds.take(3)
+                val paid = game.submitManaSourcesDecision(selectedSources = chosen, autoPay = false)
+
+                withClue("Manual selection of 3 Mountains pays {3}: ${paid.error}") {
+                    paid.error shouldBe null
+                }
+
+                val chosenTapped = chosen.all { id ->
+                    game.state.getEntity(id)
+                        ?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() == true
+                }
+                val untouchedUntapped = (mountainIds - chosen.toSet()).all { id ->
+                    game.state.getEntity(id)
+                        ?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() == false
+                }
+                withClue("Only the 3 picked Mountains tapped; the 4th stays untapped") {
+                    chosenTapped shouldBe true
+                    untouchedUntapped shouldBe true
                 }
             }
         }

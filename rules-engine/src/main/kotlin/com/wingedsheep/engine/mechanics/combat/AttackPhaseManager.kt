@@ -166,6 +166,24 @@ internal class AttackPhaseManager(
         attackers: Map<EntityId, EntityId>,
         totalTax: Int,
     ): ExecutionResult {
+        val manaCost = com.wingedsheep.sdk.core.ManaCost(
+            List(totalTax) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
+        )
+        val manaSolver = com.wingedsheep.engine.mechanics.mana.ManaSolver(cardRegistry)
+        val sources = manaSolver.findAvailableManaSources(state, attackingPlayer)
+        val sourceOptions = sources.map { source ->
+            com.wingedsheep.engine.core.ManaSourceOption(
+                entityId = source.entityId,
+                name = source.name,
+                producesColors = source.producesColors,
+                producesColorless = source.producesColorless,
+                requiresSacrifice = source.requiresSacrifice,
+                requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null,
+            )
+        }
+        val solution = manaSolver.solve(state, attackingPlayer, manaCost)
+        val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+
         val decisionId = java.util.UUID.randomUUID().toString()
         val attackerNames = attackers.keys.mapNotNull { state.getEntity(it)?.get<CardComponent>()?.name }
         val attackerListing = when (attackerNames.size) {
@@ -173,24 +191,27 @@ internal class AttackPhaseManager(
             1 -> attackerNames.single()
             else -> attackerNames.dropLast(1).joinToString(", ") + " and " + attackerNames.last()
         }
-        val decision = com.wingedsheep.engine.core.YesNoDecision(
+        val decision = com.wingedsheep.engine.core.SelectManaSourcesDecision(
             id = decisionId,
             playerId = attackingPlayer,
-            prompt = "Pay {$totalTax} to attack with $attackerListing?",
+            prompt = "Pay {$totalTax} to attack with $attackerListing",
             context = com.wingedsheep.engine.core.DecisionContext(
                 sourceId = null,
                 sourceName = "Attack tax",
                 phase = com.wingedsheep.engine.core.DecisionPhase.COMBAT,
             ),
-            yesText = "Pay {$totalTax}",
-            noText = "Cancel attack",
-            hint = "If you decline, your attack declaration is cancelled.",
+            availableSources = sourceOptions,
+            requiredCost = manaCost.toString(),
+            autoPaySuggestion = autoPaySuggestion,
+            canDecline = true,
         )
-        val continuation = com.wingedsheep.engine.core.AttackTaxConfirmationContinuation(
+        val continuation = com.wingedsheep.engine.core.AttackTaxManaSelectionContinuation(
             decisionId = decisionId,
             attackingPlayer = attackingPlayer,
             attackers = attackers,
-            totalTax = totalTax,
+            manaCost = manaCost,
+            availableSources = sourceOptions,
+            autoPaySuggestion = autoPaySuggestion,
         )
         return ExecutionResult.paused(
             state.withPendingDecision(decision).pushContinuation(continuation),
@@ -433,76 +454,6 @@ internal class AttackPhaseManager(
 
         totalGenericTax += calculatePerCreatureTax(state, attackers.keys, projected)
         return totalGenericTax
-    }
-
-    /**
-     * Pay an already-confirmed [totalTax] for an attack declaration. Returns the new
-     * state plus any auto-tap [TappedEvent]s.
-     */
-    internal fun payConfirmedAttackTax(
-        state: GameState,
-        attackingPlayer: EntityId,
-        totalTax: Int,
-    ): ExecutionResult =
-        payManaTax(state, attackingPlayer, totalTax, "attack", cardRegistry, manaAbilitySideEffectExecutor)
-
-    /**
-     * Validate and pay attack taxes from effects like Ghostly Prison and Windborn Muse.
-     */
-    private fun validateAndPayAttackTaxes(
-        state: GameState,
-        attackingPlayer: EntityId,
-        attackers: Map<EntityId, EntityId>,
-        projected: ProjectedState
-    ): ExecutionResult {
-        if (attackers.isEmpty()) return ExecutionResult.success(state)
-
-        // Group attackers by defending player (resolve planeswalker defenders to their controller)
-        val attackersPerDefender = mutableMapOf<EntityId, Int>()
-        for ((_, defenderId) in attackers) {
-            val defenderPlayerId = if (state.turnOrder.contains(defenderId)) {
-                defenderId
-            } else {
-                // Planeswalker — find its controller
-                projected.getController(defenderId)
-            }
-            if (defenderPlayerId != null) {
-                attackersPerDefender[defenderPlayerId] = (attackersPerDefender[defenderPlayerId] ?: 0) + 1
-            }
-        }
-
-        // Calculate total tax from all AttackTax permanents (Ghostly Prison, Windborn Muse,
-        // Collective Restraint). Per-attacker amount may be a DynamicAmount (e.g., domain),
-        // evaluated with the source permanent's controller as "you".
-        var totalGenericTax = 0
-        if (attackersPerDefender.isNotEmpty()) {
-            for ((defenderId, attackerCount) in attackersPerDefender) {
-                val defenderPermanents = projected.getBattlefieldControlledBy(defenderId)
-                for (entityId in defenderPermanents) {
-                    val container = state.getEntity(entityId) ?: continue
-                    val cardComponent = container.get<CardComponent>() ?: continue
-                    val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
-                    for (ability in cardDef.staticAbilities) {
-                        if (ability is AttackTax) {
-                            val ctx = com.wingedsheep.engine.handlers.EffectContext(
-                                sourceId = entityId,
-                                controllerId = defenderId,
-                                opponentId = attackingPlayer,
-                            )
-                            val taxPerAttacker = maxOf(0, dynamicAmountEvaluator.evaluate(state, ability.amountPerAttacker, ctx, projected))
-                            totalGenericTax += taxPerAttacker * attackerCount
-                        }
-                    }
-                }
-            }
-        }
-
-        // Calculate per-creature attack/block tax from floating effects (Whipgrass Entangler)
-        totalGenericTax += calculatePerCreatureTax(state, attackers.keys, projected)
-
-        if (totalGenericTax <= 0) return ExecutionResult.success(state)
-
-        return payManaTax(state, attackingPlayer, totalGenericTax, "attack", cardRegistry, manaAbilitySideEffectExecutor)
     }
 
     /**

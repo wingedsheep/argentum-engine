@@ -947,42 +947,52 @@ internal class BlockPhaseManager(
     // Block Taxes
     // =========================================================================
 
-    /**
-     * Pay an already-confirmed [totalTax] for a block declaration. Mirror of
-     * [com.wingedsheep.engine.mechanics.combat.AttackPhaseManager.payConfirmedAttackTax].
-     */
-    internal fun payConfirmedBlockTax(
-        state: GameState,
-        blockingPlayer: EntityId,
-        totalTax: Int,
-    ): ExecutionResult =
-        payManaTax(state, blockingPlayer, totalTax, "block", cardRegistry, manaAbilitySideEffectExecutor)
-
     private fun pauseForBlockTaxConfirmation(
         state: GameState,
         blockingPlayer: EntityId,
         blockers: Map<EntityId, List<EntityId>>,
         totalTax: Int,
     ): ExecutionResult {
+        val manaCost = com.wingedsheep.sdk.core.ManaCost(
+            List(totalTax) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
+        )
+        val manaSolver = com.wingedsheep.engine.mechanics.mana.ManaSolver(cardRegistry)
+        val sources = manaSolver.findAvailableManaSources(state, blockingPlayer)
+        val sourceOptions = sources.map { source ->
+            com.wingedsheep.engine.core.ManaSourceOption(
+                entityId = source.entityId,
+                name = source.name,
+                producesColors = source.producesColors,
+                producesColorless = source.producesColorless,
+                requiresSacrifice = source.requiresSacrifice,
+                requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null,
+            )
+        }
+        val solution = manaSolver.solve(state, blockingPlayer, manaCost)
+        val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+
         val decisionId = java.util.UUID.randomUUID().toString()
-        val decision = com.wingedsheep.engine.core.YesNoDecision(
+        val decision = com.wingedsheep.engine.core.SelectManaSourcesDecision(
             id = decisionId,
             playerId = blockingPlayer,
-            prompt = "Pay {$totalTax} to block with the declared creatures?",
+            prompt = "Pay {$totalTax} to block with the declared creatures",
             context = com.wingedsheep.engine.core.DecisionContext(
                 sourceId = null,
                 sourceName = "Block tax",
                 phase = com.wingedsheep.engine.core.DecisionPhase.COMBAT,
             ),
-            yesText = "Pay {$totalTax}",
-            noText = "Cancel block",
-            hint = "If you decline, your block declaration is cancelled.",
+            availableSources = sourceOptions,
+            requiredCost = manaCost.toString(),
+            autoPaySuggestion = autoPaySuggestion,
+            canDecline = true,
         )
-        val continuation = com.wingedsheep.engine.core.BlockTaxConfirmationContinuation(
+        val continuation = com.wingedsheep.engine.core.BlockTaxManaSelectionContinuation(
             decisionId = decisionId,
             blockingPlayer = blockingPlayer,
             blockers = blockers,
-            totalTax = totalTax,
+            manaCost = manaCost,
+            availableSources = sourceOptions,
+            autoPaySuggestion = autoPaySuggestion,
         )
         return ExecutionResult.paused(
             state.withPendingDecision(decision).pushContinuation(continuation),

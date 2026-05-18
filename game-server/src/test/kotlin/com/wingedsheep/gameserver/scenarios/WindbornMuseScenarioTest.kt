@@ -46,7 +46,7 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                     declared.isPaused shouldBe true
                 }
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Tax {2} payable from 2 untapped Mountains: ${paid.error}") {
                     paid.error shouldBe null
                 }
@@ -69,7 +69,7 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Only 1 Mountain available for {2} tax") {
                     paid.error shouldNotBe null
                     paid.error!! shouldContainIgnoringCase "attack tax"
@@ -93,7 +93,7 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val declined = game.answerYesNo(false)
+                val declined = game.submitManaSourcesDecision() // empty selection + autoPay=false = cancel
                 withClue("Decline is a clean no-op: no error, no pause, player stays in declare-attackers") {
                     declined.error shouldBe null
                     declined.isPaused shouldBe false
@@ -127,7 +127,7 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("4 Mountains cover the 2×{2} tax: ${paid.error}") {
                     paid.error shouldBe null
                 }
@@ -155,7 +155,7 @@ class WindbornMuseScenarioTest : ScenarioTestBase() {
                 )
                 declared.isPaused shouldBe true
 
-                val paid = game.answerYesNo(true)
+                val paid = game.submitManaSourcesAutoPay()
                 withClue("Only 3 Mountains for {4} tax") {
                     paid.error shouldNotBe null
                     paid.error!! shouldContainIgnoringCase "attack tax"
