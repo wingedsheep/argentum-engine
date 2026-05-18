@@ -316,7 +316,9 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Stack manipulation
 
 - `CounterEffect(target, condition?, destination?)` — counter a spell/ability; optionally send elsewhere.
+  - `target = CounterTarget.Spell` / `Ability` / `SpellOrAbility` — `SpellOrAbility` dispatches at resolution by inspecting whether the stack entity has a `SpellOnStackComponent`. Used by Teferi's Response.
 - `CounterAllOnStackEffect(filter?, destination?)` — counter everything matching.
+- `DestroySourceOfTargetedAbilityEffect` — when the targeted stack object is a permanent's activated/triggered ability, destroy that source permanent. Compose *before* the counter step so the ability component is still readable (Teferi's Response).
 - `CopyTargetSpellEffect(target)` — copy a spell on the stack.
 - `CopyTargetTriggeredAbilityEffect(target)` — copy a triggered ability on the stack.
 - `CopyNextSpellCastEffect` — copy the next spell its controller casts.
@@ -539,6 +541,21 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 - `GroupFilter.All(filter)` — custom group.
 - Chained: `.withColor`, `.withoutColor`, `.withKeyword`, `.withoutKeyword`, `.withSubtype`, `.withoutSubtype`,
   `.minPower`, `.maxPower`, `.power`.
+
+### Stack-object predicates
+
+These `CardPredicate`s evaluate against entities in the `Zone.STACK` (spells and activated/triggered
+abilities on the stack). They are handled in the evaluator before the `CardComponent` check, so they
+work for abilities-on-stack (which carry no `CardComponent`).
+
+- `CardPredicate.IsActivatedOrTriggeredAbility` — true for activated/triggered abilities on the stack
+  (Stifle).
+- `CardPredicate.IsTriggeredAbility` — triggered abilities only (excludes activated abilities and
+  spells).
+- `CardPredicate.TargetsMatching(subfilter)` — true when the stack object's `TargetsComponent`
+  includes at least one chosen target matching `subfilter`. Player targets are skipped. The
+  subfilter inherits the outer `PredicateContext`, so `Land.youControl()` inside the subfilter
+  resolves against the outer chooser. Used by Teferi's Response.
 
 ### `StatePredicate` — battlefield state checks
 

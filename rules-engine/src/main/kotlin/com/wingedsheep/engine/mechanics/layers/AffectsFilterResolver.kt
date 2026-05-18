@@ -464,6 +464,7 @@ internal class AffectsFilterResolver {
         // Stack-only predicates — never match a battlefield entity being projected.
         CardPredicate.IsActivatedOrTriggeredAbility,
         CardPredicate.IsTriggeredAbility -> false
+        is CardPredicate.TargetsMatching -> false
     }
 
     /**

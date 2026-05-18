@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.EntityReference
 import com.wingedsheep.engine.state.CastSpellRecord
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.TargetsComponent
 
 /**
  * Evaluates the new unified predicates and filters against game state.
@@ -121,6 +122,24 @@ class PredicateEvaluator {
         }
         if (predicate is CardPredicate.IsTriggeredAbility) {
             return container.has<TriggeredAbilityOnStackComponent>()
+        }
+        // Stack-relative targeting predicate: read the stack entity's TargetsComponent
+        // and match each chosen target against the subfilter. Works for both spells and
+        // activated/triggered abilities (none of which have CardComponent for the
+        // permanent-target case, but TargetsComponent is independent of card data).
+        if (predicate is CardPredicate.TargetsMatching) {
+            val targets = container.get<TargetsComponent>()?.targets ?: return false
+            if (targets.isEmpty()) return false
+            val subContext = context ?: return false
+            return targets.any { chosen ->
+                val targetEntityId = when (chosen) {
+                    is ChosenTarget.Permanent -> chosen.entityId
+                    is ChosenTarget.Card -> chosen.cardId
+                    is ChosenTarget.Spell -> chosen.spellEntityId
+                    is ChosenTarget.Player -> return@any false
+                }
+                matches(state, projected, targetEntityId, predicate.subfilter, subContext)
+            }
         }
 
         val card = container.get<CardComponent>() ?: return false
@@ -396,6 +415,7 @@ class PredicateEvaluator {
             // Handled before CardComponent check above — unreachable here
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
+            is CardPredicate.TargetsMatching -> false
         }
     }
 
@@ -681,6 +701,10 @@ class PredicateEvaluator {
             // Stack ability check — cast spells are not abilities
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
+
+            // Stack-relative targeting predicate — historical cast records have no
+            // chosen-target snapshot, so this always returns false here.
+            is CardPredicate.TargetsMatching -> false
 
             // Composite predicates
             is CardPredicate.And -> predicate.predicates.all { matchesRecordPredicate(record, it) }

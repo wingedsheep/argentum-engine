@@ -29,6 +29,16 @@ sealed interface CounterTarget {
     @SerialName("CounterTarget.Ability")
     @Serializable
     data object Ability : CounterTarget
+
+    /**
+     * Counter a spell or an activated/triggered ability. The executor dispatches at
+     * resolution: if the stack entity has a [com.wingedsheep.engine.state.components.stack.SpellOnStackComponent]
+     * it is countered as a spell (subject to [CounterDestination]); otherwise it is
+     * countered as an ability. Used by cards like Teferi's Response.
+     */
+    @SerialName("CounterTarget.SpellOrAbility")
+    @Serializable
+    data object SpellOrAbility : CounterTarget
 }
 
 /**
@@ -115,6 +125,13 @@ data class CounterEffect(
     override val description: String = buildString {
         when (target) {
             CounterTarget.Ability -> append("Counter target activated or triggered ability")
+            CounterTarget.SpellOrAbility -> {
+                if (filter != null) {
+                    append("Counter target ${filter.baseFilter.description}")
+                } else {
+                    append("Counter target spell or ability")
+                }
+            }
             CounterTarget.Spell -> {
                 when (condition) {
                     is CounterCondition.Always -> {
@@ -204,6 +221,34 @@ data class CounterAllOnStackEffect(
         append(parts.joinToString(" and "))
         if (opponentsOnly) append(" your opponents control")
     }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+// =============================================================================
+// Stack Effects — Destroy Ability Source
+// =============================================================================
+
+/**
+ * Destroys the source permanent of the targeted activated or triggered ability on the
+ * stack, if its source is currently a permanent on the battlefield. Reads the targeted
+ * stack entity from [com.wingedsheep.engine.handlers.EffectContext.targets] (expects a
+ * [com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell]) and inspects its
+ * `ActivatedAbilityOnStackComponent` / `TriggeredAbilityOnStackComponent` to find the
+ * source. If the targeted stack object is a spell (no ability component), nothing happens.
+ *
+ * Used by cards like Teferi's Response: "If a permanent's ability is countered this way,
+ * destroy that permanent." Compose with [CounterEffect] in a `CompositeEffect` — place this
+ * step *before* the counter so the source's component data is still present on the stack
+ * entity when this effect runs. The permanent is still on the battlefield at this point
+ * (ability sources don't have to be on the battlefield for the ability to resolve), so
+ * destruction is straightforward.
+ */
+@SerialName("DestroySourceOfTargetedAbility")
+@Serializable
+data object DestroySourceOfTargetedAbilityEffect : Effect {
+    override val description: String =
+        "If a permanent's ability is countered this way, destroy that permanent"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

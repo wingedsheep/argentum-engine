@@ -26,6 +26,7 @@ class StackExecutors(
         ReselectTargetRandomlyExecutor(),
         GrantKeywordToSpellExecutor(),
         MarkSpellExileWithCountersExecutor(),
-        ReturnSpellToOwnersHandExecutor()
+        ReturnSpellToOwnersHandExecutor(),
+        DestroySourceOfTargetedAbilityExecutor()
     )
 }

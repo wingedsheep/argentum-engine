@@ -92,7 +92,16 @@ class CounterEffectExecutor(
         context: EffectContext
     ): EffectResult {
         val resolver = StackResolver(cardRegistry = cardRegistry)
-        return EffectResult.from(when (effect.target) {
+        // For SpellOrAbility, dispatch by what's actually on the stack at this entity:
+        // a spell carries SpellOnStackComponent; activated/triggered abilities do not.
+        val effectiveTarget = when (effect.target) {
+            CounterTarget.SpellOrAbility -> {
+                val isSpell = state.getEntity(entityId)?.has<SpellOnStackComponent>() == true
+                if (isSpell) CounterTarget.Spell else CounterTarget.Ability
+            }
+            else -> effect.target
+        }
+        return EffectResult.from(when (effectiveTarget) {
             CounterTarget.Ability -> resolver.counterAbility(state, entityId)
             CounterTarget.Spell -> when (val dest = effect.counterDestination) {
                 CounterDestination.Graveyard -> resolver.counterSpell(state, entityId)
@@ -100,6 +109,7 @@ class CounterEffectExecutor(
                     state, entityId, dest.grantFreeCast, context.controllerId
                 )
             }
+            CounterTarget.SpellOrAbility -> error("unreachable — resolved above")
         })
     }
 

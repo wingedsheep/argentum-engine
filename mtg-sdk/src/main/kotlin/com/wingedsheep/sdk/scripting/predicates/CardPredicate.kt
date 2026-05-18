@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.predicates
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.EntityReference
@@ -493,6 +494,26 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     data object IsTriggeredAbility : CardPredicate {
         override val description: String = "triggered ability"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
+    /**
+     * Matches a spell or ability on the stack at least one of whose chosen targets
+     * matches [subfilter]. Player targets are skipped (they aren't card-like and have
+     * no game-object filter to match against). Used by cards like Teferi's Response
+     * ("target spell or ability ... that targets a land you control").
+     *
+     * The subfilter is evaluated in the same [com.wingedsheep.engine.handlers.PredicateContext]
+     * as the outer match — so "you control" inside the subfilter resolves against the
+     * outer chooser, exactly as for any other filter.
+     */
+    @SerialName("TargetsMatching")
+    @Serializable
+    data class TargetsMatching(val subfilter: GameObjectFilter) : CardPredicate {
+        override val description: String = "that targets ${subfilter.description}"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newSubfilter = subfilter.applyTextReplacement(replacer)
+            return if (newSubfilter !== subfilter) copy(subfilter = newSubfilter) else this
+        }
     }
 
     // =============================================================================

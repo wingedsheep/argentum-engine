@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Teferi's Response", "Teferi's Response"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Plains", "Island", "Plains", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Lay Waste"],
+    "battlefield": [
+      {"name": "Kamahl, Fist of Krosa"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

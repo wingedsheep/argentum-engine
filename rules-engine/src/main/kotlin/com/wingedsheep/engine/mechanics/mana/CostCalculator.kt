@@ -892,6 +892,7 @@ class CostCalculator(
 
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
+            is CardPredicate.TargetsMatching -> false
         }
     }
 
