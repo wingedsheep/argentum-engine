@@ -3277,9 +3277,21 @@ function HoverFollowPreview({
       setPos(null)
       return
     }
-    const onMove = (e: MouseEvent) => setPos({ x: e.clientX, y: e.clientY })
+    let pending: { x: number; y: number } | null = null
+    let rafId: number | null = null
+    const flush = () => {
+      rafId = null
+      if (pending) setPos(pending)
+    }
+    const onMove = (e: MouseEvent) => {
+      pending = { x: e.clientX, y: e.clientY }
+      if (rafId === null) rafId = requestAnimationFrame(flush)
+    }
     window.addEventListener('mousemove', onMove)
-    return () => window.removeEventListener('mousemove', onMove)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
   }, [name])
   if (!name || !pos) return null
   return <HoverCardPreview name={name} imageUri={imageUri} pos={pos} overlay={overlay} />

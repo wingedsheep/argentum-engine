@@ -98,7 +98,6 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
         left,
         pointerEvents: 'none',
         zIndex: 2500,
-        transition: 'top 0.05s, left 0.05s',
         display: 'flex',
         flexDirection: 'column',
         gap: GAP,
