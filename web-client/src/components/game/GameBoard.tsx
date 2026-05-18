@@ -898,7 +898,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <div
           style={{
             position: 'fixed',
-            bottom: 16,
+            // Sit above the Log toggle (which is bottom: 12, ~28px tall) so they don't collide.
+            bottom: 56,
             left: 16,
             display: 'flex',
             flexDirection: 'column',
