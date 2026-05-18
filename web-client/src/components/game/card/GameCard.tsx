@@ -40,7 +40,7 @@ import {
   getQuestCounters,
   getGrowthCounters,
 } from '../board/shared'
-import { styles } from '../board/styles'
+import { styles, bandColorFor } from '../board/styles'
 import {
   TARGET_COLOR, TARGET_COLOR_BRIGHT, TARGET_GLOW, TARGET_GLOW_BRIGHT, TARGET_GLOW_OUTER, TARGET_SHADOW,
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
@@ -300,6 +300,14 @@ export function GameCard({
   const isOwnCreature = !isOpponentCard && card.cardTypes.includes('CREATURE')
   const isValidAttacker = isInAttackerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
   const isSelectedAsAttacker = isInAttackerMode && combatState.selectedAttackers.includes(card.id)
+
+  // Banding (CR 702.21): when this attacker is part of a declared band, surface a colored
+  // ring + corner badge so the player can verify at a glance which creatures will be
+  // blocked as a group.
+  const bandIndex = isInAttackerMode
+    ? combatState.bands.findIndex((band) => band.includes(card.id))
+    : -1
+  const isBanded = bandIndex >= 0
 
   // For blocker mode: check if this is a valid blocker or an attacking creature to block
   const isValidBlocker = isInBlockerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
@@ -798,9 +806,16 @@ export function GameCard({
   let boxShadow = '0 2px 8px rgba(0,0,0,0.5)'
 
   if (isSelectedAsAttacker) {
-    // Red for attacking creatures
+    // Red for attacking creatures. Layer a banded-color outer glow on top when the
+    // attacker is part of a band so the grouping reads alongside the attacker ring.
     borderStyle = '3px solid #ff4444'
-    boxShadow = '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
+    if (isBanded) {
+      const band = bandColorFor(bandIndex)
+      borderStyle = `3px solid ${band.border}`
+      boxShadow = `0 0 16px rgba(255, 68, 68, 0.6), 0 0 0 4px ${band.base}, 0 0 28px ${band.glow}`
+    } else {
+      boxShadow = '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
+    }
   } else if (isSelectedAsBlocker) {
     // Blue for blocking creatures
     borderStyle = '3px solid #4488ff'
@@ -1195,6 +1210,23 @@ export function GameCard({
           </span>
         </div>
       )}
+
+      {/* Banding (CR 702.21) band-membership badge */}
+      {battlefield && isBanded && (() => {
+        const band = bandColorFor(bandIndex)
+        return (
+          <div
+            style={{
+              ...styles.bandBadge,
+              backgroundColor: band.chipBg,
+              border: `1px solid ${band.border}`,
+            }}
+            title={`Band ${bandIndex + 1} — blocked as a group`}
+          >
+            B{bandIndex + 1}
+          </div>
+        )
+      })()}
 
       {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
       {battlefield && hasStatCounters(card) && (

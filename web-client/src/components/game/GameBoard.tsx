@@ -3,6 +3,9 @@ import { useGameStore } from '@/store/gameStore'
 import { useInteraction } from '@/hooks/useInteraction'
 import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode, useGhostCards, useRevealedLibraryTopCard, useBattlefieldCards } from '@/store/selectors'
 import { hand, getNextStep, StepShortNames } from '@/types'
+import type { EntityId } from '@/types'
+import { Keyword } from '@/types/enums'
+import { bandColorFor } from './board/styles'
 import { StepStrip } from '../ui/StepStrip'
 import { ManaPool } from '../ui/ManaPool'
 import { ActionMenu } from '../ui/ActionMenu'
@@ -129,6 +132,55 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const opponent = useOpponent()
   const stackCards = useStackCards()
   const ghostCards = useGhostCards(playerId ?? null)
+
+  // Banding (CR 702.21): analyze the current attacker selection so the combat panel
+  // can show a banding hint, validate the Form Band action client-side, and render
+  // band chips with the actual member names instead of a bare count.
+  const bandingAnalysis = useMemo(() => {
+    if (combatState?.mode !== 'declareAttackers' || !opponent) {
+      return null
+    }
+    // Build a lookup over creatures the viewing player might attack with (regular
+    // creatures plus animated lands / other permanents that became creatures).
+    const yourCards = [
+      ...battlefieldCards.playerCreatures,
+      ...battlefieldCards.playerLands,
+      ...battlefieldCards.playerOther,
+    ]
+    const cardsById = new Map(yourCards.map((c) => [c.id, c] as const))
+    const selected = combatState.selectedAttackers
+    const hasBanding = (id: EntityId) =>
+      (cardsById.get(id)?.keywords ?? []).includes('BANDING' as Keyword)
+
+    const anySelectedHasBanding = selected.some(hasBanding)
+    const nameOf = (id: EntityId) => cardsById.get(id)?.name ?? 'Unknown'
+
+    // Reasons the selection can't legally form a single band, in user-facing terms.
+    let illegalReason: string | null = null
+    if (selected.length < 2) {
+      illegalReason = 'A band needs at least two attackers.'
+    } else if (!anySelectedHasBanding) {
+      illegalReason = 'At least one creature in a band must have banding.'
+    } else {
+      const nonBanding = selected.filter((id) => !hasBanding(id))
+      if (nonBanding.length > 1) {
+        illegalReason = 'A band may contain at most one creature without banding.'
+      } else {
+        const defenderOf = (id: EntityId) =>
+          combatState.attackerTargets[id] ?? opponent.playerId
+        const defenders = new Set(selected.map(defenderOf))
+        if (defenders.size > 1) {
+          illegalReason = 'All creatures in a band must attack the same defender.'
+        }
+      }
+    }
+    return {
+      anySelectedHasBanding,
+      illegalReason,
+      nameOf,
+      selectedCount: selected.length,
+    }
+  }, [combatState, battlefieldCards, opponent])
 
   // Mindslaver-style hijack indicators (Phase 2C). Spectators don't get the UX promotions.
   const youAreHijacking = !spectatorMode ? (gameState?.youAreHijacking ?? null) : null
@@ -817,18 +869,24 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               >
                 Attack with {combatState.selectedAttackers.length}
               </button>
-              {combatState.selectedAttackers.length >= 2 && (
+              {bandingAnalysis?.anySelectedHasBanding && (
                 <button
                   onClick={() => formBand(combatState.selectedAttackers)}
-                  title="Group selected attackers into a band (CR 702.21). Requires at least one creature with banding; at most one creature without."
+                  disabled={bandingAnalysis.illegalReason != null}
+                  title={
+                    bandingAnalysis.illegalReason
+                      ?? `Group these ${bandingAnalysis.selectedCount} attackers into a band. Blocking any band member blocks them all; the defender controls damage assignment among blockers.`
+                  }
                   style={{
                     ...styles.floatingBarButton,
                     ...styles.combatActionButton,
-                    backgroundColor: '#4a148c',
-                    border: '1px solid #7b1fa2',
+                    backgroundColor: bandingAnalysis.illegalReason ? '#311b3f' : '#4a148c',
+                    border: `1px solid ${bandingAnalysis.illegalReason ? '#5c3a6e' : '#ab47bc'}`,
+                    opacity: bandingAnalysis.illegalReason ? 0.55 : 1,
+                    cursor: bandingAnalysis.illegalReason ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  Form Band ({combatState.selectedAttackers.length})
+                  Form Band ({bandingAnalysis.selectedCount})
                 </button>
               )}
               <button
@@ -844,39 +902,64 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               </button>
             </>
           )}
-          {combatState.bands.length > 0 && (
+          {/* Banding panel: chips list each declared band with member names, click to remove. */}
+          {(combatState.bands.length > 0 ||
+            (combatState.selectedAttackers.length > 0 && bandingAnalysis?.anySelectedHasBanding)) && (
             <div
               style={{
                 display: 'flex',
-                gap: 6,
-                flexWrap: 'wrap',
+                flexDirection: 'column',
+                gap: 4,
                 marginTop: 8,
-                padding: '4px 6px',
-                background: 'rgba(74, 20, 140, 0.4)',
+                padding: '6px 8px',
+                background: 'rgba(74, 20, 140, 0.35)',
                 border: '1px solid #7b1fa2',
                 borderRadius: 4,
                 fontSize: 11,
+                maxWidth: 360,
               }}
             >
-              <span style={{ alignSelf: 'center', color: '#e1bee7' }}>Bands:</span>
-              {combatState.bands.map((band, i) => (
-                <button
-                  key={i}
-                  onClick={() => removeBand(i)}
-                  title="Click to remove this band"
-                  style={{
-                    background: '#6a1b9a',
-                    color: 'white',
-                    border: '1px solid #ab47bc',
-                    borderRadius: 3,
-                    padding: '2px 6px',
-                    cursor: 'pointer',
-                    fontSize: 11,
-                  }}
-                >
-                  Band {i + 1} ({band.length}) ✕
-                </button>
-              ))}
+              <div style={{ color: '#e1bee7', fontWeight: 600 }}>
+                Banding (CR 702.21)
+                <span style={{ fontWeight: 400, color: '#d1c4e9', marginLeft: 6 }}>
+                  · block one band member, block them all
+                </span>
+              </div>
+              {combatState.bands.length === 0 ? (
+                <div style={{ color: '#d1c4e9', fontStyle: 'italic' }}>
+                  {bandingAnalysis?.illegalReason
+                    ?? `Click "Form Band" to group the ${bandingAnalysis?.selectedCount ?? 0} selected attackers.`}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {combatState.bands.map((band, i) => {
+                    const color = bandColorFor(i)
+                    const names = band.map((id) => bandingAnalysis?.nameOf(id) ?? 'Unknown')
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => removeBand(i)}
+                        title={`Click to disband. Members: ${names.join(', ')}`}
+                        style={{
+                          background: color.chipBg,
+                          color: 'white',
+                          border: `1px solid ${color.border}`,
+                          borderRadius: 3,
+                          padding: '2px 6px',
+                          cursor: 'pointer',
+                          fontSize: 11,
+                          maxWidth: 340,
+                          textAlign: 'left',
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, marginRight: 4 }}>B{i + 1}</span>
+                        <span>{names.join(' · ')}</span>
+                        <span style={{ marginLeft: 6, opacity: 0.7 }}>✕</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
