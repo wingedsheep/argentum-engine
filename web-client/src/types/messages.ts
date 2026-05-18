@@ -495,6 +495,36 @@ export interface AssignDamageDecision extends PendingDecisionBase {
 }
 
 /**
+ * Per-attacker entry inside a [CombatDamagePlanDecision]. Mirrors the shape of
+ * [AssignDamageDecision] minus the wrapper fields, so the client UI can reuse the
+ * same +/- assignment logic per row.
+ */
+export interface CombatDamagePlanEntry {
+  readonly attackerId: EntityId
+  readonly attackerName: string
+  readonly availablePower: number
+  readonly orderedTargets: readonly EntityId[]
+  readonly defenderId: EntityId | null
+  readonly minimumAssignments: Record<EntityId, number>
+  readonly defaultAssignments: Record<EntityId, number>
+  readonly hasTrample: boolean
+  readonly hasDeathtouch: boolean
+  /** Banding group id (CR 702.21). Attackers in the same band share the same id. */
+  readonly bandId?: string | null
+}
+
+/**
+ * Bundles every attacker that still needs manual combat-damage assignment in the
+ * current damage step into a single decision so the player can resolve them all
+ * in one combined grid instead of a sequence of modals.
+ */
+export interface CombatDamagePlanDecision extends PendingDecisionBase {
+  readonly type: 'CombatDamagePlanDecision'
+  readonly entries: readonly CombatDamagePlanEntry[]
+  readonly firstStrike: boolean
+}
+
+/**
  * Player must split cards into piles (e.g., Surveil, Fact or Fiction).
  * Each card is assigned to one of the labeled piles.
  */
@@ -542,6 +572,7 @@ export type PendingDecision =
   | ChooseColorDecision
   | SelectManaSourcesDecision
   | AssignDamageDecision
+  | CombatDamagePlanDecision
   | SplitPilesDecision
 
 /**

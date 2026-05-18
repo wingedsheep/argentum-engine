@@ -60,10 +60,17 @@ class DecisionResponder(
             is ChooseOptionDecision -> respondOption(state, decision, playerId)
             is BudgetModalDecision -> respondBudgetModal(decision)
             is AssignDamageDecision -> respondDamageAssignment(state, decision)
+            is CombatDamagePlanDecision -> respondCombatDamagePlan(decision)
             is SearchLibraryDecision -> respondSearchLibrary(state, decision, playerId)
             is ReorderLibraryDecision -> respondReorderLibrary(state, decision, playerId)
             is SelectManaSourcesDecision -> respondManaSelection(decision)
         }
+    }
+
+    /** Use the engine-supplied defaults for every attacker in a bundled plan. */
+    private fun respondCombatDamagePlan(decision: CombatDamagePlanDecision): DecisionResponse {
+        val assignments = decision.entries.associate { it.attackerId to it.defaultAssignments }
+        return CombatDamagePlanResponse(decision.id, assignments)
     }
 
     // ── Target selection ─────────────────────────────────────────────────

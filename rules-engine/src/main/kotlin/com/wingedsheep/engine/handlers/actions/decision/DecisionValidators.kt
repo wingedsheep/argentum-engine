@@ -11,6 +11,8 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.core.CombatDamagePlanDecision
+import com.wingedsheep.engine.core.CombatDamagePlanResponse
 import com.wingedsheep.engine.core.DamageAssignmentResponse
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
@@ -61,10 +63,47 @@ object DecisionValidators {
             is ChooseOptionDecision -> validateOption(decision, response)
             is BudgetModalDecision -> validateBudgetModal(decision, response)
             is AssignDamageDecision -> validateDamageAssignment(decision, response)
+            is CombatDamagePlanDecision -> validateCombatDamagePlan(decision, response)
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
             is SelectManaSourcesDecision -> validateManaSourcesSelection(response)
         }
+    }
+
+    /**
+     * Validate a bundled CombatDamagePlanResponse against a CombatDamagePlanDecision.
+     * Each entry must have an assignment whose targets are subsets of the declared
+     * targets list (plus the defender for trample) and whose total doesn't exceed
+     * the attacker's available power. The full lethal-order / trample rules are
+     * checked downstream by [com.wingedsheep.engine.mechanics.combat.DamageCalculator]
+     * when the assignments are applied.
+     */
+    private fun validateCombatDamagePlan(
+        decision: CombatDamagePlanDecision,
+        response: DecisionResponse,
+    ): String? {
+        if (response !is CombatDamagePlanResponse) {
+            return "Expected combat damage plan response"
+        }
+        for (entry in decision.entries) {
+            val assignment = response.assignments[entry.attackerId]
+                ?: return "Missing assignment for attacker ${entry.attackerName}"
+            val legalTargets = entry.orderedTargets.toMutableSet().apply {
+                entry.defenderId?.let { add(it) }
+            }
+            var total = 0
+            for ((targetId, amount) in assignment) {
+                if (amount < 0) return "${entry.attackerName}: negative damage to $targetId"
+                if (targetId !in legalTargets) {
+                    return "${entry.attackerName}: target $targetId is not in the allowed list"
+                }
+                total += amount
+            }
+            if (total > entry.availablePower) {
+                return "${entry.attackerName}: damage total $total exceeds available power ${entry.availablePower}"
+            }
+        }
+        return null
     }
 
     private fun validateTargets(decision: ChooseTargetsDecision, response: DecisionResponse): String? {

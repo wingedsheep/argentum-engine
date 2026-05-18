@@ -107,6 +107,21 @@ data class DistributeDamageContinuation(
  * @property damageBySource Map of attacker entity ID → raw damage amount
  * @property firstStrike Whether this is during the first strike combat damage step
  */
+/**
+ * Resume after a player submits a bundled combat-damage plan
+ * ([CombatDamagePlanDecision] / [CombatDamagePlanResponse]). The resumer applies
+ * every per-attacker [DamageAssignmentComponent] from the response, then calls
+ * back into `applyCombatDamage(firstStrike)` so the engine continues from the
+ * same step with manual assignments now in place.
+ *
+ * @property firstStrike Whether the plan was for the first-strike damage step.
+ */
+@Serializable
+data class CombatDamagePlanContinuation(
+    override val decisionId: String,
+    val firstStrike: Boolean,
+) : ContinuationFrame
+
 @Serializable
 data class DamagePreventionContinuation(
     override val decisionId: String,

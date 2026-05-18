@@ -21,6 +21,9 @@ class CombatContinuationResumer(
         resumer(DamageAssignmentContinuation::class) { state, continuation, response, _ ->
             resumeDamageAssignment(state, continuation, response)
         },
+        resumer(CombatDamagePlanContinuation::class) { state, continuation, response, _ ->
+            resumeCombatDamagePlan(state, continuation, response)
+        },
         resumer(AssignAsUnblockedContinuation::class) { state, continuation, response, _ ->
             resumeAssignAsUnblocked(state, continuation, response)
         },
@@ -31,6 +34,38 @@ class CombatContinuationResumer(
         resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice),
         resumer(PreventDamageFromChosenSourceContinuation::class, ::resumePreventDamageFromChosenSource)
     )
+
+    /**
+     * Apply a bundled [CombatDamagePlanResponse] and re-enter combat damage so the
+     * engine continues with manual assignments in place. Per-attacker assignments
+     * are stored as [DamageAssignmentComponent]s; the pre-check loop in
+     * `applyCombatDamage` will then skip those attackers and proceed.
+     *
+     * Validation is intentionally lenient here — the gathering side already
+     * computed legal defaults, and the existing damage pipeline normalises
+     * over- or under-assignment. Future hardening can reject sums that exceed
+     * `availablePower` or violate minimumAssignments before applying.
+     */
+    fun resumeCombatDamagePlan(
+        state: GameState,
+        continuation: CombatDamagePlanContinuation,
+        response: DecisionResponse,
+    ): ExecutionResult {
+        if (response !is CombatDamagePlanResponse) {
+            return ExecutionResult.error(state, "Expected CombatDamagePlanResponse for damage plan")
+        }
+        var newState = state
+        for ((attackerId, assignments) in response.assignments) {
+            newState = newState.updateEntity(attackerId) { container ->
+                container.with(
+                    com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
+                        assignments
+                    )
+                )
+            }
+        }
+        return services.combatManager.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
+    }
 
     fun resumeDamageAssignment(
         state: GameState,

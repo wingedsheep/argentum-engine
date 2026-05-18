@@ -210,7 +210,26 @@ internal class CombatDamageManager(
         }
 
         // Pre-check: if any regular attacker needs manual damage assignment, pause before
-        // processing ANY damage.
+        // processing ANY damage. Instead of one AssignDamageDecision per attacker, we
+        // gather every attacker that needs manual assignment, group them by the
+        // *chooser* (attacker controller by default; defender via CR 702.21e when a
+        // banding blocker is present), and emit a single CombatDamagePlanDecision per
+        // chooser. The most common case — a band of N attackers blocked by ≥2 blockers
+        // each — collapses from N modals to 1.
+        data class PlanCandidate(
+            val attackerId: EntityId,
+            val attackerName: String,
+            val attackingComponent: AttackingComponent,
+            val chooser: EntityId,
+            val availablePower: Int,
+            val liveBlockers: List<EntityId>,
+            val hasTrample: Boolean,
+            val hasDeathtouch: Boolean,
+            val minimumAssignments: Map<EntityId, Int>,
+            val defaultAssignments: Map<EntityId, Int>,
+        )
+
+        val planCandidates = mutableListOf<PlanCandidate>()
         for ((attackerId, attackingComponent) in attackers) {
             if (attackerId !in state.getBattlefield()) continue
 
@@ -254,7 +273,6 @@ internal class CombatDamageManager(
 
             val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
             val hasDeathtouch = projected.hasKeyword(attackerId, Keyword.DEATHTOUCH)
-            val defenderId = attackingComponent.defenderId
             val attackingPlayer = projected.getController(attackerId) ?: continue
 
             // CR 702.21e: when a defending creature with banding is blocking, the *defending*
@@ -266,38 +284,66 @@ internal class CombatDamageManager(
             val minimumAssignments = damageCalculator.getMinimumAssignments(state, attackerId)
             val autoDistribution = damageCalculator.calculateAutoDamageDistribution(state, attackerId)
 
+            planCandidates.add(
+                PlanCandidate(
+                    attackerId = attackerId,
+                    attackerName = attackerCard.name,
+                    attackingComponent = attackingComponent,
+                    chooser = chooser,
+                    availablePower = attackerPower,
+                    liveBlockers = liveBlockers,
+                    hasTrample = hasTrample,
+                    hasDeathtouch = hasDeathtouch,
+                    minimumAssignments = minimumAssignments,
+                    defaultAssignments = autoDistribution.assignments,
+                )
+            )
+        }
+
+        if (planCandidates.isNotEmpty()) {
+            // Group by chooser to keep one plan per acting player. In a 2-player game
+            // with no banding-driven inversion mid-step there's only one group.
+            val byChooser = planCandidates.groupBy { it.chooser }
+            val (chooser, group) = byChooser.entries.first()
+            val entries = group.map { c ->
+                CombatDamagePlanEntry(
+                    attackerId = c.attackerId,
+                    attackerName = c.attackerName,
+                    availablePower = c.availablePower,
+                    orderedTargets = c.liveBlockers,
+                    defenderId = if (c.hasTrample) c.attackingComponent.defenderId else null,
+                    minimumAssignments = c.minimumAssignments,
+                    defaultAssignments = c.defaultAssignments,
+                    hasTrample = c.hasTrample,
+                    hasDeathtouch = c.hasDeathtouch,
+                    bandId = state.getEntity(c.attackerId)?.get<AttackingComponent>()?.bandId,
+                )
+            }
             val decisionId = UUID.randomUUID().toString()
-            val decision = AssignDamageDecision(
+            val prompt = if (entries.size == 1) {
+                "Assign ${entries[0].attackerName}'s ${entries[0].availablePower} combat damage"
+            } else {
+                "Assign combat damage for ${entries.size} attackers"
+            }
+            val decision = CombatDamagePlanDecision(
                 id = decisionId,
                 playerId = chooser,
-                prompt = "Assign ${attackerCard.name}'s $attackerPower combat damage to blockers" +
-                    if (hasTrample) " (trample)" else "",
+                prompt = prompt,
                 context = DecisionContext(
-                    sourceId = attackerId,
-                    sourceName = attackerCard.name,
-                    phase = DecisionPhase.COMBAT
+                    sourceId = entries.firstOrNull()?.attackerId,
+                    sourceName = if (entries.size == 1) entries[0].attackerName else "Combat damage",
+                    phase = DecisionPhase.COMBAT,
                 ),
-                attackerId = attackerId,
-                availablePower = attackerPower,
-                orderedTargets = liveBlockers,
-                defenderId = if (hasTrample) defenderId else null,
-                minimumAssignments = minimumAssignments,
-                defaultAssignments = autoDistribution.assignments,
-                hasTrample = hasTrample,
-                hasDeathtouch = hasDeathtouch
+                entries = entries,
+                firstStrike = firstStrike,
             )
-
-            val continuation = DamageAssignmentContinuation(
+            val continuation = CombatDamagePlanContinuation(
                 decisionId = decisionId,
-                attackerId = attackerId,
-                defendingPlayerId = defenderId,
-                firstStrike = firstStrike
+                firstStrike = firstStrike,
             )
-
             val pausedState = state
                 .withPendingDecision(decision)
                 .pushContinuation(continuation)
-
             return ExecutionResult.paused(pausedState, decision)
         }
 

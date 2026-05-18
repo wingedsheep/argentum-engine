@@ -192,6 +192,95 @@ class NobleElephantScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("band of 2 attackers blocked by 2 blockers produces ONE combined plan decision") {
+                // Setup: a band of two banding-eligible attackers (Noble Elephant + Noble
+                // Elephant), each blocked by two creatures requiring manual damage
+                // assignment. Pre-batching this produced 2 separate AssignDamageDecisions
+                // (one per attacker). After batching the engine should emit a single
+                // CombatDamagePlanDecision containing both attackers in one entry list.
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Noble Elephant")    // 2/2 trample, banding
+                    .withCardOnBattlefield(1, "Noble Elephant")
+                    .withCardOnBattlefield(2, "Grizzly Bears")     // 2/2
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val elephants = game.findAllPermanents("Noble Elephant")
+                val bears = game.findAllPermanents("Grizzly Bears")
+                elephants.size shouldBe 2
+                bears.size shouldBe 4
+
+                val (e1, e2) = elephants[0] to elephants[1]
+
+                game.execute(
+                    DeclareAttackers(
+                        game.player1Id,
+                        mapOf(e1 to game.player2Id, e2 to game.player2Id),
+                        bands = listOf(setOf(e1, e2)),
+                    )
+                )
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+
+                // Block each elephant with two bears. (Group block extends so all
+                // four bears effectively block the entire band.)
+                game.execute(
+                    DeclareBlockers(
+                        game.player2Id,
+                        mapOf(
+                            bears[0] to listOf(e1),
+                            bears[1] to listOf(e1),
+                            bears[2] to listOf(e2),
+                            bears[3] to listOf(e2),
+                        ),
+                    )
+                )
+
+                // Pass priority until we hit the bundled damage plan. The block phase
+                // may emit OrderObjects decisions (CR 510.1c) first — auto-resolve those.
+                var iterations = 0
+                while (iterations < 60) {
+                    val decision = game.state.pendingDecision
+                    if (decision is com.wingedsheep.engine.core.CombatDamagePlanDecision) break
+                    if (decision != null) {
+                        // Auto-resolve any preceding decision (e.g., blocker order).
+                        when (decision) {
+                            is com.wingedsheep.engine.core.OrderObjectsDecision ->
+                                game.execute(
+                                    com.wingedsheep.engine.core.SubmitDecision(
+                                        decision.playerId,
+                                        com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+                                    )
+                                )
+                            else -> game.execute(
+                                com.wingedsheep.engine.core.SubmitDecision(
+                                    decision.playerId,
+                                    com.wingedsheep.engine.core.YesNoResponse(decision.id, false),
+                                )
+                            )
+                        }
+                    } else {
+                        val p = game.state.priorityPlayerId ?: break
+                        game.execute(com.wingedsheep.engine.core.PassPriority(p))
+                    }
+                    iterations++
+                }
+
+                val plan = game.state.pendingDecision as? com.wingedsheep.engine.core.CombatDamagePlanDecision
+                withClue("Expected a CombatDamagePlanDecision but got ${game.state.pendingDecision?.let { it::class.simpleName }}") {
+                    plan shouldNotBe null
+                }
+
+                withClue("The plan should bundle BOTH band-mates in a single decision") {
+                    plan!!.entries.map { it.attackerId }.toSet() shouldBe setOf(e1, e2)
+                }
+            }
+
             test("Noble Elephant carries the Banding keyword and is recognized as banding") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")

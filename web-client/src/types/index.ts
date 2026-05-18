@@ -194,7 +194,10 @@ export type {
   BudgetModalDecision,
   BudgetModeOption,
   DistributeDecision,
+
   AssignDamageDecision,
+  CombatDamagePlanDecision,
+  CombatDamagePlanEntry,
   ChooseColorDecision,
   ManaSourceOption,
   SelectManaSourcesDecision,

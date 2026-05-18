@@ -60,14 +60,14 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
 
                 withClue("Should have damage assignment decision for trample creature") {
                     game.hasPendingDecision() shouldBe true
-                    game.getPendingDecision() shouldBe beInstanceOf<AssignDamageDecision>()
+                    game.getPendingDecision() shouldBe beInstanceOf<CombatDamagePlanDecision>()
                 }
 
-                val decision = game.getPendingDecision() as AssignDamageDecision
+                val entry = (game.getPendingDecision() as CombatDamagePlanDecision).entries.single()
                 withClue("Decision should have correct fields") {
-                    decision.attackerId shouldBe firecatId
-                    decision.availablePower shouldBe 7
-                    decision.hasTrample shouldBe true
+                    entry.attackerId shouldBe firecatId
+                    entry.availablePower shouldBe 7
+                    entry.hasTrample shouldBe true
                 }
 
                 // Accept the default assignment (2 to blocker, 5 to player)
@@ -117,7 +117,6 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // Custom assignment: 6 to blocker, 1 to player
-                val decision = game.getPendingDecision() as AssignDamageDecision
                 game.submitDamageAssignment(
                     mapOf(seekerId to 6, game.player2Id to 1)
                 )
@@ -169,14 +168,14 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
                 // Should have damage assignment decision
                 withClue("Should have damage assignment decision") {
                     game.hasPendingDecision() shouldBe true
-                    game.getPendingDecision() shouldBe beInstanceOf<AssignDamageDecision>()
+                    game.getPendingDecision() shouldBe beInstanceOf<CombatDamagePlanDecision>()
                 }
 
-                val decision = game.getPendingDecision() as AssignDamageDecision
+                val entry = (game.getPendingDecision() as CombatDamagePlanDecision).entries.single()
                 // Default accounts for prevention: 4 to blocker (3 toughness + 1 prevention), 3 to player
                 withClue("Default should assign 4 to blocker (3 toughness + 1 prevention) and 3 to player") {
-                    decision.defaultAssignments[defenderId] shouldBe 4
-                    decision.defaultAssignments[game.player2Id] shouldBe 3
+                    entry.defaultAssignments[defenderId] shouldBe 4
+                    entry.defaultAssignments[game.player2Id] shouldBe 3
                 }
 
                 // Accept default assignment

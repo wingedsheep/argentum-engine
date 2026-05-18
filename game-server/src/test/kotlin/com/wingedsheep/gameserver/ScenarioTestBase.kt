@@ -1024,6 +1024,10 @@ abstract class ScenarioTestBase : FunSpec() {
                 is AssignDamageDecision -> {
                     submitDecision(DamageAssignmentResponse(decision.id, decision.defaultAssignments))
                 }
+                is CombatDamagePlanDecision -> {
+                    val assignments = decision.entries.associate { it.attackerId to it.defaultAssignments }
+                    submitDecision(CombatDamagePlanResponse(decision.id, assignments))
+                }
                 else -> error("Cannot auto-resolve decision of type ${decision::class.simpleName}")
             }
         }
@@ -1200,13 +1204,29 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
-         * Submit a damage assignment response (for combat damage assignment).
+         * Submit a damage assignment response. Auto-detects whether the pending decision
+         * is a legacy single-attacker [AssignDamageDecision] or the new bundled
+         * [CombatDamagePlanDecision] (in which case the assignments are applied to that
+         * plan's single attacker — most scenario tests exercise one attacker at a time).
          * @param assignments Map of target ID (creature or player) to damage amount
          */
         fun submitDamageAssignment(assignments: Map<EntityId, Int>): ExecutionResult {
-            val decisionId = state.pendingDecision?.id
+            val decision = state.pendingDecision
                 ?: error("No pending decision to respond to")
-            return submitDecision(DamageAssignmentResponse(decisionId, assignments))
+            return when (decision) {
+                is AssignDamageDecision ->
+                    submitDecision(DamageAssignmentResponse(decision.id, assignments))
+                is CombatDamagePlanDecision -> {
+                    require(decision.entries.size == 1) {
+                        "submitDamageAssignment expects a single-attacker plan; got ${decision.entries.size} entries"
+                    }
+                    val attackerId = decision.entries.first().attackerId
+                    submitDecision(
+                        CombatDamagePlanResponse(decision.id, mapOf(attackerId to assignments))
+                    )
+                }
+                else -> error("Pending decision is not a damage decision: ${decision::class.simpleName}")
+            }
         }
 
         /**
@@ -1214,9 +1234,17 @@ abstract class ScenarioTestBase : FunSpec() {
          * Convenience method when the player accepts the engine's suggested distribution.
          */
         fun submitDefaultDamageAssignment(): ExecutionResult {
-            val decision = state.pendingDecision as? AssignDamageDecision
-                ?: error("No pending AssignDamageDecision")
-            return submitDamageAssignment(decision.defaultAssignments)
+            val decision = state.pendingDecision
+                ?: error("No pending decision to respond to")
+            return when (decision) {
+                is AssignDamageDecision ->
+                    submitDamageAssignment(decision.defaultAssignments)
+                is CombatDamagePlanDecision -> {
+                    val assignments = decision.entries.associate { it.attackerId to it.defaultAssignments }
+                    submitDecision(CombatDamagePlanResponse(decision.id, assignments))
+                }
+                else -> error("No pending damage decision (${decision::class.simpleName})")
+            }
         }
 
         /**

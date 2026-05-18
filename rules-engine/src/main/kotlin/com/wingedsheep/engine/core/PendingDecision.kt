@@ -618,6 +618,64 @@ data class DamageAssignmentResponse(
 ) : DecisionResponse
 
 /**
+ * Per-attacker entry inside a [CombatDamagePlanDecision]. Mirrors the shape of
+ * [AssignDamageDecision] minus the wrapper fields, so the client UI can reuse the
+ * same +/- assignment logic per row.
+ */
+@Serializable
+data class CombatDamagePlanEntry(
+    val attackerId: EntityId,
+    val attackerName: String,
+    val availablePower: Int,
+    val orderedTargets: List<EntityId>,
+    val defenderId: EntityId?,
+    val minimumAssignments: Map<EntityId, Int>,
+    val defaultAssignments: Map<EntityId, Int>,
+    val hasTrample: Boolean,
+    val hasDeathtouch: Boolean,
+    /** Banding group id (CR 702.21). Same value across all entries in the same band. */
+    val bandId: String? = null,
+)
+
+/**
+ * Bundles every attacker that still needs manual combat-damage assignment in the
+ * current damage step into a single decision, so the player resolves all of them
+ * in one combined UI rather than clicking through N modals in sequence. Used for
+ * the common case of "band of K attackers blocked by M blockers" where the
+ * per-attacker AssignDamageDecision flow gets unwieldy.
+ *
+ * @property entries One entry per attacker that needs manual assignment. The
+ *   chooser ([playerId]) is the same for every entry — when the chooser differs
+ *   (e.g. one attacker has a banding blocker forcing CR 702.21e inversion and the
+ *   other doesn't), the engine emits multiple [CombatDamagePlanDecision] instances
+ *   in sequence.
+ * @property firstStrike Whether this is the first-strike combat damage step.
+ */
+@Serializable
+@SerialName("CombatDamagePlanDecision")
+data class CombatDamagePlanDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val entries: List<CombatDamagePlanEntry>,
+    val firstStrike: Boolean,
+) : PendingDecision
+
+/**
+ * Response to [CombatDamagePlanDecision]. Each map entry assigns one attacker's
+ * combat damage to its blockers (and the defending player for trample). Must
+ * cover every attacker in the original plan with a sum matching its
+ * [CombatDamagePlanEntry.availablePower].
+ */
+@Serializable
+@SerialName("CombatDamagePlanResponse")
+data class CombatDamagePlanResponse(
+    override val decisionId: String,
+    val assignments: Map<EntityId, Map<EntityId, Int>>,
+) : DecisionResponse
+
+/**
  * Response to SelectManaSourcesDecision.
  *
  * @property selectedSources Entity IDs of the mana sources to tap (ignored if autoPay is true)
