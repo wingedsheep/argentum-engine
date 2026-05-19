@@ -332,6 +332,266 @@ class CombatResolutionBoardTest : FunSpec({
         }
     }
 
+    /**
+     * Symmetric Silvos vs. Ironfist Crushers scenario, CR 510.1c two-step flow.
+     *
+     *   Attackers: two 8/4 trample creatures (Silvos analogue, swapped to 4
+     *              toughness so the defender's distribution decision matters).
+     *   Blockers : two 2/4 Crushers, each blocking BOTH attackers
+     *
+     * Every blocker–attacker pair is connected (4 BLOCKER_TO_ATTACKER edges).
+     * The engine emits ONE decision but queues two choosers (`pendingChoosers`
+     * = [attacker, defender]). The attacker submits attacker→blocker amounts
+     * first; the engine re-pauses with the defender as `playerId` for the
+     * blocker→attacker half (CR 510.1c). This sub-test verifies the queue
+     * shape: decision.coChooserId is the defender on the attacker's prompt,
+     * and the second prompt re-emits with playerId=defender.
+     */
+    test("two 8/4 tramplers double-blocked: emits two-step CR 510.1c flow with defender second") {
+        val driver = createDriver()
+        val testSilvos = CardDefinition.creature(
+            name = "Test Silvos",
+            manaCost = ManaCost.parse("{3}{G}{G}{G}"),
+            subtypes = setOf(Subtype("Elemental")),
+            power = 8,
+            toughness = 4,
+            keywords = setOf(com.wingedsheep.sdk.core.Keyword.TRAMPLE),
+        )
+        val testCrusher = CardDefinition.creature(
+            name = "Test Crusher",
+            manaCost = ManaCost.parse("{4}{W}"),
+            subtypes = setOf(Subtype("Soldier")),
+            power = 2,
+            toughness = 4,
+            script = CardScript.creature(staticAbilities = listOf(CanBlockAnyNumber())),
+        )
+        driver.registerCard(testSilvos)
+        driver.registerCard(testCrusher)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val silvos1 = driver.putCreatureOnBattlefield(attacker, "Test Silvos")
+        val silvos2 = driver.putCreatureOnBattlefield(attacker, "Test Silvos")
+        val crusher1 = driver.putCreatureOnBattlefield(defender, "Test Crusher")
+        val crusher2 = driver.putCreatureOnBattlefield(defender, "Test Crusher")
+        driver.removeSummoningSickness(silvos1)
+        driver.removeSummoningSickness(silvos2)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(silvos1, silvos2), defender)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        // Each Crusher blocks both attackers — 4 blocker→attacker edges total.
+        driver.declareBlockers(
+            defender,
+            mapOf(
+                crusher1 to listOf(silvos1, silvos2),
+                crusher2 to listOf(silvos1, silvos2),
+            ),
+        )
+
+        // Drain order-of-blockers / order-of-attackers pre-steps.
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        decision.playerId shouldBe attacker
+        decision.coChooserId shouldBe defender
+        decision.attackers.map { it.id }.toSet() shouldBe setOf(silvos1, silvos2)
+        decision.blockers.map { it.id }.toSet() shouldBe setOf(crusher1, crusher2)
+
+        // Each trample attacker has a drain edge to the defender.
+        val drains = decision.edges.filter { it.isTrampleDrain }
+        drains.map { it.sourceId }.toSet() shouldBe setOf(silvos1, silvos2)
+        drains.forEach { it.targetId shouldBe defender }
+
+        // Attacker-side: 2 ATTACKER_TO_BLOCKER edges per attacker (one per blocker).
+        val silvosToBlockers = decision.edges.filter {
+            it.direction == DamageEdgeDirection.ATTACKER_TO_BLOCKER
+        }
+        silvosToBlockers.size shouldBe 4
+        silvosToBlockers.filter { it.sourceId == silvos1 }.map { it.targetId }.toSet() shouldBe
+            setOf(crusher1, crusher2)
+        silvosToBlockers.filter { it.sourceId == silvos2 }.map { it.targetId }.toSet() shouldBe
+            setOf(crusher1, crusher2)
+
+        // Blocker-side: each Crusher blocks two attackers, so each emits 2
+        // BLOCKER_TO_ATTACKER edges (4 total). Defender owns these (CR 510.1d).
+        val crusherEdges = decision.edges.filter {
+            it.direction == DamageEdgeDirection.BLOCKER_TO_ATTACKER
+        }
+        crusherEdges.size shouldBe 4
+        crusherEdges.filter { it.sourceId == crusher1 }.map { it.targetId }.toSet() shouldBe
+            setOf(silvos1, silvos2)
+        crusherEdges.filter { it.sourceId == crusher2 }.map { it.targetId }.toSet() shouldBe
+            setOf(silvos1, silvos2)
+        crusherEdges.forEach { it.editableBy shouldBe defender }
+
+        // Step 1 (CR 510.1c first half): attacker submits attacker→blocker
+        // amounts. Each Silvos must assign 4+4 lethal to its two blockers — no
+        // trample because lethal isn't satisfied with less. Blocker→attacker
+        // amounts in this submission are silently dropped (not editableBy the
+        // attacker); the engine re-pauses with the defender as next chooser.
+        val attackerResponse = CombatResolutionResponse(
+            decisionId = decision.id,
+            edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) },
+        )
+        val afterAttacker = driver.submitDecision(decision.playerId, attackerResponse)
+        afterAttacker.error shouldBe null
+        afterAttacker.isPaused shouldBe true
+
+        // Step 2 (CR 510.1c second half): defender now sees the same shape
+        // with playerId = defender, coChooserId = null. Submit the engine
+        // defaults (lethal-first concentrates damage on silvos1, killing it).
+        val defenderDecision = driver.state.pendingDecision
+        defenderDecision.shouldBeInstanceOf<CombatResolutionDecision>()
+        defenderDecision.playerId shouldBe defender
+        defenderDecision.coChooserId shouldBe null
+        val defenderResponse = CombatResolutionResponse(
+            decisionId = defenderDecision.id,
+            edges = defenderDecision.edges.map { DamageEdgeAmount(it.id, it.amount) },
+        )
+        driver.submitDecision(defenderDecision.playerId, defenderResponse).error shouldBe null
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        val battlefield = driver.state.getBattlefield()
+        battlefield.contains(crusher1) shouldBe false
+        battlefield.contains(crusher2) shouldBe false
+        // Default lethal-first plan: Crusher1→silvos1=2, Crusher2→silvos1=2.
+        // silvos1 takes 4 damage = lethal. silvos2 untouched. (CR 510.1d
+        // forbids the blocker from putting <lethal on silvos1 then spilling
+        // to silvos2.)
+        battlefield.contains(silvos1) shouldBe false
+        battlefield.contains(silvos2) shouldBe true
+        // No trample through.
+        driver.state.getEntity(defender)
+            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()
+            ?.life shouldBe 20
+    }
+
+    /**
+     * Same symmetric 8/4 tramplers vs. Crushers shape, but the defender —
+     * stepping into the CR 510.1c second-half prompt — concentrates every
+     * blocker's damage onto a single attacker instead of taking the engine's
+     * default 1+1 split. With 4-toughness attackers, 2+2 = 4 damage = LETHAL.
+     *
+     * Plan submitted by the defender:
+     *   Crusher1 → 2 on silvos1 + 0 on silvos2.
+     *   Crusher2 → 2 on silvos1 + 0 on silvos2.
+     * → silvos1 dies (4 damage on 4 toughness); silvos2 untouched.
+     *
+     * This proves (a) blocker→attacker edges are actually editable by the
+     * defender via the second prompt, and (b) the defender's choice is load-
+     * bearing on outcome.
+     */
+    test("two 8/4 tramplers double-blocked: defender concentrates damage and kills one attacker") {
+        val driver = createDriver()
+        val testSilvos = CardDefinition.creature(
+            name = "Test Silvos",
+            manaCost = ManaCost.parse("{3}{G}{G}{G}"),
+            subtypes = setOf(Subtype("Elemental")),
+            power = 8,
+            toughness = 4,
+            keywords = setOf(com.wingedsheep.sdk.core.Keyword.TRAMPLE),
+        )
+        val testCrusher = CardDefinition.creature(
+            name = "Test Crusher",
+            manaCost = ManaCost.parse("{4}{W}"),
+            subtypes = setOf(Subtype("Soldier")),
+            power = 2,
+            toughness = 4,
+            script = CardScript.creature(staticAbilities = listOf(CanBlockAnyNumber())),
+        )
+        driver.registerCard(testSilvos)
+        driver.registerCard(testCrusher)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val silvos1 = driver.putCreatureOnBattlefield(attacker, "Test Silvos")
+        val silvos2 = driver.putCreatureOnBattlefield(attacker, "Test Silvos")
+        val crusher1 = driver.putCreatureOnBattlefield(defender, "Test Crusher")
+        val crusher2 = driver.putCreatureOnBattlefield(defender, "Test Crusher")
+        driver.removeSummoningSickness(silvos1)
+        driver.removeSummoningSickness(silvos2)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(silvos1, silvos2), defender)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(
+            defender,
+            mapOf(
+                crusher1 to listOf(silvos1, silvos2),
+                crusher2 to listOf(silvos1, silvos2),
+            ),
+        )
+
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        // First prompt: attacker submits 4+4 lethal to each crusher. We use
+        // the engine defaults here — the attacker has no interesting choice
+        // with two 8-power tramplers facing 4-toughness blockers.
+        decision.playerId shouldBe attacker
+        val attackerResponse = CombatResolutionResponse(
+            decisionId = decision.id,
+            edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) },
+        )
+        driver.submitDecision(decision.playerId, attackerResponse).error shouldBe null
+
+        // Second prompt: defender's turn (CR 510.1c blocker-side). Override
+        // the defaults to concentrate both Crushers' 2 damage onto silvos1.
+        val defenderDecision = driver.state.pendingDecision
+        defenderDecision.shouldBeInstanceOf<CombatResolutionDecision>()
+        defenderDecision.playerId shouldBe defender
+        val plan: Map<Pair<com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId>, Int> =
+            mapOf(
+                (crusher1 to silvos1) to 2,
+                (crusher1 to silvos2) to 0,
+                (crusher2 to silvos1) to 2,
+                (crusher2 to silvos2) to 0,
+            )
+        val defenderResponse = CombatResolutionResponse(
+            decisionId = defenderDecision.id,
+            edges = defenderDecision.edges.map { edge ->
+                DamageEdgeAmount(edge.id, plan[edge.sourceId to edge.targetId] ?: edge.amount)
+            },
+        )
+        driver.submitDecision(defenderDecision.playerId, defenderResponse).error shouldBe null
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        val battlefield = driver.state.getBattlefield()
+        // Both Crushers die (each took 4+4 from the two attackers).
+        battlefield.contains(crusher1) shouldBe false
+        battlefield.contains(crusher2) shouldBe false
+        // silvos1 dies (4 damage on 4 toughness); silvos2 untouched.
+        battlefield.contains(silvos1) shouldBe false
+        battlefield.contains(silvos2) shouldBe true
+        // No trample through.
+        driver.state.getEntity(defender)
+            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()
+            ?.life shouldBe 20
+    }
+
     test("non-trample attacker with single blocker does not emit a resolution decision") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
@@ -436,12 +696,24 @@ class CombatResolutionBoardTest : FunSpec({
         }
 
         // The engine's defaults validate cleanly (this is what the frontend
-        // submits when the player doesn't edit).
+        // submits when the player doesn't edit). With two attackers each
+        // double-blocked, the defender owns the blocker-side edges and gets
+        // prompted second per CR 510.1c.
         val response = CombatResolutionResponse(
             decisionId = decision.id,
             edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) },
         )
-        driver.submitDecision(decision.playerId, response).isSuccess shouldBe true
+        val afterAttacker = driver.submitDecision(decision.playerId, response)
+        afterAttacker.error shouldBe null
+        // Re-paused for the defender's blocker-side prompt.
+        val defenderDecision = driver.state.pendingDecision
+        defenderDecision.shouldBeInstanceOf<CombatResolutionDecision>()
+        defenderDecision.playerId shouldBe defender
+        val defenderResponse = CombatResolutionResponse(
+            decisionId = defenderDecision.id,
+            edges = defenderDecision.edges.map { DamageEdgeAmount(it.id, it.amount) },
+        )
+        driver.submitDecision(defenderDecision.playerId, defenderResponse).error shouldBe null
     }
 
     /**

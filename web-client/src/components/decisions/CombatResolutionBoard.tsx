@@ -79,6 +79,15 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
     () => decision.edges.filter((e) => e.editableBy === playerId),
     [decision.edges, playerId],
   )
+  // Source ids the local player owns at least one edge from. Drives row
+  // visibility: there's no point showing the opponent's attacker rows on the
+  // defender's second-half prompt (their amounts are locked) or the
+  // attacker's blocker rows during the first half. The outcome strip below
+  // still surfaces the full combat math for both players.
+  const myEditableSourceIds = useMemo(
+    () => new Set(myEditableEdges.map((e) => e.sourceId)),
+    [myEditableEdges],
+  )
 
   // Band index → colour slot (stable across the board).
   const bandIndexFor = (a: ResolutionAttacker): number => {
@@ -442,7 +451,9 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
             visually merges their rows into one unit — matches the rules
             intuition that the band is "blocked as a group" (CR 702.22h) even
             though each member still has its own damage assignment. */}
-        {groupAttackersForRender(decision.attackers).map((group) => {
+        {groupAttackersForRender(
+          decision.attackers.filter((a) => myEditableSourceIds.has(a.id)),
+        ).map((group) => {
           const rows = group.attackers.map((attacker) => (
             <AttackerRow
               key={attacker.id}
@@ -506,9 +517,12 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
         })}
       </div>
 
-      {/* Blocker → attacker edges (multi-blocker / bipartite). Only render when
-          a blocker assigns damage to >1 attacker; otherwise it's redundant. */}
+      {/* Blocker → attacker edges (multi-blocker / bipartite). Only render
+          when (a) the local player owns at least one edge from this blocker
+          and (b) the blocker assigns damage to >1 attacker. Without (a) the
+          row would be all-locked noise; without (b) the row is redundant. */}
       {decision.blockers
+        .filter((b) => myEditableSourceIds.has(b.id))
         .filter((b) => (edgesBySource.get(b.id) ?? []).length >= 2)
         .map((blocker) => (
           <BlockerRow

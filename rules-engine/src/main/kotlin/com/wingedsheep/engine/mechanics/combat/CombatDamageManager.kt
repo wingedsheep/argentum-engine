@@ -1588,13 +1588,28 @@ internal class CombatDamageManager(
             previousAmounts[edge.id]?.let { edge.copy(amount = it) } ?: edge
         }
 
+        // CR 510.1c sequences combat damage assignment: the active player
+        // assigns each attacker's damage, then the defending player assigns
+        // each blocker's damage. The attacker-side choosers came in via
+        // `choosersInOrder`; append any blocker-side editor that owns at
+        // least one BLOCKER_TO_ATTACKER edge and isn't already queued.
+        // CombatContinuationResumer.resumeCombatResolution filters each
+        // submission to edges the current chooser owns and re-pauses via
+        // repauseCombatResolution until the queue empties.
+        val blockerSideEditors = finalEdges
+            .filter { it.direction == DamageEdgeDirection.BLOCKER_TO_ATTACKER }
+            .map { it.editableBy }
+            .distinct()
+            .filterNot { it in choosersInOrder }
+        val effectiveChoosers = choosersInOrder + blockerSideEditors
+
         val decisionId = UUID.randomUUID().toString()
         val prompt = if (group.size == 1) {
             "Assign ${group[0].attackerName}'s ${group[0].availablePower} combat damage"
         } else {
             "Assign combat damage for ${group.size} attackers"
         }
-        val coChooserId = choosersInOrder.drop(1).firstOrNull()
+        val coChooserId = effectiveChoosers.drop(1).firstOrNull()
         val decision = CombatResolutionDecision(
             id = decisionId,
             playerId = chooser,
@@ -1614,7 +1629,7 @@ internal class CombatDamageManager(
         val continuation = CombatResolutionContinuation(
             decisionId = decisionId,
             firstStrike = firstStrike,
-            pendingChoosers = choosersInOrder,
+            pendingChoosers = effectiveChoosers,
             decisionShape = decision,
         )
         val pausedState = state

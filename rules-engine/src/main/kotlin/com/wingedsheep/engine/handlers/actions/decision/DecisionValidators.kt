@@ -93,9 +93,12 @@ object DecisionValidators {
      *   only when every preceding non-drain edge from the same source is at its `minimum`
      *   (lethal-first per CR 510.1c / 702.19b).
      *
-     * Two-actor banding gating (Phase 2) will additionally enforce that submitted edges all
-     * have `editableBy == submittingPlayer`. For Phase 1 the decision always has a single
-     * chooser so we leave that to a later pass to avoid threading the submitter through here.
+     * Per-edge `editableBy` is enforced in
+     * [com.wingedsheep.engine.handlers.continuations.CombatContinuationResumer.resumeCombatResolution]:
+     * each submission is filtered to edges the current chooser owns, and submissions for
+     * non-owned edges are silently dropped (the resumer re-emits to the next chooser with
+     * defaults preserved). This validator therefore stays submitter-agnostic and only
+     * enforces the geometric constraints (bounds, per-source totals, lethal-first ordering).
      */
     private fun validateCombatResolution(
         decision: CombatResolutionDecision,

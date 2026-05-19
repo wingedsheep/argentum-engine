@@ -1,0 +1,38 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Ironfist Crusher"},
+      {"name": "Ironfist Crusher"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Krosan Groundshaker"},
+      {"name": "Krosan Groundshaker"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "COMBAT",
+  "step": "BEGIN_COMBAT",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": ["DECLARE_BLOCKERS", "COMBAT_DAMAGE"],
+  "player2StopAtSteps": ["DECLARE_ATTACKERS", "COMBAT_DAMAGE"],
+  "player1OpponentStopAtSteps": ["DECLARE_ATTACKERS"],
+  "player2OpponentStopAtSteps": ["DECLARE_BLOCKERS"]
+}
