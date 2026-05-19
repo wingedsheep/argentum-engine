@@ -185,7 +185,7 @@ private fun bench(name: String, warmup: Int, iterations: Int, op: () -> Any?) {
     repeat(warmup) { sink = op() }
 
     val threadBean = ManagementFactory.getThreadMXBean() as com.sun.management.ThreadMXBean
-    val tid = Thread.currentThread().id
+    val tid = Thread.currentThread().threadId()
 
     val allocBefore = threadBean.getThreadAllocatedBytes(tid)
     val t0 = System.nanoTime()

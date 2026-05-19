@@ -211,7 +211,7 @@ class WarpMechanicTest : FunSpec({
         val regularCastFromExile = legalActions.firstOrNull { action ->
             action.actionType == "CastSpell" &&
                 (action.action as? CastSpell)?.cardId == exiledCardId &&
-                (action.action as? CastSpell)?.useAlternativeCost == false
+                action.action.useAlternativeCost == false
         }
         regularCastFromExile shouldNotBe null
     }
@@ -252,7 +252,7 @@ class WarpMechanicTest : FunSpec({
         val enumerator = LegalActionEnumerator.create(driver.cardRegistry)
         val warpCostCastFromExile = enumerator.enumerate(driver.state, player).firstOrNull { action ->
             (action.action as? CastSpell)?.cardId == exiledCardId &&
-                (action.action as? CastSpell)?.useAlternativeCost == true
+                action.action.useAlternativeCost == true
         }
         warpCostCastFromExile shouldBe null
     }

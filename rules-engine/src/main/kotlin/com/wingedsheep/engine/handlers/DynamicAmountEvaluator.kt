@@ -214,15 +214,15 @@ class DynamicAmountEvaluator(
                     val useSnapshot = snapshot != null && !state.getBattlefield().contains(entityId)
                     when (amount.numericProperty) {
                         is EntityNumericProperty.Power -> {
-                            val power = if (useSnapshot) snapshot!!.power ?: 0
+                            val power = if (useSnapshot) snapshot.power ?: 0
                                 else resolveNumericProperty(state, entityId, EntityNumericProperty.Power, context, useProjected = true, explicitProjected = projectedState)
-                            val toughness = if (useSnapshot) snapshot!!.toughness ?: 0
+                            val toughness = if (useSnapshot) snapshot.toughness ?: 0
                                 else resolveNumericProperty(state, entityId, EntityNumericProperty.Toughness, context, useProjected = true, explicitProjected = projectedState)
                             return if (toughness > power &&
                                 controllerHasStationUsingToughness(state, entityId, snapshot?.controllerId)) toughness else power
                         }
                         is EntityNumericProperty.Toughness ->
-                            if (useSnapshot) snapshot!!.toughness?.let { return it }
+                            if (useSnapshot) snapshot.toughness?.let { return it }
                         else -> { /* fall through */ }
                     }
                 }

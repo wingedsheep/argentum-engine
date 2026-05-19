@@ -142,7 +142,7 @@ class CastSpellEnumeratorTest : FunSpec({
         cast.validTargets shouldNotBe null
         // AnyTarget allows both players; both should be in the valid set.
         cast.validTargets!! shouldContain driver.player1
-        cast.validTargets!! shouldContain driver.player2
+        cast.validTargets shouldContain driver.player2
     }
 
     test("CastSpell action carries the card's entity id") {

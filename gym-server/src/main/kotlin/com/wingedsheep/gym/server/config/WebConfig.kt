@@ -26,6 +26,7 @@ class WebConfig : WebMvcConfigurer {
         explicitNulls = false
     }
 
+    @Deprecated("Overrides deprecated WebMvcConfigurer.extendMessageConverters")
     override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         // extendMessageConverters runs after the defaults are registered;
         // inserting at index 0 makes our converter win over the default

@@ -179,7 +179,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
         if (castResult.pendingDecision != null) {
             return EffectResult.paused(
                 castResult.state,
-                castResult.pendingDecision!!,
+                castResult.pendingDecision,
                 castResult.events,
             )
         }
