@@ -345,10 +345,14 @@ internal class CombatDamageManager(
                 state, projected, attackerId, defaultChooser = attackingPlayer
             )
 
-            // CR 702.22j: when a banding creature is blocking, the defender may *also* ignore
-            // the damage-assignment order. Same condition as the chooser flip — any blocker
-            // has banding — so check `chooser != attackingPlayer`.
-            val bandingBypassesOrder = chooser != attackingPlayer
+            // Two paths bypass CR 510.1c's lethal-first on the ATK→BLK side:
+            //   - CR 702.21e (blocker has banding → chooser flips to defender, which also
+            //     lifts order, so `chooser != attackingPlayer` is sufficient).
+            //   - CR 702.22j (attacker's band contains a banding member → active player
+            //     still chooses, but may divide damage among the band's blockers ignoring
+            //     order). The chooser doesn't flip here, so it needs its own check.
+            val bandingBypassesOrder = chooser != attackingPlayer ||
+                CombatDamageUtils.attackerBandHasBanding(state, projected, attackerId)
 
             val minimumAssignments = damageCalculator.getMinimumAssignments(state, attackerId)
             val autoDistribution = damageCalculator.calculateAutoDamageDistribution(state, attackerId)
@@ -1416,8 +1420,6 @@ internal class CombatDamageManager(
             val isFreeAssignment = c.hasAssignAsUnblocked || c.hasDivideDamageFreely
             val bypassLethalFirst = isFreeAssignment || c.bandingBypassesOrder
             for (blockerId in c.liveBlockers) {
-                val baseMinimum = c.minimumAssignments[blockerId] ?: 0
-                val minimum = if (bypassLethalFirst) 0 else baseMinimum
                 val default = if (c.hasAssignAsUnblocked) {
                     // Default for AssignAsUnblocked: dump everything on defender, nothing on blockers.
                     0
@@ -1427,7 +1429,26 @@ internal class CombatDamageManager(
                 } else {
                     c.defaultAssignments[blockerId] ?: 0
                 }
-                val lethal = if (c.hasDeathtouch) 1 else baseMinimum.coerceAtLeast(1)
+                // lethalThreshold drives the validator's CR 510.1d relational check.
+                // null = this edge bypasses damage-assignment order (free assignment,
+                // banding). Otherwise the validator enforces "later blocker can't
+                // receive damage until this one has at least lethalThreshold marked".
+                // Per-edge `minimum` is always 0 — the rule is relational, not
+                // per-edge: an attacker whose power is below the first blocker's
+                // lethal must still be able to assign its full power to that blocker.
+                // The threshold must reflect the blocker's actual lethal need (not
+                // the power-capped `minimumAssignments`), or relational gating would
+                // pass on under-lethal assignments.
+                val lethal = if (bypassLethalFirst) {
+                    null
+                } else if (c.hasDeathtouch) {
+                    1
+                } else {
+                    damageCalculator
+                        .calculateLethalDamage(state, blockerId, c.attackerId)
+                        .lethalAmount
+                        .coerceAtLeast(1)
+                }
                 edges.add(
                     DamageEdge(
                         id = "${c.attackerId}->${blockerId}",
@@ -1435,7 +1456,7 @@ internal class CombatDamageManager(
                         targetId = blockerId,
                         direction = DamageEdgeDirection.ATTACKER_TO_BLOCKER,
                         amount = default,
-                        minimum = minimum,
+                        minimum = 0,
                         maximum = c.availablePower,
                         isTrampleDrain = false,
                         lethalThreshold = lethal,
@@ -1528,10 +1549,18 @@ internal class CombatDamageManager(
             var blockerUnlockOrder = 0
             for (attackerId in liveOrdered) {
                 val default = defaults[attackerId] ?: 0
-                val isLast = attackerId == liveOrdered.last()
                 val lethalInfo = damageCalculator.calculateLethalDamage(state, attackerId, blocker.id)
-                val minimum = if (bandingBypassesOrder || isLast) 0 else lethalInfo.lethalAmount
-                val lethal = if (blocker.hasDeathtouch) 1 else lethalInfo.lethalAmount
+                // Same model as attacker→blocker: minimum is always 0, the
+                // CR 510.1d order constraint is enforced relationally in the
+                // validator via lethalThreshold. Banding (CR 702.22k) lets the
+                // chooser ignore order → signal by lethalThreshold = null.
+                val lethal = if (bandingBypassesOrder) {
+                    null
+                } else if (blocker.hasDeathtouch) {
+                    1
+                } else {
+                    lethalInfo.lethalAmount
+                }
                 edges.add(
                     DamageEdge(
                         id = "${blocker.id}->${attackerId}",
@@ -1539,7 +1568,7 @@ internal class CombatDamageManager(
                         targetId = attackerId,
                         direction = DamageEdgeDirection.BLOCKER_TO_ATTACKER,
                         amount = default,
-                        minimum = minimum,
+                        minimum = 0,
                         maximum = blockerPower,
                         isTrampleDrain = false,
                         lethalThreshold = lethal,

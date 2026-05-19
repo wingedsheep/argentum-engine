@@ -398,8 +398,20 @@ class DamageCalculator(
     }
 
     /**
-     * Get the minimum damage requirements for each target.
-     * Used for UI to show what the minimum valid assignment is.
+     * Get the minimum damage requirements for each target under CR 510.1c.
+     *
+     * Walk blockers in order, tracking the attacker's remaining power. Each
+     * blocker's minimum is `min(lethal, remainingPower)` — the attacker can
+     * only ever commit damage it actually has. Once remainingPower runs out
+     * (or the next blocker can't be killed even with all of it), every
+     * subsequent blocker's minimum is 0, because CR 510.1c only requires
+     * lethal *before* moving on; if the current blocker can't reach lethal
+     * we're done.
+     *
+     * Without this clamp the validator demands `lethal` from a single edge
+     * even when the attacker doesn't have that much power, leaving combat
+     * unresolvable (e.g., Noble Elephant (2 power) attacking Hill Giant
+     * (3 toughness) — lethal = 3 but the elephant only has 2).
      */
     fun getMinimumAssignments(
         state: GameState,
@@ -412,10 +424,27 @@ class DamageCalculator(
             ?: return emptyMap()).filter { it in state.getBattlefield() }
 
         val minimums = mutableMapOf<EntityId, Int>()
+        var remainingPower = CombatDamageUtils.getAssignedCombatDamage(
+            state, state.projectedState, attackerId, cardRegistry,
+        ).coerceAtLeast(0)
 
         for (blockerId in orderedBlockers) {
+            if (remainingPower <= 0) {
+                minimums[blockerId] = 0
+                continue
+            }
             val lethalInfo = calculateLethalDamage(state, blockerId, attackerId)
-            minimums[blockerId] = lethalInfo.lethalAmount
+            val needed = lethalInfo.lethalAmount.coerceAtLeast(0)
+            val committed = minOf(needed, remainingPower)
+            minimums[blockerId] = committed
+            // If we couldn't reach lethal on this blocker, every subsequent
+            // blocker stays at 0 (CR 510.1c blocks assignment past an
+            // unfilled blocker).
+            if (committed < needed) {
+                remainingPower = 0
+            } else {
+                remainingPower -= committed
+            }
         }
 
         return minimums

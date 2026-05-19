@@ -353,4 +353,229 @@ class CombatResolutionBoardTest : FunSpec({
         // Lions (1t) dies from 3 damage; Courser survives at 3t having taken 2.
         driver.state.getBattlefield().contains(lions) shouldBe false
     }
+
+    /**
+     * CR 510.1d edge case: a non-trample attacker whose total power is less
+     * than its first blocker's lethal threshold. The attacker must be allowed
+     * to assign its full power to that blocker (with 0 on later blockers).
+     *
+     * Pre-fix, the emitter set `minimum = lethal` and `maximum = power` on
+     * the blocker edges, producing an unsatisfiable constraint that rejected
+     * even the engine's own default. The fix: blocker edges have
+     * `minimum = 0`; CR 510.1d is enforced relationally in the validator via
+     * `lethalThreshold`.
+     */
+    test("non-trample attacker with power < blocker lethal: defaults validate cleanly") {
+        val driver = createDriver()
+        val testCrusher = CardDefinition.creature(
+            name = "Test Crusher",
+            manaCost = ManaCost.parse("{4}{W}"),
+            subtypes = setOf(Subtype("Soldier")),
+            power = 2,
+            toughness = 4,
+            script = CardScript.creature(staticAbilities = listOf(CanBlockAnyNumber())),
+        )
+        val small = CardDefinition.creature(
+            name = "Test Small Attacker",
+            manaCost = ManaCost.parse("{2}{R}"),
+            subtypes = setOf(Subtype("Cat")),
+            power = 3,
+            toughness = 2,
+        )
+        driver.registerCard(testCrusher)
+        driver.registerCard(small)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        // A trample attacker forces the resolution board to emit (so we can
+        // inspect edges). The second attacker has 3 power and faces two
+        // 4-toughness blockers — the case this test guards.
+        val tusker = driver.putCreatureOnBattlefield(attacker, "Trample Beast")
+        val smallId = driver.putCreatureOnBattlefield(attacker, "Test Small Attacker")
+        val crusher1 = driver.putCreatureOnBattlefield(defender, "Test Crusher")
+        val crusher2 = driver.putCreatureOnBattlefield(defender, "Test Crusher")
+        driver.removeSummoningSickness(tusker)
+        driver.removeSummoningSickness(smallId)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(tusker, smallId), defender)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(
+            defender,
+            mapOf(
+                crusher1 to listOf(tusker, smallId),
+                crusher2 to listOf(tusker, smallId),
+            ),
+        )
+
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+
+        // The small attacker's blocker edges: minimum=0, maximum=3 (its power),
+        // lethalThreshold=4 (Crusher's toughness). The constraint is satisfiable.
+        val smallEdges = decision.edges.filter {
+            it.sourceId == smallId && it.direction == DamageEdgeDirection.ATTACKER_TO_BLOCKER
+        }
+        smallEdges.size shouldBe 2
+        smallEdges.forEach { edge ->
+            edge.minimum shouldBe 0
+            edge.maximum shouldBe 3
+            edge.lethalThreshold shouldBe 4
+        }
+
+        // The engine's defaults validate cleanly (this is what the frontend
+        // submits when the player doesn't edit).
+        val response = CombatResolutionResponse(
+            decisionId = decision.id,
+            edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) },
+        )
+        driver.submitDecision(decision.playerId, response).isSuccess shouldBe true
+    }
+
+    /**
+     * Banding cross-band damage cooperation (CR 702.22j/k).
+     *
+     * The active player divides each banded attacker's outgoing damage
+     * among the band's blockers ignoring damage-assignment order
+     * (CR 702.22j, attacker-side bypass — symmetric to the long-standing
+     * CR 702.22k bypass on blocker-to-attacker damage). The chooser stays
+     * the active player; only the order constraint is lifted. The
+     * non-banding member of the band (CR 702.22c) inherits the bypass
+     * because the band as a whole contains a banding creature.
+     *
+     * Scenario:
+     *
+     *   Attackers (banded): NE1 2/2 banding, NE2 2/2 banding, Bear 2/2
+     *   Blockers          : Giant1 3/3, Giant2 3/3, defBear 2/2
+     *
+     * Per CR 702.21g, blocking any band member blocks the entire band.
+     *
+     * Damage plan:
+     *   NE1     → 2 to Giant1               (non-lethal on its own)
+     *   NE2     → 1 to Giant1, 1 to Giant2  (cooperates: G1 hits 3 = lethal,
+     *                                        G2 carries 1 toward lethal)
+     *   atkBear → 2 to Giant2               (G2 hits 3 = lethal)
+     *   blockers (3+3+2 = 8 incoming damage) all → atkBear (CR 702.22k
+     *                                        overassignment onto one band
+     *                                        member).
+     *
+     * Outcome: both giants die, atkBear dies (sponge), both NEs survive.
+     */
+    test("banding overassignment: 3-attacker band cooperates to kill two 3/3 blockers") {
+        val driver = createDriver()
+        val bandingElephant = CardDefinition.creature(
+            name = "Test Banding Elephant",
+            manaCost = ManaCost.parse("{2}{W}"),
+            subtypes = setOf(Subtype("Elephant")),
+            power = 2,
+            toughness = 2,
+            keywords = setOf(com.wingedsheep.sdk.core.Keyword.BANDING),
+        )
+        val testBear = CardDefinition.creature(
+            name = "Test Bear",
+            manaCost = ManaCost.parse("{1}{G}"),
+            subtypes = setOf(Subtype("Bear")),
+            power = 2,
+            toughness = 2,
+        )
+        val testGiant = CardDefinition.creature(
+            name = "Test Giant",
+            manaCost = ManaCost.parse("{3}{R}"),
+            subtypes = setOf(Subtype("Giant")),
+            power = 3,
+            toughness = 3,
+        )
+        driver.registerCard(bandingElephant)
+        driver.registerCard(testBear)
+        driver.registerCard(testGiant)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val ne1 = driver.putCreatureOnBattlefield(attacker, "Test Banding Elephant")
+        val ne2 = driver.putCreatureOnBattlefield(attacker, "Test Banding Elephant")
+        // CR 702.22c: one non-banding creature may band with banding attackers.
+        val atkBear = driver.putCreatureOnBattlefield(attacker, "Test Bear")
+        val giant1 = driver.putCreatureOnBattlefield(defender, "Test Giant")
+        val giant2 = driver.putCreatureOnBattlefield(defender, "Test Giant")
+        val defBear = driver.putCreatureOnBattlefield(defender, "Test Bear")
+        driver.removeSummoningSickness(ne1)
+        driver.removeSummoningSickness(ne2)
+        driver.removeSummoningSickness(atkBear)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(
+            com.wingedsheep.engine.core.DeclareAttackers(
+                attacker,
+                mapOf(ne1 to defender, ne2 to defender, atkBear to defender),
+                bands = listOf(setOf(ne1, ne2, atkBear)),
+            ),
+        )
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        // Defender assigns one blocker per attacker; per CR 702.21g this
+        // expands so each blocker blocks the whole band.
+        driver.declareBlockers(
+            defender,
+            mapOf(
+                giant1 to listOf(ne1),
+                giant2 to listOf(ne2),
+                defBear to listOf(atkBear),
+            ),
+        )
+
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        decision.attackers.map { it.id }.toSet() shouldBe setOf(ne1, ne2, atkBear)
+        decision.blockers.map { it.id }.toSet() shouldBe setOf(giant1, giant2, defBear)
+
+        // The user-described cooperative distribution (see test doc).
+        val plan: Map<Pair<com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId>, Int> =
+            mapOf(
+                (ne1 to giant1) to 2,
+                (ne2 to giant1) to 1,
+                (ne2 to giant2) to 1,
+                (atkBear to giant2) to 2,
+                // CR 702.22k overassignment: all blocker damage onto atkBear.
+                (giant1 to atkBear) to 3,
+                (giant2 to atkBear) to 3,
+                (defBear to atkBear) to 2,
+            )
+        val customEdges = decision.edges.map { edge ->
+            DamageEdgeAmount(edge.id, plan[edge.sourceId to edge.targetId] ?: 0)
+        }
+        val response = CombatResolutionResponse(decisionId = decision.id, edges = customEdges)
+        driver.submitDecision(decision.playerId, response).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        val battlefield = driver.state.getBattlefield()
+        battlefield.contains(giant1) shouldBe false
+        battlefield.contains(giant2) shouldBe false
+        battlefield.contains(atkBear) shouldBe false
+        battlefield.contains(ne1) shouldBe true
+        battlefield.contains(ne2) shouldBe true
+        battlefield.contains(defBear) shouldBe true
+    }
 })

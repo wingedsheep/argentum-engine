@@ -143,6 +143,37 @@ internal object CombatDamageUtils {
     }
 
     /**
+     * Does the attacking band containing [attackerId] include at least one
+     * creature with banding? Used to apply CR 702.22j's order-bypass to
+     * ATK→BLK damage division.
+     *
+     * Unlike CR 702.21e (banding blocker → defender chooses the division),
+     * 702.22j leaves the chooser unchanged — the active player still owns
+     * the assignment — but lifts the lethal-first ordering constraint so
+     * banded attackers can cooperate to drop a single blocker that no
+     * individual member could kill alone. The result is independent of
+     * whether [attackerId] itself has banding: a single banding member in
+     * the band is enough (CR 702.22c also permits one non-banding member).
+     */
+    fun attackerBandHasBanding(
+        state: GameState,
+        projected: ProjectedState,
+        attackerId: EntityId,
+    ): Boolean {
+        val attacking = state.getEntity(attackerId)?.get<AttackingComponent>() ?: return false
+        val bandId = attacking.bandId ?: return false
+        if (projected.hasKeyword(attackerId, Keyword.BANDING)) return true
+        for (entityId in state.getBattlefield()) {
+            if (entityId == attackerId) continue
+            val other = state.getEntity(entityId)?.get<AttackingComponent>() ?: continue
+            if (other.bandId == bandId && projected.hasKeyword(entityId, Keyword.BANDING)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
      * Who chooses the damage-assignment division for [blockerId]'s combat damage among the
      * attackers it's blocking?
      *

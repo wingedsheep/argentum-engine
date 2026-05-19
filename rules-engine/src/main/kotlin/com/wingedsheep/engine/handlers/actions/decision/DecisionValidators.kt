@@ -130,8 +130,16 @@ object DecisionValidators {
             }
         }
 
-        // Lethal-first: drain edges may only carry damage when every lower-ordered
-        // non-drain edge from the same source is at its minimum.
+        // CR 510.1d / 702.19c — damage-assignment order. From each source, walk
+        // edges by unlockOrder; a non-zero amount on an edge requires every
+        // preceding edge that participates in lethal-first ordering
+        // (lethalThreshold != null) to have received at least its lethal
+        // threshold. lethalThreshold == null marks an edge as outside the order
+        // constraint (free assignment, banding bypass, or non-trample drain).
+        // Per-edge `minimum` intentionally stays at 0 here: an attacker whose
+        // total power is below the first blocker's lethal must still be able
+        // to assign its full power to that blocker (the relational rule lets
+        // later edges stay at 0 in that case).
         for ((_, sourceEdges) in edgesBySource) {
             val ordered = sourceEdges.sortedBy { it.unlockOrder }
             var allPrecedingLethal = true
@@ -142,10 +150,16 @@ object DecisionValidators {
                         return "Trample drain ${edge.id}: preceding blocker not at lethal"
                     }
                 } else {
-                    if (finalAmount < edge.minimum) {
-                        // Cannot have damage on later edges if this one isn't at lethal.
-                        allPrecedingLethal = false
+                    val lethal = edge.lethalThreshold
+                    if (lethal != null) {
+                        if (finalAmount > 0 && !allPrecedingLethal) {
+                            return "Edge ${edge.id}: cannot assign damage to a later target until earlier targets have lethal damage"
+                        }
+                        if (finalAmount < lethal) {
+                            allPrecedingLethal = false
+                        }
                     }
+                    // lethalThreshold == null → bypass; do not gate later edges.
                 }
             }
         }

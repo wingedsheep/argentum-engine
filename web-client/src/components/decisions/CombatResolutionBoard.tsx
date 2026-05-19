@@ -589,7 +589,16 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
                 : undefined,
           }}
         >
-          {waitingForOther ? 'Waiting…' : 'Confirm Damage  ⏎'}
+          {waitingForOther ? (
+            'Waiting…'
+          ) : (
+            <>
+              Confirm Damage
+              <span style={{ marginLeft: 8, opacity: 0.7, fontWeight: 600 }} aria-hidden>
+                ⏎
+              </span>
+            </>
+          )}
         </button>
       </div>
       <style>{`
