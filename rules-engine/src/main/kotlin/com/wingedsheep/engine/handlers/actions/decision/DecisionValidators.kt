@@ -36,6 +36,7 @@ import com.wingedsheep.engine.core.SplitPilesDecision
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
+import com.wingedsheep.sdk.model.EntityId
 
 /**
  * Validators for different types of decision responses.
@@ -163,6 +164,34 @@ object DecisionValidators {
                         }
                     }
                     // lethalThreshold == null → bypass; do not gate later edges.
+                }
+            }
+        }
+
+        // CR 702.19b — trample lethal-first is independent of CR 510.1d's
+        // damage-assignment order. Banding (CR 702.22) nulls `lethalThreshold`
+        // on ATK→BLK edges to lift the order constraint, but the trampling
+        // attacker still cannot drain damage to the defender until every
+        // blocker it's blocked by has accumulated lethal damage. Aggregate
+        // across all ATK→BLK edges since 702.19b counts damage from other
+        // creatures in the same combat damage step (band cooperation).
+        val damageToBlocker = mutableMapOf<EntityId, Int>()
+        for (edge in decision.edges) {
+            if (edge.direction != DamageEdgeDirection.ATTACKER_TO_BLOCKER) continue
+            val amount = submitted[edge.id]?.amount ?: edge.amount
+            damageToBlocker.merge(edge.targetId, amount, Int::plus)
+        }
+        for (edge in decision.edges) {
+            if (!edge.isTrampleDrain) continue
+            val drainAmount = submitted[edge.id]?.amount ?: edge.amount
+            if (drainAmount <= 0) continue
+            for (blockerEdge in decision.edges) {
+                if (blockerEdge.sourceId != edge.sourceId) continue
+                if (blockerEdge.direction != DamageEdgeDirection.ATTACKER_TO_BLOCKER) continue
+                val lethal = blockerEdge.effectiveLethal ?: continue
+                val total = damageToBlocker[blockerEdge.targetId] ?: 0
+                if (total < lethal) {
+                    return "Trample drain ${edge.id}: preceding blocker not at lethal"
                 }
             }
         }

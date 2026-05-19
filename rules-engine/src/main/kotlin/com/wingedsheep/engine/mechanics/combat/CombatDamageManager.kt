@@ -1439,9 +1439,7 @@ internal class CombatDamageManager(
                 // The threshold must reflect the blocker's actual lethal need (not
                 // the power-capped `minimumAssignments`), or relational gating would
                 // pass on under-lethal assignments.
-                val lethal = if (bypassLethalFirst) {
-                    null
-                } else if (c.hasDeathtouch) {
+                val sourceLethal = if (c.hasDeathtouch) {
                     1
                 } else {
                     damageCalculator
@@ -1449,6 +1447,7 @@ internal class CombatDamageManager(
                         .lethalAmount
                         .coerceAtLeast(1)
                 }
+                val lethal = if (bypassLethalFirst) null else sourceLethal
                 edges.add(
                     DamageEdge(
                         id = "${c.attackerId}->${blockerId}",
@@ -1460,6 +1459,7 @@ internal class CombatDamageManager(
                         maximum = c.availablePower,
                         isTrampleDrain = false,
                         lethalThreshold = lethal,
+                        effectiveLethal = sourceLethal,
                         editableBy = c.chooser,
                         unlockOrder = unlockOrder++,
                     )

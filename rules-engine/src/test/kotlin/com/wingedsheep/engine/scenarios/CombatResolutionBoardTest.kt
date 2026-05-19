@@ -103,6 +103,150 @@ class CombatResolutionBoardTest : FunSpec({
     }
 
     /**
+     * CR 702.19b — even when a trampling attacker is in an attacking band
+     * (CR 702.22), it cannot freely route damage to the defending player.
+     * Lethal damage must first be assigned to the blocker(s), counting
+     * damage assigned by other band members in the same combat damage step.
+     *
+     * Banding (CR 702.22j/k) only relocates the *chooser* of the band's
+     * damage division across blockers; it does not exempt a trampling
+     * attacker from the "lethal first" requirement of CR 702.19b.
+     *
+     * Scenario (Noble Elephant shape):
+     *
+     *   Attackers (banded): NE  2/2 trample + banding
+     *                       Bear 2/2 vanilla (CR 702.22c: one non-banding
+     *                                          member may join a band)
+     *   Blocker           : Giant 3/3
+     *
+     * Per CR 702.22h, blocking any band member blocks the entire band, so
+     * the band has 4 total power facing one 3/3 (lethal = 3). The active
+     * player must allocate ≥3 damage to the giant before NE may drain to
+     * the defender.
+     */
+    test("banded trampler cannot drain damage to player while the blocker is below band-lethal") {
+        val driver = createDriver()
+        val nobleElephant = CardDefinition.creature(
+            name = "Test Noble Elephant",
+            manaCost = ManaCost.parse("{3}{W}"),
+            subtypes = setOf(Subtype("Elephant")),
+            power = 2,
+            toughness = 2,
+            keywords = setOf(
+                com.wingedsheep.sdk.core.Keyword.TRAMPLE,
+                com.wingedsheep.sdk.core.Keyword.BANDING,
+            ),
+        )
+        val partnerBear = CardDefinition.creature(
+            name = "Test Band Partner",
+            manaCost = ManaCost.parse("{1}{G}"),
+            subtypes = setOf(Subtype("Bear")),
+            power = 2,
+            toughness = 2,
+        )
+        val giant = CardDefinition.creature(
+            name = "Test Giant",
+            manaCost = ManaCost.parse("{3}{R}"),
+            subtypes = setOf(Subtype("Giant")),
+            power = 3,
+            toughness = 3,
+        )
+        driver.registerCard(nobleElephant)
+        driver.registerCard(partnerBear)
+        driver.registerCard(giant)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val ne = driver.putCreatureOnBattlefield(attacker, "Test Noble Elephant")
+        val partner = driver.putCreatureOnBattlefield(attacker, "Test Band Partner")
+        val giantId = driver.putCreatureOnBattlefield(defender, "Test Giant")
+        driver.removeSummoningSickness(ne)
+        driver.removeSummoningSickness(partner)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(
+            com.wingedsheep.engine.core.DeclareAttackers(
+                attacker,
+                mapOf(ne to defender, partner to defender),
+                bands = listOf(setOf(ne, partner)),
+            ),
+        )
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        // Per CR 702.22h: blocking one band member blocks the whole band.
+        driver.declareBlockers(defender, mapOf(giantId to listOf(ne)))
+
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        decision.attackers.map { it.id }.toSet() shouldBe setOf(ne, partner)
+
+        val neEdges = decision.edges.filter { it.sourceId == ne }
+        val partnerEdges = decision.edges.filter { it.sourceId == partner }
+        val neToGiant = neEdges.single { it.direction == DamageEdgeDirection.ATTACKER_TO_BLOCKER }
+        val partnerToGiant = partnerEdges.single { it.direction == DamageEdgeDirection.ATTACKER_TO_BLOCKER }
+        val drain = neEdges.single { it.isTrampleDrain }
+        neToGiant.targetId shouldBe giantId
+        partnerToGiant.targetId shouldBe giantId
+        drain.targetId shouldBe defender
+        // Trample drain stays gated even though banding relaxes lethal-first
+        // ordering on the ATK→BLK edges (CR 702.19b is independent of 702.22).
+        drain.isTrampleDrain shouldBe true
+
+        fun planEdges(
+            neToGiantDmg: Int,
+            partnerToGiantDmg: Int,
+            drainDmg: Int,
+        ): List<DamageEdgeAmount> = decision.edges.map { edge ->
+            val amount = when (edge.id) {
+                neToGiant.id -> neToGiantDmg
+                partnerToGiant.id -> partnerToGiantDmg
+                drain.id -> drainDmg
+                else -> 0
+            }
+            DamageEdgeAmount(edge.id, amount)
+        }
+
+        // Attempt 1: skip the blocker entirely, dump NE's 2 damage on the player.
+        // Band has assigned 0 damage to the giant → trample drain must be rejected.
+        val skipBlocker = CombatResolutionResponse(decision.id, planEdges(0, 0, 2))
+        val skipBlockerResult = driver.submitDecision(decision.playerId, skipBlocker)
+        skipBlockerResult.isSuccess shouldBe false
+        skipBlockerResult.error shouldBe "Trample drain ${drain.id}: preceding blocker not at lethal"
+
+        // Attempt 2: band cooperates partway — partner puts 2 on giant, NE drains
+        // its full 2 to the player. Giant has only 2 damage (lethal = 3) → still
+        // rejected. This is the case banding alone cannot rescue.
+        val belowLethal = CombatResolutionResponse(decision.id, planEdges(0, 2, 2))
+        val belowLethalResult = driver.submitDecision(decision.playerId, belowLethal)
+        belowLethalResult.isSuccess shouldBe false
+        belowLethalResult.error shouldBe "Trample drain ${drain.id}: preceding blocker not at lethal"
+
+        // State has not advanced — the original decision is still pending.
+        driver.state.pendingDecision shouldBe decision
+
+        // Positive control: partner contributes 2, NE contributes 1 to the
+        // giant (band total = 3 = lethal); NE may drain its remaining 1 to the
+        // player. This is exactly the cooperation CR 702.19b permits.
+        val lethalThenDrain = CombatResolutionResponse(decision.id, planEdges(1, 2, 1))
+        driver.submitDecision(decision.playerId, lethalThenDrain).error shouldBe null
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.findPermanent(defender, "Test Giant") shouldBe null
+        driver.assertLifeTotal(defender, 19)
+    }
+
+    /**
      * Bipartite crossover (Scenario E in `docs/plans/combat-resolution-board.md`)
      * combined with a trample attacker so the board is forced to emit. A pure
      * bipartite case with no trample currently auto-resolves under the new flag

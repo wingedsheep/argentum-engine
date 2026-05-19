@@ -809,6 +809,16 @@ data class DamageEdge(
     val isTrampleDrain: Boolean = false,
     /** Lethal threshold for chip rendering (1 for DT sources, else effective toughness/loyalty). */
     val lethalThreshold: Int? = null,
+    /**
+     * Per-source lethal need for ATK→BLK edges, independent of banding bypass.
+     * 1 when the source has deathtouch, else the blocker's toughness-based
+     * lethal (post-prior-damage). Non-null only on ATK→BLK edges.
+     *
+     * Used by the validator for CR 702.19b trample-drain gating, which is
+     * orthogonal to CR 510.1d's damage-assignment order — banding (CR 702.22)
+     * bypasses order but not trample's lethal-first requirement.
+     */
+    val effectiveLethal: Int? = null,
     /** Player allowed to modify this edge. For banding (CR 702.22j/k) this may differ from the decision's primary player. */
     val editableBy: EntityId,
     val unlockOrder: Int,
