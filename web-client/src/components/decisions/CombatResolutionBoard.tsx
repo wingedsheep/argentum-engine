@@ -964,6 +964,12 @@ function AttackerRow(props: AttackerRowProps) {
   // rather than treating drain as just another cell.
   const blockerEdges = edges.filter((e) => !e.isTrampleDrain)
   const drainEdges = edges.filter((e) => e.isTrampleDrain)
+  // CR 702.22j bypass: at least one non-drain edge has minimum=0 despite the
+  // lethal threshold being positive. Means the chooser may ignore the
+  // damage-assignment order (lethal labels are hints, not constraints).
+  const freeDivision = blockerEdges.some(
+    (e) => e.minimum === 0 && (e.lethalThreshold ?? 0) > 0,
+  )
 
   return (
     <div
@@ -1004,6 +1010,7 @@ function AttackerRow(props: AttackerRowProps) {
         chips={[
           band ? <BandChip key="band" idx={bandIdx} band={band} /> : null,
           <PowerChip key="power" value={attacker.power} />,
+          freeDivision ? <FreeDivisionChip key="free" /> : null,
           attacker.hasTrample ? <KeywordChip key="t" color="#f59e0b">trample</KeywordChip> : null,
           attacker.hasTrampleOverPlaneswalkers ? <KeywordChip key="tpw" color="#f59e0b">trample-PW</KeywordChip> : null,
           attacker.hasDeathtouch ? <KeywordChip key="dt" color="#a855f7">deathtouch</KeywordChip> : null,
@@ -1029,6 +1036,9 @@ function AttackerRow(props: AttackerRowProps) {
           const isLethal = lethal != null && amount >= lethal
           const editable = edge.editableBy === playerId
           const unlocked = isDrainUnlocked(edge)
+          // When the row is in CR 702.22j bypass, the lethal label on each
+          // cell is informational ("kills at X") rather than a constraint.
+          const lethalIsHint = freeDivision && edge.minimum === 0 && (edge.lethalThreshold ?? 0) > 0
           return (
             <EdgeCell
               key={edge.id}
@@ -1048,6 +1058,7 @@ function AttackerRow(props: AttackerRowProps) {
               canDecrement={editable && unlocked && canDecrement(edge)}
               canIncrement={editable && unlocked && canIncrement(edge)}
               lethalThreshold={lethal}
+              lethalIsHint={lethalIsHint}
               onAdjust={(d) => adjust(edge, d)}
               thumbWidth={thumbWidth}
               thumbHeight={thumbHeight}
@@ -1133,6 +1144,12 @@ function BlockerRow(props: BlockerRowProps) {
   const fillRatio = blocker.power > 0 ? Math.max(0, Math.min(1, assigned / blocker.power)) : 0
   const card = gameStateCards?.[blocker.id]
   const isHovered = hoveredSourceId === blocker.id
+  // CR 702.22k bypass: at least one edge has minimum=0 despite a positive
+  // lethal threshold — the active player is dividing this blocker's damage
+  // and may ignore the attacker order.
+  const freeDivision = edges.some(
+    (e) => e.minimum === 0 && (e.lethalThreshold ?? 0) > 0,
+  )
 
   return (
     <div
@@ -1169,6 +1186,7 @@ function BlockerRow(props: BlockerRowProps) {
         chips={[
           <PowerChip key="power" value={blocker.power} />,
           <KeywordChip key="bipartite" color="#93c5fd">↔ {edges.length} atks</KeywordChip>,
+          freeDivision ? <FreeDivisionChip key="free" /> : null,
           blocker.hasDeathtouch ? <KeywordChip key="dt" color="#a855f7">deathtouch</KeywordChip> : null,
           blocker.markedDamage > 0 ? <MarkedDamageChip key="md" amount={blocker.markedDamage} /> : null,
         ].filter((x): x is React.ReactElement => x != null)}
@@ -1186,6 +1204,7 @@ function BlockerRow(props: BlockerRowProps) {
           const lethal = edge.lethalThreshold
           const isLethal = lethal != null && amount >= lethal
           const editable = edge.editableBy === playerId
+          const lethalIsHint = freeDivision && edge.minimum === 0 && (edge.lethalThreshold ?? 0) > 0
           return (
             <EdgeCell
               key={edge.id}
@@ -1205,6 +1224,7 @@ function BlockerRow(props: BlockerRowProps) {
               canDecrement={editable && canDecrement(edge)}
               canIncrement={editable && canIncrement(edge)}
               lethalThreshold={lethal}
+              lethalIsHint={lethalIsHint}
               onAdjust={(d) => adjust(edge, d)}
               thumbWidth={thumbWidth}
               thumbHeight={thumbHeight}
@@ -1367,6 +1387,33 @@ function SpilloverDivider() {
   )
 }
 
+/**
+ * Inline chip indicating that lethal-first / damage-assignment order is
+ * bypassed for this source (CR 702.22j/k banding). The chooser can divide
+ * the source's damage freely — lethal labels in the row's cells become
+ * informational, not constraints.
+ */
+function FreeDivisionChip() {
+  return (
+    <span
+      title="Banding lets the chooser ignore the damage-assignment order (CR 702.22j/k). The lethal labels on each cell are hints, not requirements."
+      style={{
+        background: 'rgba(168, 85, 247, 0.18)',
+        color: '#e9d5ff',
+        fontWeight: 700,
+        fontSize: 9,
+        padding: '2px 6px',
+        borderRadius: 4,
+        border: '1px solid rgba(168, 85, 247, 0.5)',
+        letterSpacing: 0.3,
+        textTransform: 'uppercase',
+      }}
+    >
+      free divide
+    </span>
+  )
+}
+
 function PowerChip({ value }: { value: number }) {
   return (
     <span
@@ -1403,6 +1450,11 @@ interface EdgeCellProps {
   canDecrement: boolean
   canIncrement: boolean
   lethalThreshold: number | null | undefined
+  /**
+   * True when the lethal threshold is informational only (CR 702.22j/k bypass),
+   * not a constraint. Renders the label as "kills at X" in a subdued style.
+   */
+  lethalIsHint?: boolean
   onAdjust: (delta: number) => void
   thumbWidth: number
   thumbHeight: number
@@ -1413,7 +1465,7 @@ function EdgeCell(props: EdgeCellProps) {
   const {
     targetId, label, imageUri, isDefender, defenderKind, defenderValue,
     amount, isLethal, isDrain, unlocked, editable, canDecrement, canIncrement,
-    lethalThreshold, onAdjust, thumbWidth, thumbHeight, hoverCard,
+    lethalThreshold, lethalIsHint, onAdjust, thumbWidth, thumbHeight, hoverCard,
   } = props
   const dim = isDrain && !unlocked
   const cellThumbW = Math.round(thumbWidth * 0.78)
@@ -1529,12 +1581,26 @@ function EdgeCell(props: EdgeCellProps) {
         <div
           style={{
             fontSize: 9,
-            color: isLethal ? '#4ade80' : '#888',
+            color: isLethal
+              ? '#4ade80'
+              : lethalIsHint
+                ? '#4b5563' // very subdued — the lethal label is a hint, not a constraint
+                : '#888',
             fontWeight: isLethal ? 700 : 400,
             letterSpacing: 0.2,
+            fontStyle: lethalIsHint && !isLethal ? 'italic' : 'normal',
           }}
+          title={
+            lethalIsHint && !isLethal
+              ? 'Lethal threshold is informational here — CR 702.22j/k lets the chooser ignore damage-assignment order.'
+              : undefined
+          }
         >
-          {isLethal ? `✓ lethal ${lethalThreshold}` : `lethal ${lethalThreshold}`}
+          {isLethal
+            ? `✓ lethal ${lethalThreshold}`
+            : lethalIsHint
+              ? `kills at ${lethalThreshold}`
+              : `lethal ${lethalThreshold}`}
         </div>
       )}
 
