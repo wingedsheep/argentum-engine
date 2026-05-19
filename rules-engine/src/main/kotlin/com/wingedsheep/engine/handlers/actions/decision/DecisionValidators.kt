@@ -194,6 +194,21 @@ object DecisionValidators {
             if (total > entry.availablePower) {
                 return "${entry.attackerName}: damage total $total exceeds available power ${entry.availablePower}"
             }
+
+            // CR 702.19c lethal-first for trample drain: damage may be assigned to the
+            // defending player only after every blocker has received at least its
+            // minimumAssignments amount (which already accounts for power caps, so a
+            // power-starved attacker drains 0 naturally without tripping this check).
+            val defenderId = entry.defenderId
+            if (defenderId != null && (assignment[defenderId] ?: 0) > 0) {
+                for (blockerId in entry.orderedTargets) {
+                    val assigned = assignment[blockerId] ?: 0
+                    val minimum = entry.minimumAssignments[blockerId] ?: 0
+                    if (assigned < minimum) {
+                        return "${entry.attackerName}: cannot trample over to the defender — blocker has $assigned of $minimum lethal damage assigned"
+                    }
+                }
+            }
         }
         return null
     }

@@ -246,6 +246,178 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
     }
 
+    test("deathtouch + trample 3/3 into 5/5 blocker assigns 1 lethal then tramples 2") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20, "Swamp" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // 3/3 deathtouch+trample attacking into a 5/5 blocker.
+        // 704.5h makes 1 damage lethal, so player may assign 1 to blocker and 2 over to defender.
+        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Deathtouch Trampler")
+        val blocker = driver.putCreatureOnBattlefield(opponent, "Force of Nature") // 5/5
+        driver.removeSummoningSickness(trampler)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(activePlayer, listOf(trampler), opponent).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opponent, mapOf(blocker to listOf(trampler))).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        val decision = driver.pendingDecision
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        val entry = decision.entries.single()
+        entry.attackerId shouldBe trampler
+        entry.availablePower shouldBe 3
+        entry.hasDeathtouch shouldBe true
+        entry.hasTrample shouldBe true
+
+        // Deathtouch makes 1 damage lethal regardless of toughness.
+        entry.minimumAssignments[blocker] shouldBe 1
+        entry.defaultAssignments[blocker] shouldBe 1
+        entry.defaultAssignments[opponent] shouldBe 2
+
+        driver.submitDecision(
+            activePlayer,
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to entry.defaultAssignments))
+        )
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+
+        // 5/5 blocker dies to 1 deathtouch damage (704.5h).
+        driver.findPermanent(opponent, "Force of Nature").shouldBeNull()
+        driver.getGraveyardCardNames(opponent) shouldContain "Force of Nature"
+
+        // 2 trample damage to defending player (3 power - 1 to blocker).
+        driver.assertLifeTotal(opponent, 18)
+
+        // 3/3 trampler took 5 damage from 5/5 and dies as well.
+        driver.findPermanent(activePlayer, "Deathtouch Trampler").shouldBeNull()
+    }
+
+    test("deathtouch + trample 3/3 vs 5/5 - cannot route all 3 to player (CR 702.19c lethal-first)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20, "Swamp" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Deathtouch Trampler")
+        val blocker = driver.putCreatureOnBattlefield(opponent, "Force of Nature") // 5/5
+        driver.removeSummoningSickness(trampler)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(activePlayer, listOf(trampler), opponent).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opponent, mapOf(blocker to listOf(trampler))).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        val decision = driver.pendingDecision
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        val entry = decision.entries.single()
+        entry.minimumAssignments[blocker] shouldBe 1 // deathtouch lethal threshold
+
+        // Attempt to bypass the blocker — assign 0 to blocker, all 3 trample damage to player.
+        // CR 702.19c forbids this: the attacker must assign at least lethal damage to the
+        // blocker (1 under deathtouch) before any can trample over.
+        val illegalPlan = mapOf(entry.attackerId to mapOf(blocker to 0, opponent to 3))
+        val result = driver.submit(
+            com.wingedsheep.engine.core.SubmitDecision(
+                activePlayer,
+                CombatDamagePlanResponse(decision.id, illegalPlan)
+            )
+        )
+
+        result.isSuccess shouldBe false
+        result.error.shouldNotBeNull()
+
+        // Decision is still pending — the player must submit a legal plan.
+        driver.pendingDecision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+
+        // Submit the lethal-first plan: 1 to blocker (lethal via deathtouch), 2 to player.
+        driver.submitDecision(
+            activePlayer,
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to mapOf(blocker to 1, opponent to 2)))
+        )
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+
+        // Only the legal plan's 2 damage reaches the player.
+        driver.assertLifeTotal(opponent, 18)
+        driver.findPermanent(opponent, "Force of Nature").shouldBeNull()
+    }
+
+    test("deathtouch + trample vs indestructible blocker: 1 damage 'lethal' for assignment, blocker survives") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20, "Swamp" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // 3/3 deathtouch+trample into a 5/5 indestructible.
+        // CR 702.19c: for trample-assignment, deathtouch treats a single point as lethal —
+        // independent of whether that damage actually destroys the blocker (CR 702.12c
+        // protects it from being destroyed). So the chooser may still trample 2 over.
+        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Deathtouch Trampler")
+        val blocker = driver.putCreatureOnBattlefield(opponent, "Indestructible Colossus")
+        driver.removeSummoningSickness(trampler)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(activePlayer, listOf(trampler), opponent).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opponent, mapOf(blocker to listOf(trampler))).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        val decision = driver.pendingDecision
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        val entry = decision.entries.single()
+        entry.hasDeathtouch shouldBe true
+        entry.hasTrample shouldBe true
+        // Indestructible doesn't change the assignment-minimum: deathtouch still makes
+        // 1 damage count as "lethal" for the trample-ordering rule.
+        entry.minimumAssignments[blocker] shouldBe 1
+        entry.defaultAssignments[blocker] shouldBe 1
+        entry.defaultAssignments[opponent] shouldBe 2
+
+        driver.submitDecision(
+            activePlayer,
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to entry.defaultAssignments))
+        )
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+
+        // 2 trample damage to player.
+        driver.assertLifeTotal(opponent, 18)
+
+        // CR 702.12c: deathtouch can't destroy an indestructible permanent — blocker survives.
+        driver.findPermanent(opponent, "Indestructible Colossus").shouldNotBeNull()
+
+        // The 3/3 trampler took 5 damage from the 5/5 — dies normally (no indestructible on attacker).
+        driver.findPermanent(activePlayer, "Deathtouch Trampler").shouldBeNull()
+    }
+
     test("deathtouch 1/1 kills larger creature via 704.5h") {
         val driver = createDriver()
         driver.initMirrorMatch(

@@ -553,6 +553,20 @@ object TestCards {
     )
 
     /**
+     * 5/5 Indestructible for {4}{W}
+     * Test card for indestructible damage interactions (deathtouch + indestructible, etc.).
+     */
+    val IndestructibleColossus = CardDefinition.creature(
+        name = "Indestructible Colossus",
+        manaCost = ManaCost.parse("{4}{W}"),
+        subtypes = setOf(Subtype("Construct")),
+        power = 5,
+        toughness = 5,
+        oracleText = "Indestructible",
+        keywords = setOf(Keyword.INDESTRUCTIBLE)
+    )
+
+    /**
      * 2/2 Cleric for {1}{W}
      * Vanilla Cleric creature for testing Daunting Defender interaction.
      */
@@ -655,6 +669,7 @@ object TestCards {
         TrampleBeast,
         DeathtouchRat,
         DeathtouchTrampler,
+        IndestructibleColossus,
         TestCleric,
         // Mana Dorks
         LlanowarElves,
