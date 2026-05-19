@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.AssignDamageDecision
-import com.wingedsheep.engine.core.DamageAssignmentResponse
+import com.wingedsheep.engine.core.CombatDamagePlanDecision
+import com.wingedsheep.engine.core.CombatDamagePlanResponse
 import com.wingedsheep.engine.core.OrderObjectsDecision
 import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.support.GameTestDriver
@@ -53,26 +53,30 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(blocker to listOf(trampler))).isSuccess shouldBe true
 
-        // Advance to combat damage - should present AssignDamageDecision
+        // Advance to combat damage - should present CombatDamagePlanDecision (the batched
+        // form emitted since commit 61a92bf57; for a single manual-assignment attacker it
+        // carries one entry).
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
-        decision.attackerId shouldBe trampler
-        decision.availablePower shouldBe 5
-        decision.orderedTargets shouldBe listOf(blocker)
-        decision.defenderId shouldBe opponent
-        decision.hasTrample shouldBe true
-        decision.hasDeathtouch shouldBe false
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        decision.entries.size shouldBe 1
+        val entry = decision.entries.single()
+        entry.attackerId shouldBe trampler
+        entry.availablePower shouldBe 5
+        entry.orderedTargets shouldBe listOf(blocker)
+        entry.defenderId shouldBe opponent
+        entry.hasTrample shouldBe true
+        entry.hasDeathtouch shouldBe false
 
         // Default assignments: 2 to blocker (lethal), 3 to player
-        decision.defaultAssignments[blocker] shouldBe 2
-        decision.defaultAssignments[opponent] shouldBe 3
+        entry.defaultAssignments[blocker] shouldBe 2
+        entry.defaultAssignments[opponent] shouldBe 3
 
         // Submit default assignment
         driver.submitDecision(
             activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to entry.defaultAssignments))
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
@@ -109,12 +113,13 @@ class CombatDamageAssignmentTest : FunSpec({
 
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
-        val decision = driver.pendingDecision as AssignDamageDecision
+        val decision = driver.pendingDecision as CombatDamagePlanDecision
+        val entry = decision.entries.single()
 
         // Override: assign 4 to blocker, 1 to player
         driver.submitDecision(
             activePlayer,
-            DamageAssignmentResponse(decision.id, mapOf(blocker to 4, opponent to 1))
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to mapOf(blocker to 4, opponent to 1)))
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
@@ -158,26 +163,27 @@ class CombatDamageAssignmentTest : FunSpec({
             OrderedResponse(orderDecision.id, listOf(blocker1, blocker2))
         )
 
-        // Advance to combat damage - should present AssignDamageDecision
+        // Advance to combat damage - should present CombatDamagePlanDecision
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
-        decision.attackerId shouldBe trampler
-        decision.availablePower shouldBe 5
-        decision.orderedTargets shouldBe listOf(blocker1, blocker2)
-        decision.defenderId shouldBe opponent
-        decision.hasTrample shouldBe true
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        val entry = decision.entries.single()
+        entry.attackerId shouldBe trampler
+        entry.availablePower shouldBe 5
+        entry.orderedTargets shouldBe listOf(blocker1, blocker2)
+        entry.defenderId shouldBe opponent
+        entry.hasTrample shouldBe true
 
         // Default: 2 to bears (lethal), 1 to goblin (lethal), 2 to player
-        decision.defaultAssignments[blocker1] shouldBe 2
-        decision.defaultAssignments[blocker2] shouldBe 1
-        decision.defaultAssignments[opponent] shouldBe 2
+        entry.defaultAssignments[blocker1] shouldBe 2
+        entry.defaultAssignments[blocker2] shouldBe 1
+        entry.defaultAssignments[opponent] shouldBe 2
 
         // Submit default
         driver.submitDecision(
             activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to entry.defaultAssignments))
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
@@ -216,18 +222,19 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
-        decision.hasDeathtouch shouldBe true
-        decision.hasTrample shouldBe true
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        val entry = decision.entries.single()
+        entry.hasDeathtouch shouldBe true
+        entry.hasTrample shouldBe true
 
         // With deathtouch, 1 damage is lethal. Default: 1 to blocker, 2 to player
-        decision.minimumAssignments[blocker] shouldBe 1
-        decision.defaultAssignments[blocker] shouldBe 1
-        decision.defaultAssignments[opponent] shouldBe 2
+        entry.minimumAssignments[blocker] shouldBe 1
+        entry.defaultAssignments[blocker] shouldBe 1
+        entry.defaultAssignments[opponent] shouldBe 2
 
         driver.submitDecision(
             activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to entry.defaultAssignments))
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
@@ -364,18 +371,19 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
+        decision.shouldBeInstanceOf<CombatDamagePlanDecision>()
+        val entry = decision.entries.single()
 
         // Minimum is based on toughness only (2), per MTG rules
-        decision.minimumAssignments[clericBlocker] shouldBe 2
+        entry.minimumAssignments[clericBlocker] shouldBe 2
         // Default accounts for Daunting Defender's prevention: 2 toughness + 1 prevention = 3
-        decision.defaultAssignments[clericBlocker] shouldBe 3
-        decision.defaultAssignments[opponent] shouldBe 2
+        entry.defaultAssignments[clericBlocker] shouldBe 3
+        entry.defaultAssignments[opponent] shouldBe 2
 
         // Submit default: 3 to cleric (overcomes prevention), 2 to player
         driver.submitDecision(
             activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+            CombatDamagePlanResponse(decision.id, mapOf(entry.attackerId to entry.defaultAssignments))
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
@@ -417,14 +425,18 @@ class CombatDamageAssignmentTest : FunSpec({
 
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
-        val decision = driver.pendingDecision as AssignDamageDecision
+        val decision = driver.pendingDecision as CombatDamagePlanDecision
+        val entry = decision.entries.single()
 
-        // Player deliberately assigns only toughness-worth of damage (2) to maximize trample
+        // Player deliberately assigns only toughness-worth of damage (2) to maximize trample.
         // This is below the prevention-aware default (3) but still valid per MTG rules
-        // (prevention doesn't change what counts as "lethal" for assignment ordering purposes)
+        // (prevention doesn't change what counts as "lethal" for assignment ordering purposes).
         driver.submitDecision(
             activePlayer,
-            DamageAssignmentResponse(decision.id, mapOf(clericBlocker to 2, opponent to 3))
+            CombatDamagePlanResponse(
+                decision.id,
+                mapOf(entry.attackerId to mapOf(clericBlocker to 2, opponent to 3)),
+            ),
         )
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)

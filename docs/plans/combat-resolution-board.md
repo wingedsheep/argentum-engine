@@ -558,3 +558,137 @@ Phased rollout behind a `combatResolutionBoard` flag:
    illegal layouts at edit time but may feel rigid for advanced players doing complex damage
    manipulation (e.g. interacting with damage-prevention triggers between steps). Lean
    strict; revisit if it hurts.
+
+## 9. Implementation status
+
+### Phase 1 — engine wire shape (commit `e1df91319`)
+
+Done. Adds `CombatResolutionDecision`, `CombatResolutionResponse`, `DamageEdge`,
+`ResolutionAttacker/Blocker/Defender`, and `CombatResolutionContinuation`, all behind
+`EngineFeatures.combatResolutionBoardEnabled`. Legacy `CombatDamagePlanDecision`
+remains the default emission.
+
+### Phase 2 — server-side completeness (commit `ae04ed0da`)
+
+Done. With the flag on:
+
+- Bipartite graph including `BLOCKER_TO_ATTACKER` edges for any blocker that blocks ≥2
+  attackers; defaults computed via `DamageCalculator.calculateBlockerDamageDistribution`
+  seeded with the attacker-side pending damage so Ironfist-style crossovers default sensibly.
+  `proposeDamageAssignments` honors a blocker's `DamageAssignmentComponent` the same way it
+  honors an attacker's.
+- CR 702.22j/k routing for both attacker- and blocker-side damage choosers
+  (`CombatDamageUtils.damageAssignmentChooser` + new `blockerDamageAssignmentChooser`).
+- Two-actor banding decision: a single `CombatResolutionDecision` covers every chooser via
+  `playerId`/`coChooserId` plus a continuation queue. Partial responses are filtered by
+  `editableBy` and re-pause via `CombatManager.repauseCombatResolution` until every queued
+  chooser has confirmed.
+- `AssignCombatDamageAsUnblocked` and *blocked* `DivideCombatDamageFreely` fold into the
+  board (free-assignment edges, `minimum = 0`, non-trample defender drain that bypasses
+  lethal-first gating). Legacy `YesNoDecision` / `DistributeDecision` pre-checks skip when
+  the flag is on for these cases.
+
+### Stale test cleanup (this turn)
+
+`CombatDamageAssignmentTest` was asserting the long-deprecated `AssignDamageDecision`
+type (predates commit `61a92bf57`). Rewrote the 6 failing tests to assert the current
+`CombatDamagePlanDecision`/`CombatDamagePlanResponse` shape. `:rules-engine:test` is now
+green end-to-end. The remaining `AssignDamageDecision` callers (engine-side pre-checks for
+`AssignCombatDamageAsUnblocked`, `DivideCombatDamageFreely` unblocked variant) keep the type
+alive when the flag is off.
+
+## 10. Remaining work
+
+### Phase 3 — Client component
+
+The wire shape and server logic are ready; the client still routes
+`CombatResolutionDecision` to nothing and falls through. This is the largest remaining
+piece. Build it as outlined in §6 but with the following concrete checklist:
+
+- [ ] `web-client/src/components/decisions/CombatResolutionBoard.tsx` — replaces
+  `CombatDamagePlanModal.tsx`. Mounted from the `CombatResolutionDecision` branch in
+  `DecisionUI.tsx`. Keep the legacy modal as fallback while the flag rolls out.
+- [ ] `web-client/src/components/decisions/board/` — `BoardLayout.tsx`, `EdgeLayer.tsx`
+  (reuse `CombatArrows.tsx:1-665` SVG primitives), `EdgeAmountChip.tsx`,
+  `DrainEdge.tsx`, `BandingHeaderChip.tsx`, `StepChip.tsx`, `MarkedDamageChip.tsx`.
+- [ ] Drag/click model on `EdgeAmountChip`: vertical drag with `−`/`+` buttons; lethal-first
+  enforced as a drag constraint (snap-back when the new amount would drop a preceding
+  edge below `minimum`). On mobile, default to buttons (use `useResponsive.isMobile`).
+- [ ] Auto-confirm trivial boards (Scenario I Board 2 in the design): when every editable
+  edge sits at its default and there's nothing meaningfully to choose, render the board
+  for ~400 ms with a damage-flow animation, then auto-submit.
+- [ ] Compact view for the 1v1 plain case: detect
+  `attackers.length === 1 && blockers.length <= 1 && !hasTrample` and render a compact
+  "Block: 2 ↔ 2 [Confirm]" strip instead of the full bipartite layout.
+- [ ] Zustand: replace `submitCombatDamagePlanDecision` with
+  `submitCombatResolutionDecision({ edges, orderedBlockers, orderedAttackers })`. Add a
+  transient `combatBoardDraft` slice scoped to the open decision id (current edge amounts,
+  row orders). Add selector `selectMyEditableEdges(playerId)` for the read-only / interactive
+  split.
+
+### Phase 4 — Session-layer two-actor dispatch
+
+Today the game-server forwards `pendingDecision` only to `decision.playerId`. The engine
+already supports the banding case via sequential `pendingChoosers` (the resumer re-pauses
+the same decision shape for each chooser in turn), so this phase is **optional polish**,
+not a correctness requirement.
+
+If we want both players to see and edit the same board simultaneously (the "true" two-actor
+flow described in §5 of this doc), we'd need:
+
+- [ ] `GameSession` to forward the message to `decision.coChooserId` as well as
+  `decision.playerId`.
+- [ ] Server to merge partial responses by `editableBy` rather than rotating
+  `pendingChoosers` one at a time. Each player submits their own subset; the engine waits
+  until every editableBy player has confirmed.
+- [ ] UI to render edges owned by the other player as read-only with "Waiting on opponent"
+  indicators.
+
+Without this, the banding scenario emits two sequential boards (first chooser's view, then
+co-chooser's view with prior amounts baked in). Behaviorally correct, just slightly less
+elegant.
+
+### Deferred from Phase 2
+
+- [ ] **Unblocked `DivideCombatDamageFreely`** (e.g. Butcher Orgg attacking the face). The
+  legacy `DistributeDecision` flow still fires for this case when the flag is on, because
+  the board doesn't yet support arbitrary defending-creature targets (Butcher Orgg can dump
+  damage onto any creatures the defender controls plus the defender themselves, not just the
+  attacker's blockers). To fold this in: extend the emitter to include a `ResolutionDefender`
+  list of defending creatures, add `ATTACKER_TO_CREATURE` edges to those, and surface them on
+  the board as additional drain-like targets with no lethal-first gating.
+
+### Phase 5 — E2E coverage
+
+- [ ] `e2e-scenarios/tests/general/trample-damage-assignment.spec.ts` — re-point
+  `gamePage.confirmDamage()` (helpers/gamePage.ts:447-453) at the new board's Confirm button.
+- [ ] `e2e-scenarios/tests/general/multiple-blockers.spec.ts`,
+  `combat-kill-blocker.spec.ts` — same migration.
+- [ ] **New e2e gap**: banding two-actor (covers CR 702.22j and the inversion routing).
+  No banding e2e exists today.
+- [ ] **New e2e gap**: trample-over-planeswalkers. Requires the `Keyword.TRAMPLE_OVER_PLANESWALKERS`
+  feature to be added to the engine first (currently absent — emitter always sets
+  `hasTrampleOverPlaneswalkers = false`).
+- [ ] **New e2e gap**: Ironfist bipartite crossover. Today's coverage is engine-only.
+- [ ] Add a board-specific helper to `gamePage.ts`:
+  `dragDamage(attacker, target, amount)` for non-default cases.
+
+### Phase 6 — Migration / cleanup
+
+1. Default the flag on in dev/staging via `EngineFeatures(combatResolutionBoardEnabled = true)`
+   at `EngineServices` construction in `game-server`.
+2. Migrate any remaining client routes / tests; verify the legacy modal isn't reachable.
+3. Flip the flag default in `EngineFeatures.kt` to `true`.
+4. Remove `CombatDamagePlanDecision`, `CombatDamagePlanResponse`,
+   `CombatDamagePlanContinuation`, `CombatDamagePlanModal.tsx`, the COMBAT branch of
+   `OrderBlockersUI.tsx`, and the `AssignDamageDecision` branch in `CombatDamageAssignmentTest`.
+5. Remove `EngineFeatures.combatResolutionBoardEnabled` once no caller flips it.
+
+### Risk summary
+
+| Risk | Mitigation |
+|---|---|
+| Client work is large; runs through a lot of stateful UI | Reuse `CombatArrows.tsx` SVG, `OrderBlockersUI.tsx` DnD, and the existing modal scaffold. Keep the legacy modal mounted behind the flag during rollout. |
+| Two-actor banding behavior is hard to reason about | Phase 2 already keeps it correct via sequential `pendingChoosers`. Phase 4 is purely UX polish. |
+| Test infra changes might miss edge cases | `:rules-engine:test` is green end-to-end. Add scenario tests for Ironfist + Butcher Orgg blocked + AssignAsUnblocked in Phase 3. |
+| Drag UX may not match accessibility expectations | Default mobile/a11y to `−`/`+` buttons. |
