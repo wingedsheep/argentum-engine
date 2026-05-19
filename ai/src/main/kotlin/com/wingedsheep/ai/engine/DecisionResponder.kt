@@ -61,6 +61,7 @@ class DecisionResponder(
             is BudgetModalDecision -> respondBudgetModal(decision)
             is AssignDamageDecision -> respondDamageAssignment(state, decision)
             is CombatDamagePlanDecision -> respondCombatDamagePlan(decision)
+            is CombatResolutionDecision -> respondCombatResolution(decision)
             is SearchLibraryDecision -> respondSearchLibrary(state, decision, playerId)
             is ReorderLibraryDecision -> respondReorderLibrary(state, decision, playerId)
             is SelectManaSourcesDecision -> respondManaSelection(decision)
@@ -71,6 +72,12 @@ class DecisionResponder(
     private fun respondCombatDamagePlan(decision: CombatDamagePlanDecision): DecisionResponse {
         val assignments = decision.entries.associate { it.attackerId to it.defaultAssignments }
         return CombatDamagePlanResponse(decision.id, assignments)
+    }
+
+    /** Confirm the engine-supplied defaults for every edge in a resolution board. */
+    private fun respondCombatResolution(decision: CombatResolutionDecision): DecisionResponse {
+        val edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) }
+        return CombatResolutionResponse(decisionId = decision.id, edges = edges)
     }
 
     // ── Target selection ─────────────────────────────────────────────────

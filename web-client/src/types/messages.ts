@@ -524,6 +524,84 @@ export interface CombatDamagePlanDecision extends PendingDecisionBase {
   readonly firstStrike: boolean
 }
 
+// ============================================================================
+// Combat Resolution Board (Phase 1 of UX redesign — see
+// docs/plans/combat-resolution-board.md). Bipartite-graph payload that
+// replaces the per-attacker [CombatDamagePlanDecision] when the
+// `combatResolutionBoardEnabled` engine feature flag is on.
+// ============================================================================
+
+export type ResolutionTargetKind = 'ATTACKER' | 'BLOCKER' | 'PLAYER' | 'PLANESWALKER' | 'BATTLE'
+
+export type DamageEdgeDirection =
+  | 'ATTACKER_TO_BLOCKER'
+  | 'BLOCKER_TO_ATTACKER'
+  | 'ATTACKER_TO_PLAYER'
+  | 'ATTACKER_TO_PLANESWALKER'
+  | 'ATTACKER_TO_BATTLE'
+
+export interface ResolutionAttacker {
+  readonly id: EntityId
+  readonly name: string
+  readonly power: number
+  readonly toughness: number
+  readonly hasTrample: boolean
+  readonly hasTrampleOverPlaneswalkers: boolean
+  readonly hasDeathtouch: boolean
+  readonly hasFirstStrike: boolean
+  readonly hasDoubleStrike: boolean
+  readonly dealsDamageThisStep: boolean
+  readonly bandId?: string | null
+  readonly attackedDefenderId: EntityId
+  readonly blockedByIds: readonly EntityId[]
+  readonly markedDamage: number
+}
+
+export interface ResolutionBlocker {
+  readonly id: EntityId
+  readonly name: string
+  readonly power: number
+  readonly toughness: number
+  readonly hasDeathtouch: boolean
+  readonly hasFirstStrike: boolean
+  readonly hasDoubleStrike: boolean
+  readonly dealsDamageThisStep: boolean
+  readonly blockedAttackerIds: readonly EntityId[]
+  readonly orderedAttackers: readonly EntityId[]
+  readonly markedDamage: number
+}
+
+export interface ResolutionDefender {
+  readonly id: EntityId
+  readonly kind: ResolutionTargetKind
+  readonly name: string
+  readonly lifeOrLoyaltyOrDefense?: number | null
+}
+
+export interface DamageEdge {
+  readonly id: string
+  readonly sourceId: EntityId
+  readonly targetId: EntityId
+  readonly direction: DamageEdgeDirection
+  readonly amount: number
+  readonly minimum: number
+  readonly maximum: number
+  readonly isTrampleDrain: boolean
+  readonly lethalThreshold?: number | null
+  readonly editableBy: EntityId
+  readonly unlockOrder: number
+}
+
+export interface CombatResolutionDecision extends PendingDecisionBase {
+  readonly type: 'CombatResolutionDecision'
+  readonly firstStrike: boolean
+  readonly attackers: readonly ResolutionAttacker[]
+  readonly blockers: readonly ResolutionBlocker[]
+  readonly defenders: readonly ResolutionDefender[]
+  readonly edges: readonly DamageEdge[]
+  readonly coChooserId?: EntityId | null
+}
+
 /**
  * Player must split cards into piles (e.g., Surveil, Fact or Fiction).
  * Each card is assigned to one of the labeled piles.
@@ -573,6 +651,7 @@ export type PendingDecision =
   | SelectManaSourcesDecision
   | AssignDamageDecision
   | CombatDamagePlanDecision
+  | CombatResolutionDecision
   | SplitPilesDecision
 
 /**

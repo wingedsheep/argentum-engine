@@ -13,6 +13,9 @@ import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatDamagePlanDecision
 import com.wingedsheep.engine.core.CombatDamagePlanResponse
+import com.wingedsheep.engine.core.CombatResolutionDecision
+import com.wingedsheep.engine.core.CombatResolutionResponse
+import com.wingedsheep.engine.core.DamageEdgeDirection
 import com.wingedsheep.engine.core.DamageAssignmentResponse
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
@@ -64,6 +67,7 @@ object DecisionValidators {
             is BudgetModalDecision -> validateBudgetModal(decision, response)
             is AssignDamageDecision -> validateDamageAssignment(decision, response)
             is CombatDamagePlanDecision -> validateCombatDamagePlan(decision, response)
+            is CombatResolutionDecision -> validateCombatResolution(decision, response)
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
             is SelectManaSourcesDecision -> validateManaSourcesSelection(response)
@@ -78,6 +82,77 @@ object DecisionValidators {
      * checked downstream by [com.wingedsheep.engine.mechanics.combat.DamageCalculator]
      * when the assignments are applied.
      */
+    /**
+     * Validate a [CombatResolutionResponse] against a [CombatResolutionDecision].
+     *
+     * Checks performed:
+     * - Every edge id the response carries must exist in the decision.
+     * - Each amount lies within `[minimum, maximum]` for that edge.
+     * - Per source, the total amount across outbound edges doesn't exceed the source's `maximum`.
+     * - Trample drain edges (ATTACKER_TO_PLAYER / _PLANESWALKER / _BATTLE) carry non-zero damage
+     *   only when every preceding non-drain edge from the same source is at its `minimum`
+     *   (lethal-first per CR 510.1c / 702.19b).
+     *
+     * Two-actor banding gating (Phase 2) will additionally enforce that submitted edges all
+     * have `editableBy == submittingPlayer`. For Phase 1 the decision always has a single
+     * chooser so we leave that to a later pass to avoid threading the submitter through here.
+     */
+    private fun validateCombatResolution(
+        decision: CombatResolutionDecision,
+        response: DecisionResponse,
+    ): String? {
+        if (response !is CombatResolutionResponse) {
+            return "Expected combat resolution response"
+        }
+
+        val edgesById = decision.edges.associateBy { it.id }
+        val submitted = response.edges.associateBy { it.edgeId }
+
+        for ((edgeId, amount) in submitted) {
+            val edge = edgesById[edgeId]
+                ?: return "Unknown edge id: $edgeId"
+            if (amount.amount < edge.minimum) {
+                return "Edge $edgeId: amount ${amount.amount} below minimum ${edge.minimum}"
+            }
+            if (amount.amount > edge.maximum) {
+                return "Edge $edgeId: amount ${amount.amount} exceeds maximum ${edge.maximum}"
+            }
+        }
+
+        // Per-source totals must not exceed any single edge's maximum (which equals
+        // the source's available power — see emitter).
+        val edgesBySource = decision.edges.groupBy { it.sourceId }
+        for ((sourceId, sourceEdges) in edgesBySource) {
+            val total = sourceEdges.sumOf { submitted[it.id]?.amount ?: it.amount }
+            val sourcePower = sourceEdges.maxOf { it.maximum }
+            if (total > sourcePower) {
+                return "Source $sourceId: damage total $total exceeds available power $sourcePower"
+            }
+        }
+
+        // Lethal-first: drain edges may only carry damage when every lower-ordered
+        // non-drain edge from the same source is at its minimum.
+        for ((_, sourceEdges) in edgesBySource) {
+            val ordered = sourceEdges.sortedBy { it.unlockOrder }
+            var allPrecedingLethal = true
+            for (edge in ordered) {
+                val finalAmount = submitted[edge.id]?.amount ?: edge.amount
+                if (edge.isTrampleDrain) {
+                    if (finalAmount > 0 && !allPrecedingLethal) {
+                        return "Trample drain ${edge.id}: preceding blocker not at lethal"
+                    }
+                } else {
+                    if (finalAmount < edge.minimum) {
+                        // Cannot have damage on later edges if this one isn't at lethal.
+                        allPrecedingLethal = false
+                    }
+                }
+            }
+        }
+
+        return null
+    }
+
     private fun validateCombatDamagePlan(
         decision: CombatDamagePlanDecision,
         response: DecisionResponse,

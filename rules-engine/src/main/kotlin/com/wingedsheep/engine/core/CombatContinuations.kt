@@ -122,6 +122,28 @@ data class CombatDamagePlanContinuation(
     val firstStrike: Boolean,
 ) : ContinuationFrame
 
+/**
+ * Resume after a player submits a [CombatResolutionDecision]. The resumer
+ * folds edges back into per-attacker [DamageAssignmentComponent]s plus
+ * [DamageAssignmentOrderComponent] / [AttackerOrderComponent] order updates,
+ * then re-enters `applyCombatDamage(firstStrike)`.
+ *
+ * For the banding two-actor case (CR 702.22j/k) the continuation tracks which
+ * players have confirmed so far. When [pendingChoosers] still has entries
+ * after applying one player's response, the engine re-pauses on the same
+ * decision shape with the remaining chooser populated.
+ *
+ * @property firstStrike Whether the plan was for the first-strike damage step.
+ * @property pendingChoosers Players still expected to confirm. Empty means the
+ *   resumer should apply assignments and proceed.
+ */
+@Serializable
+data class CombatResolutionContinuation(
+    override val decisionId: String,
+    val firstStrike: Boolean,
+    val pendingChoosers: List<EntityId> = emptyList(),
+) : ContinuationFrame
+
 @Serializable
 data class DamagePreventionContinuation(
     override val decisionId: String,

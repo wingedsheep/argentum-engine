@@ -38,6 +38,11 @@ class EngineServices(
      * lookup is null-safe.
      */
     val printingRegistry: PrintingRegistry? = null,
+    /**
+     * Engine-wide feature flags. Defaults preserve legacy behaviour; flip a flag to opt in
+     * to in-progress migrations (e.g. the bipartite combat resolution board).
+     */
+    val features: EngineFeatures = EngineFeatures(),
 ) {
     init {
         DamageUtils.cardRegistry = cardRegistry
@@ -47,7 +52,11 @@ class EngineServices(
         cardRegistry = cardRegistry,
         effectExecutor = effectExecutorRegistry::execute
     )
-    val combatManager = CombatManager(cardRegistry, manaAbilitySideEffectExecutor)
+    val combatManager = CombatManager(
+        cardRegistry = cardRegistry,
+        manaAbilitySideEffectExecutor = manaAbilitySideEffectExecutor,
+        features = features,
+    )
     val triggerDetector = TriggerDetector(cardRegistry)
     val stackResolver = StackResolver(
         effectHandler = EffectHandler(cardRegistry = cardRegistry),

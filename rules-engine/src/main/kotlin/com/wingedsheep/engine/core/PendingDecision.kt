@@ -675,6 +675,204 @@ data class CombatDamagePlanResponse(
     val assignments: Map<EntityId, Map<EntityId, Int>>,
 ) : DecisionResponse
 
+// =============================================================================
+// Combat Resolution Board (Phase 1 of UX redesign — see
+// docs/plans/combat-resolution-board.md). Bipartite graph payload that replaces
+// the per-attacker [CombatDamagePlanDecision] when the
+// `combatResolutionBoardEnabled` engine feature flag is on. The legacy types
+// above stay in place so old clients keep working through the rollout.
+// =============================================================================
+
+/**
+ * Kind of node that participates in the resolution graph. Drives how the client
+ * renders the entity and which damage-rule constraints apply to inbound edges.
+ */
+@Serializable
+enum class ResolutionTargetKind {
+    /** Attacking creature. */
+    ATTACKER,
+
+    /** Blocking creature. */
+    BLOCKER,
+
+    /** A player being attacked directly (also the trample drain). */
+    PLAYER,
+
+    /** A planeswalker being attacked. */
+    PLANESWALKER,
+
+    /** A battle being attacked. */
+    BATTLE,
+}
+
+/**
+ * Direction of a [DamageEdge] in the resolution graph. Combined with the
+ * source/target kinds this determines which damage rules apply when validating
+ * the player's chosen amount.
+ */
+@Serializable
+enum class DamageEdgeDirection {
+    /** Attacker assigning damage to one of its blockers (CR 510.1c). */
+    ATTACKER_TO_BLOCKER,
+
+    /** Blocker assigning damage back to one of its blocked attackers (CR 510.1d). */
+    BLOCKER_TO_ATTACKER,
+
+    /** Attacker's trample overflow to the defending player (CR 702.19b). */
+    ATTACKER_TO_PLAYER,
+
+    /** Attacker's trample-over-planeswalkers overflow to a planeswalker (CR 702.19c). */
+    ATTACKER_TO_PLANESWALKER,
+
+    /** Attacker's damage to a battle it is attacking. */
+    ATTACKER_TO_BATTLE,
+}
+
+/**
+ * One attacker exposed in the resolution graph. Mirrors what the client needs
+ * to render the top row of the board (band membership, keyword chips, marked
+ * damage carried across damage steps).
+ */
+@Serializable
+data class ResolutionAttacker(
+    val id: EntityId,
+    val name: String,
+    val power: Int,
+    val toughness: Int,
+    val hasTrample: Boolean = false,
+    val hasTrampleOverPlaneswalkers: Boolean = false,
+    val hasDeathtouch: Boolean = false,
+    val hasFirstStrike: Boolean = false,
+    val hasDoubleStrike: Boolean = false,
+    /** True if this attacker actually deals damage in this step (FS-only sources are false on the regular board). */
+    val dealsDamageThisStep: Boolean = true,
+    /** Banding group id (CR 702.21) shared across all members of the same band; null when unbanded. */
+    val bandId: String? = null,
+    val attackedDefenderId: EntityId,
+    val blockedByIds: List<EntityId> = emptyList(),
+    /** Damage already marked on the attacker (carried from first-strike into regular damage step). */
+    val markedDamage: Int = 0,
+)
+
+/**
+ * One blocker exposed in the resolution graph.
+ */
+@Serializable
+data class ResolutionBlocker(
+    val id: EntityId,
+    val name: String,
+    val power: Int,
+    val toughness: Int,
+    val hasDeathtouch: Boolean = false,
+    val hasFirstStrike: Boolean = false,
+    val hasDoubleStrike: Boolean = false,
+    val dealsDamageThisStep: Boolean = true,
+    val blockedAttackerIds: List<EntityId>,
+    /** Attackers in damage-assignment order for this blocker's outbound edges (CR 510.1d). */
+    val orderedAttackers: List<EntityId>,
+    val markedDamage: Int = 0,
+)
+
+/**
+ * A non-creature defender node in the resolution graph (player, planeswalker, battle).
+ */
+@Serializable
+data class ResolutionDefender(
+    val id: EntityId,
+    val kind: ResolutionTargetKind,
+    /** Display label — player name, planeswalker name, etc. */
+    val name: String,
+    /** Player life total, planeswalker loyalty, or battle defense. Null when not applicable. */
+    val lifeOrLoyaltyOrDefense: Int? = null,
+)
+
+/**
+ * A single damage edge in the bipartite graph. Each edge carries a default
+ * amount (pre-computed lethal-first) plus the minimum and maximum the chooser
+ * may submit. [editableBy] is the player allowed to modify this edge; for
+ * banding the same decision may carry edges owned by different players.
+ *
+ * [unlockOrder] is the position of this edge within its source's outbound
+ * sequence. Drain edges (`ATTACKER_TO_PLAYER`, `ATTACKER_TO_PLANESWALKER`)
+ * become editable only when all lower-ordered edges from the same source are at
+ * their `minimum` (lethal). The engine validator enforces this rule.
+ */
+@Serializable
+data class DamageEdge(
+    val id: String,
+    val sourceId: EntityId,
+    val targetId: EntityId,
+    val direction: DamageEdgeDirection,
+    val amount: Int,
+    val minimum: Int,
+    val maximum: Int,
+    val isTrampleDrain: Boolean = false,
+    /** Lethal threshold for chip rendering (1 for DT sources, else effective toughness/loyalty). */
+    val lethalThreshold: Int? = null,
+    /** Player allowed to modify this edge. For banding (CR 702.22j/k) this may differ from the decision's primary player. */
+    val editableBy: EntityId,
+    val unlockOrder: Int,
+)
+
+/**
+ * Bipartite combat damage decision — the full graph of attackers, blockers,
+ * defenders/PWs/battles, and damage edges with pre-computed defaults. Replaces
+ * [CombatDamagePlanDecision] when the resolution-board feature flag is on.
+ *
+ * In the two-actor banding case (CR 702.22j/k) [coChooserId] names the second
+ * player whose edges have `editableBy != playerId`. The engine accepts partial
+ * responses from each player and re-pauses on the same [id] until both halves
+ * have been confirmed.
+ *
+ * @property firstStrike Whether this decision belongs to the first-strike combat damage step.
+ */
+@Serializable
+@SerialName("CombatResolutionDecision")
+data class CombatResolutionDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val firstStrike: Boolean,
+    val attackers: List<ResolutionAttacker>,
+    val blockers: List<ResolutionBlocker>,
+    val defenders: List<ResolutionDefender>,
+    val edges: List<DamageEdge>,
+    /** Set when banding (CR 702.22j/k) puts a second player in control of part of the graph. */
+    val coChooserId: EntityId? = null,
+) : PendingDecision
+
+/**
+ * Single edge value submitted as part of a [CombatResolutionResponse].
+ */
+@Serializable
+data class DamageEdgeAmount(
+    val edgeId: String,
+    val amount: Int,
+)
+
+/**
+ * Response to [CombatResolutionDecision].
+ *
+ * [edges] carries every edge the submitting player owns. The engine merges
+ * partial responses from each player when [CombatResolutionDecision.coChooserId]
+ * is set; only edges with `editableBy == submittingPlayer` are honoured.
+ *
+ * [orderedBlockers] and [orderedAttackers] capture the row order the client
+ * displayed when the player confirmed. The engine writes these into
+ * [com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent] /
+ * [com.wingedsheep.engine.state.components.combat.AttackerOrderComponent],
+ * replacing the legacy pre-damage `OrderObjectsDecision`s.
+ */
+@Serializable
+@SerialName("CombatResolutionResponse")
+data class CombatResolutionResponse(
+    override val decisionId: String,
+    val edges: List<DamageEdgeAmount>,
+    val orderedBlockers: Map<EntityId, List<EntityId>> = emptyMap(),
+    val orderedAttackers: Map<EntityId, List<EntityId>> = emptyMap(),
+) : DecisionResponse
+
 /**
  * Response to SelectManaSourcesDecision.
  *

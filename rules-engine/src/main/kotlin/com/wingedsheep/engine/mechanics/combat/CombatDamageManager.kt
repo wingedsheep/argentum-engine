@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageT
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.AttackerOrderComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -48,7 +49,21 @@ import java.util.UUID
 internal class CombatDamageManager(
     private val cardRegistry: CardRegistry,
     private val damageCalculator: DamageCalculator,
+    private val features: EngineFeatures = EngineFeatures(),
 ) {
+
+    private data class PlanCandidate(
+        val attackerId: EntityId,
+        val attackerName: String,
+        val attackingComponent: AttackingComponent,
+        val chooser: EntityId,
+        val availablePower: Int,
+        val liveBlockers: List<EntityId>,
+        val hasTrample: Boolean,
+        val hasDeathtouch: Boolean,
+        val minimumAssignments: Map<EntityId, Int>,
+        val defaultAssignments: Map<EntityId, Int>,
+    )
 
     private val damageModifiers: List<CombatDamageModifier> = listOf(
         PreventAllCombatDamageModifier(),
@@ -216,19 +231,6 @@ internal class CombatDamageManager(
         // banding blocker is present), and emit a single CombatDamagePlanDecision per
         // chooser. The most common case — a band of N attackers blocked by ≥2 blockers
         // each — collapses from N modals to 1.
-        data class PlanCandidate(
-            val attackerId: EntityId,
-            val attackerName: String,
-            val attackingComponent: AttackingComponent,
-            val chooser: EntityId,
-            val availablePower: Int,
-            val liveBlockers: List<EntityId>,
-            val hasTrample: Boolean,
-            val hasDeathtouch: Boolean,
-            val minimumAssignments: Map<EntityId, Int>,
-            val defaultAssignments: Map<EntityId, Int>,
-        )
-
         val planCandidates = mutableListOf<PlanCandidate>()
         for ((attackerId, attackingComponent) in attackers) {
             if (attackerId !in state.getBattlefield()) continue
@@ -305,6 +307,11 @@ internal class CombatDamageManager(
             // with no banding-driven inversion mid-step there's only one group.
             val byChooser = planCandidates.groupBy { it.chooser }
             val (chooser, group) = byChooser.entries.first()
+
+            if (features.combatResolutionBoardEnabled) {
+                return emitCombatResolutionDecision(state, projected, chooser, group, firstStrike)
+            }
+
             val entries = group.map { c ->
                 CombatDamagePlanEntry(
                     attackerId = c.attackerId,
@@ -1197,5 +1204,179 @@ internal class CombatDamageManager(
         if (container.has<TokenComponent>()) return state
         container.get<CommanderComponent>() ?: return state
         return state.recordCommanderDamage(sourceId, targetPlayerId, amount)
+    }
+
+    // =========================================================================
+    // Combat Resolution Board (Phase 1)
+    //
+    // Builds and pauses on a [CombatResolutionDecision] — the bipartite
+    // attacker/blocker/defender graph that replaces the per-attacker
+    // [CombatDamagePlanDecision] when [EngineFeatures.combatResolutionBoardEnabled]
+    // is set. Scope-wise this Phase 1 emitter mirrors the legacy emitter: it
+    // surfaces only attacker→target edges (blockers + trample drains) for the
+    // single chooser group the legacy path would have emitted. Phase 2 will add
+    // blocker→attacker edges and merge multiple chooser groups into a single
+    // decision for the banding two-actor flow.
+    // =========================================================================
+
+    private fun emitCombatResolutionDecision(
+        state: GameState,
+        projected: ProjectedState,
+        chooser: EntityId,
+        group: List<PlanCandidate>,
+        firstStrike: Boolean,
+    ): ExecutionResult {
+        val blockerIds = group.flatMap { it.liveBlockers }.toSet()
+        val defenderIds = group.map { it.attackingComponent.defenderId }.toSet()
+
+        val attackers = group.map { c ->
+            val attackerEntity = state.getEntity(c.attackerId)
+            val attackerCard = attackerEntity?.get<CardComponent>()
+            ResolutionAttacker(
+                id = c.attackerId,
+                name = c.attackerName,
+                power = projected.getPower(c.attackerId) ?: c.availablePower,
+                toughness = projected.getToughness(c.attackerId) ?: 0,
+                hasTrample = c.hasTrample,
+                hasTrampleOverPlaneswalkers = false,
+                hasDeathtouch = c.hasDeathtouch,
+                hasFirstStrike = projected.hasKeyword(c.attackerId, Keyword.FIRST_STRIKE),
+                hasDoubleStrike = projected.hasKeyword(c.attackerId, Keyword.DOUBLE_STRIKE),
+                dealsDamageThisStep = true,
+                bandId = c.attackingComponent.bandId,
+                attackedDefenderId = c.attackingComponent.defenderId,
+                blockedByIds = c.liveBlockers,
+                markedDamage = attackerEntity?.get<DamageComponent>()?.amount ?: 0,
+            )
+        }
+
+        val blockers = blockerIds.mapNotNull { blockerId ->
+            val container = state.getEntity(blockerId) ?: return@mapNotNull null
+            val card = container.get<CardComponent>() ?: return@mapNotNull null
+            val blocking = container.get<BlockingComponent>()
+            ResolutionBlocker(
+                id = blockerId,
+                name = card.name,
+                power = projected.getPower(blockerId) ?: 0,
+                toughness = projected.getToughness(blockerId) ?: 0,
+                hasDeathtouch = projected.hasKeyword(blockerId, Keyword.DEATHTOUCH),
+                hasFirstStrike = projected.hasKeyword(blockerId, Keyword.FIRST_STRIKE),
+                hasDoubleStrike = projected.hasKeyword(blockerId, Keyword.DOUBLE_STRIKE),
+                dealsDamageThisStep = true,
+                blockedAttackerIds = blocking?.blockedAttackerIds.orEmpty(),
+                orderedAttackers = container.get<AttackerOrderComponent>()?.orderedAttackers
+                    ?: blocking?.blockedAttackerIds.orEmpty(),
+                markedDamage = container.get<DamageComponent>()?.amount ?: 0,
+            )
+        }
+
+        val defenders = defenderIds.mapNotNull { defenderId ->
+            val container = state.getEntity(defenderId) ?: return@mapNotNull null
+            val isPlayer = container.get<LifeTotalComponent>() != null &&
+                container.get<CardComponent>() == null
+            when {
+                isPlayer -> ResolutionDefender(
+                    id = defenderId,
+                    kind = ResolutionTargetKind.PLAYER,
+                    name = "Player",
+                    lifeOrLoyaltyOrDefense = container.get<LifeTotalComponent>()?.life,
+                )
+                projected.isPlaneswalker(defenderId) -> ResolutionDefender(
+                    id = defenderId,
+                    kind = ResolutionTargetKind.PLANESWALKER,
+                    name = container.get<CardComponent>()?.name ?: "Planeswalker",
+                    lifeOrLoyaltyOrDefense = container.get<CountersComponent>()
+                        ?.getCount(CounterType.LOYALTY),
+                )
+                else -> ResolutionDefender(
+                    id = defenderId,
+                    kind = ResolutionTargetKind.BATTLE,
+                    name = container.get<CardComponent>()?.name ?: "Battle",
+                    lifeOrLoyaltyOrDefense = null,
+                )
+            }
+        }
+
+        val edges = mutableListOf<DamageEdge>()
+        for (c in group) {
+            var unlockOrder = 0
+            for (blockerId in c.liveBlockers) {
+                val minimum = c.minimumAssignments[blockerId] ?: 0
+                val default = c.defaultAssignments[blockerId] ?: 0
+                val lethal = if (c.hasDeathtouch) 1 else minimum.coerceAtLeast(1)
+                edges.add(
+                    DamageEdge(
+                        id = "${c.attackerId}->${blockerId}",
+                        sourceId = c.attackerId,
+                        targetId = blockerId,
+                        direction = DamageEdgeDirection.ATTACKER_TO_BLOCKER,
+                        amount = default,
+                        minimum = minimum,
+                        maximum = c.availablePower,
+                        isTrampleDrain = false,
+                        lethalThreshold = lethal,
+                        editableBy = c.chooser,
+                        unlockOrder = unlockOrder++,
+                    )
+                )
+            }
+            if (c.hasTrample) {
+                val defenderId = c.attackingComponent.defenderId
+                val defenderContainer = state.getEntity(defenderId)
+                val defenderIsPlayer = defenderContainer?.get<LifeTotalComponent>() != null &&
+                    defenderContainer.get<CardComponent>() == null
+                val direction = when {
+                    defenderIsPlayer -> DamageEdgeDirection.ATTACKER_TO_PLAYER
+                    projected.isPlaneswalker(defenderId) -> DamageEdgeDirection.ATTACKER_TO_PLANESWALKER
+                    else -> DamageEdgeDirection.ATTACKER_TO_BATTLE
+                }
+                edges.add(
+                    DamageEdge(
+                        id = "${c.attackerId}->${defenderId}",
+                        sourceId = c.attackerId,
+                        targetId = defenderId,
+                        direction = direction,
+                        amount = c.defaultAssignments[defenderId] ?: 0,
+                        minimum = 0,
+                        maximum = c.availablePower,
+                        isTrampleDrain = true,
+                        lethalThreshold = null,
+                        editableBy = c.chooser,
+                        unlockOrder = unlockOrder++,
+                    )
+                )
+            }
+        }
+
+        val decisionId = UUID.randomUUID().toString()
+        val prompt = if (group.size == 1) {
+            "Assign ${group[0].attackerName}'s ${group[0].availablePower} combat damage"
+        } else {
+            "Assign combat damage for ${group.size} attackers"
+        }
+        val decision = CombatResolutionDecision(
+            id = decisionId,
+            playerId = chooser,
+            prompt = prompt,
+            context = DecisionContext(
+                sourceId = group.firstOrNull()?.attackerId,
+                sourceName = if (group.size == 1) group[0].attackerName else "Combat damage",
+                phase = DecisionPhase.COMBAT,
+            ),
+            firstStrike = firstStrike,
+            attackers = attackers,
+            blockers = blockers,
+            defenders = defenders,
+            edges = edges,
+            coChooserId = null,
+        )
+        val continuation = CombatResolutionContinuation(
+            decisionId = decisionId,
+            firstStrike = firstStrike,
+        )
+        val pausedState = state
+            .withPendingDecision(decision)
+            .pushContinuation(continuation)
+        return ExecutionResult.paused(pausedState, decision)
     }
 }

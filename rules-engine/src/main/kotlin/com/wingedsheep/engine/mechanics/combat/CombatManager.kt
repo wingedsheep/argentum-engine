@@ -34,10 +34,11 @@ class CombatManager(
     private val blockEvasionRules: List<BlockEvasionRule> = defaultBlockEvasionRules(),
     private val attackRestrictionRules: List<AttackRestrictionRule> = defaultAttackRestrictionRules(),
     private val attackDefenderRules: List<AttackDefenderRule> = defaultAttackDefenderRules(),
+    private val features: EngineFeatures = EngineFeatures(),
 ) {
     internal val attackPhase = AttackPhaseManager(cardRegistry, attackRestrictionRules, attackDefenderRules, manaAbilitySideEffectExecutor)
     internal val blockPhase = BlockPhaseManager(cardRegistry, blockEvasionRules, manaAbilitySideEffectExecutor)
-    private val damagePhase = CombatDamageManager(cardRegistry, damageCalculator)
+    private val damagePhase = CombatDamageManager(cardRegistry, damageCalculator, features)
 
     // =========================================================================
     // Declare Attackers
