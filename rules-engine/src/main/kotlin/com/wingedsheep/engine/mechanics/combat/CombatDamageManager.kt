@@ -249,6 +249,30 @@ internal class CombatDamageManager(
         // banding blocker is present), and emit a single CombatDamagePlanDecision per
         // chooser. The most common case — a band of N attackers blocked by ≥2 blockers
         // each — collapses from N modals to 1.
+        //
+        // With the resolution board on, also force-include any attacker whose
+        // blockers include one that blocks ≥2 attackers (an Ironfist-style
+        // bipartite). Without this the blocker's damage division would silently
+        // auto-resolve — the decision wouldn't emit because no individual attacker
+        // requires manual assignment on its own. See plan §10 "Engine gaps".
+        val attackersWithBipartiteBlocker: Set<EntityId> = if (!features.combatResolutionBoardEnabled) {
+            emptySet()
+        } else {
+            val result = mutableSetOf<EntityId>()
+            for ((attackerId, _) in attackers) {
+                val blockerIds = state.getEntity(attackerId)?.get<BlockedComponent>()
+                    ?.blockerIds.orEmpty().filter { it in state.getBattlefield() }
+                val anyBipartite = blockerIds.any { blockerId ->
+                    val liveBlocked = state.getEntity(blockerId)
+                        ?.get<BlockingComponent>()
+                        ?.blockedAttackerIds.orEmpty()
+                        .count { it in state.getBattlefield() }
+                    liveBlocked >= 2
+                }
+                if (anyBipartite) result += attackerId
+            }
+            result
+        }
         val planCandidates = mutableListOf<PlanCandidate>()
         for ((attackerId, attackingComponent) in attackers) {
             if (attackerId !in state.getBattlefield()) continue
@@ -291,7 +315,9 @@ internal class CombatDamageManager(
             // the board even when normal lethal-first wouldn't surface a decision.
             val forceManual = features.combatResolutionBoardEnabled &&
                 (hasAssignAsUnblocked || hasDivideDamageFreely)
-            if (!damageCalculator.requiresManualAssignment(state, attackerId) && !bandingOverride && !forceManual) continue
+            val bipartitePull = attackerId in attackersWithBipartiteBlocker
+            if (!damageCalculator.requiresManualAssignment(state, attackerId) &&
+                !bandingOverride && !forceManual && !bipartitePull) continue
 
             val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue

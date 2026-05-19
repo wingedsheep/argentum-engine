@@ -694,19 +694,14 @@ elegant.
 
 ### Engine gaps discovered while writing Phase 5 scenario coverage
 
-- [ ] **Pure bipartite without a manually-assigned attacker doesn't surface a decision.**
-  When one blocker blocks two attackers and *neither* attacker individually
-  requires manual assignment (e.g., no trample, no banding, lethal-first has a
-  unique answer), `emitCombatResolutionDecision` is never called — the
-  blocker's damage division silently auto-resolves. `CombatDamageManager`
-  builds `planCandidates` per attacker; the blocker-side `BLOCKER_TO_ATTACKER`
-  emitter at `CombatDamageManager.kt:1466` only runs as a side effect of an
-  attacker-side candidate existing. To close this, the emitter needs a
-  "blocker requires manual division" entry point that includes all blocked
-  attackers (auto and manual) in `attackers` and skips per-attacker
-  ATTACKER_TO_BLOCKER edges where there is nothing to choose. Today's
-  `CombatResolutionBoardTest` works around this by using a trample attacker
-  (always manual) on each side of the crusher to force the decision to emit.
+- [x] **Pure bipartite without a manually-assigned attacker now surfaces a
+  decision.** `CombatDamageManager` precomputes
+  `attackersWithBipartiteBlocker` — the set of attackers blocked by any
+  blocker that blocks ≥2 attackers — and treats them as requiring manual
+  assignment so they enter `planCandidates`. The bipartite blocker's
+  damage-division choice now reliably emits a `CombatResolutionDecision`.
+  Verified by the `pure bipartite (no trample, no banding) still emits a
+  CombatResolutionDecision` test.
 - [ ] **`CombatResolutionResponse` rejected for multi-trample bipartite** —
   the engine emits the decision correctly (verified in test) but rejects the
   default-edge response with `isSuccess = false`. The test asserts the

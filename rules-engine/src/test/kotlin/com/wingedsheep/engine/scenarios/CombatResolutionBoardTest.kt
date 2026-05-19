@@ -203,6 +203,64 @@ class CombatResolutionBoardTest : FunSpec({
         fromCrusher.forEach { it.editableBy shouldBe defender }
     }
 
+    /**
+     * Pure bipartite — one Ironfist-style crusher blocks both attackers, neither
+     * attacker has trample/banding, and neither requires manual assignment on
+     * its own. The blocker still needs to divide its 2 damage between the two
+     * attackers, so the board must emit a decision (engine gap fixed in
+     * `CombatDamageManager.attackersWithBipartiteBlocker`).
+     */
+    test("pure bipartite (no trample, no banding) still emits a CombatResolutionDecision") {
+        val driver = createDriver()
+        val testCrusher = CardDefinition.creature(
+            name = "Test Crusher",
+            manaCost = ManaCost.parse("{4}{W}"),
+            subtypes = setOf(Subtype("Soldier")),
+            power = 2,
+            toughness = 4,
+            script = CardScript.creature(staticAbilities = listOf(CanBlockAnyNumber())),
+        )
+        driver.registerCard(testCrusher)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val courser1 = driver.putCreatureOnBattlefield(attacker, "Centaur Courser") // 3/3
+        val courser2 = driver.putCreatureOnBattlefield(attacker, "Centaur Courser") // 3/3
+        val crusher = driver.putCreatureOnBattlefield(defender, "Test Crusher")     // 2/4
+        driver.removeSummoningSickness(courser1)
+        driver.removeSummoningSickness(courser2)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(courser1, courser2), defender)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(defender, mapOf(crusher to listOf(courser1, courser2)))
+
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        // Both attackers must be in the decision so the crusher's blocker→attacker
+        // edges have valid target nodes.
+        decision.attackers.map { it.id }.toSet() shouldBe setOf(courser1, courser2)
+        decision.blockers.map { it.id } shouldBe listOf(crusher)
+
+        val fromCrusher = decision.edges.filter { it.sourceId == crusher }
+        fromCrusher.size shouldBe 2
+        fromCrusher.map { it.direction }.toSet() shouldContainExactly setOf(DamageEdgeDirection.BLOCKER_TO_ATTACKER)
+        fromCrusher.map { it.targetId }.toSet() shouldBe setOf(courser1, courser2)
+        fromCrusher.forEach { it.editableBy shouldBe defender }
+    }
+
     test("non-trample attacker with single blocker does not emit a resolution decision") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
