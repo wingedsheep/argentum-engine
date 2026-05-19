@@ -257,7 +257,9 @@ enum class PendingDecisionKind {
     REORDER_LIBRARY,
     ASSIGN_DAMAGE,
     SELECT_MANA_SOURCES,
-    BUDGET_MODAL
+    BUDGET_MODAL,
+    COMBAT_DAMAGE_PLAN,
+    COMBAT_RESOLUTION
 }
 
 @Serializable

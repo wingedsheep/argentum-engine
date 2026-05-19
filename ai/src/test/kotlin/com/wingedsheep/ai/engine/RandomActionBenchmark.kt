@@ -286,6 +286,18 @@ private fun randomDecisionResponse(decision: PendingDecision, rng: Random): Deci
 
         is SelectManaSourcesDecision ->
             ManaSourcesSelectedResponse(decision.id, emptyList(), autoPay = true)
+
+        is CombatDamagePlanDecision ->
+            CombatDamagePlanResponse(
+                decision.id,
+                decision.entries.associate { it.attackerId to it.defaultAssignments }
+            )
+
+        is CombatResolutionDecision ->
+            CombatResolutionResponse(
+                decision.id,
+                decision.edges.map { DamageEdgeAmount(it.id, it.amount) }
+            )
     }
 }
 

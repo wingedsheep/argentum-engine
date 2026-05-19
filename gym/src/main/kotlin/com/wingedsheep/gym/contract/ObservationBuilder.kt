@@ -10,6 +10,8 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.core.CombatDamagePlanDecision
+import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.ModesChosenResponse
@@ -438,6 +440,12 @@ class ObservationBuilder(
                     ActionRegistry.EMPTY
             is SelectManaSourcesDecision ->
                 baseView(decision, PendingDecisionKind.SELECT_MANA_SOURCES, baseShape, structured = true) to
+                    ActionRegistry.EMPTY
+            is CombatDamagePlanDecision ->
+                baseView(decision, PendingDecisionKind.COMBAT_DAMAGE_PLAN, baseShape, structured = true) to
+                    ActionRegistry.EMPTY
+            is CombatResolutionDecision ->
+                baseView(decision, PendingDecisionKind.COMBAT_RESOLUTION, baseShape, structured = true) to
                     ActionRegistry.EMPTY
         }
     }
