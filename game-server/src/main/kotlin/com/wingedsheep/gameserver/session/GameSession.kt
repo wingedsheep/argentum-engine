@@ -54,7 +54,16 @@ class GameSession(
         useHandSmoother: Boolean = false,
         debugMode: Boolean = false,
         printingRegistry: com.wingedsheep.engine.registry.PrintingRegistry? = null,
-    ) : this(sessionId, EngineServices(cardRegistry, printingRegistry), if (debugMode) ClientStateTransformer(cardRegistry, debugMode = true) else stateTransformer, useHandSmoother)
+    ) : this(
+        sessionId,
+        EngineServices(
+            cardRegistry,
+            printingRegistry,
+            features = com.wingedsheep.engine.core.EngineFeatures(combatResolutionBoardEnabled = true),
+        ),
+        if (debugMode) ClientStateTransformer(cardRegistry, debugMode = true) else stateTransformer,
+        useHandSmoother,
+    )
 
     private val cardRegistry: CardRegistry get() = services.cardRegistry
     // Lock for synchronizing state modifications to prevent lost updates
