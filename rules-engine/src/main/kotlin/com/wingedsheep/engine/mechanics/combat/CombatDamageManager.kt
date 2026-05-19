@@ -63,6 +63,10 @@ internal class CombatDamageManager(
         val hasDeathtouch: Boolean,
         val minimumAssignments: Map<EntityId, Int>,
         val defaultAssignments: Map<EntityId, Int>,
+        /** True for AssignCombatDamageAsUnblocked (Thorn Elemental). Disables lethal-first on this attacker's edges and adds a non-trample player drain. */
+        val hasAssignAsUnblocked: Boolean = false,
+        /** True for DivideCombatDamageFreely (Butcher Orgg). All edges have minimum=0; defaults split evenly across blockers + defender. */
+        val hasDivideDamageFreely: Boolean = false,
     )
 
     private val damageModifiers: List<CombatDamageModifier> = listOf(
@@ -90,67 +94,81 @@ internal class CombatDamageManager(
 
         // Pre-check: if any blocked attacker has AssignCombatDamageAsUnblocked, ask the
         // controller whether to assign damage to the defending player instead of blockers.
-        for ((attackerId, attackingComponent) in attackers) {
-            if (attackerId !in state.getBattlefield()) continue
-            val attackerContainer = state.getEntity(attackerId) ?: continue
-            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
+        // When the resolution-board flag is on this whole loop is bypassed — those
+        // attackers flow into the plan-candidate gather instead and surface a non-trample
+        // ATTACKER_TO_PLAYER drain edge on the board, replacing the separate Y/N modal.
+        if (!features.combatResolutionBoardEnabled) {
+            for ((attackerId, attackingComponent) in attackers) {
+                if (attackerId !in state.getBattlefield()) continue
+                val attackerContainer = state.getEntity(attackerId) ?: continue
+                val attackerCard = attackerContainer.get<CardComponent>() ?: continue
 
-            // Only relevant when blocked
-            val blockedBy = attackerContainer.get<BlockedComponent>() ?: continue
-            if (blockedBy.blockerIds.isEmpty()) continue
-            val liveBlockers = blockedBy.blockerIds.filter { it in state.getBattlefield() }
-            if (liveBlockers.isEmpty()) continue
+                // Only relevant when blocked
+                val blockedBy = attackerContainer.get<BlockedComponent>() ?: continue
+                if (blockedBy.blockerIds.isEmpty()) continue
+                val liveBlockers = blockedBy.blockerIds.filter { it in state.getBattlefield() }
+                if (liveBlockers.isEmpty()) continue
 
-            // Already has a manual assignment (decision already made)
-            if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
+                // Already has a manual assignment (decision already made)
+                if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
 
-            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
-            val hasAssignAsUnblocked = cardDef.staticAbilities.any { it is AssignCombatDamageAsUnblocked }
-            if (!hasAssignAsUnblocked) continue
+                val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
+                val hasAssignAsUnblocked = cardDef.staticAbilities.any { it is AssignCombatDamageAsUnblocked }
+                if (!hasAssignAsUnblocked) continue
 
-            if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
+                if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
 
-            val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
-            if (attackerPower <= 0) continue
+                val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
+                if (attackerPower <= 0) continue
 
-            val attackingPlayer = projected.getController(attackerId) ?: continue
-            val decisionId = UUID.randomUUID().toString()
+                val attackingPlayer = projected.getController(attackerId) ?: continue
+                val decisionId = UUID.randomUUID().toString()
 
-            val decision = YesNoDecision(
-                id = decisionId,
-                playerId = attackingPlayer,
-                prompt = "Assign ${attackerCard.name}'s combat damage as though it weren't blocked?",
-                context = DecisionContext(
-                    sourceId = attackerId,
-                    sourceName = attackerCard.name,
-                    phase = DecisionPhase.COMBAT
-                ),
-                yesText = "Assign to player",
-                noText = "Assign to blockers"
-            )
+                val decision = YesNoDecision(
+                    id = decisionId,
+                    playerId = attackingPlayer,
+                    prompt = "Assign ${attackerCard.name}'s combat damage as though it weren't blocked?",
+                    context = DecisionContext(
+                        sourceId = attackerId,
+                        sourceName = attackerCard.name,
+                        phase = DecisionPhase.COMBAT
+                    ),
+                    yesText = "Assign to player",
+                    noText = "Assign to blockers"
+                )
 
-            val continuation = AssignAsUnblockedContinuation(
-                decisionId = decisionId,
-                attackerId = attackerId,
-                defendingPlayerId = attackingComponent.defenderId,
-                firstStrike = firstStrike
-            )
+                val continuation = AssignAsUnblockedContinuation(
+                    decisionId = decisionId,
+                    attackerId = attackerId,
+                    defendingPlayerId = attackingComponent.defenderId,
+                    firstStrike = firstStrike
+                )
 
-            val pausedState = state
-                .withPendingDecision(decision)
-                .pushContinuation(continuation)
+                val pausedState = state
+                    .withPendingDecision(decision)
+                    .pushContinuation(continuation)
 
-            return ExecutionResult.paused(pausedState, decision)
+                return ExecutionResult.paused(pausedState, decision)
+            }
         }
 
         // Pre-check: if any attacker with DivideCombatDamageFreely needs a distribution
-        // decision, pause before processing ANY damage.
+        // decision, pause before processing ANY damage. When the resolution board is on,
+        // *blocked* DivideCombatDamageFreely attackers fold into the board instead; the
+        // *unblocked* variant (e.g. Butcher Orgg dumping damage onto an arbitrary set of
+        // defending creatures + defender) still uses the legacy DistributeDecision flow
+        // since the board doesn't yet surface arbitrary defending-creature targets.
         for ((attackerId, attackingComponent) in attackers) {
             val attackerContainer = state.getEntity(attackerId) ?: continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
             val hasDivideDamageFreely = cardDef.staticAbilities.any { it is DivideCombatDamageFreely }
             if (!hasDivideDamageFreely) continue
+            if (features.combatResolutionBoardEnabled) {
+                val blocked = attackerContainer.get<BlockedComponent>()?.blockerIds
+                    ?.any { it in state.getBattlefield() } == true
+                if (blocked) continue  // handled by the resolution board's plan-candidate gather
+            }
 
             val hasFirstStrike = projected.hasKeyword(attackerId, Keyword.FIRST_STRIKE)
             val hasDoubleStrike = projected.hasKeyword(attackerId, Keyword.DOUBLE_STRIKE)
@@ -240,7 +258,13 @@ internal class CombatDamageManager(
 
             val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId)
             val hasDivideDamageFreely = cardDef?.staticAbilities?.any { it is DivideCombatDamageFreely } == true
-            if (hasDivideDamageFreely) continue
+            val hasAssignAsUnblocked = cardDef?.staticAbilities?.any { it is AssignCombatDamageAsUnblocked } == true
+            // When the resolution board is on, DivideCombatDamageFreely + AssignAsUnblocked
+            // both fold into the board (the standalone pre-checks are skipped above for
+            // AssignAsUnblocked; DivideCombatDamageFreely is handled by its own pre-check
+            // below when the flag is off). With the flag on, we route these through plan
+            // candidates so they share the board UI with vanilla manual assignment.
+            if (!features.combatResolutionBoardEnabled && hasDivideDamageFreely) continue
 
             if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
 
@@ -262,7 +286,12 @@ internal class CombatDamageManager(
             val liveBlockerIds = blockedBy.blockerIds.filter { it in state.getBattlefield() }
             val bandingOverride = liveBlockerIds.size >= 2 &&
                 liveBlockerIds.any { projected.hasKeyword(it, Keyword.BANDING) }
-            if (!damageCalculator.requiresManualAssignment(state, attackerId) && !bandingOverride) continue
+            // AssignAsUnblocked / DivideCombatDamageFreely always require manual assignment
+            // (the player must choose how to split). When the flag is on they're folded into
+            // the board even when normal lethal-first wouldn't surface a decision.
+            val forceManual = features.combatResolutionBoardEnabled &&
+                (hasAssignAsUnblocked || hasDivideDamageFreely)
+            if (!damageCalculator.requiresManualAssignment(state, attackerId) && !bandingOverride && !forceManual) continue
 
             val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue
@@ -298,6 +327,8 @@ internal class CombatDamageManager(
                     hasDeathtouch = hasDeathtouch,
                     minimumAssignments = minimumAssignments,
                     defaultAssignments = autoDistribution.assignments,
+                    hasAssignAsUnblocked = hasAssignAsUnblocked,
+                    hasDivideDamageFreely = hasDivideDamageFreely,
                 )
             )
         }
@@ -309,7 +340,18 @@ internal class CombatDamageManager(
             val (chooser, group) = byChooser.entries.first()
 
             if (features.combatResolutionBoardEnabled) {
-                return emitCombatResolutionDecision(state, projected, chooser, group, firstStrike)
+                // Phase 2: unify all chooser groups into a single decision. The primary
+                // chooser acts first; CR 702.22j/k co-choosers follow in order via the
+                // continuation's pendingChoosers queue.
+                val choosersInOrder = byChooser.keys.toList()
+                return emitCombatResolutionDecision(
+                    state = state,
+                    projected = projected,
+                    choosersInOrder = choosersInOrder,
+                    allCandidates = planCandidates,
+                    firstStrike = firstStrike,
+                    previousAmounts = emptyMap(),
+                )
             }
 
             val entries = group.map { c ->
@@ -494,6 +536,22 @@ internal class CombatDamageManager(
 
                 val blockingComponent = blockerContainer.get<BlockingComponent>()
                 val blockedAttackerIds = blockingComponent?.blockedAttackerIds ?: listOf(attackerId)
+
+                // Honor a manual blocker assignment (CR 510.1d): when the new resolution
+                // board exposes blocker→attacker edges, the resumer writes the player's
+                // chosen amounts into the blocker's DamageAssignmentComponent. Targets that
+                // are no longer on the battlefield are silently dropped (mirroring the
+                // attacker-side first-strike pruning above).
+                val manualBlockerAssignment = blockerContainer.get<DamageAssignmentComponent>()
+                if (manualBlockerAssignment != null && manualBlockerAssignment.assignments.isNotEmpty()) {
+                    for ((targetId, damage) in manualBlockerAssignment.assignments) {
+                        if (damage <= 0) continue
+                        if (targetId !in state.getBattlefield()) continue
+                        assignments.add(CombatDamageAssignment(blockerId, targetId, damage))
+                        pendingDamage[targetId] = (pendingDamage[targetId] ?: 0) + damage
+                    }
+                    continue
+                }
 
                 if (blockedAttackerIds.size <= 1) {
                     // Blocking a single attacker — deal full damage
@@ -1219,13 +1277,26 @@ internal class CombatDamageManager(
     // decision for the banding two-actor flow.
     // =========================================================================
 
+    /**
+     * Build and pause on a [CombatResolutionDecision] covering every attacker in
+     * [allCandidates] (across all choosers, for the banding two-actor case).
+     *
+     * The primary chooser is `choosersInOrder.first()` and gets prompted first;
+     * remaining choosers queue up on the continuation's `pendingChoosers`. Each
+     * edge's `editableBy` matches the candidate's chooser. When a subsequent
+     * chooser is prompted (after the primary submits), [previousAmounts] carries
+     * the already-confirmed values so the new decision shows them baked in.
+     */
     private fun emitCombatResolutionDecision(
         state: GameState,
         projected: ProjectedState,
-        chooser: EntityId,
-        group: List<PlanCandidate>,
+        choosersInOrder: List<EntityId>,
+        allCandidates: List<PlanCandidate>,
         firstStrike: Boolean,
+        previousAmounts: Map<String, Int>,
     ): ExecutionResult {
+        val chooser = choosersInOrder.first()
+        val group = allCandidates
         val blockerIds = group.flatMap { it.liveBlockers }.toSet()
         val defenderIds = group.map { it.attackingComponent.defenderId }.toSet()
 
@@ -1300,10 +1371,23 @@ internal class CombatDamageManager(
         val edges = mutableListOf<DamageEdge>()
         for (c in group) {
             var unlockOrder = 0
+            // Free-assignment attackers (AssignCombatDamageAsUnblocked / DivideCombatDamageFreely)
+            // bypass lethal-first: blocker edges have minimum=0 and a non-trample defender drain
+            // is always present, so the player can drag damage anywhere within the power budget.
+            val isFreeAssignment = c.hasAssignAsUnblocked || c.hasDivideDamageFreely
             for (blockerId in c.liveBlockers) {
-                val minimum = c.minimumAssignments[blockerId] ?: 0
-                val default = c.defaultAssignments[blockerId] ?: 0
-                val lethal = if (c.hasDeathtouch) 1 else minimum.coerceAtLeast(1)
+                val baseMinimum = c.minimumAssignments[blockerId] ?: 0
+                val minimum = if (isFreeAssignment) 0 else baseMinimum
+                val default = if (c.hasAssignAsUnblocked) {
+                    // Default for AssignAsUnblocked: dump everything on defender, nothing on blockers.
+                    0
+                } else if (c.hasDivideDamageFreely) {
+                    // Default for DivideDamageFreely: even split across blockers + defender.
+                    c.availablePower / (c.liveBlockers.size + 1)
+                } else {
+                    c.defaultAssignments[blockerId] ?: 0
+                }
+                val lethal = if (c.hasDeathtouch) 1 else baseMinimum.coerceAtLeast(1)
                 edges.add(
                     DamageEdge(
                         id = "${c.attackerId}->${blockerId}",
@@ -1320,7 +1404,11 @@ internal class CombatDamageManager(
                     )
                 )
             }
-            if (c.hasTrample) {
+            // Add defender drain when the attacker can route damage there: trample (lethal-first
+            // gated), or free-assignment (no gating). Free-assignment defaults pre-fill the
+            // drain with the full power for AssignAsUnblocked or the even-split remainder for
+            // DivideDamageFreely.
+            if (c.hasTrample || isFreeAssignment) {
                 val defenderId = c.attackingComponent.defenderId
                 val defenderContainer = state.getEntity(defenderId)
                 val defenderIsPlayer = defenderContainer?.get<LifeTotalComponent>() != null &&
@@ -1330,16 +1418,23 @@ internal class CombatDamageManager(
                     projected.isPlaneswalker(defenderId) -> DamageEdgeDirection.ATTACKER_TO_PLANESWALKER
                     else -> DamageEdgeDirection.ATTACKER_TO_BATTLE
                 }
+                val drainDefault = when {
+                    c.hasAssignAsUnblocked -> c.availablePower
+                    c.hasDivideDamageFreely -> c.availablePower - (c.availablePower / (c.liveBlockers.size + 1)) * c.liveBlockers.size
+                    else -> c.defaultAssignments[defenderId] ?: 0
+                }
                 edges.add(
                     DamageEdge(
                         id = "${c.attackerId}->${defenderId}",
                         sourceId = c.attackerId,
                         targetId = defenderId,
                         direction = direction,
-                        amount = c.defaultAssignments[defenderId] ?: 0,
+                        amount = drainDefault,
                         minimum = 0,
                         maximum = c.availablePower,
-                        isTrampleDrain = true,
+                        // isTrampleDrain governs lethal-first gating in the validator. Free
+                        // assignment is allowed to drain regardless of blocker lethality.
+                        isTrampleDrain = c.hasTrample && !isFreeAssignment,
                         lethalThreshold = null,
                         editableBy = c.chooser,
                         unlockOrder = unlockOrder++,
@@ -1348,12 +1443,85 @@ internal class CombatDamageManager(
             }
         }
 
+        // Blocker→attacker edges (CR 510.1d): surface the reverse-direction graph for any
+        // blocker in `blockers` that blocks 2+ attackers. Pre-fill via
+        // `calculateBlockerDamageDistribution` (already lethal-first / pending-damage aware).
+        // editableBy follows CR 702.22k: defaults to the blocker's controller; flipped to the
+        // active player when any blocked attacker has banding.
+        //
+        // Walk blockers in a deterministic order (matching the order of the `blockers` list
+        // built above) and feed each blocker's defaults through a running pendingDamage map
+        // so successive blockers see the damage already going at each attacker (mirrors what
+        // `proposeDamageAssignments` does at apply time).
+        val activePlayerId = state.activePlayerId
+        val pendingForBlockerEdges = mutableMapOf<EntityId, Int>()
+        // Seed pendingDamage with the attacker→blocker side we just emitted, so blockers can
+        // see what attackers are already taking from each other (e.g. Ironfist crossover).
+        for (edge in edges) {
+            if (edge.direction == DamageEdgeDirection.ATTACKER_TO_BLOCKER) {
+                pendingForBlockerEdges[edge.targetId] =
+                    (pendingForBlockerEdges[edge.targetId] ?: 0) + edge.amount
+            }
+        }
+        for (blocker in blockers) {
+            if (blocker.blockedAttackerIds.size < 2) continue
+            val blockerContainer = state.getEntity(blocker.id) ?: continue
+            val defaultChooser = projected.getController(blocker.id) ?: continue
+            val chooser = CombatDamageUtils.blockerDamageAssignmentChooser(
+                state, projected, blocker.id, defaultChooser, activePlayerId ?: defaultChooser
+            )
+            val orderedTargets = blockerContainer
+                .get<AttackerOrderComponent>()
+                ?.orderedAttackers
+                ?: blocker.blockedAttackerIds
+            val liveOrdered = orderedTargets.filter { it in state.getBattlefield() }
+            if (liveOrdered.isEmpty()) continue
+            val blockerPower = blocker.power
+            if (blockerPower <= 0) continue
+            val defaults = damageCalculator.calculateBlockerDamageDistribution(
+                state, blocker.id, pendingForBlockerEdges
+            ).assignments
+            var blockerUnlockOrder = 0
+            for (attackerId in liveOrdered) {
+                val default = defaults[attackerId] ?: 0
+                val isLast = attackerId == liveOrdered.last()
+                val lethalInfo = damageCalculator.calculateLethalDamage(state, attackerId, blocker.id)
+                val minimum = if (isLast) 0 else lethalInfo.lethalAmount
+                val lethal = if (blocker.hasDeathtouch) 1 else lethalInfo.lethalAmount
+                edges.add(
+                    DamageEdge(
+                        id = "${blocker.id}->${attackerId}",
+                        sourceId = blocker.id,
+                        targetId = attackerId,
+                        direction = DamageEdgeDirection.BLOCKER_TO_ATTACKER,
+                        amount = default,
+                        minimum = minimum,
+                        maximum = blockerPower,
+                        isTrampleDrain = false,
+                        lethalThreshold = lethal,
+                        editableBy = chooser,
+                        unlockOrder = blockerUnlockOrder++,
+                    )
+                )
+                pendingForBlockerEdges[attackerId] =
+                    (pendingForBlockerEdges[attackerId] ?: 0) + default
+            }
+        }
+
+        // Bake previously-confirmed amounts into the edges. Empty on the primary
+        // chooser's prompt; populated when re-emitting for a co-chooser so the prior
+        // choice is shown as the current edge amount.
+        val finalEdges = if (previousAmounts.isEmpty()) edges else edges.map { edge ->
+            previousAmounts[edge.id]?.let { edge.copy(amount = it) } ?: edge
+        }
+
         val decisionId = UUID.randomUUID().toString()
         val prompt = if (group.size == 1) {
             "Assign ${group[0].attackerName}'s ${group[0].availablePower} combat damage"
         } else {
             "Assign combat damage for ${group.size} attackers"
         }
+        val coChooserId = choosersInOrder.drop(1).firstOrNull()
         val decision = CombatResolutionDecision(
             id = decisionId,
             playerId = chooser,
@@ -1367,16 +1535,58 @@ internal class CombatDamageManager(
             attackers = attackers,
             blockers = blockers,
             defenders = defenders,
-            edges = edges,
-            coChooserId = null,
+            edges = finalEdges,
+            coChooserId = coChooserId,
         )
         val continuation = CombatResolutionContinuation(
             decisionId = decisionId,
             firstStrike = firstStrike,
+            pendingChoosers = choosersInOrder,
+            decisionShape = decision,
         )
         val pausedState = state
             .withPendingDecision(decision)
             .pushContinuation(continuation)
         return ExecutionResult.paused(pausedState, decision)
+    }
+
+    /**
+     * Re-pause the same logical combat-damage step with a new chooser. Used by the
+     * resumer when the two-actor banding flow needs to hand off from one chooser to
+     * the next without re-running the pre-check or recomputing the graph.
+     *
+     * Returns a paused [ExecutionResult] carrying the updated decision (same
+     * attackers/blockers/defenders/edges but with the next chooser as
+     * [PendingDecision.playerId] and the prior chooser's amounts baked in).
+     */
+    internal fun repauseCombatResolution(
+        state: GameState,
+        previous: CombatResolutionDecision,
+        remainingChoosers: List<EntityId>,
+        latestAmounts: Map<String, Int>,
+        firstStrike: Boolean,
+    ): ExecutionResult {
+        val nextChooser = remainingChoosers.first()
+        val nextCoChooser = remainingChoosers.drop(1).firstOrNull()
+        val updatedEdges = previous.edges.map { edge ->
+            latestAmounts[edge.id]?.let { edge.copy(amount = it) } ?: edge
+        }
+        val decisionId = UUID.randomUUID().toString()
+        val newDecision = previous.copy(
+            id = decisionId,
+            playerId = nextChooser,
+            coChooserId = nextCoChooser,
+            edges = updatedEdges,
+        )
+        val continuation = CombatResolutionContinuation(
+            decisionId = decisionId,
+            firstStrike = firstStrike,
+            pendingChoosers = remainingChoosers,
+            decisionShape = newDecision,
+        )
+        val pausedState = state
+            .withPendingDecision(newDecision)
+            .pushContinuation(continuation)
+        return ExecutionResult.paused(pausedState, newDecision)
     }
 }

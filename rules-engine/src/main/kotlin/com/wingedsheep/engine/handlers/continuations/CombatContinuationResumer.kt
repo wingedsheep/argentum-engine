@@ -71,17 +71,19 @@ class CombatContinuationResumer(
     }
 
     /**
-     * Apply a bundled [CombatResolutionResponse]: fold every attacker-source edge
-     * back into a [DamageAssignmentComponent] (target → amount), write any
-     * row-order overrides from [CombatResolutionResponse.orderedBlockers] /
-     * [CombatResolutionResponse.orderedAttackers] into the matching components,
-     * then re-enter combat damage.
+     * Apply a [CombatResolutionResponse]. Two paths:
      *
-     * Phase 1 scope: only attacker→target edges (blockers + trample drains) are
-     * present in the decision, so we just route those into per-attacker
-     * `DamageAssignmentComponent`s. Validation upstream guarantees the response
-     * covers every attacker exposed in the decision; the pre-check loop in
-     * `applyCombatDamage` skips attackers that already have a manual assignment.
+     * 1. **Single-chooser** (most combat) — fold every edge into a per-source
+     *    [DamageAssignmentComponent] (target → amount), write any row-order
+     *    overrides, then re-enter `applyCombatDamage`.
+     *
+     * 2. **Multi-chooser** (CR 702.22j/k banding) — only the *current* chooser
+     *    (`continuation.pendingChoosers.first()`) submits this turn. Filter the
+     *    response to edges they own (per `editableBy` on the cached
+     *    `continuation.decisionShape.edges`), bake the new amounts on top of
+     *    the cached shape, and re-pause via
+     *    [com.wingedsheep.engine.mechanics.combat.CombatManager.repauseCombatResolution].
+     *    Only when the queue empties do we write the components and proceed.
      */
     fun resumeCombatResolution(
         state: GameState,
@@ -92,38 +94,61 @@ class CombatContinuationResumer(
             return ExecutionResult.error(state, "Expected CombatResolutionResponse for combat resolution decision")
         }
 
-        // Group edge amounts by source. Each attacker collects its outbound
-        // target → amount map and is written as one DamageAssignmentComponent
-        // entry (mirrors the legacy CombatDamagePlanResponse handling).
-        val edgesBySource = response.edges
-            .groupBy { it.edgeId.substringBefore("->") }
-        val assignmentsBySource = mutableMapOf<EntityId, Map<EntityId, Int>>()
-        for ((_, edgeAmounts) in edgesBySource) {
-            for (edge in edgeAmounts) {
-                val sourceTarget = edge.edgeId.split("->", limit = 2)
-                if (sourceTarget.size != 2) continue
-                val sourceId = EntityId(sourceTarget[0])
-                val targetId = EntityId(sourceTarget[1])
-                val current = assignmentsBySource[sourceId].orEmpty().toMutableMap()
-                current[targetId] = edge.amount
-                assignmentsBySource[sourceId] = current
-            }
+        val shape = continuation.decisionShape
+        val submittingPlayer = continuation.pendingChoosers.firstOrNull()
+        val remainingChoosers = continuation.pendingChoosers.drop(1)
+
+        // Filter submitted edges to those the current chooser is allowed to write.
+        // Edges with unrecognised ids or wrong owner are silently dropped — the
+        // decision shape is the source of truth for `editableBy`.
+        val ownerByEdge = shape?.edges?.associate { it.id to it.editableBy }.orEmpty()
+        val submittedByEdge = response.edges.associate { it.edgeId to it.amount }
+        val honoredByEdge = if (shape == null || submittingPlayer == null) {
+            submittedByEdge
+        } else {
+            submittedByEdge.filter { (edgeId, _) -> ownerByEdge[edgeId] == submittingPlayer }
+        }
+
+        // Accumulate amounts on top of the decision's current edge amounts so the
+        // next chooser (if any) sees the locked-in values when we re-emit.
+        val accumulatedAmounts: Map<String, Int> = if (shape == null) {
+            honoredByEdge
+        } else {
+            shape.edges.associate { it.id to it.amount } + honoredByEdge
+        }
+
+        if (remainingChoosers.isNotEmpty() && shape != null) {
+            return services.combatManager.repauseCombatResolution(
+                state = state,
+                previous = shape,
+                remainingChoosers = remainingChoosers,
+                latestAmounts = accumulatedAmounts,
+                firstStrike = continuation.firstStrike,
+            )
+        }
+
+        // All choosers have confirmed — write per-source DamageAssignmentComponents
+        // by splitting each edge id on "->" (matches the emitter's id convention).
+        val assignmentsBySource = mutableMapOf<EntityId, MutableMap<EntityId, Int>>()
+        for ((edgeId, amount) in accumulatedAmounts) {
+            val parts = edgeId.split("->", limit = 2)
+            if (parts.size != 2) continue
+            val sourceId = EntityId(parts[0])
+            val targetId = EntityId(parts[1])
+            assignmentsBySource.getOrPut(sourceId) { mutableMapOf() }[targetId] = amount
         }
 
         var newState = state
-        for ((attackerId, assignments) in assignmentsBySource) {
-            newState = newState.updateEntity(attackerId) { container ->
+        for ((sourceId, assignments) in assignmentsBySource) {
+            newState = newState.updateEntity(sourceId) { container ->
                 container.with(
-                    com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
-                        assignments
-                    )
+                    com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(assignments)
                 )
             }
         }
 
-        // Apply blocker-order overrides (Phase 2 will accept these from the
-        // client; Phase 1 emitter doesn't expose row-reorder so the map will
-        // usually be empty and these loops are no-ops).
+        // Phase 2 emitter doesn't yet write back row orders; honor them if the
+        // response carries any (future client-side drag-to-reorder).
         for ((attackerId, order) in response.orderedBlockers) {
             newState = newState.updateEntity(attackerId) { container ->
                 container.with(

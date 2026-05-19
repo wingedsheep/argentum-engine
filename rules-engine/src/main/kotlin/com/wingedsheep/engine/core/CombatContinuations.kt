@@ -124,24 +124,35 @@ data class CombatDamagePlanContinuation(
 
 /**
  * Resume after a player submits a [CombatResolutionDecision]. The resumer
- * folds edges back into per-attacker [DamageAssignmentComponent]s plus
- * [DamageAssignmentOrderComponent] / [AttackerOrderComponent] order updates,
- * then re-enters `applyCombatDamage(firstStrike)`.
+ * folds edges back into per-attacker / per-blocker
+ * [com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent]
+ * plus order-component updates, then re-enters
+ * `applyCombatDamage(firstStrike)`.
  *
  * For the banding two-actor case (CR 702.22j/k) the continuation tracks which
- * players have confirmed so far. When [pendingChoosers] still has entries
- * after applying one player's response, the engine re-pauses on the same
- * decision shape with the remaining chooser populated.
+ * players still need to confirm. When [pendingChoosers] still has entries
+ * after applying one player's response, the engine re-pauses on a fresh
+ * decision id with the next chooser as `playerId` and the prior chooser's
+ * submitted amounts baked into [decisionShape.edges]. The full
+ * [decisionShape] is persisted so re-emission doesn't re-derive PlanCandidate
+ * state from a possibly-stale snapshot.
  *
  * @property firstStrike Whether the plan was for the first-strike damage step.
- * @property pendingChoosers Players still expected to confirm. Empty means the
- *   resumer should apply assignments and proceed.
+ * @property pendingChoosers Players still expected to confirm. The head of
+ *   the list is the player currently being prompted; tail are queued. Empty
+ *   means the resumer should apply assignments and proceed.
+ * @property decisionShape Cached decision payload — attackers, blockers,
+ *   defenders, and edges (with the latest amounts) — so the resumer can
+ *   re-pause the next chooser without re-deriving the graph from scratch.
+ *   Null when the resolution board feature flag is off and the continuation
+ *   isn't used in the multi-chooser path.
  */
 @Serializable
 data class CombatResolutionContinuation(
     override val decisionId: String,
     val firstStrike: Boolean,
     val pendingChoosers: List<EntityId> = emptyList(),
+    val decisionShape: CombatResolutionDecision? = null,
 ) : ContinuationFrame
 
 @Serializable

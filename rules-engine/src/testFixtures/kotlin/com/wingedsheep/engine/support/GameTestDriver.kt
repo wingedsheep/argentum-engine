@@ -52,9 +52,18 @@ import com.wingedsheep.sdk.model.EntityId
  * driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
  * ```
  */
-class GameTestDriver {
+class GameTestDriver(
+    /**
+     * Engine feature flags to apply to the driver's internal [ActionProcessor].
+     * Defaults preserve legacy behaviour; flip individual flags to exercise
+     * in-progress migrations (e.g. the bipartite combat resolution board).
+     */
+    features: EngineFeatures = EngineFeatures(),
+) {
     val cardRegistry: CardRegistry = CardRegistry()
-    private val processor: ActionProcessor = ActionProcessor(cardRegistry)
+    private val processor: ActionProcessor = ActionProcessor(
+        EngineServices(cardRegistry = cardRegistry, features = features)
+    )
     private var _state: GameState = GameState()
     private val _events = mutableListOf<GameEvent>()
 
@@ -1126,6 +1135,25 @@ class GameTestDriver {
                 submitDecision(
                     decision.playerId,
                     DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+                )
+            }
+            is CombatDamagePlanDecision -> {
+                // Auto-resolve: confirm the engine-supplied per-attacker defaults.
+                val assignments = decision.entries.associate { it.attackerId to it.defaultAssignments }
+                submitDecision(
+                    decision.playerId,
+                    CombatDamagePlanResponse(decision.id, assignments)
+                )
+            }
+            is CombatResolutionDecision -> {
+                // Auto-resolve: confirm every edge at its current amount (the engine-supplied
+                // default for new boards, or the prior chooser's submission when re-paused).
+                submitDecision(
+                    decision.playerId,
+                    CombatResolutionResponse(
+                        decisionId = decision.id,
+                        edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) },
+                    )
                 )
             }
             is SelectManaSourcesDecision -> {

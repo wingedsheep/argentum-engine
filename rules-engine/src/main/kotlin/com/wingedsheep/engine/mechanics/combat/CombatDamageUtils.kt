@@ -117,8 +117,8 @@ internal object CombatDamageUtils {
      * among its blockers?
      *
      * Default: the attacker's controller (CR 510.1c). Inverted to the defending player when
-     * any defending creature blocking [attackerId] has banding (CR 702.21e). When no
-     * inversion applies, returns [defaultChooser].
+     * any defending creature blocking [attackerId] has banding (CR 702.21e / 702.22j). When
+     * no inversion applies, returns [defaultChooser].
      *
      * The "defender" is the controller of `AttackingComponent.defenderId` — either the
      * defending player directly or the controller of the attacked planeswalker.
@@ -140,6 +140,30 @@ internal object CombatDamageUtils {
         val defenderId = attacking.defenderId
         return if (state.turnOrder.contains(defenderId)) defenderId
             else projected.getController(defenderId) ?: defaultChooser
+    }
+
+    /**
+     * Who chooses the damage-assignment division for [blockerId]'s combat damage among the
+     * attackers it's blocking?
+     *
+     * Default: the blocker's controller (CR 510.1d), supplied as [defaultChooser]. Inverted
+     * to the active (attacking) player when any of the blocked attackers has banding
+     * (CR 702.22k).
+     */
+    fun blockerDamageAssignmentChooser(
+        state: GameState,
+        projected: ProjectedState,
+        blockerId: EntityId,
+        defaultChooser: EntityId,
+        activePlayerId: EntityId,
+    ): EntityId {
+        val blockerContainer = state.getEntity(blockerId) ?: return defaultChooser
+        val blocking = blockerContainer.get<com.wingedsheep.engine.state.components.combat.BlockingComponent>()
+            ?: return defaultChooser
+        val attackerHasBanding = blocking.blockedAttackerIds.any { attackerId ->
+            projected.hasKeyword(attackerId, Keyword.BANDING)
+        }
+        return if (attackerHasBanding) activePlayerId else defaultChooser
     }
 
     private fun matches(

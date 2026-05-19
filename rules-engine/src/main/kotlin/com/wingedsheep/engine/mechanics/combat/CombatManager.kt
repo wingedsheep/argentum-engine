@@ -93,6 +93,20 @@ class CombatManager(
     fun applyCombatDamage(state: GameState, firstStrike: Boolean = false): ExecutionResult =
         damagePhase.applyCombatDamage(state, firstStrike)
 
+    /**
+     * Re-pause the same combat damage step with the next chooser (CR 702.22j/k
+     * two-actor banding). Delegates to [CombatDamageManager.repauseCombatResolution].
+     */
+    fun repauseCombatResolution(
+        state: GameState,
+        previous: com.wingedsheep.engine.core.CombatResolutionDecision,
+        remainingChoosers: List<EntityId>,
+        latestAmounts: Map<String, Int>,
+        firstStrike: Boolean,
+    ): ExecutionResult = damagePhase.repauseCombatResolution(
+        state, previous, remainingChoosers, latestAmounts, firstStrike,
+    )
+
     // =========================================================================
     // End Combat
     // =========================================================================
