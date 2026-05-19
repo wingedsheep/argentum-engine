@@ -588,7 +588,7 @@ Done. With the flag on:
   lethal-first gating). Legacy `YesNoDecision` / `DistributeDecision` pre-checks skip when
   the flag is on for these cases.
 
-### Stale test cleanup (this turn)
+### Stale test cleanup (commit `4d83f69ff`)
 
 `CombatDamageAssignmentTest` was asserting the long-deprecated `AssignDamageDecision`
 type (predates commit `61a92bf57`). Rewrote the 6 failing tests to assert the current
@@ -597,34 +597,78 @@ green end-to-end. The remaining `AssignDamageDecision` callers (engine-side pre-
 `AssignCombatDamageAsUnblocked`, `DivideCombatDamageFreely` unblocked variant) keep the type
 alive when the flag is off.
 
+### Phase 3 — Client component (this turn)
+
+Done. `CombatResolutionDecision` now mounts a working board on the client when the engine
+emits it; behind `EngineFeatures.combatResolutionBoardEnabled`, so the legacy
+`CombatDamagePlanModal` stays the default. Shipped:
+
+- `web-client/src/components/decisions/CombatResolutionBoard.tsx` — bipartite-graph UI
+  with three tiers (attackers, blockers, drain targets) driven by the edge list. One row
+  per attacker, an additional row per blocker that targets ≥2 attackers, ± chips on each
+  edge.
+- `DecisionUI.tsx` routes `CombatResolutionDecision` to the new board; legacy modal still
+  serves `CombatDamagePlanDecision` for flag-off games.
+- `submitCombatResolutionDecision({ edges, orderedBlockers?, orderedAttackers? })` added
+  to `gameplaySlice.ts` (action type `CombatResolutionResponse`). Submits only the edges
+  with `editableBy === playerId` so banding partial responses round-trip cleanly through
+  the engine's merge logic.
+- Lethal-first enforced via per-edge `[minimum, maximum]` clamp (the engine pre-computes
+  `minimum` for blockers below lethal). Drain edges (`isTrampleDrain`) only allow
+  increments once every lower-`unlockOrder` sibling edge from the same source hits its
+  `lethalThreshold` — matches the "dim drain → lit drain" behaviour from §3 K/L.
+- Auto-confirm trivial boards: when the local player owns no edge with `maximum > minimum`
+  (Scenario I Board 2, banding co-chooser's pre-confirmed half, etc.), the board renders
+  for 400 ms then auto-submits.
+- Banding header chip (CR 702.22j/k) when any attacker carries a `bandId`; per-edge
+  `read-only` tag on edges the local player doesn't own so the inverted-control case is
+  legible without a separate panel.
+- Step chip ("First Strike Damage" / "Regular Damage") and marked-damage chip wired from
+  `decision.firstStrike` and `attacker/blocker.markedDamage`.
+
+Deferred from this turn (intentionally, not blockers for flag rollout):
+
+- Single-file implementation rather than the multi-file `board/` directory in §6 — the
+  whole component is ~700 lines, no need to fan out files until we add drag, SVG-edge
+  rendering, or animations. Reorganize when those land.
+- Drag-to-change-amount chip (the plan calls for vertical drag + ±). Today it's ± only;
+  good enough for desktop and a strict superset of the legacy modal's interaction model.
+- Compact 1v1 strip (§6 "Auto-confirm trivial boards" sibling). The full bipartite
+  layout collapses to one short row when there's only one attacker and one blocker
+  anyway, so the visual gap is small.
+- Row drag-to-reorder. `submitCombatResolutionDecision` accepts `orderedBlockers` /
+  `orderedAttackers` and the engine writes them through, but the UI doesn't expose
+  reordering yet — the existing `OrderObjectsDecision` pre-step still handles it. Folding
+  in is a one-evening task once we want to ship Phase 6.
+
 ## 10. Remaining work
 
-### Phase 3 — Client component
+### Phase 3 polish
 
-The wire shape and server logic are ready; the client still routes
-`CombatResolutionDecision` to nothing and falls through. This is the largest remaining
-piece. Build it as outlined in §6 but with the following concrete checklist:
+**Landed this turn:**
 
-- [ ] `web-client/src/components/decisions/CombatResolutionBoard.tsx` — replaces
-  `CombatDamagePlanModal.tsx`. Mounted from the `CombatResolutionDecision` branch in
-  `DecisionUI.tsx`. Keep the legacy modal as fallback while the flag rolls out.
-- [ ] `web-client/src/components/decisions/board/` — `BoardLayout.tsx`, `EdgeLayer.tsx`
-  (reuse `CombatArrows.tsx:1-665` SVG primitives), `EdgeAmountChip.tsx`,
-  `DrainEdge.tsx`, `BandingHeaderChip.tsx`, `StepChip.tsx`, `MarkedDamageChip.tsx`.
-- [ ] Drag/click model on `EdgeAmountChip`: vertical drag with `−`/`+` buttons; lethal-first
-  enforced as a drag constraint (snap-back when the new amount would drop a preceding
-  edge below `minimum`). On mobile, default to buttons (use `useResponsive.isMobile`).
-- [ ] Auto-confirm trivial boards (Scenario I Board 2 in the design): when every editable
-  edge sits at its default and there's nothing meaningfully to choose, render the board
-  for ~400 ms with a damage-flow animation, then auto-submit.
-- [ ] Compact view for the 1v1 plain case: detect
-  `attackers.length === 1 && blockers.length <= 1 && !hasTrample` and render a compact
-  "Block: 2 ↔ 2 [Confirm]" strip instead of the full bipartite layout.
-- [ ] Zustand: replace `submitCombatDamagePlanDecision` with
-  `submitCombatResolutionDecision({ edges, orderedBlockers, orderedAttackers })`. Add a
-  transient `combatBoardDraft` slice scoped to the open decision id (current edge amounts,
-  row orders). Add selector `selectMyEditableEdges(playerId)` for the read-only / interactive
-  split.
+- [x] **Vertical-drag amount chip** — `DragHandle` in `CombatResolutionBoard.tsx`.
+  Mousedown on the numeric value, drag up = +1 step per 14 px, drag down = -1. Each
+  step is dispatched as a discrete `onAdjust(±1)` so the existing `[minimum, maximum]`
+  clamp and trample-drain unlock gates run per increment (a single big delta would
+  skip the lethal check). ± buttons remain as click/tap fallback.
+- [x] **Compact 1v1 strip** (§8 Q3) — when `attackers.length === 1`,
+  `blockers.length <= 1`, no trample, no banding: render `CompactDamageStrip` as a
+  slim bottom-center banner instead of the full overlay. Battlefield stays visible
+  behind. Auto-confirm path still applies via the parent component.
+
+**Still deferred:**
+
+- [ ] **Row drag-to-reorder** for blockers / attackers. Coupled to engine state: the
+  default edge amounts are computed pre-emission from the current order, so a UI
+  reorder needs either a client-side default recompute or a server round-trip. Doing
+  this also unlocks dropping the standalone `OrderObjectsDecision` pre-step from
+  `BlockPhaseManager.kt:171-200` (Phase 6 work).
+- [ ] **SVG edge rendering** — today the board is row-based (attacker thumbnail →
+  flex-row of edge cells). `CombatArrows.tsx` is tied to battlefield DOM positions
+  via `getCardCenter`, so reusing it on the board means either lifting the SVG arrow
+  primitives into a shared module or wiring board-internal refs. Visual polish only;
+  the row layout reads cleanly today.
 
 ### Phase 4 — Session-layer two-actor dispatch
 

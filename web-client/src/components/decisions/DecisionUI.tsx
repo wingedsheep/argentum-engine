@@ -8,6 +8,7 @@ import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
 import { CombatDamageAssignmentModal } from './CombatDamageAssignmentModal'
 import { CombatDamagePlanModal } from './CombatDamagePlanModal'
+import { CombatResolutionBoard } from './CombatResolutionBoard'
 import { YesNoDecisionUI } from './YesNoDecisionUI'
 import { ChooseNumberDecisionUI } from './ChooseNumberDecisionUI'
 import { ChooseOptionDecisionUI } from './ChooseOptionDecisionUI'
@@ -156,9 +157,15 @@ export function DecisionUI() {
     return <CombatDamageAssignmentModal key={pendingDecision.id} decision={pendingDecision} />
   }
 
-  // Handle CombatDamagePlanDecision (bundled per-attacker damage assignments)
+  // Handle CombatDamagePlanDecision (bundled per-attacker damage assignments, legacy modal)
   if (pendingDecision.type === 'CombatDamagePlanDecision') {
     return <CombatDamagePlanModal key={pendingDecision.id} decision={pendingDecision} />
+  }
+
+  // Handle CombatResolutionDecision (bipartite-graph combat resolution board,
+  // emitted when EngineFeatures.combatResolutionBoardEnabled is on).
+  if (pendingDecision.type === 'CombatResolutionDecision') {
+    return <CombatResolutionBoard key={pendingDecision.id} decision={pendingDecision} />
   }
 
   // Handle ChooseColorDecision (e.g., "Choose a color for protection")

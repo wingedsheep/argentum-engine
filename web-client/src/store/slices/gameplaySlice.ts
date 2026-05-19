@@ -62,6 +62,11 @@ export interface GameplaySliceActions {
   submitDistributeDecision: (distribution: Record<EntityId, number>) => void
   submitDamageAssignmentDecision: (assignments: Record<EntityId, number>) => void
   submitCombatDamagePlanDecision: (assignments: Record<EntityId, Record<EntityId, number>>) => void
+  submitCombatResolutionDecision: (response: {
+    edges: ReadonlyArray<{ edgeId: string; amount: number }>
+    orderedBlockers?: Record<EntityId, readonly EntityId[]>
+    orderedAttackers?: Record<EntityId, readonly EntityId[]>
+  }) => void
   submitColorDecision: (color: string) => void
   submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
   submitCancelDecision: () => void
@@ -297,6 +302,28 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         type: 'CombatDamagePlanResponse' as const,
         decisionId: pendingDecision.id,
         assignments,
+      },
+    }
+    getWebSocket()?.send(createSubmitActionMessage(action))
+  },
+
+  submitCombatResolutionDecision: (response: {
+    edges: ReadonlyArray<{ edgeId: string; amount: number }>
+    orderedBlockers?: Record<string, readonly string[]>
+    orderedAttackers?: Record<string, readonly string[]>
+  }) => {
+    const { pendingDecision, playerId } = get()
+    if (!pendingDecision || !playerId) return
+
+    const action = {
+      type: 'SubmitDecision' as const,
+      playerId,
+      response: {
+        type: 'CombatResolutionResponse' as const,
+        decisionId: pendingDecision.id,
+        edges: response.edges,
+        orderedBlockers: response.orderedBlockers ?? {},
+        orderedAttackers: response.orderedAttackers ?? {},
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))
