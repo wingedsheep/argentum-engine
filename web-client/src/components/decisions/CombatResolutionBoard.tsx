@@ -30,6 +30,11 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
   const hoverCard = useGameStore((s) => s.hoverCard)
   const responsive = useResponsive()
   const [minimized, setMinimized] = useState(false)
+  // Hovering an attacker / blocker highlights all of its outgoing edges so the
+  // user can see at a glance which targets a source dumps damage into.
+  const [hoveredSourceId, setHoveredSourceId] = useState<EntityId | null>(null)
+  // Animated progress of the auto-confirm timer (0 → 1). Drives the top bar.
+  const [autoConfirmProgress, setAutoConfirmProgress] = useState(0)
 
   // Mutable per-edge amounts. Initialised from server-computed defaults.
   const [draft, setDraft] = useState<Record<string, number>>(() => {
@@ -148,17 +153,56 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
 
   // Auto-confirm the trivial case (Scenario I Board 2: regular damage after a
   // first-strike attacker pruned the dangerous blocker; nothing left to do).
+  // The 600 ms wait drives a visible progress bar at the top of the overlay so
+  // the user knows the board is resolving on its own rather than appearing
+  // frozen.
+  const AUTO_CONFIRM_MS = 600
   useEffect(() => {
-    if (hasMeaningfulEditableEdge) return
-    if (!allSourcesFullyAssigned) return
-    const t = window.setTimeout(() => {
-      submit({
-        edges: myEditableEdges.map((e) => ({ edgeId: e.id, amount: draft[e.id] ?? e.amount })),
-      })
-    }, 400)
-    return () => window.clearTimeout(t)
+    if (hasMeaningfulEditableEdge || !allSourcesFullyAssigned) {
+      setAutoConfirmProgress(0)
+      return
+    }
+    let raf = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const elapsed = now - start
+      const p = Math.min(1, elapsed / AUTO_CONFIRM_MS)
+      setAutoConfirmProgress(p)
+      if (p >= 1) {
+        submit({
+          edges: myEditableEdges.map((e) => ({ edgeId: e.id, amount: draft[e.id] ?? e.amount })),
+        })
+        return
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      setAutoConfirmProgress(0)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decision.id, hasMeaningfulEditableEdge, allSourcesFullyAssigned])
+
+  // Keyboard shortcuts: Enter = confirm, Esc = minimize. Bound to window so the
+  // user doesn't have to click the board first.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && allSourcesFullyAssigned && !waitingForOtherRef.current) {
+        e.preventDefault()
+        submit({
+          edges: myEditableEdges.map((edge) => ({ edgeId: edge.id, amount: draft[edge.id] ?? edge.amount })),
+        })
+      } else if (e.key === 'Escape') {
+        setMinimized((m) => !m)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allSourcesFullyAssigned, myEditableEdges, draft])
+  // ref to keep window listener cheap (no need to re-bind on every waiting tick)
+  const waitingForOtherRef = useRef(false)
 
   // ─── handlers ────────────────────────────────────────────────────────────
   const adjust = (edge: DamageEdge, delta: number) => {
@@ -216,6 +260,7 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
   const thumbHeight = Math.round(thumbWidth * 1.4)
 
   const waitingForOther = myEditableEdges.length === 0 && decision.coChooserId != null
+  waitingForOtherRef.current = waitingForOther
 
   // Compact 1v1 strip: a single unblocked-or-once-blocked attacker with no
   // trample fan-out is the most common case and doesn't need the full overlay.
@@ -252,7 +297,8 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.92)',
+        background:
+          'radial-gradient(ellipse at top, rgba(40,15,15,0.55) 0%, rgba(0,0,0,0.94) 60%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -264,28 +310,77 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
         overflowY: 'auto',
       }}
     >
-      {/* Step + banding header */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      {/* Auto-confirm progress strip — thin red bar at the very top edge during
+          the 600ms hands-off resolution window. */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          background: 'rgba(220, 38, 38, 0.15)',
+          zIndex: 1001,
+          pointerEvents: 'none',
+          opacity: autoConfirmProgress > 0 ? 1 : 0,
+          transition: 'opacity 120ms ease-out',
+        }}
+      >
+        <div
+          style={{
+            width: `${autoConfirmProgress * 100}%`,
+            height: '100%',
+            background: 'linear-gradient(90deg, #f87171, #dc2626)',
+            boxShadow: '0 0 8px rgba(220,38,38,0.7)',
+          }}
+        />
+      </div>
+
+      {/* Header strip: step chip + title + status. Tight horizontal layout
+          gives the rows below most of the vertical space. */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          width: '100%',
+          maxWidth: 1400,
+        }}
+      >
         <StepChip firstStrike={decision.firstStrike} />
-        {hasBanding && <BandingHeaderChip />}
         <h2
           style={{
             color: 'white',
             margin: 0,
-            fontSize: responsive.isMobile ? 18 : 22,
+            fontSize: responsive.isMobile ? 17 : 21,
             fontWeight: 600,
+            letterSpacing: 0.2,
+            flex: 1,
           }}
         >
           {waitingForOther ? 'Waiting on opponent…' : 'Assign Combat Damage'}
         </h2>
+        <span
+          style={{
+            color: '#888',
+            fontSize: 11,
+            fontStyle: 'italic',
+            whiteSpace: 'nowrap',
+          }}
+          title="Keyboard: Enter to confirm, Esc to minimize"
+        >
+          ⏎ confirm · esc minimize
+        </span>
       </div>
+
+      {hasBanding && <BandingHeaderChip />}
 
       {/* Attacker rows */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
+          gap: 12,
           width: '100%',
           maxWidth: 1400,
         }}
@@ -309,6 +404,8 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
             canIncrement={canIncrement}
             canDecrement={canDecrement}
             hoverCard={hoverCard}
+            hoveredSourceId={hoveredSourceId}
+            setHoveredSourceId={setHoveredSourceId}
             gameStateCards={gameState?.cards}
           />
         ))}
@@ -333,12 +430,26 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
             canIncrement={canIncrement}
             canDecrement={canDecrement}
             hoverCard={hoverCard}
+            hoveredSourceId={hoveredSourceId}
+            setHoveredSourceId={setHoveredSourceId}
             gameStateCards={gameState?.cards}
           />
         ))}
 
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 6 }}>
+      {/* Controls bar */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          marginTop: 6,
+          padding: '8px 14px',
+          background: 'rgba(15, 15, 22, 0.78)',
+          border: '1px solid #2a2a36',
+          borderRadius: 10,
+          boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
+        }}
+      >
         <button
           onClick={reset}
           style={controlBtn('#374151', 'white')}
@@ -359,16 +470,31 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
               allSourcesFullyAssigned && !waitingForOther ? '#dc2626' : '#3d2020',
               'white',
             ),
-            padding: '12px 28px',
+            padding: '12px 32px',
             fontSize: 15,
-            fontWeight: 600,
+            fontWeight: 700,
+            letterSpacing: 0.3,
             cursor: allSourcesFullyAssigned && !waitingForOther ? 'pointer' : 'not-allowed',
             opacity: allSourcesFullyAssigned && !waitingForOther ? 1 : 0.55,
+            boxShadow:
+              allSourcesFullyAssigned && !waitingForOther
+                ? '0 0 20px rgba(220, 38, 38, 0.55)'
+                : 'none',
+            animation:
+              allSourcesFullyAssigned && !waitingForOther
+                ? 'crb-pulse 1600ms ease-in-out infinite'
+                : undefined,
           }}
         >
-          {waitingForOther ? 'Waiting…' : 'Confirm Damage'}
+          {waitingForOther ? 'Waiting…' : 'Confirm Damage  ⏎'}
         </button>
       </div>
+      <style>{`
+        @keyframes crb-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.45); }
+          50% { box-shadow: 0 0 28px rgba(220, 38, 38, 0.75); }
+        }
+      `}</style>
     </div>
   )
 }
@@ -464,17 +590,28 @@ function StepChip({ firstStrike }: { firstStrike: boolean }) {
   return (
     <div
       style={{
-        background: firstStrike ? '#f59e0b' : '#1f2937',
-        color: firstStrike ? '#1a1a2e' : '#aaa',
-        border: '1px solid #444',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        background: firstStrike
+          ? 'linear-gradient(135deg, #fbbf24, #f59e0b)'
+          : 'linear-gradient(135deg, #ef4444, #b91c1c)',
+        color: firstStrike ? '#1a1a2e' : 'white',
+        border: '1px solid rgba(0,0,0,0.4)',
         borderRadius: 999,
-        padding: '4px 12px',
-        fontSize: 12,
-        fontWeight: 600,
-        letterSpacing: 0.4,
+        padding: '5px 12px 5px 8px',
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: 0.6,
+        textTransform: 'uppercase',
+        boxShadow: firstStrike
+          ? '0 0 12px rgba(251, 191, 36, 0.4)'
+          : '0 0 12px rgba(220, 38, 38, 0.3)',
+        whiteSpace: 'nowrap',
       }}
     >
-      {firstStrike ? 'First Strike Damage' : 'Regular Damage'}
+      <span style={{ fontSize: 14, lineHeight: 1 }}>{firstStrike ? '⚡' : '⚔'}</span>
+      {firstStrike ? 'First Strike' : 'Regular Damage'}
     </div>
   )
 }
@@ -483,18 +620,26 @@ function BandingHeaderChip() {
   return (
     <div
       style={{
-        background: 'rgba(180, 100, 220, 0.18)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 8,
+        background: 'linear-gradient(135deg, rgba(168,85,247,0.22), rgba(139,92,246,0.15))',
         color: '#e9d5ff',
-        border: '1px solid #a855f7',
-        borderRadius: 6,
-        padding: '4px 10px',
+        border: '1px solid rgba(168, 85, 247, 0.6)',
+        borderRadius: 8,
+        padding: '6px 12px',
         fontSize: 11,
         fontWeight: 500,
         maxWidth: 720,
-        textAlign: 'center',
+        textAlign: 'left',
+        boxShadow: '0 0 14px rgba(168, 85, 247, 0.2)',
       }}
     >
-      Banding (CR 702.22j/k): some damage edges are assigned by the other player.
+      <span style={{ fontSize: 14 }}>↻</span>
+      <span>
+        <strong style={{ color: '#f3e8ff' }}>Banding</strong> (CR 702.22j/k) — some damage edges
+        are controlled by the other player. Look for the 🔒 opponent tag on locked edges.
+      </span>
     </div>
   )
 }
@@ -516,6 +661,8 @@ interface AttackerRowProps {
   canIncrement: (edge: DamageEdge) => boolean
   canDecrement: (edge: DamageEdge) => boolean
   hoverCard: (id: EntityId | null, pos?: { x: number; y: number }) => void
+  hoveredSourceId: EntityId | null
+  setHoveredSourceId: (id: EntityId | null) => void
   gameStateCards: Record<EntityId, { name: string; imageUri?: string | null }> | undefined
 }
 
@@ -523,26 +670,47 @@ function AttackerRow(props: AttackerRowProps) {
   const {
     attacker, edges, draft, playerId, adjust, blockerById, defenderById,
     bandIdx, thumbWidth, thumbHeight, sumFromSource, isDrainUnlocked,
-    canIncrement, canDecrement, hoverCard, gameStateCards,
+    canIncrement, canDecrement, hoverCard, hoveredSourceId, setHoveredSourceId,
+    gameStateCards,
   } = props
   const band = bandIdx >= 0 ? bandColorFor(bandIdx) : null
-  const remaining = attacker.power - sumFromSource(attacker.id)
+  const assigned = sumFromSource(attacker.id)
+  const remaining = attacker.power - assigned
+  const fillRatio = attacker.power > 0 ? Math.max(0, Math.min(1, assigned / attacker.power)) : 0
   const card = gameStateCards?.[attacker.id]
+  const isHovered = hoveredSourceId === attacker.id
+
+  // Split edges into blocker-targeted vs drain. Drain gets its own slot on the
+  // right so the player reads "damage flowing to blockers ▸ then spilling over"
+  // rather than treating drain as just another cell.
+  const blockerEdges = edges.filter((e) => !e.isTrampleDrain)
+  const drainEdges = edges.filter((e) => e.isTrampleDrain)
 
   return (
     <div
+      onMouseEnter={() => setHoveredSourceId(attacker.id)}
+      onMouseLeave={() => setHoveredSourceId(null)}
       style={{
         display: 'flex',
-        gap: 12,
-        alignItems: 'center',
-        padding: 10,
+        gap: 14,
+        alignItems: 'stretch',
+        padding: 12,
         background: attacker.dealsDamageThisStep
-          ? 'rgba(20, 20, 30, 0.7)'
+          ? 'linear-gradient(180deg, rgba(40,18,18,0.78) 0%, rgba(18,18,28,0.78) 100%)'
           : 'rgba(20, 20, 30, 0.3)',
-        border: band ? `2px solid ${band.border}` : '1px solid #333',
-        borderRadius: 8,
-        boxShadow: band ? `0 0 16px ${band.glow}` : 'none',
+        border: band
+          ? `2px solid ${band.border}`
+          : isHovered
+            ? '1px solid #ff7a7a'
+            : '1px solid #2a2a36',
+        borderRadius: 10,
+        boxShadow: band
+          ? `0 0 16px ${band.glow}`
+          : isHovered
+            ? '0 0 18px rgba(255, 80, 80, 0.25)'
+            : '0 1px 2px rgba(0,0,0,0.3)',
         opacity: attacker.dealsDamageThisStep ? 1 : 0.55,
+        transition: 'border-color 120ms, box-shadow 120ms',
       }}
     >
       <SourceThumbnail
@@ -556,7 +724,7 @@ function AttackerRow(props: AttackerRowProps) {
         hoverCard={hoverCard}
         chips={[
           band ? <BandChip key="band" idx={bandIdx} band={band} /> : null,
-          <span key="power" style={{ color: '#fbbf24', fontSize: 11 }}>{attacker.power} pwr</span>,
+          <PowerChip key="power" value={attacker.power} />,
           attacker.hasTrample ? <KeywordChip key="t" color="#f59e0b">trample</KeywordChip> : null,
           attacker.hasTrampleOverPlaneswalkers ? <KeywordChip key="tpw" color="#f59e0b">trample-PW</KeywordChip> : null,
           attacker.hasDeathtouch ? <KeywordChip key="dt" color="#a855f7">deathtouch</KeywordChip> : null,
@@ -566,18 +734,15 @@ function AttackerRow(props: AttackerRowProps) {
             <MarkedDamageChip key="md" amount={attacker.markedDamage} />
           ) : null,
         ].filter((x): x is React.ReactElement => x != null)}
-        remainingLabel={
-          remaining === 0
-            ? '✓ done'
-            : remaining > 0
-              ? `${remaining} left`
-              : `over by ${-remaining}`
-        }
-        remainingColor={remaining === 0 ? '#4ade80' : '#f87171'}
+        progressFill={fillRatio}
+        progressColor={remaining === 0 ? '#4ade80' : remaining < 0 ? '#f87171' : '#f59e0b'}
+        progressLabel={remaining === 0 ? '✓ assigned' : remaining > 0 ? `${remaining} left` : `over by ${-remaining}`}
       />
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
-        {edges.map((edge) => {
+      <ArrowDivider />
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1, alignItems: 'center' }}>
+        {blockerEdges.map((edge) => {
           const blk = blockerById.get(edge.targetId)
           const def = defenderById.get(edge.targetId)
           const amount = draft[edge.id] ?? 0
@@ -585,7 +750,6 @@ function AttackerRow(props: AttackerRowProps) {
           const isLethal = lethal != null && amount >= lethal
           const editable = edge.editableBy === playerId
           const unlocked = isDrainUnlocked(edge)
-          const isDrain = edge.isTrampleDrain
           return (
             <EdgeCell
               key={edge.id}
@@ -599,7 +763,7 @@ function AttackerRow(props: AttackerRowProps) {
               minimum={edge.minimum}
               maximum={edge.maximum}
               isLethal={isLethal}
-              isDrain={isDrain}
+              isDrain={false}
               unlocked={unlocked}
               editable={editable}
               canDecrement={editable && unlocked && canDecrement(edge)}
@@ -613,6 +777,50 @@ function AttackerRow(props: AttackerRowProps) {
           )
         })}
       </div>
+
+      {/* Drain slot: spillover target for trample / trample-over-PW. Visually
+          separated from blockers so the player reads "after lethal on blockers,
+          excess flows here" without reading any tooltip. */}
+      {drainEdges.length > 0 && (
+        <>
+          <SpilloverDivider />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {drainEdges.map((edge) => {
+              const def = defenderById.get(edge.targetId)
+              const amount = draft[edge.id] ?? 0
+              const lethal = edge.lethalThreshold
+              const isLethal = lethal != null && amount >= lethal
+              const editable = edge.editableBy === playerId
+              const unlocked = isDrainUnlocked(edge)
+              return (
+                <EdgeCell
+                  key={edge.id}
+                  targetId={edge.targetId}
+                  label={def?.name ?? 'defender'}
+                  imageUri={null}
+                  isDefender={true}
+                  defenderKind={def?.kind}
+                  defenderValue={def?.lifeOrLoyaltyOrDefense ?? null}
+                  amount={amount}
+                  minimum={edge.minimum}
+                  maximum={edge.maximum}
+                  isLethal={isLethal}
+                  isDrain={true}
+                  unlocked={unlocked}
+                  editable={editable}
+                  canDecrement={editable && unlocked && canDecrement(edge)}
+                  canIncrement={editable && unlocked && canIncrement(edge)}
+                  lethalThreshold={lethal}
+                  onAdjust={(d) => adjust(edge, d)}
+                  thumbWidth={thumbWidth}
+                  thumbHeight={thumbHeight}
+                  hoverCard={hoverCard}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -630,32 +838,44 @@ interface BlockerRowProps {
   canIncrement: (edge: DamageEdge) => boolean
   canDecrement: (edge: DamageEdge) => boolean
   hoverCard: (id: EntityId | null, pos?: { x: number; y: number }) => void
+  hoveredSourceId: EntityId | null
+  setHoveredSourceId: (id: EntityId | null) => void
   gameStateCards: Record<EntityId, { name: string; imageUri?: string | null }> | undefined
 }
 
 function BlockerRow(props: BlockerRowProps) {
   const {
     blocker, edges, draft, playerId, adjust, attackerById, thumbWidth,
-    thumbHeight, sumFromSource, canIncrement, canDecrement, hoverCard, gameStateCards,
+    thumbHeight, sumFromSource, canIncrement, canDecrement, hoverCard,
+    hoveredSourceId, setHoveredSourceId, gameStateCards,
   } = props
-  const remaining = blocker.power - sumFromSource(blocker.id)
+  const assigned = sumFromSource(blocker.id)
+  const remaining = blocker.power - assigned
+  const fillRatio = blocker.power > 0 ? Math.max(0, Math.min(1, assigned / blocker.power)) : 0
   const card = gameStateCards?.[blocker.id]
+  const isHovered = hoveredSourceId === blocker.id
 
   return (
     <div
+      onMouseEnter={() => setHoveredSourceId(blocker.id)}
+      onMouseLeave={() => setHoveredSourceId(null)}
       style={{
         display: 'flex',
-        gap: 12,
-        alignItems: 'center',
-        padding: 10,
+        gap: 14,
+        alignItems: 'stretch',
+        padding: 12,
         background: blocker.dealsDamageThisStep
-          ? 'rgba(30, 25, 40, 0.7)'
+          ? 'linear-gradient(180deg, rgba(20,30,50,0.78) 0%, rgba(18,18,28,0.78) 100%)'
           : 'rgba(30, 25, 40, 0.3)',
-        border: '1px solid #4b5563',
-        borderRadius: 8,
+        border: isHovered ? '1px solid #7ab8ff' : '1px solid #2a3a4d',
+        borderRadius: 10,
+        boxShadow: isHovered
+          ? '0 0 18px rgba(96, 165, 250, 0.25)'
+          : '0 1px 2px rgba(0,0,0,0.3)',
         opacity: blocker.dealsDamageThisStep ? 1 : 0.55,
         maxWidth: 1400,
         width: '100%',
+        transition: 'border-color 120ms, box-shadow 120ms',
       }}
     >
       <SourceThumbnail
@@ -668,21 +888,19 @@ function BlockerRow(props: BlockerRowProps) {
         glowColor="rgba(96, 165, 250, 0.5)"
         hoverCard={hoverCard}
         chips={[
-          <span key="power" style={{ color: '#fbbf24', fontSize: 11 }}>{blocker.power} pwr</span>,
+          <PowerChip key="power" value={blocker.power} />,
+          <KeywordChip key="bipartite" color="#93c5fd">↔ {edges.length} atks</KeywordChip>,
           blocker.hasDeathtouch ? <KeywordChip key="dt" color="#a855f7">deathtouch</KeywordChip> : null,
           blocker.markedDamage > 0 ? <MarkedDamageChip key="md" amount={blocker.markedDamage} /> : null,
         ].filter((x): x is React.ReactElement => x != null)}
-        remainingLabel={
-          remaining === 0
-            ? '✓ done'
-            : remaining > 0
-              ? `${remaining} left`
-              : `over by ${-remaining}`
-        }
-        remainingColor={remaining === 0 ? '#4ade80' : '#f87171'}
+        progressFill={fillRatio}
+        progressColor={remaining === 0 ? '#4ade80' : remaining < 0 ? '#f87171' : '#3b82f6'}
+        progressLabel={remaining === 0 ? '✓ assigned' : remaining > 0 ? `${remaining} left` : `over by ${-remaining}`}
       />
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+      <ArrowDivider />
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1, alignItems: 'center' }}>
         {edges.map((edge) => {
           const atk = attackerById.get(edge.targetId)
           const amount = draft[edge.id] ?? 0
@@ -730,12 +948,17 @@ interface SourceThumbnailProps {
   glowColor: string
   hoverCard: (id: EntityId | null, pos?: { x: number; y: number }) => void
   chips: React.ReactElement[]
-  remainingLabel: string
-  remainingColor: string
+  /** 0-1 fill ratio for the progress bar at the bottom of the thumb. */
+  progressFill: number
+  progressColor: string
+  progressLabel: string
 }
 
 function SourceThumbnail(props: SourceThumbnailProps) {
-  const { id, name, imageUri, thumbWidth, thumbHeight, borderColor, glowColor, hoverCard, chips, remainingLabel, remainingColor } = props
+  const {
+    id, name, imageUri, thumbWidth, thumbHeight, borderColor, glowColor,
+    hoverCard, chips, progressFill, progressColor, progressLabel,
+  } = props
   return (
     <div
       onMouseEnter={(e) => hoverCard(id, { x: e.clientX, y: e.clientY })}
@@ -745,8 +968,8 @@ function SourceThumbnail(props: SourceThumbnailProps) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 4,
-        minWidth: thumbWidth + 16,
+        gap: 5,
+        minWidth: thumbWidth + 18,
       }}
     >
       <div
@@ -765,16 +988,122 @@ function SourceThumbnail(props: SourceThumbnailProps) {
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       </div>
-      <div style={{ color: 'white', fontSize: 11, fontWeight: 600, textAlign: 'center', maxWidth: thumbWidth + 16 }}>
+      <div
+        style={{
+          color: 'white',
+          fontSize: 11,
+          fontWeight: 600,
+          textAlign: 'center',
+          maxWidth: thumbWidth + 18,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          width: thumbWidth + 18,
+        }}
+      >
         {name}
       </div>
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', maxWidth: thumbWidth + 24 }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 3,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          maxWidth: thumbWidth + 24,
+        }}
+      >
         {chips}
       </div>
-      <div style={{ color: remainingColor, fontSize: 11, fontWeight: 600 }}>
-        {remainingLabel}
+      {/* Progress fill bar: visual replacement for "N left" text. Fills as
+          damage is assigned; turns green when fully assigned. */}
+      <div
+        style={{
+          width: thumbWidth + 12,
+          height: 4,
+          background: 'rgba(255,255,255,0.08)',
+          borderRadius: 2,
+          overflow: 'hidden',
+          marginTop: 2,
+        }}
+        title={progressLabel}
+      >
+        <div
+          style={{
+            width: `${Math.min(100, progressFill * 100)}%`,
+            height: '100%',
+            background: progressColor,
+            transition: 'width 100ms ease-out, background-color 120ms',
+            boxShadow: `0 0 6px ${progressColor}`,
+          }}
+        />
+      </div>
+      <div style={{ color: progressColor, fontSize: 10, fontWeight: 600, letterSpacing: 0.2 }}>
+        {progressLabel}
       </div>
     </div>
+  )
+}
+
+function ArrowDivider() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        color: '#666',
+        fontSize: 18,
+        userSelect: 'none',
+        padding: '0 2px',
+      }}
+      aria-hidden
+    >
+      →
+    </div>
+  )
+}
+
+function SpilloverDivider() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#f59e0b',
+        gap: 2,
+        fontSize: 10,
+        fontWeight: 600,
+        letterSpacing: 0.4,
+        textTransform: 'uppercase',
+        padding: '0 4px',
+        opacity: 0.85,
+      }}
+      aria-hidden
+    >
+      <span>spillover</span>
+      <span style={{ fontSize: 16, lineHeight: 1 }}>↦</span>
+    </div>
+  )
+}
+
+function PowerChip({ value }: { value: number }) {
+  return (
+    <span
+      style={{
+        background: 'rgba(251, 191, 36, 0.18)',
+        color: '#fde68a',
+        fontWeight: 700,
+        fontSize: 10,
+        padding: '2px 6px',
+        borderRadius: 4,
+        border: '1px solid rgba(251, 191, 36, 0.4)',
+        letterSpacing: 0.2,
+      }}
+    >
+      ⚔ {value}
+    </span>
   )
 }
 
@@ -808,39 +1137,77 @@ function EdgeCell(props: EdgeCellProps) {
     lethalThreshold, onAdjust, thumbWidth, thumbHeight, hoverCard,
   } = props
   const dim = isDrain && !unlocked
+  const cellThumbW = Math.round(thumbWidth * 0.78)
+  const cellThumbH = Math.round(thumbHeight * 0.78)
+
+  // Background + border shifts with the edge's state. Lethal = red glow,
+  // drain unlocked = amber dashed, drain locked = grey dashed + lock icon,
+  // editable = subtle blue border on hover (via CSS-less inline), read-only =
+  // dimmed with lock icon next to the value.
   const border = isLethal
     ? '2px solid #dc2626'
     : isDrain
-      ? `2px dashed ${unlocked ? '#fbbf24' : '#555'}`
-      : '1px solid #444'
+      ? `2px dashed ${unlocked ? '#fbbf24' : '#3a3a3a'}`
+      : editable
+        ? '1px solid #4a4a55'
+        : '1px solid #2a2a2a'
 
   return (
     <div
       onMouseEnter={(e) => !isDefender && hoverCard(targetId, { x: e.clientX, y: e.clientY })}
       onMouseLeave={() => hoverCard(null)}
       style={{
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 4,
-        padding: 6,
-        background: 'rgba(0,0,0,0.4)',
+        gap: 5,
+        padding: '6px 8px',
+        background: isLethal
+          ? 'radial-gradient(ellipse at center, rgba(220,38,38,0.18) 0%, rgba(0,0,0,0.5) 65%)'
+          : isDrain && unlocked
+            ? 'radial-gradient(ellipse at center, rgba(245,158,11,0.12) 0%, rgba(0,0,0,0.5) 65%)'
+            : 'rgba(0,0,0,0.42)',
         border,
-        borderRadius: 6,
-        minWidth: thumbWidth + 16,
+        borderRadius: 8,
+        minWidth: cellThumbW + 22,
         opacity: dim ? 0.45 : 1,
+        boxShadow: isLethal
+          ? '0 0 14px rgba(220, 38, 38, 0.35)'
+          : isDrain && unlocked
+            ? '0 0 10px rgba(245, 158, 11, 0.25)'
+            : 'none',
+        transition: 'opacity 120ms',
       }}
     >
+      {/* Locked drain badge: little padlock in the corner so the player sees
+          why the drain is dimmed without reading a tooltip. */}
+      {isDrain && !unlocked && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 4,
+            right: 6,
+            fontSize: 12,
+            color: '#888',
+          }}
+          aria-hidden
+          title="Drain unlocks once preceding blockers are at lethal"
+        >
+          🔒
+        </div>
+      )}
+
       {isDefender ? (
         <DefenderThumb
           label={label}
           kind={defenderKind}
           value={defenderValue}
-          width={thumbWidth}
-          height={thumbHeight}
+          width={cellThumbW}
+          height={cellThumbH}
         />
       ) : (
-        <div style={{ width: thumbWidth, height: thumbHeight, borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ width: cellThumbW, height: cellThumbH, borderRadius: 4, overflow: 'hidden' }}>
           <img
             src={getCardImageUrl(label, imageUri)}
             alt={label}
@@ -849,20 +1216,17 @@ function EdgeCell(props: EdgeCellProps) {
         </div>
       )}
 
-      {lethalThreshold != null && (
-        <div style={{ fontSize: 10, color: isLethal ? '#4ade80' : '#aaa' }}>
-          lethal {lethalThreshold}{isLethal ? ' ✓' : ''}
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      {/* Damage readout — the prominent center of the cell. ▲/▼ chevrons sit
+          next to the number both to indicate drag direction and to act as
+          touch-friendly increment/decrement targets. */}
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2 }}>
         <button
           onClick={() => onAdjust(-1)}
           disabled={!canDecrement}
-          style={stepBtn(canDecrement)}
+          style={chevronBtn(canDecrement)}
           aria-label="decrease damage"
         >
-          −
+          ▼
         </button>
         <DragHandle
           amount={amount}
@@ -870,20 +1234,43 @@ function EdgeCell(props: EdgeCellProps) {
           canIncrement={canIncrement}
           canDecrement={canDecrement}
           onAdjust={onAdjust}
+          isLethal={isLethal}
         />
         <button
           onClick={() => onAdjust(1)}
           disabled={!canIncrement}
-          style={stepBtn(canIncrement)}
+          style={chevronBtn(canIncrement)}
           aria-label="increase damage"
         >
-          +
+          ▲
         </button>
       </div>
 
+      {lethalThreshold != null && (
+        <div
+          style={{
+            fontSize: 9,
+            color: isLethal ? '#4ade80' : '#888',
+            fontWeight: isLethal ? 700 : 400,
+            letterSpacing: 0.2,
+          }}
+        >
+          {isLethal ? `✓ lethal ${lethalThreshold}` : `lethal ${lethalThreshold}`}
+        </div>
+      )}
+
       {!editable && (
-        <div style={{ fontSize: 9, color: '#888', fontStyle: 'italic' }}>
-          read-only
+        <div
+          style={{
+            fontSize: 9,
+            color: '#666',
+            fontStyle: 'italic',
+            display: 'flex',
+            gap: 3,
+            alignItems: 'center',
+          }}
+        >
+          🔒 opponent
         </div>
       )}
     </div>
@@ -903,12 +1290,14 @@ function DragHandle({
   canIncrement,
   canDecrement,
   onAdjust,
+  isLethal,
 }: {
   amount: number
   editable: boolean
   canIncrement: boolean
   canDecrement: boolean
   onAdjust: (delta: number) => void
+  isLethal: boolean
 }) {
   const DRAG_PX_PER_STEP = 14
   const [dragging, setDragging] = useState(false)
@@ -956,6 +1345,12 @@ function DragHandle({
     setDragging(true)
   }
 
+  const color = isLethal
+    ? '#fca5a5'
+    : amount > 0
+      ? '#fb7185'
+      : '#666'
+
   return (
     <div
       onMouseDown={onMouseDown}
@@ -964,13 +1359,17 @@ function DragHandle({
       aria-label="damage amount (drag vertically to change)"
       tabIndex={editable ? 0 : -1}
       style={{
-        minWidth: 28,
+        minWidth: 34,
         textAlign: 'center',
-        fontWeight: 700,
-        color: amount > 0 ? '#dc2626' : '#666',
+        fontWeight: 800,
+        fontSize: 22,
+        lineHeight: 1,
+        color,
         cursor: editable ? (dragging ? 'ns-resize' : 'grab') : 'default',
         userSelect: 'none',
-        padding: '0 4px',
+        padding: '2px 6px',
+        textShadow: isLethal ? '0 0 8px rgba(220, 38, 38, 0.7)' : 'none',
+        transition: 'color 80ms, text-shadow 80ms',
       }}
     >
       {amount}
@@ -1068,15 +1467,19 @@ function controlBtn(bg: string, color: string, border?: string): React.CSSProper
   }
 }
 
-function stepBtn(enabled: boolean): React.CSSProperties {
+function chevronBtn(enabled: boolean): React.CSSProperties {
   return {
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
     borderRadius: 4,
-    border: '1px solid #555',
-    background: '#1f2937',
-    color: enabled ? 'white' : '#555',
+    border: '1px solid transparent',
+    background: 'transparent',
+    color: enabled ? '#cbd5e1' : '#3a3a44',
     fontWeight: 700,
+    fontSize: 11,
+    lineHeight: 1,
+    padding: 0,
     cursor: enabled ? 'pointer' : 'not-allowed',
+    transition: 'color 80ms, background 80ms',
   }
 }
