@@ -8,10 +8,12 @@ import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackerOrderComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
@@ -46,6 +48,7 @@ internal class BlockPhaseManager(
     private val cardRegistry: CardRegistry,
     private val blockEvasionRules: List<BlockEvasionRule>,
     private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
+    private val features: com.wingedsheep.engine.core.EngineFeatures = com.wingedsheep.engine.core.EngineFeatures(),
 ) {
     private val conditionEvaluator = ConditionEvaluator()
 
@@ -166,32 +169,62 @@ internal class BlockPhaseManager(
         val blockersEvent = BlockersDeclaredEvent(blockers, blockerNameMap, attackerNameMap)
         val blockTaxEvents = taxEvents
 
-        // Per MTG CR 510.1c: An attacker blocked by 2+ creatures has its damage divided
-        // among them as its controller chooses; the engine collects this as an explicit order
-        val attackersNeedingOrder = findAttackersWithMultipleBlockers(newState)
-        if (attackersNeedingOrder.isNotEmpty()) {
-            val attackingPlayer = state.activePlayerId!!
-            return createBlockerOrderDecision(
-                newState,
-                attackingPlayer = attackingPlayer,
-                firstAttacker = attackersNeedingOrder.first(),
-                remainingAttackers = attackersNeedingOrder.drop(1),
-                precedingEvents = blockTaxEvents + blockersEvent
-            )
-        }
+        // Per MTG CR 510.1c/d: ordering blocker damage assignment is normally a
+        // separate pre-decision. When the combat resolution board is on, fold
+        // it into the board: pre-fill the default order from declaration order
+        // and let the board's row-order at confirm time override if needed.
+        // Removes 1 round-trip per attacker with multi-blockers + 1 per blocker
+        // with multi-attackers (a band of N attackers blocked by ≥2 each used to
+        // pop N modals before combat damage; now zero).
+        if (features.combatResolutionBoardEnabled) {
+            val attackersNeedingOrder = findAttackersWithMultipleBlockers(newState)
+            for (attackerId in attackersNeedingOrder) {
+                val container = newState.getEntity(attackerId) ?: continue
+                if (container.has<DamageAssignmentOrderComponent>()) continue
+                val blockerIds = container.get<BlockedComponent>()?.blockerIds.orEmpty()
+                if (blockerIds.size < 2) continue
+                newState = newState.updateEntity(attackerId) { c ->
+                    c.with(DamageAssignmentOrderComponent(blockerIds))
+                }
+            }
+            val blockersNeedingOrder = findBlockersWithMultipleAttackers(newState)
+            for (blockerId in blockersNeedingOrder) {
+                val container = newState.getEntity(blockerId) ?: continue
+                if (container.has<AttackerOrderComponent>()) continue
+                val attackerIds = container.get<BlockingComponent>()?.blockedAttackerIds.orEmpty()
+                if (attackerIds.size < 2) continue
+                newState = newState.updateEntity(blockerId) { c ->
+                    c.with(AttackerOrderComponent(attackerIds))
+                }
+            }
+        } else {
+            // Per MTG CR 510.1c: An attacker blocked by 2+ creatures has its damage divided
+            // among them as its controller chooses; the engine collects this as an explicit order
+            val attackersNeedingOrder = findAttackersWithMultipleBlockers(newState)
+            if (attackersNeedingOrder.isNotEmpty()) {
+                val attackingPlayer = state.activePlayerId!!
+                return createBlockerOrderDecision(
+                    newState,
+                    attackingPlayer = attackingPlayer,
+                    firstAttacker = attackersNeedingOrder.first(),
+                    remainingAttackers = attackersNeedingOrder.drop(1),
+                    precedingEvents = blockTaxEvents + blockersEvent
+                )
+            }
 
-        // Per MTG CR 510.1d: A blocker blocking 2+ attackers has its damage divided
-        // among them as its controller chooses; the engine collects this as an explicit order
-        val blockersNeedingOrder = findBlockersWithMultipleAttackers(newState)
-        if (blockersNeedingOrder.isNotEmpty()) {
-            val attackingPlayer = state.activePlayerId!!
-            return createAttackerOrderDecision(
-                newState,
-                attackingPlayer = attackingPlayer,
-                firstBlocker = blockersNeedingOrder.first(),
-                remainingBlockers = blockersNeedingOrder.drop(1),
-                precedingEvents = blockTaxEvents + blockersEvent
-            )
+            // Per MTG CR 510.1d: A blocker blocking 2+ attackers has its damage divided
+            // among them as its controller chooses; the engine collects this as an explicit order
+            val blockersNeedingOrder = findBlockersWithMultipleAttackers(newState)
+            if (blockersNeedingOrder.isNotEmpty()) {
+                val attackingPlayer = state.activePlayerId!!
+                return createAttackerOrderDecision(
+                    newState,
+                    attackingPlayer = attackingPlayer,
+                    firstBlocker = blockersNeedingOrder.first(),
+                    remainingBlockers = blockersNeedingOrder.drop(1),
+                    precedingEvents = blockTaxEvents + blockersEvent
+                )
+            }
         }
 
         return ExecutionResult.success(

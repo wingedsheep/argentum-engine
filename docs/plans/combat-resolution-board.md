@@ -434,6 +434,9 @@ enables the two-actor banding case in a single payload.
    `BlockPhaseManager.kt:171-200`. Pre-fill default order in
    `DamageAssignmentOrderComponent` / `AttackerOrderComponent` automatically; the response
    carries the final order, populated by the client from row order at confirm time.
+   *(Done — `BlockPhaseManager.declareBlockers` now pre-fills both components from declaration
+   order when `combatResolutionBoardEnabled` is on, skipping every `OrderObjectsDecision` modal
+   that previously fired between block declaration and combat damage.)*
 4. **Validation** in `DecisionValidators.kt:81`. Extend to enforce:
    - Per-attacker edge sum ≤ source power.
    - Each edge's `editableBy` matches the submitting player.

@@ -37,7 +37,7 @@ class CombatManager(
     private val features: EngineFeatures = EngineFeatures(),
 ) {
     internal val attackPhase = AttackPhaseManager(cardRegistry, attackRestrictionRules, attackDefenderRules, manaAbilitySideEffectExecutor)
-    internal val blockPhase = BlockPhaseManager(cardRegistry, blockEvasionRules, manaAbilitySideEffectExecutor)
+    internal val blockPhase = BlockPhaseManager(cardRegistry, blockEvasionRules, manaAbilitySideEffectExecutor, features)
     private val damagePhase = CombatDamageManager(cardRegistry, damageCalculator, features)
 
     // =========================================================================
