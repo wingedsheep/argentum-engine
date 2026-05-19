@@ -261,6 +261,77 @@ class CombatResolutionBoardTest : FunSpec({
         fromCrusher.forEach { it.editableBy shouldBe defender }
     }
 
+    /**
+     * CR 702.22k: when an attacking creature has banding, the active player
+     * chooses the damage division for the blockers blocking it AND can ignore
+     * the damage-assignment order. So the BLOCKER_TO_ATTACKER edges should
+     * have `minimum = 0` (not the lethal threshold) so the active player can
+     * dump all of a blocker's damage on a single band member.
+     *
+     * Before the fix the validator rejected such submissions with
+     * "amount X below minimum Y".
+     */
+    test("banding attacker: BLOCKER_TO_ATTACKER edges have minimum=0 (lethal-first bypassed)") {
+        val driver = createDriver()
+        val bandingKnight = CardDefinition.creature(
+            name = "Test Banding Knight",
+            manaCost = ManaCost.parse("{2}{W}"),
+            subtypes = setOf(Subtype("Knight")),
+            power = 2,
+            toughness = 2,
+            keywords = setOf(com.wingedsheep.sdk.core.Keyword.BANDING),
+        )
+        driver.registerCard(bandingKnight)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        // Two banded attackers (one banding, one not) — CR 702.22c allows a
+        // banding creature to band with up to one non-banding attacker.
+        val knight1 = driver.putCreatureOnBattlefield(attacker, "Test Banding Knight")
+        val knight2 = driver.putCreatureOnBattlefield(attacker, "Test Banding Knight")
+        val giant1 = driver.putCreatureOnBattlefield(defender, "Trample Beast")  // 5/5 trample, used as 5-power blocker
+        val giant2 = driver.putCreatureOnBattlefield(defender, "Trample Beast")
+        driver.removeSummoningSickness(knight1)
+        driver.removeSummoningSickness(knight2)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(
+            com.wingedsheep.engine.core.DeclareAttackers(
+                attacker,
+                mapOf(knight1 to defender, knight2 to defender),
+                bands = listOf(setOf(knight1, knight2)),
+            ),
+        )
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        // Per CR 702.22h: blocking any band member blocks the entire band.
+        // Both blockers naturally block the band.
+        driver.declareBlockers(defender, mapOf(giant1 to listOf(knight1), giant2 to listOf(knight2)))
+
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        val blockerEdges = decision.edges.filter {
+            it.direction == DamageEdgeDirection.BLOCKER_TO_ATTACKER
+        }
+        // With banding active on at least one blocked attacker, every blocker
+        // edge should have minimum=0 — the active player can ignore the
+        // damage-assignment order (CR 702.22k).
+        blockerEdges.forEach { edge ->
+            edge.minimum shouldBe 0
+        }
+    }
+
     test("non-trample attacker with single blocker does not emit a resolution decision") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))

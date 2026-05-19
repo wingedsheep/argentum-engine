@@ -67,6 +67,13 @@ internal class CombatDamageManager(
         val hasAssignAsUnblocked: Boolean = false,
         /** True for DivideCombatDamageFreely (Butcher Orgg). All edges have minimum=0; defaults split evenly across blockers + defender. */
         val hasDivideDamageFreely: Boolean = false,
+        /**
+         * True when CR 702.22j applies: at least one of this attacker's blockers has
+         * banding, so the defender chooses the damage split *and* can ignore the
+         * damage-assignment order. All ATK→BLK edges from this attacker drop their
+         * lethal-first minimum to 0.
+         */
+        val bandingBypassesOrder: Boolean = false,
     )
 
     private val damageModifiers: List<CombatDamageModifier> = listOf(
@@ -338,6 +345,11 @@ internal class CombatDamageManager(
                 state, projected, attackerId, defaultChooser = attackingPlayer
             )
 
+            // CR 702.22j: when a banding creature is blocking, the defender may *also* ignore
+            // the damage-assignment order. Same condition as the chooser flip — any blocker
+            // has banding — so check `chooser != attackingPlayer`.
+            val bandingBypassesOrder = chooser != attackingPlayer
+
             val minimumAssignments = damageCalculator.getMinimumAssignments(state, attackerId)
             val autoDistribution = damageCalculator.calculateAutoDamageDistribution(state, attackerId)
 
@@ -355,6 +367,7 @@ internal class CombatDamageManager(
                     defaultAssignments = autoDistribution.assignments,
                     hasAssignAsUnblocked = hasAssignAsUnblocked,
                     hasDivideDamageFreely = hasDivideDamageFreely,
+                    bandingBypassesOrder = bandingBypassesOrder,
                 )
             )
         }
@@ -1401,9 +1414,10 @@ internal class CombatDamageManager(
             // bypass lethal-first: blocker edges have minimum=0 and a non-trample defender drain
             // is always present, so the player can drag damage anywhere within the power budget.
             val isFreeAssignment = c.hasAssignAsUnblocked || c.hasDivideDamageFreely
+            val bypassLethalFirst = isFreeAssignment || c.bandingBypassesOrder
             for (blockerId in c.liveBlockers) {
                 val baseMinimum = c.minimumAssignments[blockerId] ?: 0
-                val minimum = if (isFreeAssignment) 0 else baseMinimum
+                val minimum = if (bypassLethalFirst) 0 else baseMinimum
                 val default = if (c.hasAssignAsUnblocked) {
                     // Default for AssignAsUnblocked: dump everything on defender, nothing on blockers.
                     0
@@ -1496,6 +1510,10 @@ internal class CombatDamageManager(
             val chooser = CombatDamageUtils.blockerDamageAssignmentChooser(
                 state, projected, blocker.id, defaultChooser, activePlayerId ?: defaultChooser
             )
+            // CR 702.22k: when any attacker this blocker is blocking has banding, the active
+            // player chooses the division *and* can ignore the damage-assignment order. Same
+            // condition that flips the chooser, so detect via `chooser != defaultChooser`.
+            val bandingBypassesOrder = chooser != defaultChooser
             val orderedTargets = blockerContainer
                 .get<AttackerOrderComponent>()
                 ?.orderedAttackers
@@ -1512,7 +1530,7 @@ internal class CombatDamageManager(
                 val default = defaults[attackerId] ?: 0
                 val isLast = attackerId == liveOrdered.last()
                 val lethalInfo = damageCalculator.calculateLethalDamage(state, attackerId, blocker.id)
-                val minimum = if (isLast) 0 else lethalInfo.lethalAmount
+                val minimum = if (bandingBypassesOrder || isLast) 0 else lethalInfo.lethalAmount
                 val lethal = if (blocker.hasDeathtouch) 1 else lethalInfo.lethalAmount
                 edges.add(
                     DamageEdge(
