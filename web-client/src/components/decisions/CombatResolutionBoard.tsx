@@ -114,10 +114,14 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
     const current = draft[edge.id] ?? 0
     if (current >= edge.maximum) return false
     if (!isDrainUnlocked(edge)) return false
+    // At source cap, ▲ becomes "redistribute": take 1 from another sibling
+    // edge if any has room (current > minimum), then add 1 here. canIncrement
+    // returns true so the chevron stays enabled.
     const sourcePower = sourcePowerFor(edge.sourceId)
     if (sourcePower == null) return true
     const allocated = sumFromSource(edge.sourceId)
-    return allocated < sourcePower
+    if (allocated < sourcePower) return true
+    return findRedistributeDonor(edge) != null
   }
 
   function sourcePowerFor(sourceId: EntityId): number | null {
@@ -127,6 +131,27 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
     let sum = 0
     for (const edge of edgesBySource.get(sourceId) ?? []) sum += draft[edge.id] ?? 0
     return sum
+  }
+
+  /**
+   * Find the best sibling edge to steal 1 damage from when incrementing `edge`
+   * at the source's power cap. Prefers the edge with the highest current
+   * allocation that's still above its minimum; ignores trample-drain siblings
+   * unless they're the only available donor. Returns null if no donor exists.
+   */
+  function findRedistributeDonor(edge: DamageEdge): DamageEdge | null {
+    const siblings = (edgesBySource.get(edge.sourceId) ?? []).filter((e) => e.id !== edge.id)
+    const candidates = siblings
+      .filter((e) => (draft[e.id] ?? 0) > e.minimum)
+      .sort((a, b) => {
+        // Prefer non-drain donors first (they're regular blocker edges); among
+        // those, prefer the one carrying the most damage.
+        const drainA = a.isTrampleDrain ? 1 : 0
+        const drainB = b.isTrampleDrain ? 1 : 0
+        if (drainA !== drainB) return drainA - drainB
+        return (draft[b.id] ?? 0) - (draft[a.id] ?? 0)
+      })
+    return candidates[0] ?? null
   }
 
   // ─── editability + auto-confirm ──────────────────────────────────────────
@@ -209,9 +234,37 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
     if (edge.editableBy !== playerId) return
     setDraft((prev) => {
       const current = prev[edge.id] ?? 0
-      const next = Math.max(edge.minimum, Math.min(edge.maximum, current + delta))
-      if (next === current) return prev
-      return { ...prev, [edge.id]: next }
+      const clamped = Math.max(edge.minimum, Math.min(edge.maximum, current + delta))
+      if (clamped === current) return prev
+      const next = { ...prev, [edge.id]: clamped }
+      // Auto-redistribute: if the source is now over its power cap (only
+      // possible on +1 deltas), drain the overflow from sibling edges in
+      // priority order so the user perceives "+1 here = -1 from another
+      // target", not "blocked because cap reached". Repeats until balanced
+      // or no donor is left (in which case the increment partially happens
+      // — the chip caps at whatever room existed).
+      if (delta > 0) {
+        const sourcePower = sourcePowerFor(edge.sourceId) ?? Infinity
+        const siblings = (edgesBySource.get(edge.sourceId) ?? []).filter((e) => e.id !== edge.id)
+        let total = siblings.reduce((sum, e) => sum + (next[e.id] ?? 0), 0) + clamped
+        while (total > sourcePower) {
+          const donor = siblings
+            .filter((e) => (next[e.id] ?? 0) > e.minimum)
+            .sort((a, b) => {
+              const drainA = a.isTrampleDrain ? 1 : 0
+              const drainB = b.isTrampleDrain ? 1 : 0
+              if (drainA !== drainB) return drainA - drainB
+              return (next[b.id] ?? 0) - (next[a.id] ?? 0)
+            })[0]
+          if (!donor) {
+            // No donor available — partial increment isn't legal, revert.
+            return prev
+          }
+          next[donor.id] = (next[donor.id] ?? 0) - 1
+          total--
+        }
+      }
+      return next
     })
   }
   const reset = () => {
