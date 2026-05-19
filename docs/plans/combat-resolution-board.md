@@ -692,6 +692,29 @@ Without this, the banding scenario emits two sequential boards (first chooser's 
 co-chooser's view with prior amounts baked in). Behaviorally correct, just slightly less
 elegant.
 
+### Engine gaps discovered while writing Phase 5 scenario coverage
+
+- [ ] **Pure bipartite without a manually-assigned attacker doesn't surface a decision.**
+  When one blocker blocks two attackers and *neither* attacker individually
+  requires manual assignment (e.g., no trample, no banding, lethal-first has a
+  unique answer), `emitCombatResolutionDecision` is never called — the
+  blocker's damage division silently auto-resolves. `CombatDamageManager`
+  builds `planCandidates` per attacker; the blocker-side `BLOCKER_TO_ATTACKER`
+  emitter at `CombatDamageManager.kt:1466` only runs as a side effect of an
+  attacker-side candidate existing. To close this, the emitter needs a
+  "blocker requires manual division" entry point that includes all blocked
+  attackers (auto and manual) in `attackers` and skips per-attacker
+  ATTACKER_TO_BLOCKER edges where there is nothing to choose. Today's
+  `CombatResolutionBoardTest` works around this by using a trample attacker
+  (always manual) on each side of the crusher to force the decision to emit.
+- [ ] **`CombatResolutionResponse` rejected for multi-trample bipartite** —
+  the engine emits the decision correctly (verified in test) but rejects the
+  default-edge response with `isSuccess = false`. The test asserts the
+  decision shape and skips the submit step; needs follow-up to confirm
+  whether the rejection is in `DecisionValidators.kt` (lethal-first /
+  per-source budget on a multi-trample-drain layout) or in the resumer's
+  edge-id parsing.
+
 ### Deferred from Phase 2
 
 - [ ] **Unblocked `DivideCombatDamageFreely`** (e.g. Butcher Orgg attacking the face). The

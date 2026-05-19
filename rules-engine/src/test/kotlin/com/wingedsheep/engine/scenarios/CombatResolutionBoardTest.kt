@@ -8,9 +8,15 @@ import com.wingedsheep.engine.core.EngineFeatures
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -94,6 +100,107 @@ class CombatResolutionBoardTest : FunSpec({
             edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) },
         )
         driver.submitDecision(decision.playerId, response).isSuccess shouldBe true
+    }
+
+    /**
+     * Bipartite crossover (Scenario E in `docs/plans/combat-resolution-board.md`)
+     * combined with a trample attacker so the board is forced to emit. A pure
+     * bipartite case with no trample currently auto-resolves under the new flag
+     * because no per-attacker manual-assignment is needed; that is a known engine
+     * gap noted in §10 (the blocker-side division should still surface a
+     * decision). Once that gap is closed we can drop the trample helper and
+     * test pure bipartite directly.
+     *
+     * Setup: trample attacker double-blocked by an Ironfist-style crusher and a
+     * vanilla blocker; the crusher *also* blocks a second non-trample attacker.
+     * Verifies (a) the trample drain edge is emitted, (b) the crusher's
+     * blocker→attacker edges surface, (c) ownership defaults to the defender.
+     */
+    test("bipartite crusher between two manually-assigned attackers emits BLOCKER_TO_ATTACKER edges") {
+        val driver = createDriver()
+        val testCrusher = CardDefinition.creature(
+            name = "Test Crusher",
+            manaCost = ManaCost.parse("{4}{W}"),
+            subtypes = setOf(Subtype("Soldier")),
+            power = 2,
+            toughness = 4,
+            script = CardScript.creature(staticAbilities = listOf(CanBlockAnyNumber())),
+        )
+        val testBear = CardDefinition.creature(
+            name = "Test Bear",
+            manaCost = ManaCost.parse("{1}{G}"),
+            subtypes = setOf(Subtype("Bear")),
+            power = 2,
+            toughness = 2,
+        )
+        driver.registerCard(testCrusher)
+        driver.registerCard(testBear)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        // Two trample attackers: trample forces manual assignment unconditionally
+        // (the player must choose drain), guaranteeing both end up in
+        // planCandidates and so in the decision's `attackers` list.
+        val tusker1 = driver.putCreatureOnBattlefield(attacker, "Trample Beast")   // 5/5 trample
+        val tusker2 = driver.putCreatureOnBattlefield(attacker, "Trample Beast")   // 5/5 trample
+        val crusher = driver.putCreatureOnBattlefield(defender, "Test Crusher")    // 2/4
+        val lions = driver.putCreatureOnBattlefield(defender, "Savannah Lions")    // 2/1
+        val bear = driver.putCreatureOnBattlefield(defender, "Test Bear")          // 2/2
+        driver.removeSummoningSickness(tusker1)
+        driver.removeSummoningSickness(tusker2)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(tusker1, tusker2), defender)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        // Crusher blocks both attackers; Lions on tusker1, Bear on tusker2.
+        driver.declareBlockers(
+            defender,
+            mapOf(
+                crusher to listOf(tusker1, tusker2),
+                lions to listOf(tusker1),
+                bear to listOf(tusker2),
+            ),
+        )
+
+        // Drain any OrderObjectsDecision pre-steps (CR 510.1d): one per attacker
+        // with >1 blocker, one per blocker with >1 attacker.
+        advanceUntilDecision(driver)
+        var decision: com.wingedsheep.engine.core.PendingDecision? = driver.state.pendingDecision
+        while (decision is com.wingedsheep.engine.core.OrderObjectsDecision) {
+            driver.submitDecision(
+                decision.playerId,
+                com.wingedsheep.engine.core.OrderedResponse(decision.id, decision.objects),
+            )
+            advanceUntilDecision(driver)
+            decision = driver.state.pendingDecision
+        }
+
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        decision.attackers.map { it.id }.toSet() shouldBe setOf(tusker1, tusker2)
+        decision.blockers.map { it.id }.toSet() shouldBe setOf(crusher, lions, bear)
+
+        // Trample drain edges present on each tusker.
+        val drains = decision.edges.filter { it.isTrampleDrain }
+        drains.map { it.sourceId }.toSet() shouldBe setOf(tusker1, tusker2)
+        drains.forEach {
+            it.direction shouldBe DamageEdgeDirection.ATTACKER_TO_PLAYER
+            it.targetId shouldBe defender
+        }
+
+        // Bipartite half: crusher (blocking both attackers) emits BLOCKER_TO_ATTACKER
+        // edges to each. Single-attacker blockers (lions, bear) do not.
+        val fromCrusher = decision.edges.filter { it.sourceId == crusher }
+        fromCrusher.size shouldBe 2
+        fromCrusher.map { it.direction }.toSet() shouldContainExactly setOf(DamageEdgeDirection.BLOCKER_TO_ATTACKER)
+        fromCrusher.map { it.targetId }.toSet() shouldBe setOf(tusker1, tusker2)
+
+        decision.edges.filter { it.sourceId == lions }.size shouldBe 0
+        decision.edges.filter { it.sourceId == bear }.size shouldBe 0
+
+        // Defender owns the blocker-side edges by default (CR 510.1d).
+        fromCrusher.forEach { it.editableBy shouldBe defender }
     }
 
     test("non-trample attacker with single blocker does not emit a resolution decision") {
