@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type {
   CombatResolutionDecision,
@@ -385,30 +385,72 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
           maxWidth: 1400,
         }}
       >
-        {decision.attackers.map((attacker) => (
-          <AttackerRow
-            key={attacker.id}
-            attacker={attacker}
-            edges={edgesBySource.get(attacker.id) ?? []}
-            draft={draft}
-            playerId={playerId}
-            adjust={adjust}
-            attackerById={attackerById}
-            blockerById={blockerById}
-            defenderById={defenderById}
-            bandIdx={bandIndexFor(attacker)}
-            thumbWidth={thumbWidth}
-            thumbHeight={thumbHeight}
-            sumFromSource={sumFromSource}
-            isDrainUnlocked={isDrainUnlocked}
-            canIncrement={canIncrement}
-            canDecrement={canDecrement}
-            hoverCard={hoverCard}
-            hoveredSourceId={hoveredSourceId}
-            setHoveredSourceId={setHoveredSourceId}
-            gameStateCards={gameState?.cards}
-          />
-        ))}
+        {/* Banded attackers (sharing a bandId) get a single wrapper that
+            visually merges their rows into one unit — matches the rules
+            intuition that the band is "blocked as a group" (CR 702.22h) even
+            though each member still has its own damage assignment. */}
+        {groupAttackersForRender(decision.attackers).map((group) => {
+          const rows = group.attackers.map((attacker) => (
+            <AttackerRow
+              key={attacker.id}
+              attacker={attacker}
+              edges={edgesBySource.get(attacker.id) ?? []}
+              draft={draft}
+              playerId={playerId}
+              adjust={adjust}
+              attackerById={attackerById}
+              blockerById={blockerById}
+              defenderById={defenderById}
+              bandIdx={bandIndexFor(attacker)}
+              thumbWidth={thumbWidth}
+              thumbHeight={thumbHeight}
+              sumFromSource={sumFromSource}
+              isDrainUnlocked={isDrainUnlocked}
+              canIncrement={canIncrement}
+              canDecrement={canDecrement}
+              hoverCard={hoverCard}
+              hoveredSourceId={hoveredSourceId}
+              setHoveredSourceId={setHoveredSourceId}
+              gameStateCards={gameState?.cards}
+            />
+          ))
+          if (group.kind !== 'band' || rows.length < 2) {
+            return <React.Fragment key={group.key}>{rows}</React.Fragment>
+          }
+          const band = bandColorFor(group.bandSlot ?? 0)
+          return (
+            <div
+              key={group.key}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                padding: 8,
+                background: `linear-gradient(135deg, ${band.glow} 0%, rgba(0,0,0,0.0) 70%)`,
+                border: `1px dashed ${band.border}`,
+                borderRadius: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 0.6,
+                  textTransform: 'uppercase',
+                  color: band.chipBg,
+                  paddingLeft: 4,
+                }}
+              >
+                <span style={{ fontSize: 13 }}>⛓</span>
+                Band of {rows.length} — you assign all damage (CR 702.22k)
+              </div>
+              {rows}
+            </div>
+          )
+        })}
       </div>
 
       {/* Blocker → attacker edges (multi-blocker / bipartite). Only render when
@@ -435,6 +477,14 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
             gameStateCards={gameState?.cards}
           />
         ))}
+
+      {/* Outcome preview: the killer feature for dense scenarios (banding,
+          multi-block bands). Shows who dies / who survives at-a-glance so the
+          player doesn't have to scan every edge cell to verify defaults. */}
+      <CombatOutcomeStrip
+        decision={decision}
+        draft={draft}
+      />
 
       {/* Controls bar */}
       <div
@@ -499,7 +549,236 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
   )
 }
 
+// ─── helpers ───────────────────────────────────────────────────────────────
+
+/**
+ * Group attackers by bandId so the renderer can wrap each band in a single
+ * "band-of-N" container. Preserves declaration order across groups.
+ */
+type AttackerGroup =
+  | { kind: 'solo'; key: string; attackers: ResolutionAttacker[] }
+  | { kind: 'band'; key: string; bandSlot: number; attackers: ResolutionAttacker[] }
+
+function groupAttackersForRender(attackers: readonly ResolutionAttacker[]): AttackerGroup[] {
+  const groups: AttackerGroup[] = []
+  const bandSlots = new Map<string, number>()
+  for (const attacker of attackers) {
+    if (attacker.bandId) {
+      let slot = bandSlots.get(attacker.bandId)
+      if (slot == null) {
+        slot = bandSlots.size
+        bandSlots.set(attacker.bandId, slot)
+        groups.push({
+          kind: 'band',
+          key: `band-${attacker.bandId}`,
+          bandSlot: slot,
+          attackers: [attacker],
+        })
+      } else {
+        // Find the existing band group and append.
+        const existing = groups.find(
+          (g) => g.kind === 'band' && g.key === `band-${attacker.bandId}`,
+        ) as Extract<AttackerGroup, { kind: 'band' }> | undefined
+        if (existing) existing.attackers.push(attacker)
+      }
+    } else {
+      groups.push({ kind: 'solo', key: `solo-${attacker.id}`, attackers: [attacker] })
+    }
+  }
+  return groups
+}
+
 // ─── sub-components ────────────────────────────────────────────────────────
+
+/**
+ * Compact at-a-glance "what happens" panel. Walks every edge in the current
+ * draft, sums incoming damage per target (creatures + player + planeswalker +
+ * battle), and labels each as ✗ dies / ✓ survives at X/Y / takes N. Lets the
+ * player verify the board state without scanning every cell — especially
+ * valuable in dense banding scenarios where ≥6 source rows can land on a
+ * handful of unique outcomes.
+ */
+function CombatOutcomeStrip({
+  decision,
+  draft,
+}: {
+  decision: CombatResolutionDecision
+  draft: Record<string, number>
+}) {
+  // Tally incoming damage per target id, plus track whether any incoming
+  // source has deathtouch (1 = lethal). Marked damage from the prior step
+  // adds to the total.
+  type Tally = { damage: number; deathtouch: boolean }
+  const tally = new Map<EntityId, Tally>()
+  const bump = (id: EntityId, dmg: number, dt: boolean) => {
+    const cur = tally.get(id) ?? { damage: 0, deathtouch: false }
+    tally.set(id, { damage: cur.damage + dmg, deathtouch: cur.deathtouch || dt })
+  }
+  const attackerById = new Map(decision.attackers.map((a) => [a.id, a]))
+  const blockerById = new Map(decision.blockers.map((b) => [b.id, b]))
+  for (const edge of decision.edges) {
+    const amount = draft[edge.id] ?? edge.amount
+    if (amount <= 0) continue
+    const src = attackerById.get(edge.sourceId) ?? blockerById.get(edge.sourceId)
+    bump(edge.targetId, amount, src?.hasDeathtouch ?? false)
+  }
+
+  type Outcome = {
+    id: EntityId
+    name: string
+    side: 'attacker' | 'blocker' | 'defender'
+    damageTaken: number
+    toughness: number | null
+    dies: boolean
+    icon?: string
+  }
+  const outcomes: Outcome[] = []
+  for (const a of decision.attackers) {
+    const t = tally.get(a.id) ?? { damage: 0, deathtouch: false }
+    const total = t.damage + a.markedDamage
+    const dies = (t.deathtouch && total > 0) || (a.toughness > 0 && total >= a.toughness)
+    outcomes.push({
+      id: a.id,
+      name: a.name,
+      side: 'attacker',
+      damageTaken: total,
+      toughness: a.toughness,
+      dies,
+    })
+  }
+  for (const b of decision.blockers) {
+    const t = tally.get(b.id) ?? { damage: 0, deathtouch: false }
+    const total = t.damage + b.markedDamage
+    const dies = (t.deathtouch && total > 0) || (b.toughness > 0 && total >= b.toughness)
+    outcomes.push({
+      id: b.id,
+      name: b.name,
+      side: 'blocker',
+      damageTaken: total,
+      toughness: b.toughness,
+      dies,
+    })
+  }
+  for (const d of decision.defenders) {
+    const t = tally.get(d.id) ?? { damage: 0, deathtouch: false }
+    if (t.damage <= 0) continue
+    outcomes.push({
+      id: d.id,
+      name: d.name,
+      side: 'defender',
+      damageTaken: t.damage,
+      toughness: d.lifeOrLoyaltyOrDefense ?? null,
+      dies: d.kind === 'PLANESWALKER' && d.lifeOrLoyaltyOrDefense != null && t.damage >= d.lifeOrLoyaltyOrDefense,
+      icon: d.kind === 'PLAYER' ? '♟' : d.kind === 'PLANESWALKER' ? '✦' : '⚔',
+    })
+  }
+
+  const dying = outcomes.filter((o) => o.dies)
+  const surviving = outcomes.filter((o) => !o.dies && o.damageTaken > 0)
+  const defenderHit = outcomes.filter((o) => o.side === 'defender')
+
+  if (dying.length === 0 && surviving.length === 0 && defenderHit.length === 0) {
+    return null
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        width: '100%',
+        maxWidth: 1400,
+        padding: '8px 14px',
+        background: 'rgba(15, 15, 22, 0.78)',
+        border: '1px solid #2a2a36',
+        borderRadius: 10,
+        boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{ color: '#888', fontSize: 9, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase' }}>
+          Outcome
+        </span>
+        <span style={{ color: '#cbd5e1', fontSize: 12, fontWeight: 600 }}>
+          {dying.length === 0 ? 'No deaths' : `${dying.length} dies`}
+        </span>
+      </div>
+      <div style={{ width: 1, alignSelf: 'stretch', background: '#2a2a36' }} />
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flex: 1, alignItems: 'center' }}>
+        {dying.map((o) => (
+          <OutcomePill
+            key={`d-${o.id}`}
+            label={o.name}
+            value={`${o.damageTaken}${o.toughness != null ? ` / ${o.toughness}` : ''}`}
+            tone="dies"
+          />
+        ))}
+        {surviving.map((o) => (
+          <OutcomePill
+            key={`s-${o.id}`}
+            label={o.name}
+            value={`${o.damageTaken} / ${o.toughness ?? '–'}`}
+            tone="hurt"
+          />
+        ))}
+        {defenderHit.map((o) => {
+          const value =
+            o.toughness != null
+              ? `−${o.damageTaken} → ${Math.max(0, o.toughness - o.damageTaken)}`
+              : `${o.damageTaken}`
+          const tone: 'dies' | 'face' = o.dies ? 'dies' : 'face'
+          return o.icon ? (
+            <OutcomePill key={`f-${o.id}`} label={o.name} value={value} tone={tone} icon={o.icon} />
+          ) : (
+            <OutcomePill key={`f-${o.id}`} label={o.name} value={value} tone={tone} />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function OutcomePill({
+  label,
+  value,
+  tone,
+  icon,
+}: {
+  label: string
+  value: string
+  tone: 'dies' | 'hurt' | 'face'
+  icon?: string
+}) {
+  const palette = {
+    dies: { bg: 'rgba(220, 38, 38, 0.16)', border: '#7f1d1d', color: '#fca5a5', mark: '✗' },
+    hurt: { bg: 'rgba(251, 191, 36, 0.12)', border: '#78350f', color: '#fde68a', mark: '⚠' },
+    face: { bg: 'rgba(96, 165, 250, 0.12)', border: '#1e40af', color: '#93c5fd', mark: '⤵' },
+  }[tone]
+  return (
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '4px 10px',
+        background: palette.bg,
+        border: `1px solid ${palette.border}`,
+        borderRadius: 999,
+        fontSize: 11,
+        color: palette.color,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <span style={{ fontWeight: 700, fontSize: 12 }}>{icon ?? palette.mark}</span>
+      <span style={{ fontWeight: 600 }}>{label}</span>
+      <span style={{ color: '#94a3b8', fontWeight: 700 }}>{value}</span>
+    </div>
+  )
+}
+
+
 
 /**
  * Compact strip for the trivial 1-attacker × ≤1-blocker non-trample case
