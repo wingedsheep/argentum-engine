@@ -99,83 +99,21 @@ internal class CombatDamageManager(
         val projected = state.projectedState
         val attackers = state.findEntitiesWith<AttackingComponent>()
 
-        // Pre-check: if any blocked attacker has AssignCombatDamageAsUnblocked, ask the
-        // controller whether to assign damage to the defending player instead of blockers.
-        // When the resolution-board flag is on this whole loop is bypassed — those
-        // attackers flow into the plan-candidate gather instead and surface a non-trample
-        // ATTACKER_TO_PLAYER drain edge on the board, replacing the separate Y/N modal.
-        if (!features.combatResolutionBoardEnabled) {
-            for ((attackerId, attackingComponent) in attackers) {
-                if (attackerId !in state.getBattlefield()) continue
-                val attackerContainer = state.getEntity(attackerId) ?: continue
-                val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-
-                // Only relevant when blocked
-                val blockedBy = attackerContainer.get<BlockedComponent>() ?: continue
-                if (blockedBy.blockerIds.isEmpty()) continue
-                val liveBlockers = blockedBy.blockerIds.filter { it in state.getBattlefield() }
-                if (liveBlockers.isEmpty()) continue
-
-                // Already has a manual assignment (decision already made)
-                if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
-
-                val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
-                val hasAssignAsUnblocked = cardDef.staticAbilities.any { it is AssignCombatDamageAsUnblocked }
-                if (!hasAssignAsUnblocked) continue
-
-                if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
-
-                val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
-                if (attackerPower <= 0) continue
-
-                val attackingPlayer = projected.getController(attackerId) ?: continue
-                val decisionId = UUID.randomUUID().toString()
-
-                val decision = YesNoDecision(
-                    id = decisionId,
-                    playerId = attackingPlayer,
-                    prompt = "Assign ${attackerCard.name}'s combat damage as though it weren't blocked?",
-                    context = DecisionContext(
-                        sourceId = attackerId,
-                        sourceName = attackerCard.name,
-                        phase = DecisionPhase.COMBAT
-                    ),
-                    yesText = "Assign to player",
-                    noText = "Assign to blockers"
-                )
-
-                val continuation = AssignAsUnblockedContinuation(
-                    decisionId = decisionId,
-                    attackerId = attackerId,
-                    defendingPlayerId = attackingComponent.defenderId,
-                    firstStrike = firstStrike
-                )
-
-                val pausedState = state
-                    .withPendingDecision(decision)
-                    .pushContinuation(continuation)
-
-                return ExecutionResult.paused(pausedState, decision)
-            }
-        }
-
         // Pre-check: if any attacker with DivideCombatDamageFreely needs a distribution
-        // decision, pause before processing ANY damage. When the resolution board is on,
-        // *blocked* DivideCombatDamageFreely attackers fold into the board instead; the
-        // *unblocked* variant (e.g. Butcher Orgg dumping damage onto an arbitrary set of
-        // defending creatures + defender) still uses the legacy DistributeDecision flow
-        // since the board doesn't yet surface arbitrary defending-creature targets.
+        // decision, pause before processing ANY damage. *Blocked* DivideCombatDamageFreely
+        // attackers fold into the resolution board instead; the *unblocked* variant
+        // (e.g. Butcher Orgg dumping damage onto an arbitrary set of defending creatures
+        // + defender) still uses the DistributeDecision flow since the board doesn't
+        // yet surface arbitrary defending-creature targets.
         for ((attackerId, attackingComponent) in attackers) {
             val attackerContainer = state.getEntity(attackerId) ?: continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
             val hasDivideDamageFreely = cardDef.staticAbilities.any { it is DivideCombatDamageFreely }
             if (!hasDivideDamageFreely) continue
-            if (features.combatResolutionBoardEnabled) {
-                val blocked = attackerContainer.get<BlockedComponent>()?.blockerIds
-                    ?.any { it in state.getBattlefield() } == true
-                if (blocked) continue  // handled by the resolution board's plan-candidate gather
-            }
+            val blocked = attackerContainer.get<BlockedComponent>()?.blockerIds
+                ?.any { it in state.getBattlefield() } == true
+            if (blocked) continue  // handled by the resolution board's plan-candidate gather
 
             val hasFirstStrike = projected.hasKeyword(attackerId, Keyword.FIRST_STRIKE)
             val hasDoubleStrike = projected.hasKeyword(attackerId, Keyword.DOUBLE_STRIKE)
@@ -250,21 +188,17 @@ internal class CombatDamageManager(
         }
 
         // Pre-check: if any regular attacker needs manual damage assignment, pause before
-        // processing ANY damage. Instead of one AssignDamageDecision per attacker, we
-        // gather every attacker that needs manual assignment, group them by the
-        // *chooser* (attacker controller by default; defender via CR 702.21e when a
-        // banding blocker is present), and emit a single CombatDamagePlanDecision per
-        // chooser. The most common case — a band of N attackers blocked by ≥2 blockers
-        // each — collapses from N modals to 1.
+        // processing ANY damage. Gather every attacker that needs manual assignment, group
+        // them by the *chooser* (attacker controller by default; defender via CR 702.21e
+        // when a banding blocker is present), and emit a single CombatResolutionDecision
+        // covering all of them. The most common case — a band of N attackers blocked by
+        // ≥2 blockers each — collapses from N modals to 1.
         //
-        // With the resolution board on, also force-include any attacker whose
-        // blockers include one that blocks ≥2 attackers (an Ironfist-style
-        // bipartite). Without this the blocker's damage division would silently
-        // auto-resolve — the decision wouldn't emit because no individual attacker
-        // requires manual assignment on its own. See plan §10 "Engine gaps".
-        val attackersWithBipartiteBlocker: Set<EntityId> = if (!features.combatResolutionBoardEnabled) {
-            emptySet()
-        } else {
+        // Also force-include any attacker whose blockers include one that blocks ≥2
+        // attackers (an Ironfist-style bipartite). Without this the blocker's damage
+        // division would silently auto-resolve — the decision wouldn't emit because no
+        // individual attacker requires manual assignment on its own.
+        val attackersWithBipartiteBlocker: Set<EntityId> = run {
             val result = mutableSetOf<EntityId>()
             for ((attackerId, _) in attackers) {
                 val blockerIds = state.getEntity(attackerId)?.get<BlockedComponent>()
@@ -290,12 +224,6 @@ internal class CombatDamageManager(
             val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId)
             val hasDivideDamageFreely = cardDef?.staticAbilities?.any { it is DivideCombatDamageFreely } == true
             val hasAssignAsUnblocked = cardDef?.staticAbilities?.any { it is AssignCombatDamageAsUnblocked } == true
-            // When the resolution board is on, DivideCombatDamageFreely + AssignAsUnblocked
-            // both fold into the board (the standalone pre-checks are skipped above for
-            // AssignAsUnblocked; DivideCombatDamageFreely is handled by its own pre-check
-            // below when the flag is off). With the flag on, we route these through plan
-            // candidates so they share the board UI with vanilla manual assignment.
-            if (!features.combatResolutionBoardEnabled && hasDivideDamageFreely) continue
 
             if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
 
@@ -318,10 +246,9 @@ internal class CombatDamageManager(
             val bandingOverride = liveBlockerIds.size >= 2 &&
                 liveBlockerIds.any { projected.hasKeyword(it, Keyword.BANDING) }
             // AssignAsUnblocked / DivideCombatDamageFreely always require manual assignment
-            // (the player must choose how to split). When the flag is on they're folded into
-            // the board even when normal lethal-first wouldn't surface a decision.
-            val forceManual = features.combatResolutionBoardEnabled &&
-                (hasAssignAsUnblocked || hasDivideDamageFreely)
+            // (the player must choose how to split). Folded into the board even when normal
+            // lethal-first wouldn't surface a decision.
+            val forceManual = hasAssignAsUnblocked || hasDivideDamageFreely
             val bipartitePull = attackerId in attackersWithBipartiteBlocker
             if (!damageCalculator.requiresManualAssignment(state, attackerId) &&
                 !bandingOverride && !forceManual && !bipartitePull) continue
@@ -377,66 +304,19 @@ internal class CombatDamageManager(
         }
 
         if (planCandidates.isNotEmpty()) {
-            // Group by chooser to keep one plan per acting player. In a 2-player game
-            // with no banding-driven inversion mid-step there's only one group.
+            // Unify all chooser groups into a single CombatResolutionDecision. The primary
+            // chooser acts first; CR 702.22j/k co-choosers follow in order via the
+            // continuation's pendingChoosers queue.
             val byChooser = planCandidates.groupBy { it.chooser }
-            val (chooser, group) = byChooser.entries.first()
-
-            if (features.combatResolutionBoardEnabled) {
-                // Phase 2: unify all chooser groups into a single decision. The primary
-                // chooser acts first; CR 702.22j/k co-choosers follow in order via the
-                // continuation's pendingChoosers queue.
-                val choosersInOrder = byChooser.keys.toList()
-                return emitCombatResolutionDecision(
-                    state = state,
-                    projected = projected,
-                    choosersInOrder = choosersInOrder,
-                    allCandidates = planCandidates,
-                    firstStrike = firstStrike,
-                    previousAmounts = emptyMap(),
-                )
-            }
-
-            val entries = group.map { c ->
-                CombatDamagePlanEntry(
-                    attackerId = c.attackerId,
-                    attackerName = c.attackerName,
-                    availablePower = c.availablePower,
-                    orderedTargets = c.liveBlockers,
-                    defenderId = if (c.hasTrample) c.attackingComponent.defenderId else null,
-                    minimumAssignments = c.minimumAssignments,
-                    defaultAssignments = c.defaultAssignments,
-                    hasTrample = c.hasTrample,
-                    hasDeathtouch = c.hasDeathtouch,
-                    bandId = state.getEntity(c.attackerId)?.get<AttackingComponent>()?.bandId,
-                )
-            }
-            val decisionId = UUID.randomUUID().toString()
-            val prompt = if (entries.size == 1) {
-                "Assign ${entries[0].attackerName}'s ${entries[0].availablePower} combat damage"
-            } else {
-                "Assign combat damage for ${entries.size} attackers"
-            }
-            val decision = CombatDamagePlanDecision(
-                id = decisionId,
-                playerId = chooser,
-                prompt = prompt,
-                context = DecisionContext(
-                    sourceId = entries.firstOrNull()?.attackerId,
-                    sourceName = if (entries.size == 1) entries[0].attackerName else "Combat damage",
-                    phase = DecisionPhase.COMBAT,
-                ),
-                entries = entries,
+            val choosersInOrder = byChooser.keys.toList()
+            return emitCombatResolutionDecision(
+                state = state,
+                projected = projected,
+                choosersInOrder = choosersInOrder,
+                allCandidates = planCandidates,
                 firstStrike = firstStrike,
+                previousAmounts = emptyMap(),
             )
-            val continuation = CombatDamagePlanContinuation(
-                decisionId = decisionId,
-                firstStrike = firstStrike,
-            )
-            val pausedState = state
-                .withPendingDecision(decision)
-                .pushContinuation(continuation)
-            return ExecutionResult.paused(pausedState, decision)
         }
 
         // Pre-check: damage prevention choice (CR 615.7)
@@ -1308,16 +1188,14 @@ internal class CombatDamageManager(
     }
 
     // =========================================================================
-    // Combat Resolution Board (Phase 1)
+    // Combat Resolution Board
     //
     // Builds and pauses on a [CombatResolutionDecision] — the bipartite
-    // attacker/blocker/defender graph that replaces the per-attacker
-    // [CombatDamagePlanDecision] when [EngineFeatures.combatResolutionBoardEnabled]
-    // is set. Scope-wise this Phase 1 emitter mirrors the legacy emitter: it
-    // surfaces only attacker→target edges (blockers + trample drains) for the
-    // single chooser group the legacy path would have emitted. Phase 2 will add
-    // blocker→attacker edges and merge multiple chooser groups into a single
-    // decision for the banding two-actor flow.
+    // attacker/blocker/defender graph that drives combat damage assignment.
+    // Surfaces attacker→blocker, attacker→defender (trample drain), and
+    // blocker→attacker edges for every chooser group, and chains the
+    // CR 702.22j/k banding two-actor flow via the continuation's pendingChoosers
+    // queue.
     // =========================================================================
 
     /**

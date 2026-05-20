@@ -336,39 +336,6 @@ data class ChooseOptionDecision(
 ) : PendingDecision
 
 /**
- * Player must assign combat damage from an attacker to blockers.
- *
- * Per CR 510.1c: Damage must be assigned in order. A creature cannot be
- * assigned damage until all creatures before it in the order have been
- * assigned lethal damage.
- *
- * @property attackerId The attacking creature assigning damage
- * @property availablePower Total damage available to assign
- * @property orderedTargets Blockers in damage assignment order (first = first to receive damage)
- * @property defenderId The defending player (only receives damage if attacker has trample)
- * @property minimumAssignments Minimum damage each blocker must receive (lethal damage)
- * @property defaultAssignments Pre-computed optimal damage distribution (lethal to each blocker in order, remainder to last/player)
- * @property hasTrample Whether excess damage can go to defending player
- * @property hasDeathtouch If true, 1 damage is lethal to any creature
- */
-@Serializable
-@SerialName("AssignDamageDecision")
-data class AssignDamageDecision(
-    override val id: String,
-    override val playerId: EntityId,
-    override val prompt: String,
-    override val context: DecisionContext,
-    val attackerId: EntityId,
-    val availablePower: Int,
-    val orderedTargets: List<EntityId>,
-    val defenderId: EntityId?,
-    val minimumAssignments: Map<EntityId, Int>,
-    val defaultAssignments: Map<EntityId, Int>,
-    val hasTrample: Boolean,
-    val hasDeathtouch: Boolean
-) : PendingDecision
-
-/**
  * Information about a card available for selection during library search.
  * This is embedded in the decision because library cards are normally hidden.
  */
@@ -606,81 +573,9 @@ data class BudgetModalResponse(
     val selectedModeIndices: List<Int>
 ) : DecisionResponse
 
-/**
- * Response to AssignDamageDecision.
- */
-@Serializable
-@SerialName("DamageAssignmentResponse")
-data class DamageAssignmentResponse(
-    override val decisionId: String,
-    /** Map of target ID (creature or player) to damage amount */
-    val assignments: Map<EntityId, Int>
-) : DecisionResponse
-
-/**
- * Per-attacker entry inside a [CombatDamagePlanDecision]. Mirrors the shape of
- * [AssignDamageDecision] minus the wrapper fields, so the client UI can reuse the
- * same +/- assignment logic per row.
- */
-@Serializable
-data class CombatDamagePlanEntry(
-    val attackerId: EntityId,
-    val attackerName: String,
-    val availablePower: Int,
-    val orderedTargets: List<EntityId>,
-    val defenderId: EntityId?,
-    val minimumAssignments: Map<EntityId, Int>,
-    val defaultAssignments: Map<EntityId, Int>,
-    val hasTrample: Boolean,
-    val hasDeathtouch: Boolean,
-    /** Banding group id (CR 702.21). Same value across all entries in the same band. */
-    val bandId: String? = null,
-)
-
-/**
- * Bundles every attacker that still needs manual combat-damage assignment in the
- * current damage step into a single decision, so the player resolves all of them
- * in one combined UI rather than clicking through N modals in sequence. Used for
- * the common case of "band of K attackers blocked by M blockers" where the
- * per-attacker AssignDamageDecision flow gets unwieldy.
- *
- * @property entries One entry per attacker that needs manual assignment. The
- *   chooser ([playerId]) is the same for every entry — when the chooser differs
- *   (e.g. one attacker has a banding blocker forcing CR 702.21e inversion and the
- *   other doesn't), the engine emits multiple [CombatDamagePlanDecision] instances
- *   in sequence.
- * @property firstStrike Whether this is the first-strike combat damage step.
- */
-@Serializable
-@SerialName("CombatDamagePlanDecision")
-data class CombatDamagePlanDecision(
-    override val id: String,
-    override val playerId: EntityId,
-    override val prompt: String,
-    override val context: DecisionContext,
-    val entries: List<CombatDamagePlanEntry>,
-    val firstStrike: Boolean,
-) : PendingDecision
-
-/**
- * Response to [CombatDamagePlanDecision]. Each map entry assigns one attacker's
- * combat damage to its blockers (and the defending player for trample). Must
- * cover every attacker in the original plan with a sum matching its
- * [CombatDamagePlanEntry.availablePower].
- */
-@Serializable
-@SerialName("CombatDamagePlanResponse")
-data class CombatDamagePlanResponse(
-    override val decisionId: String,
-    val assignments: Map<EntityId, Map<EntityId, Int>>,
-) : DecisionResponse
-
 // =============================================================================
-// Combat Resolution Board (Phase 1 of UX redesign — see
-// docs/plans/combat-resolution-board.md). Bipartite graph payload that replaces
-// the per-attacker [CombatDamagePlanDecision] when the
-// `combatResolutionBoardEnabled` engine feature flag is on. The legacy types
-// above stay in place so old clients keep working through the rollout.
+// Combat Resolution Board — see docs/plans/combat-resolution-board.md.
+// Bipartite graph payload that drives combat damage assignment.
 // =============================================================================
 
 /**
@@ -826,8 +721,7 @@ data class DamageEdge(
 
 /**
  * Bipartite combat damage decision — the full graph of attackers, blockers,
- * defenders/PWs/battles, and damage edges with pre-computed defaults. Replaces
- * [CombatDamagePlanDecision] when the resolution-board feature flag is on.
+ * defenders/PWs/battles, and damage edges with pre-computed defaults.
  *
  * In the two-actor banding case (CR 702.22j/k) [coChooserId] names the second
  * player whose edges have `editableBy != playerId`. The engine accepts partial

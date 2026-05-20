@@ -1130,21 +1130,6 @@ class GameTestDriver(
                     DistributionResponse(decision.id, distribution)
                 )
             }
-            is AssignDamageDecision -> {
-                // Auto-resolve: use the pre-computed default assignments
-                submitDecision(
-                    decision.playerId,
-                    DamageAssignmentResponse(decision.id, decision.defaultAssignments)
-                )
-            }
-            is CombatDamagePlanDecision -> {
-                // Auto-resolve: confirm the engine-supplied per-attacker defaults.
-                val assignments = decision.entries.associate { it.attackerId to it.defaultAssignments }
-                submitDecision(
-                    decision.playerId,
-                    CombatDamagePlanResponse(decision.id, assignments)
-                )
-            }
             is CombatResolutionDecision -> {
                 // Auto-resolve: confirm every edge at its current amount (the engine-supplied
                 // default for new boards, or the prior chooser's submission when re-paused).

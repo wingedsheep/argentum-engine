@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.handlers.actions.decision
 
-import com.wingedsheep.engine.core.AssignDamageDecision
 import com.wingedsheep.engine.core.BudgetModalDecision
 import com.wingedsheep.engine.core.BudgetModalResponse
 import com.wingedsheep.engine.core.CancelDecisionResponse
@@ -11,12 +10,9 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
-import com.wingedsheep.engine.core.CombatDamagePlanDecision
-import com.wingedsheep.engine.core.CombatDamagePlanResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.CombatResolutionResponse
 import com.wingedsheep.engine.core.DamageEdgeDirection
-import com.wingedsheep.engine.core.DamageAssignmentResponse
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.DistributionResponse
@@ -66,8 +62,6 @@ object DecisionValidators {
             is SplitPilesDecision -> validateSplitPiles(decision, response)
             is ChooseOptionDecision -> validateOption(decision, response)
             is BudgetModalDecision -> validateBudgetModal(decision, response)
-            is AssignDamageDecision -> validateDamageAssignment(decision, response)
-            is CombatDamagePlanDecision -> validateCombatDamagePlan(decision, response)
             is CombatResolutionDecision -> validateCombatResolution(decision, response)
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
@@ -75,14 +69,6 @@ object DecisionValidators {
         }
     }
 
-    /**
-     * Validate a bundled CombatDamagePlanResponse against a CombatDamagePlanDecision.
-     * Each entry must have an assignment whose targets are subsets of the declared
-     * targets list (plus the defender for trample) and whose total doesn't exceed
-     * the attacker's available power. The full lethal-order / trample rules are
-     * checked downstream by [com.wingedsheep.engine.mechanics.combat.DamageCalculator]
-     * when the assignments are applied.
-     */
     /**
      * Validate a [CombatResolutionResponse] against a [CombatResolutionDecision].
      *
@@ -196,49 +182,6 @@ object DecisionValidators {
             }
         }
 
-        return null
-    }
-
-    private fun validateCombatDamagePlan(
-        decision: CombatDamagePlanDecision,
-        response: DecisionResponse,
-    ): String? {
-        if (response !is CombatDamagePlanResponse) {
-            return "Expected combat damage plan response"
-        }
-        for (entry in decision.entries) {
-            val assignment = response.assignments[entry.attackerId]
-                ?: return "Missing assignment for attacker ${entry.attackerName}"
-            val legalTargets = entry.orderedTargets.toMutableSet().apply {
-                entry.defenderId?.let { add(it) }
-            }
-            var total = 0
-            for ((targetId, amount) in assignment) {
-                if (amount < 0) return "${entry.attackerName}: negative damage to $targetId"
-                if (targetId !in legalTargets) {
-                    return "${entry.attackerName}: target $targetId is not in the allowed list"
-                }
-                total += amount
-            }
-            if (total > entry.availablePower) {
-                return "${entry.attackerName}: damage total $total exceeds available power ${entry.availablePower}"
-            }
-
-            // CR 702.19c lethal-first for trample drain: damage may be assigned to the
-            // defending player only after every blocker has received at least its
-            // minimumAssignments amount (which already accounts for power caps, so a
-            // power-starved attacker drains 0 naturally without tripping this check).
-            val defenderId = entry.defenderId
-            if (defenderId != null && (assignment[defenderId] ?: 0) > 0) {
-                for (blockerId in entry.orderedTargets) {
-                    val assigned = assignment[blockerId] ?: 0
-                    val minimum = entry.minimumAssignments[blockerId] ?: 0
-                    if (assigned < minimum) {
-                        return "${entry.attackerName}: cannot trample over to the defender — blocker has $assigned of $minimum lethal damage assigned"
-                    }
-                }
-            }
-        }
         return null
     }
 
@@ -421,60 +364,6 @@ object DecisionValidators {
         val totalCost = response.selectedModeIndices.sumOf { decision.modes[it].cost }
         if (totalCost > decision.budget) {
             return "Total cost ($totalCost) exceeds budget (${decision.budget})"
-        }
-        return null
-    }
-
-    private fun validateDamageAssignment(decision: AssignDamageDecision, response: DecisionResponse): String? {
-        if (response !is DamageAssignmentResponse) {
-            return "Expected damage assignment response"
-        }
-
-        val totalDamage = response.assignments.values.sum()
-        if (totalDamage > decision.availablePower) {
-            return "Total damage ($totalDamage) exceeds available power (${decision.availablePower})"
-        }
-
-        val validTargets = decision.orderedTargets.toSet() + listOfNotNull(decision.defenderId)
-        for (targetId in response.assignments.keys) {
-            if (targetId !in validTargets) {
-                return "Invalid damage target: $targetId"
-            }
-        }
-
-        // Validate damage assignment order
-        var allPreviousHaveLethal = true
-        for (blockerId in decision.orderedTargets) {
-            val assignedDamage = response.assignments[blockerId] ?: 0
-            val lethalRequired = decision.minimumAssignments[blockerId] ?: 0
-            val hasLethal = assignedDamage >= lethalRequired
-
-            if (!hasLethal && !allPreviousHaveLethal) {
-                // Fine - can assign 0 to later blockers
-            } else if (!hasLethal) {
-                allPreviousHaveLethal = false
-            }
-
-            // Check no subsequent blocker has damage if this one doesn't have lethal
-            if (!hasLethal) {
-                val laterBlockers = decision.orderedTargets.dropWhile { it != blockerId }.drop(1)
-                for (laterBlocker in laterBlockers) {
-                    if ((response.assignments[laterBlocker] ?: 0) > 0) {
-                        return "Cannot assign damage to later blocker until earlier blockers have lethal damage"
-                    }
-                }
-            }
-        }
-
-        // Validate trample damage
-        val damageToDefender = response.assignments[decision.defenderId] ?: 0
-        if (damageToDefender > 0) {
-            if (!decision.hasTrample) {
-                return "Cannot assign damage to defending player without trample"
-            }
-            if (!allPreviousHaveLethal) {
-                return "Cannot assign trample damage until all blockers have lethal damage"
-            }
         }
         return null
     }

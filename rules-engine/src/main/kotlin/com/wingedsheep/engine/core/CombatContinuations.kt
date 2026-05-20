@@ -4,7 +4,9 @@ import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
 /**
- * Resume combat damage assignment for creatures with DivideCombatDamageFreely.
+ * Resume combat damage assignment for the legacy unblocked DivideCombatDamageFreely
+ * flow (paired with [DistributeDecision] for cards like Butcher Orgg that hit
+ * an arbitrary set of defending creatures + defender).
  *
  * @property attackerId The attacking creature assigning damage
  * @property defendingPlayerId The defending player
@@ -19,33 +21,12 @@ data class DamageAssignmentContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume combat damage after player decides whether to assign damage as though unblocked.
- * Used for creatures with AssignCombatDamageAsUnblocked (e.g. Thorn Elemental).
- *
- * @property attackerId The attacking creature with the ability
- * @property defendingPlayerId The defending player
- * @property firstStrike Whether this is during the first strike combat damage step
- */
-@Serializable
-data class AssignAsUnblockedContinuation(
-    override val decisionId: String,
-    val attackerId: EntityId,
-    val defendingPlayerId: EntityId,
-    val firstStrike: Boolean = false
-) : ContinuationFrame
-
-/**
  * Resume after attacking player declares damage assignment order for blockers.
  *
  * Per MTG CR 510.1c, an attacking creature blocked by two or more creatures
  * assigns its combat damage to those creatures divided as its controller chooses.
  * The engine surfaces this as an explicit ordering decision so the attacking
  * player can specify the division before damage is dealt.
- *
- * @property attackingPlayerId The attacking player who must order the blockers
- * @property attackerId The attacking creature whose blockers are being ordered
- * @property attackerName Name of the attacker for display
- * @property remainingAttackers List of attackers that still need ordering after this one
  */
 @Serializable
 data class BlockerOrderContinuation(
@@ -59,13 +40,9 @@ data class BlockerOrderContinuation(
 /**
  * Resume after the attacking player orders their attackers for a blocker's damage assignment.
  *
- * When a single blocker blocks multiple attackers, the attacking player must order those
- * attackers to determine how the blocker divides its combat damage (CR 510.1d).
- *
- * @property attackingPlayerId The attacking player who must order their attackers
- * @property blockerId The blocking creature whose attackers are being ordered
- * @property blockerName Name of the blocker for display
- * @property remainingBlockers List of blockers that still need attacker ordering after this one
+ * Per CR 510.1d, when a single blocker blocks multiple attackers, the attacking
+ * player orders those attackers to determine how the blocker divides its combat
+ * damage.
  */
 @Serializable
 data class AttackerOrderContinuation(
@@ -107,21 +84,6 @@ data class DistributeDamageContinuation(
  * @property damageBySource Map of attacker entity ID → raw damage amount
  * @property firstStrike Whether this is during the first strike combat damage step
  */
-/**
- * Resume after a player submits a bundled combat-damage plan
- * ([CombatDamagePlanDecision] / [CombatDamagePlanResponse]). The resumer applies
- * every per-attacker [DamageAssignmentComponent] from the response, then calls
- * back into `applyCombatDamage(firstStrike)` so the engine continues from the
- * same step with manual assignments now in place.
- *
- * @property firstStrike Whether the plan was for the first-strike damage step.
- */
-@Serializable
-data class CombatDamagePlanContinuation(
-    override val decisionId: String,
-    val firstStrike: Boolean,
-) : ContinuationFrame
-
 /**
  * Resume after a player submits a [CombatResolutionDecision]. The resumer
  * folds edges back into per-attacker / per-blocker

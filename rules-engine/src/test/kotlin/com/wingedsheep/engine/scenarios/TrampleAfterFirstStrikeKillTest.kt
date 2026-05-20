@@ -67,7 +67,7 @@ class TrampleAfterFirstStrikeKillTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(blocker to listOf(attacker))).isSuccess shouldBe true
 
-        // Lets first-strike damage step run (auto-resolves AssignDamageDecision with
+        // Lets first-strike damage step run (auto-resolves the CombatResolutionDecision with
         // the default: 2 damage to the blocker, none to the player). Blocker dies as
         // SBA before the regular damage step.
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)

@@ -129,6 +129,70 @@ class IronfistCrusherScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("two Crushers each blocking both Silvos and Spurred Wolverine: both Crushers die, no trample through") {
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Silvos, Rogue Elemental")  // 8/5 trample
+                    .withCardOnBattlefield(1, "Spurred Wolverine")        // 3/2
+                    .withCardOnBattlefield(2, "Ironfist Crusher")         // 2/4 can-block-any-number
+                    .withCardOnBattlefield(2, "Ironfist Crusher")         // 2/4 can-block-any-number
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val silvosId = game.findPermanent("Silvos, Rogue Elemental")!!
+                val wolverineId = game.findPermanent("Spurred Wolverine")!!
+                val crushers = game.findAllPermanents("Ironfist Crusher")
+                crushers.size shouldBe 2
+
+                game.execute(
+                    DeclareAttackers(game.player1Id, mapOf(
+                        silvosId to game.player2Id,
+                        wolverineId to game.player2Id
+                    ))
+                )
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+
+                // Both Crushers each block BOTH attackers (8 blocker-attacker edges total).
+                val blockResult = game.execute(
+                    DeclareBlockers(
+                        game.player2Id,
+                        mapOf(
+                            crushers[0] to listOf(silvosId, wolverineId),
+                            crushers[1] to listOf(silvosId, wolverineId)
+                        )
+                    )
+                )
+                withClue("Both Crushers should be allowed to block both attackers: ${blockResult.error}") {
+                    blockResult.error shouldBe null
+                }
+
+                // Verify each Crusher records both attackers in its BlockingComponent.
+                crushers.forEach { crusherId ->
+                    val blocking = game.state.getEntity(crusherId)!!.get<BlockingComponent>()
+                    withClue("Crusher should block both attackers") {
+                        blocking shouldNotBe null
+                        blocking!!.blockedAttackerIds.size shouldBe 2
+                    }
+                }
+
+                // Resolve combat (default damage assignments).
+                // Silvos (8 power, trample): each Crusher has 4 toughness, lethal to each = 4.
+                //   Two blockers × 4 lethal = 8, consuming all of Silvos's power → 0 trample.
+                // Wolverine (3 power, no trample): can only assign to first blocker in damage order
+                //   (3 < 4 lethal), so all 3 land on a single Crusher.
+                // → One Crusher takes 4+3=7, the other takes 4. Both die. Defender takes 0.
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                withClue("Both Ironfist Crushers should die (each took at least 4 damage)") {
+                    game.findAllPermanents("Ironfist Crusher").shouldBe(emptyList())
+                }
+                withClue("Defender takes 0 damage: Silvos's 8 power was fully absorbed by the two 4-toughness blockers") {
+                    game.getLifeTotal(2) shouldBe 20
+                }
+            }
+
             test("blocking multiple attackers prevents all damage to defending player") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")

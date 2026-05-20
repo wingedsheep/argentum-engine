@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.CombatResolutionResponse
 import com.wingedsheep.engine.core.DamageEdgeAmount
 import com.wingedsheep.engine.core.DamageEdgeDirection
-import com.wingedsheep.engine.core.EngineFeatures
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -21,17 +20,13 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * Phase 2 of the combat resolution board migration
- * (see `docs/plans/combat-resolution-board.md`). Verifies the engine emits the
- * bipartite [CombatResolutionDecision] shape when
- * [EngineFeatures.combatResolutionBoardEnabled] is on.
+ * Verifies the engine emits the bipartite [CombatResolutionDecision] for combat
+ * damage assignment. See `docs/plans/combat-resolution-board.md`.
  */
 class CombatResolutionBoardTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
-        val driver = GameTestDriver(
-            features = EngineFeatures(combatResolutionBoardEnabled = true),
-        )
+        val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         return driver
     }

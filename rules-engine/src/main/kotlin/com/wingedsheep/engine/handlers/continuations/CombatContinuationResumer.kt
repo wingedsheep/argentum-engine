@@ -21,54 +21,16 @@ class CombatContinuationResumer(
         resumer(DamageAssignmentContinuation::class) { state, continuation, response, _ ->
             resumeDamageAssignment(state, continuation, response)
         },
-        resumer(CombatDamagePlanContinuation::class) { state, continuation, response, _ ->
-            resumeCombatDamagePlan(state, continuation, response)
-        },
         resumer(CombatResolutionContinuation::class) { state, continuation, response, _ ->
             resumeCombatResolution(state, continuation, response)
         },
-        resumer(AssignAsUnblockedContinuation::class) { state, continuation, response, _ ->
-            resumeAssignAsUnblocked(state, continuation, response)
-        },
-        resumer(DamagePreventionContinuation::class, ::resumeDamagePrevention),
         resumer(BlockerOrderContinuation::class, ::resumeBlockerOrder),
         resumer(AttackerOrderContinuation::class, ::resumeAttackerOrder),
+        resumer(DamagePreventionContinuation::class, ::resumeDamagePrevention),
         resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage),
         resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice),
         resumer(PreventDamageFromChosenSourceContinuation::class, ::resumePreventDamageFromChosenSource)
     )
-
-    /**
-     * Apply a bundled [CombatDamagePlanResponse] and re-enter combat damage so the
-     * engine continues with manual assignments in place. Per-attacker assignments
-     * are stored as [DamageAssignmentComponent]s; the pre-check loop in
-     * `applyCombatDamage` will then skip those attackers and proceed.
-     *
-     * Validation is intentionally lenient here — the gathering side already
-     * computed legal defaults, and the existing damage pipeline normalises
-     * over- or under-assignment. Future hardening can reject sums that exceed
-     * `availablePower` or violate minimumAssignments before applying.
-     */
-    fun resumeCombatDamagePlan(
-        state: GameState,
-        continuation: CombatDamagePlanContinuation,
-        response: DecisionResponse,
-    ): ExecutionResult {
-        if (response !is CombatDamagePlanResponse) {
-            return ExecutionResult.error(state, "Expected CombatDamagePlanResponse for damage plan")
-        }
-        var newState = state
-        for ((attackerId, assignments) in response.assignments) {
-            newState = newState.updateEntity(attackerId) { container ->
-                container.with(
-                    com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
-                        assignments
-                    )
-                )
-            }
-        }
-        return services.combatManager.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
-    }
 
     /**
      * Apply a [CombatResolutionResponse]. Two paths:
@@ -172,51 +134,16 @@ class CombatContinuationResumer(
         continuation: DamageAssignmentContinuation,
         response: DecisionResponse
     ): ExecutionResult {
-        val assignments = when (response) {
-            is DistributionResponse -> response.distribution
-            is DamageAssignmentResponse -> response.assignments
-            else -> return ExecutionResult.error(state, "Expected distribution or damage assignment response")
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response for damage assignment")
         }
 
         val newState = state.updateEntity(continuation.attackerId) { container ->
             container.with(
                 com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
-                    assignments
+                    response.distribution
                 )
             )
-        }
-
-        return services.combatManager.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
-    }
-
-    fun resumeAssignAsUnblocked(
-        state: GameState,
-        continuation: AssignAsUnblockedContinuation,
-        response: DecisionResponse
-    ): ExecutionResult {
-        if (response !is YesNoResponse) {
-            return ExecutionResult.error(state, "Expected yes/no response for assign-as-unblocked decision")
-        }
-
-        val newState = if (response.choice) {
-            // Player chose to assign damage to the defending player — store a manual assignment
-            val projected = state.projectedState
-            val power = projected.getPower(continuation.attackerId) ?: 0
-            state.updateEntity(continuation.attackerId) { container ->
-                container.with(
-                    com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(
-                        mapOf(continuation.defendingPlayerId to power)
-                    )
-                )
-            }
-        } else {
-            // Player chose to assign to blockers normally — mark with empty assignment
-            // so the pre-check doesn't re-ask; proposeDamageAssignments will auto-distribute
-            state.updateEntity(continuation.attackerId) { container ->
-                container.with(
-                    com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(emptyMap())
-                )
-            }
         }
 
         return services.combatManager.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
