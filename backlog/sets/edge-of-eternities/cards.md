@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 195 / 261
+**Implemented:** 196 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -53,7 +53,7 @@
 - [x] Decode Transmissions
 - [x] Depressurize
 - [x] Desculpting Blast
-- [ ] Devastating Onslaught
+- [x] Devastating Onslaught
 - [x] Diplomatic Relations
 - [ ] Divert Disaster
 - [x] Dockworker Drone
