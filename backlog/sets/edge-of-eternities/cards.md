@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 202 / 261
+**Implemented:** 203 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -89,7 +89,7 @@
 - [ ] Genemorph Imago
 - [x] Gene Pollinator
 - [x] Germinating Wurm
-- [ ] Gigastorm Titan
+- [x] Gigastorm Titan
 - [x] Glacier Godmaw
 - [x] Godless Shrine
 - [x] Gravblade Heavy
