@@ -126,7 +126,7 @@
 - [x] Lashwhip Predator
 - [x] Lightless Evangel
 - [ ] Lightstall Inquisitor
-- [ ] Lithobraking
+- [x] Lithobraking
 - [x] Loading Zone
 - [x] Lost in Space
 - [x] Lumen-Class Frigate
