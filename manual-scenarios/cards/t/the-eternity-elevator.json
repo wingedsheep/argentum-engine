@@ -1,0 +1,46 @@
+{
+  "_description": "The Eternity Elevator (Spacecraft) — exercise all three abilities. Setup: Alice has The Eternity Elevator with 18 charge counters and two untapped Grizzly Bears (2/2). Suggested sequence: (1) Station — tap a Grizzly Bears (power 2) → adds 2 charge counters → now at 20. (2) The 20+ activated ability becomes legal; {T}: Add 20 mana of any one color. Alternatively, before stationing, activate the basic {T}: Add {C}{C}{C} mana ability. Station is sorcery-speed; both mana abilities are mana abilities (no stack).",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "The Eternity Elevator", "counters": {"CHARGE": 18}},
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

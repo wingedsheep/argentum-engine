@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 195 / 261
+**Implemented:** 204 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -53,7 +53,7 @@
 - [x] Decode Transmissions
 - [x] Depressurize
 - [x] Desculpting Blast
-- [ ] Devastating Onslaught
+- [x] Devastating Onslaught
 - [x] Diplomatic Relations
 - [ ] Divert Disaster
 - [x] Dockworker Drone
@@ -78,7 +78,7 @@
 - [ ] Faller's Faithful
 - [ ] Famished Worldsire
 - [x] Fell Gravship
-- [ ] Flight-Deck Coordinator
+- [x] Flight-Deck Coordinator
 - [ ] Focus Fire
 - [x] Frenzied Baloth
 - [ ] Frontline War-Rager
@@ -89,7 +89,7 @@
 - [ ] Genemorph Imago
 - [x] Gene Pollinator
 - [x] Germinating Wurm
-- [ ] Gigastorm Titan
+- [x] Gigastorm Titan
 - [x] Glacier Godmaw
 - [x] Godless Shrine
 - [x] Gravblade Heavy
@@ -123,7 +123,7 @@
 - [ ] Kav Landseeker
 - [x] Knight Luminary
 - [ ] Larval Scoutlander
-- [ ] Lashwhip Predator
+- [x] Lashwhip Predator
 - [x] Lightless Evangel
 - [ ] Lightstall Inquisitor
 - [ ] Lithobraking
@@ -159,7 +159,7 @@
 - [x] Oreplate Pangolin
 - [x] Ouroboroid
 - [ ] Pain for All
-- [ ] Perigee Beckoner
+- [x] Perigee Beckoner
 - [x] Pinnacle Emissary
 - [x] Pinnacle Kill-Ship
 - [x] Pinnacle Starcage
@@ -192,7 +192,7 @@
 - [x] Seedship Agrarian
 - [x] Seedship Broodtender
 - [x] Seedship Impact
-- [ ] Selfcraft Mechan
+- [x] Selfcraft Mechan
 - [x] Shattered Wings
 - [x] Singularity Rupture
 - [x] Sinister Cryologist
@@ -218,7 +218,7 @@
 - [x] Sunstar Lightsmith
 - [x] Survey Mechan
 - [x] Susurian Dirgecraft
-- [ ] Susurian Voidborn
+- [x] Susurian Voidborn
 - [ ] Susur Secundi, Void Altar
 - [x] Swarm Culler
 - [x] Synthesizer Labship
@@ -238,7 +238,7 @@
 - [x] Thawbringer
 - [x] The Dominion Bracelet
 - [x] The Endstone
-- [ ] The Eternity Elevator
+- [x] The Eternity Elevator
 - [x] The Seriema
 - [ ] Thrumming Hivepool
 - [x] Timeline Culler
@@ -250,7 +250,7 @@
 - [x] Uthros Scanship
 - [x] Uthros, Titanic Godcore
 - [x] Vaultguard Trooper
-- [ ] Virulent Silencer
+- [x] Virulent Silencer
 - [x] Virus Beetle
 - [x] Voidforged Titan
 - [x] Vote Out
