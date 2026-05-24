@@ -768,10 +768,18 @@ class TriggerDetector(
                         }
                     }
                     // Same shape for "whenever an opponent discards a card" — discarding N cards
-                    // through one effect creates N separate trigger firings.
+                    // through one effect creates N separate trigger firings. A card filter narrows
+                    // that to the matching cards, so defer to the matcher for the count.
                     else if (ability.trigger is GameEvent.DiscardEvent &&
                         event is CardsDiscardedEvent) {
-                        repeat(event.cardIds.size) {
+                        val firings = matcher.matchingDiscardCount(
+                            ability.trigger as GameEvent.DiscardEvent,
+                            event,
+                            entityId,
+                            controllerId,
+                            state
+                        )
+                        repeat(firings) {
                             triggers.add(
                                 PendingTrigger(
                                     ability = ability,

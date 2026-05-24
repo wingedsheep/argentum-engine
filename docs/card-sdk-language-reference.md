@@ -746,8 +746,9 @@ one aggregate `CardsDiscardedEvent` per resolution and fans it out in the detect
 - `YouDiscard` — whenever you discard a card.
 
 **Factory** — `discards(player?, cardFilter?)` — generic shape. `player = Player.Each`
-matches any player; `cardFilter` matches if *any* card in the batch satisfies it.
-The cardFilter is evaluated against the **post-discard zone** (the cards are already
+matches any player; `cardFilter` narrows the fan-out to matching cards, so a batch that
+discards a creature and two lands fires a `cardFilter = Creature` trigger once, not three
+times. The cardFilter is evaluated against the **post-discard zone** (the cards are already
 in the graveyard when the trigger matches) — safe for type/subtype/color predicates,
 but a filter that depends on hand-specific state would read the wrong zone.
 

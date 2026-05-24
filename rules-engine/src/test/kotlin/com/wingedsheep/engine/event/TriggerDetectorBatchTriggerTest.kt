@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
@@ -15,9 +16,15 @@ import com.wingedsheep.mtg.sets.definitions.ktk.cards.SidisiBroodTyrant
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -63,6 +70,27 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
         power = 1,
         toughness = 1
     )
+
+    // "Whenever a player discards a creature card, that player loses 1 life." Exercises the
+    // cardFilter path of Triggers.discards — no shipped card uses it yet.
+    val creatureDiscardWatcher = card("Creature Discard Watcher") {
+        manaCost = "{1}"
+        typeLine = "Enchantment"
+        triggeredAbility {
+            trigger = Triggers.discards(player = Player.Each, cardFilter = GameObjectFilter.Creature)
+            effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
+        }
+    }
+
+    // "Whenever a player discards a card, that player loses 1 life." No filter — fires per card.
+    val anyDiscardWatcher = card("Any Discard Watcher") {
+        manaCost = "{1}"
+        typeLine = "Enchantment"
+        triggeredAbility {
+            trigger = Triggers.discards(player = Player.Each)
+            effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
+        }
+    }
 
     fun createDriver(vararg extras: CardDefinition): GameTestDriver {
         val driver = GameTestDriver()
@@ -492,6 +520,64 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             triggers.filter {
                 it.ability.trigger is GameEvent.PermanentsEnteredEvent
             }.shouldBeEmpty()
+        }
+    }
+
+    // --- discard fan-out (Triggers.discards, filtered + unfiltered) -------------
+
+    context("discard batch fan-out") {
+
+        test("unfiltered: discarding 3 cards fires the trigger 3 times") {
+            val driver = createDriver(anyDiscardWatcher)
+            driver.putPermanentOnBattlefield(driver.player1, "Any Discard Watcher")
+
+            val discarded = listOf("Grizzly Bears", "Forest", "Lightning Bolt")
+                .map { driver.putCardInGraveyard(driver.player2, it) }
+            val event = CardsDiscardedEvent(
+                playerId = driver.player2,
+                cardIds = discarded,
+                cardNames = listOf("Grizzly Bears", "Forest", "Lightning Bolt")
+            )
+
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers.filter { it.ability.trigger is GameEvent.DiscardEvent } shouldHaveSize 3
+        }
+
+        test("filtered: only the matching cards in the batch fire the trigger") {
+            val driver = createDriver(creatureDiscardWatcher)
+            driver.putPermanentOnBattlefield(driver.player1, "Creature Discard Watcher")
+
+            // A mixed batch: one creature, one land, one instant. Filter = Creature, so the
+            // ability fires exactly once — not three times (the bug this guards against).
+            val discarded = listOf("Grizzly Bears", "Forest", "Lightning Bolt")
+                .map { driver.putCardInGraveyard(driver.player2, it) }
+            val event = CardsDiscardedEvent(
+                playerId = driver.player2,
+                cardIds = discarded,
+                cardNames = listOf("Grizzly Bears", "Forest", "Lightning Bolt")
+            )
+
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers.filter { it.ability.trigger is GameEvent.DiscardEvent } shouldHaveSize 1
+        }
+
+        test("filtered: a batch with no matching card does not fire") {
+            val driver = createDriver(creatureDiscardWatcher)
+            driver.putPermanentOnBattlefield(driver.player1, "Creature Discard Watcher")
+
+            val discarded = listOf("Forest", "Lightning Bolt")
+                .map { driver.putCardInGraveyard(driver.player2, it) }
+            val event = CardsDiscardedEvent(
+                playerId = driver.player2,
+                cardIds = discarded,
+                cardNames = listOf("Forest", "Lightning Bolt")
+            )
+
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers.filter { it.ability.trigger is GameEvent.DiscardEvent }.shouldBeEmpty()
         }
     }
 
