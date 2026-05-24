@@ -193,9 +193,15 @@ class GameSimulator(
             } else null
         }
 
-        // Mana sources — always auto-pay
+        // Mana sources — auto-pay is trivial only when the solver actually found a
+        // solution. When autoPaySuggestion is empty (e.g. the only available mana
+        // requires sacrificing a Treasure), autoPay=true errors and the resumer
+        // would re-prompt the same decision; fall through so the pluggable
+        // resolver (DecisionResponder.respondManaSelection) handles it.
         is SelectManaSourcesDecision -> {
-            ManaSourcesSelectedResponse(decision.id, autoPay = true)
+            if (decision.autoPaySuggestion.isNotEmpty()) {
+                ManaSourcesSelectedResponse(decision.id, autoPay = true)
+            } else null
         }
 
         // Single option

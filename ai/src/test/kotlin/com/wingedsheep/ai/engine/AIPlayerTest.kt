@@ -351,4 +351,54 @@ class AIPlayerTest : FunSpec({
         wonScore shouldBeGreaterThan 0.0
         (lostScore < 0.0).shouldBeTrue()
     }
+
+    // Regression: the AI used to send autoPay=true unconditionally for
+    // SelectManaSourcesDecision. When the only mana available required sacrificing
+    // a Treasure, the engine's solver returned no solution, the resumer raised
+    // "Cannot pay mana cost with auto-pay", and the same decision was re-prompted
+    // forever — freezing the AI in a live game.
+    test("AI does not loop on SelectManaSourcesDecision when only Treasures can pay") {
+        val registry = createCardRegistry()
+        val (state, _) = initGame(registry, Deck.of("Mountain" to 17, "Raging Goblin" to 3))
+        val playerId = state.turnOrder[0]
+
+        val simulator = GameSimulator(registry)
+        val responder = DecisionResponder(simulator, AIPlayer.defaultEvaluator())
+        val treasureId = state.turnOrder[1] // dummy entity id; the responder never dereferences it
+
+        val treasureSource = ManaSourceOption(
+            entityId = treasureId,
+            name = "Treasure",
+            producesColors = com.wingedsheep.sdk.core.Color.entries.toSet(),
+            producesColorless = false,
+            requiresSacrifice = true
+        )
+
+        // canDecline=true (may-pay) → AI should decline rather than autoPay.
+        val mayPayDecision = SelectManaSourcesDecision(
+            id = "d1",
+            playerId = playerId,
+            prompt = "Pay {1}",
+            context = DecisionContext(sourceId = null, sourceName = "Test", phase = DecisionPhase.RESOLUTION),
+            availableSources = listOf(treasureSource),
+            requiredCost = "{1}",
+            autoPaySuggestion = emptyList(),
+            canDecline = true
+        )
+        val mayPayResponse = responder.respond(state, mayPayDecision, playerId) as ManaSourcesSelectedResponse
+        mayPayResponse.autoPay shouldBe false
+        mayPayResponse.selectedSources shouldBe emptyList()
+
+        // canDecline=false (ward / counter-unless-pays) → AI must select the
+        // Treasure manually so the resumer can sacrifice it for mana.
+        val wardDecision = mayPayDecision.copy(id = "d2", canDecline = false)
+        val wardResponse = responder.respond(state, wardDecision, playerId) as ManaSourcesSelectedResponse
+        wardResponse.autoPay shouldBe false
+        wardResponse.selectedSources shouldBe listOf(treasureId)
+
+        // When the engine did find an auto-pay solution, autoPay=true is still used.
+        val autoPayable = mayPayDecision.copy(id = "d3", autoPaySuggestion = listOf(treasureId))
+        val autoPayResponse = responder.respond(state, autoPayable, playerId) as ManaSourcesSelectedResponse
+        autoPayResponse.autoPay shouldBe true
+    }
 })

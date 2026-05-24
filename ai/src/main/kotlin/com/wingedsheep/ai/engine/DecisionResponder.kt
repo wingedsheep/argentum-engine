@@ -453,7 +453,37 @@ class DecisionResponder(
     // ── Mana sources ─────────────────────────────────────────────────────
 
     private fun respondManaSelection(decision: SelectManaSourcesDecision): DecisionResponse {
-        return ManaSourcesSelectedResponse(decision.id, autoPay = true)
+        // Auto-pay uses the engine's solver, which excludes Treasures (sacrifice
+        // sub-cost) and Springleaf-Drum-style sources (tap-permanent sub-cost). When
+        // the solver finds no solution, [autoPaySuggestion] is empty — submitting
+        // autoPay=true would error inside the resumer ("Cannot pay mana cost with
+        // auto-pay") and the engine would re-prompt the same decision, freezing the
+        // AI in an infinite retry loop.
+        if (decision.autoPaySuggestion.isNotEmpty()) {
+            return ManaSourcesSelectedResponse(decision.id, autoPay = true)
+        }
+
+        // No auto-pay solution. If declining is allowed (e.g. "you may pay"),
+        // decline rather than burn permanents on an optional effect.
+        if (decision.canDecline) {
+            return ManaSourcesSelectedResponse(
+                decision.id,
+                autoPay = false,
+                selectedSources = emptyList()
+            )
+        }
+
+        // Mandatory payment (ward, counter-unless-pays) — fall back to manual
+        // selection of every available source so the resumer sacrifices Treasures
+        // and taps lands as needed. Skip sub-cost sources (Springleaf Drum) since
+        // the AI can't currently answer the follow-up tap-permanent prompt.
+        return ManaSourcesSelectedResponse(
+            decision.id,
+            autoPay = false,
+            selectedSources = decision.availableSources
+                .filterNot { it.requiresTappingAnotherPermanent }
+                .map { it.entityId }
+        )
     }
 
     // ═════════════════════════════════════════════════════════════════════
