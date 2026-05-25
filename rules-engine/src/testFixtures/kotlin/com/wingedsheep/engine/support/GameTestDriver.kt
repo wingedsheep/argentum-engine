@@ -422,6 +422,15 @@ class GameTestDriver {
     }
 
     /**
+     * Declare attackers as a single band (CR 702.22), all attacking the same defender.
+     */
+    fun declareAttackingBand(playerId: EntityId, band: List<EntityId>, defendingPlayer: EntityId): ExecutionResult {
+        return submit(
+            DeclareAttackers(playerId, band.associateWith { defendingPlayer }, bands = listOf(band.toSet()))
+        )
+    }
+
+    /**
      * Declare blockers.
      */
     fun declareBlockers(playerId: EntityId, blockers: Map<EntityId, List<EntityId>>): ExecutionResult {

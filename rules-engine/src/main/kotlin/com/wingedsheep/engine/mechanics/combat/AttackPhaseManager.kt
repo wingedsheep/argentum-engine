@@ -47,15 +47,23 @@ internal class AttackPhaseManager(
      * Validate and declare attackers.
      *
      * @param attackers Map of attacker entity ID to defender (player or planeswalker)
+     * @param bands Optional band groupings (CR 702.22). Each set is one band of attackers.
      */
     fun declareAttackers(
         state: GameState,
         attackingPlayer: EntityId,
-        attackers: Map<EntityId, EntityId>
+        attackers: Map<EntityId, EntityId>,
+        bands: List<Set<EntityId>> = emptyList()
     ): ExecutionResult {
         // Validate each attacker
         val projected = state.projectedState
         val opponents = state.turnOrder.filter { it != attackingPlayer }
+
+        // Validate band declarations (CR 702.22c).
+        val bandValidation = validateBands(state, attackers, bands, projected)
+        if (bandValidation != null) {
+            return ExecutionResult.error(state, bandValidation)
+        }
         for ((attackerId, defenderId) in attackers) {
             val validation = validateAttacker(state, attackingPlayer, attackerId)
             if (validation != null) {
@@ -103,10 +111,10 @@ internal class AttackPhaseManager(
         // pool would steal sources they were saving for instants/post-combat plays.
         val totalTax = calculateTotalAttackTax(state, attackingPlayer, attackers, projected)
         if (totalTax > 0) {
-            return pauseForAttackTaxConfirmation(state, attackingPlayer, attackers, totalTax)
+            return pauseForAttackTaxConfirmation(state, attackingPlayer, attackers, totalTax, bands)
         }
 
-        return commitAttackDeclaration(state, attackingPlayer, attackers, projected, taxEvents = emptyList())
+        return commitAttackDeclaration(state, attackingPlayer, attackers, projected, taxEvents = emptyList(), bands = bands)
     }
 
     /**
@@ -118,20 +126,31 @@ internal class AttackPhaseManager(
      *
      * @param taxEvents Events from the tax payment (auto-tap [TappedEvent]s, etc.) to emit
      *   before the [AttackersDeclaredEvent].
+     * @param bands Validated band groupings (CR 702.22); each attacker in a band is stamped
+     *   with a shared [AttackingComponent.bandId].
      */
     internal fun commitAttackDeclaration(
         state: GameState,
         attackingPlayer: EntityId,
         attackers: Map<EntityId, EntityId>,
         projected: ProjectedState,
-        taxEvents: List<com.wingedsheep.engine.core.GameEvent>
+        taxEvents: List<com.wingedsheep.engine.core.GameEvent>,
+        bands: List<Set<EntityId>> = emptyList()
     ): ExecutionResult {
+        // Assign each band a shared id, then map every banded attacker to it (CR 702.22).
+        val bandIdByAttacker: Map<EntityId, String> = buildMap {
+            for (band in bands) {
+                val bandId = java.util.UUID.randomUUID().toString()
+                for (attackerId in band) put(attackerId, bandId)
+            }
+        }
+
         var newState = state
         val tapEvents = mutableListOf<TappedEvent>()
         for ((attackerId, defenderId) in attackers) {
             val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
             newState = newState.updateEntity(attackerId) { container ->
-                var updated = container.with(AttackingComponent(defenderId))
+                var updated = container.with(AttackingComponent(defenderId, bandIdByAttacker[attackerId]))
                 if (!hasVigilance) {
                     updated = updated.with(TappedComponent)
                 }
@@ -165,6 +184,7 @@ internal class AttackPhaseManager(
         attackingPlayer: EntityId,
         attackers: Map<EntityId, EntityId>,
         totalTax: Int,
+        bands: List<Set<EntityId>> = emptyList(),
     ): ExecutionResult {
         val manaCost = com.wingedsheep.sdk.core.ManaCost(
             List(totalTax) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
@@ -212,6 +232,7 @@ internal class AttackPhaseManager(
             manaCost = manaCost,
             availableSources = sourceOptions,
             autoPaySuggestion = autoPaySuggestion,
+            bands = bands,
         )
         return ExecutionResult.paused(
             state.withPendingDecision(decision).pushContinuation(continuation),
@@ -265,6 +286,62 @@ internal class AttackPhaseManager(
         for (rule in attackRestrictionRules) {
             val error = rule.check(ctx)
             if (error != null) return error
+        }
+        return null
+    }
+
+    /**
+     * Validate band declarations per CR 702.22c:
+     * - Each band must have at least two creatures.
+     * - Each creature in a band must also be one of the declared attackers.
+     * - All creatures in a band must attack the same defender.
+     * - At most one creature in a band may lack the [Keyword.BANDING] keyword.
+     * - A creature may appear in at most one band.
+     *
+     * Returns an error message if any constraint is violated, or null when valid (including
+     * the common no-bands case).
+     */
+    private fun validateBands(
+        state: GameState,
+        attackers: Map<EntityId, EntityId>,
+        bands: List<Set<EntityId>>,
+        projected: ProjectedState,
+    ): String? {
+        if (bands.isEmpty()) return null
+
+        val seen = mutableSetOf<EntityId>()
+        for (band in bands) {
+            if (band.size < 2) {
+                return "A band must contain at least two creatures"
+            }
+            var nonBandingCount = 0
+            var sharedDefender: EntityId? = null
+            for (creatureId in band) {
+                if (creatureId in seen) {
+                    val name = state.getEntity(creatureId)?.get<CardComponent>()?.name ?: "Creature"
+                    return "$name cannot be in more than one band"
+                }
+                seen += creatureId
+
+                val defenderId = attackers[creatureId]
+                    ?: run {
+                        val name = state.getEntity(creatureId)?.get<CardComponent>()?.name ?: "Creature"
+                        return "$name is in a band but is not declared as an attacker"
+                    }
+
+                if (sharedDefender == null) {
+                    sharedDefender = defenderId
+                } else if (sharedDefender != defenderId) {
+                    return "All creatures in a band must attack the same defender"
+                }
+
+                if (!projected.hasKeyword(creatureId, Keyword.BANDING)) {
+                    nonBandingCount += 1
+                    if (nonBandingCount > 1) {
+                        return "A band may contain at most one creature without banding"
+                    }
+                }
+            }
         }
         return null
     }

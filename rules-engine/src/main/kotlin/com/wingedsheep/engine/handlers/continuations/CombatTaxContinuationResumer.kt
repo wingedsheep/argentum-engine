@@ -70,6 +70,7 @@ class CombatTaxContinuationResumer(
             attackers = continuation.attackers,
             projected = paid.state.projectedState,
             taxEvents = paid.events,
+            bands = continuation.bands,
         )
     }
 

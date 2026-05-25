@@ -176,6 +176,19 @@ object TestCards {
     )
 
     /**
+     * 2/2 Banding for {1}{W}. Test card for band declaration / banding damage assignment.
+     */
+    val BandingScout = CardDefinition.creature(
+        name = "Banding Scout",
+        manaCost = ManaCost.parse("{1}{W}"),
+        subtypes = setOf(Subtype("Human"), Subtype("Soldier")),
+        power = 2,
+        toughness = 2,
+        oracleText = "Banding",
+        keywords = setOf(Keyword.BANDING)
+    )
+
+    /**
      * 2/2 Fear for {1}{B}{B}
      * Test card for fear evasion.
      */
@@ -649,6 +662,7 @@ object TestCards {
         PhantomWarrior,
         BladeOfTheNinthWatch,
         FirstStrikeKnight,
+        BandingScout,
         FearCreature,
         ArtifactCreature,
         BlackCreature,
