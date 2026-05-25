@@ -46,8 +46,9 @@ class CombatManager(
     fun declareAttackers(
         state: GameState,
         attackingPlayer: EntityId,
-        attackers: Map<EntityId, EntityId>
-    ): ExecutionResult = attackPhase.declareAttackers(state, attackingPlayer, attackers)
+        attackers: Map<EntityId, EntityId>,
+        bands: List<Set<EntityId>> = emptyList()
+    ): ExecutionResult = attackPhase.declareAttackers(state, attackingPlayer, attackers, bands)
 
     fun isValidAttacker(state: GameState, attackerId: EntityId, attackingPlayer: EntityId): Boolean =
         attackPhase.isValidAttacker(state, attackerId, attackingPlayer)
@@ -74,22 +75,26 @@ class CombatManager(
     fun getMandatoryAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> =
         attackPhase.getMandatoryAttackers(state, attackingPlayer)
 
-    fun createAttackerOrderDecision(
-        state: GameState,
-        attackingPlayer: EntityId,
-        firstBlocker: EntityId,
-        remainingBlockers: List<EntityId>,
-        precedingEvents: List<GameEvent>
-    ): ExecutionResult = blockPhase.createAttackerOrderDecision(
-        state, attackingPlayer, firstBlocker, remainingBlockers, precedingEvents
-    )
-
     // =========================================================================
     // Combat Damage
     // =========================================================================
 
     fun applyCombatDamage(state: GameState, firstStrike: Boolean = false): ExecutionResult =
         damagePhase.applyCombatDamage(state, firstStrike)
+
+    /**
+     * Re-pause the same combat damage step for the next chooser (CR 510.1c sequencing and the
+     * CR 702.22j/k two-actor banding case). Delegates to [CombatDamageManager.repauseCombatResolution].
+     */
+    fun repauseCombatResolution(
+        state: GameState,
+        previous: com.wingedsheep.engine.core.CombatResolutionDecision,
+        remainingChoosers: List<EntityId>,
+        latestAmounts: Map<String, Int>,
+        firstStrike: Boolean,
+    ): ExecutionResult = damagePhase.repauseCombatResolution(
+        state, previous, remainingChoosers, latestAmounts, firstStrike,
+    )
 
     // =========================================================================
     // End Combat

@@ -1,9 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.AssignDamageDecision
-import com.wingedsheep.engine.core.DamageAssignmentResponse
-import com.wingedsheep.engine.core.OrderObjectsDecision
-import com.wingedsheep.engine.core.OrderedResponse
+import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -16,11 +13,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * Tests for combat damage assignment UI flow.
- *
- * When an attacker has trample or multiple blockers with excess power,
- * the attacking player is presented with an AssignDamageDecision to
- * choose how to distribute combat damage.
+ * Combat damage assignment flow, driven through the combat resolution board
+ * ([CombatResolutionDecision]). When an attacker has trample or multiple blockers with excess
+ * power, the chooser gets a board of [com.wingedsheep.engine.core.DamageEdge]s pre-filled with
+ * the lethal-first default; they confirm or re-divide. Damage-assignment order is part of the
+ * board (declaration order is the default), not a separate pre-step.
  */
 class CombatDamageAssignmentTest : FunSpec({
 
@@ -30,12 +27,9 @@ class CombatDamageAssignmentTest : FunSpec({
         return driver
     }
 
-    test("trample creature with single blocker presents damage assignment decision") {
+    test("trample creature with single blocker presents a damage board with a drain edge") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 40),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -53,44 +47,32 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(blocker to listOf(trampler))).isSuccess shouldBe true
 
-        // Advance to combat damage - should present AssignDamageDecision
+        // Advance to combat damage — the board pauses here (passPriorityUntil stops at the step
+        // boundary before it would auto-resolve the decision).
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
-        decision.attackerId shouldBe trampler
-        decision.availablePower shouldBe 5
-        decision.orderedTargets shouldBe listOf(blocker)
-        decision.defenderId shouldBe opponent
-        decision.hasTrample shouldBe true
-        decision.hasDeathtouch shouldBe false
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        val blockerEdge = decision.edges.single { it.sourceId == trampler && it.targetId == blocker }
+        val drainEdge = decision.edges.single { it.sourceId == trampler && it.isTrampleDrain }
+        blockerEdge.maximum shouldBe 5
+        blockerEdge.lethal shouldBe 2
+        drainEdge.targetId shouldBe opponent
+        // Default: 2 to blocker (lethal), 3 to player.
+        blockerEdge.amount shouldBe 2
+        drainEdge.amount shouldBe 3
 
-        // Default assignments: 2 to blocker (lethal), 3 to player
-        decision.defaultAssignments[blocker] shouldBe 2
-        decision.defaultAssignments[opponent] shouldBe 3
-
-        // Submit default assignment
-        driver.submitDecision(
-            activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
-        )
-
+        driver.confirmCombatDamage()
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // Blocker should be dead
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
         driver.getGraveyardCardNames(opponent) shouldContain "Grizzly Bears"
-
-        // 3 trample damage to player (5 - 2 lethal = 3)
         driver.assertLifeTotal(opponent, 17)
     }
 
     test("trample creature with custom damage assignment - all to blocker") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 40),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -109,27 +91,18 @@ class CombatDamageAssignmentTest : FunSpec({
 
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
-        val decision = driver.pendingDecision as AssignDamageDecision
-
-        // Override: assign 4 to blocker, 1 to player
-        driver.submitDecision(
-            activePlayer,
-            DamageAssignmentResponse(decision.id, mapOf(blocker to 4, opponent to 1))
-        )
+        // Override: 4 to blocker, 1 to player.
+        driver.submitCombatDamage(mapOf((trampler to blocker) to 4, (trampler to opponent) to 1))
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // Blocker dead, only 1 damage to player
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
         driver.assertLifeTotal(opponent, 19)
     }
 
-    test("multiple blockers with damage assignment order decision then damage assignment") {
+    test("multiple blockers: board defaults to lethal-first order then drains") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 20, "Mountain" to 20),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Mountain" to 20), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -146,56 +119,35 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.declareAttackers(activePlayer, listOf(trampler), opponent).isSuccess shouldBe true
 
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        // Damage-assignment order is folded into the board (declaration order is the default).
         driver.declareBlockers(opponent, mapOf(
             blocker1 to listOf(trampler),
             blocker2 to listOf(trampler)
         ))
 
-        // First: damage assignment order decision
-        val orderDecision = driver.pendingDecision as OrderObjectsDecision
-        driver.submitDecision(
-            activePlayer,
-            OrderedResponse(orderDecision.id, listOf(blocker1, blocker2))
-        )
-
-        // Advance to combat damage - should present AssignDamageDecision
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
-        decision.attackerId shouldBe trampler
-        decision.availablePower shouldBe 5
-        decision.orderedTargets shouldBe listOf(blocker1, blocker2)
-        decision.defenderId shouldBe opponent
-        decision.hasTrample shouldBe true
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        val toB1 = decision.edges.single { it.sourceId == trampler && it.targetId == blocker1 }
+        val toB2 = decision.edges.single { it.sourceId == trampler && it.targetId == blocker2 }
+        val drain = decision.edges.single { it.sourceId == trampler && it.isTrampleDrain }
+        // Default: 2 to bears (lethal), 1 to goblin (lethal), 2 to player.
+        toB1.amount shouldBe 2
+        toB2.amount shouldBe 1
+        drain.amount shouldBe 2
 
-        // Default: 2 to bears (lethal), 1 to goblin (lethal), 2 to player
-        decision.defaultAssignments[blocker1] shouldBe 2
-        decision.defaultAssignments[blocker2] shouldBe 1
-        decision.defaultAssignments[opponent] shouldBe 2
-
-        // Submit default
-        driver.submitDecision(
-            activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
-        )
-
+        driver.confirmCombatDamage()
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // Both blockers dead
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
         driver.findPermanent(opponent, "Goblin Guide").shouldBeNull()
-
-        // 2 trample damage to player (5 - 2 - 1 = 2)
         driver.assertLifeTotal(opponent, 18)
     }
 
     test("deathtouch + trample assigns 1 damage per blocker, rest to player") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 20, "Swamp" to 20),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Swamp" to 20), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -216,35 +168,26 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
-        decision.hasDeathtouch shouldBe true
-        decision.hasTrample shouldBe true
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        val blockerEdge = decision.edges.single { it.sourceId == trampler && it.targetId == blocker }
+        val drainEdge = decision.edges.single { it.sourceId == trampler && it.isTrampleDrain }
+        // With deathtouch, 1 damage is lethal. Default: 1 to blocker, 2 to player.
+        blockerEdge.lethal shouldBe 1
+        blockerEdge.amount shouldBe 1
+        drainEdge.amount shouldBe 2
 
-        // With deathtouch, 1 damage is lethal. Default: 1 to blocker, 2 to player
-        decision.minimumAssignments[blocker] shouldBe 1
-        decision.defaultAssignments[blocker] shouldBe 1
-        decision.defaultAssignments[opponent] shouldBe 2
-
-        driver.submitDecision(
-            activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
-        )
-
+        driver.confirmCombatDamage()
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         // 2 trample damage to player (3 power - 1 to blocker = 2)
         driver.assertLifeTotal(opponent, 18)
-
         // 704.5h: blocker received 1 deathtouch damage, so it dies
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
     }
 
     test("deathtouch 1/1 kills larger creature via 704.5h") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Swamp" to 40),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -262,21 +205,18 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(bigCreature to listOf(rat))).isSuccess shouldBe true
 
+        // Single blocker, no trample: no board, auto-resolves.
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         // 704.5h: 5/5 received 1 deathtouch damage — it dies
         driver.findPermanent(opponent, "Force of Nature").shouldBeNull()
-
         // 1/1 rat also dies from 5 damage
         driver.findPermanent(activePlayer, "Deathtouch Rat").shouldBeNull()
     }
 
     test("single blocker without trample - no decision needed, auto-assigned") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 40),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -297,22 +237,14 @@ class CombatDamageAssignmentTest : FunSpec({
         // Should pass straight through combat damage with no decision
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // Blocker dead, all 5 damage to blocker (no trample)
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
-
-        // No trample damage to player
         driver.assertLifeTotal(opponent, 20)
-
-        // Attacker survives (5/5 took 2 damage from blocker)
         driver.findPermanent(activePlayer, "Force of Nature").shouldNotBeNull()
     }
 
     test("auto-resolve uses default assignments for trample") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 40),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
@@ -329,30 +261,27 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
         driver.declareBlockers(opponent, mapOf(blocker to listOf(trampler))).isSuccess shouldBe true
 
-        // Use passPriorityUntil which auto-resolves decisions
+        // passPriorityUntil(POSTCOMBAT_MAIN) auto-resolves the board with its defaults.
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // Default assignment: 2 to blocker (lethal), 3 to player
+        // Default assignment: 2 to blocker (lethal), 3 to player.
         driver.findPermanent(opponent, "Grizzly Bears").shouldBeNull()
         driver.assertLifeTotal(opponent, 17)
     }
 
     test("Daunting Defender - default assignment accounts for prevention and kills Cleric") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 20, "Plains" to 20),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Plains" to 20), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
 
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        // Set up: 5/5 trample attacks, 2/2 Cleric blocks, Daunting Defender on battlefield
-        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Trample Beast") // 5/5 trample
-        val clericBlocker = driver.putCreatureOnBattlefield(opponent, "Test Cleric")  // 2/2 Cleric
-        val defender = driver.putCreatureOnBattlefield(opponent, "Daunting Defender")  // 3/3, prevents 1 to Clerics
+        // 5/5 trample attacks, 2/2 Cleric blocks, Daunting Defender prevents 1 damage to Clerics.
+        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Trample Beast")
+        val clericBlocker = driver.putCreatureOnBattlefield(opponent, "Test Cleric")
+        driver.putCreatureOnBattlefield(opponent, "Daunting Defender")
         driver.removeSummoningSickness(trampler)
 
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
@@ -364,49 +293,38 @@ class CombatDamageAssignmentTest : FunSpec({
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         val decision = driver.pendingDecision
-        decision.shouldBeInstanceOf<AssignDamageDecision>()
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        val blockerEdge = decision.edges.single { it.sourceId == trampler && it.targetId == clericBlocker }
+        val drainEdge = decision.edges.single { it.sourceId == trampler && it.isTrampleDrain }
+        // The CR 510.1c order threshold is toughness only (2); prevention doesn't change it.
+        blockerEdge.lethal shouldBe 2
+        // But the default accounts for Daunting Defender's prevention so it actually kills: 2 + 1.
+        blockerEdge.amount shouldBe 3
+        drainEdge.amount shouldBe 2
 
-        // Minimum is based on toughness only (2), per MTG rules
-        decision.minimumAssignments[clericBlocker] shouldBe 2
-        // Default accounts for Daunting Defender's prevention: 2 toughness + 1 prevention = 3
-        decision.defaultAssignments[clericBlocker] shouldBe 3
-        decision.defaultAssignments[opponent] shouldBe 2
-
-        // Submit default: 3 to cleric (overcomes prevention), 2 to player
-        driver.submitDecision(
-            activePlayer,
-            DamageAssignmentResponse(decision.id, decision.defaultAssignments)
-        )
-
+        driver.confirmCombatDamage()
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // 3 assigned - 1 prevented = 2 damage dealt = lethal to 2/2 Cleric
+        // 3 assigned - 1 prevented = 2 = lethal to the 2/2 Cleric.
         driver.findPermanent(opponent, "Test Cleric").shouldBeNull()
         driver.getGraveyardCardNames(opponent) shouldContain "Test Cleric"
-
-        // 2 trample damage to player
         driver.assertLifeTotal(opponent, 18)
-
-        // Both Daunting Defender and Trample Beast survive
         driver.findPermanent(opponent, "Daunting Defender").shouldNotBeNull()
         driver.findPermanent(activePlayer, "Trample Beast").shouldNotBeNull()
     }
 
     test("Daunting Defender - player assigns minimum (toughness only) and Cleric survives") {
         val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Forest" to 20, "Plains" to 20),
-            startingLife = 20
-        )
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Plains" to 20), startingLife = 20)
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
 
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Trample Beast") // 5/5 trample
-        val clericBlocker = driver.putCreatureOnBattlefield(opponent, "Test Cleric")  // 2/2 Cleric
-        val defender = driver.putCreatureOnBattlefield(opponent, "Daunting Defender")  // prevents 1
+        val trampler = driver.putCreatureOnBattlefield(activePlayer, "Trample Beast")
+        val clericBlocker = driver.putCreatureOnBattlefield(opponent, "Test Cleric")
+        driver.putCreatureOnBattlefield(opponent, "Daunting Defender")
         driver.removeSummoningSickness(trampler)
 
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
@@ -417,22 +335,14 @@ class CombatDamageAssignmentTest : FunSpec({
 
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
-        val decision = driver.pendingDecision as AssignDamageDecision
-
-        // Player deliberately assigns only toughness-worth of damage (2) to maximize trample
-        // This is below the prevention-aware default (3) but still valid per MTG rules
-        // (prevention doesn't change what counts as "lethal" for assignment ordering purposes)
-        driver.submitDecision(
-            activePlayer,
-            DamageAssignmentResponse(decision.id, mapOf(clericBlocker to 2, opponent to 3))
-        )
+        // The player assigns only the order-threshold (toughness 2) to the Cleric to maximize
+        // trample. That satisfies CR 510.1c / 702.19b — prevention isn't part of the threshold —
+        // but the 1 prevented means only 1 actual damage lands, so the Cleric survives.
+        driver.submitCombatDamage(mapOf((trampler to clericBlocker) to 2, (trampler to opponent) to 3))
 
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
-        // 2 assigned - 1 prevented = 1 actual damage, less than 2 toughness → Cleric survives!
         driver.findPermanent(opponent, "Test Cleric").shouldNotBeNull()
-
-        // 3 trample damage to player (player chose to maximize trample over kill)
         driver.assertLifeTotal(opponent, 17)
     }
 })

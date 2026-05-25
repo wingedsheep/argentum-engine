@@ -568,6 +568,12 @@ data class ClientAttacker(
     val blockedBy: List<EntityId>,
     /** True if all creatures that can block this creature must do so (Alluring Scent) */
     val mustBeBlockedByAll: Boolean = false,
+    /**
+     * Banding band id (CR 702.22) shared by every attacker in the same band, or null if this
+     * attacker isn't banded. Lets the client keep showing the band grouping after attacks are
+     * declared (during the defender's blocks and combat), not just during declare-attackers.
+     */
+    val bandId: String? = null,
     /** Ordered list of blockers for damage assignment (first receives damage first). Null if not yet ordered. */
     val damageAssignmentOrder: List<EntityId>? = null,
     /** Damage assigned to each target (blocker ID or player ID -> damage amount). Null if not yet assigned. */

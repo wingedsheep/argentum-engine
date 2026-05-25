@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useHasLegalActions } from '@/store/selectors.ts'
 import type { ClientCard, EntityId } from '@/types'
-import { Color, ColorSymbols } from '@/types/enums'
+import { Color, ColorSymbols, Keyword } from '@/types/enums'
 import { getCardImageUrl, getScryfallFallbackUrl, MORPH_FACE_DOWN_IMAGE_URL } from '@/utils/cardImages.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
 import { ManaCost } from '@/components/ui/ManaSymbols.tsx'
@@ -40,7 +40,7 @@ import {
   getQuestCounters,
   getGrowthCounters,
 } from '../board/shared'
-import { styles } from '../board/styles'
+import { styles, bandColorFor } from '../board/styles'
 import {
   TARGET_COLOR, TARGET_COLOR_BRIGHT, TARGET_GLOW, TARGET_GLOW_BRIGHT, TARGET_GLOW_OUTER, TARGET_SHADOW,
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
@@ -118,6 +118,13 @@ export function GameCard({
   const startDraggingAttacker = useGameStore((state) => state.startDraggingAttacker)
   const stopDraggingAttacker = useGameStore((state) => state.stopDraggingAttacker)
   const draggingAttackerId = useGameStore((state) => state.draggingAttackerId)
+  const draggingAttackerHasBanding = useGameStore((state) => state.draggingAttackerHasBanding)
+  const linkBand = useGameStore((state) => state.linkBand)
+  // Server-side combat attackers (carry bandId) so band grouping stays visible after
+  // attacks are declared — during the defender's blocks and combat, not just declare-attackers.
+  const serverCombatAttackers = useGameStore(
+    (state) => (state.spectatingState?.gameState ?? state.gameState)?.combat?.attackers ?? null
+  )
   const setAttackTarget = useGameStore((state) => state.setAttackTarget)
   const startDraggingCard = useGameStore((state) => state.startDraggingCard)
   const stopDraggingCard = useGameStore((state) => state.stopDraggingCard)
@@ -301,6 +308,40 @@ export function GameCard({
   const isValidAttacker = isInAttackerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
   const isSelectedAsAttacker = isInAttackerMode && combatState.selectedAttackers.includes(card.id)
 
+  // Banding (CR 702.22): which declared band (if any) this creature belongs to. Drives the
+  // colored ring + corner badge so the player can see which creatures attack — and are blocked —
+  // as a group. During the viewing player's own declare-attackers this comes from the client-side
+  // bands being assembled; afterwards (the defender's blocks, combat) it comes from the server's
+  // per-attacker bandId so the grouping persists.
+  const cardHasBanding = card.keywords.includes(Keyword.BANDING)
+  const bandIndex = (() => {
+    if (isInAttackerMode && combatState) {
+      const localIdx = combatState.bands.findIndex((band) => band.includes(card.id))
+      if (localIdx !== -1) return localIdx
+    }
+    const serverBandId = serverCombatAttackers?.find((a) => a.creatureId === card.id)?.bandId
+    if (!serverBandId) return -1
+    // Order bands by first appearance of each unique bandId in attacker order, so the color
+    // assignment is stable and matches what the attacker submitted.
+    const seen: string[] = []
+    for (const att of serverCombatAttackers ?? []) {
+      if (att.bandId && !seen.includes(att.bandId)) seen.push(att.bandId)
+    }
+    return seen.indexOf(serverBandId)
+  })()
+  const isBanded = bandIndex >= 0
+  const bandColor = isBanded ? bandColorFor(bandIndex) : null
+
+  // Banding drag-and-drop: while one of your attackers is being dragged, this card is a
+  // legal band drop target iff it's a valid attacker (other than the dragged one) and at
+  // least one of (drag source, this card) has BANDING. Used to highlight the drop target.
+  const isBandDropTarget =
+    isInAttackerMode &&
+    !!draggingAttackerId &&
+    draggingAttackerId !== card.id &&
+    combatState.validCreatures.includes(card.id) &&
+    (cardHasBanding || draggingAttackerHasBanding === true)
+
   // For blocker mode: check if this is a valid blocker or an attacking creature to block
   const isValidBlocker = isInBlockerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
   const isSelectedAsBlocker = isInBlockerMode && !!(combatState?.blockerAssignments[card.id]?.length)
@@ -400,7 +441,7 @@ export function GameCard({
       if (!isSelectedAsAttacker) {
         toggleAttacker(card.id) // Select it immediately so the arrow shows
       }
-      startDraggingAttacker(card.id)
+      startDraggingAttacker(card.id, card.keywords.includes(Keyword.BANDING))
       return
     }
 
@@ -553,10 +594,50 @@ export function GameCard({
       // Check if dropped on an opponent planeswalker
       const cardEl = elementAtPoint.closest('[data-card-id]')
       if (cardEl) {
-        const targetCardId = cardEl.getAttribute('data-card-id')
-        if (targetCardId && combatState?.validAttackTargets.includes(targetCardId as EntityId)) {
-          setAttackTarget(draggingAttackerId, targetCardId as EntityId)
+        const targetCardId = cardEl.getAttribute('data-card-id') as EntityId | null
+        if (targetCardId && combatState?.validAttackTargets.includes(targetCardId)) {
+          setAttackTarget(draggingAttackerId, targetCardId)
           return
+        }
+        // CR 702.22: drop on another of your valid attackers → form/extend a band.
+        // validCreatures is the canonical set of creatures the viewing player can
+        // attack with, so checking membership keeps this path scoped to legal targets.
+        if (
+          targetCardId &&
+          targetCardId !== draggingAttackerId &&
+          combatState?.mode === 'declareAttackers' &&
+          combatState.validCreatures.includes(targetCardId)
+        ) {
+          const sourceHasBanding = card.keywords.includes(Keyword.BANDING)
+          const targetHasBanding = cardEl.getAttribute('data-banding') === 'true'
+          if (sourceHasBanding || targetHasBanding) {
+            // CR 702.22c: a band may contain at most one creature without banding.
+            // Reject the link client-side when the resulting band would exceed that;
+            // banding status of existing members is read off each card's data-banding
+            // attribute (missing attribute = no banding). Server re-checks regardless.
+            const hasBandingFor = (memberId: EntityId): boolean => {
+              if (memberId === draggingAttackerId) return sourceHasBanding
+              if (memberId === targetCardId) return targetHasBanding
+              const el = document.querySelector(`[data-card-id="${memberId}"]`)
+              return el?.getAttribute('data-banding') === 'true'
+            }
+            const bands = combatState.bands
+            const sourceBand = bands.find((b) => b.includes(draggingAttackerId)) ?? []
+            const targetBand = bands.find((b) => b.includes(targetCardId)) ?? []
+            const merged = new Set<EntityId>([
+              draggingAttackerId,
+              targetCardId,
+              ...sourceBand,
+              ...targetBand,
+            ])
+            const nonBandingCount = Array.from(merged).filter((id) => !hasBandingFor(id)).length
+            if (nonBandingCount > 1) {
+              // Illegal band — silently no-op.
+              return
+            }
+            linkBand(draggingAttackerId, targetCardId, sourceHasBanding, targetHasBanding)
+            return
+          }
         }
       }
 
@@ -620,7 +701,7 @@ export function GameCard({
       window.removeEventListener('mouseup', handleMouseUp)
       window.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [draggingAttackerId, card.id, stopDraggingAttacker, toggleAttacker, combatState, setAttackTarget])
+  }, [draggingAttackerId, card.id, card.keywords, stopDraggingAttacker, toggleAttacker, combatState, setAttackTarget, linkBand])
 
   const handleClick = () => {
     // If the drag handler already processed this interaction, skip
@@ -968,6 +1049,7 @@ export function GameCard({
   const cardElement = (
     <div
       data-card-id={card.id}
+      {...(cardHasBanding ? { 'data-banding': 'true' } : {})}
       {...(isGhost ? { 'data-ghost': 'true' } : {})}
       onClick={handleClick}
       onDoubleClick={handleDoubleClickEvent}
@@ -999,6 +1081,17 @@ export function GameCard({
         userSelect: 'none',
         ...(voidEligible ? { outline: '1px solid rgba(140, 90, 220, 0.55)', outlineOffset: '2px' } : {}),
         ...(isBeheldPulsing ? { animation: 'beholdPulse 1.1s ease-in-out infinite alternate' } : {}),
+        // Banding: colored ring + glow on every member of a declared band (CR 702.22).
+        ...(isBanded && bandColor ? {
+          outline: `2px solid ${bandColor.border}`,
+          outlineOffset: '1px',
+          boxShadow: `${boxShadow}, 0 0 9px 2px ${bandColor.glow}`,
+        } : {}),
+        // Highlight a legal band drop target while an attacker is being dragged over it.
+        ...(isBandDropTarget ? {
+          outline: '2px dashed #ffd54f',
+          outlineOffset: '2px',
+        } : {}),
       }}
     >
       {/* Token with art_crop image — render a custom card frame */}
@@ -1194,6 +1287,13 @@ export function GameCard({
           <span>
             {Math.min(card.thresholdInfo.current, card.thresholdInfo.required)}/{card.thresholdInfo.required}
           </span>
+        </div>
+      )}
+
+      {/* Banding (CR 702.22): band-membership badge, color-coded per band */}
+      {isBanded && bandColor && (
+        <div style={{ ...styles.bandBadge, backgroundColor: bandColor.base }}>
+          Band {bandIndex + 1}
         </div>
       )}
 

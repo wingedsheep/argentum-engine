@@ -60,6 +60,7 @@ class DecisionResponder(
             is ChooseOptionDecision -> respondOption(state, decision, playerId)
             is BudgetModalDecision -> respondBudgetModal(decision)
             is AssignDamageDecision -> respondDamageAssignment(state, decision)
+            is CombatResolutionDecision -> respondCombatResolution(decision)
             is SearchLibraryDecision -> respondSearchLibrary(state, decision, playerId)
             is ReorderLibraryDecision -> respondReorderLibrary(state, decision, playerId)
             is SelectManaSourcesDecision -> respondManaSelection(decision)
@@ -415,6 +416,11 @@ class DecisionResponder(
     ): DecisionResponse {
         // Use the engine's defaults — lethal to each in order, rest to player
         return DamageAssignmentResponse(decision.id, decision.defaultAssignments)
+    }
+
+    private fun respondCombatResolution(decision: CombatResolutionDecision): DecisionResponse {
+        // Confirm the engine-computed default edge amounts (lethal-first, rest to drain).
+        return CombatResolutionResponse(decision.id, decision.edges.map { DamageEdgeAmount(it.id, it.amount) })
     }
 
     // ── Library search ───────────────────────────────────────────────────

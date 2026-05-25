@@ -1,0 +1,32 @@
+{
+  "player1Name": "Attacker",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Giant Growth"],
+    "battlefield": [
+      {"name": "Panther Warriors", "summoningSickness": false},
+      {"name": "Spined Wurm", "summoningSickness": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Ironfist Crusher"},
+      {"name": "Ironfist Crusher"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

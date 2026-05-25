@@ -1,7 +1,5 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.OrderObjectsDecision
-import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -233,13 +231,9 @@ class FirstStrikeCombatTest : FunSpec({
             normalBlocker to listOf(attacker)
         ))
 
-        // Multiple blockers require damage assignment order decision
-        val orderDecision = driver.pendingDecision as OrderObjectsDecision
-        driver.submitDecision(
-            activePlayer,
-            OrderedResponse(orderDecision.id, listOf(fsBlocker, normalBlocker))
-        )
-
+        // No manual damage assignment: the 2/2 has no trample and exactly lethal power for its
+        // two blockers, so combat auto-resolves. The attacker dies to first strike before it
+        // would assign anything anyway.
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         // Attacker should be dead (killed by first strike)

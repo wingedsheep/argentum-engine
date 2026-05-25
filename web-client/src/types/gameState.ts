@@ -511,6 +511,8 @@ export interface ClientAttacker {
   readonly blockedBy: readonly EntityId[]
   /** True if all creatures that can block this creature must do so (Alluring Scent) */
   readonly mustBeBlockedByAll?: boolean
+  /** Banding band id (CR 702.22) shared by every attacker in the same band; null/absent if not banded. */
+  readonly bandId?: string | null
   /** Ordered list of blockers for damage assignment (first receives damage first). Null if not yet ordered. */
   readonly damageAssignmentOrder?: readonly EntityId[]
   /** Damage assigned to each target (blocker ID or player ID -> damage amount). Null if not yet assigned. */

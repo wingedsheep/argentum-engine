@@ -218,6 +218,9 @@ export interface DeclareAttackersAction {
   readonly type: 'DeclareAttackers'
   readonly playerId: EntityId
   readonly attackers: Record<EntityId, EntityId>  // attacker -> defending player
+  // Banding bands (CR 702.22): each set is one band of attacker IDs. Deserialized directly
+  // into the engine's DeclareAttackers.bands; omitted when no bands were formed.
+  readonly bands?: readonly (readonly EntityId[])[]
 }
 
 export interface DeclareBlockersAction {

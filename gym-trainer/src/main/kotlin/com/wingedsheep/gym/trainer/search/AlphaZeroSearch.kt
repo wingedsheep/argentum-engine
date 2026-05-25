@@ -9,6 +9,7 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.GameAction
@@ -277,6 +278,7 @@ class AlphaZeroSearch<T>(
         is SearchLibraryDecision,
         is ReorderLibraryDecision,
         is AssignDamageDecision,
+        is CombatResolutionDecision,
         is SelectManaSourcesDecision,
         is BudgetModalDecision -> null
     }

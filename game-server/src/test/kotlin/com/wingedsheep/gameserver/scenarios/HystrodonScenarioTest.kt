@@ -163,9 +163,9 @@ class HystrodonScenarioTest : ScenarioTestBase() {
                 while (iterations < 50) {
                     if (game.hasPendingDecision()) {
                         val decision = game.getPendingDecision()
-                        if (decision is AssignDamageDecision) {
+                        if (decision is CombatResolutionDecision) {
                             // Accept the default trample damage assignment
-                            game.submitDefaultDamageAssignment()
+                            game.submitDefaultCombatDamage()
                             continue
                         }
                         break  // Found a non-damage-assignment decision (the may trigger)

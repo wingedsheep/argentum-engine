@@ -1,0 +1,31 @@
+{
+  "player1Name": "Attacker",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Blistering Firecat", "summoningSickness": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Noble Elephant"},
+      {"name": "Grizzly Bears"},
+      {"name": "Devoted Hero"},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

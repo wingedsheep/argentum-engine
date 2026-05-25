@@ -124,6 +124,12 @@ export interface CombatState {
   mustBeBlockedAttackers: readonly EntityId[]
   /** Max block counts for blockers that can block more than one attacker (blocker ID -> max attackers) */
   blockerMaxBlockCounts: Readonly<Record<EntityId, number>>
+  /**
+   * Banding bands declared during declare-attackers (CR 702.21): each entry is the set of
+   * attacker IDs grouped into one band. Assembled client-side by dragging an attacker onto
+   * another (see `linkBand`); legality is re-checked server-side on confirm. Empty otherwise.
+   */
+  bands: readonly (readonly EntityId[])[]
 }
 
 /**
@@ -679,6 +685,7 @@ export type GameStore = {
   submitBudgetModalDecision: (selectedModeIndices: readonly number[]) => void
   submitDistributeDecision: (distribution: Record<EntityId, number>) => void
   submitDamageAssignmentDecision: (assignments: Record<EntityId, number>) => void
+  submitCombatResolutionDecision: (edges: ReadonlyArray<{ edgeId: string; amount: number }>) => void
   submitColorDecision: (color: string) => void
   submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
   submitCancelDecision: () => void
@@ -785,6 +792,7 @@ export type GameStore = {
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
+  draggingAttackerHasBanding: boolean | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
   revealedCardsInfo: {
@@ -829,7 +837,7 @@ export type GameStore = {
   clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
-  startDraggingAttacker: (attackerId: EntityId) => void
+  startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
   stopDraggingAttacker: () => void
   setAttackTarget: (attackerId: EntityId, targetId: EntityId) => void
   startDraggingCard: (cardId: EntityId) => void
@@ -839,6 +847,9 @@ export type GameStore = {
   attackWithAll: () => void
   clearAttackers: () => void
   clearCombat: () => void
+  removeBand: (bandIndex: number) => void
+  clearBands: () => void
+  linkBand: (sourceId: EntityId, targetId: EntityId, sourceHasBanding: boolean, targetHasBanding: boolean) => void
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void
   cancelXSelection: () => void

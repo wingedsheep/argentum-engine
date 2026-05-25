@@ -1024,6 +1024,11 @@ abstract class ScenarioTestBase : FunSpec() {
                 is AssignDamageDecision -> {
                     submitDecision(DamageAssignmentResponse(decision.id, decision.defaultAssignments))
                 }
+                is CombatResolutionDecision -> {
+                    submitDecision(
+                        CombatResolutionResponse(decision.id, decision.edges.map { DamageEdgeAmount(it.id, it.amount) })
+                    )
+                }
                 else -> error("Cannot auto-resolve decision of type ${decision::class.simpleName}")
             }
         }
@@ -1217,6 +1222,32 @@ abstract class ScenarioTestBase : FunSpec() {
             val decision = state.pendingDecision as? AssignDamageDecision
                 ?: error("No pending AssignDamageDecision")
             return submitDamageAssignment(decision.defaultAssignments)
+        }
+
+        /**
+         * Confirm the pending [CombatResolutionDecision] with the engine's default edge amounts.
+         * The combat resolution board replaces the old per-attacker AssignDamageDecision flow.
+         */
+        fun submitDefaultCombatDamage(): ExecutionResult {
+            val decision = state.pendingDecision as? CombatResolutionDecision
+                ?: error("No pending CombatResolutionDecision (have ${state.pendingDecision})")
+            return submitDecision(
+                CombatResolutionResponse(decision.id, decision.edges.map { DamageEdgeAmount(it.id, it.amount) })
+            )
+        }
+
+        /**
+         * Submit a custom combat-damage assignment to the pending [CombatResolutionDecision] for the
+         * current chooser. [plan] maps (sourceId, targetId) to the damage on that edge; any edge not
+         * named keeps its engine-computed default.
+         */
+        fun submitCombatDamage(plan: Map<Pair<EntityId, EntityId>, Int>): ExecutionResult {
+            val decision = state.pendingDecision as? CombatResolutionDecision
+                ?: error("No pending CombatResolutionDecision (have ${state.pendingDecision})")
+            val edges = decision.edges.map { edge ->
+                DamageEdgeAmount(edge.id, plan[edge.sourceId to edge.targetId] ?: edge.amount)
+            }
+            return submitDecision(CombatResolutionResponse(decision.id, edges))
         }
 
         /**

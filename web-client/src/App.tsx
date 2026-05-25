@@ -156,6 +156,7 @@ export default function App() {
         attackingCreatures: [],
         mustBeBlockedAttackers: [],
         blockerMaxBlockCounts: {},
+        bands: [],
       })
       return
     }
@@ -206,6 +207,7 @@ export default function App() {
         attackingCreatures,
         mustBeBlockedAttackers,
         blockerMaxBlockCounts,
+        bands: [],
       })
     }
   }, [hasDeclareAttackersAction, hasDeclareBlockersAction, gameState, viewingPlayer, combatState, startCombat, clearCombat, battlefieldCards, legalActions])

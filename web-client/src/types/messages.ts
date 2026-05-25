@@ -495,6 +495,91 @@ export interface AssignDamageDecision extends PendingDecisionBase {
 }
 
 /**
+ * Direction of a {@link DamageEdge} on the combat resolution board.
+ */
+export type DamageEdgeDirection =
+  | 'ATTACKER_TO_BLOCKER'
+  | 'BLOCKER_TO_ATTACKER'
+  | 'ATTACKER_TO_PLAYER'
+  | 'ATTACKER_TO_PLANESWALKER'
+  | 'ATTACKER_TO_BATTLE'
+
+/**
+ * One directed damage assignment on the combat resolution board. Pre-filled with the
+ * engine-computed default {@link amount}; editable within `[0, maximum]` by {@link editableBy}.
+ */
+export interface DamageEdge {
+  readonly id: string
+  readonly sourceId: EntityId
+  readonly targetId: EntityId
+  readonly direction: DamageEdgeDirection
+  readonly amount: number
+  readonly maximum: number
+  /** True lethal need for the target from this source (deathtouch -> 1, else toughness - marked). */
+  readonly lethal: number
+  /** Whether this edge participates in CR 510.1c assignment-order gating (banding lifts it). */
+  readonly orderConstrained: boolean
+  /** Trample overflow edge to a player / planeswalker / battle (CR 702.19b lethal-first). */
+  readonly isTrampleDrain: boolean
+  /** Which player may modify this edge (banding flips it to the opponent). */
+  readonly editableBy: EntityId
+}
+
+export interface ResolutionAttacker {
+  readonly id: EntityId
+  readonly name: string
+  readonly power: number
+  readonly toughness: number
+  readonly hasTrample: boolean
+  readonly hasDeathtouch: boolean
+  readonly hasFirstStrike: boolean
+  readonly hasDoubleStrike: boolean
+  readonly dealsDamageThisStep: boolean
+  readonly bandId: string | null
+  readonly attackedDefenderId: EntityId
+  readonly blockedByIds: readonly EntityId[]
+  readonly markedDamage: number
+}
+
+export interface ResolutionBlocker {
+  readonly id: EntityId
+  readonly name: string
+  readonly power: number
+  readonly toughness: number
+  readonly hasDeathtouch: boolean
+  readonly hasFirstStrike: boolean
+  readonly hasDoubleStrike: boolean
+  readonly dealsDamageThisStep: boolean
+  readonly blockedAttackerIds: readonly EntityId[]
+  readonly orderedAttackers: readonly EntityId[]
+  readonly markedDamage: number
+}
+
+export type ResolutionTargetKind = 'PLAYER' | 'PLANESWALKER' | 'BATTLE'
+
+export interface ResolutionDefender {
+  readonly id: EntityId
+  readonly kind: ResolutionTargetKind
+  readonly name: string
+  readonly lifeOrLoyaltyOrDefense: number | null
+}
+
+/**
+ * The combat-damage resolution board (CR 510 / 702.22) — a bipartite damage graph the chooser
+ * confirms or re-divides. Replaces the per-attacker AssignDamageDecision + blocker-ordering pre-step.
+ */
+export interface CombatResolutionDecision extends PendingDecisionBase {
+  readonly type: 'CombatResolutionDecision'
+  readonly firstStrike: boolean
+  readonly attackers: readonly ResolutionAttacker[]
+  readonly blockers: readonly ResolutionBlocker[]
+  readonly defenders: readonly ResolutionDefender[]
+  readonly edges: readonly DamageEdge[]
+  /** For the two-actor banding case: the other player who owns the inverted edges. */
+  readonly coChooserId?: EntityId | null
+}
+
+/**
  * Player must split cards into piles (e.g., Surveil, Fact or Fiction).
  * Each card is assigned to one of the labeled piles.
  */
@@ -542,6 +627,7 @@ export type PendingDecision =
   | ChooseColorDecision
   | SelectManaSourcesDecision
   | AssignDamageDecision
+  | CombatResolutionDecision
   | SplitPilesDecision
 
 /**

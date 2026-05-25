@@ -1445,4 +1445,47 @@ export const styles: Record<string, React.CSSProperties> = {
     fontSize: 12,
     color: '#ff4444',
   } as React.CSSProperties,
+  // Banding (CR 702.22): band-membership badge rendered top-left of attackers that
+  // are part of a declared band. Color comes from BAND_COLORS, indexed by the band's
+  // position in CombatState.bands. Pointer-events disabled so it doesn't interfere
+  // with card interactions; the band is cleared by deselecting a member attacker.
+  bandBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    borderRadius: 4,
+    padding: '1px 5px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 3,
+    fontWeight: 700,
+    fontSize: 10,
+    color: '#fff',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
+    pointerEvents: 'none',
+    zIndex: 6,
+  } as React.CSSProperties,
+}
+
+/**
+ * Per-band visual color palette. Each band declared in declare-attackers mode picks
+ * the next color in order; the ring + badge on every banded creature use the same
+ * shade so the grouping is obvious at a glance.
+ */
+export const BAND_COLORS: ReadonlyArray<{
+  readonly base: string
+  readonly border: string
+  readonly glow: string
+  readonly chipBg: string
+}> = [
+  { base: '#7b1fa2', border: '#ce93d8', glow: 'rgba(186, 104, 200, 0.7)', chipBg: '#6a1b9a' }, // purple
+  { base: '#00838f', border: '#80deea', glow: 'rgba(38, 198, 218, 0.7)',  chipBg: '#006064' }, // teal
+  { base: '#ef6c00', border: '#ffb74d', glow: 'rgba(255, 152, 0, 0.7)',   chipBg: '#e65100' }, // orange
+  { base: '#558b2f', border: '#aed581', glow: 'rgba(124, 179, 66, 0.7)',  chipBg: '#33691e' }, // green
+  { base: '#ad1457', border: '#f48fb1', glow: 'rgba(236, 64, 122, 0.7)',  chipBg: '#880e4f' }, // pink
+  { base: '#283593', border: '#9fa8da', glow: 'rgba(92, 107, 192, 0.7)',  chipBg: '#1a237e' }, // indigo
+]
+
+export function bandColorFor(index: number): typeof BAND_COLORS[number] {
+  return BAND_COLORS[index % BAND_COLORS.length]!
 }

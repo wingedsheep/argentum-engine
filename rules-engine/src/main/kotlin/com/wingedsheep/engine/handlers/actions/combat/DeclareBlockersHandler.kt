@@ -40,17 +40,18 @@ class DeclareBlockersHandler(
         val result = combatManager.declareBlockers(state, action.playerId, action.blockers)
 
         if (result.isPaused) {
-            // Paused for blocker damage assignment ordering (multiple blockers on one attacker).
-            // Detect block triggers now and queue them as a PendingTriggersContinuation so they
-            // fire after blocker ordering completes (via checkForMoreContinuations).
+            // Paused for a block tax (the only remaining mid-declare pause now that damage-
+            // assignment ordering is folded into the combat resolution board). If any block
+            // triggers were detected, queue them as a PendingTriggersContinuation so they fire
+            // after the pause resolves (via checkForMoreContinuations).
             val triggers = triggerDetector.detectTriggers(result.newState, result.events)
             if (triggers.isNotEmpty()) {
                 val pendingTriggers = PendingTriggersContinuation(
                     decisionId = "block-triggers-${java.util.UUID.randomUUID()}",
                     remainingTriggers = triggers
                 )
-                // Insert BELOW the BlockerOrderContinuation so blocker ordering completes first,
-                // then checkForMoreContinuations picks up the triggers afterwards.
+                // Insert BELOW the top continuation so the pause resolves first, then
+                // checkForMoreContinuations picks up the triggers afterwards.
                 val stack = result.newState.continuationStack
                 val newStack = stack.dropLast(1) + pendingTriggers + stack.last()
                 val stateWithTriggers = result.newState.copy(continuationStack = newStack)

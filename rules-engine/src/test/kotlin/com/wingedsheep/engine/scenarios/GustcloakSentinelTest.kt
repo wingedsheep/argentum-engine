@@ -1,7 +1,5 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.OrderObjectsDecision
-import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -151,21 +149,15 @@ class GustcloakSentinelTest : FunSpec({
         driver.declareAttackers(attacker, listOf(sentinel), defender)
         driver.bothPass()
 
-        // Block with two creatures — triggers blocker ordering decision
+        // Block with two creatures. Damage-assignment order is no longer a separate pre-step
+        // (it's folded into the combat resolution board), so the "becomes blocked" trigger
+        // fires straight away.
         driver.declareBlockers(defender, mapOf(
             blocker1 to listOf(sentinel),
             blocker2 to listOf(sentinel)
         ))
 
-        // Multiple blockers require damage assignment order decision
-        val orderDecision = driver.pendingDecision as OrderObjectsDecision
-        driver.submitDecision(
-            attacker,
-            OrderedResponse(orderDecision.id, listOf(blocker1, blocker2))
-        )
-
-        // After ordering, the "becomes blocked" trigger should fire.
-        // Both pass to resolve.
+        // Resolve the "becomes blocked" trigger.
         driver.bothPass()
 
         // Choose yes - untap and remove from combat

@@ -154,19 +154,8 @@ class ButcherOrggScenarioTest : ScenarioTestBase() {
                     blockResult.error shouldBe null
                 }
 
-                // Multiple blockers require damage assignment order decision
-                val decision = game.getPendingDecision()
-                withClue("Should have damage assignment order decision") {
-                    decision shouldNotBe null
-                    decision shouldBe io.kotest.matchers.types.beInstanceOf<OrderObjectsDecision>()
-                }
-
-                // Order: Bears first, then Goblin Bully
-                game.submitDecision(
-                    OrderedResponse((decision as OrderObjectsDecision).id, listOf(bearsId, bullyId))
-                )
-
-                // Advance to combat damage step (where the distribution decision is created)
+                // Butcher Orgg divides its damage freely (DistributeDecision); damage-assignment
+                // order is no longer a separate pre-step. Advance to the combat damage step.
                 game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // Submit damage distribution: 2 to bears (lethal), 1 to bully (lethal), 3 to player

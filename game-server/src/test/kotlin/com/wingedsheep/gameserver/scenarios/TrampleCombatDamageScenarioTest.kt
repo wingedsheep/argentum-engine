@@ -55,23 +55,25 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
                     blockResult.error shouldBe null
                 }
 
-                // Advance to combat damage step - should present AssignDamageDecision
+                // Advance to combat damage step - should present the combat resolution board
                 game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
-                withClue("Should have damage assignment decision for trample creature") {
+                withClue("Should have a combat resolution board for the trample creature") {
                     game.hasPendingDecision() shouldBe true
-                    game.getPendingDecision() shouldBe beInstanceOf<AssignDamageDecision>()
+                    game.getPendingDecision() shouldBe beInstanceOf<CombatResolutionDecision>()
                 }
 
-                val decision = game.getPendingDecision() as AssignDamageDecision
-                withClue("Decision should have correct fields") {
-                    decision.attackerId shouldBe firecatId
-                    decision.availablePower shouldBe 7
-                    decision.hasTrample shouldBe true
+                val decision = game.getPendingDecision() as CombatResolutionDecision
+                val blockerEdge = decision.edges.single { it.sourceId == firecatId && it.targetId == seekerId }
+                val drainEdge = decision.edges.single { it.sourceId == firecatId && it.isTrampleDrain }
+                withClue("Board should expose the trample budget and default split") {
+                    blockerEdge.maximum shouldBe 7
+                    blockerEdge.amount shouldBe 2
+                    drainEdge.amount shouldBe 5
                 }
 
                 // Accept the default assignment (2 to blocker, 5 to player)
-                game.submitDefaultDamageAssignment()
+                game.submitDefaultCombatDamage()
 
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
 
@@ -117,9 +119,8 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // Custom assignment: 6 to blocker, 1 to player
-                val decision = game.getPendingDecision() as AssignDamageDecision
-                game.submitDamageAssignment(
-                    mapOf(seekerId to 6, game.player2Id to 1)
+                game.submitCombatDamage(
+                    mapOf((firecatId to seekerId) to 6, (firecatId to game.player2Id) to 1)
                 )
 
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
@@ -166,21 +167,23 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
 
                 game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
-                // Should have damage assignment decision
-                withClue("Should have damage assignment decision") {
+                // Should have a combat resolution board
+                withClue("Should have a combat resolution board") {
                     game.hasPendingDecision() shouldBe true
-                    game.getPendingDecision() shouldBe beInstanceOf<AssignDamageDecision>()
+                    game.getPendingDecision() shouldBe beInstanceOf<CombatResolutionDecision>()
                 }
 
-                val decision = game.getPendingDecision() as AssignDamageDecision
-                // Default accounts for prevention: 4 to blocker (3 toughness + 1 prevention), 3 to player
+                val decision = game.getPendingDecision() as CombatResolutionDecision
+                val blockerEdge = decision.edges.single { it.sourceId == firecatId && it.targetId == defenderId }
+                val drainEdge = decision.edges.single { it.sourceId == firecatId && it.isTrampleDrain }
+                // Default accounts for prevention: 4 to blocker (3 toughness + 1 prevention), 3 to player.
                 withClue("Default should assign 4 to blocker (3 toughness + 1 prevention) and 3 to player") {
-                    decision.defaultAssignments[defenderId] shouldBe 4
-                    decision.defaultAssignments[game.player2Id] shouldBe 3
+                    blockerEdge.amount shouldBe 4
+                    drainEdge.amount shouldBe 3
                 }
 
                 // Accept default assignment
-                game.submitDefaultDamageAssignment()
+                game.submitDefaultCombatDamage()
 
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
 
@@ -227,8 +230,8 @@ class TrampleCombatDamageScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // Assign 3 to blocker (toughness without prevention), 4 to player
-                game.submitDamageAssignment(
-                    mapOf(defenderId to 3, game.player2Id to 4)
+                game.submitCombatDamage(
+                    mapOf((firecatId to defenderId) to 3, (firecatId to game.player2Id) to 4)
                 )
 
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)

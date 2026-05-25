@@ -128,14 +128,8 @@ class ButcherOrggTest : FunSpec({
             blocker2 to listOf(orgg)
         ))
 
-        // Multiple blockers require damage assignment order decision
-        val orderDecision = driver.pendingDecision as OrderObjectsDecision
-        driver.submitDecision(
-            activePlayer,
-            OrderedResponse(orderDecision.id, listOf(blocker1, blocker2))
-        )
-
-        // Pass priority to reach combat damage step
+        // Butcher Orgg divides its damage freely (DistributeDecision); damage-assignment order is
+        // no longer a separate pre-step. Pass priority to reach the combat damage step.
         driver.passPriorityUntil(Step.COMBAT_DAMAGE)
 
         // Submit damage distribution: 2 to bears (lethal), 1 to goblin (lethal), 3 to player
@@ -349,5 +343,105 @@ class ButcherOrggTest : FunSpec({
         driver.findPermanent(opponent, "Grizzly Bears") shouldNotBe null
         // Butcher Orgg takes 2 damage from blocker but survives
         driver.findPermanent(activePlayer, "Butcher Orgg") shouldNotBe null
+    }
+
+    test("blocked Butcher Orgg can assign its damage to a creature that did not block it") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Mountain" to 20, "Forest" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val orgg = driver.putCreatureOnBattlefield(activePlayer, "Butcher Orgg")
+        val blocker = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")       // 2/2 — blocks
+        val bystander = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")   // 3/3 — never blocks
+        driver.removeSummoningSickness(orgg)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(activePlayer, listOf(orgg), opponent).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opponent, mapOf(blocker to listOf(orgg))).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // The non-blocking creature is a legal damage target even though it never blocked.
+        val decision = driver.pendingDecision as DistributeDecision
+        decision.targets shouldContain bystander
+
+        // Divide freely: lethal to the NON-blocking Centaur Courser, nothing to the actual
+        // blocker, the rest to the defending player.
+        driver.submitDecision(
+            activePlayer,
+            DistributionResponse(decision.id, mapOf(bystander to 3, opponent to 3))
+        ).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+
+        // The creature that never blocked took the lethal damage and died.
+        driver.findPermanent(opponent, "Centaur Courser") shouldBe null
+        driver.getGraveyardCardNames(opponent) shouldContain "Centaur Courser"
+
+        // The actual blocker was assigned 0 and survives.
+        driver.findPermanent(opponent, "Grizzly Bears") shouldNotBe null
+
+        // Remaining 3 damage went to the defending player.
+        driver.assertLifeTotal(opponent, 17)
+
+        // Butcher Orgg still took 2 from its blocker but survives.
+        driver.findPermanent(activePlayer, "Butcher Orgg") shouldNotBe null
+    }
+
+    test("blocked Butcher Orgg deals no damage when its only blocker is removed before combat damage") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Mountain" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val orgg = driver.putCreatureOnBattlefield(activePlayer, "Butcher Orgg")
+        driver.putLandOnBattlefield(activePlayer, "Mountain")          // mana for the removal spell
+        val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
+        driver.removeSummoningSickness(orgg)
+
+        val blocker = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")       // 2/2 — the sole blocker
+        driver.putCreatureOnBattlefield(opponent, "Centaur Courser")                   // 3/3 — could be a target
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(activePlayer, listOf(orgg), opponent).isSuccess shouldBe true
+
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opponent, mapOf(blocker to listOf(orgg))).isSuccess shouldBe true
+
+        // Remove the only creature blocking Butcher Orgg before the combat damage step. The
+        // defending player holds priority right after declaring blockers, so pass it to the
+        // attacker, who burns the blocker down.
+        driver.passPriority(opponent)
+        driver.castSpell(activePlayer, bolt, listOf(blocker)).isSuccess shouldBe true
+        driver.bothPass()  // resolve Lightning Bolt
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
+
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // Butcher Orgg is still "blocked" but has no creature blocking it and no trample, so per
+        // CR 509.1h / 510.1c it assigns no combat damage at all — the divide-freely ability does
+        // NOT let it redirect its damage to the surviving Centaur Courser or the player.
+        (driver.pendingDecision is DistributeDecision) shouldBe false
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+
+        driver.assertLifeTotal(opponent, 20)                                 // player untouched
+        driver.findPermanent(opponent, "Centaur Courser") shouldNotBe null   // bystander untouched
+        driver.findPermanent(activePlayer, "Butcher Orgg") shouldNotBe null  // Orgg took no blocker damage either
     }
 })

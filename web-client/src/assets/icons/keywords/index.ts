@@ -6,11 +6,13 @@
  * Keywords without a mana-font glyph fall back to a local SVG via `keywordSvgIcon`.
  */
 import persistSvgUrl from './persist.svg'
+import bandingSvgUrl from './banding.svg'
 import questCounterSvgUrl from '../counters/quest.svg'
 
 /** Maps engine keyword names to local SVG URLs (used when mana-font has no glyph). */
 export const keywordSvgIcon: Record<string, string> = {
   PERSIST: persistSvgUrl,
+  BANDING: bandingSvgUrl,
 }
 
 /** Maps engine CounterType names to local SVG URLs (used when mana-font has no glyph or we prefer custom art). */
@@ -59,7 +61,7 @@ export const displayableKeywords = new Set([
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE', 'FEAR',
   'PROWESS', 'WARD', 'INTIMIDATE', 'INFECT',
   'WITHER', 'TOXIC', 'CANT_BE_BLOCKED', 'CHANGELING',
-  'PERSIST',
+  'PERSIST', 'BANDING',
 ])
 
 /** Maps engine CounterType to mana-font counter class suffixes */

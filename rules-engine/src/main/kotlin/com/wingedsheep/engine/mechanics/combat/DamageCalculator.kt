@@ -186,92 +186,6 @@ class DamageCalculator(
     }
 
     /**
-     * Validate a manual damage assignment.
-     *
-     * Rules for valid assignment:
-     * 1. Total damage cannot exceed attacker's power
-     * 2. Damage must be assigned in blocker order (can't skip)
-     * 3. Each blocker (except the last) must be assigned lethal damage
-     *    before assigning any damage to the next blocker
-     * 4. Trample allows assigning to defending player only after all
-     *    blockers have lethal damage assigned
-     *
-     * @param state Current game state
-     * @param attackerId The attacking creature
-     * @param assignment Proposed damage assignments (target -> amount)
-     * @return Error message if invalid, null if valid
-     */
-    fun validateDamageAssignment(
-        state: GameState,
-        attackerId: EntityId,
-        assignment: Map<EntityId, Int>
-    ): String? {
-        val attackerContainer = state.getEntity(attackerId)
-            ?: return "Attacker not found"
-
-        val attackerCard = attackerContainer.get<CardComponent>()
-            ?: return "Attacker is not a card"
-
-        // Use projected values for power and keywords (includes floating effects like +4/+4)
-        val projected = state.projectedState
-        val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
-        val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
-
-        // Get blockers in damage assignment order, filtering out dead blockers
-        val orderedBlockers = (attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
-            ?: attackerContainer.get<BlockedComponent>()?.blockerIds
-            ?: emptyList()).filter { it in state.getBattlefield() }
-
-        // Get defending player for trample check
-        val attackingComponent = attackerContainer.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
-        val defenderId = attackingComponent?.defenderId
-
-        // Check total damage doesn't exceed power
-        val totalDamage = assignment.values.sum()
-        if (totalDamage > attackerPower) {
-            return "Total damage ($totalDamage) exceeds attacker's power ($attackerPower)"
-        }
-
-        // Verify damage is assigned in order with lethal requirements
-        var allBlockersHaveLethal = true
-        for ((index, blockerId) in orderedBlockers.withIndex()) {
-            val damageToThisBlocker = assignment[blockerId] ?: 0
-            val lethalInfo = calculateLethalDamage(state, blockerId, attackerId)
-
-            // Check if this blocker has lethal
-            val hasLethal = damageToThisBlocker >= lethalInfo.lethalAmount
-
-            if (!hasLethal) {
-                allBlockersHaveLethal = false
-
-                // If this blocker doesn't have lethal, no damage can be assigned
-                // to any subsequent blocker
-                for (subsequentIndex in (index + 1) until orderedBlockers.size) {
-                    val subsequentBlocker = orderedBlockers[subsequentIndex]
-                    val subsequentDamage = assignment[subsequentBlocker] ?: 0
-                    if (subsequentDamage > 0) {
-                        return "Cannot assign damage to ${getCreatureName(state, subsequentBlocker)} " +
-                               "until ${getCreatureName(state, blockerId)} has been assigned lethal damage"
-                    }
-                }
-            }
-        }
-
-        // Check trample assignment to player
-        val damageToPlayer = assignment[defenderId] ?: 0
-        if (damageToPlayer > 0) {
-            if (!hasTrample) {
-                return "Cannot assign damage to defending player without trample"
-            }
-            if (!allBlockersHaveLethal) {
-                return "Cannot assign trample damage until all blockers have lethal damage"
-            }
-        }
-
-        return null
-    }
-
-    /**
      * Check if an attacker requires manual damage assignment.
      *
      * Manual assignment is needed when:
@@ -296,27 +210,16 @@ class DamageCalculator(
         // Use projected values for keywords and power (includes floating effects like +4/+4)
         val projected = state.projectedState
 
-        // Single blocker without trample = no choice needed
+        // Single blocker without trample = no choice (all damage goes to that one blocker).
         if (blockerIds.size <= 1 && !projected.hasKeyword(attackerId, Keyword.TRAMPLE)) {
             return false
         }
 
-        // Has trample = always has a choice for excess damage
-        if (projected.hasKeyword(attackerId, Keyword.TRAMPLE)) {
-            return true
-        }
-
-        // Multiple blockers - check if there's excess damage to distribute
-        val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
-        var totalLethalNeeded = 0
-
-        for (blockerId in blockerIds) {
-            val lethalInfo = calculateLethalDamage(state, blockerId, attackerId)
-            totalLethalNeeded += lethalInfo.lethalAmount
-        }
-
-        // If power exceeds total lethal needed, there are choices to make
-        return attackerPower > totalLethalNeeded
+        // Trample (choose how much spills over) or 2+ blockers always present a choice: the
+        // attacking player picks the damage-assignment order, which decides *which* blockers die
+        // when power is short and where any overkill goes (CR 510.1c) — not just whether there's
+        // excess to spread. So surface the board whenever there is more than one way to assign.
+        return true
     }
 
     /**

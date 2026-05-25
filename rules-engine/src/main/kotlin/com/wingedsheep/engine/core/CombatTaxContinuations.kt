@@ -20,6 +20,8 @@ import kotlinx.serialization.Serializable
  * @property manaCost Total tax to pay, encoded as a generic-mana cost.
  * @property availableSources Mana sources the player chooses from in the prompt.
  * @property autoPaySuggestion Pre-computed entity IDs the solver would tap on auto-pay.
+ * @property bands Validated band groupings (CR 702.22) carried across the tax pause so the
+ *   resumer can stamp band ids when it commits the attack.
  */
 @Serializable
 data class AttackTaxManaSelectionContinuation(
@@ -29,6 +31,7 @@ data class AttackTaxManaSelectionContinuation(
     val manaCost: ManaCost,
     val availableSources: List<ManaSourceOption>,
     val autoPaySuggestion: List<EntityId>,
+    val bands: List<Set<EntityId>> = emptyList(),
 ) : ContinuationFrame
 
 /**

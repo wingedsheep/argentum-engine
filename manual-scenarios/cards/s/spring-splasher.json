@@ -1,0 +1,31 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Spring Splasher"},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["DECLARE_ATTACKERS"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": ["DECLARE_BLOCKERS"]
+}

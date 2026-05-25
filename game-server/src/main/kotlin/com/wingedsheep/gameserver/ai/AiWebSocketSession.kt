@@ -327,6 +327,18 @@ class AiWebSocketSession(
                         )
                     )
                 }
+                is com.wingedsheep.engine.core.CombatResolutionDecision -> {
+                    logger.info("AI fallback: confirming default combat damage board")
+                    ActionResponse.SubmitDecision(
+                        aiPlayerId,
+                        com.wingedsheep.engine.core.CombatResolutionResponse(
+                            decisionId = pendingDecision.id,
+                            edges = pendingDecision.edges.map {
+                                com.wingedsheep.engine.core.DamageEdgeAmount(it.id, it.amount)
+                            }
+                        )
+                    )
+                }
                 is com.wingedsheep.engine.core.SelectCardsDecision -> {
                     // Pick the first `minSelections` options — matches SelectCardsHandler.heuristic.
                     // Not an ideal choice, but submitting *something* valid is strictly better

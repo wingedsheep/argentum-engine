@@ -109,11 +109,8 @@ class BerserkMurlodontScenarioTest : ScenarioTestBase() {
                     warriorId to listOf(murlodontId)
                 )))
 
-                // Multiple blockers require damage assignment order
-                val orderDecision = game.state.pendingDecision as OrderObjectsDecision
-                game.submitDecision(OrderedResponse(orderDecision.id, listOf(bearId, warriorId)))
-
-                // Trigger fires — resolve it (still at DECLARE_BLOCKERS)
+                // Damage-assignment order is folded into the combat resolution board, so the
+                // "becomes blocked" trigger fires straight away — resolve it (still at DECLARE_BLOCKERS).
                 game.resolveStack()
 
                 // After trigger resolves, Murlodont should be 5/5 (3/3 + 2/2 for 2 blockers)

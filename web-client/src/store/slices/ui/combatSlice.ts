@@ -18,6 +18,13 @@ export interface CombatSliceState {
   combatState: CombatState | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
+  /**
+   * Whether the currently-dragged attacker has the BANDING keyword. Set alongside
+   * [draggingAttackerId] so other GameCards can decide whether they're a legal
+   * band-drop target without re-querying the store for keyword data. Null when no
+   * attacker is being dragged.
+   */
+  draggingAttackerHasBanding: boolean | null
   draggingCardId: EntityId | null
   opponentAttackerTargets: { selectedAttackers: readonly EntityId[]; attackerTargets: Record<EntityId, EntityId> } | null
   opponentBlockerAssignments: Record<EntityId, EntityId[]> | null
@@ -32,7 +39,7 @@ export interface CombatSliceActions {
   clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
-  startDraggingAttacker: (attackerId: EntityId) => void
+  startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
   stopDraggingAttacker: () => void
   startDraggingCard: (cardId: EntityId) => void
   stopDraggingCard: () => void
@@ -41,6 +48,23 @@ export interface CombatSliceActions {
   attackWithAll: () => void
   clearAttackers: () => void
   clearCombat: () => void
+  /** Remove the band at [bandIndex] (does not affect attacker selection). */
+  removeBand: (bandIndex: number) => void
+  /** Clear all bands. */
+  clearBands: () => void
+  /**
+   * Drag-and-drop band assembly (CR 702.22). Called when an attacker is dragged onto
+   * another player-controlled attacker. Auto-selects both as attackers, then:
+   * - If both are already in the same band → no-op.
+   * - If one is in a band and the other isn't → adds the other to that band.
+   * - If both are in different bands → merges into the band of [target].
+   * - If neither is in a band → creates a fresh band of [source, target].
+   *
+   * `sourceHasBanding` and `targetHasBanding` are caller-supplied keyword flags. If
+   * neither has banding the link is rejected; the "at most one non-banding member"
+   * rule (CR 702.22c) is enforced at drop time by the caller and re-checked server-side.
+   */
+  linkBand: (sourceId: EntityId, targetId: EntityId, sourceHasBanding: boolean, targetHasBanding: boolean) => void
 }
 
 export type CombatSlice = CombatSliceState & CombatSliceActions
@@ -49,6 +73,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
   combatState: null,
   draggingBlockerId: null,
   draggingAttackerId: null,
+  draggingAttackerHasBanding: null,
   draggingCardId: null,
   opponentAttackerTargets: null,
   opponentBlockerAssignments: null,
@@ -84,6 +109,14 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         delete newTargets[creatureId]
       }
 
+      // Prune bands when an attacker is deselected: drop the creature from every band,
+      // then discard any band that fell below 2 members.
+      const newBands = isSelected
+        ? state.combatState.bands
+            .map((band) => band.filter((id) => id !== creatureId))
+            .filter((band) => band.length >= 2)
+        : state.combatState.bands
+
       getWebSocket()?.send(createUpdateAttackerTargetsMessage(newAttackers, newTargets))
 
       return {
@@ -91,6 +124,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
           ...state.combatState,
           selectedAttackers: newAttackers,
           attackerTargets: newTargets,
+          bands: newBands,
         },
       }
     })
@@ -194,12 +228,12 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     set({ draggingBlockerId: null })
   },
 
-  startDraggingAttacker: (attackerId) => {
-    set({ draggingAttackerId: attackerId })
+  startDraggingAttacker: (attackerId, hasBanding = false) => {
+    set({ draggingAttackerId: attackerId, draggingAttackerHasBanding: hasBanding })
   },
 
   stopDraggingAttacker: () => {
-    set({ draggingAttackerId: null })
+    set({ draggingAttackerId: null, draggingAttackerHasBanding: null })
   },
 
   startDraggingCard: (cardId) => {
@@ -227,10 +261,24 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         attackers[attackerId] = combatState.attackerTargets[attackerId] ?? opponent.playerId
       }
 
+      // Drop bands that no longer satisfy CR 702.22 (after attacker deselection /
+      // target changes). Bands must have ≥2 members, all selected, all attacking the
+      // same defender. Legality is re-checked server-side; this just avoids sending
+      // obviously stale data.
+      const selectedSet = new Set(combatState.selectedAttackers)
+      const validBands = combatState.bands
+        .map((band) => band.filter((id) => selectedSet.has(id)))
+        .filter((band) => {
+          if (band.length < 2) return false
+          const target = attackers[band[0]!]
+          return band.every((id) => attackers[id] === target)
+        })
+
       const action = {
         type: 'DeclareAttackers' as const,
         playerId,
         attackers,
+        ...(validBands.length > 0 ? { bands: validBands } : {}),
       }
       getWebSocket()?.send(createSubmitActionMessage(action))
     } else if (combatState.mode === 'declareBlockers') {
@@ -297,6 +345,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
           ...state.combatState,
           selectedAttackers: [...state.combatState.mandatoryAttackers],
           attackerTargets: {},
+          bands: [],
         },
       }
     })
@@ -304,5 +353,91 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
 
   clearCombat: () => {
     set({ combatState: null, draggingBlockerId: null })
+  },
+
+  removeBand: (bandIndex) => {
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
+        return state
+      }
+      if (bandIndex < 0 || bandIndex >= state.combatState.bands.length) return state
+      const newBands = state.combatState.bands.filter((_, i) => i !== bandIndex)
+      return {
+        combatState: {
+          ...state.combatState,
+          bands: newBands,
+        },
+      }
+    })
+  },
+
+  clearBands: () => {
+    set((state) => {
+      if (!state.combatState) return state
+      return {
+        combatState: {
+          ...state.combatState,
+          bands: [],
+        },
+      }
+    })
+  },
+
+  linkBand: (sourceId, targetId, sourceHasBanding, targetHasBanding) => {
+    if (sourceId === targetId) return
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') return state
+      if (!sourceHasBanding && !targetHasBanding) return state
+
+      // Auto-select both attackers if not already selected. Mandatory creatures are
+      // already in the list; this just extends it.
+      const selected = new Set(state.combatState.selectedAttackers)
+      let newSelected = state.combatState.selectedAttackers
+      if (!selected.has(sourceId)) {
+        newSelected = [...newSelected, sourceId]
+      }
+      if (!selected.has(targetId)) {
+        newSelected = [...newSelected, targetId]
+      }
+
+      const existingBands = state.combatState.bands.map((b) => [...b])
+      const sourceBandIdx = existingBands.findIndex((b) => b.includes(sourceId))
+      const targetBandIdx = existingBands.findIndex((b) => b.includes(targetId))
+
+      let nextBands: EntityId[][]
+      if (sourceBandIdx !== -1 && sourceBandIdx === targetBandIdx) {
+        // Already banded together — nothing to do beyond the (possible) re-selection.
+        return {
+          combatState: {
+            ...state.combatState,
+            selectedAttackers: newSelected,
+          },
+        }
+      } else if (sourceBandIdx !== -1 && targetBandIdx !== -1) {
+        // Merge the two bands into the target's band, drop the source's band.
+        const merged = Array.from(new Set([...existingBands[targetBandIdx]!, ...existingBands[sourceBandIdx]!]))
+        nextBands = existingBands
+          .map((b, i) => (i === targetBandIdx ? merged : i === sourceBandIdx ? [] : b))
+          .filter((b) => b.length >= 2)
+      } else if (sourceBandIdx !== -1) {
+        nextBands = existingBands.map((b, i) =>
+          i === sourceBandIdx ? Array.from(new Set([...b, targetId])) : b
+        )
+      } else if (targetBandIdx !== -1) {
+        nextBands = existingBands.map((b, i) =>
+          i === targetBandIdx ? Array.from(new Set([...b, sourceId])) : b
+        )
+      } else {
+        nextBands = [...existingBands, [sourceId, targetId]]
+      }
+
+      return {
+        combatState: {
+          ...state.combatState,
+          selectedAttackers: newSelected,
+          bands: nextBands,
+        },
+      }
+    })
   },
 })

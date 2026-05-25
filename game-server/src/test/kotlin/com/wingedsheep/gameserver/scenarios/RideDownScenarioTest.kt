@@ -105,14 +105,10 @@ class RideDownScenarioTest : ScenarioTestBase() {
                     DeclareBlockers(game.player2Id, mapOf(blockerId to listOf(hero, bears)))
                 )
 
-                // When a creature blocks multiple attackers, the attacking player must order
-                // the blocked creatures for damage assignment (CR 510.1c)
-                val decision = game.state.pendingDecision
-                check(decision is OrderObjectsDecision) { "Expected damage ordering decision" }
-                game.submitDecision(OrderedResponse(decision.id, decision.objects))
-
-                // P1 now has priority after resolving the damage ordering decision
-                // Cast Ride Down targeting the blocker
+                // Damage-assignment order is folded into the combat resolution board (no standalone
+                // ordering pre-step). The defender holds priority after declaring blocks; pass to
+                // the active player, then cast Ride Down targeting the blocker.
+                game.passPriority()
                 val castResult = game.castSpell(1, "Ride Down", blockerId)
                 withClue("Ride Down should cast successfully: ${castResult.error}") {
                     castResult.error shouldBe null

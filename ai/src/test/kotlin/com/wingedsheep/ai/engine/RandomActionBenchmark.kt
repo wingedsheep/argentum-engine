@@ -263,6 +263,9 @@ private fun randomDecisionResponse(decision: PendingDecision, rng: Random): Deci
         is AssignDamageDecision ->
             DamageAssignmentResponse(decision.id, decision.defaultAssignments)
 
+        is CombatResolutionDecision ->
+            CombatResolutionResponse(decision.id, decision.edges.map { DamageEdgeAmount(it.id, it.amount) })
+
         is BudgetModalDecision -> {
             val selected = mutableListOf<Int>()
             var budget = decision.budget

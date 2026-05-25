@@ -7,6 +7,7 @@ import { LibrarySearchUI } from './LibrarySearchUI'
 import { ReorderCardsUI } from './ReorderCardsUI'
 import { OrderBlockersUI } from './OrderBlockersUI'
 import { CombatDamageAssignmentModal } from './CombatDamageAssignmentModal'
+import { CombatResolutionBoard } from './CombatResolutionBoard'
 import { YesNoDecisionUI } from './YesNoDecisionUI'
 import { ChooseNumberDecisionUI } from './ChooseNumberDecisionUI'
 import { ChooseOptionDecisionUI } from './ChooseOptionDecisionUI'
@@ -150,9 +151,14 @@ export function DecisionUI() {
     return null
   }
 
-  // Handle AssignDamageDecision (combat damage assignment to blockers/player)
+  // Handle AssignDamageDecision (legacy per-attacker combat damage assignment)
   if (pendingDecision.type === 'AssignDamageDecision') {
     return <CombatDamageAssignmentModal key={pendingDecision.id} decision={pendingDecision} />
+  }
+
+  // Handle CombatResolutionDecision (the bipartite combat resolution board)
+  if (pendingDecision.type === 'CombatResolutionDecision') {
+    return <CombatResolutionBoard key={pendingDecision.id} decision={pendingDecision} />
   }
 
   // Handle ChooseColorDecision (e.g., "Choose a color for protection")

@@ -1,6 +1,7 @@
 package com.wingedsheep.gym.contract
 
 import com.wingedsheep.engine.core.AssignDamageDecision
+import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.BudgetModalDecision
 import com.wingedsheep.engine.core.BudgetModalResponse
 import com.wingedsheep.engine.core.CardsSelectedResponse
@@ -435,6 +436,9 @@ class ObservationBuilder(
                     ActionRegistry.EMPTY
             is AssignDamageDecision ->
                 baseView(decision, PendingDecisionKind.ASSIGN_DAMAGE, baseShape, structured = true) to
+                    ActionRegistry.EMPTY
+            is CombatResolutionDecision ->
+                baseView(decision, PendingDecisionKind.COMBAT_RESOLUTION, baseShape, structured = true) to
                     ActionRegistry.EMPTY
             is SelectManaSourcesDecision ->
                 baseView(decision, PendingDecisionKind.SELECT_MANA_SOURCES, baseShape, structured = true) to

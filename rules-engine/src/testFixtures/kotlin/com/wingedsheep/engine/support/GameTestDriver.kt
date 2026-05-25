@@ -422,6 +422,15 @@ class GameTestDriver {
     }
 
     /**
+     * Declare attackers as a single band (CR 702.22), all attacking the same defender.
+     */
+    fun declareAttackingBand(playerId: EntityId, band: List<EntityId>, defendingPlayer: EntityId): ExecutionResult {
+        return submit(
+            DeclareAttackers(playerId, band.associateWith { defendingPlayer }, bands = listOf(band.toSet()))
+        )
+    }
+
+    /**
      * Declare blockers.
      */
     fun declareBlockers(playerId: EntityId, blockers: Map<EntityId, List<EntityId>>): ExecutionResult {
@@ -433,6 +442,35 @@ class GameTestDriver {
      */
     fun declareNoBlockers(playerId: EntityId): ExecutionResult {
         return declareBlockers(playerId, emptyMap())
+    }
+
+    /**
+     * Confirm the pending [CombatResolutionDecision] with the engine's default edge amounts,
+     * looping through every chooser (the two-actor banding case re-pauses for each). This is the
+     * "just resolve combat with defaults" path most combat scenarios want.
+     */
+    fun confirmCombatDamage(): ExecutionResult {
+        var result: ExecutionResult? = null
+        while (true) {
+            val decision = _state.pendingDecision as? CombatResolutionDecision ?: break
+            val edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) }
+            result = submitDecision(decision.playerId, CombatResolutionResponse(decision.id, edges))
+        }
+        return result ?: error("No pending CombatResolutionDecision to confirm (have ${_state.pendingDecision})")
+    }
+
+    /**
+     * Submit a custom combat-damage assignment to the pending [CombatResolutionDecision] for the
+     * current chooser. [plan] maps (sourceId, targetId) to the damage on that edge; any edge not
+     * named keeps its engine-computed default.
+     */
+    fun submitCombatDamage(plan: Map<Pair<EntityId, EntityId>, Int>): ExecutionResult {
+        val decision = _state.pendingDecision as? CombatResolutionDecision
+            ?: error("No pending CombatResolutionDecision (have ${_state.pendingDecision})")
+        val edges = decision.edges.map { edge ->
+            DamageEdgeAmount(edge.id, plan[edge.sourceId to edge.targetId] ?: edge.amount)
+        }
+        return submitDecision(decision.playerId, CombatResolutionResponse(decision.id, edges))
     }
 
     /**
@@ -1127,6 +1165,12 @@ class GameTestDriver {
                     decision.playerId,
                     DamageAssignmentResponse(decision.id, decision.defaultAssignments)
                 )
+            }
+            is CombatResolutionDecision -> {
+                // Auto-resolve the combat damage board with the engine-computed default edge
+                // amounts (one chooser per call; passPriorityUntil loops over the rest).
+                val edges = decision.edges.map { DamageEdgeAmount(it.id, it.amount) }
+                submitDecision(decision.playerId, CombatResolutionResponse(decision.id, edges))
             }
             is SelectManaSourcesDecision -> {
                 // Auto-resolve: decline the mana source selection (e.g., Words of Wind prompt)

@@ -1,0 +1,31 @@
+{
+  "player1Name": "Attacker",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Panther Warriors", "summoningSickness": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Elvish Warrior"},
+      {"name": "Hill Giant"},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

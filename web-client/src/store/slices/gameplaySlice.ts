@@ -61,6 +61,7 @@ export interface GameplaySliceActions {
   submitBudgetModalDecision: (selectedModeIndices: readonly number[]) => void
   submitDistributeDecision: (distribution: Record<EntityId, number>) => void
   submitDamageAssignmentDecision: (assignments: Record<EntityId, number>) => void
+  submitCombatResolutionDecision: (edges: ReadonlyArray<{ edgeId: string; amount: number }>) => void
   submitColorDecision: (color: string) => void
   submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
   submitCancelDecision: () => void
@@ -294,6 +295,22 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         type: 'ColorChosenResponse' as const,
         decisionId: pendingDecision.id,
         color,
+      },
+    }
+    getWebSocket()?.send(createSubmitActionMessage(action))
+  },
+
+  submitCombatResolutionDecision: (edges: ReadonlyArray<{ edgeId: string; amount: number }>) => {
+    const { pendingDecision, playerId } = get()
+    if (!pendingDecision || !playerId) return
+
+    const action = {
+      type: 'SubmitDecision' as const,
+      playerId,
+      response: {
+        type: 'CombatResolutionResponse' as const,
+        decisionId: pendingDecision.id,
+        edges,
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))
