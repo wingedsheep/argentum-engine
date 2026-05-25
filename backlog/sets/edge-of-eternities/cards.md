@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 215 / 261
+**Implemented:** 218 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -79,7 +79,7 @@
 - [x] Famished Worldsire
 - [x] Fell Gravship
 - [x] Flight-Deck Coordinator
-- [ ] Focus Fire
+- [x] Focus Fire
 - [x] Frenzied Baloth
 - [ ] Frontline War-Rager
 - [x] Full Bore
