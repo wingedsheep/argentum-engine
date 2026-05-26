@@ -23,7 +23,7 @@
 - [ ] Jihad
 - [x] King Suleiman
 - [x] Moorish Cavalry
-- [ ] Piety
+- [x] Piety
 - [x] Repentant Blacksmith
 - [ ] Shahrazad
 - [ ] War Elephant
