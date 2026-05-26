@@ -1,0 +1,36 @@
+{
+  "player1Name": "Haliya",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Haliya, Ascendant Cadet"],
+    "battlefield": [
+      {"name": "Haliya, Ascendant Cadet"},
+      {"name": "Hill Giant", "counters": {"PLUS_ONE_PLUS_ONE": 1}},
+      {"name": "Glory Seeker"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Storm Crow", "Plains", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Storm Crow"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

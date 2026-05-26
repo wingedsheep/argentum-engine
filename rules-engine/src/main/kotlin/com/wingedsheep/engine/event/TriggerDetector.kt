@@ -1364,24 +1364,24 @@ class TriggerDetector(
                 val controllerId = entry.controllerId
                 val damageEvents = combatDamageByController[controllerId] ?: continue
 
-                // Check if any damage source matches the sourceFilter (using projected state for subtypes)
+                // Check if any damage source matches the sourceFilter. Damage events are already
+                // grouped by source controller and matched to observers with the same controller,
+                // so "you control" is satisfied; we still run the full filter via the canonical
+                // evaluator so state predicates (e.g. +1/+1 counters) and any other card/controller
+                // predicates are honored — not just the handful of card predicates handled inline.
                 val firstMatchingInfo = damageEvents.firstOrNull { info ->
                     val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
                     sourceContainer.get<CardComponent>() ?: return@firstOrNull false
                     if (!projected.isCreature(info.sourceId)) return@firstOrNull false
                     if (sourceContainer.has<FaceDownComponent>()) return@firstOrNull false
 
-                    // Check card predicates from the sourceFilter
-                    trigger.sourceFilter.cardPredicates.all { predicate ->
-                        when (predicate) {
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> true
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                                projected.hasSubtype(info.sourceId, predicate.subtype.value)
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken ->
-                                !sourceContainer.has<TokenComponent>()
-                            else -> true
-                        }
-                    }
+                    predicateEvaluator.matches(
+                        state,
+                        projected,
+                        info.sourceId,
+                        trigger.sourceFilter,
+                        PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
+                    )
                 }
 
                 if (firstMatchingInfo != null) {

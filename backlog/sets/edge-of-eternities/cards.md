@@ -95,7 +95,7 @@
 - [x] Gravblade Heavy
 - [x] Gravkill
 - [x] Gravpack Monoist
-- [ ] Haliya, Ascendant Cadet
+- [x] Haliya, Ascendant Cadet
 - [x] Haliya, Guided by Light
 - [x] Hardlight Containment
 - [x] Harmonious Grovestrider
