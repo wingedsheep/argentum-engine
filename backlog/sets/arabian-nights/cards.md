@@ -24,7 +24,7 @@
 - [ ] King Suleiman
 - [x] Moorish Cavalry
 - [ ] Piety
-- [ ] Repentant Blacksmith
+- [x] Repentant Blacksmith
 - [ ] Shahrazad
 - [ ] War Elephant
 - [ ] Dandân
