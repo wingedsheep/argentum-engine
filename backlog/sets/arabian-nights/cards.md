@@ -69,7 +69,7 @@
 - [ ] Metamorphosis
 - [ ] Nafs Asp
 - [x] Sandstorm
-- [ ] Singing Tree
+- [x] Singing Tree
 - [x] Wyluli Wolf
 - [ ] Aladdin's Lamp
 - [x] Aladdin's Ring
