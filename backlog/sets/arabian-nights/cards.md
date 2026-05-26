@@ -48,7 +48,7 @@
 - [ ] Oubliette
 - [x] Sorceress Queen
 - [x] Stone-Throwing Devils
-- [ ] Aladdin
+- [x] Aladdin
 - [x] Ali Baba
 - [ ] Ali from Cairo
 - [x] Bird Maiden
