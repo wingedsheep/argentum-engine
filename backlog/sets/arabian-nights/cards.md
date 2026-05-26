@@ -90,6 +90,6 @@
 - [x] Diamond Valley
 - [ ] Elephant Graveyard
 - [x] Island of Wak-Wak
-- [ ] Library of Alexandria
+- [x] Library of Alexandria
 - [ ] Mountain
 - [x] Oasis
