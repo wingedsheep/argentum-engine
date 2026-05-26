@@ -153,6 +153,9 @@ data class ClientCard(
     val hasSummoningSickness: Boolean,
     val isTransformed: Boolean,
 
+    /** Phased out (Rule 702.26) — treated as though it doesn't exist; rendered translucent */
+    val isPhasedOut: Boolean = false,
+
     /** Combat state (if in combat) */
     val isAttacking: Boolean,
     val isBlocking: Boolean,

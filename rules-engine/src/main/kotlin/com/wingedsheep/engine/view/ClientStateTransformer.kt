@@ -658,6 +658,7 @@ class ClientStateTransformer(
 
         // Get state components
         val isTapped = container.has<TappedComponent>()
+        val isPhasedOut = container.has<PhasedOutComponent>()
         // Summoning sickness doesn't affect creatures with haste
         val hasSummoningSicknessComponent = container.has<SummoningSicknessComponent>()
         val hasHaste = keywords.contains(com.wingedsheep.sdk.core.Keyword.HASTE)
@@ -763,6 +764,7 @@ class ClientStateTransformer(
                 isTapped = isTapped,
                 hasSummoningSickness = hasSummoningSickness,
                 isTransformed = false,
+                isPhasedOut = isPhasedOut,
                 isAttacking = container.get<AttackingComponent>() != null,
                 isBlocking = container.get<BlockingComponent>() != null,
                 attackingTarget = container.get<AttackingComponent>()?.defenderId,
@@ -992,6 +994,7 @@ class ClientStateTransformer(
             isTapped = isTapped,
             hasSummoningSickness = hasSummoningSickness,
             isTransformed = false, // TODO: Add transformed support
+            isPhasedOut = isPhasedOut,
             isAttacking = isAttacking,
             isBlocking = isBlocking,
             attackingTarget = attackingTarget,

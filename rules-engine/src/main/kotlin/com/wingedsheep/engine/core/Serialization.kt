@@ -73,6 +73,8 @@ val engineSerializersModule = SerializersModule {
         subclass(PriorityChangedEvent::class)
         subclass(TappedEvent::class)
         subclass(UntappedEvent::class)
+        subclass(PhasedOutEvent::class)
+        subclass(PhasedInEvent::class)
         subclass(CountersAddedEvent::class)
         subclass(CountersRemovedEvent::class)
         subclass(CardsDrawnEvent::class)
@@ -304,6 +306,7 @@ val engineSerializersModule = SerializersModule {
         // Battlefield components
         subclass(TappedComponent::class)
         subclass(SummoningSicknessComponent::class)
+        subclass(PhasedOutComponent::class)
         subclass(CastFromHandComponent::class)
         subclass(CastFromGraveyardComponent::class)
         subclass(EnteredFromGraveyardComponent::class)

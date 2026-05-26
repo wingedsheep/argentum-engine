@@ -1623,6 +1623,13 @@ object Effects {
     fun Untap(target: EffectTarget): Effect =
         TapUntapEffect(target, tap = false)
 
+    /**
+     * Phase out a target permanent (Rule 702.26). It's treated as though it
+     * doesn't exist until it phases back in before its controller's next untap step.
+     */
+    fun PhaseOut(target: EffectTarget = EffectTarget.Self): Effect =
+        com.wingedsheep.sdk.scripting.effects.PhaseOutEffect(target)
+
     // =========================================================================
     // Group Effects (atomic effect classes)
     // =========================================================================

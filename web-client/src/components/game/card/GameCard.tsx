@@ -213,6 +213,7 @@ export function GameCard({
   const autoTapPreview = useGameStore((state) => state.autoTapPreview)
 
   const isTapped = suppressTapRotation ? false : (card.isTapped || forceTapped)
+  const isPhasedOut = card.isPhasedOut === true
   // Rooms (CR 709.5) are printed landscape; rotate the permanent +90° on the battlefield
   // so the image reads landscape (the source orientation matches "tilt head right").
   // Tap state stacks an additional +90° on top (= 180° upside-down portrait), preserving
@@ -1077,7 +1078,10 @@ export function GameCard({
         boxShadow: card.isCommander && !faceDown
           ? `${boxShadow}, 0 0 6px 2px rgba(212, 175, 55, 0.6), 0 0 14px 4px rgba(212, 175, 55, 0.3)`
           : boxShadow,
-        opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
+        opacity: isPhasedOut ? 0.4 : isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
+        // Phased-out permanents (Rule 702.26) are treated as though they don't exist —
+        // desaturate so they read as "not really there" while still showing the board slot.
+        ...(isPhasedOut ? { filter: 'grayscale(0.7)' } : {}),
         userSelect: 'none',
         ...(voidEligible ? { outline: '1px solid rgba(140, 90, 220, 0.55)', outlineOffset: '2px' } : {}),
         ...(isBeheldPulsing ? { animation: 'beholdPulse 1.1s ease-in-out infinite alternate' } : {}),

@@ -131,6 +131,8 @@ export interface ClientCard {
   readonly isTapped: boolean
   readonly hasSummoningSickness: boolean
   readonly isTransformed: boolean
+  /** Phased out (Rule 702.26) — treated as though it doesn't exist; rendered translucent. */
+  readonly isPhasedOut?: boolean
 
   /** True when this card is a double-faced card (DFC). */
   readonly isDoubleFaced?: boolean

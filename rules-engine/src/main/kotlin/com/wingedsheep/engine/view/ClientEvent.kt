@@ -263,6 +263,22 @@ sealed interface ClientEvent {
     ) : ClientEvent
 
     @Serializable
+    @SerialName("permanentPhasedOut")
+    data class PermanentPhasedOut(
+        val permanentId: EntityId,
+        val permanentName: String,
+        override val description: String = "$permanentName phased out"
+    ) : ClientEvent
+
+    @Serializable
+    @SerialName("permanentPhasedIn")
+    data class PermanentPhasedIn(
+        val permanentId: EntityId,
+        val permanentName: String,
+        override val description: String = "$permanentName phased in"
+    ) : ClientEvent
+
+    @Serializable
     @SerialName("counterAdded")
     data class CounterAdded(
         val permanentId: EntityId,
@@ -871,6 +887,16 @@ object ClientEventTransformer {
             )
 
             is UntappedEvent -> ClientEvent.PermanentUntapped(
+                permanentId = event.entityId,
+                permanentName = event.entityName
+            )
+
+            is PhasedOutEvent -> ClientEvent.PermanentPhasedOut(
+                permanentId = event.entityId,
+                permanentName = event.entityName
+            )
+
+            is PhasedInEvent -> ClientEvent.PermanentPhasedIn(
                 permanentId = event.entityId,
                 permanentName = event.entityName
             )

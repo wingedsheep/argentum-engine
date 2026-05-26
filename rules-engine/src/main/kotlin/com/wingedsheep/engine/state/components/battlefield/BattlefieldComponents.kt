@@ -22,6 +22,24 @@ data object TappedComponent : Component
 data object SummoningSicknessComponent : Component
 
 /**
+ * Marks a permanent as phased out (Rule 702.26).
+ *
+ * A phased-out permanent is treated as though it doesn't exist — it's excluded from
+ * [com.wingedsheep.engine.state.GameState.getBattlefield], which in turn removes it
+ * from state projection, trigger detection, targeting, combat, and state-based actions.
+ * It stays physically in the battlefield zone (phasing is not a zone change) and keeps
+ * its tapped state, counters, and attachments.
+ *
+ * It phases back in before [phasedOutByController] untaps during their next untap step
+ * (see `BeginningPhaseManager.performUntapStep`). The controller at phase-out time is
+ * stored here because, while phased out, the permanent has no projected controller.
+ */
+@Serializable
+data class PhasedOutComponent(
+    val phasedOutByController: EntityId
+) : Component
+
+/**
  * Marks a permanent as having been cast from its controller's hand.
  * Added when a creature spell resolves from the stack after being cast from hand.
  * Used by cards like Phage the Untouchable to check how a creature entered the battlefield.

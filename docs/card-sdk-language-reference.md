@@ -337,7 +337,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `AnimateLandEffect(target, subtypes, keywords, duration)` — land becomes a creature.
 - `ExploreEffect(target)` — Explore mechanic (reveal top; land → battlefield, else hand + counter).
 - `AttachEquipmentEffect(equip, target)` — attach an Equipment.
-- `TapUntapEffect(target, isTap)` — tap or untap.
+- `TapUntapEffect(target, isTap)` — tap or untap. Facade: `Effects.Tap` / `Effects.Untap`.
+- `PhaseOutEffect(target = Self)` — phase the target permanent out (Rule 702.26); facade `Effects.PhaseOut(target)`. While phased out it's treated as though it doesn't exist (excluded from `getBattlefield`, so from projection, triggers, combat, targeting, and SBAs) and phases back in before its controller's next untap step. Indirect phasing (attached Auras/Equipment) is handled automatically. Used as the `suffer` branch of a pay-or-phase trigger (Vaporous Djinn: "phases out unless you pay {U}{U}" = `PayOrSufferEffect(PayCost.Mana(...), Effects.PhaseOut())`).
 - `MarkExileOnDeathEffect(target)` — replace next "to graveyard" with "to exile".
 - `OptionalCostEffect(cost, effect)` — pay cost to trigger an effect.
 - `StoreResultEffect(effect, as)` — stash an effect's result for later reference.

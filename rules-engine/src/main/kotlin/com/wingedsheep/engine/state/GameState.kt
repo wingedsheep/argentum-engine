@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.engine.state.components.battlefield.GraveyardEntryTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
@@ -315,8 +316,26 @@ data class GameState(
 
     /**
      * Get all entities on the battlefield.
+     *
+     * Phased-out permanents (Rule 702.26) are excluded: while phased out a permanent
+     * is treated as though it doesn't exist. This is the central seam — state
+     * projection, trigger detection, combat, targeting enumeration, and state-based
+     * actions all funnel through here, so excluding phased-out permanents here removes
+     * them from every game-logic query at once. They physically remain in the
+     * battlefield zone (see [allBattlefieldEntities]) and the client still renders them.
      */
     fun getBattlefield(): List<EntityId> {
+        return zones.filterKeys { it.zoneType == Zone.BATTLEFIELD }
+            .values.flatten()
+            .filter { entities[it]?.has<PhasedOutComponent>() != true }
+    }
+
+    /**
+     * Get all entities physically in the battlefield zone, **including phased-out
+     * permanents**. Used by phase-in processing and client rendering, which must see
+     * permanents that [getBattlefield] hides.
+     */
+    fun allBattlefieldEntities(): List<EntityId> {
         return zones.filterKeys { it.zoneType == Zone.BATTLEFIELD }
             .values.flatten()
     }

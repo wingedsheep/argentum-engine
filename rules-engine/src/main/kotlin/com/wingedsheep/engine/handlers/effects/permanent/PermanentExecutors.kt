@@ -41,6 +41,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.protection.GrantHexproo
 import com.wingedsheep.engine.handlers.effects.permanent.stats.ModifyStatsExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerToughnessExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseOutExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapTargetCreaturesExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapUntapCollectionExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapUntapExecutor
@@ -145,6 +146,8 @@ class PermanentExecutors(
         TapUntapExecutor(),
         TapTargetCreaturesExecutor(),
         TapUntapCollectionExecutor(),
+        // phasing
+        PhaseOutExecutor(),
         // protection
         ChooseColorProtectionExecutor(decisionHandler),
         ChooseColorProtectionTargetExecutor(decisionHandler),

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -47,20 +48,25 @@ class BeginningPhaseManager(
         val events = mutableListOf<GameEvent>()
         var newState = state
 
+        // Phase in permanents that phased out under the active player's control
+        // (Rule 702.26e: this happens during the untap step, before untapping).
+        newState = phaseInPermanents(newState, activePlayer, events)
+
         // Check if the player has a SkipUntapComponent
         val skipUntap = newState.getEntity(activePlayer)?.get<SkipUntapComponent>()
 
-        // Use projected state for controller checks (control-changing effects like Annex)
-        val projected = state.projectedState
+        // Use projected state for controller checks (control-changing effects like Annex).
+        // Recomputed from newState so just-phased-in permanents are visible.
+        val projected = newState.projectedState
 
         // Find all tapped permanents controlled by the active player
-        val permanentsToUntap = state.entities.filter { (entityId, container) ->
+        val permanentsToUntap = newState.entities.filter { (entityId, container) ->
             projected.getController(entityId) == activePlayer &&
                 container.has<TappedComponent>()
         }.keys.filter { entityId ->
             // If there's a skip untap component, check if this permanent should be skipped
             if (skipUntap != null) {
-                val cardComponent = state.getEntity(entityId)?.get<CardComponent>()
+                val cardComponent = newState.getEntity(entityId)?.get<CardComponent>()
                 val typeLine = cardComponent?.typeLine
                 val isCreature = typeLine?.isCreature == true
                 val isLand = typeLine?.isLand == true
@@ -205,6 +211,33 @@ class BeginningPhaseManager(
         }
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Phase in (Rule 702.26) every permanent that phased out under [activePlayer]'s
+     * control. This is a turn-based action at the start of the untap step, before
+     * untapping. Phased-in permanents keep their tapped state, counters, and
+     * attachments; phasing is not a zone change, so no triggers fire.
+     *
+     * Phased-out attachments share the controller stamped at phase-out time, so they
+     * are picked up by the same scan and phase in alongside their host.
+     */
+    private fun phaseInPermanents(
+        state: GameState,
+        activePlayer: EntityId,
+        events: MutableList<GameEvent>
+    ): GameState {
+        val toPhaseIn = state.allBattlefieldEntities().filter { entityId ->
+            state.getEntity(entityId)?.get<PhasedOutComponent>()?.phasedOutByController == activePlayer
+        }
+
+        var newState = state
+        for (entityId in toPhaseIn) {
+            val name = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
+            newState = newState.updateEntity(entityId) { it.without<PhasedOutComponent>() }
+            events.add(PhasedInEvent(entityId, name))
+        }
+        return newState
     }
 
     /**

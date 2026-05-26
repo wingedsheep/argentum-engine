@@ -475,6 +475,26 @@ data class UntappedEvent(
 ) : GameEvent
 
 /**
+ * A permanent phased out (Rule 702.26).
+ */
+@Serializable
+@SerialName("PhasedOutEvent")
+data class PhasedOutEvent(
+    val entityId: EntityId,
+    val entityName: String
+) : GameEvent
+
+/**
+ * A permanent phased in (Rule 702.26).
+ */
+@Serializable
+@SerialName("PhasedInEvent")
+data class PhasedInEvent(
+    val entityId: EntityId,
+    val entityName: String
+) : GameEvent
+
+/**
  * Counters were added to a permanent.
  */
 @Serializable
