@@ -52,7 +52,7 @@
 - [ ] Aladdin
 - [ ] Ali Baba
 - [ ] Ali from Cairo
-- [ ] Bird Maiden
+- [x] Bird Maiden
 - [ ] Desert Nomads
 - [ ] Hurr Jackal
 - [ ] Kird Ape
