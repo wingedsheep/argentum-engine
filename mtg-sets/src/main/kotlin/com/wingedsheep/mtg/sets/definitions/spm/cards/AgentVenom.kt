@@ -46,5 +46,9 @@ val AgentVenom = card("Agent Venom") {
 
     metadata {
         rarity = Rarity.RARE
+        collectorNumber = "49"
+        artist = "Kevin Sidharta"
+        flavorText = "Wounded in action, Corporal Thompson was offered an experimental way to be all he could be."
+        imageUri = "https://cards.scryfall.io/normal/front/f/5/f5f80d82-d64c-466f-8874-9cfb00469f02.jpg?1757377054"
     }
 }
