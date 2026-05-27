@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GrantSubtype
 import com.wingedsheep.sdk.scripting.IsAllCreatureTypes
 import com.wingedsheep.sdk.scripting.GrantCardType
+import com.wingedsheep.sdk.scripting.RemoveCardType
 import com.wingedsheep.sdk.scripting.GrantSupertype
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.GrantHexproofFromOwnColorsToGroup
@@ -461,6 +462,12 @@ class StaticAbilityHandler(
             is GrantCardType -> {
                 ContinuousEffectData(
                     modification = Modification.AddType(ability.cardType.uppercase()),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is RemoveCardType -> {
+                ContinuousEffectData(
+                    modification = Modification.RemoveType(ability.cardType.uppercase()),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

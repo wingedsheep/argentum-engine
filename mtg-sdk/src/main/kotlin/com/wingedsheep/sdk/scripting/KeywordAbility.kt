@@ -444,6 +444,33 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Impending
+    // =========================================================================
+
+    /**
+     * Impending N—[cost] (CR 702.176, Duskmourn: House of Horror).
+     * "If you cast this spell for its impending cost, it enters with N time counters
+     * and isn't a creature until the last is removed. At the beginning of your end step,
+     * remove a time counter from it."
+     *
+     * Impending is a self-alternative cost: you may pay [cost] rather than the spell's
+     * mana cost. When a spell cast for its impending cost resolves, the engine places
+     * [time] time counters on the permanent. While it has a time counter it isn't a
+     * creature, and at the beginning of the controller's end step a time counter is
+     * removed; the permanent becomes a creature once the last is gone.
+     *
+     * The full behavior is wired by the `impending(n, cost)` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder], which attaches this keyword ability plus the
+     * conditional type-removing static ability and the end-step counter-removal trigger.
+     */
+    @SerialName("Impending")
+    @Serializable
+    data class Impending(val time: Int, val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.IMPENDING
+        override val description: String = "Impending $time—$cost"
+    }
+
+    // =========================================================================
     // Devour
     // =========================================================================
 
@@ -653,6 +680,13 @@ sealed interface KeywordAbility {
          * Create Evoke with mana cost from string.
          */
         fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
+
+        /**
+         * Create Impending with a time-counter count and an impending mana cost.
+         * Prefer the `impending(n, cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder],
+         * which also wires the associated static ability and end-step trigger.
+         */
+        fun impending(time: Int, cost: String): KeywordAbility = Impending(time, ManaCost.parse(cost))
 
         /**
          * Create Conspire keyword ability.

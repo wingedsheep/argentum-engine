@@ -329,16 +329,22 @@ class CastSpellHandler(
                     if (evokeAbility != null) {
                         costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, evokeAbility.cost, action.playerId)
                     } else {
-                        // Check self-alternative cost (e.g., Zahid's {3}{U} + tap artifact)
-                        val selfAltCost = cardDef.script.selfAlternativeCost
-                        if (selfAltCost != null) {
-                            val altMana = ManaCost.parse(selfAltCost.manaCost)
-                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altMana, action.playerId)
+                        // Check impending cost
+                        val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+                        if (impendingAbility != null) {
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, impendingAbility.cost, action.playerId)
                         } else {
-                            // Fall back to battlefield-granted alternative cost (e.g., Jodah's {W}{U}{B}{R}{G})
-                            val altCosts = costCalculator.findAlternativeCastingCosts(state, action.playerId)
-                            if (altCosts.isEmpty()) return "No alternative casting cost available"
-                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCosts.first())
+                            // Check self-alternative cost (e.g., Zahid's {3}{U} + tap artifact)
+                            val selfAltCost = cardDef.script.selfAlternativeCost
+                            if (selfAltCost != null) {
+                                val altMana = ManaCost.parse(selfAltCost.manaCost)
+                                costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altMana, action.playerId)
+                            } else {
+                                // Fall back to battlefield-granted alternative cost (e.g., Jodah's {W}{U}{B}{R}{G})
+                                val altCosts = costCalculator.findAlternativeCastingCosts(state, action.playerId)
+                                if (altCosts.isEmpty()) return "No alternative casting cost available"
+                                costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCosts.first())
+                            }
                         }
                     }
                 }
@@ -1244,16 +1250,22 @@ class CastSpellHandler(
                     if (evokeAbility != null) {
                         costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, evokeAbility.cost, action.playerId)
                     } else {
-                        val selfAltCost = cardDef.script.selfAlternativeCost
-                        if (selfAltCost != null) {
-                            val altMana = ManaCost.parse(selfAltCost.manaCost)
-                            costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altMana, action.playerId)
+                        // Check impending cost
+                        val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+                        if (impendingAbility != null) {
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, impendingAbility.cost, action.playerId)
                         } else {
-                            val altCosts = costCalculator.findAlternativeCastingCosts(currentState, action.playerId)
-                            if (altCosts.isNotEmpty()) {
-                                costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altCosts.first())
+                            val selfAltCost = cardDef.script.selfAlternativeCost
+                            if (selfAltCost != null) {
+                                val altMana = ManaCost.parse(selfAltCost.manaCost)
+                                costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altMana, action.playerId)
                             } else {
-                                cardComponent.manaCost
+                                val altCosts = costCalculator.findAlternativeCastingCosts(currentState, action.playerId)
+                                if (altCosts.isNotEmpty()) {
+                                    costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altCosts.first())
+                                } else {
+                                    cardComponent.manaCost
+                                }
                             }
                         }
                     }
@@ -1938,6 +1950,10 @@ class CastSpellHandler(
         val wasEvoked = action.useAlternativeCost && cardDef != null &&
             cardDef.keywordAbilities.any { it is KeywordAbility.Evoke }
 
+        // Determine if this spell is being cast using impending
+        val wasImpending = action.useAlternativeCost && cardDef != null &&
+            cardDef.keywordAbilities.any { it is KeywordAbility.Impending }
+
         // Extract per-color mana spent from payment events (for mana-spent-gated triggers)
         val manaSpentEvent = paymentResult.events.filterIsInstance<ManaSpentEvent>().firstOrNull()
 
@@ -2005,6 +2021,7 @@ class CastSpellHandler(
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             wasWarped = wasWarped,
             wasEvoked = wasEvoked,
+            wasImpending = wasImpending,
             chosenModes = action.chosenModes,
             modeTargetsOrdered = effectiveModeTargetsOrdered,
             modeTargetRequirements = perModeTargetRequirements,

@@ -423,6 +423,15 @@ export function getGrowthCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of time counters on a card. Time counters appear on permanents
+ * cast for their Impending cost (and Suspend/Vanishing-style mechanics); the
+ * permanent isn't a creature until the last one is removed.
+ */
+export function getTimeCounters(card: ClientCard): number {
+  return card.counters[CounterType.TIME] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {

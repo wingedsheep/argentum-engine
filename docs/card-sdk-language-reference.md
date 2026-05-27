@@ -958,6 +958,9 @@ staticAbility {
   type from the source's `ChosenLandTypeComponent` (paired with
   `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`). Chosen-value counterpart to
   `SetEnchantedLandType`, mirroring `GrantChosenColor`/`GrantColor`. (Phantasmal Terrain)
+- `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
+  remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
+  counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect.
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`.
 - `Effects.CreatePermanentEmblem(...)` — emblem with static abilities (planeswalker ultimates).
 - `AttackTax(amountPerAttacker: DynamicAmount)` — Propaganda / Ghostly Prison / Windborn Muse /
@@ -1026,8 +1029,8 @@ activatedAbility {
 
 Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all landwalks (Plainswalk … Forestwalk), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
-Flash, Prowess, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Conspire, Hideaway, Cascade, Plot, Offspring,
-Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
+Flash, Prowess, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Impending, Conspire, Hideaway, Cascade, Plot,
+Offspring, Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
 composite abilities).
 
 **Parameterized `KeywordAbility.*`**
@@ -1059,6 +1062,14 @@ composite abilities).
 - `Plot(cost)` — `KeywordAbility.plot(cost)`. Special action available during your main phase while the stack is empty: pay [cost] and exile the card from your hand. It becomes plotted (stamped with a `PlottedComponent`). On a later turn you may cast it from exile without paying its mana cost, as a sorcery (CR 718). Cast permission is granted via the engine's standard `MayPlayPermission` + `PlayWithoutPayingCostComponent`, gated by `Conditions.SourcePlottedOnPriorTurn`. No card-side wiring needed — declare the keyword ability on the card and the engine handles the rest.
 - `Hideaway(n)` — `KeywordAbility.hideaway(n)`; display tag rendered "Hideaway N". Mechanic is composed manually via `MoveCollectionEffect(faceDown = true, linkToSource = true)` + `CardSource.FromLinkedExile()` — the keyword itself carries no engine behavior.
 - `OptionalAdditionalCost(manaCost?, additionalCost?, multi, displayPrefix, branchesEffect, grantsFlashTiming)` — generalised "pay an optional extra cost while casting" primitive. Backs printed Kicker / Multikicker / Offspring **and** the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire). When `branchesEffect = true` (default) paying the cost marks the spell so `WasKicked` fires for the card's own effect/triggers; when `false` the payment is invisible to `WasKicked` (used by `flashKicker`). When `grantsFlashTiming = true` paying the cost unlocks instant-speed casting in addition to whatever else it does. Prefer the factories: `KeywordAbility.kicker(cost)`, `KeywordAbility.kicker(additionalCost)`, `KeywordAbility.multikicker(cost)`, `KeywordAbility.offspring(cost)`, `KeywordAbility.flashKicker(cost)`. Serial name is `Kicker` for wire compatibility.
+- `Impending(time, cost)` — `card { impending(n, cost) }` builder helper (CR 702.176, Duskmourn). A self-alternative
+  cost: pay [cost] instead of the mana cost and the permanent enters with N **time counters**, isn't a creature until
+  the last is removed, and loses one at the beginning of your end step. The helper wires everything from one call — the
+  `KeywordAbility.Impending` alt-cost (display + cast enumeration), a `ConditionalStaticAbility(RemoveCardType("CREATURE"),
+  Conditions.SourceHasCounter(TIME))` "isn't a creature while it has a time counter" static, and a `YourEndStep`
+  triggered ability (gated by the same intervening-if) that removes a time counter. The engine places the N TIME counters
+  when a spell cast for its impending cost resolves; casting for the normal mana cost adds no counters, so neither wiring
+  fires (mirrors `prowess()` / `rampage()`).
 - `Morph(cost)` — cast face-down for `{3}`, flip for cost.
 - `Unmorph(cost, effect)` — turn-face-up cost + bonus effect.
 - `Equip(cost)` — Equipment attach cost.

@@ -69,6 +69,29 @@ data class GrantCardType(
 }
 
 /**
+ * Removes a card type (e.g., "CREATURE") from the target permanent.
+ * The mirror of [GrantCardType] — a Layer 4 (type-changing) continuous effect.
+ *
+ * Used by Impending ("isn't a creature until the last time counter is removed"), gated
+ * behind a [ConditionalStaticAbility]. General-purpose: any "it's no longer a [type]"
+ * effect can reuse it.
+ *
+ * @property cardType The card type to remove (e.g., "CREATURE", "ARTIFACT")
+ * @property filter What this ability applies to
+ */
+@SerialName("RemoveCardType")
+@Serializable
+data class RemoveCardType(
+    val cardType: String,
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "isn't ${
+        if (cardType.first().lowercaseChar() in "aeiou") "an" else "a"
+    } ${cardType.lowercase()}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * Grants a supertype (e.g., Legendary) to the target permanent.
  * Used for On Serra's Wings: "Enchanted creature is legendary."
  *

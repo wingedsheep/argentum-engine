@@ -32,6 +32,7 @@ data class SpellOnStackComponent(
     val castFromZone: Zone? = null,  // Zone the spell was cast from (e.g., HAND for normal casting)
     val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step
     val wasEvoked: Boolean = false,  // For evoke - permanent is sacrificed on ETB
+    val wasImpending: Boolean = false,  // For impending - permanent enters with time counters and isn't a creature until they're gone
     val beheldCards: List<EntityId> = emptyList(),  // Cards chosen via Behold (stored in pipeline as named collection)
     /**
      * Last-known-info snapshots (Rule 112.7a) for entities chosen at cost-pay time

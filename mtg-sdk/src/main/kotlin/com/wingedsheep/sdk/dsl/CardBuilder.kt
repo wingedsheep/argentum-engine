@@ -411,6 +411,55 @@ class CardBuilder(private val name: String) {
     }
 
     /**
+     * Add Impending N—[cost] (CR 702.176, Duskmourn: House of Horror).
+     *
+     * "If you cast this spell for its impending cost, it enters with N time counters and
+     * isn't a creature until the last is removed. At the beginning of your end step, remove
+     * a time counter from it."
+     *
+     * Wires the full keyword from one call:
+     *  - the [KeywordAbility.Impending] alternative cost (display text + cast enumeration),
+     *  - a conditional "isn't a creature while it has a time counter" type-removing static
+     *    ability ([RemoveCardType] gated by [Conditions.SourceHasCounter]), and
+     *  - a "remove a time counter at the beginning of your end step" triggered ability,
+     *    gated by the same intervening-if so it stops once the counters are gone.
+     *
+     * CR 702.176a gates the not-a-creature static and the end-step trigger on "impending
+     * cost was paid AND it has a time counter"; we gate only on the time counter, since the
+     * engine adds time counters solely when a spell resolves having been cast for its
+     * impending cost (the battlefield never tracks "was cast for impending"). The two are
+     * equivalent unless an external effect stamps a time counter onto a permanent not cast
+     * for impending — a case no current card produces.
+     *
+     * The engine places [time] TIME counters on the permanent when a spell cast for its
+     * impending cost resolves (see the cast/resolve path); these wirings then count it down
+     * and keep it a non-creature enchantment until the last counter is removed. Casting the
+     * card for its normal mana cost adds no time counters, so neither wiring ever fires and
+     * it behaves as an ordinary enchantment creature.
+     */
+    fun impending(time: Int, cost: String) {
+        keywordAbilityList.add(KeywordAbility.Impending(time, ManaCost.parse(cost)))
+        val hasTimeCounter = Conditions.SourceHasCounter(
+            com.wingedsheep.sdk.scripting.events.CounterTypeFilter.Named(Counters.TIME)
+        )
+        staticAbilities.add(
+            ConditionalStaticAbility(
+                ability = RemoveCardType("CREATURE", GroupFilter.source()),
+                condition = hasTimeCounter
+            )
+        )
+        triggeredAbilities.add(
+            TriggeredAbility.create(
+                trigger = Triggers.YourEndStep.event,
+                binding = Triggers.YourEndStep.binding,
+                effect = Effects.RemoveCounters(Counters.TIME, 1, EffectTarget.Self),
+                triggerCondition = hasTimeCounter,
+                descriptionOverride = "At the beginning of your end step, remove a time counter from this permanent."
+            )
+        )
+    }
+
+    /**
      * Add a parameterized keyword ability.
      * Examples: ward {2}, protection from blue, annihilator 2
      */

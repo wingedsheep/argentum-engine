@@ -370,6 +370,13 @@ class CastSpellEnumerator : ActionEnumerator {
                 context.manaSolver.canPay(state, playerId, evokeMana, precomputedSources = cachedSources)
             } else false
 
+            // Check impending cost (alternative cost from Impending keyword)
+            val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+            val canAffordImpending = if (impendingAbility != null) {
+                val impendingMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, impendingAbility.cost, playerId)
+                context.manaSolver.canPay(state, playerId, impendingMana, precomputedSources = cachedSources)
+            } else false
+
             // Check blight path affordability (base cost without the extra mana, but needs a creature)
             val canAffordBlightPath = if (blightOrPayCost != null && blightCreatures.isNotEmpty()) {
                 context.manaSolver.canPay(state, playerId, blightBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
@@ -380,7 +387,7 @@ class CastSpellEnumerator : ActionEnumerator {
                 context.manaSolver.canPay(state, playerId, beholdBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
             } else false
 
-            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordBlightPath && !canAffordBeholdPath) continue
+            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordBlightPath && !canAffordBeholdPath) continue
 
             val targetReqs = buildList {
                 addAll(cardDef.script.targetRequirements)
@@ -516,6 +523,20 @@ class CastSpellEnumerator : ActionEnumerator {
                 SelfAltCostResult(
                     manaCostString = evokeMana.toString(),
                     autoTapPreview = evokePreview,
+                    additionalCostInfo = null
+                )
+            } else null
+
+            // Compute impending cost info
+            val impendingCostResult = if (canAffordImpending && impendingAbility != null) {
+                val impendingMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, impendingAbility.cost, playerId)
+                val impendingPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, impendingMana, precomputedSources = cachedSources)
+                        ?.sources?.map { it.entityId }
+                }
+                SelfAltCostResult(
+                    manaCostString = impendingMana.toString(),
+                    autoTapPreview = impendingPreview,
                     additionalCostInfo = null
                 )
             } else null
@@ -798,6 +819,15 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = evokeCostResult.autoTapPreview
                             ))
                         }
+                        if (impendingCostResult != null) {
+                            result.add(LegalAction(
+                                actionType = "CastWithAlternativeCost",
+                                description = "Impending ${cardComponent.name} (${impendingCostResult.manaCostString})",
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                manaCostString = impendingCostResult.manaCostString,
+                                autoTapPreview = impendingCostResult.autoTapPreview
+                            ))
+                        }
                         if (blightPathInfo != null) {
                             result.add(LegalAction(
                                 actionType = "CastSpell",
@@ -911,6 +941,23 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = evokeCostResult.autoTapPreview
                             ))
                         }
+                        if (impendingCostResult != null) {
+                            result.add(LegalAction(
+                                actionType = "CastWithAlternativeCost",
+                                description = "Impending ${cardComponent.name} (${impendingCostResult.manaCostString})",
+                                action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                validTargets = firstReqInfo.validTargets,
+                                requiresTargets = true,
+                                targetCount = firstReq.count,
+                                minTargets = firstReq.effectiveMinCount,
+                                targetDescription = firstReq.description,
+                                targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                xConstrainsTargetManaValue = firstReqInfo.xConstrainsManaValue,
+                                xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
+                                manaCostString = impendingCostResult.manaCostString,
+                                autoTapPreview = impendingCostResult.autoTapPreview
+                            ))
+                        }
                         if (blightPathInfo != null) {
                             result.add(LegalAction(
                                 actionType = "CastSpell",
@@ -1000,6 +1047,15 @@ class CastSpellEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId, useAlternativeCost = true),
                         manaCostString = evokeCostResult.manaCostString,
                         autoTapPreview = evokeCostResult.autoTapPreview
+                    ))
+                }
+                if (impendingCostResult != null) {
+                    result.add(LegalAction(
+                        actionType = "CastWithAlternativeCost",
+                        description = "Impending ${cardComponent.name} (${impendingCostResult.manaCostString})",
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        manaCostString = impendingCostResult.manaCostString,
+                        autoTapPreview = impendingCostResult.autoTapPreview
                     ))
                 }
                 if (blightPathInfo != null) {

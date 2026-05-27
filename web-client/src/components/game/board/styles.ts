@@ -1173,6 +1173,22 @@ export const styles: Record<string, React.CSSProperties> = {
     zIndex: 5,
     textShadow: '0 0 4px rgba(120, 220, 180, 0.8)',
   } as React.CSSProperties,
+  // Time counter badge (Impending — counts down to becoming a creature)
+  timeCounterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(40, 30, 70, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(170, 140, 230, 0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#cbb6f0',
+    fontWeight: 700,
+    zIndex: 5,
+    textShadow: '0 0 4px rgba(170, 140, 230, 0.8)',
+  } as React.CSSProperties,
   // Quest counter badge (for Beastmaster Ascension etc.)
   questCounterBadge: {
     position: 'absolute',

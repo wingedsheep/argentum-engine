@@ -82,6 +82,21 @@ enum class Keyword(val displayName: String) {
     STORM("Storm"),
     FLASHBACK("Flashback"),
     EVOKE("Evoke"),
+
+    /**
+     * Impending N—[cost] (CR 702.176, Duskmourn: House of Horror).
+     * "If you cast this spell for its impending cost, it enters with N time counters
+     * and isn't a creature until the last is removed. At the beginning of your end step,
+     * remove a time counter from it."
+     *
+     * Modelled as a self-alternative cost ([KeywordAbility.Impending]). The
+     * `impending(n, cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder] wires the
+     * full behavior: the alternative cost, the conditional "isn't a creature while it
+     * has a time counter" type-removing static ability, and the "remove a time counter
+     * at the beginning of your end step" triggered ability. The engine adds the N TIME
+     * counters when a spell cast for its impending cost resolves.
+     */
+    IMPENDING("Impending"),
     CONSPIRE("Conspire"),
     HIDEAWAY("Hideaway"),
 

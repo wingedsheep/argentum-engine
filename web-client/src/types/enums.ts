@@ -186,6 +186,7 @@ export enum Keyword {
   STORM = 'STORM',
   FLASHBACK = 'FLASHBACK',
   EVOKE = 'EVOKE',
+  IMPENDING = 'IMPENDING',
   CONSPIRE = 'CONSPIRE',
   HIDEAWAY = 'HIDEAWAY',
   CASCADE = 'CASCADE',
@@ -242,6 +243,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.STORM]: 'Storm',
   [Keyword.FLASHBACK]: 'Flashback',
   [Keyword.EVOKE]: 'Evoke',
+  [Keyword.IMPENDING]: 'Impending',
   [Keyword.CONSPIRE]: 'Conspire',
   [Keyword.HIDEAWAY]: 'Hideaway',
   [Keyword.CASCADE]: 'Cascade',
@@ -330,6 +332,7 @@ export enum CounterType {
   DREAM = 'DREAM',
   QUEST = 'QUEST',
   GROWTH = 'GROWTH',
+  TIME = 'TIME',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -360,6 +363,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.DREAM]: 'Dream',
   [CounterType.QUEST]: 'Quest',
   [CounterType.GROWTH]: 'Growth',
+  [CounterType.TIME]: 'Time',
 }
 
 /**

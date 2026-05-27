@@ -39,6 +39,7 @@ import {
   getDreamCounters,
   getQuestCounters,
   getGrowthCounters,
+  getTimeCounters,
 } from '../board/shared'
 import { styles, bandColorFor } from '../board/styles'
 import {
@@ -1521,6 +1522,20 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.GROWTH}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getGrowthCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Time counter badge (Impending — counts down to becoming a creature) */}
+      {battlefield && getTimeCounters(card) > 0 && (
+        <div style={{
+          ...styles.timeCounterBadge,
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
+        }}>
+          <i className={`ms ms-${counterManaClass.TIME}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+          <span style={{ fontWeight: 700 }}>
+            {getTimeCounters(card)}
           </span>
         </div>
       )}
