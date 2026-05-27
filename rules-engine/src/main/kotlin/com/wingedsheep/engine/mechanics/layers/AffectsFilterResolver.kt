@@ -413,6 +413,8 @@ internal class AffectsFilterResolver {
         is CardPredicate.HasAnyOfSubtypes -> if (isFaceDown) false else predicate.subtypes.any { sub -> subtypes.any { it.equals(sub.value, ignoreCase = true) } }
         is CardPredicate.HasColor -> predicate.color.name in colors
         is CardPredicate.NotColor -> predicate.color.name !in colors
+        // No resolution-time chosen color in a static-ability projection context.
+        CardPredicate.HasChosenColor -> false
         CardPredicate.IsColorless -> colors.isEmpty()
         CardPredicate.IsMulticolored -> colors.size > 1
         CardPredicate.IsMonocolored -> colors.size == 1

@@ -534,6 +534,10 @@ For modal spells, prefer the explicit `targetPlayerControls(target)` DSL form; p
 - `.youControl()` / `.controlledByOpponent()` — control predicate.
 - `.withSubtype(s)` / `.withKeyword(k)` — type/ability predicate.
 - `.ofColor(c)` / `.ofColors(set)` — color predicate.
+- `.withColor(c)` / `.withAnyColor(c…)` / `.notColor(c)` — fixed-color predicates (`CardPredicate.HasColor`/`NotColor`).
+- `.withChosenColor()` — `CardPredicate.HasChosenColor`: matches the color chosen during the current
+  effect's resolution (read from `EffectContext.chosenColor`, set by `Effects.ChooseColorThen`). Use with
+  `AggregateBattlefield(Player.Each, …)` for "for each permanent of that color" (Coalition Dragon cycle).
 - `.power(n)` / `.minPower(n)` / `.maxPower(n)` — P/T comparator.
 - `.tapped()` / `.untapped()` — tap state.
 - `.nontoken()` / `.token()` — token vs printed.

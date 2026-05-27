@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -177,6 +178,7 @@ class PredicateEvaluator {
             // Color predicates - use projected colors
             is CardPredicate.HasColor -> predicate.color.name in colors
             is CardPredicate.NotColor -> predicate.color.name !in colors
+            CardPredicate.HasChosenColor -> context?.chosenColor?.let { it.name in colors } ?: false
             CardPredicate.IsColorless -> colors.isEmpty()
             CardPredicate.IsMulticolored -> colors.size > 1
             CardPredicate.IsMonocolored -> colors.size == 1
@@ -699,6 +701,7 @@ class PredicateEvaluator {
             // Source-relative and context predicates — not applicable
             CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity, CardPredicate.HasChosenSubtype,
+            CardPredicate.HasChosenColor,
             is CardPredicate.SharesCreatureTypeWith -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,
             is CardPredicate.HasSubtypeInEachStoredGroup -> false
@@ -751,7 +754,12 @@ data class PredicateContext(
      * SpellOnStackComponent at resolution). Used by [CardPredicate.ManaValueAtMostX] to
      * filter targets by "mana value X or less".
      */
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    /**
+     * The color chosen during the current effect's resolution (e.g. via `ChooseColorThen`).
+     * Read by [CardPredicate.HasChosenColor] so filters can match "permanents of that color".
+     */
+    val chosenColor: Color? = null
 ) {
     /**
      * Resolve an [EffectTarget] reference to a concrete player [EntityId].
@@ -793,7 +801,8 @@ data class PredicateContext(
                 storedSubtypeGroups = context.pipeline.storedSubtypeGroups,
                 targets = context.targets,
                 namedTargets = context.pipeline.namedTargets,
-                xValue = context.xValue
+                xValue = context.xValue,
+                chosenColor = context.chosenColor
             )
         }
     }

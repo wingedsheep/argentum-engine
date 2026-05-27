@@ -162,6 +162,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.NotColor(color)
     )
 
+    /** Match the color chosen during the current effect's resolution (e.g. via ChooseColorThen). */
+    fun withChosenColor() = copy(
+        cardPredicates = cardPredicates + CardPredicate.HasChosenColor
+    )
+
     /** Add a subtype requirement */
     fun withSubtype(subtype: Subtype) = copy(
         cardPredicates = cardPredicates + CardPredicate.HasSubtype(subtype)

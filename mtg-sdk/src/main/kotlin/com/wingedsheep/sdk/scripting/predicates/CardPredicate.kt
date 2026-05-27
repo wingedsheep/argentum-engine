@@ -159,6 +159,19 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /**
+     * Matches cards whose colors include the color chosen during this effect's resolution
+     * (e.g. via [ChooseColorThenEffect][com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect]).
+     * Reads the chosen color from the resolution context, so it only matches inside an effect that
+     * has stored one. Used by the Coalition Dragon cycle ("for each permanent of that color").
+     */
+    @SerialName("HasChosenColor")
+    @Serializable
+    data object HasChosenColor : CardPredicate {
+        override val description: String = "of the chosen color"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     @SerialName("IsColorless")
     @Serializable
     data object IsColorless : CardPredicate {
