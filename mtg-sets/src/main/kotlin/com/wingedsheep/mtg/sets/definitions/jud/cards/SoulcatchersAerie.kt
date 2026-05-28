@@ -28,10 +28,12 @@ val SoulcatchersAerie = card("Soulcatchers' Aerie") {
     typeLine = "Enchantment"
     oracleText = "Whenever a Bird is put into your graveyard from the battlefield, put a feather counter on this enchantment.\nBird creatures get +1/+1 for each feather counter on this enchantment."
 
-    // Whenever a Bird you control dies, accrue a feather counter (CR 700.4: battlefield → graveyard).
+    // Whenever a Bird is put into your graveyard from the battlefield, accrue a feather counter.
+    // "Your graveyard" is ownership, not control: a permanent always goes to its owner's
+    // graveyard (CR 400.3), so we filter by ownedByYou rather than youControl.
     triggeredAbility {
         trigger = Triggers.leavesBattlefield(
-            filter = GameObjectFilter.Creature.withSubtype("Bird").youControl(),
+            filter = GameObjectFilter.Creature.withSubtype("Bird").ownedByYou(),
             to = Zone.GRAVEYARD,
             binding = TriggerBinding.ANY
         )

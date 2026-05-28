@@ -466,9 +466,13 @@ class TriggerMatcher(
             for (predicate in trigger.filter.statePredicates) {
                 if (!matchesStatePredicateForZoneChangeTrigger(predicate, state, event)) return false
             }
-            // Check controller predicate (youControl). Prefer the dying creature's last-known
-            // controller over its owner so stolen creatures (Threaten / Mind Control) and
-            // tokens whose creator owns them but doesn't control them group correctly.
+            // Check controller predicate. Control predicates (youControl) prefer the dying
+            // creature's last-known controller over its owner so stolen creatures (Threaten /
+            // Mind Control) and tokens whose creator owns them but doesn't control them group
+            // correctly. Owner predicates (ownedByYou) instead read the card's owner: "put into
+            // YOUR graveyard from the battlefield" cares about ownership, since a permanent
+            // always goes to its owner's graveyard regardless of who last controlled it
+            // (CR 400.3, e.g. Soulcatchers' Aerie).
             if (trigger.filter.controllerPredicate != null) {
                 val effectiveController = event.lastKnownController ?: event.ownerId
                 when (trigger.filter.controllerPredicate) {
@@ -477,6 +481,12 @@ class TriggerMatcher(
                     }
                     is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
                         if (effectiveController == controllerId) return false
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.OwnedByYou -> {
+                        if (event.ownerId != controllerId) return false
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.OwnedByOpponent -> {
+                        if (event.ownerId == controllerId) return false
                     }
                     else -> {}
                 }

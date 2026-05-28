@@ -175,6 +175,94 @@ class SoulcatchersAerieScenarioTest : ScenarioTestBase() {
                     featherCount(game, aerieId) shouldBe 0
                 }
             }
+
+            // Edge case (CR 400.3): "your graveyard" is ownership, not control. A permanent
+            // always goes to its owner's graveyard.
+            test("a Bird you stole that dies goes to its owner's graveyard, so it does NOT trigger") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Soulcatchers' Aerie")
+                    .withCardOnBattlefield(1, "Nantuko Husk")
+                    .withCardInHand(1, "Threaten")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardOnBattlefield(2, "Test Sparrow") // owned by the opponent
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val aerieId = game.findPermanent("Soulcatchers' Aerie")!!
+                val huskId = game.findPermanent("Nantuko Husk")!!
+                val opponentBird = game.findPermanent("Test Sparrow")!!
+
+                // Player1 steals the opponent's Bird with Threaten.
+                game.castSpell(1, "Threaten", opponentBird)
+                game.resolveStack()
+                withClue("Player1 should now control the opponent's Bird") {
+                    stateProjector.project(game.state).getController(opponentBird) shouldBe game.player1Id
+                }
+
+                // Player1 sacrifices the stolen Bird; it goes to the OPPONENT's graveyard (its owner).
+                val huskAbility = cardRegistry.getCard("Nantuko Husk")!!.script.activatedAbilities.first()
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = huskId,
+                        abilityId = huskAbility.id,
+                        costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(opponentBird))
+                    )
+                )
+                game.resolveStack()
+
+                withClue("Bird went to its owner's (opponent's) graveyard, not yours — no feather counter") {
+                    game.isInGraveyard(2, "Test Sparrow") shouldBe true
+                    featherCount(game, aerieId) shouldBe 0
+                }
+            }
+
+            test("a Bird you own but an opponent controls still triggers when it dies (your graveyard)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Soulcatchers' Aerie")
+                    .withCardOnBattlefield(1, "Test Sparrow") // owned by Player1
+                    .withCardOnBattlefield(2, "Nantuko Husk")
+                    .withCardInHand(2, "Threaten")
+                    .withLandsOnBattlefield(2, "Mountain", 3)
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val aerieId = game.findPermanent("Soulcatchers' Aerie")!!
+                val huskId = game.findPermanent("Nantuko Husk")!!
+                val yourBird = game.findPermanent("Test Sparrow")!!
+
+                // Opponent steals your Bird with Threaten.
+                game.castSpell(2, "Threaten", yourBird)
+                game.resolveStack()
+                withClue("Opponent should now control your Bird") {
+                    stateProjector.project(game.state).getController(yourBird) shouldBe game.player2Id
+                }
+
+                // Opponent sacrifices it; it goes to YOUR graveyard (you own it), so the Aerie triggers.
+                val huskAbility = cardRegistry.getCard("Nantuko Husk")!!.script.activatedAbilities.first()
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player2Id,
+                        sourceId = huskId,
+                        abilityId = huskAbility.id,
+                        costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(yourBird))
+                    )
+                )
+                game.resolveStack()
+
+                withClue("Bird went to your graveyard (you own it) — the Aerie gains a feather counter") {
+                    game.isInGraveyard(1, "Test Sparrow") shouldBe true
+                    featherCount(game, aerieId) shouldBe 1
+                }
+            }
         }
     }
 
