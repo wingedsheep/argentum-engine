@@ -136,7 +136,7 @@ cards, not one.
 
 | # | Card(s) | Why it already works |
 |---|---------|----------------------|
-| #6 | **Pyre Zombie** | `TriggeredAbility.activeZone = Zone.GRAVEYARD` + `triggerCondition` already drive graveyard-functional triggers; `TriggerDetector` scans graveyard cards (`TriggerDetector.kt:359-405`). Only check: confirm the `triggeredAbility { }` builder surfaces `activeZone`/`triggerZone`; if not, add the one setter. |
+| #6 | **Pyre Zombie** | ✅ **Implemented** (`inv/cards/PyreZombie.kt`). Graveyard-functional upkeep trigger via `triggerZone = Zone.GRAVEYARD` + `MayPayManaEffect({1}{B}{B}, ReturnToHand(Self))` (same shape as Onslaught's Gigapede); sac ability = `Costs.Composite(Mana({1}{R}{R}), SacrificeSelf)` → `DealDamage(2, Targets.Any)`. The `triggeredAbility { }` builder already surfaces `triggerZone`; `TriggerDetector` scans graveyard cards (`TriggerDetector.kt:359-405`). No engine work. |
 | #12 | **Backlash**, **Agonizing Demise** (kicked) | `EffectTarget.TargetController` already exists (`EffectTarget.kt:57-62`), plus `ControllerOfTriggeringEntity`. Backlash = `DealDamage(amount = DynamicAmounts.targetPower(0), target = EffectTarget.TargetController)`; Agonizing Demise riders on `Conditions.WasKicked`. |
 | #20 | **Goblin Spy** | `MiscStaticAbilities.LookAtTopOfLibrary` / `PlayFromTopOfLibrary` exist (`MiscStaticAbilities.kt:162-201`). One nuance: Goblin Spy reveals to **all** players (public), `LookAtTopOfLibrary` is private. Add a sibling `RevealTopOfLibrary` data object (public reveal, no play permission) mirroring the existing ones — ~5 lines, not a new system. |
 | #2 (half) | **Coalition Victory** | ✅ **Implemented** (`inv/cards/CoalitionVictory.kt`). "A creature of each color" = `Compare(DynamicAmounts.colorsAmongPermanents(Player.You, GameObjectFilter.Creature), GTE, Fixed(5))` (a single 5-color creature satisfies it — matches the official ruling, and `Aggregation.DISTINCT_COLORS` caps at 5). "A land of each basic land type" = `Conditions.BasicLandTypesAtLeast(5)`. Combined with `Conditions.All(...)` inside a `ConditionalEffect` → `Effects.WinGame()`. No new primitive. |
@@ -266,13 +266,20 @@ Dega-style payoffs).
 
 ---
 
-### #6 — Graveyard-functional ability · Pyre Zombie
+### #6 — Graveyard-functional ability · Pyre Zombie ✅ DONE
 
-**Already buildable** (see table). `activeZone = Zone.GRAVEYARD` + intervening-`if` is fully wired
-(`TriggerDetector.kt:359-405`; controller resolves to the card's **owner** for graveyard cards).
-Pyre Zombie's upkeep trigger uses `MayEffect` + pay `{3}{R}{R}` → return. Only action item: confirm
-`TriggeredAbilityBuilder` exposes `activeZone`; if it doesn't, add the single setter
-(`triggerZone = Zone.GRAVEYARD`).
+> **Implemented** (`inv/cards/PyreZombie.kt`, pure card authoring — no engine change). The
+> `triggeredAbility { }` builder already exposes `triggerZone` (→ `TriggeredAbility.activeZone`), and
+> `TriggerDetector` scans graveyard cards for step triggers with `activeZone == GRAVEYARD`
+> (`TriggerDetector.kt:359-405`, controller = card owner). Upkeep recursion =
+> `triggerZone = Zone.GRAVEYARD` + `MayPayManaEffect(ManaCost.parse("{1}{B}{B}"),
+> Effects.ReturnToHand(EffectTarget.Self))`. Sac ability =
+> `Costs.Composite(Costs.Mana("{1}{R}{R}"), Costs.SacrificeSelf)` → `Effects.DealDamage(2, Targets.Any)`.
+
+`activeZone = Zone.GRAVEYARD` + intervening-`if` is fully wired (`TriggerDetector.kt:359-405`;
+controller resolves to the card's **owner** for graveyard cards). The `MayPayManaEffect`
+("you may pay {1}{B}{B}. If you do, return it to your hand") and graveyard `triggerZone` setter both
+already existed (Gigapede precedent), so no engine work was required.
 
 ---
 
