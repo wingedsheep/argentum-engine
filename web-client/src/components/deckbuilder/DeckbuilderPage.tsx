@@ -2538,42 +2538,20 @@ function FilterSection({
   const [powMin, powMax] = useMemo(() => extractRange(query, 'pow'), [query])
   const [touMin, touMax] = useMemo(() => extractRange(query, 'tou'), [query])
 
-  // Distinct set codes present in the loaded catalogue. The picker hides codes that
-  // have no cards on disk so a partially-implemented backend doesn't surface dead options.
-  const availableSetCodes = useMemo(() => {
-    const set = new Set<string>()
-    for (const c of catalog) if (c.setCode) set.add(c.setCode)
-    return set
-  }, [catalog])
-
-  // Sort mode for the Set picker. "name" sorts alphabetically by display name (case-insensitive);
-  // "date" sorts newest-first by release date with null/unknown dates pushed to the bottom.
-  // Persisted in localStorage so the user's preference survives page reloads.
-  const [setSortMode, setSetSortMode] = useState<'name' | 'date'>(() => {
-    if (typeof window === 'undefined') return 'name'
-    return (window.localStorage.getItem('deckbuilder.setSort') as 'name' | 'date') ?? 'name'
-  })
-  useEffect(() => {
-    if (typeof window !== 'undefined') window.localStorage.setItem('deckbuilder.setSort', setSortMode)
-  }, [setSortMode])
-
-  const sortedSets = useMemo(() => {
-    const present = setInfos.filter((s) => availableSetCodes.has(s.code))
-    // Fall back to codes that exist in the catalogue but not in the /api/sets response (defensive).
+  // Sets the picker can offer: every set that has at least one card in the loaded
+  // catalogue. `/api/sets` may include sets the backend hasn't implemented yet, and the
+  // catalogue may include codes `/api/sets` doesn't know about — keep the intersection plus
+  // a defensive fallback so neither source can silently swallow the other.
+  const availableSets = useMemo(() => {
+    const codes = new Set<string>()
+    for (const c of catalog) if (c.setCode) codes.add(c.setCode)
+    const present = setInfos.filter((s) => codes.has(s.code))
     const known = new Set(present.map((s) => s.code))
-    for (const code of availableSetCodes) {
+    for (const code of codes) {
       if (!known.has(code)) present.push({ code, name: code, releaseDate: null })
     }
-    if (setSortMode === 'date') {
-      return [...present].sort((a, b) => {
-        if (!a.releaseDate && !b.releaseDate) return a.name.localeCompare(b.name)
-        if (!a.releaseDate) return 1
-        if (!b.releaseDate) return -1
-        return b.releaseDate.localeCompare(a.releaseDate)
-      })
-    }
-    return [...present].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-  }, [setInfos, availableSetCodes, setSortMode])
+    return present
+  }, [setInfos, catalog])
 
   const activeSet = useMemo(() => {
     const m = query.match(/(?:^|\s)s:([^\s]+)/)
@@ -2608,63 +2586,10 @@ function FilterSection({
           Advanced query — chips disabled. Edit the search bar directly.
         </div>
       )}
-      {sortedSets.length > 0 && (
+      {availableSets.length > 0 && (
         <section className={`${styles.section} ${styles.setPickerSection}`}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionLabel}>Set</h2>
-            <div className={styles.modeSegmented} role="tablist" aria-label="Sort sets">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={setSortMode === 'name'}
-                className={`${styles.modeButton} ${setSortMode === 'name' ? styles.modeButtonActive : ''}`}
-                onClick={() => setSetSortMode('name')}
-              >
-                Name
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={setSortMode === 'date'}
-                className={`${styles.modeButton} ${setSortMode === 'date' ? styles.modeButtonActive : ''}`}
-                onClick={() => setSetSortMode('date')}
-              >
-                Release
-              </button>
-            </div>
-          </div>
-          <select
-            className={styles.setPicker}
-            value={activeSet}
-            onChange={(e) => onSetChange(e.target.value)}
-            aria-label="Filter by set"
-          >
-            <option value="">All sets</option>
-            {sortedSets.map((s) => {
-              const year = s.releaseDate ? s.releaseDate.slice(0, 4) : '—'
-              return (
-                <option key={s.code} value={s.code}>
-                  {s.name} · {year} ({s.code})
-                </option>
-              )
-            })}
-          </select>
-          {activeSet && (
-            <div className={styles.setPickerMeta}>
-              {(() => {
-                const sel = sortedSets.find((s) => s.code === activeSet)
-                if (!sel) return null
-                return (
-                  <>
-                    <span className={styles.setPickerMetaName}>{sel.name}</span>
-                    <span className={styles.setPickerMetaDate}>
-                      {sel.releaseDate ?? 'release date unknown'}
-                    </span>
-                  </>
-                )
-              })()}
-            </div>
-          )}
+          <h2 className={styles.sectionLabel}>Set</h2>
+          <SetCombobox sets={availableSets} value={activeSet} onChange={onSetChange} />
         </section>
       )}
       <section className={styles.section}>
@@ -2825,6 +2750,254 @@ function FilterSection({
         </button>
       </section>
     </fieldset>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Set combobox — the "primary lens" on the catalogue. Owns its own search,
+// sort, and open/active state; communicates with the parent only through
+// {sets, value, onChange}. Sort preference persists to localStorage.
+// ---------------------------------------------------------------------------
+
+function SetCombobox({
+  sets,
+  value,
+  onChange,
+}: {
+  sets: SetInfo[]
+  value: string
+  onChange: (next: string) => void
+}) {
+  const [sortMode, setSortMode] = useState<'name' | 'date'>(() => {
+    if (typeof window === 'undefined') return 'name'
+    return (window.localStorage.getItem('deckbuilder.setSort') as 'name' | 'date') ?? 'name'
+  })
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.localStorage.setItem('deckbuilder.setSort', sortMode)
+  }, [sortMode])
+
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  const rootRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+
+  const selected = useMemo(() => sets.find((s) => s.code === value) ?? null, [sets, value])
+
+  const sorted = useMemo(() => {
+    const arr = [...sets]
+    if (sortMode === 'date') {
+      arr.sort((a, b) => {
+        if (!a.releaseDate && !b.releaseDate) return a.name.localeCompare(b.name)
+        if (!a.releaseDate) return 1
+        if (!b.releaseDate) return -1
+        return b.releaseDate.localeCompare(a.releaseDate)
+      })
+    } else {
+      arr.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+    }
+    return arr
+  }, [sets, sortMode])
+
+  const filtered = useMemo(() => {
+    const needle = search.trim().toLowerCase()
+    if (!needle) return sorted
+    return sorted.filter(
+      (s) => s.name.toLowerCase().includes(needle) || s.code.toLowerCase().includes(needle),
+    )
+  }, [sorted, search])
+
+  // Close on outside click. mousedown (not click) so a selection inside fires before close.
+  useEffect(() => {
+    if (!open) return
+    function onDown(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) {
+        setOpen(false)
+        setSearch('')
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  // When opening, point the active row at the current selection so Enter is a no-op
+  // by default and arrow keys move from "where you are".
+  useEffect(() => {
+    if (!open) return
+    const idx = selected ? filtered.findIndex((s) => s.code === selected.code) : -1
+    setActiveIdx(idx >= 0 ? idx : 0)
+  }, [open, selected, filtered])
+
+  // Keep active row in view as the user navigates.
+  useEffect(() => {
+    if (!open) return
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-idx="${activeIdx}"]`)
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [open, activeIdx])
+
+  function commit(code: string) {
+    onChange(code)
+    setSearch('')
+    setOpen(false)
+    inputRef.current?.blur()
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (!open) setOpen(true)
+      else setActiveIdx((i) => Math.min(filtered.length - 1, i + 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIdx((i) => Math.max(0, i - 1))
+    } else if (e.key === 'Enter') {
+      if (!open) return
+      e.preventDefault()
+      const pick = filtered[activeIdx]
+      if (pick) commit(pick.code)
+    } else if (e.key === 'Escape' && open) {
+      e.preventDefault()
+      setOpen(false)
+      setSearch('')
+    } else if (e.key === 'Backspace' && !search && selected && !open) {
+      e.preventDefault()
+      commit('')
+    }
+  }
+
+  const displayValue = open ? search : selected ? `${selected.name} (${selected.code})` : ''
+  const placeholder = selected ? '' : 'All sets — type to search'
+  const activeOptionId = open && filtered[activeIdx] ? `set-opt-${filtered[activeIdx].code}` : undefined
+
+  return (
+    <div className={styles.setCombobox} ref={rootRef}>
+      <div className={`${styles.setComboInput} ${open ? styles.setComboInputOpen : ''}`}>
+        <span className={styles.setComboIcon} aria-hidden="true">⌕</span>
+        <input
+          ref={inputRef}
+          type="text"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls="set-combobox-list"
+          aria-autocomplete="list"
+          {...(activeOptionId ? { 'aria-activedescendant': activeOptionId } : {})}
+          value={displayValue}
+          placeholder={placeholder}
+          spellCheck={false}
+          autoComplete="off"
+          onChange={(e) => {
+            setSearch(e.target.value)
+            if (!open) setOpen(true)
+            setActiveIdx(0)
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={onKeyDown}
+        />
+        {selected && !open && (
+          <button
+            type="button"
+            className={styles.setComboClear}
+            aria-label={`Clear set filter (${selected.name})`}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              commit('')
+            }}
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className={styles.setComboPanel}>
+          <div className={styles.setComboPanelHeader}>
+            <span className={styles.setComboCount}>
+              {filtered.length} {filtered.length === 1 ? 'set' : 'sets'}
+            </span>
+            <div className={styles.modeSegmented} role="tablist" aria-label="Sort sets">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sortMode === 'name'}
+                className={`${styles.modeButton} ${sortMode === 'name' ? styles.modeButtonActive : ''}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setSortMode('name')}
+              >
+                Name
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sortMode === 'date'}
+                className={`${styles.modeButton} ${sortMode === 'date' ? styles.modeButtonActive : ''}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setSortMode('date')}
+              >
+                Release
+              </button>
+            </div>
+          </div>
+          <ul
+            id="set-combobox-list"
+            ref={listRef}
+            className={styles.setComboList}
+            role="listbox"
+            aria-label="Sets"
+          >
+            <li
+              id="set-opt-all"
+              role="option"
+              aria-selected={!selected}
+              data-idx={-1}
+              className={`${styles.setComboOption} ${styles.setComboOptionAll} ${!selected ? styles.setComboOptionSelected : ''}`}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                commit('')
+              }}
+            >
+              <span className={styles.setComboOptionName}>All sets</span>
+            </li>
+            {filtered.map((s, i) => {
+              const isActive = i === activeIdx
+              const isSelected = s.code === value
+              const year = s.releaseDate ? s.releaseDate.slice(0, 4) : '—'
+              const classes = [
+                styles.setComboOption,
+                isActive ? styles.setComboOptionActive : '',
+                isSelected ? styles.setComboOptionSelected : '',
+              ]
+                .filter(Boolean)
+                .join(' ')
+              return (
+                <li
+                  key={s.code}
+                  id={`set-opt-${s.code}`}
+                  data-idx={i}
+                  role="option"
+                  aria-selected={isSelected}
+                  className={classes}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    commit(s.code)
+                  }}
+                >
+                  <span className={styles.setComboOptionName}>{s.name}</span>
+                  <span className={styles.setComboOptionMeta}>
+                    <span className={styles.setComboOptionYear}>{year}</span>
+                    <span className={styles.setComboOptionCode}>{s.code}</span>
+                  </span>
+                </li>
+              )
+            })}
+            {filtered.length === 0 && (
+              <li className={styles.setComboEmpty}>No sets match "{search}"</li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
   )
 }
 

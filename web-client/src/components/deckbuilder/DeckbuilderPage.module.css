@@ -953,44 +953,180 @@
   gap: var(--space-2);
 }
 
-.setPicker {
+/* Searchable set combobox. The input is the only always-visible control; the
+   sort toggle, count, and option list live in a popover that opens on focus. */
+.setCombobox {
+  position: relative;
   width: 100%;
+}
+
+.setComboInput {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
+  padding: 6px 8px 6px 10px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.setPicker:hover {
-  border-color: rgba(106, 163, 255, 0.5);
+.setComboInput:hover {
+  border-color: rgba(106, 163, 255, 0.45);
 }
 
-.setPicker:focus {
-  outline: none;
+.setComboInput:focus-within,
+.setComboInputOpen {
   border-color: rgba(106, 163, 255, 0.8);
   box-shadow: 0 0 0 2px rgba(106, 163, 255, 0.2);
 }
 
-.setPickerMeta {
+.setComboIcon {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.setComboInput input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 2px 0;
+}
+
+.setComboInput input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.setComboClear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.setComboClear:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.setComboPanel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: rgba(14, 18, 26, 0.98);
+  border: 1px solid rgba(106, 163, 255, 0.35);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+}
+
+.setComboPanelHeader {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.setComboCount {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.setComboList {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.setComboOption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  border-left: 2px solid transparent;
+}
+
+.setComboOptionActive {
+  background: rgba(106, 163, 255, 0.12);
+}
+
+.setComboOptionSelected {
+  border-left-color: rgba(106, 163, 255, 0.85);
+  color: #fff;
+}
+
+.setComboOptionAll {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 2px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.setComboOptionAll.setComboOptionSelected {
+  color: var(--text-primary);
+  font-style: normal;
+}
+
+.setComboOptionName {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setComboOptionMeta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.setComboOptionYear {
+  color: var(--text-muted);
   font-size: 0.7rem;
 }
 
-.setPickerMetaName {
-  color: var(--text-primary);
-  font-weight: 500;
+.setComboOptionCode {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  font-weight: 600;
 }
 
-.setPickerMetaDate {
+.setComboEmpty {
+  padding: 12px 10px;
+  text-align: center;
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-style: italic;
 }
 
 .gridScroll {
