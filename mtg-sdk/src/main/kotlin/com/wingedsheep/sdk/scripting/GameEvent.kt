@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.events.AmountFilter
 import com.wingedsheep.sdk.scripting.events.ControllerFilter
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -58,9 +59,14 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     data class DamageEvent(
         val recipient: RecipientFilter = RecipientFilter.Any,
         val source: SourceFilter = SourceFilter.Any,
-        val damageType: DamageType = DamageType.Any
+        val damageType: DamageType = DamageType.Any,
+        val amount: AmountFilter = AmountFilter.Any
     ) : GameEvent {
         override val description: String = buildString {
+            if (amount != AmountFilter.Any) {
+                append(amount.description)
+                append(" ")
+            }
             if (damageType != DamageType.Any) {
                 append(damageType.description)
                 append(" ")

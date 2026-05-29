@@ -303,7 +303,29 @@ already existed (Gigapede precedent), so no engine work was required.
 
 ---
 
-### #7 — Conditional / amount-relational damage replacements · 6 cards
+### #7 — Conditional / amount-relational damage replacements · 6 cards ✅ MOSTLY DONE
+
+> **Implemented (5 of 6 cards; Protective Sphere deferred to #8).** New SDK vocabulary, no per-card
+> executors: `AmountFilter` (`Any`/`AtMost`/`AtLeast`/`Exactly`) on `GameEvent.DamageEvent`; `CapDamage`
+> replacement; `PreventDamage.restrictions: List<Condition>` (condition-gated prevention, mirrors
+> `ModifyLifeLoss.restrictions`); relational `CardPredicate.SharesColorWithRecipient` +
+> `GameObjectFilter.sharingColorWithRecipient()`; `CardPredicate.SharesChosenColorWithSource` +
+> `sharingChosenColorWithSource()`; `EffectTarget.ControllerOfDamageSource`. Engine: `AmountFilter`,
+> the relational source predicate, and `restrictions` are honored in `DamageUtils.applyStaticDamageReduction`;
+> `CapDamage` in `applyStaticDamageAmplification`; the previously-dead `RedirectDamage` replacement is now
+> applied as a continuous static via a new `findStaticDamageRedirect` scan in `dealDamageToTarget`
+> (each source applies once per event, loop-guarded by `appliedRedirects`). All paths shared by combat
+> and noncombat damage. Cards authored in `definitions/inv/cards/`: **Callous Giant** (AmountFilter),
+> **Divine Presence** (CapDamage), **Well-Laid Plans** (SharesColorWithRecipient), **Spirit of
+> Resistance** (#2 five-color condition + restrictions), **Harsh Judgment** (RedirectDamage +
+> ControllerOfDamageSource + chosen-color predicate). Covered by per-card scenario tests
+> (`CallousGiantTest`, `DivinePresenceTest`, `WellLaidPlansTest`, `SpiritOfResistanceTest`,
+> `HarshJudgmentTest`).
+>
+> **Protective Sphere remains blocked on #8** — it prevents damage from a source sharing a color with
+> *the mana spent on the activation cost*, which needs per-color mana-spent tracking (gap #8). The
+> reusable hook is ready: store the spent color as the prevention's chosen color and reuse the
+> chosen-color source predicate.
 
 This is the largest gap and the place where it's most tempting to write six bespoke executors. The
 elegant path is to **enrich the existing `appliesTo` filter vocabulary** so the existing
@@ -590,8 +612,9 @@ filter.
 3. **`SharesColorWith` filter** (#5) — one predicate, reusable family.
 4. **Per-color mana tracking + X restriction** (#8) — unlocks Soul Burn / Atalya and feeds #7's
    Protective Sphere.
-5. **Damage-replacement vocabulary** (#7) — `AmountFilter`, relational/chosen-color `SourceFilter`s,
-   `CapDamage`, `ControllerOfDamageSource`; unlocks 6 cards and enriches the shared event system.
+5. **Damage-replacement vocabulary** (#7) ✅ — `AmountFilter`, relational/chosen-color predicates,
+   `CapDamage`, `PreventDamage.restrictions`, `RedirectDamage` (now wired), `ControllerOfDamageSource`;
+   unlocked 5 cards and enriched the shared event system. Protective Sphere still waits on #8.
 6. **Tapped-for-mana event + rider + replacement** (#3) — 3 cards, reusable mana hooks.
 7. **Name-a-card choice + filter** (#10) — 2 cards, large external family.
 8. **Pile-separation trio** (#21) — 5 cards from three composable additions.

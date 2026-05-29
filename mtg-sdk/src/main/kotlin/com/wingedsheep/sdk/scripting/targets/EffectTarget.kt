@@ -211,4 +211,19 @@ sealed interface EffectTarget {
     data object ControllerOfTriggeringEntity : EffectTarget {
         override val description: String = "that spell's controller"
     }
+
+    /**
+     * CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage
+     * currently being processed. Only meaningful inside a damage replacement
+     * (e.g. [com.wingedsheep.sdk.scripting.RedirectDamage]); resolved by the damage
+     * pipeline from the source of the in-flight damage.
+     *
+     * Used by Harsh Judgment ("If an instant or sorcery spell of the chosen color
+     * would deal damage to you, it deals that damage to its controller instead").
+     */
+    @SerialName("ControllerOfDamageSource")
+    @Serializable
+    data object ControllerOfDamageSource : EffectTarget {
+        override val description: String = "its controller"
+    }
 }

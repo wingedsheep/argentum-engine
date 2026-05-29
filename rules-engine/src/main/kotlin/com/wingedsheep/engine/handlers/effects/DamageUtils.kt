@@ -37,17 +37,20 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CapDamage
 import com.wingedsheep.sdk.scripting.DamageCantBePrevented
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.ModifyDamageAmount
 import com.wingedsheep.sdk.scripting.ModifyLifeLoss
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.PreventLifeGain
+import com.wingedsheep.sdk.scripting.RedirectDamage
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Utility functions for dealing damage, applying damage prevention/amplification/redirection,
@@ -74,7 +77,9 @@ object DamageUtils {
         targetId: EntityId,
         amount: Int,
         sourceId: EntityId?,
-        cantBePrevented: Boolean = false
+        cantBePrevented: Boolean = false,
+        isCombatDamage: Boolean = false,
+        appliedRedirects: Set<EntityId> = emptySet()
     ): EffectResult {
         if (amount <= 0) return EffectResult.success(state)
 
@@ -85,15 +90,29 @@ object DamageUtils {
         // Check for damage redirection (Glarecaster, Zealous Inquisitor)
         val (redirectState, redirectTargetId, redirectAmount) = checkDamageRedirection(state, targetId, amount)
         if (redirectTargetId != null) {
-            val redirectResult = dealDamageToTarget(redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented)
+            val redirectResult = dealDamageToTarget(redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, appliedRedirects)
             val remainingDamage = amount - redirectAmount
             return if (remainingDamage > 0) {
                 // Partial redirection — deal remaining damage to original target
                 val afterRedirect = redirectResult.state
-                val remainingResult = dealDamageToTarget(afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented)
+                val remainingResult = dealDamageToTarget(afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented, isCombatDamage, appliedRedirects)
                 EffectResult.success(remainingResult.state, redirectResult.events + remainingResult.events)
             } else {
                 redirectResult
+            }
+        }
+
+        // Check for static damage-redirection replacement effects (Harsh Judgment). Unlike the
+        // floating shields above these are continuous statics; each source applies at most once
+        // per damage event (CR 616.1), tracked via [appliedRedirects] to avoid redirect loops.
+        if (!cantBePrevented && sourceId != null) {
+            val (staticRedirectTo, staticRedirectSource) =
+                findStaticDamageRedirect(state, targetId, amount, sourceId, isCombatDamage, appliedRedirects)
+            if (staticRedirectTo != null && staticRedirectSource != null) {
+                return dealDamageToTarget(
+                    state, staticRedirectTo, amount, sourceId, cantBePrevented, isCombatDamage,
+                    appliedRedirects + staticRedirectSource
+                )
             }
         }
 
@@ -552,6 +571,104 @@ object DamageUtils {
     }
 
     /**
+     * Find a static [RedirectDamage] replacement effect that applies to the in-flight
+     * damage (Harsh Judgment). Scans battlefield permanents with a
+     * [ReplacementEffectSourceComponent]; the first matching effect whose source hasn't
+     * already applied this event ([appliedRedirects]) wins.
+     *
+     * Returns (redirectTargetId, redirectSourceEntityId) — the entity to redirect the
+     * full amount to, plus the replacement source's id (so the caller can mark it applied
+     * and prevent redirect loops). Returns (null, null) when nothing applies.
+     */
+    private fun findStaticDamageRedirect(
+        state: GameState,
+        targetId: EntityId,
+        amount: Int,
+        sourceId: EntityId,
+        isCombatDamage: Boolean,
+        appliedRedirects: Set<EntityId>
+    ): Pair<EntityId?, EntityId?> {
+        val projected = state.projectedState
+
+        for (entityId in state.getBattlefield()) {
+            if (entityId in appliedRedirects) continue
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is RedirectDamage) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+
+                val damageTypeMatches = when (damageEvent.damageType) {
+                    is DamageType.Any -> true
+                    is DamageType.Combat -> isCombatDamage
+                    is DamageType.NonCombat -> !isCombatDamage
+                }
+                if (!damageTypeMatches) continue
+                if (!damageEvent.amount.matches(amount)) continue
+
+                val sourceMatches = when (val source = damageEvent.source) {
+                    is SourceFilter.Any -> true
+                    is SourceFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId, recipientId = targetId)
+                        predicateEvaluator.matches(state, projected, sourceId, source.filter, context)
+                    }
+                    else -> false
+                }
+                if (!sourceMatches) continue
+
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Any -> true
+                    is RecipientFilter.You -> targetId == sourceControllerId
+                    is RecipientFilter.Self -> targetId == entityId
+                    is RecipientFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)
+                        predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
+                    }
+                    is RecipientFilter.CreatureYouControl -> {
+                        projected.isCreature(targetId) && projected.getController(targetId) == sourceControllerId
+                    }
+                    else -> false
+                }
+                if (!recipientMatches) continue
+
+                val redirectTo = resolveRedirectTarget(state, effect.redirectTo, sourceId, entityId, targetId)
+                if (redirectTo != null && redirectTo != targetId) {
+                    return redirectTo to entityId
+                }
+            }
+        }
+        return null to null
+    }
+
+    /**
+     * Resolve the [EffectTarget] of a static [RedirectDamage] to a concrete entity id.
+     * [damageSourceId] is the source dealing the in-flight damage, [replacementOwnerId]
+     * the permanent carrying the replacement, [originalTargetId] the original recipient.
+     */
+    private fun resolveRedirectTarget(
+        state: GameState,
+        target: EffectTarget,
+        damageSourceId: EntityId,
+        replacementOwnerId: EntityId,
+        originalTargetId: EntityId
+    ): EntityId? = when (target) {
+        is EffectTarget.ControllerOfDamageSource ->
+            state.getEntity(damageSourceId)?.get<ControllerComponent>()?.playerId
+                ?: state.getEntity(damageSourceId)?.get<CardComponent>()?.ownerId
+        is EffectTarget.Controller ->
+            state.getEntity(replacementOwnerId)?.get<ControllerComponent>()?.playerId
+        is EffectTarget.TargetController ->
+            state.projectedState.getController(originalTargetId)
+                ?: state.getEntity(originalTargetId)?.get<ControllerComponent>()?.playerId
+        is EffectTarget.Self -> replacementOwnerId
+        else -> null
+    }
+
+    /**
      * Check for deflect damage shields (Deflecting Palm).
      *
      * Scans floating effects for DeflectNextDamageFromSource matching the damage source.
@@ -699,6 +816,21 @@ object DamageUtils {
                 }
                 if (!damageTypeMatches) continue
 
+                // Amount threshold (Callous Giant: "3 or less"). Checked against the full
+                // incoming would-be amount, not the partially-prevented remainder.
+                if (!damageEvent.amount.matches(amount)) continue
+
+                // Additional gating conditions evaluated against the source's controller
+                // (Spirit of Resistance: "as long as you control a permanent of each color").
+                if (effect.restrictions.isNotEmpty()) {
+                    val context = EffectContext(
+                        sourceId = entityId,
+                        controllerId = sourceControllerId,
+                        opponentId = state.turnOrder.firstOrNull { it != sourceControllerId },
+                    )
+                    if (effect.restrictions.any { !conditionEvaluator.evaluate(state, it, context) }) continue
+                }
+
                 // Check if the damage source matches the source filter
                 val sourceMatches = when (val source = damageEvent.source) {
                     is SourceFilter.Any -> true
@@ -709,7 +841,7 @@ object DamageUtils {
                     is SourceFilter.Matching -> {
                         if (sourceId == null) false
                         else {
-                            val context = PredicateContext(controllerId = sourceControllerId)
+                            val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId, recipientId = targetId)
                             predicateEvaluator.matches(state, projected, sourceId, source.filter, context)
                         }
                     }
@@ -720,6 +852,7 @@ object DamageUtils {
                 // Check if the target matches the recipient filter
                 val recipientMatches = when (val recipient = damageEvent.recipient) {
                     is RecipientFilter.Self -> targetId == entityId
+                    is RecipientFilter.You -> targetId == sourceControllerId
                     is RecipientFilter.EnchantedCreature, is RecipientFilter.EquippedCreature -> {
                         val attachedTo = container.get<AttachedToComponent>()?.targetId
                         targetId == attachedTo
@@ -736,6 +869,9 @@ object DamageUtils {
                         val isControlled = projected.getController(targetId) == sourceControllerId
                         isCreature && isControlled
                     }
+                    is RecipientFilter.AnyCreature -> projected.isCreature(targetId)
+                    is RecipientFilter.AnyPlayer -> targetId in state.turnOrder
+                    is RecipientFilter.AnyPermanent -> targetId in state.getBattlefield()
                     is RecipientFilter.Any -> true
                     else -> false
                 }
@@ -921,6 +1057,60 @@ object DamageUtils {
                         }
                     }
                 }
+            }
+        }
+
+        // Cap damage replacements (Divine Presence): clamp the would-be amount to a maximum.
+        // Applied last so it caps the fully-amplified amount. Capping is a replacement, so
+        // prevention shields still apply afterward to the capped amount.
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is CapDamage) continue
+                if (amplifiedAmount <= effect.maxAmount) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+
+                val damageTypeMatches = when (damageEvent.damageType) {
+                    is DamageType.Any -> true
+                    is DamageType.Combat -> isCombatDamage
+                    is DamageType.NonCombat -> !isCombatDamage
+                }
+                if (!damageTypeMatches) continue
+                if (!damageEvent.amount.matches(amplifiedAmount)) continue
+
+                val sourceMatches = when (val source = damageEvent.source) {
+                    is SourceFilter.Any -> true
+                    is SourceFilter.Matching -> {
+                        if (sourceId == null) false
+                        else {
+                            val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId, recipientId = targetId)
+                            predicateEvaluator.matches(state, projected, sourceId, source.filter, context)
+                        }
+                    }
+                    else -> false
+                }
+                if (!sourceMatches) continue
+
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Any -> true
+                    is RecipientFilter.Self -> targetId == entityId
+                    is RecipientFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)
+                        predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
+                    }
+                    is RecipientFilter.CreatureYouControl -> {
+                        projected.isCreature(targetId) && projected.getController(targetId) == sourceControllerId
+                    }
+                    else -> false
+                }
+                if (!recipientMatches) continue
+
+                amplifiedAmount = effect.maxAmount
             }
         }
 

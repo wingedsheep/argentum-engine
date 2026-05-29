@@ -332,6 +332,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.HasChosenSubtype
     )
 
+    /** Must include the color chosen on the source permanent (ChosenColorComponent) */
+    fun sharingChosenColorWithSource() = copy(
+        cardPredicates = cardPredicates + CardPredicate.SharesChosenColorWithSource
+    )
+
     /** Must share a creature type with the referenced entity */
     fun sharingCreatureTypeWith(entity: EntityReference) = copy(
         cardPredicates = cardPredicates + CardPredicate.SharesCreatureTypeWith(entity)
@@ -340,6 +345,15 @@ data class GameObjectFilter(
     /** Must share a color with the referenced entity */
     fun sharingColorWith(entity: EntityReference) = copy(
         cardPredicates = cardPredicates + CardPredicate.SharesColorWith(entity)
+    )
+
+    /**
+     * Must share a color with the recipient of the in-flight damage (and not be that
+     * recipient). Only meaningful in a damage replacement's source filter. Used by
+     * Well-Laid Plans.
+     */
+    fun sharingColorWithRecipient() = copy(
+        cardPredicates = cardPredicates + CardPredicate.SharesColorWithRecipient
     )
 
     // =============================================================================
