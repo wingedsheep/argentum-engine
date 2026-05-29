@@ -885,6 +885,15 @@ class CostCalculator(
             }
             is CardPredicate.SharesCreatureTypeWith -> true
             is CardPredicate.SharesColorWith -> true
+            CardPredicate.SharesColorWithRecipient -> false
+            CardPredicate.SharesChosenColorWithSource -> {
+                if (sourceEntityId == null || state == null) return false
+                val chosenColor = state.getEntity(sourceEntityId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()
+                    ?.color
+                    ?: return false
+                cardDef.colors.contains(chosenColor)
+            }
 
             is CardPredicate.HasSubtypeFromVariable -> true
             is CardPredicate.HasSubtypeInStoredList -> true

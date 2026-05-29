@@ -390,6 +390,25 @@ class PredicateEvaluator {
                 colors.any { it in referenceColors }
             }
 
+            CardPredicate.SharesChosenColorWithSource -> {
+                val sourceId = context?.sourceId ?: return false
+                val chosenColor = state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
+                    ?: return false
+                chosenColor.name in colors
+            }
+
+            CardPredicate.SharesColorWithRecipient -> {
+                val recipientId = context?.recipientId ?: return false
+                if (recipientId == entityId) return false
+                val recipientColors = projected.getColors(recipientId).ifEmpty {
+                    state.getEntity(recipientId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
+                        ?: emptySet()
+                }
+                if (recipientColors.isEmpty() || colors.isEmpty()) return false
+                colors.any { it in recipientColors }
+            }
+
             // Context-relative predicates (pipeline variable references)
             is CardPredicate.HasSubtypeFromVariable -> {
                 val chosenType = context?.chosenValues?.get(predicate.variableName) ?: return false
@@ -755,7 +774,8 @@ class PredicateEvaluator {
             // Source-relative and context predicates — not applicable
             CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity, CardPredicate.HasChosenSubtype,
-            CardPredicate.HasChosenColor,
+            CardPredicate.HasChosenColor, CardPredicate.SharesChosenColorWithSource,
+            CardPredicate.SharesColorWithRecipient,
             is CardPredicate.SharesCreatureTypeWith,
             is CardPredicate.SharesColorWith -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,
@@ -814,7 +834,13 @@ data class PredicateContext(
      * The color chosen during the current effect's resolution (e.g. via `ChooseColorThen`).
      * Read by [CardPredicate.HasChosenColor] so filters can match "permanents of that color".
      */
-    val chosenColor: Color? = null
+    val chosenColor: Color? = null,
+    /**
+     * The recipient of the in-flight damage, when evaluating a damage replacement's source
+     * filter. Read by [CardPredicate.SharesColorWithRecipient] so a source filter can be
+     * relative to what's being damaged (Well-Laid Plans).
+     */
+    val recipientId: EntityId? = null
 ) {
     /**
      * Resolve an [EffectTarget] reference to a concrete player [EntityId].

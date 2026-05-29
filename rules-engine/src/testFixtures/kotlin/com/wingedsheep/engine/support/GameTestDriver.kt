@@ -1310,4 +1310,13 @@ class GameTestDriver {
     fun getHandSize(playerId: EntityId): Int {
         return getHand(playerId).size
     }
+
+    /**
+     * Attach (or replace) a component on an entity (test helper). Useful for setting up
+     * state that would normally be produced by an entry choice, e.g. a
+     * [com.wingedsheep.engine.state.components.identity.ChosenColorComponent].
+     */
+    fun addComponent(entityId: EntityId, component: com.wingedsheep.engine.state.Component) {
+        _state = _state.updateEntity(entityId) { it.withComponent(component) }
+    }
 }

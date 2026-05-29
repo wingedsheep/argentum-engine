@@ -492,6 +492,20 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /**
+     * Matches objects whose color set includes the color chosen on the source
+     * permanent (read from its ChosenColorComponent). Composable color analogue of
+     * [HasChosenSubtype] — combine with a type predicate to express e.g. "an instant
+     * or sorcery spell of the chosen color" (Harsh Judgment). Colorless objects never
+     * match; if the source has no chosen color, nothing matches.
+     */
+    @SerialName("SharesChosenColorWithSource")
+    @Serializable
+    data object SharesChosenColorWithSource : CardPredicate {
+        override val description: String = "of the chosen color"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     /** Matches creatures that share a creature subtype with the referenced entity */
     @SerialName("SharesCreatureTypeWith")
     @Serializable
@@ -513,6 +527,20 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
             is EntityReference.Triggering -> "that shares a color with it"
             else -> "that shares a color with ${entity.description}"
         }
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
+    /**
+     * Matches objects that share a color with the recipient of the in-flight damage,
+     * and are not that recipient. Only meaningful inside a damage replacement's source
+     * filter, where the engine supplies the recipient. Combine with a type predicate to
+     * express "another creature that shares a color" — Well-Laid Plans uses
+     * `GameObjectFilter.Creature` + this predicate. Colorless on either side never matches.
+     */
+    @SerialName("SharesColorWithRecipient")
+    @Serializable
+    data object SharesColorWithRecipient : CardPredicate {
+        override val description: String = "that shares a color with it"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 

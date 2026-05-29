@@ -1538,7 +1538,24 @@ replacementEffect {
 }
 ```
 
-- `ReplacementEffect.PreventDamage(amount?, direction?, scope?, source?, recipient?)` — prevent damage of a given shape.
+- `ReplacementEffect.PreventDamage(amount?, restrictions?, appliesTo)` — prevent damage matching the
+  `GameEvent.DamageEvent` shape. `amount = null` prevents all; a number prevents up to that much.
+  `restrictions: List<Condition>` (default empty) gates the prevention on extra conditions evaluated
+  against the source's controller — the same pattern as `ModifyLifeLoss.restrictions`. Use it for
+  "as long as …, prevent …" statics (Spirit of Resistance: a five-distinct-colors `Compare` gate).
+- `CapDamage(maxAmount, appliesTo)` — clamp matching damage to `maxAmount` (a *replacement* distinct
+  from prevent/modify; applied after all amplification). Divine Presence: `CapDamage(3, DamageEvent(recipient = Any))`.
+- `RedirectDamage(redirectTo, appliesTo)` — redirect matching damage to another recipient. Now wired
+  as a continuous static replacement (each source applies at most once per damage event). `redirectTo`
+  supports `EffectTarget.ControllerOfDamageSource` (the controller of the damaging source),
+  `Controller`/`Self` (the replacement's owner/controller), and `TargetController`. Harsh Judgment:
+  redirect chosen-color instant/sorcery damage dealt to you back to the spell's controller.
+- **DamageEvent filters (gap #7):** `GameEvent.DamageEvent(recipient, source, damageType, amount)`.
+  `amount: AmountFilter` (`Any` / `AtMost(n)` / `AtLeast(n)` / `Exactly(n)`) gates on the would-be
+  amount (Callous Giant: `AtMost(3)`). `source = SourceFilter.Matching(filter)` can carry relational
+  predicates: `GameObjectFilter.sharingColorWithRecipient()` (`CardPredicate.SharesColorWithRecipient`,
+  Well-Laid Plans — "another creature that shares a color") and `sharingChosenColorWithSource()`
+  (`CardPredicate.SharesChosenColorWithSource`, reads the replacement source's `ChosenColorComponent`).
 - `ReplacementEffect.EntersBattlefieldTappedUnless(condition)` — ETB tapped unless condition met.
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - `OnEnterRunEffect(effect)` — generic "as ~ enters the battlefield, run [effect]". The wrapped effect

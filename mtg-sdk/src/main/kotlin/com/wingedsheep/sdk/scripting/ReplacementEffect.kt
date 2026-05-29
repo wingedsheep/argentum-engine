@@ -381,15 +381,32 @@ data class PersistEffect(
 /**
  * Prevent damage.
  * Example: Fog effects, protection, damage shields
+ *
+ * The optional [restrictions] list lets a card gate the prevention on arbitrary
+ * additional conditions (mirroring [ModifyLifeLoss.restrictions]). Each entry is a
+ * [Condition] evaluated against the source permanent's controller; the prevention
+ * only applies when *all* restrictions hold. This is how "as long as …, prevent …"
+ * statics are expressed without a dedicated conditional-replacement wrapper — e.g.
+ * Spirit of Resistance ("As long as you control a permanent of each color, prevent
+ * all damage that would be dealt to you").
  */
 @SerialName("PreventDamage")
 @Serializable
 data class PreventDamage(
     val amount: Int? = null,  // null = prevent all
+    val restrictions: List<Condition> = emptyList(),
     override val appliesTo: GameEvent
 ) : ReplacementEffect {
     override val description: String = buildString {
-        append("If ${appliesTo.description}, prevent ")
+        val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
+        if (restrictionDesc.isNotEmpty()) {
+            append(restrictionDesc.replaceFirstChar { it.uppercase() })
+            append(", if ")
+        } else {
+            append("If ")
+        }
+        append(appliesTo.description)
+        append(", prevent ")
         if (amount == null) {
             append("that damage")
         } else {
@@ -399,7 +416,10 @@ data class PreventDamage(
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
+        val anyChanged = newAppliesTo !== appliesTo ||
+            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
     }
 }
 
@@ -454,6 +474,31 @@ data class ModifyDamageAmount(
     override val description: String = buildString {
         append("If ${appliesTo.description}, it deals that much damage plus $modifier instead")
     }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+/**
+ * Cap damage at a maximum amount. If a matching source would deal more than
+ * [maxAmount] damage, it deals exactly [maxAmount] instead (smaller amounts are
+ * unchanged). Distinct from [PreventDamage] (which subtracts) and [ModifyDamageAmount]
+ * (which adds): capping clamps to an upper bound.
+ *
+ * Example: Divine Presence ("If a source would deal 4 or more damage to a permanent
+ * or player, that source deals 3 damage to that permanent or player instead.") →
+ * `CapDamage(maxAmount = 3, appliesTo = DamageEvent(recipient = AnyPermanentOrPlayer))`.
+ */
+@SerialName("CapDamage")
+@Serializable
+data class CapDamage(
+    val maxAmount: Int,
+    override val appliesTo: GameEvent
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, it deals $maxAmount damage instead"
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)

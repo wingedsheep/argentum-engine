@@ -206,6 +206,56 @@ sealed interface DamageType {
 }
 
 // =============================================================================
+// Amount Filters - Threshold on the amount of a quantitative event (e.g. damage)
+// =============================================================================
+
+/**
+ * Filter on the *amount* of a quantitative game event — currently the amount of
+ * damage a [GameEvent.DamageEvent] would deal. Lets a replacement effect apply only
+ * when the would-be amount crosses a threshold, without baking the threshold into the
+ * replacement type itself.
+ *
+ * Used by Callous Giant ("If a source would deal 3 or less damage to this creature,
+ * prevent that damage") via [AtMost]. Reusable by any future amount-gated prevention
+ * or modification (e.g. "if it would deal 5 or more damage").
+ */
+@Serializable
+sealed interface AmountFilter {
+    val description: String
+
+    /** Returns true when [amount] satisfies this filter. */
+    fun matches(amount: Int): Boolean
+
+    @SerialName("AmountAny")
+    @Serializable
+    data object Any : AmountFilter {
+        override val description = ""
+        override fun matches(amount: Int) = true
+    }
+
+    @SerialName("AmountAtMost")
+    @Serializable
+    data class AtMost(val value: Int) : AmountFilter {
+        override val description = "$value or less"
+        override fun matches(amount: Int) = amount <= value
+    }
+
+    @SerialName("AmountAtLeast")
+    @Serializable
+    data class AtLeast(val value: Int) : AmountFilter {
+        override val description = "$value or more"
+        override fun matches(amount: Int) = amount >= value
+    }
+
+    @SerialName("AmountExactly")
+    @Serializable
+    data class Exactly(val value: Int) : AmountFilter {
+        override val description = "exactly $value"
+        override fun matches(amount: Int) = amount == value
+    }
+}
+
+// =============================================================================
 // Counter Type Filters
 // =============================================================================
 
