@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 228 / 261
+**Implemented:** 229 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -136,7 +136,7 @@
 - [x] Mechanozoa
 - [x] Mechan Shieldmate
 - [x] Melded Moxite
-- [ ] Meltstrider Eulogist
+- [x] Meltstrider Eulogist
 - [x] Meltstrider's Gear
 - [x] Meltstrider's Resolve
 - [x] Memorial Team Leader
