@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 225 / 261
+**Implemented:** 226 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -175,7 +175,7 @@
 - [x] Remnant Elemental
 - [x] Requiem Monolith
 - [x] Reroute Systems
-- [ ] Rescue Skiff
+- [x] Rescue Skiff
 - [x] Rig for War
 - [ ] Roving Actuator
 - [x] Ruinous Rampage
