@@ -244,7 +244,15 @@ Card-by-card:
 
 ---
 
-### #4 — Opponent / any-player cast-trigger sugar · Rewards of Diversity, Pure Reflection
+### #4 — Opponent / any-player cast-trigger sugar · Rewards of Diversity, Pure Reflection ✅ DONE
+
+> **Implemented (facade + both cards).** `Triggers.AnyPlayerCastsSpell`, `Triggers.OpponentCastsSpell`,
+> `Triggers.anyPlayerCasts(spellFilter)`, `Triggers.opponentCasts(spellFilter)` added to `Triggers.kt`.
+> **Rewards of Diversity** (`opponentCasts(Multicolored)`) and **Pure Reflection**
+> (`anyPlayerCasts(Creature)` → destroy existing Reflections, create X/X token under the caster's
+> control) authored in `definitions/inv/cards/` and auto-registered. Covered by
+> `RewardsOfDiversityScenarioTest` (incl. the `Player.Opponent`-scoping negative case) and
+> `PureReflectionScenarioTest`.
 
 **What exists.** Already wired at runtime (`TriggerMatcher.matchesPlayer`). Only the `Triggers` facade
 lacks constants; cards can construct `SpellCastEvent(player = …)` directly today.
@@ -621,7 +629,7 @@ filter.
    card authoring plus ≤2 trivial surfacing tweaks (graveyard `activeZone` setter, public
    `RevealTopOfLibrary`, opponent-cast facade constants).
 1. **`ColorIsMostCommon` self-condition** (#1) — 5 djinns from one condition.
-2. **Opponent/any-player cast facade** (#4) — already runtime-wired; sugar only, broadly reusable.
+2. **Opponent/any-player cast facade** (#4) ✅ — runtime-wired; facade added, Rewards of Diversity + Pure Reflection done.
 3. **`SharesColorWith` filter** (#5) — one predicate, reusable family.
 4. **Per-color mana tracking + X restriction** (#8) — unlocks Soul Burn / Atalya and feeds #7's
    Protective Sphere.
