@@ -27,6 +27,13 @@ export interface AnimationSliceState {
     imageUris: readonly (string | null)[]
     source: string | null
     isYourReveal: boolean
+    /**
+     * Per-card revealer attribution (parallel to cardIds), present when one effect reveals
+     * cards from more than one player at once (e.g. Psychic Battle: each player reveals their
+     * top card). `true` = revealed by the viewing player, `false` = by an opponent. Absent for
+     * single-player reveals, which use [isYourReveal] for the whole group.
+     */
+    cardOwnerIsYours?: readonly boolean[]
     fromZone?: string | null
     toZone?: string | null
   } | null

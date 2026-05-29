@@ -308,6 +308,12 @@ class StackResolver(
             events.add(CommitCrimeEvent(casterId, cardId, eventName))
         }
 
+        // "Whenever a player chooses one or more targets" (Psychic Battle). Emit once per cast
+        // when the spell chose at least one target.
+        if (effectiveTargets.isNotEmpty()) {
+            events.add(TargetsChosenEvent(casterId, cardId, eventName))
+        }
+
         // Emit BecomesTargetEvent for each permanent target (Rule 601.2c)
         // Also track targeting for Valiant ("first time each turn")
         for (target in effectiveTargets) {
@@ -358,6 +364,10 @@ class StackResolver(
 
         if (CrimeDetector.isCrime(newState, ability.controllerId, targets)) {
             events.add(CommitCrimeEvent(ability.controllerId, abilityId, ability.sourceName))
+        }
+
+        if (targets.isNotEmpty()) {
+            events.add(TargetsChosenEvent(ability.controllerId, abilityId, ability.sourceName))
         }
 
         // Emit BecomesTargetEvent for each permanent target
@@ -519,6 +529,10 @@ class StackResolver(
 
         if (CrimeDetector.isCrime(newState, ability.controllerId, targets)) {
             events.add(CommitCrimeEvent(ability.controllerId, abilityId, ability.sourceName))
+        }
+
+        if (targets.isNotEmpty()) {
+            events.add(TargetsChosenEvent(ability.controllerId, abilityId, ability.sourceName))
         }
 
         // Emit BecomesTargetEvent for each permanent target

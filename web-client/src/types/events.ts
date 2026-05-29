@@ -279,6 +279,8 @@ export interface CardsRevealedEvent {
   readonly cardNames: readonly string[]
   readonly imageUris: readonly (string | null)[]
   readonly source: string | null
+  /** Owner of each revealed card (parallel to cardIds); set for multi-player reveals. */
+  readonly cardOwnerIds?: readonly EntityId[]
   /** Set when the reveal represents a zone transition (e.g., GRAVEYARD → HAND). */
   readonly fromZone?: string | null
   readonly toZone?: string | null

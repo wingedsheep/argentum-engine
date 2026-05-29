@@ -358,6 +358,8 @@ sealed interface ClientEvent {
         val cardNames: List<String>,
         val imageUris: List<String?> = emptyList(),
         val source: String? = null,
+        /** Owner of each revealed card (parallel to [cardIds]); set for multi-player reveals. */
+        val cardOwnerIds: List<EntityId> = emptyList(),
         /** Zone the card came from, when the reveal represents a zone transition. */
         val fromZone: com.wingedsheep.sdk.core.Zone? = null,
         /** Zone the card moved to, when the reveal represents a zone transition. */
@@ -979,6 +981,7 @@ object ClientEventTransformer {
                     cardNames = event.cardNames,
                     imageUris = event.imageUris,
                     source = event.source,
+                    cardOwnerIds = event.cardOwnerIds,
                     fromZone = event.fromZone,
                     toZone = event.toZone
                 )
@@ -1152,7 +1155,8 @@ is PermanentsSacrificedEvent -> {
             )
 
             is TurnHijackedEvent,
-            is CommitCrimeEvent -> null
+            is CommitCrimeEvent,
+            is TargetsChosenEvent -> null
         }
     }
 }

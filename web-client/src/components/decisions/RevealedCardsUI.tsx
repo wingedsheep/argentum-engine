@@ -107,13 +107,20 @@ export function RevealedCardsUI() {
 
   const onDismiss = isHandReveal ? dismissRevealedHand : dismissRevealedCards
 
+  // Per-card revealer attribution — present when one effect revealed cards from both players
+  // at once (e.g. Psychic Battle). When the reveal mixes your card with an opponent's, the
+  // group title stays neutral and each card gets its own "You" / "Opponent" badge.
+  const cardOwnerIsYours = isCardReveal ? revealedCardsInfo!.cardOwnerIsYours : undefined
+  const isMixedReveal =
+    !!cardOwnerIsYours && cardOwnerIsYours.some(Boolean) && cardOwnerIsYours.some((v) => !v)
+
   // Title and subtitle
   const isYourReveal = !isHandReveal && revealedCardsInfo!.isYourReveal
   const transitionLabel = isHandReveal
     ? null
     : zoneTransitionLabel(revealedCardsInfo!.fromZone ?? null, revealedCardsInfo!.toZone ?? null)
   const actionWord = transitionLabel ?? 'Revealed'
-  const whoPrefix = isYourReveal ? '' : 'Opponent '
+  const whoPrefix = isMixedReveal || isYourReveal ? '' : 'Opponent '
   const title = isHandReveal
     ? "Opponent's Hand"
     : `${whoPrefix}${actionWord}${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
@@ -182,9 +189,10 @@ export function RevealedCardsUI() {
       {/* Card ribbon */}
       {cards.length > 0 && (
         <div className={styles.cardRibbon} style={{ gap }}>
-          {cards.map((card) => {
+          {cards.map((card, index) => {
             const isHovered = hoveredCardId === card.id
             const cardImageUrl = getCardImageUrl(card.name, card.imageUri)
+            const ownerIsYours = cardOwnerIsYours ? cardOwnerIsYours[index] : undefined
 
             return (
               <div
@@ -193,6 +201,7 @@ export function RevealedCardsUI() {
                 onMouseLeave={handleMouseLeave}
                 className={styles.card}
                 style={{
+                  position: 'relative',
                   width: cardWidth,
                   height: cardHeight,
                   borderColor: isHovered ? 'var(--color-highlight)' : undefined,
@@ -200,6 +209,27 @@ export function RevealedCardsUI() {
                   boxShadow: isHovered ? '0 8px 20px var(--color-highlight-shadow)' : undefined,
                 }}
               >
+                {ownerIsYours !== undefined && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      left: 4,
+                      zIndex: 1,
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: '#fff',
+                      background: ownerIsYours
+                        ? 'rgba(37, 99, 235, 0.9)'
+                        : 'rgba(220, 38, 38, 0.9)',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {ownerIsYours ? 'You' : 'Opponent'}
+                  </span>
+                )}
                 <img
                   src={cardImageUrl}
                   alt={card.name}

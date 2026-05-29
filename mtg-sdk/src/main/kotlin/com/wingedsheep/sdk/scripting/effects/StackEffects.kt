@@ -410,6 +410,52 @@ data object ReselectTargetRandomlyEffect : Effect {
 }
 
 /**
+ * Selects which player may change a spell/ability's targets via [ChangeTriggeringObjectTargetsEffect].
+ */
+@Serializable
+sealed interface RetargetChooser {
+    /** The controller of the effect changes the targets (e.g., "you may change the target"). */
+    @SerialName("RetargetChooser.Controller")
+    @Serializable
+    data object Controller : RetargetChooser
+
+    /**
+     * The owner of the single card in pipeline collection [collectionName] changes the targets —
+     * e.g. the card left after `FilterCollection(GreatestManaValue)` over each player's revealed
+     * top card (Psychic Battle). If the collection does not hold exactly one card (empty, or a tie
+     * left several), there is no chooser and the retarget is skipped.
+     */
+    @SerialName("RetargetChooser.OwnerOfStored")
+    @Serializable
+    data class OwnerOfStored(val collectionName: String) : RetargetChooser
+}
+
+/**
+ * The player named by [chooser] may change the target or targets of the triggering spell or
+ * ability (`context.triggeringEntityId`). Resolve from a trigger that fires on the spell/ability
+ * (e.g. [com.wingedsheep.sdk.scripting.GameEvent.TargetsChosenEvent]). The chooser may change all,
+ * some, or none of the targets; new targets must be legal for the original spell/ability judged
+ * from *its* controller's perspective (CR: same number, no illegal target, no target chosen twice).
+ *
+ * The non-random, player-chosen counterpart of [ReselectTargetRandomlyEffect]. When [chooser] is a
+ * [RetargetChooser.StoredPlayer] that resolves to no player, the effect does nothing.
+ */
+@SerialName("ChangeTriggeringObjectTargets")
+@Serializable
+data class ChangeTriggeringObjectTargetsEffect(
+    val chooser: RetargetChooser = RetargetChooser.Controller
+) : Effect {
+    override val description: String = "${
+        when (chooser) {
+            is RetargetChooser.Controller -> "You"
+            is RetargetChooser.OwnerOfStored -> "The chosen player"
+        }
+    } may change the target or targets of the triggering spell or ability"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Create copies of a spell on the stack (Storm mechanic).
  * "Copy it for each spell cast before it this turn. You may choose new targets for the copies."
  *

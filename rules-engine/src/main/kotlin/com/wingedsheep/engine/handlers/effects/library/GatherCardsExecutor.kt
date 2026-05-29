@@ -194,13 +194,19 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             val sourceName = context.sourceId?.let { sourceId ->
                 state.getEntity(sourceId)?.get<CardComponent>()?.name
             }
+            // Per-card owners, so a multi-player reveal (e.g. each player reveals their top card)
+            // can be attributed card-by-card in the UI. Only meaningful when owners differ.
+            val cardOwnerIds = cards.map { cardId ->
+                state.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: context.controllerId
+            }
             listOf(
                 CardsRevealedEvent(
                     revealingPlayerId = context.controllerId,
                     cardIds = cards,
                     cardNames = cardNames,
                     imageUris = imageUris,
-                    source = sourceName
+                    source = sourceName,
+                    cardOwnerIds = if (cardOwnerIds.distinct().size > 1) cardOwnerIds else emptyList()
                 )
             )
         } else {

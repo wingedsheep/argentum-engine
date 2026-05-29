@@ -372,6 +372,21 @@ data class CommitCrimeEvent(
     val sourceName: String
 ) : GameEvent
 
+/**
+ * A player chose one or more targets. Emitted at the same time as [SpellCastEvent],
+ * [AbilityActivatedEvent], or [AbilityTriggeredEvent] when the spell/ability has at least one
+ * chosen target. Emitted at most once per spell or ability. [stackObjectId] is the spell/ability
+ * on the stack (the trigger's triggering entity), so an effect resolving from a
+ * "whenever a player chooses targets" trigger can read and change those targets (Psychic Battle).
+ */
+@Serializable
+@SerialName("TargetsChosenEvent")
+data class TargetsChosenEvent(
+    val chooserId: EntityId,
+    val stackObjectId: EntityId,
+    val sourceName: String
+) : GameEvent
+
 // =============================================================================
 // Combat Events
 // =============================================================================
@@ -826,6 +841,12 @@ data class CardsRevealedEvent(
     val cardNames: List<String>,
     val imageUris: List<String?> = emptyList(),
     val source: String? = null,
+    /**
+     * Owner of each revealed card, parallel to [cardIds]. Populated when one reveal spans
+     * cards from more than one player (e.g. Psychic Battle: each player reveals their top card)
+     * so the UI can attribute each card to its revealer. Empty for single-owner reveals.
+     */
+    val cardOwnerIds: List<EntityId> = emptyList(),
     /** If false, the revealing player does not see the reveal overlay (e.g., behold from hand) */
     val revealToSelf: Boolean = true,
     /**

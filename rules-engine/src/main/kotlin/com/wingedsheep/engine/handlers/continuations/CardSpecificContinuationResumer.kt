@@ -14,8 +14,50 @@ class CardSpecificContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(SecretBidContinuation::class, ::resumeSecretBid),
-        resumer(LifeAuctionContinuation::class, ::resumeLifeAuction)
+        resumer(LifeAuctionContinuation::class, ::resumeLifeAuction),
+        resumer(ContestedRetargetContinuation::class, ::resumeContestedRetarget)
     )
+
+    /**
+     * Resume a chosen player's retargeting of a contested spell/ability (Psychic Battle's reveal
+     * winner). Applies the chosen target for the current slot, then continues with the remaining slots.
+     */
+    fun resumeContestedRetarget(
+        state: GameState,
+        continuation: ContestedRetargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for contested retarget")
+        }
+        val current = continuation.originalTargets.getOrNull(continuation.currentSlot)
+            ?: return checkForMore(state, emptyList())
+        val selectedId = response.selectedCards.firstOrNull()
+        val chosenTarget = if (selectedId == null) {
+            current
+        } else {
+            com.wingedsheep.engine.handlers.effects.stack.ContestedRetargetLogic
+                .rebuildTarget(state, selectedId, current)
+        }
+
+        val result = com.wingedsheep.engine.handlers.effects.stack.ContestedRetargetLogic.advance(
+            state = state,
+            stackObjectId = continuation.stackObjectId,
+            chooserId = continuation.chooserId,
+            ownerControllerId = continuation.ownerControllerId,
+            perSlotRequirements = continuation.perSlotRequirements,
+            originalTargets = continuation.originalTargets,
+            newTargets = continuation.newTargets + chosenTarget,
+            startSlot = continuation.currentSlot + 1,
+            sourceId = continuation.sourceId
+        )
+        return if (result.pendingDecision != null) {
+            result.toExecutionResult()
+        } else {
+            checkForMore(result.state, result.events)
+        }
+    }
 
     /**
      * Resume an open life-bidding auction (Mages' Contest). On a "top" yes/no we either ask

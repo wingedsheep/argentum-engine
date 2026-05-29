@@ -85,6 +85,17 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
                 }
             }
 
+            is CollectionFilter.GreatestManaValue -> {
+                fun manaValueOf(cardId: EntityId): Int =
+                    state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: Int.MIN_VALUE
+                val maxManaValue = cards.maxOfOrNull { manaValueOf(it) }
+                if (maxManaValue == null || maxManaValue == Int.MIN_VALUE) {
+                    emptyList<EntityId>() to cards
+                } else {
+                    cards.partition { manaValueOf(it) == maxManaValue }
+                }
+            }
+
             is CollectionFilter.ManaValueAtMost -> {
                 val maxManaValue = amountEvaluator.evaluate(state, filter.max, context)
                 cards.partition { cardId ->

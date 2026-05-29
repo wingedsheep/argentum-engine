@@ -780,6 +780,17 @@ object Triggers {
     )
 
     /**
+     * Whenever a player (any player, including you) chooses one or more targets — i.e. casts a
+     * spell, activates an ability, or puts a triggered ability on the stack with at least one
+     * target. The triggering entity is that spell/ability, so the payoff can read and change its
+     * targets (Psychic Battle).
+     */
+    val AnyPlayerChoosesTargets: TriggerSpec = TriggerSpec(
+        event = TargetsChosenEvent(player = Player.Each),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever a player (any player, including you) casts a spell matching [spellFilter].
      * Example: "Whenever a player casts a creature spell" → `anyPlayerCasts(GameObjectFilter.Creature)`.
      */

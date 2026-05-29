@@ -691,16 +691,53 @@ was the precedent for a projection-time, board-derived keyword grant.
 
 ---
 
-### #19 — Reveal-and-compare target swap · Psychic Battle
+### #19 — Reveal-and-compare target swap · Psychic Battle ✅ DONE
 
-**What exists.** `ChangeTargetEffect` / `ChangeSpellTargetEffect` / `ReselectTargetRandomlyEffect` all
-exist (`StackEffects.kt:355-410`). Reveal/gather + `DynamicAmount.StoredCardManaValue` +
-`DynamicAmount.Conditional` all exist.
+> **Implemented (new trigger + two reusable atoms; Psychic Battle is pure composition).** The card's
+> real Oracle text is *"Whenever a player chooses one or more targets, each player reveals the top
+> card of their library. The player who reveals the card with the greatest mana value may change the
+> target or targets. … (a tie leaves them unchanged)."* Three pieces, no card-specific executor:
+>
+> 1. **Trigger.** New `GameEvent.TargetsChosenEvent(player)` (SDK) + `Triggers.AnyPlayerChoosesTargets`.
+>    The engine emits `TargetsChosenEvent(chooserId, stackObjectId, …)` once per spell / activated
+>    ability / triggered ability that goes on the stack with ≥1 target (the three `StackResolver` put
+>    paths, beside the existing `CommitCrimeEvent`). Wired through `TriggerContext` (triggering entity =
+>    the stack object), `TriggerMatcher`, `TriggerIndex` (`CHOOSE_TARGETS` category), `Serialization`,
+>    and `ClientEvent` (internal → `null`). It mirrors the once-per-object `CommitCrimeEvent` shape.
+> 2. **The reveal + compare reuses existing pipeline atoms** — no new reveal/argmax executor. Each
+>    player reveals their top card via the existing `GatherCards(CardSource.TopOfLibrary(1, Player.Each),
+>    revealed = true)`, and the greatest-mana-value card is found by the existing `FilterCollection` with
+>    a new **generic** `CollectionFilter.GreatestManaValue` (sibling of `GreatestPower`; keeps all ties,
+>    so a tie yields several survivors). Empty libraries simply contribute no card (CR ruling).
+> 3. **`Effects.ChangeTriggeringObjectTargets(chooser)`** — the one genuinely-new atom: the player named
+>    by `chooser` (`RetargetChooser.Controller`, or `RetargetChooser.OwnerOfStored(name)` = the owner of
+>    the *single* card in a pipeline collection) may change the triggering object's targets — the
+>    player-chosen, multi-target counterpart of `ReselectTargetRandomly`. Reselection runs slot-by-slot
+>    via `TargetFinder.findLegalTargets` (legality judged from the *spell's* controller), keeping the
+>    current target as a "keep" option. `OwnerOfStored` resolves to nobody unless exactly one card
+>    survives — so a tie (≥2 survivors) or all-empty board is a no-op. Backed by `ContestedRetargetLogic`
+>    + `ContestedRetargetContinuation`.
+>
+> **Psychic Battle** is pure composition:
+> `triggeredAbility { trigger = AnyPlayerChoosesTargets; effect = Composite(
+> GatherCards(TopOfLibrary(1, Player.Each), revealed = true, storeAs = "revealed"),
+> FilterCollection("revealed", GreatestManaValue, storeMatching = "w"),
+> ChangeTriggeringObjectTargets(OwnerOfStored("w"))) }`. Because targets are changed in place (not
+> re-chosen via a put-on-stack), no fresh `TargetsChosenEvent` is emitted, so Psychic Battle never
+> re-triggers itself (matching the printed errata clause). Covered by `PsychicBattleTest` (winner
+> redirects the spell; tie leaves it unchanged; empty library is skipped so the lone revealer wins).
+>
+> **Scoping note:** copies of spells (`putSpellCopy`) do not emit `TargetsChosenEvent` — choosing new
+> targets for a copy is a rare edge and is left out to keep the change bounded; the three primary
+> targeting paths cover the practical universe.
 
-**Plan.** Compose a continuation that: gathers (reveals) the top card of each relevant player's
-library, stores their mana values, then runs a `Conditional` effect comparing them (the
-control/redirect payoff). Most pieces exist; the new control-flow is "reveal both, compare, branch,"
-which is a thin continuation over existing primitives. **Medium / bespoke.**
+**What existed.** `ChangeTargetEffect` / `ChangeSpellTargetEffect` / `ReselectTargetRandomlyEffect`
+(`StackEffects.kt`) changed a *targeted* spell's single target; there was no "whenever a player chooses
+targets" trigger and no way to route a retarget decision to a *computed* player. The reveal + argmax
+is built from the **existing** `GatherCards`/`FilterCollection` pipeline plus one generic
+`CollectionFilter.GreatestManaValue`; the only genuinely-new effect is `ChangeTriggeringObjectTargets`
+(the irreducible "[chooser] may change the triggering object's targets" control flow). All three new
+pieces — the trigger, the collection filter, and the retarget effect — are reusable, not card-specific.
 
 ---
 
@@ -762,4 +799,4 @@ filter.
 9. Scope additions: protection supertype (#13 ✅), dynamic-color protection (#15 ✅), chosen-type
    landwalk (#14 ✅), discard-at-random cost (#9 ✅) — small, independent.
 10. Bespoke / heavier: stack color-change (#11 ✅), life auction (#16 ✅), text-changing (#17 ✅),
-    Mana Maze restriction (#18 ✅), reveal-and-compare (#19).
+    Mana Maze restriction (#18 ✅), reveal-and-compare (#19 ✅).

@@ -139,6 +139,10 @@ data class TriggerContext(
                     triggeringEntityId = event.targetEntityId,
                     targetingSourceEntityId = event.sourceEntityId
                 )
+                is com.wingedsheep.engine.core.TargetsChosenEvent -> TriggerContext(
+                    triggeringEntityId = event.stackObjectId,
+                    triggeringPlayerId = event.chooserId
+                )
                 is AbilityActivatedEvent -> TriggerContext(
                     triggeringEntityId = event.abilityEntityId,
                     triggeringPlayerId = event.controllerId

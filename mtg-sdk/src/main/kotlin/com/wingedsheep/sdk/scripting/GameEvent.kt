@@ -757,6 +757,25 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     }
 
     /**
+     * When a player chooses one or more targets.
+     *
+     * Fires when [player] casts a spell, activates an ability, or puts a triggered ability
+     * on the stack with at least one chosen target. Fires at most once per spell or ability
+     * regardless of how many targets it has. The triggering entity is the spell/ability on
+     * the stack, so an effect resolving from this trigger can read and change those targets
+     * (Psychic Battle).
+     */
+    @SerialName("TargetsChosenEvent")
+    @Serializable
+    data class TargetsChosenEvent(
+        val player: Player = Player.Each
+    ) : GameEvent {
+        override val description: String = "${player.description} chooses one or more targets"
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
+    /**
      * When a card is cycled.
      */
     @SerialName("CycleEvent")

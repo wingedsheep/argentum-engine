@@ -67,6 +67,7 @@ enum class TriggerCategory {
     GIFT_GIVEN,
     TRANSFORM,
     COMMIT_CRIME,
+    CHOOSE_TARGETS,
     DISCARD,
     RING_TEMPTED,
 }
@@ -184,6 +185,7 @@ class TriggerIndex(
                 is SdkGameEvent.GiftGivenEvent -> listOf(TriggerCategory.GIFT_GIVEN)
                 is SdkGameEvent.TransformEvent -> listOf(TriggerCategory.TRANSFORM)
                 is SdkGameEvent.CommitCrimeEvent -> listOf(TriggerCategory.COMMIT_CRIME)
+                is SdkGameEvent.TargetsChosenEvent -> listOf(TriggerCategory.CHOOSE_TARGETS)
                 is SdkGameEvent.DiscardEvent -> listOf(TriggerCategory.DISCARD)
                 is SdkGameEvent.RingTemptedEvent -> RING_TEMPTED_LIST
                 // These are handled by specialized detect methods, not the main loop
@@ -217,6 +219,7 @@ class TriggerIndex(
             is GiftGivenEvent -> GIFT_GIVEN_LIST
             is com.wingedsheep.engine.core.TransformedEvent -> TRANSFORM_LIST
             is com.wingedsheep.engine.core.CommitCrimeEvent -> COMMIT_CRIME_LIST
+            is com.wingedsheep.engine.core.TargetsChosenEvent -> CHOOSE_TARGETS_LIST
             is CardsDiscardedEvent -> DISCARD_LIST
             is com.wingedsheep.engine.core.RingTemptedEvent -> RING_TEMPTED_LIST
             else -> emptyList()
@@ -242,6 +245,7 @@ class TriggerIndex(
         private val GIFT_GIVEN_LIST = listOf(TriggerCategory.GIFT_GIVEN)
         private val TRANSFORM_LIST = listOf(TriggerCategory.TRANSFORM)
         private val COMMIT_CRIME_LIST = listOf(TriggerCategory.COMMIT_CRIME)
+        private val CHOOSE_TARGETS_LIST = listOf(TriggerCategory.CHOOSE_TARGETS)
         private val DISCARD_LIST = listOf(TriggerCategory.DISCARD)
         private val RING_TEMPTED_LIST = listOf(TriggerCategory.RING_TEMPTED)
     }

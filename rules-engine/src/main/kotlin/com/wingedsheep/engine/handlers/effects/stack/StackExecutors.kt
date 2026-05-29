@@ -24,6 +24,7 @@ class StackExecutors(
         CopyNextSpellCastExecutor(),
         CopyEachSpellCastExecutor(),
         ReselectTargetRandomlyExecutor(),
+        ChangeTriggeringObjectTargetsExecutor(),
         GrantKeywordToSpellExecutor(),
         MarkSpellExileWithCountersExecutor(),
         ReturnSpellToOwnersHandExecutor(),

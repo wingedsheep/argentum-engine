@@ -101,9 +101,21 @@ function processStateUpdate(
     (e) => e.type === 'handRevealed' && (e as { revealingPlayerId: EntityId }).revealingPlayerId !== playerId
   ) as { type: 'handRevealed'; cardIds: readonly EntityId[] } | undefined
 
-  const cardsRevealedEvent = msg.events.find(
+  const cardsRevealedEventRaw = msg.events.find(
     (e) => e.type === 'cardsRevealed'
-  ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null; fromZone?: string | null; toZone?: string | null } | undefined
+  ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null; cardOwnerIds?: readonly EntityId[]; fromZone?: string | null; toZone?: string | null } | undefined
+
+  // A single effect can reveal cards from more than one player at once (Psychic Battle: each
+  // player reveals their top card). The event carries per-card owners in that case; derive a
+  // "revealed by the viewing player?" flag per card so the overlay can tag each one.
+  const cardsRevealedEvent = cardsRevealedEventRaw
+    ? {
+        ...cardsRevealedEventRaw,
+        ...(cardsRevealedEventRaw.cardOwnerIds && cardsRevealedEventRaw.cardOwnerIds.length > 0
+          ? { cardOwnerIsYours: cardsRevealedEventRaw.cardOwnerIds.map((ownerId) => ownerId === playerId) }
+          : {}),
+      }
+    : undefined
 
   const faceDownCastByOpponent = msg.events.some(
     (e) => e.type === 'spellCast' &&
@@ -139,6 +151,9 @@ function processStateUpdate(
         cardIds: revealOverlayIndices.map((i) => cardsRevealedEvent.cardIds[i]!),
         cardNames: revealOverlayIndices.map((i) => cardsRevealedEvent.cardNames[i]!),
         imageUris: revealOverlayIndices.map((i) => cardsRevealedEvent.imageUris[i]!),
+        ...(cardsRevealedEvent.cardOwnerIsYours
+          ? { cardOwnerIsYours: revealOverlayIndices.map((i) => cardsRevealedEvent.cardOwnerIsYours![i]!) }
+          : {}),
       }
     : null
 
@@ -361,7 +376,7 @@ function processStateUpdate(
            msg.pendingDecision.nonSelectableOptions ?? []
          )
           ? null
-          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId, fromZone: filteredReveal.fromZone ?? null, toZone: filteredReveal.toZone ?? null })
+          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId, fromZone: filteredReveal.fromZone ?? null, toZone: filteredReveal.toZone ?? null, ...(filteredReveal.cardOwnerIsYours ? { cardOwnerIsYours: filteredReveal.cardOwnerIsYours } : {}) })
       : cardsRevealedEvent ? null : state.revealedCardsInfo,
     opponentAttackerTargets: resolvedState.combat ? null : state.opponentAttackerTargets,
     opponentBlockerAssignments: (resolvedState.combat?.blockers?.length || !resolvedState.combat) ? null : state.opponentBlockerAssignments,

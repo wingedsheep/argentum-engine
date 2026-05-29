@@ -802,6 +802,12 @@ export type GameStore = {
     imageUris: readonly (string | null)[]
     source: string | null
     isYourReveal: boolean
+    /**
+     * Per-card revealer attribution (parallel to cardIds), present when one effect reveals cards
+     * from more than one player at once (e.g. Psychic Battle). `true` = the viewing player,
+     * `false` = an opponent. Absent for single-player reveals (use [isYourReveal]).
+     */
+    cardOwnerIsYours?: readonly boolean[]
     /** Zone the card came from (e.g., 'Graveyard', 'Exile') when this reveal is a zone transition. */
     fromZone?: string | null
     /** Zone the card moved to (e.g., 'Hand', 'Library') when this reveal is a zone transition. */

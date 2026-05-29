@@ -1112,6 +1112,18 @@ sealed interface CollectionFilter {
     data object GreatestPower : CollectionFilter
 
     /**
+     * Keep only the cards with the greatest mana value in the collection. If multiple cards are
+     * tied for the greatest mana value, all of them are kept (so a downstream "exactly one" consumer
+     * can detect a tie).
+     *
+     * Used by reveal-and-compare effects like Psychic Battle ("the player who revealed the card with
+     * the greatest mana value …").
+     */
+    @SerialName("GreatestManaValue")
+    @Serializable
+    data object GreatestManaValue : CollectionFilter
+
+    /**
      * Keep only entities whose mana value is at most a dynamic amount.
      * The amount is resolved at execution time from the effect context.
      *

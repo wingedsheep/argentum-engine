@@ -1635,6 +1635,17 @@ object Effects {
         ReselectTargetRandomlyEffect
 
     /**
+     * The player named by [chooser] may change the target or targets of the triggering spell or
+     * ability. The non-random, player-chosen counterpart of [ReselectTargetRandomly]; resolve from
+     * a trigger on the spell/ability (e.g. a "whenever a player chooses targets" trigger).
+     */
+    fun ChangeTriggeringObjectTargets(
+        chooser: com.wingedsheep.sdk.scripting.effects.RetargetChooser =
+            com.wingedsheep.sdk.scripting.effects.RetargetChooser.Controller
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.ChangeTriggeringObjectTargetsEffect(chooser)
+
+    /**
      * Copy target instant or sorcery spell. You may choose new targets for the copy.
      *
      * If [keywordsForCopy] is non-empty, the copy will also be treated as having those

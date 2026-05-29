@@ -100,6 +100,34 @@ data class LifeAuctionContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume a chosen player's optional retargeting of the triggering spell/ability (Psychic Battle's
+ * reveal winner, or any "[chooser] may change its targets" effect). Targets are reselected one slot
+ * at a time; this carries the state needed to apply the choice for [currentSlot] and continue with
+ * the remaining slots.
+ *
+ * @property stackObjectId The triggering spell/ability whose targets are being changed
+ * @property chooserId The player choosing the new targets
+ * @property ownerControllerId The triggering object's controller (legality is judged from here)
+ * @property perSlotRequirements One target requirement per target slot
+ * @property originalTargets The triggering object's targets at trigger-resolution time
+ * @property newTargets Targets chosen/kept for slots before [currentSlot]
+ * @property currentSlot The slot the pending decision is choosing a target for
+ * @property sourceId The retargeting effect's source (for prompt context)
+ */
+@Serializable
+data class ContestedRetargetContinuation(
+    override val decisionId: String,
+    val stackObjectId: EntityId,
+    val chooserId: EntityId,
+    val ownerControllerId: EntityId,
+    val perSlotRequirements: List<TargetRequirement>,
+    val originalTargets: List<ChosenTarget>,
+    val newTargets: List<ChosenTarget>,
+    val currentSlot: Int,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
  * Resume after player has distributed counters from a source creature to other creatures.
  *
  * Used for effects like Forgotten Ancient where the player moves counters from

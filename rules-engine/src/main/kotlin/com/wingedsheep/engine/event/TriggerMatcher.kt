@@ -208,6 +208,10 @@ class TriggerMatcher(
                 event is CommitCrimeEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            is GameEvent.TargetsChosenEvent -> {
+                event is com.wingedsheep.engine.core.TargetsChosenEvent &&
+                    matchesPlayer(trigger.player, event.chooserId, controllerId)
+            }
             is GameEvent.RoomFullyUnlockedEvent -> {
                 event is RoomFullyUnlockedEvent &&
                     matchesPlayer(trigger.player, event.controllerId, controllerId)
