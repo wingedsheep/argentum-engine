@@ -35,12 +35,11 @@ data class ModifySpellCost(
             CostGating.None -> ""
         }
         // A gated description ("The Nth ...") refers to a single spell, so phrase it in the singular.
+        val noun = if (gated) "spell" else "spells"
         val subject = when (target) {
             SpellCostTarget.SelfCast -> "This spell"
-            is SpellCostTarget.YouCast ->
-                "${target.filter.description} ${if (gated) "spell" else "spells"} you cast"
-            is SpellCostTarget.AnyCaster ->
-                "${target.filter.description} ${if (gated) "spell" else "spells"}"
+            is SpellCostTarget.YouCast -> "${filterAdjective(target.filter)}$noun you cast"
+            is SpellCostTarget.AnyCaster -> "${filterAdjective(target.filter)}$noun"
             is SpellCostTarget.OpponentsCastTargeting ->
                 "Spells your opponents cast that target ${target.targetFilter.description}"
             SpellCostTarget.FaceDownYouCast -> "Face-down creature spells you cast"
@@ -65,6 +64,14 @@ data class ModifySpellCost(
         val agreedVerb = if (gated) verb.replaceFirst("cost ", "costs ") else verb
         val prefix = if (gate.isNotEmpty()) gate + subject.replaceFirstChar { it.lowercase() } else subject
         return "$prefix $agreedVerb$perTurn"
+    }
+
+    // A filter that narrows nothing (e.g. GameObjectFilter.Any) describes itself as "card", which
+    // reads wrong as an adjective ("the second card spell you cast"). Emit no adjective in that case
+    // so the unconstrained form is just "spell(s)".
+    private fun filterAdjective(filter: GameObjectFilter): String {
+        val desc = filter.description
+        return if (desc.isBlank() || desc == "card") "" else "$desc "
     }
 
     private fun ordinal(n: Int): String = when (n) {
