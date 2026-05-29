@@ -79,6 +79,21 @@ internal class EffectApplicator(
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)
                 }
+                is Modification.GrantLandwalkFromChosen -> {
+                    val chosenLandType = state.getEntity(effect.sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.identity.ChosenLandTypeComponent>()?.landType
+                    val landwalk = when (chosenLandType) {
+                        com.wingedsheep.sdk.core.Subtype.PLAINS.value -> Keyword.PLAINSWALK
+                        com.wingedsheep.sdk.core.Subtype.ISLAND.value -> Keyword.ISLANDWALK
+                        com.wingedsheep.sdk.core.Subtype.SWAMP.value -> Keyword.SWAMPWALK
+                        com.wingedsheep.sdk.core.Subtype.MOUNTAIN.value -> Keyword.MOUNTAINWALK
+                        com.wingedsheep.sdk.core.Subtype.FOREST.value -> Keyword.FORESTWALK
+                        else -> null
+                    }
+                    if (landwalk != null) {
+                        values.keywords.add(landwalk.name)
+                    }
+                }
                 is Modification.ChangeColor -> {
                     values.colors.clear()
                     values.colors.addAll(mod.colors)

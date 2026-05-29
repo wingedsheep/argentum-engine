@@ -386,6 +386,18 @@ sealed interface Modification {
     }
 
     /**
+     * Grants the landwalk keyword matching the source's chosen basic land type (resolved at
+     * apply-time from the source's `ChosenLandTypeComponent`): Plains→PLAINSWALK, Island→ISLANDWALK,
+     * Swamp→SWAMPWALK, Mountain→MOUNTAINWALK, Forest→FORESTWALK. Used for Traveler's Cloak. The
+     * chosen-value counterpart to [GrantKeyword]. If the source has no chosen land type (or an
+     * unrecognized one), nothing is granted.
+     */
+    @Serializable
+    data object GrantLandwalkFromChosen : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
+    /**
      * Grants "hexproof from each of its colors" to each affected entity. Read at apply-time:
      * for every color the entity currently has (post-Layer 5), adds the keyword
      * `HEXPROOF_FROM_<COLOR>` to its keyword set. A colorless entity gains nothing.

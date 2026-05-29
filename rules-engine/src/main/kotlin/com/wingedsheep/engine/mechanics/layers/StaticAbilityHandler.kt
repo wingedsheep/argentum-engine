@@ -61,6 +61,7 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
@@ -418,6 +419,15 @@ class StaticAbilityHandler(
                 ContinuousEffectData(
                     modification = Modification.SetBasicLandTypesFromChosen,
                     affectsFilter = AffectsFilter.AttachedPermanent
+                )
+            }
+            is GrantLandwalkOfChosenType -> {
+                // "Enchanted creature has landwalk of the chosen type" - Layer 6 ability-adding.
+                // The landwalk keyword is resolved at projection time from the source's
+                // ChosenLandTypeComponent (Plains→Plainswalk, Island→Islandwalk, etc.).
+                ContinuousEffectData(
+                    modification = Modification.GrantLandwalkFromChosen,
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantKeywordByCounter -> {

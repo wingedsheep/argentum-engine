@@ -541,9 +541,23 @@ mirrors the established pattern.
 
 ---
 
-### #14 — Landwalk of a chosen basic land type · Traveler's Cloak
+### #14 — Landwalk of a chosen basic land type · Traveler's Cloak ✅ DONE
 
-**What exists.** Landwalk is a fixed 5-keyword enum; `EntersWithChoice(BASIC_LAND_TYPE)` writes a
+> **Implemented (primitive + card).** SDK `GrantLandwalkOfChosenType(filter = attachedCreature())`
+> static ability (the chosen-value counterpart to `GrantKeyword`, mirroring
+> `SetEnchantedLandTypeFromChosen`). Engine: `StaticAbilityHandler` converts it to a new Layer-6
+> `Modification.GrantLandwalkFromChosen`; `EffectApplicator` reads the source's
+> `ChosenLandTypeComponent` at apply-time and grants the matching landwalk keyword
+> (Plains→Plainswalk, Island→Islandwalk, Swamp→Swampwalk, Mountain→Mountainwalk, Forest→Forestwalk).
+> No new "parameterized landwalk" keyword — reuses the existing five landwalk keywords and the
+> `EntersWithChoice(BASIC_LAND_TYPE)` / `ChosenLandTypeComponent` machinery. **Traveler's Cloak**
+> authored in `definitions/inv/cards/TravelersCloak.kt` (`EntersWithChoice(BASIC_LAND_TYPE)` +
+> ETB `DrawCards(1)` + `GrantLandwalkOfChosenType()`); covered by `TravelersCloakScenarioTest`.
+> **Scoping note:** the card's oracle says "choose a land type"; the engine models landwalk only for
+> the five basic land types (the only ones with a landwalk keyword), so the entry choice is
+> restricted to `BASIC_LAND_TYPE` — the practical universe of the ability.
+
+**What existed.** Landwalk is a fixed 5-keyword enum; `EntersWithChoice(BASIC_LAND_TYPE)` writes a
 chosen-type component.
 
 **Plan.** Because basic-land-type → landwalk keyword is a fixed 5-way mapping
@@ -553,7 +567,7 @@ it to the enchanted creature. Reuses the existing landwalk keywords and chosen-t
 "parameterized landwalk" keyword needed.
 
 **Composition.** Traveler's Cloak = Aura with `EntersWithChoice(BASIC_LAND_TYPE)` +
-`staticAbility { GrantLandwalkOfChosenType(target = EnchantedCreature) }`.
+`staticAbility { ability = GrantLandwalkOfChosenType() }` (default `attachedCreature()` filter).
 
 ---
 
@@ -686,6 +700,6 @@ filter.
    `StoreCardName` (capture-from-chosen-card) + `NameEqualsChosen` filter; Desperate Research + Lobotomy done.
 8. **Pile-separation trio** (#21) — 5 cards from three composable additions.
 9. Scope additions: protection supertype (#13), dynamic-color protection (#15), chosen-type landwalk
-   (#14), discard-at-random cost (#9) — small, independent.
+   (#14 ✅), discard-at-random cost (#9 ✅) — small, independent.
 10. Bespoke / heavier: stack color-change (#11), Mana Maze restriction (#18), reveal-and-compare
     (#19), text-changing (#17), life auction (#16).

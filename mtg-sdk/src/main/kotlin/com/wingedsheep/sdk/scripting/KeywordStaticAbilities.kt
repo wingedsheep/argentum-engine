@@ -92,6 +92,31 @@ data class GrantWard(
 }
 
 /**
+ * Grants the landwalk keyword matching the basic land type chosen as the source entered
+ * (resolved at projection time from the source's `ChosenLandTypeComponent`):
+ * Plains→Plainswalk, Island→Islandwalk, Swamp→Swampwalk, Mountain→Mountainwalk, Forest→Forestwalk.
+ *
+ * Used for Auras like Traveler's Cloak ("As this Aura enters, choose a basic land type. Enchanted
+ * creature has landwalk of the chosen type."). The chosen-value counterpart to [GrantKeyword],
+ * mirroring [SetEnchantedLandTypeFromChosen]'s relationship to [SetEnchantedLandType]. If the source
+ * has no chosen land type, nothing is granted.
+ *
+ * Pair with `replacementEffect(EntersWithChoice(ChoiceType.BASIC_LAND_TYPE))` so the chosen type is
+ * recorded when the permanent enters.
+ */
+@SerialName("GrantLandwalkOfChosenType")
+@Serializable
+data class GrantLandwalkOfChosenType(
+    val filter: GroupFilter = GroupFilter.attachedCreature()
+) : StaticAbility {
+    override val description: String = "${filter.description} have landwalk of the chosen type"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Grants a keyword to all creatures that have a specific counter type.
  * Used for Aurification: "Each creature with a gold counter on it has defender."
  * With [controllerOnly] = true, only affects creatures you control (e.g., outlast lords).

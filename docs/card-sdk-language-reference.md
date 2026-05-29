@@ -1029,6 +1029,10 @@ staticAbility {
   type from the source's `ChosenLandTypeComponent` (paired with
   `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`). Chosen-value counterpart to
   `SetEnchantedLandType`, mirroring `GrantChosenColor`/`GrantColor`. (Phantasmal Terrain)
+- `GrantLandwalkOfChosenType(filter = attachedCreature())` — "Enchanted creature has landwalk of
+  the chosen type" — grants the landwalk keyword matching the source's `ChosenLandTypeComponent`
+  (Plains→Plainswalk, Island→Islandwalk, …) at projection time. Chosen-value counterpart to
+  `GrantKeyword`; pair with `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`. (Traveler's Cloak)
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect.
@@ -1573,13 +1577,21 @@ EntersWithChoice(
 `GrantChosenColor`), `ChoiceType.CREATURE_TYPE` writes `ChosenCreatureTypeComponent`,
 `ChoiceType.CREATURE_ON_BATTLEFIELD` writes `ChosenCreatureComponent`, and
 `ChoiceType.BASIC_LAND_TYPE` writes `ChosenLandTypeComponent` (read by
-`SetEnchantedLandTypeFromChosen`). Example — Phantasmal Terrain ("As this Aura enters,
-choose a basic land type. Enchanted land is the chosen type."):
+`SetEnchantedLandTypeFromChosen` and `GrantLandwalkOfChosenType`). Example — Phantasmal Terrain
+("As this Aura enters, choose a basic land type. Enchanted land is the chosen type."):
 
 ```kotlin
 auraTarget = Targets.Land
 replacementEffect(EntersWithChoice(ChoiceType.BASIC_LAND_TYPE))
 staticAbility { ability = SetEnchantedLandTypeFromChosen }
+```
+
+Traveler's Cloak grants landwalk of the chosen type to the enchanted creature instead:
+
+```kotlin
+auraTarget = Targets.Creature
+replacementEffect(EntersWithChoice(ChoiceType.BASIC_LAND_TYPE))
+staticAbility { ability = GrantLandwalkOfChosenType() }
 ```
 
 ### Other choice effects
