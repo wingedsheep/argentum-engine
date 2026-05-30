@@ -1378,6 +1378,19 @@ object Effects {
     ): Effect = ChooseColorAndGrantProtectionToTargetEffect(target, duration)
 
     /**
+     * Grant protection from a fixed color to a target (no player choice).
+     * "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte)
+     *
+     * Composes [GrantKeywordEffect] with the `PROTECTION_FROM_<COLOR>` string keyword —
+     * the same projected keyword the static "Protection from red" ability produces.
+     */
+    fun GrantProtectionFromColor(
+        color: Color,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantKeywordEffect("PROTECTION_FROM_${color.name}", target, duration)
+
+    /**
      * Choose a color, then run [then] with the chosen color exposed via the effect
      * context. Atomic effects under [then] (e.g. [GrantHexproofFromChosenColor],
      * [GrantCantBeBlockedByChosenColor]) read the color and apply per-color

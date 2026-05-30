@@ -427,6 +427,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `ChooseActionEffect(choices)` — player picks from a list of effects.
 - `ChooseColorAndGrantProtectionToTargetEffect(target)` — pick a color, grant protection to target.
 - `ChooseColorAndGrantProtectionToGroupEffect(filter)` — same, for a group.
+- `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `ChooseColorThenEffect(whenChosen)` — pick a color, then run a function of that color.
 - `GrantHexproofFromChosenColorEffect(target)` — hexproof from chosen color.
 - `ChooseCreatureTypeEffect(...)` — pause for creature-type pick.
