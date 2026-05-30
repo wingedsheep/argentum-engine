@@ -4,7 +4,7 @@ Engine features required to implement the remaining EOE cards. Each section list
 unblocks, the exact oracle clause that can't be expressed with current primitives, and a sketch of
 the engine/SDK work needed.
 
-As of the latest pass, **235 / 261** booster cards are implemented. The 26 cards below remain
+As of the latest pass, **238 / 261** booster cards are implemented. The cards below remain
 blocked on the engine features listed here. Cards whose every clause maps to an existing primitive
 have already been implemented and are not listed.
 
@@ -110,19 +110,6 @@ it as a characteristic-defining P/T (Layer 7b set-base from a dynamic value, app
 **Plan:** Add an ETB "sacrifice this unless you pay <cost>" intervening-choice effect where the
 alternative cost is tapping an untapped permanent you control. The "enters tapped" and the
 any-color mana ability are already expressible.
-
----
-
-## 8. Delayed trigger that always fires on the controller's *next* turn's end step
-
-**Cards:** Kav Landseeker.
-
-**Clause:** "At the beginning of the end step on your next turn, sacrifice that token."
-
-**Plan:** `CreateDelayedTriggerEffect.onControllerNextTurn` fires at the *next upcoming* end step on
-the controller's turn — i.e. it fires *this* turn if the current-turn end step hasn't started. Add a
-flag/variant that unconditionally skips the current turn and fires on the controller's following
-turn's end step. The Menace body and the ETB "create a Lander" are already expressible.
 
 ---
 
@@ -344,5 +331,6 @@ counter"), the 0 untap, and the −3 tutor are expressible.
 ## Already covered elsewhere
 
 Poison counters (Virulent Silencer), token doubling (Exalted Sunborn), devour-land (Famished
-Worldsire), and "mana spent" for X-counters (Astelli Reclaimer) were previously listed here and are
-now implemented; their entries have been removed.
+Worldsire), "mana spent" for X-counters (Astelli Reclaimer), and "your next turn" delayed-trigger
+timing (Kav Landseeker — `CreateDelayedTriggerEffect.timing = DelayedTriggerTiming.NEXT_TURN`) were previously listed
+here and are now implemented; their entries have been removed.

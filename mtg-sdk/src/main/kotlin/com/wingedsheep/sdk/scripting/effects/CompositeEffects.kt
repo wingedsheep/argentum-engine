@@ -491,6 +491,44 @@ data class PayOrSufferEffect(
 }
 
 /**
+ * The earliest turn a step-based [CreateDelayedTriggerEffect] may fire. A single
+ * mutually-exclusive axis (replaces the former onControllerNextTurn / skipCurrentTurn
+ * booleans, whose presence/absence encoded these three states).
+ *
+ * Orthogonal to [CreateDelayedTriggerEffect.fireOnlyOnControllersTurn], which gates
+ * *whose* turn the trigger may fire on, not *which* turn is the earliest eligible one.
+ */
+@Serializable
+enum class DelayedTriggerTiming {
+    /**
+     * No turn floor: the trigger fires at the next upcoming occurrence of its step,
+     * which may be the current turn. Default — Astral Slide-style exile-until-end-step.
+     */
+    @SerialName("CurrentTurnOrLater")
+    CURRENT_TURN_OR_LATER,
+
+    /**
+     * "At the beginning of your next end step" timing: the current turn's end step
+     * still qualifies if it hasn't begun yet; only once it has started (END or CLEANUP
+     * on the controller's turn) does the trigger defer to the controller's following
+     * turn. Typically paired with [CreateDelayedTriggerEffect.fireOnlyOnControllersTurn]
+     * = true. (Dragonhawk, Fate's Tempest.)
+     */
+    @SerialName("NextEndStep")
+    NEXT_END_STEP,
+
+    /**
+     * "On your next turn" timing: the current turn never qualifies, regardless of step;
+     * the trigger fires no earlier than the next turn. Pair with
+     * [CreateDelayedTriggerEffect.fireOnlyOnControllersTurn] = true to land on the
+     * controller's upcoming own turn rather than an intervening opponent turn.
+     * (Kav Landseeker.)
+     */
+    @SerialName("NextTurn")
+    NEXT_TURN
+}
+
+/**
  * Create a delayed triggered ability that fires at a specific step.
  *
  * When executed, bakes any context-dependent target references (ContextTarget)
@@ -537,14 +575,11 @@ data class CreateDelayedTriggerEffect(
      */
     val expiry: DelayedTriggerExpiry = DelayedTriggerExpiry.EndOfTurn,
     /**
-     * If true, applies "your next end step" timing semantics: the trigger fires at
-     * the next upcoming end step on the controller's turn. If the controller's
-     * current-turn end step hasn't started yet, the trigger fires this turn; only if
-     * it's already started (END or CLEANUP step on the controller's turn) is the
-     * trigger deferred to the controller's following turn. Typically combined with
-     * [fireOnlyOnControllersTurn] = true.
+     * The earliest turn this step-based delayed trigger may fire. See
+     * [DelayedTriggerTiming]. Orthogonal to [fireOnlyOnControllersTurn], which gates
+     * whose turn the trigger fires on.
      */
-    val onControllerNextTurn: Boolean = false
+    val timing: DelayedTriggerTiming = DelayedTriggerTiming.CURRENT_TURN_OR_LATER
 ) : Effect {
     override val description: String = when {
         trigger != null -> "create a delayed trigger that fires on ${trigger.event::class.simpleName}"

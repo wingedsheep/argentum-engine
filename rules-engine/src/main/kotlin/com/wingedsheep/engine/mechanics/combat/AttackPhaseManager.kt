@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttackTax
+import com.wingedsheep.sdk.scripting.AttackerCountLimit
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -99,6 +100,13 @@ internal class AttackPhaseManager(
         val coAttackerValidation = validateCoAttackerRequirements(state, projected, attackers.keys)
         if (coAttackerValidation != null) {
             return ExecutionResult.error(state, coAttackerValidation)
+        }
+
+        // Check global attacker-count caps (Dueling Grounds — "No more than one creature can
+        // attack each combat"). Applies to the whole declared attacker set, not per creature.
+        val attackerCountValidation = validateGlobalAttackerCount(state, attackers.keys)
+        if (attackerCountValidation != null) {
+            return ExecutionResult.error(state, attackerCountValidation)
         }
 
         // Check must-attack requirements (Taunt)
@@ -331,6 +339,33 @@ internal class AttackPhaseManager(
                     return "${cardComponent.name} ${restriction.description}"
                 }
             }
+        }
+        return null
+    }
+
+    /**
+     * Validate global attacker-count caps. While any permanent with [AttackerCountLimit] is on
+     * the battlefield (e.g. Dueling Grounds), the total number of declared attackers across all
+     * players may not exceed the smallest such cap. Returns an error message when violated.
+     */
+    private fun validateGlobalAttackerCount(
+        state: GameState,
+        attackerIds: Set<EntityId>
+    ): String? {
+        var cap: Int? = null
+        var capDescription = ""
+        for (permId in state.getBattlefield()) {
+            val cardComponent = state.getEntity(permId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            for (ability in cardDef.staticAbilities.filterIsInstance<AttackerCountLimit>()) {
+                if (cap == null || ability.maxAttackers < cap) {
+                    cap = ability.maxAttackers
+                    capDescription = ability.description
+                }
+            }
+        }
+        if (cap != null && attackerIds.size > cap) {
+            return capDescription
         }
         return null
     }

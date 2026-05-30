@@ -3,9 +3,9 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 # Problem Cards
 
-## Status: cards still blocked on engine work (24)
+## Status: cards still blocked on engine work (23)
 
-The booster set is at **237 / 261**. The cards below are the only unimplemented ones; each is
+The booster set is at **238 / 261**. The cards below are the only unimplemented ones; each is
 blocked on a missing engine/SDK feature. The blocking clause and the engine change needed are
 summarized here and detailed in [`missing-effects.md`](missing-effects.md) (section numbers in
 parentheses).
@@ -19,7 +19,6 @@ parentheses).
 | Bioengineered Future | "Each creature you control enters with an additional +1/+1 counter ... for each land that entered ... this turn" | Continuous extra-ETB-counters + lands-entered-this-turn tracker (§5) |
 | Dyadrine, Synthesis Amalgam | "enters with ... +1/+1 counters ... equal to the amount of mana spent to cast it" | Mana-spent `DynamicAmount` in ETB replacement (§6) |
 | Cosmogoyf | power/toughness = "number of cards you own in exile" (+1) | CDA P/T from cards-in-exile count (§7) |
-| Kav Landseeker | "At the beginning of the end step on your next turn, sacrifice that token" | Delayed trigger that always fires next turn's end step (§8) |
 | Territorial Bruntar | "exile cards from the top ... until you exile a nonland card. You may cast that card this turn" | Impulse-until-nonland effect (§9) |
 | Zero Point Ballad | "Destroy all creatures with toughness X or less" + reanimate one destroyed this way | Dynamic-toughness mass destroy + reanimate-from-batch (§10) |
 | Weapons Manufacturing | create the noncreature "Munitions" artifact token with a leaves-battlefield damage trigger | Noncreature tokens with embedded triggers (§11) |

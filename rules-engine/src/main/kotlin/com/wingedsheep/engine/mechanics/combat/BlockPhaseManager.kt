@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.scripting.BlockerCountLimit
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBlock
@@ -77,6 +78,13 @@ internal class BlockPhaseManager(
         val maxBlockersValidation = validateMaxBlockersRequirements(state, blockers)
         if (maxBlockersValidation != null) {
             return ExecutionResult.error(state, maxBlockersValidation)
+        }
+
+        // Check global blocker-count caps (Dueling Grounds — "No more than one creature can
+        // block each combat"). Counts distinct blocking creatures across all players.
+        val blockerCountValidation = validateGlobalBlockerCount(state, blockers.keys)
+        if (blockerCountValidation != null) {
+            return ExecutionResult.error(state, blockerCountValidation)
         }
 
         // Check "must be blocked" requirements (Alluring Scent, etc.)
@@ -488,6 +496,33 @@ internal class BlockPhaseManager(
                 val countText = if (limit == 1) "more than one creature" else "more than $limit creatures"
                 return "${attackerCard.name} can't be blocked by $countText"
             }
+        }
+        return null
+    }
+
+    /**
+     * Validate global blocker-count caps. While any permanent with [BlockerCountLimit] is on the
+     * battlefield (e.g. Dueling Grounds), the total number of distinct blocking creatures across
+     * all players may not exceed the smallest such cap. Returns an error message when violated.
+     */
+    private fun validateGlobalBlockerCount(
+        state: GameState,
+        blockerIds: Set<EntityId>
+    ): String? {
+        var cap: Int? = null
+        var capDescription = ""
+        for (permId in state.getBattlefield()) {
+            val cardComponent = state.getEntity(permId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            for (ability in cardDef.staticAbilities.filterIsInstance<BlockerCountLimit>()) {
+                if (cap == null || ability.maxBlockers < cap) {
+                    cap = ability.maxBlockers
+                    capDescription = ability.description
+                }
+            }
+        }
+        if (cap != null && blockerIds.size > cap) {
+            return capDescription
         }
         return null
     }

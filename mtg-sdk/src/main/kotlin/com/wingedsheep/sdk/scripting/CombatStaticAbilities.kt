@@ -299,3 +299,41 @@ data class CantBeAttackedWithout(
         "Creatures without ${requiredKeyword.displayName.lowercase()} can't attack you"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
+
+/**
+ * Global cap on how many creatures may attack in a single combat (Dueling Grounds —
+ * "No more than one creature can attack each combat").
+ *
+ * Unlike per-creature restrictions, this constrains the *total* declared attacker set
+ * regardless of controller, so it is enforced as a whole-declaration check rather than a
+ * per-attacker [AttackRestrictionRule]. While any permanent with this ability is on the
+ * battlefield, an attack declaration with more than [maxAttackers] attackers is illegal.
+ */
+@SerialName("AttackerCountLimit")
+@Serializable
+data class AttackerCountLimit(
+    val maxAttackers: Int
+) : StaticAbility {
+    override val description: String =
+        "No more than $maxAttackers creature${if (maxAttackers == 1) "" else "s"} can attack each combat"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
+ * Global cap on how many creatures may block in a single combat (Dueling Grounds —
+ * "No more than one creature can block each combat").
+ *
+ * Constrains the *total* declared blocker set regardless of controller, so it is enforced as
+ * a whole-declaration check rather than a per-blocker rule. While any permanent with this
+ * ability is on the battlefield, a block declaration with more than [maxBlockers] blockers is
+ * illegal.
+ */
+@SerialName("BlockerCountLimit")
+@Serializable
+data class BlockerCountLimit(
+    val maxBlockers: Int
+) : StaticAbility {
+    override val description: String =
+        "No more than $maxBlockers creature${if (maxBlockers == 1) "" else "s"} can block each combat"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

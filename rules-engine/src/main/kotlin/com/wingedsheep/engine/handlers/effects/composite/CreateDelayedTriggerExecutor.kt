@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
@@ -54,17 +55,24 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
         // entity id so matching later is cheap and doesn't need the original context.
         val watchedEntityId = effect.watchedTarget?.let { context.resolveTarget(it) }
 
-        // "At the beginning of your next end step" fires at the next upcoming end step
-        // on the controller's turn. If we're still before the end step on the controller's
-        // current turn, that end step qualifies — don't skip to the following turn.
-        // Only bump notBeforeTurn when the current turn's end step has already begun (or passed),
-        // i.e. we're in END or CLEANUP on the controller's turn.
-        val notBeforeTurn = if (effect.onControllerNextTurn) {
-            val onControllersTurn = context.controllerId == state.activePlayerId
-            val endStepAlreadyStarted = state.step == Step.END || state.step == Step.CLEANUP
-            if (onControllersTurn && endStepAlreadyStarted) state.turnNumber + 1 else null
-        } else {
-            null
+        // The earliest turn this delayed trigger may fire, derived from effect.timing:
+        //  - NEXT_END_STEP ("at the beginning of your next end step"): fires at the next
+        //    upcoming end step on the controller's turn. If we're still before the end step
+        //    on the controller's current turn, that end step qualifies — don't skip to the
+        //    following turn. Only bump notBeforeTurn when the current turn's end step has
+        //    already begun (or passed), i.e. we're in END or CLEANUP on the controller's turn.
+        //  - NEXT_TURN ("on your next turn") is stricter: the current turn never qualifies,
+        //    regardless of step. Combine with fireOnlyOnControllersTurn = true to land on the
+        //    controller's upcoming turn.
+        //  - CURRENT_TURN_OR_LATER: no turn floor.
+        val notBeforeTurn = when (effect.timing) {
+            DelayedTriggerTiming.NEXT_TURN -> state.turnNumber + 1
+            DelayedTriggerTiming.NEXT_END_STEP -> {
+                val onControllersTurn = context.controllerId == state.activePlayerId
+                val endStepAlreadyStarted = state.step == Step.END || state.step == Step.CLEANUP
+                if (onControllersTurn && endStepAlreadyStarted) state.turnNumber + 1 else null
+            }
+            DelayedTriggerTiming.CURRENT_TURN_OR_LATER -> null
         }
 
         val delayedTrigger = DelayedTriggeredAbility(

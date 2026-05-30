@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -59,7 +60,7 @@ val DragonhawkFatesTempest = card("Dragonhawk, Fate's Tempest") {
         CreateDelayedTriggerEffect(
             step = Step.END,
             fireOnlyOnControllersTurn = true,
-            onControllerNextTurn = true,
+            timing = DelayedTriggerTiming.NEXT_END_STEP,
             effect = DealDamagePerEntityInZoneEffect(
                 collectionName = "exiledCards",
                 zone = Zone.EXILE,
