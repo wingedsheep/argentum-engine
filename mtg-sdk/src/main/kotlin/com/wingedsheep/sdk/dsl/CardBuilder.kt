@@ -1421,11 +1421,10 @@ class MetadataBuilder {
  * Builder for one face of a split-layout card.
  *
  * A face owns its name, mana cost, type line, oracle text, keywords, and a per-face
- * [CardScript] holding triggered / activated / static abilities scoped to that face.
- *
- * Phase 1 deliberately omits face-level spell effects, aura targets, and replacement
- * effects — Rooms (the first SPLIT consumer) don't need them. Add them when later split
- * layouts (Aftermath, Fuse, Adventure) require it.
+ * [CardScript]. Permanent halves (Rooms) hold triggered / activated / static abilities;
+ * instant/sorcery halves (the Invasion split cards, Adventure faces) declare a `spell { }`
+ * block carrying the face's effect and target requirements. Aura targets and replacement
+ * effects on a face are not modeled yet.
  */
 @CardDsl
 class CardFaceBuilder(private val name: String) {
