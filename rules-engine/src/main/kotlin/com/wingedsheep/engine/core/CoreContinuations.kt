@@ -61,7 +61,9 @@ data class TriggeredAbilityContinuation(
     val lastKnownToughness: Int? = null,
     val triggerModesChosenCount: Int? = null,
     /** Power of the aura/equipment's attached creature, captured at trigger time (CR 608.2g LKI). */
-    val enchantedCreatureLastKnownPower: Int? = null
+    val enchantedCreatureLastKnownPower: Int? = null,
+    /** Cards looked at by the scry that fired this trigger (CR 701.18). Null for non-scry triggers. */
+    val triggerScryCount: Int? = null
 ) : ContinuationFrame
 
 /**

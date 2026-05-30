@@ -134,6 +134,11 @@ data class EffectContext(
      * `ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL` (Riku of Many Paths).
      */
     val triggerModesChosenCount: Int? = null,
+    /**
+     * Number of cards actually looked at by the scry that fired this trigger. Read by
+     * `ContextPropertyKey.TRIGGER_SCRY_COUNT` (Celeborn the Wise, Elrond Master of Healing).
+     */
+    val triggerScryCount: Int? = null,
     // --- Choice state ---
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,

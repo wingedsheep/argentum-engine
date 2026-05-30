@@ -111,6 +111,12 @@ enum class ContextPropertyKey(val description: String) {
      * a mode for that spell, not the number of distinct modes").
      */
     MODES_CHOSEN_ON_TRIGGERING_SPELL("the number of times you chose a mode for that spell"),
+    /**
+     * Number of cards actually looked at by the scry that fired this trigger. Equals the
+     * scry N parameter unless the library held fewer cards. Read by "Whenever you scry,
+     * ... for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
+     */
+    TRIGGER_SCRY_COUNT("the number of cards looked at"),
 }
 
 /**

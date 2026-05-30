@@ -1423,7 +1423,8 @@ class ClientStateTransformer(
         triggeringPlayerId = triggered.triggeringPlayerId,
         targetingSourceEntityId = triggered.targetingSourceEntityId,
         triggerLastKnownPower = triggered.lastKnownPower,
-        triggerLastKnownToughness = triggered.lastKnownToughness
+        triggerLastKnownToughness = triggered.lastKnownToughness,
+        triggerScryCount = triggered.triggerScryCount
     )
 
     /**

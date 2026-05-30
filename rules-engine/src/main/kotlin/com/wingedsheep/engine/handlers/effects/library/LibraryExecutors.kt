@@ -60,6 +60,7 @@ class LibraryExecutors(
         FilterCollectionExecutor(),
         PutOnTopOrBottomOfLibraryExecutor(),
         StoreNumberExecutor(),
-        StoreCardNameExecutor()
+        StoreCardNameExecutor(),
+        EmitScriedEventExecutor()
     )
 }

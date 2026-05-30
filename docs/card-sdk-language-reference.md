@@ -1036,6 +1036,13 @@ Triggers.youCastSpell(
 
 - `RingTemptsYou` — whenever the Ring tempts you (CR 701.52d). Paired with `Effects.TheRingTemptsYou()`.
 
+### Scry
+
+- `WheneverYouScry` — fires once per scry resolution (CR 701.18), after the cards have
+  been placed on top/bottom. Pair with `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)`
+  for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
+  Automatically emitted by `EffectPatterns.scry(N)`; no card has to opt in.
+
 ### Sacrifice & counters
 
 - `YouSacrificeOneOrMore(filter?)` — you sac ≥1 matching.
@@ -1582,6 +1589,8 @@ than the source permanent itself — for an Aura, `EntityReference.Source` is th
   - `MODES_CHOSEN_ON_TRIGGERING_SPELL` — number of mode picks recorded on the cast that fired
     the trigger (Riku of Many Paths). Counts selections, not distinct modes, so Spree with
     the same mode twice reads as `2`.
+  - `TRIGGER_SCRY_COUNT` — cards looked at by the scry that fired the trigger (Celeborn the
+    Wise, Elrond Master of Healing). Equals the scry N parameter.
 - `AdditionalCostBlightAmount` — X paid via the Blight additional cost.
 - `ChosenNumber` — number a player chose via a Choose action.
 - `VariableReference(name)` — named variable stored earlier by `StoreResult`/`StoreCount`.

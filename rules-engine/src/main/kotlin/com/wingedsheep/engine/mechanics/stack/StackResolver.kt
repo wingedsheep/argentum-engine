@@ -1601,6 +1601,7 @@ class StackResolver(
             triggerLastKnownToughness = abilityComponent.lastKnownToughness,
             enchantedCreatureLastKnownPower = abilityComponent.enchantedCreatureLastKnownPower,
             triggerModesChosenCount = abilityComponent.triggerModesChosenCount,
+            triggerScryCount = abilityComponent.triggerScryCount,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
             chosenModes = abilityComponent.chosenModes,

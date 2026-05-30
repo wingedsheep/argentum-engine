@@ -69,7 +69,14 @@ data class TriggerContext(
      * if the creature — and the aura — leave before the ability resolves. Null for non-attached
      * sources. Populated by [TriggerDetector], not [fromEvent] (which has no game state).
      */
-    val enchantedCreatureLastKnownPower: Int? = null
+    val enchantedCreatureLastKnownPower: Int? = null,
+    /**
+     * Number of cards actually looked at by the scry that caused this trigger to fire. Read
+     * by `ContextPropertyKey.TRIGGER_SCRY_COUNT` so "Whenever you scry, ... for each card
+     * looked at" payoffs (Celeborn the Wise, Elrond Master of Healing) scale correctly.
+     * `null` when the trigger was not driven by a scry.
+     */
+    val scryCount: Int? = null
 ) {
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
@@ -101,6 +108,10 @@ data class TriggerContext(
                     modesChosenCount = event.chosenModesCount.takeIf { it > 0 }
                 )
                 is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                is com.wingedsheep.engine.core.ScriedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId,
+                    scryCount = event.count
+                )
                 is CardsDiscardedEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 is CardRevealedFromDrawEvent -> TriggerContext(
                     triggeringEntityId = event.cardEntityId,

@@ -70,6 +70,7 @@ enum class TriggerCategory {
     CHOOSE_TARGETS,
     DISCARD,
     RING_TEMPTED,
+    SCRIED,
 }
 
 /**
@@ -188,6 +189,7 @@ class TriggerIndex(
                 is SdkGameEvent.TargetsChosenEvent -> listOf(TriggerCategory.CHOOSE_TARGETS)
                 is SdkGameEvent.DiscardEvent -> listOf(TriggerCategory.DISCARD)
                 is SdkGameEvent.RingTemptedEvent -> RING_TEMPTED_LIST
+                is SdkGameEvent.ScriedEvent -> SCRIED_LIST
                 // These are handled by specialized detect methods, not the main loop
                 else -> emptyList()
             }
@@ -222,6 +224,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.TargetsChosenEvent -> CHOOSE_TARGETS_LIST
             is CardsDiscardedEvent -> DISCARD_LIST
             is com.wingedsheep.engine.core.RingTemptedEvent -> RING_TEMPTED_LIST
+            is com.wingedsheep.engine.core.ScriedEvent -> SCRIED_LIST
             else -> emptyList()
         }
 
@@ -248,5 +251,6 @@ class TriggerIndex(
         private val CHOOSE_TARGETS_LIST = listOf(TriggerCategory.CHOOSE_TARGETS)
         private val DISCARD_LIST = listOf(TriggerCategory.DISCARD)
         private val RING_TEMPTED_LIST = listOf(TriggerCategory.RING_TEMPTED)
+        private val SCRIED_LIST = listOf(TriggerCategory.SCRIED)
     }
 }

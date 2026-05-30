@@ -29,6 +29,33 @@ data class ShuffleLibraryEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
+/**
+ * Emit a `ScriedEvent` after a scry pipeline finishes resolving. Appended internally
+ * by [com.wingedsheep.sdk.dsl.LibraryPatterns.scry] so that "Whenever you scry"
+ * triggers ([com.wingedsheep.sdk.dsl.Triggers.WheneverYouScry]) fire exactly once
+ * per scry, carrying the actual number of cards looked at.
+ *
+ * The count is the size of the named gather collection (`"scried"` by default) at
+ * resolution time — i.e. the cards `GatherCardsEffect` actually pulled, which equals
+ * the scry N parameter unless the library held fewer (CR 701.18a). The count can be
+ * zero when the library was empty; the event still fires, because CR 701.18d triggers
+ * "whenever you scry" abilities "even if some or all of those actions were impossible."
+ * Suppression of a literal "scry 0" (CR 701.18b) is handled by `scry()` omitting this
+ * tail entirely, not here.
+ *
+ * Card authors should not use this directly; it is wired into the scry primitive.
+ */
+@SerialName("EmitScriedEvent")
+@Serializable
+data class EmitScriedEventEffect(
+    val gatherCollection: String = "scried"
+) : Effect {
+    // Intentionally blank: this is an internal pipeline tail with no player-facing text.
+    override val description: String = ""
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 
 /**
  * Destination for searched cards.

@@ -185,6 +185,25 @@ data class RingTemptedEvent(
 ) : GameEvent
 
 /**
+ * A player just finished a `scry N` (CR 701.18). Fires once per scry, after the
+ * top/bottom moves have all resolved. Drives "Whenever you scry" triggers; see
+ * [com.wingedsheep.sdk.scripting.GameEvent.ScriedEvent].
+ *
+ * @property playerId The player who scried.
+ * @property count Number of cards actually looked at (equals scry N unless the
+ *   library held fewer cards). Surfaced via `TRIGGER_SCRY_COUNT` so payoffs can
+ *   scale by "the number of cards looked at."
+ * @property sourceName The card/ability that caused the scry (for display).
+ */
+@Serializable
+@SerialName("ScriedEvent")
+data class ScriedEvent(
+    val playerId: EntityId,
+    val count: Int,
+    val sourceName: String
+) : GameEvent
+
+/**
  * A player chose a creature type (e.g., "Choose a creature type" for Walking Desecration).
  * This is a public announcement visible to all players.
  */

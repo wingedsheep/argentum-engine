@@ -284,6 +284,23 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
     }
 
+    /**
+     * Whenever a player scries (CR 701.18). Fires once per scry, after every card chosen
+     * for the bottom/top has been moved. Carries the number of cards actually looked at,
+     * which equals the scry N parameter unless the library had fewer cards available.
+     * Read this count via [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT]
+     * for "for each card looked at" payoffs (e.g. Celeborn the Wise, Elrond Master of Healing).
+     */
+    @SerialName("ScriedEvent")
+    @Serializable
+    data class ScriedEvent(
+        val player: Player = Player.You
+    ) : GameEvent {
+        override val description: String = "${player.description} scries"
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
     // =========================================================================
     // Extra Turn Events
     // =========================================================================

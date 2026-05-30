@@ -1252,4 +1252,19 @@ object Triggers {
         event = RingTemptedEvent(Player.You),
         binding = TriggerBinding.ANY
     )
+
+    // =========================================================================
+    // Scry Triggers (CR 701.18)
+    // =========================================================================
+
+    /**
+     * Whenever you scry. Fires once per scry resolution, after the cards have been
+     * placed on top/bottom. Pair with [com.wingedsheep.sdk.scripting.values.DynamicAmount.ContextProperty]
+     * + [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT]
+     * to scale by "the number of cards looked at" (Celeborn the Wise, Elrond Master of Healing).
+     */
+    val WheneverYouScry: TriggerSpec = TriggerSpec(
+        event = ScriedEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
 }

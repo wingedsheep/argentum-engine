@@ -254,6 +254,10 @@ class TriggerMatcher(
                 event is com.wingedsheep.engine.core.RingTemptedEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            is GameEvent.ScriedEvent -> {
+                event is com.wingedsheep.engine.core.ScriedEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
             is GameEvent.BecomesTargetEvent -> {
                 event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
             }
@@ -954,7 +958,8 @@ class TriggerMatcher(
                 triggerTotalCounterCount = trigger.triggerContext.totalCounterCount,
                 triggerMinusOneMinusOneCounterCount = trigger.triggerContext.minusOneMinusOneCounterCount,
                 triggerLastKnownPower = trigger.triggerContext.lastKnownPower,
-                triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness
+                triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness,
+                triggerScryCount = trigger.triggerContext.scryCount
             )
             conditionEvaluator.evaluate(state, condition, context)
         }
