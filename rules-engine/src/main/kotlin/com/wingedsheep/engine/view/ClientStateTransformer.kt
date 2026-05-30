@@ -2207,6 +2207,35 @@ class ClientStateTransformer(
                 }
             }
 
+            // Surface a "type-change" badge when a land's basic land types are replaced
+            // (e.g., Slimy Kavu / Dream Thrush "target land becomes a Swamp"). The type
+            // line text already reflects this, but a battlefield permanent is read by its
+            // art, so the badge makes the change visible. Driven from projected state so
+            // superseded transformations (re-targeting the same land) don't stack.
+            // Dream Thrush's chosen-type variant resolves to a concrete SetBasicLandTypes
+            // at execution time, so the floating effect is always SetBasicLandTypes here.
+            val hasSetBasicLandTypes = state.floatingEffects.any {
+                entityId in it.effect.affectedEntities &&
+                    it.effect.modification is SerializableModification.SetBasicLandTypes
+            }
+            if (hasSetBasicLandTypes) {
+                val basicLandTypes = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES
+                val baseLandTypes = baseSubtypes.filter { it in basicLandTypes }.toSet()
+                val projectedLandTypes = projectedState.getSubtypes(entityId)
+                    .filter { it in basicLandTypes }
+                if (projectedLandTypes.isNotEmpty() && projectedLandTypes.toSet() != baseLandTypes) {
+                    val joined = projectedLandTypes.joinToString(" ")
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "land_type_changed",
+                            name = joined,
+                            description = "Land types are now $joined",
+                            icon = "type-change"
+                        )
+                    )
+                }
+            }
+
             // Surface a single "color-change" badge when a ChangeColor floating effect
             // is replacing this entity's colors. Driven from projected state so
             // superseded transformations don't stack (Tam re-targeting same creature).

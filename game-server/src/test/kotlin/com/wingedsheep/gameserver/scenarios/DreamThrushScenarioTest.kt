@@ -122,6 +122,35 @@ class DreamThrushScenarioTest : ScenarioTestBase() {
                     projected.hasSubtype(mountain, "Island") shouldBe false
                 }
             }
+
+            test("the land surfaces a type-change badge while it is the chosen type") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Dream Thrush")
+                    .withLandsOnBattlefield(2, "Forest", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val forest = game.findPermanent("Forest")!!
+
+                fun typeChangeBadges() = game.getClientState(1).cards.values
+                    .first { it.id == forest }
+                    .activeEffects
+                    .filter { it.icon == "type-change" }
+
+                withClue("Before the change the land has no type-change badge") {
+                    typeChangeBadges() shouldBe emptyList()
+                }
+
+                game.changeLandType(forest, "Island")
+
+                withClue("After becoming an Island the land surfaces exactly one type-change badge") {
+                    val badges = typeChangeBadges()
+                    badges.size shouldBe 1
+                    badges[0].name shouldBe "Island"
+                }
+            }
         }
     }
 }
