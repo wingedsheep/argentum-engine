@@ -70,6 +70,7 @@ class CostCalculator(
         var totalIncrease = 0
         val coloredReductionSymbols = mutableListOf<ManaSymbol>()
         val coloredReductionWithOverflow = mutableListOf<ManaSymbol>()
+        val coloredIncreaseSymbols = mutableListOf<ManaSymbol>()
 
         // Self-reductions read from the spell card's own static abilities.
         for (ability in cardDef.script.staticAbilities) {
@@ -82,6 +83,7 @@ class CostCalculator(
                 addGenericIncrease = { totalIncrease += it },
                 addColoredReduction = { coloredReductionSymbols += it },
                 addColoredReductionWithOverflow = { coloredReductionWithOverflow += it },
+                addColoredIncrease = { coloredIncreaseSymbols += it },
             )
         }
 
@@ -105,6 +107,7 @@ class CostCalculator(
                 addGenericIncrease = { totalIncrease += it },
                 addColoredReduction = { coloredReductionSymbols += it },
                 addColoredReductionWithOverflow = { coloredReductionWithOverflow += it },
+                addColoredIncrease = { coloredIncreaseSymbols += it },
             )
         }
 
@@ -116,6 +119,9 @@ class CostCalculator(
         // increases first so a reduction that overshoots {0} doesn't leave a stale increase behind
         // (e.g. {U} +{1} −{2} → {U}, not {1}{U}).
         var effectiveCost = increaseGenericCost(cardDef.manaCost, totalIncrease)
+        if (coloredIncreaseSymbols.isNotEmpty()) {
+            effectiveCost = increaseColoredCost(effectiveCost, coloredIncreaseSymbols)
+        }
         effectiveCost = reduceGenericCost(effectiveCost, totalReduction)
         if (coloredReductionSymbols.isNotEmpty()) {
             effectiveCost = reduceColoredCost(effectiveCost, coloredReductionSymbols)
@@ -281,6 +287,7 @@ class CostCalculator(
         addGenericIncrease: (Int) -> Unit,
         addColoredReduction: (ManaSymbol) -> Unit,
         addColoredReductionWithOverflow: (ManaSymbol) -> Unit,
+        addColoredIncrease: (ManaSymbol) -> Unit,
     ) {
         when (modification) {
             is CostModification.ReduceGeneric -> addGenericReduction(modification.amount)
@@ -298,6 +305,11 @@ class CostCalculator(
                 repeat(units) { coloredSymbols.forEach(addColoredReductionWithOverflow) }
             }
             is CostModification.IncreaseGeneric -> addGenericIncrease(modification.amount)
+            is CostModification.IncreaseColored -> {
+                ManaCost.parse(modification.symbols).symbols
+                    .filterIsInstance<ManaSymbol.Colored>()
+                    .forEach(addColoredIncrease)
+            }
             is CostModification.IncreaseGenericPerOtherSpellThisTurn -> {
                 val spellsCast = state.playerSpellsCastThisTurn[casterId] ?: 0
                 addGenericIncrease(spellsCast * modification.amountPerSpell)
@@ -718,6 +730,15 @@ class CostCalculator(
         return state.controlledBattlefield(playerId).count { entityId ->
             projected.hasSubtype(entityId, subtype.value)
         }
+    }
+
+    /**
+     * Add specific colored mana symbols to a mana cost (colored tax effect).
+     * Each symbol in [symbolsToAdd] appends one matching colored pip. Does not affect generic mana.
+     */
+    private fun increaseColoredCost(cost: ManaCost, symbolsToAdd: List<ManaSymbol>): ManaCost {
+        if (symbolsToAdd.isEmpty()) return cost
+        return ManaCost(cost.symbols + symbolsToAdd)
     }
 
     /**

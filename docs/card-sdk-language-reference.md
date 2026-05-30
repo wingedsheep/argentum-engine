@@ -1122,7 +1122,9 @@ staticAbility {
   `OpponentsCastTargeting(GroupFilter)`, `FaceDownYouCast`, `MorphActivation`.
 - `modification: CostModification` — `ReduceGeneric(amount)`, `ReduceGenericBy(source)`,
   `ReduceColored(symbols)`, `ReduceColoredPerUnit(symbols, source)`, `IncreaseGeneric(amount)`,
-  `IncreaseGenericPerOtherSpellThisTurn(amountPerSpell)`, `IncreaseLife(amount)`.
+  `IncreaseColored(symbols)` (colored tax — adds colored pips, e.g. the Invasion Leeches'
+  "White spells you cast cost {W} more"), `IncreaseGenericPerOtherSpellThisTurn(amountPerSpell)`,
+  `IncreaseLife(amount)`.
   Reduction `source: CostReductionSource` covers fixed amounts, counts of permanents/cards in
   zones, target/condition gates, and a few mechanic-specific shapes — see
   `CostStaticAbilities.kt` for the full list.

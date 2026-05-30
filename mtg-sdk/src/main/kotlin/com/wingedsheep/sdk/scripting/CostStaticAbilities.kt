@@ -52,6 +52,7 @@ data class ModifySpellCost(
             is CostModification.ReduceColoredPerUnit ->
                 "cost ${modification.symbols} less to cast for each ${modification.countSource.description}"
             is CostModification.IncreaseGeneric -> "cost {${modification.amount}} more"
+            is CostModification.IncreaseColored -> "cost ${modification.symbols} more to cast"
             is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
                 "cost {${modification.amountPerSpell}} more to cast for each other spell that player has cast this turn"
             is CostModification.IncreaseLife -> "cost an additional ${modification.amount} life to cast"
@@ -213,6 +214,14 @@ sealed interface CostModification {
     @SerialName("IncreaseGeneric")
     @Serializable
     data class IncreaseGeneric(val amount: Int) : CostModification
+
+    /**
+     * Add specific colored mana symbols to the cost (e.g. `"{W}"`), a colored tax effect.
+     * Used for the Invasion "Leech" creatures ("White spells you cast cost {W} more to cast").
+     */
+    @SerialName("IncreaseColored")
+    @Serializable
+    data class IncreaseColored(val symbols: String) : CostModification
 
     /**
      * Damping-Sphere-style scaling tax: increase by `amountPerSpell` for each spell
