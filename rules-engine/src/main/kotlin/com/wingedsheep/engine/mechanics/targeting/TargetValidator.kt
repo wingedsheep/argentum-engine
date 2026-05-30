@@ -103,6 +103,22 @@ class TargetValidator {
                     }
                 }
             }
+
+            // "... controlled by the same player" — every chosen target for this requirement
+            // must share a controller (Rule uses current control; projected state respects
+            // control-changing effects). No-op for single-target requirements.
+            if (requirement is TargetObject && requirement.sameController && targetsForReq.size > 1) {
+                val projected = state.projectedState
+                val controllers = targetsForReq.mapNotNull { target ->
+                    (target as? ChosenTarget.Permanent)?.let { perm ->
+                        projected.getController(perm.entityId)
+                            ?: state.getEntity(perm.entityId)?.get<ControllerComponent>()?.playerId
+                    }
+                }
+                if (controllers.toSet().size > 1) {
+                    return "Targets must be controlled by the same player"
+                }
+            }
         }
 
         return null

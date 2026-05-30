@@ -594,6 +594,11 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   instead — that clamps the count to the chosen X.
 - `dynamicMaxCount: DynamicAmount?` — evaluated when the spell/ability hits the stack; the resolved
   value becomes the max ("up to X target creatures", X = board state or chosen X).
+- `sameController = false` — on `TargetObject` / `TargetCreature(...)`; when `true` and the requirement
+  picks more than one target, every chosen target must share a controller ("**two target creatures
+  controlled by the same player**"). Enforced cross-target by `TargetValidator` at cast time using
+  projected control; a no-op for single-target requirements. E.g.
+  `TargetCreature(count = 2, sameController = true)` (Barrin's Spite).
 
 ---
 
@@ -1796,6 +1801,13 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   basic land type can't be kept at all (Global Ruin: "chooses a land of each basic land type, then sacrifices the
   rest"). Each restriction also exposes a boolean flag on `SelectCardsDecision` (`onePerBasicLandType`, …) so the UI
   can disable redundant picks.
+  - `chooser` (`Chooser`, default `Controller`) — who makes the selection: `Controller`, `Opponent`, `TargetPlayer`
+    (`context.targets[0]`), `TriggeringPlayer`, `SourceController` (the source's controller, ignoring per-iteration
+    swaps), or `ControllerOfSelection` (the controller of the cards in `from` — resolved from the first card's
+    projected controller). Use `ControllerOfSelection` for "their controller chooses…" where the deciding player is
+    whoever controls the gathered cards and may be you or an opponent (Barrin's Spite: gather the two targeted
+    creatures, their controller sacrifices one, the other is returned to hand). The same `chooser` set is accepted by
+    `ChoosePileEffect`.
 
 **Linked exile**
 

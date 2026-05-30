@@ -100,7 +100,8 @@ fun TargetCreature(
     unlimited: Boolean = false,
     filter: TargetFilter = TargetFilter.Creature,
     id: String? = null,
-    dynamicMaxCount: DynamicAmount? = null
+    dynamicMaxCount: DynamicAmount? = null,
+    sameController: Boolean = false
 ): TargetObject = TargetObject(
     count = count,
     minCount = minCount,
@@ -108,7 +109,8 @@ fun TargetCreature(
     unlimited = unlimited,
     filter = filter,
     id = id,
-    dynamicMaxCount = dynamicMaxCount
+    dynamicMaxCount = dynamicMaxCount,
+    sameController = sameController
 )
 
 // =============================================================================
@@ -293,29 +295,39 @@ data class TargetObject(
     override val unlimited: Boolean = false,
     val filter: TargetFilter,
     override val id: String? = null,
-    val dynamicMaxCount: DynamicAmount? = null
+    val dynamicMaxCount: DynamicAmount? = null,
+    /**
+     * When true and more than one target is chosen for this requirement, every chosen
+     * target must be controlled by the same player ("two target creatures controlled by
+     * the same player"). Enforced cross-target by `TargetValidator` at cast time; a no-op
+     * for single-target requirements. Defaults to false.
+     */
+    val sameController: Boolean = false
 ) : TargetRequirement {
-    override val description: String = if (id != null) {
-        buildString {
-            when {
-                unlimited -> append("any number of ")
-                optional -> append("up to ")
-                minCount < count -> append("$minCount to ")
+    override val description: String = run {
+        val base = if (id != null) {
+            buildString {
+                when {
+                    unlimited -> append("any number of ")
+                    optional -> append("up to ")
+                    minCount < count -> append("$minCount to ")
+                }
+                append(id)
             }
-            append(id)
-        }
-    } else {
-        buildString {
-            if (unlimited) {
-                append("any number of target ")
-                append("${filter.description}s")
-            } else {
-                if (optional) append("up to ")
-                else if (minCount < count) append("$minCount to ")
-                append("target ")
-                append(if (count == 1) filter.description else "$count ${filter.description}s")
+        } else {
+            buildString {
+                if (unlimited) {
+                    append("any number of target ")
+                    append("${filter.description}s")
+                } else {
+                    if (optional) append("up to ")
+                    else if (minCount < count) append("$minCount to ")
+                    append("target ")
+                    append(if (count == 1) filter.description else "$count ${filter.description}s")
+                }
             }
         }
+        if (sameController) "$base controlled by the same player" else base
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {

@@ -389,7 +389,16 @@ enum class Chooser {
      * Use this for cards like Winnowing where the spell's caster makes a choice for each
      * player during a per-player iteration.
      */
-    SourceController
+    SourceController,
+    /**
+     * The controller of the cards being selected from (the `from` collection) decides.
+     * When every gathered card shares a single controller — e.g. "two target creatures
+     * controlled by the same player" — this resolves to that player, who may be the
+     * spell's controller or an opponent. Resolves through the projected controller of the
+     * first card in the source collection. Used by Barrin's Spite ("their controller
+     * chooses and sacrifices one of them").
+     */
+    ControllerOfSelection
 }
 
 /**

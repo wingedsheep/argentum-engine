@@ -98,6 +98,13 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
                     ?: return EffectResult.error(state, "Source entity has no ControllerComponent for SourceController chooser")
             }
+            Chooser.ControllerOfSelection -> {
+                val deriveFrom = eligibleCards.firstOrNull() ?: cards.firstOrNull()
+                    ?: return EffectResult.error(state, "No card to derive controller for ControllerOfSelection chooser")
+                state.projectedState.getController(deriveFrom)
+                    ?: state.getEntity(deriveFrom)?.get<ControllerComponent>()?.playerId
+                    ?: return EffectResult.error(state, "Could not resolve controller for ControllerOfSelection chooser")
+            }
         }
 
         // OnePerColor(matchControllerPermanentColors = true) narrows eligibility to

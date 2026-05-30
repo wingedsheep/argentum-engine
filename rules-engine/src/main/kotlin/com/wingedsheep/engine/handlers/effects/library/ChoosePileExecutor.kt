@@ -47,6 +47,13 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
                 state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
                     ?: return EffectResult.error(state, "Source entity has no ControllerComponent for ChoosePile chooser")
             }
+            Chooser.ControllerOfSelection -> {
+                val deriveFrom = (pileA + pileB).firstOrNull()
+                    ?: return EffectResult.error(state, "No card to derive controller for ChoosePile ControllerOfSelection chooser")
+                state.projectedState.getController(deriveFrom)
+                    ?: state.getEntity(deriveFrom)?.get<ControllerComponent>()?.playerId
+                    ?: return EffectResult.error(state, "Could not resolve controller for ChoosePile ControllerOfSelection chooser")
+            }
         }
 
         val sourceName = context.sourceId?.let { sourceId ->

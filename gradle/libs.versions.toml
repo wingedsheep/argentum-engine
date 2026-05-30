@@ -3,16 +3,16 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin = "2.3.20"
-kotlinxDatetime = "0.7.1"
+kotlin = "2.3.21"
+kotlinxDatetime = "0.8.0"
 kotlinxSerializationJSON = "1.11.0"
-kotlinxCoroutines = "1.10.2"
-kotest = "6.1.5"
-mockk = "1.14.9"
-springBoot = "4.0.5"
-springdocOpenapi = "3.0.2"
-kover = "0.9.1"
-classgraph = "4.8.179"
+kotlinxCoroutines = "1.11.0"
+kotest = "6.1.11"
+mockk = "1.14.11"
+springBoot = "4.0.6"
+springdocOpenapi = "3.0.3"
+kover = "0.9.8"
+classgraph = "4.8.184"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -25,7 +25,7 @@ kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" 
 kotestExtensionsSpring = { module = "io.kotest:kotest-extensions-spring", version.ref = "kotest" }
 kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
-slf4jApi = { module = "org.slf4j:slf4j-api", version = "2.0.16" }
+slf4jApi = { module = "org.slf4j:slf4j-api", version = "2.0.18" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 
 # Spring Boot dependencies
