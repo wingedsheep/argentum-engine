@@ -62,7 +62,10 @@ section; do not let SDK additions land without a corresponding doc update.
 
 - `NORMAL` — standard single face (default).
 - `SPLIT` — two or more halves on one card; combined characteristics apply off-battlefield (CR 709.4c). Used for Rooms,
-  Fuse, Aftermath.
+  Fuse, Aftermath, and the classic Invasion split cards (Pain // Suffering, Stand // Deliver, Wax // Wane). Each half is
+  cast independently via `CastSpell.faceIndex`; only the chosen half goes on the stack (CR 709.4). A non-permanent half
+  carries its effect in a `face("Name") { spell { … } }` block (with its own `target(...)` requirements); a permanent
+  half (Room) carries triggered/activated/static abilities instead.
 - `ADVENTURE` — primary face is a creature, `cardFaces[0]` is an instant/sorcery Adventure (CR 715). Resolving the
   Adventure exiles the card and grants permission to cast the creature from exile.
 
@@ -71,7 +74,8 @@ section; do not let SDK additions land without a corresponding doc update.
 - `name` — face name.
 - `manaCost` — face mana cost.
 - `typeLine` — face type line.
-- `script { ... }` — that face's abilities.
+- `script { ... }` — that face's abilities; for instant/sorcery SPLIT halves and Adventures this includes a
+  `spell { effect = …; target(...) }` block holding the face's effect and target requirements.
 - `keywords` — face-local keywords.
 
 **`metadata { ... }`**

@@ -69,10 +69,10 @@ class CastSpellEnumerator : ActionEnumerator {
             // mana cost, so we emit one CastSpell action per face with `faceIndex = i` and the
             // face's printed cost.
             //
-            // Phase 2 does not yet support targets, modal effects, alternative costs, blight,
-            // behold, kicker, or convoke for split halves — Rooms (the only Phase 5 consumer)
-            // don't use any of them. Layouts that need this (Aftermath, Fuse, Adventure) will
-            // extend this branch when they land.
+            // Targeted instant/sorcery split halves are supported (the Invasion split cards —
+            // Pain // Suffering, Stand // Deliver, Wax // Wane — read their face's
+            // `targetRequirements` in CastSpellHandler). Modal effects, alternative costs, blight,
+            // behold, kicker, and convoke on a split half are not yet wired up.
             // Adventure layout (CR 715) — emit one cast option for the Adventure face, then fall
             // through so the surrounding code also enumerates the creature face. The Adventure
             // face has its own mana cost, type line (instant/sorcery — Adventure), target

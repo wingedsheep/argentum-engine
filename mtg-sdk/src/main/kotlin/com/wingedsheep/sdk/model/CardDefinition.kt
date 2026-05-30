@@ -88,10 +88,10 @@ enum class CardLayout {
  * door / mode is "active" for the permanent (see CR 709.5 for Rooms, where locked halves are
  * suppressed).
  *
- * Phase 1 deliberately keeps this minimal — no spell effect / aura target / replacement effects.
- * Today it's only used by Rooms (which are permanents that don't carry a spell effect) and the
- * supported abilities are triggered, activated, and static. Adventure / Aftermath / Fuse layouts
- * will add what they need on top.
+ * A face's [script] may carry a `spellEffect` (with `targetRequirements`) for instant/sorcery
+ * halves — the classic Invasion split cards (Pain // Suffering, Stand // Deliver, Wax // Wane) and
+ * Adventure faces use this. Permanent halves (Rooms) instead carry triggered / activated / static
+ * abilities. Aura targets and replacement effects on a face are not modeled yet.
  */
 @Serializable
 data class CardFace(
