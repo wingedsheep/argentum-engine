@@ -11,7 +11,8 @@
     "test:headed": "playwright test --headed"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "typescript": "^5.9.3"
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^22.19.19",
+    "typescript": "^6.0.3"
   }
 }
