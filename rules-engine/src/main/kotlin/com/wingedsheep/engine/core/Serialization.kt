@@ -186,6 +186,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseColorProtectionContinuation::class)
         subclass(ChooseColorProtectionTargetContinuation::class)
         subclass(ChooseColorThenContinuation::class)
+        subclass(ChooseNumberThenContinuation::class)
         subclass(ChooseManaColorContinuation::class)
         subclass(ChooseColorForTargetContinuation::class)
         subclass(ChooseAnyColorTapBonusContinuation::class)

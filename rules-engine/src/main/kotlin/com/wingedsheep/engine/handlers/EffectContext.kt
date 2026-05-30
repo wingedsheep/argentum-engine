@@ -26,6 +26,12 @@ data class EffectContext(
     val controllerId: EntityId,
     val opponentId: EntityId?,
     val targets: List<ChosenTarget> = emptyList(),
+    /**
+     * The X chosen for an X-cost spell/ability. Also reused by `ChooseNumberThenEffect` to
+     * carry a "choose a number" value into the inner effect (read via `CardPredicate.ManaValueEqualsX`,
+     * Void). These two uses share one slot, so a future card that both pays `{X}` *and* chooses a
+     * number would collide here — split the slot before authoring such a card.
+     */
     val xValue: Int? = null,
     /**
      * Total mana paid from the pool to cast this spell — sum of every `manaSpent{Color}`

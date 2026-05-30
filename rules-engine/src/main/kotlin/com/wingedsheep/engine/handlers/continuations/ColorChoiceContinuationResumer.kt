@@ -25,6 +25,7 @@ class ColorChoiceContinuationResumer(
         resumer(ChooseColorProtectionContinuation::class, ::resumeChooseColorProtection),
         resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget),
         resumer(ChooseColorThenContinuation::class, ::resumeChooseColorThen),
+        resumer(ChooseNumberThenContinuation::class, ::resumeChooseNumberThen),
         resumer(ChooseManaColorContinuation::class, ::resumeChooseManaColor),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget),
         resumer(ChooseAnyColorTapBonusContinuation::class, ::resumeChooseAnyColorTapBonus)
@@ -163,6 +164,28 @@ class ColorChoiceContinuationResumer(
             state,
             listOf(continuation.then),
             contextWithColor
+        )
+
+        if (effectResult.isPaused) return effectResult.toExecutionResult()
+        return checkForMore(effectResult.state, effectResult.events.toList())
+    }
+
+    fun resumeChooseNumberThen(
+        state: GameState,
+        continuation: ChooseNumberThenContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number choice response for ChooseNumberThen effect")
+        }
+
+        // Stamp the chosen number as X so atomic effects/filters (manaValueEqualsX) read it.
+        val contextWithNumber = continuation.baseContext.copy(xValue = response.number)
+        val effectResult = effectRunner.executeRemainingEffects(
+            state,
+            listOf(continuation.then),
+            contextWithNumber
         )
 
         if (effectResult.isPaused) return effectResult.toExecutionResult()

@@ -430,6 +430,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `ChooseColorAndGrantProtectionToGroupEffect(filter)` — same, for a group.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `ChooseColorThenEffect(whenChosen)` — pick a color, then run a function of that color.
+- `Effects.ChooseNumberThen(then, minValue=0, maxValue=16, prompt)` — pick a number in `[minValue, maxValue]`,
+  then run `then` once with the chosen number exposed via the effect context as **X**. Atomic effects and filters
+  under `then` read it through `ManaValueEqualsX` (`.manaValueEqualsX()`). Compose with `CompositeEffect` for
+  multi-step cards (Void: destroy all artifacts/creatures with that mana value, then a target player reveals their
+  hand and discards all nonland cards with that mana value).
 - `GrantHexproofFromChosenColorEffect(target)` — hexproof from chosen color.
 - `ChooseCreatureTypeEffect(...)` — pause for creature-type pick.
 - `SelectTargetEffect(...)` — have a player pick from a valid set.
@@ -642,6 +647,8 @@ Every `TargetRequirement` carries count semantics (defaults shown):
 - `.power(n)` / `.minPower(n)` / `.maxPower(n)` — P/T comparator.
 - `.manaValue(n)` / `.manaValueAtMost(n)` / `.manaValueAtLeast(n)` — mana-value comparator.
 - `.manaValueAtMostX()` — mana value ≤ the X chosen for the source spell/ability.
+- `.manaValueEqualsX()` — mana value **exactly equal** to the number chosen for the source spell/ability
+  (set by `Effects.ChooseNumberThen`; resolution-time only — matches nothing without a chosen number). Used by Void.
 - `.manaValueAtMostEntity(ref)` — mana value ≤ a referenced entity's mana value (e.g. Kodama of the East Tree).
 - `.manaValueAtMostEntityManaSpent(ref)` — mana value ≤ the mana **actually spent** to cast a referenced
   entity. Reads the live `SpellOnStackComponent` buckets while the entity is still a spell, or the

@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantToxicEffect
@@ -1401,6 +1402,21 @@ object Effects {
         then: Effect,
         prompt: String = "Choose a color"
     ): Effect = ChooseColorThenEffect(then, prompt)
+
+    /**
+     * Choose a number, then run [then] with the chosen number exposed via the effect
+     * context (as X). Atomic effects and filters under [then] read it through
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX] (via
+     * `GameObjectFilter`/`GroupFilter` `manaValueEqualsX()`). Compose with [Composite]
+     * for multi-step cards (Void: destroy all, then reveal & discard). [minValue]/[maxValue]
+     * bound the legal choice.
+     */
+    fun ChooseNumberThen(
+        then: Effect,
+        minValue: Int = 0,
+        maxValue: Int = 16,
+        prompt: String = "Choose a number"
+    ): Effect = ChooseNumberThenEffect(then, minValue, maxValue, prompt)
 
     /**
      * Grant Toxic N to a target until end of turn. Resolves to a `TOXIC_<n>`

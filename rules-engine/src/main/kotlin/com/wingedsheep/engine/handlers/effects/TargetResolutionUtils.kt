@@ -169,7 +169,10 @@ object TargetResolutionUtils {
                 }
                 else -> emptyList()
             }
-            else -> resolvePlayerTarget(effectTarget, context)?.let { listOf(it) } ?: emptyList()
+            // Use the state-aware resolver so state-dependent targets (e.g. TargetController,
+            // which reads the target spell/permanent's controller) resolve here too. It tries
+            // the stateless path first, so this stays a superset of the previous behavior.
+            else -> resolvePlayerTarget(effectTarget, context, state)?.let { listOf(it) } ?: emptyList()
         }
     }
 

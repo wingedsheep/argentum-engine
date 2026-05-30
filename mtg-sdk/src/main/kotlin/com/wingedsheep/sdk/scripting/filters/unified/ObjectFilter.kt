@@ -223,6 +223,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.ManaValueAtMostX
     )
 
+    /** Mana value exactly equal to the number chosen for the source spell/ability (Void) */
+    fun manaValueEqualsX() = copy(
+        cardPredicates = cardPredicates + CardPredicate.ManaValueEqualsX
+    )
+
     /** Mana value at least */
     fun manaValueAtLeast(min: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.ManaValueAtLeast(min)

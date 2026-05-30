@@ -246,6 +246,12 @@ class PredicateEvaluator {
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc <= predicate.max
             }
+            is CardPredicate.ManaValueEqualsX -> {
+                // The chosen number is stamped onto the context as xValue. Unbound = no match.
+                val xValue = context?.xValue ?: return false
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                cmc == xValue
+            }
             is CardPredicate.ManaValueAtMostX -> {
                 // Null xValue means X is unbound (legal-action enumeration runs before the
                 // player chooses X). Match permissively so the cast action is offered; the
@@ -764,8 +770,10 @@ class PredicateEvaluator {
             // Mana value predicates
             is CardPredicate.ManaValueEquals -> record.manaValue == predicate.value
             is CardPredicate.ManaValueAtMost -> record.manaValue <= predicate.max
-            // ManaValueAtMostX is target-time only; without context it cannot match record-level history.
+            // ManaValueAtMostX / ManaValueEqualsX are resolution-time chosen-number predicates;
+            // without context they cannot match record-level cast history.
             CardPredicate.ManaValueAtMostX -> false
+            CardPredicate.ManaValueEqualsX -> false
             is CardPredicate.ManaValueAtLeast -> record.manaValue >= predicate.min
             // Entity-relative — no entity context for cast records
             is CardPredicate.ManaValueAtMostEntity -> false

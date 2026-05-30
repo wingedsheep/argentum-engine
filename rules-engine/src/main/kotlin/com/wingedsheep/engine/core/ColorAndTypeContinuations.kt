@@ -71,6 +71,25 @@ data class ChooseColorThenContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller chooses a number for a
+ * [com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect].
+ *
+ * The resumer stamps the chosen number onto [baseContext] as the X value and dispatches
+ * [then] through the standard effect runner, so any composition of atomic effects and
+ * filters can read it via `EffectContext.xValue` /
+ * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX] (Void).
+ */
+@Serializable
+data class ChooseNumberThenContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val then: Effect,
+    val baseContext: EffectContext
+) : ContinuationFrame
+
+/**
  * Resume after the controller of an [com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect]
  * picks the mana color. The resumer re-runs the effect via the executor registry with
  * `manaColorChoice` populated on [baseContext], so dynamic amounts evaluate consistently.

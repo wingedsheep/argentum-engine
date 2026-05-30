@@ -308,6 +308,19 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Mana value exactly equal to the number chosen for the source spell/ability.
+     * Resolves against [PredicateContext.xValue] at evaluation time. Used by effects
+     * that "choose a number" and then act on objects with that mana value (Void). When
+     * the chosen number is unbound, nothing matches.
+     */
+    @SerialName("ManaValueEqualsX")
+    @Serializable
+    data object ManaValueEqualsX : CardPredicate {
+        override val description: String = "with mana value equal to the chosen number"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
+    /**
      * Mana value at most the X chosen for the source spell/ability.
      * Resolves against [PredicateContext.xValue] at evaluation time, so it works
      * both at cast-time target validation and at resolution-time legality re-check.

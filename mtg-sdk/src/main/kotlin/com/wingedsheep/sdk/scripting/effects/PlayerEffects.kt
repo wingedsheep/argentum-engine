@@ -527,3 +527,28 @@ data class TheRingTemptsYouEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * "Choose a number, then [effect]." The controller is prompted for an integer in
+ * [[minValue], [maxValue]]; the chosen number is stamped onto the effect context (as the
+ * X value) and [then] is executed once. Atomic effects and filters read the chosen number
+ * via [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX] so the same
+ * combinator works for any "choose a number, act on objects with that mana value" card (Void).
+ *
+ * Compose [then] with [CompositeEffect] when several effects key off the chosen number.
+ */
+@SerialName("ChooseNumberThen")
+@Serializable
+data class ChooseNumberThenEffect(
+    val then: Effect,
+    val minValue: Int = 0,
+    val maxValue: Int = 16,
+    val prompt: String = "Choose a number"
+) : Effect {
+    override val description: String = "Choose a number. ${then.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newThen = then.applyTextReplacement(replacer)
+        return if (newThen !== then) copy(then = newThen) else this
+    }
+}

@@ -560,6 +560,8 @@ class TriggerMatcher(
                 cmc <= predicate.max
             }
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostX -> false
+            // Resolution-time chosen-number predicate; TriggerMatcher has no chosen-number context.
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX -> false
             // Entity-relative — TriggerMatcher has no entity context; predicate doesn't apply here.
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostEntity -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostEntityManaSpent -> false
