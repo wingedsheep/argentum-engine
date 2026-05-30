@@ -309,6 +309,8 @@ class TriggerMatcher(
             is GameEvent.CardsPutIntoGraveyardFromLibraryEvent -> false
             // Batching trigger handled separately by detectAnyToGraveyardBatchTriggers
             is GameEvent.CardsPutIntoYourGraveyardEvent -> false
+            // Leave-graveyard batch triggers are handled by detectCardsLeftGraveyardBatchTriggers
+            is GameEvent.CardsLeftYourGraveyardEvent -> false
             // Sacrifice batch triggers are handled by detectSacrificeBatchTriggers
             is GameEvent.PermanentsSacrificedEvent -> false
             // Combat damage batch triggers are handled by detectCombatDamageBatchTriggers

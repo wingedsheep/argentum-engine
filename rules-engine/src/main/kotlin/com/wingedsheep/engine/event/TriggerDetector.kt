@@ -208,6 +208,12 @@ class TriggerDetector(
         // and fires the trigger at most once per controller.
         detectAnyToGraveyardBatchTriggers(state, events, triggers, index)
 
+        // Detect "whenever one or more cards leave your graveyard" batching triggers
+        // (e.g., Attuned Hunter, Kishla Skimmer). Groups from-graveyard zone changes by the
+        // owner of that graveyard and fires the trigger at most once per controller. The
+        // "during your turn" restriction is a triggerCondition (Conditions.IsYourTurn) on the card.
+        detectCardsLeftGraveyardBatchTriggers(state, events, triggers, index)
+
         // Detect "whenever you sacrifice one or more [permanents]" batching triggers
         // (e.g., Camellia, the Seedmiser). Groups sacrifice events per controller
         // and fires the trigger at most once per controller.
@@ -1171,34 +1177,7 @@ class TriggerDetector(
 
                 // Check if any of the moved cards match the filter
                 val hasMatch = ownerEvents.any { event ->
-                    if (trigger.filter == GameObjectFilter.Any) return@any true
-                    val entity = state.getEntity(event.entityId)
-                    val cardComponent = entity?.get<CardComponent>()
-                    if (cardComponent != null) {
-                        trigger.filter.cardPredicates.all { predicate ->
-                            when (predicate) {
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                                    cardComponent.typeLine.isCreature
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
-                                    cardComponent.typeLine.isArtifact
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment ->
-                                    cardComponent.typeLine.isEnchantment
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand ->
-                                    cardComponent.typeLine.isLand
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPlaneswalker ->
-                                    com.wingedsheep.sdk.core.CardType.PLANESWALKER in cardComponent.typeLine.cardTypes
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent ->
-                                    cardComponent.typeLine.isPermanent
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland ->
-                                    !cardComponent.typeLine.isLand
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature ->
-                                    !cardComponent.typeLine.isCreature
-                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                                    cardComponent.typeLine.hasSubtype(predicate.subtype)
-                                else -> true
-                            }
-                        }
-                    } else false
+                    cardMatchesGraveyardBatchFilter(state, event.entityId, trigger.filter)
                 }
 
                 if (hasMatch) {
@@ -1212,6 +1191,96 @@ class TriggerDetector(
                         )
                     )
                 }
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever one or more cards leave your graveyard" batching triggers
+     * (e.g., Attuned Hunter, Kishla Skimmer, Kheru Goldkeeper).
+     *
+     * Groups all from-graveyard zone changes by the owner of that graveyard ("your graveyard")
+     * and fires the trigger at most once per controller, regardless of how many matching cards
+     * left or where they went (cast/exiled/reanimated/returned to hand). The "during your turn"
+     * restriction is expressed on the card as `triggerCondition = Conditions.IsYourTurn`, and
+     * "only once each turn" via `oncePerTurn = true`, both applied later in detectTriggers.
+     */
+    private fun detectCardsLeftGraveyardBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        // Collect all zone change events leaving a graveyard, grouped by the graveyard's owner
+        val fromGravByOwner = mutableMapOf<EntityId, MutableList<ZoneChangeEvent>>()
+        for (event in events) {
+            if (event is ZoneChangeEvent && event.fromZone == Zone.GRAVEYARD && event.toZone != Zone.GRAVEYARD) {
+                fromGravByOwner.getOrPut(event.ownerId) { mutableListOf() }.add(event)
+            }
+        }
+        if (fromGravByOwner.isEmpty()) return
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.CARDS_LEFT_GRAVEYARD)) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is GameEvent.CardsLeftYourGraveyardEvent) continue
+
+                val controllerId = entry.controllerId
+                val ownerEvents = fromGravByOwner[controllerId] ?: continue
+
+                // Check if any of the departed cards match the filter
+                val hasMatch = ownerEvents.any { event ->
+                    cardMatchesGraveyardBatchFilter(state, event.entityId, trigger.filter)
+                }
+
+                if (hasMatch) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entry.entityId,
+                            sourceName = entry.cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Whether the card now identified by [entityId] (which may have moved to a new zone)
+     * matches [filter] for graveyard batching triggers. Card-characteristic predicates are
+     * evaluated against the card's base [CardComponent]; [GameObjectFilter.Any] always matches.
+     */
+    private fun cardMatchesGraveyardBatchFilter(
+        state: GameState,
+        entityId: EntityId,
+        filter: GameObjectFilter
+    ): Boolean {
+        if (filter == GameObjectFilter.Any) return true
+        val cardComponent = state.getEntity(entityId)?.get<CardComponent>() ?: return false
+        return filter.cardPredicates.all { predicate ->
+            when (predicate) {
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                    cardComponent.typeLine.isCreature
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
+                    cardComponent.typeLine.isArtifact
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment ->
+                    cardComponent.typeLine.isEnchantment
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand ->
+                    cardComponent.typeLine.isLand
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPlaneswalker ->
+                    com.wingedsheep.sdk.core.CardType.PLANESWALKER in cardComponent.typeLine.cardTypes
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent ->
+                    cardComponent.typeLine.isPermanent
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland ->
+                    !cardComponent.typeLine.isLand
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature ->
+                    !cardComponent.typeLine.isCreature
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                    cardComponent.typeLine.hasSubtype(predicate.subtype)
+                else -> true
             }
         }
     }

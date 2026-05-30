@@ -614,6 +614,24 @@ object Triggers {
     )
 
     // =========================================================================
+    // Leave-Graveyard Batching Triggers
+    // =========================================================================
+
+    /**
+     * Whenever one or more cards matching [filter] leave your graveyard.
+     * Batching trigger — fires at most once per event batch regardless of how many cards left,
+     * and regardless of where they went (cast/exiled/reanimated/returned to hand, etc.).
+     *
+     * Pair with `triggerCondition = Conditions.IsYourTurn` for the common
+     * "leave your graveyard during your turn" wording, and `oncePerTurn = true`
+     * for "this ability triggers only once each turn" (e.g. Kishla Skimmer).
+     */
+    fun CardsLeaveYourGraveyard(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec = TriggerSpec(
+        event = CardsLeftYourGraveyardEvent(filter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Card Drawing Triggers
     // =========================================================================
 

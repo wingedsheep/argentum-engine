@@ -930,6 +930,12 @@ in the repo today):
 - `CardsPutIntoYourGraveyard(filter?)` — when matching cards enter your yard.
 - `PermanentCardsPutIntoYourGraveyard` — only permanent cards.
 - `CreaturesPutIntoGraveyardFromLibrary` — mill-trigger shape.
+- `CardsLeaveYourGraveyard(filter?)` — batching trigger; fires once per event batch when one
+  or more matching cards **leave** your graveyard (cast/exiled/reanimated/returned to hand,
+  etc.), regardless of how many or where they went. For the common "leave your graveyard
+  **during your turn**" wording, add `triggerCondition = Conditions.IsYourTurn`; for "this
+  ability triggers only once each turn", add `oncePerTurn = true`. (Attuned Hunter, Kishla
+  Skimmer, Kheru Goldkeeper.)
 
 ### Discard
 

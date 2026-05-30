@@ -1160,6 +1160,47 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         }
     }
 
+    /**
+     * Whenever one or more cards matching [filter] leave your graveyard.
+     *
+     * This is a **batching trigger** — it fires at most once per event batch, regardless of
+     * how many matching cards left the graveyard. "Leave your graveyard" covers any move out
+     * of the graveyard: cast/played from it, exiled (e.g. Renew, Delve, Escape), reanimated to
+     * the battlefield, returned to hand or library, etc.
+     *
+     * Detection is handled specially by TriggerDetector: after processing individual events,
+     * it groups all from-graveyard zone changes by the owner of that graveyard and fires the
+     * trigger at most once per qualifying controller.
+     *
+     * The common "during your turn" timing restriction is expressed on the card via
+     * `triggerCondition = Conditions.IsYourTurn` rather than baked into the event, and the
+     * "this ability triggers only once each turn" restriction via `oncePerTurn = true`.
+     *
+     * Examples:
+     * - "Whenever one or more cards leave your graveyard during your turn, …"
+     *   → CardsLeftYourGraveyardEvent() + triggerCondition = Conditions.IsYourTurn
+     *   (Attuned Hunter, Kishla Skimmer, Kheru Goldkeeper)
+     */
+    @SerialName("CardsLeftYourGraveyardEvent")
+    @Serializable
+    data class CardsLeftYourGraveyardEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : GameEvent {
+        override val description: String = buildString {
+            append("one or more ")
+            if (filter != GameObjectFilter.Any) {
+                append(filter.cardPredicates.joinToString(" ") { it.description })
+                append(" ")
+            }
+            append("cards leave your graveyard")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     // =========================================================================
     // Sacrifice Triggers
     // =========================================================================
