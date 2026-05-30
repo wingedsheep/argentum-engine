@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.inv.cards
+package com.wingedsheep.mtg.sets.definitions.exo.cards
 
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -32,8 +32,8 @@ val ManiacalRage = card("Maniacal Rage") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "155"
-        artist = "Matt Cavotta"
-        imageUri = "https://cards.scryfall.io/normal/front/3/d/3d17886c-fffd-4f0d-b4da-4b5fba18b811.jpg?1595075978"
+        collectorNumber = "87"
+        artist = "Pete Venters"
+        imageUri = "https://cards.scryfall.io/normal/front/f/3/f3aa840f-6a70-4674-acb7-ded0ea4397d8.jpg?1562089267"
     }
 }
