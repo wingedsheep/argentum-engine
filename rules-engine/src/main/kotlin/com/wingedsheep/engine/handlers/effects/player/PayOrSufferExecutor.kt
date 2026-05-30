@@ -69,6 +69,11 @@ class PayOrSufferExecutor(
             is PayCost.Sacrifice -> handleSacrificeCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.PayLife -> handlePayLifeCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Mana -> handleManaCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
+            // "...pay its mana cost": pay the affected permanent's own mana cost. A permanent
+            // with no mana cost (a land, a token) has an empty ManaCost, which resolves to {0}
+            // and is trivially payable, so such a permanent is always kept.
+            is PayCost.OwnManaCost ->
+                handleManaCost(state, effect, context, PayCost.Mana(sourceCard.manaCost), sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Exile -> handleExileCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Choice -> handleChoiceCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Tap -> handleTapCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
@@ -621,6 +626,12 @@ class PayOrSufferExecutor(
                 life > cost.amount
             }
             is PayCost.Mana -> ManaSolver(cardRegistry).canPay(state, playerId, cost.cost)
+            is PayCost.OwnManaCost -> {
+                // Null only when the source entity/CardComponent is missing; an empty mana cost
+                // (lands, tokens) is {0} and always payable — see the execute branch above.
+                val ownCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost
+                ownCost != null && ManaSolver(cardRegistry).canPay(state, playerId, ownCost)
+            }
             is PayCost.Exile -> findValidCardsInZone(state, playerId, cost.filter, cost.zone).size >= cost.count
             is PayCost.Choice -> cost.options.any { canPayCost(state, playerId, it, sourceId) }
             is PayCost.Tap -> findValidUntappedPermanentsOnBattlefield(state, playerId, cost.filter, sourceId).size >= cost.count

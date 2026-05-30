@@ -68,6 +68,25 @@ data object EnchantedCreatureIsLegendary : Condition {
 }
 
 /**
+ * Condition: "if enchanted permanent matches [filter]".
+ *
+ * Resolves the source Aura's `AttachedToComponent` and checks the attached permanent
+ * against a [GameObjectFilter] in projected state. The general-purpose counterpart to
+ * [EnchantedCreatureHasSubtype] / [EnchantedCreatureIsLegendary]: works for color, type,
+ * or any other filterable property. Used by Essence Leak ("as long as enchanted permanent
+ * is red or green"). The attachment may be any permanent, not just a creature.
+ */
+@SerialName("EnchantedPermanentMatches")
+@Serializable
+data class EnchantedPermanentMatches(val filter: GameObjectFilter) : Condition {
+    override val description: String = "if enchanted permanent is ${filter.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Condition: "if it was historic" (legendary, artifact, or Saga).
  * Checks the triggering entity's card definition for the historic quality.
  * Used for Curator's Ward's "if it was historic" intervening-if condition.

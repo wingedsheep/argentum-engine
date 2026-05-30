@@ -144,6 +144,11 @@ player to pay against an alternative consequence.
 
 - `PayCost.Mana(ManaCost)` — pay mana (auto-taps lands via the solver). "...unless you pay {U}{U}"
   (Vaporous Djinn).
+- `PayCost.OwnManaCost` — pay the mana cost of the permanent the cost applies to (its *own* mana
+  cost, read from `CardComponent.manaCost` at payment time). Use for granted abilities like
+  Essence Leak ("...sacrifice this permanent unless you pay its mana cost"), where the affected
+  permanent — not a fixed cost — owns the mana cost. The engine resolves it into a concrete
+  `PayCost.Mana` against that permanent before prompting.
 - `PayCost.PayLife(amount)` — pay N life; offered only when the player has more than N life.
   "...unless you pay 3 life."
 - `PayCost.Discard(filter = Any, count = 1, random = false)` — discard cards matching `filter`.
@@ -1371,6 +1376,12 @@ keywordAbilities(KeywordAbility.Protection(Color.BLUE), KeywordAbility.Annihilat
   target itself is excluded, so a lone copy never satisfies its own check; tokens compare by name
   like any other permanent. Resolution-only (reads a chosen target). Used by Winnow ("Destroy
   target nonland permanent if another permanent with the same name is on the battlefield").
+- `EnchantedPermanentMatches(filter)` — true when the permanent the source Aura is attached to
+  matches a `GameObjectFilter` (color, type, etc.), evaluated in projected state via the Aura's
+  `AttachedToComponent`. General-purpose counterpart to the narrow `EnchantedCreatureIsLegendary` /
+  `EnchantedCreatureHasSubtype` conditions. Works as a `ConditionalStaticAbility` gate (also in the
+  trigger resolver for conditionally-granted abilities). Used by Essence Leak ("as long as enchanted
+  permanent is red or green…", `GameObjectFilter.Permanent.withAnyColor(Color.RED, Color.GREEN)`).
 - `YouHaveCitysBlessing` — you have City's Blessing (10+ permanents).
 - `SourceIsRingBearer` — the source permanent is your Ring-bearer (CR 701.52e).
 

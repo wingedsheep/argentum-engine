@@ -244,6 +244,14 @@ object Conditions {
     fun EnchantedCreatureIsLegendary(): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 
+    /**
+     * If the permanent enchanted by the source Aura matches [filter] (color, type, etc.).
+     * General-purpose; e.g. `EnchantedPermanentMatches(GameObjectFilter.Permanent.anyColorOf(Color.RED, Color.GREEN))`
+     * for Essence Leak's "as long as enchanted permanent is red or green".
+     */
+    fun EnchantedPermanentMatches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.EnchantedPermanentMatches(filter)
+
     // =========================================================================
     // Life Total Conditions (via Compare)
     // =========================================================================

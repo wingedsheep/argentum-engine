@@ -180,6 +180,9 @@ class TurnFaceUpEnumerator : ActionEnumerator {
                 is PayCost.Tap -> {
                     // Tap morph costs not supported
                 }
+                is PayCost.OwnManaCost -> {
+                    // Own-mana-cost morph costs not supported
+                }
             }
         }
 

@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.EnchantedPermanentMatches
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
@@ -166,6 +167,7 @@ class ConditionEvaluator {
 
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtypeCtx(state, condition, ctx)
             is EnchantedCreatureIsLegendary -> evaluateEnchantedCreatureIsLegendaryCtx(state, ctx)
+            is EnchantedPermanentMatches -> evaluateEnchantedPermanentMatchesCtx(state, condition, ctx)
 
             // Player-relative trackers (resolve [Player] against the current context).
             is PlayerAttackedWithCreaturesThisTurn -> evaluateAttackedWithCreaturesCtx(state, condition, ctx)
@@ -376,6 +378,31 @@ class ConditionEvaluator {
             is Projection -> return false
         }
         return "LEGENDARY" in ctx.projectedStateFor(state).getTypes(creatureId)
+    }
+
+    private fun evaluateEnchantedPermanentMatchesCtx(
+        state: GameState,
+        condition: EnchantedPermanentMatches,
+        ctx: ConditionEvaluationContext
+    ): Boolean {
+        val sourceId = ctx.sourceId ?: return false
+        val attached = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
+        val permanentId = attached ?: when (ctx) {
+            is Resolution -> sourceId  // resolution-mode fallback (granted-ability scope)
+            is Projection -> return false
+        }
+        val projected = ctx.projectedStateFor(state)
+        val predicateContext = when (ctx) {
+            is Resolution -> PredicateContext.fromEffectContext(ctx.effectContext)
+            is Projection -> {
+                // "You" (for any controller predicate in [filter]) is the Aura's controller.
+                // Fall back to the source's projected controller rather than miscasting the
+                // source entity id as a player id; if even that is unknown, we can't evaluate.
+                val controller = ctx.controllerId ?: projected.getController(sourceId) ?: return false
+                PredicateContext(controllerId = controller)
+            }
+        }
+        return PredicateEvaluator().matches(state, projected, permanentId, condition.filter, predicateContext)
     }
 
     /**

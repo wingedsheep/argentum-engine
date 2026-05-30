@@ -32,6 +32,22 @@ sealed interface PayCost : TextReplaceable<PayCost> {
     }
 
     /**
+     * Pay the mana cost of the permanent the cost applies to (its own mana cost).
+     *
+     * Resolved at payment time by reading the source permanent's `CardComponent.manaCost`,
+     * so it works for granted abilities like Essence Leak ("...sacrifice this permanent
+     * unless you pay its mana cost"), where the affected permanent — not a fixed cost — owns
+     * the mana cost. The engine converts this into a concrete [Mana] cost against that
+     * permanent before prompting.
+     */
+    @SerialName("OwnManaCost")
+    @Serializable
+    data object OwnManaCost : PayCost {
+        override val description: String = "its mana cost"
+        override fun applyTextReplacement(replacer: TextReplacer): PayCost = this
+    }
+
+    /**
      * Discard one or more cards matching a filter.
      * "...unless you discard a land card"
      *

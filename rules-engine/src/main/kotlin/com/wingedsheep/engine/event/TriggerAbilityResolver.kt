@@ -277,10 +277,29 @@ class TriggerAbilityResolver(
             val allStaticAbilities = sourceDef.script.effectiveStaticAbilities(classLevel)
 
             for (ability in allStaticAbilities) {
-                if (ability is GrantTriggeredAbility &&
-                    ability.filter.scope is Scope.AttachedTo
-                ) {
-                    result.add(ability.ability)
+                when (ability) {
+                    is GrantTriggeredAbility ->
+                        if (ability.filter.scope is Scope.AttachedTo) result.add(ability.ability)
+
+                    // "As long as enchanted permanent is X, it has '<triggered ability>'" —
+                    // a conditional grant (e.g. Essence Leak). Only contribute the granted ability
+                    // while the gating condition holds, evaluated with the Aura as the source so
+                    // EnchantedPermanentMatches resolves the attached permanent.
+                    is ConditionalStaticAbility -> {
+                        val grant = ability.ability as? GrantTriggeredAbility ?: continue
+                        if (grant.filter.scope !is Scope.AttachedTo) continue
+                        val controllerId = state.projectedState.getController(permanentId) ?: continue
+                        val context = EffectContext(
+                            sourceId = permanentId,
+                            controllerId = controllerId,
+                            opponentId = null
+                        )
+                        if (ConditionEvaluator().evaluate(state, ability.condition, context)) {
+                            result.add(grant.ability)
+                        }
+                    }
+
+                    else -> {}
                 }
             }
         }
