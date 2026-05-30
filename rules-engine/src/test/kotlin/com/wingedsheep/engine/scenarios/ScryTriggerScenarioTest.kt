@@ -24,7 +24,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Substrate tests for the "Whenever you scry" trigger (CR 701.18):
+ * Substrate tests for the "Whenever you scry" trigger (CR 701.22):
  * `EffectPatterns.scry(N)` ends by emitting [ScriedEvent], which drives
  * `Triggers.WheneverYouScry` and surfaces "the number of cards looked at" via
  * [ContextPropertyKey.TRIGGER_SCRY_COUNT].

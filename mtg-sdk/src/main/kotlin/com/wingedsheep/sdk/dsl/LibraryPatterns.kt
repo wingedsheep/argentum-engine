@@ -156,8 +156,10 @@ object LibraryPatterns {
                 destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
                 order = CardOrder.ControllerChooses
             ),
-            // Fire "Whenever you scry" triggers (CR 701.18) after the pipeline finishes.
-            EmitScriedEventEffect(count = DynamicAmount.Fixed(count))
+            // Fire "Whenever you scry" triggers (CR 701.22) after the pipeline finishes.
+            // The event count is the actual size of the "scried" gather collection at
+            // resolution time, not the literal N (handles library-smaller-than-N).
+            EmitScriedEventEffect()
         )
     )
 

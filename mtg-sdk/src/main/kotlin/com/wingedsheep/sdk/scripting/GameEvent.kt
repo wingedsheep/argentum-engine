@@ -285,7 +285,7 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     }
 
     /**
-     * Whenever a player scries (CR 701.18). Fires once per scry, after every card chosen
+     * Whenever a player scries (CR 701.22). Fires once per scry, after every card chosen
      * for the bottom/top has been moved. Carries the number of cards actually looked at,
      * which equals the scry N parameter unless the library had fewer cards available.
      * Read this count via [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT]

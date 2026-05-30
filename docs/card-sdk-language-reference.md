@@ -1038,7 +1038,7 @@ Triggers.youCastSpell(
 
 ### Scry
 
-- `WheneverYouScry` — fires once per scry resolution (CR 701.18), after the cards have
+- `WheneverYouScry` — fires once per scry resolution (CR 701.22), after the cards have
   been placed on top/bottom. Pair with `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)`
   for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
   Automatically emitted by `EffectPatterns.scry(N)`; no card has to opt in.

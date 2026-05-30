@@ -2,7 +2,6 @@ package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ScriedEvent
-import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -12,15 +11,16 @@ import kotlin.reflect.KClass
 
 /**
  * Tail of the [com.wingedsheep.sdk.dsl.LibraryPatterns.scry] composite: emits a
- * [ScriedEvent] so "Whenever you scry" triggers (CR 701.18) fire exactly once per
- * scry, after the top/bottom moves have all resolved. The count carried is the
- * scry N parameter; this is fixed at composition time today (we don't shorten it
- * when the library held fewer cards — see CR 701.18a). Refine later if that case
- * comes up in practice.
+ * [ScriedEvent] so "Whenever you scry" triggers (CR 701.22) fire exactly once per
+ * scry, after the top/bottom moves have all resolved.
+ *
+ * The carried count is the size of the named gather collection (`"scried"` by default)
+ * at resolution time — the cards `GatherCardsEffect` actually pulled, which equals
+ * the scry N parameter unless the library held fewer (CR 701.22a). When that count
+ * is zero, no event is emitted at all, satisfying CR 701.22b ("if a player is
+ * instructed to scry 0, no scry event occurs").
  */
-class EmitScriedEventExecutor(
-    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
-) : EffectExecutor<EmitScriedEventEffect> {
+class EmitScriedEventExecutor : EffectExecutor<EmitScriedEventEffect> {
 
     override val effectType: KClass<EmitScriedEventEffect> = EmitScriedEventEffect::class
 
@@ -29,8 +29,10 @@ class EmitScriedEventExecutor(
         effect: EmitScriedEventEffect,
         context: EffectContext
     ): EffectResult {
+        val count = context.pipeline.storedCollections[effect.gatherCollection]?.size ?: 0
+        if (count == 0) return EffectResult.success(state)
+
         val playerId = context.controllerId
-        val count = amountEvaluator.evaluate(state, effect.count, context).coerceAtLeast(0)
         val sourceName = context.sourceId
             ?.let { state.getEntity(it)?.get<CardComponent>()?.name }
             ?: "Scry"

@@ -101,7 +101,7 @@ data class TriggeredAbilityOnStackComponent(
     /** Power of the aura/equipment's attached creature, captured at trigger time; LKI for
      *  "enchanted creature ... its power" reads when the creature has left (CR 608.2g). */
     val enchantedCreatureLastKnownPower: Int? = null,
-    /** Cards looked at by the scry that fired this trigger (CR 701.18). Null for non-scry triggers. */
+    /** Cards looked at by the scry that fired this trigger (CR 701.22). Null for non-scry triggers. */
     val triggerScryCount: Int? = null,
     // Modal fields — populated when this triggered ability is a copy of a modal spell (700.2g).
     // Copies inherit the original's chosen modes; targets either inherit too (StormCopy default)

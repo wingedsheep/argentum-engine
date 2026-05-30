@@ -185,7 +185,7 @@ data class RingTemptedEvent(
 ) : GameEvent
 
 /**
- * A player just finished a `scry N` (CR 701.18). Fires once per scry, after the
+ * A player just finished a `scry N` (CR 701.22). Fires once per scry, after the
  * top/bottom moves have all resolved. Drives "Whenever you scry" triggers; see
  * [com.wingedsheep.sdk.scripting.GameEvent.ScriedEvent].
  *

@@ -35,13 +35,19 @@ data class ShuffleLibraryEffect(
  * triggers ([com.wingedsheep.sdk.dsl.Triggers.WheneverYouScry]) fire exactly once
  * per scry, carrying the actual number of cards looked at.
  *
+ * The count is the size of the named gather collection (`"scried"` by default) at
+ * resolution time — i.e. the cards `GatherCardsEffect` actually pulled, which equals
+ * the scry N parameter unless the library held fewer (CR 701.22a). Per CR 701.22b,
+ * a scry-0 (zero cards looked at) emits no event at all.
+ *
  * Card authors should not use this directly; it is wired into the scry primitive.
  */
 @SerialName("EmitScriedEvent")
 @Serializable
 data class EmitScriedEventEffect(
-    val count: DynamicAmount
+    val gatherCollection: String = "scried"
 ) : Effect {
+    // Intentionally blank: this is an internal pipeline tail with no player-facing text.
     override val description: String = ""
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
