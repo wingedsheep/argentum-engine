@@ -14,6 +14,7 @@ import com.wingedsheep.mtg.sets.definitions.dom.DominariaSet
 import com.wingedsheep.mtg.sets.definitions.dsk.DuskmournSet
 import com.wingedsheep.mtg.sets.definitions.ecl.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.eoe.EdgeOfEternitiesSet
+import com.wingedsheep.mtg.sets.definitions.exo.ExodusSet
 import com.wingedsheep.mtg.sets.definitions.fdn.FoundationsSet
 import com.wingedsheep.mtg.sets.definitions.fin.FinalFantasySet
 import com.wingedsheep.mtg.sets.definitions.frf.FateReforgedSet
@@ -112,6 +113,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(DominariaUnitedSet.cards)
         register(DuskmournSet.cards)
         register(EdgeOfEternitiesSet.cards); register(EdgeOfEternitiesSet.basicLands)
+        register(ExodusSet.cards)
         register(FinalFantasySet.cards)
         register(FateReforgedSet.cards)
         register(FoundationsSet.cards)
