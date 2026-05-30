@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 177 / 291
+**Implemented:** 178 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -192,7 +192,7 @@ starter-deck/special cards and basic lands.
 - [x] Bag End Porter
 - [x] Bombadil's Song
 - [x] Brandywine Farmer
-- [ ] Celeborn the Wise
+- [x] Celeborn the Wise
 - [ ] Chance-Met Elves
 - [ ] Delighted Halfling
 - [ ] Dúnedain Rangers
