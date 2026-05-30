@@ -299,8 +299,14 @@ class GameEnvironment private constructor(
 
             val action = if (pendingDecision != null) {
                 val decision = pendingDecision!!
-                val response = selector?.respondToDecision(state, decision)
-                    ?: defaultDecisionResponder.respond(state, decision, player)
+                // A selector signals "I don't handle decisions" by throwing
+                // UnsupportedOperationException (see RandomActionSelector); fall back to the
+                // built-in responder in that case, as its contract promises.
+                val response = try {
+                    selector?.respondToDecision(state, decision)
+                } catch (e: UnsupportedOperationException) {
+                    null
+                } ?: defaultDecisionResponder.respond(state, decision, player)
                 SubmitDecision(player, response)
             } else {
                 val actions = legalActions()
