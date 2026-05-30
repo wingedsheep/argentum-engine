@@ -24,14 +24,17 @@ class SaprolingSymbiosisScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Willow Dryad")
                     .withCardOnBattlefield(1, "Jungle Lion")
+                    // The opponent controls a creature too — it must NOT be counted ("each
+                    // creature you control"), so the token count stays at 2.
+                    .withCardOnBattlefield(2, "Jungle Lion")
                     .withCardInHand(1, "Saproling Symbiosis")
                     .withLandsOnBattlefield(1, "Forest", 4)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                withClue("two creatures controlled before casting") {
-                    (game.findPermanents("Willow Dryad").size + game.findPermanents("Jungle Lion").size) shouldBe 2
+                withClue("three creatures in play before casting (two yours, one opponent's)") {
+                    (game.findPermanents("Willow Dryad").size + game.findPermanents("Jungle Lion").size) shouldBe 3
                 }
 
                 val castResult = game.castSpell(1, "Saproling Symbiosis")
@@ -40,7 +43,7 @@ class SaprolingSymbiosisScenarioTest : ScenarioTestBase() {
                 }
                 game.resolveStack()
 
-                withClue("two creatures controlled → two Saproling tokens (tokens are not self-counted)") {
+                withClue("two creatures YOU control → two Saproling tokens (opponent's creature and the tokens are not counted)") {
                     game.findPermanents("Saproling Token").size shouldBe 2
                 }
             }

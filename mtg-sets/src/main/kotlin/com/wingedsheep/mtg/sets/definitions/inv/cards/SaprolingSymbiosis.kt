@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * The flash-timing unlock reuses the shared FlashKicker plumbing (same as Ghitu Fire):
  * paying {2} more lets the sorcery be cast at instant speed. The token count reads the number
  * of creatures you control at resolution — tokens created by this spell are not counted because
- * the amount is evaluated once before the tokens enter (CR 608.2g).
+ * the amount is evaluated once before the tokens enter (CR 608.2h).
  */
 val SaprolingSymbiosis = card("Saproling Symbiosis") {
     manaCost = "{3}{G}"
