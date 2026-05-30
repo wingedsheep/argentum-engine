@@ -216,6 +216,7 @@ class TurnFaceUpHandler(
                 }
             }
             is PayCost.Choice -> return "Choice morph costs are not supported"
+            is PayCost.Tap -> return "Tap morph costs are not supported"
         }
 
         return null
@@ -470,6 +471,7 @@ class TurnFaceUpHandler(
                 }
             }
             is PayCost.Choice -> return ExecutionResult.error(currentState, "Choice morph costs are not supported")
+            is PayCost.Tap -> return ExecutionResult.error(currentState, "Tap morph costs are not supported")
         }
 
         // Turn the creature face up and add static ability components

@@ -71,6 +71,7 @@ class PayOrSufferExecutor(
             is PayCost.Mana -> handleManaCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Exile -> handleExileCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Choice -> handleChoiceCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
+            is PayCost.Tap -> handleTapCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.ReturnToHand -> EffectResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
             is PayCost.RevealCard -> EffectResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
         }
@@ -253,6 +254,72 @@ class PayOrSufferExecutor(
             sourceId = sourceId,
             sourceName = sourceName,
             costType = PayOrSufferCostType.SACRIFICE,
+            sufferEffect = effect.suffer,
+            requiredCount = cost.count,
+            filter = cost.filter,
+            random = false,
+            targets = context.targets,
+            namedTargets = context.pipeline.namedTargets
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+        return EffectResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            decisionResult.events
+        )
+    }
+
+    /**
+     * Handle a tap cost - player must tap one or more of their untapped permanents
+     * to avoid the suffer effect.
+     *
+     * Filters candidates to permanents the paying player controls that are untapped,
+     * excluding the source itself (the source is typically tapped or off-battlefield
+     * but we exclude defensively, matching the sacrifice-cost convention).
+     */
+    private fun handleTapCost(
+        state: GameState,
+        effect: PayOrSufferEffect,
+        context: EffectContext,
+        cost: PayCost.Tap,
+        sourceId: EntityId,
+        sourceName: String,
+        controllerId: EntityId
+    ): EffectResult {
+        // Untapped permanents the player controls that match the filter, excluding the source.
+        val validPermanents = findValidUntappedPermanentsOnBattlefield(
+            state, controllerId, cost.filter, sourceId
+        )
+
+        // If the player doesn't have enough untapped permanents, automatically suffer.
+        if (validPermanents.size < cost.count) {
+            return executeSufferEffect(state, effect.suffer, context)
+        }
+
+        val prompt = buildTapPrompt(cost, sourceName, effect.suffer)
+
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = state,
+            playerId = controllerId,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            prompt = prompt,
+            options = validPermanents,
+            minSelections = 0,
+            maxSelections = cost.count,
+            ordered = false,
+            phase = DecisionPhase.RESOLUTION,
+            useTargetingUI = true  // Click an untapped permanent in play to tap it
+        )
+
+        val continuation = PayOrSufferContinuation(
+            decisionId = decisionResult.pendingDecision!!.id,
+            playerId = controllerId,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            costType = PayOrSufferCostType.TAP,
             sufferEffect = effect.suffer,
             requiredCount = cost.count,
             filter = cost.filter,
@@ -556,6 +623,7 @@ class PayOrSufferExecutor(
             is PayCost.Mana -> ManaSolver(cardRegistry).canPay(state, playerId, cost.cost)
             is PayCost.Exile -> findValidCardsInZone(state, playerId, cost.filter, cost.zone).size >= cost.count
             is PayCost.Choice -> cost.options.any { canPayCost(state, playerId, it, sourceId) }
+            is PayCost.Tap -> findValidUntappedPermanentsOnBattlefield(state, playerId, cost.filter, sourceId).size >= cost.count
             is PayCost.ReturnToHand -> false
             is PayCost.RevealCard -> false
         }
@@ -612,6 +680,23 @@ class PayOrSufferExecutor(
     ): List<EntityId> {
         return BattlefieldFilterUtils.findMatchingOnBattlefield(
             state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
+        )
+    }
+
+    /**
+     * Find all untapped permanents the player controls that match the filter.
+     * Excludes the source permanent itself.
+     */
+    private fun findValidUntappedPermanentsOnBattlefield(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter,
+        sourceId: EntityId
+    ): List<EntityId> {
+        return BattlefieldFilterUtils.findMatchingOnBattlefield(
+            state, filter.youControl().untapped(),
+            PredicateContext(controllerId = playerId),
+            excludeSelfId = sourceId
         )
     }
 
@@ -713,6 +798,21 @@ class PayOrSufferExecutor(
         }
         val consequence = describeConsequence(sufferEffect, sourceName)
         return "Sacrifice $typeText or $consequence"
+    }
+
+    /**
+     * Build prompt for tap cost.
+     */
+    private fun buildTapPrompt(cost: PayCost.Tap, sourceName: String, sufferEffect: Effect): String {
+        val desc = cost.filter.description
+        val typeText = if (cost.count == 1) {
+            // The article always precedes "untapped", so it is always "an".
+            "an untapped $desc you control"
+        } else {
+            "${cost.count} untapped ${desc}s you control"
+        }
+        val consequence = describeConsequence(sufferEffect, sourceName)
+        return "Tap $typeText or $consequence"
     }
 
     /**

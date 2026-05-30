@@ -99,7 +99,8 @@ enum class PayOrSufferCostType {
     PAY_LIFE,
     MANA,
     EXILE,
-    CHOICE
+    CHOICE,
+    TAP
 }
 
 /**

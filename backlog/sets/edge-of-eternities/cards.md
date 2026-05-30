@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 236 / 261
+**Implemented:** 237 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -38,7 +38,7 @@
 - [x] Cloudsculpt Technician
 - [x] Codecracker Hound
 - [x] Comet Crawler
-- [ ] Command Bridge
+- [x] Command Bridge
 - [x] Consult the Star Charts
 - [ ] Cosmogoyf
 - [x] Cosmogrand Zenith

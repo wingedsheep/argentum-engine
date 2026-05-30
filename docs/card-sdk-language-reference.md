@@ -133,6 +133,31 @@ the `CardDefinition`.
   each target." Pair with an unbounded `TargetCreature(unlimited = true)` etc.; the engine
   auto-pays `amountPerTarget × action.targets.size` at cast resolution (Phyrexian Purge).
 
+**`PayCost`** — payable costs used by [`PayOrSufferEffect`](#15-replacement-effects) ("do X
+unless you Y") and by `morphCost` (non-mana face-up cost). Distinct from `AbilityCost` / `Costs.*`
+which model an ability's activation cost; `PayCost` models a single cost the engine prompts the
+player to pay against an alternative consequence.
+
+- `PayCost.Mana(ManaCost)` — pay mana (auto-taps lands via the solver). "...unless you pay {U}{U}"
+  (Vaporous Djinn).
+- `PayCost.PayLife(amount)` — pay N life; offered only when the player has more than N life.
+  "...unless you pay 3 life."
+- `PayCost.Discard(filter = Any, count = 1, random = false)` — discard cards matching `filter`.
+  Random variant prompts a yes/no and the engine picks the discards (Pillaging Horde).
+- `PayCost.Sacrifice(filter = Any, count = 1)` — sacrifice permanents you control matching
+  `filter`. Source is auto-excluded. "...unless you sacrifice three Forests" (Primeval Force).
+- `PayCost.Exile(filter = Any, zone = HAND, count = 1)` — exile cards from `zone` matching
+  `filter`. "...unless you exile a blue card from your hand."
+- `PayCost.Tap(filter = Any, count = 1)` — tap untapped permanents you control matching `filter`.
+  Source is auto-excluded. Tapping each emits a `TappedEvent` so "becomes tapped" triggers fire.
+  "...unless you tap an untapped permanent you control" (Command Bridge).
+- `PayCost.Choice(options)` — present several `PayCost`s; player picks one (or the suffer effect).
+  Unaffordable options are hidden. "...unless they sacrifice a nonland permanent or discard a card."
+- `PayCost.ReturnToHand(filter, count = 1)` — return permanents you control to their owner's hand.
+  Currently only consumed by `morphCost`; not yet wired into `PayOrSufferEffect`.
+- `PayCost.RevealCard(filter, count = 1)` — reveal a card from hand matching `filter`. Currently
+  only consumed by `morphCost`; not yet wired into `PayOrSufferEffect`.
+
 ---
 
 ## 4. Effects (`Effects.*`)

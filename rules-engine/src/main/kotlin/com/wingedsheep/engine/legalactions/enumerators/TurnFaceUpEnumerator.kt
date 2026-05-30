@@ -177,6 +177,9 @@ class TurnFaceUpEnumerator : ActionEnumerator {
                 is PayCost.Choice -> {
                     // Choice morph costs not supported
                 }
+                is PayCost.Tap -> {
+                    // Tap morph costs not supported
+                }
             }
         }
 

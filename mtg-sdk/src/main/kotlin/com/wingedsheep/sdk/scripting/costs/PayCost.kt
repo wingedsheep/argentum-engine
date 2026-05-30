@@ -234,4 +234,41 @@ sealed interface PayCost : TextReplaceable<PayCost> {
             return if (newFilter !== filter) copy(filter = newFilter) else this
         }
     }
+
+    /**
+     * Tap one or more untapped permanents you control to avoid the consequence.
+     * "...unless you tap an untapped permanent you control"
+     *
+     * The executor restricts candidates to permanents the paying player controls that
+     * are untapped, and excludes the source itself. Tapping the selected permanent(s)
+     * emits a `TappedEvent` for each one, so "becomes tapped" triggers fire normally.
+     *
+     * Used by Command Bridge.
+     *
+     * @property filter Additional filter on the permanents that can be tapped
+     *                  (`Any` by default — any of your untapped permanents qualify).
+     * @property count How many untapped permanents must be tapped (default 1).
+     */
+    @SerialName("Tap")
+    @Serializable
+    data class Tap(
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
+        val count: Int = 1
+    ) : PayCost {
+        override val description: String = buildString {
+            append("tap ")
+            val filterDesc = filter.description
+            if (count == 1) {
+                // The article always precedes "untapped", so it is always "an".
+                append("an untapped $filterDesc you control")
+            } else {
+                append("$count untapped ${filterDesc}s you control")
+            }
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): PayCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
 }

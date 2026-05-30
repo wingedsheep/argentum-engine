@@ -148,6 +148,7 @@ class SacrificeAndPayContinuationResumer(
             PayOrSufferCostType.PAY_LIFE -> resumePayOrSufferPayLife(state, continuation, response, checkForMore)
             PayOrSufferCostType.MANA -> resumePayOrSufferMana(state, continuation, response, checkForMore)
             PayOrSufferCostType.EXILE -> resumePayOrSufferExile(state, continuation, response, checkForMore)
+            PayOrSufferCostType.TAP -> resumePayOrSufferTap(state, continuation, response, checkForMore)
             PayOrSufferCostType.CHOICE -> ExecutionResult.error(state, "Choice cost type should be handled by PayOrSufferChoiceContinuation, not PayOrSufferContinuation")
         }
     }
@@ -310,6 +311,43 @@ class SacrificeAndPayContinuationResumer(
             )
             newState = transitionResult.state
             events.addAll(transitionResult.events)
+        }
+
+        return checkForMore(newState, events)
+    }
+
+    /**
+     * Handle tap-permanent selection for pay or suffer.
+     * Tapping each selected permanent emits a TappedEvent so "becomes tapped" triggers fire.
+     */
+    private fun resumePayOrSufferTap(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for pay or suffer tap")
+        }
+
+        val selectedPermanents = response.selectedCards
+
+        // If player didn't select enough untapped permanents, execute the suffer effect.
+        if (selectedPermanents.size < continuation.requiredCount) {
+            return executePayOrSufferConsequence(state, continuation, checkForMore)
+        }
+
+        // Player paid the cost - tap each selected permanent.
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (permanentId in selectedPermanents) {
+            val entity = newState.getEntity(permanentId) ?: continue
+            // Skip already-tapped permanents (defensive — selection UI should already exclude them).
+            if (entity.has<TappedComponent>()) continue
+            val permanentName = entity.get<CardComponent>()?.name ?: "Unknown"
+            newState = newState.updateEntity(permanentId) { it.with(TappedComponent) }
+            events.add(TappedEvent(permanentId, permanentName))
         }
 
         return checkForMore(newState, events)
