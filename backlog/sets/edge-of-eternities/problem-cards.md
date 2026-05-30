@@ -3,9 +3,9 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 # Problem Cards
 
-## Status: cards still blocked on engine work (21)
+## Status: cards still blocked on engine work (19)
 
-The booster set is at **240 / 261**. The cards below are the only unimplemented ones; each is
+The booster set is at **242 / 261**. The cards below are the only unimplemented ones; each is
 blocked on a missing engine/SDK feature. The blocking clause and the engine change needed are
 summarized here and detailed in [`missing-effects.md`](missing-effects.md) (section numbers in
 parentheses).
@@ -13,11 +13,9 @@ parentheses).
 | Card | Blocking clause | Engine change needed (missing-effects §) |
 |------|-----------------|-------------------------------------------|
 | Quantum Riddler | "if you would draw one or more cards, you draw that many plus one instead" while hand ≤ 1 | Conditional draw-replacement static (§1) |
-| Faller's Faithful | "if that creature wasn't dealt damage this turn, ... draws two cards" | "Was dealt damage this turn" tracking (§2) |
 | Orbital Plunge | "If excess damage was dealt this way, create a Lander token" | Excess-damage detection (§3) |
 | Blade of the Swarm | "Put target exiled card with warp on the bottom of its owner's library" | Targeting warp-exiled cards (§4) |
 | Bioengineered Future | "Each creature you control enters with an additional +1/+1 counter ... for each land that entered ... this turn" | Continuous extra-ETB-counters + lands-entered-this-turn tracker (§5) |
-| Dyadrine, Synthesis Amalgam | "enters with ... +1/+1 counters ... equal to the amount of mana spent to cast it" | Mana-spent `DynamicAmount` in ETB replacement (§6) |
 | Cosmogoyf | power/toughness = "number of cards you own in exile" (+1) | CDA P/T from cards-in-exile count (§7) |
 | Territorial Bruntar | "exile cards from the top ... until you exile a nonland card. You may cast that card this turn" | Impulse-until-nonland effect (§9) |
 | Zero Point Ballad | "Destroy all creatures with toughness X or less" + reanimate one destroyed this way | Dynamic-toughness mass destroy + reanimate-from-batch (§10) |
