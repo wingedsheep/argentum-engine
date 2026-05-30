@@ -58,6 +58,15 @@ enum class Keyword(val displayName: String) {
 
     // ── Triggered/Static keyword abilities ───────────────────
     PROWESS("Prowess"),
+
+    /**
+     * Flurry (Tarkir: Dragonstorm, Jeskai). "Flurry — Whenever you cast your second spell
+     * each turn, [effect]." A display-only keyword tag; the behavior lives in a triggered
+     * ability on the [com.wingedsheep.sdk.scripting.GameEvent.NthSpellCastEvent] (n=2, you)
+     * event, wired by the `flurry { }` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    FLURRY("Flurry"),
     CHANGELING("Changeling"),
 
     // ── ETB modification ──────────────────────────────────────

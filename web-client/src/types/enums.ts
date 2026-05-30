@@ -177,6 +177,7 @@ export enum Keyword {
   FLASH = 'FLASH',
   // Triggered/Static keyword abilities
   PROWESS = 'PROWESS',
+  FLURRY = 'FLURRY',
   CHANGELING = 'CHANGELING',
   // Cost reduction
   CONVOKE = 'CONVOKE',
@@ -236,6 +237,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.HASTE]: 'Haste',
   [Keyword.FLASH]: 'Flash',
   [Keyword.PROWESS]: 'Prowess',
+  [Keyword.FLURRY]: 'Flurry',
   [Keyword.CHANGELING]: 'Changeling',
   [Keyword.CONVOKE]: 'Convoke',
   [Keyword.DELVE]: 'Delve',

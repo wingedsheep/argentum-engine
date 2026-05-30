@@ -61,11 +61,17 @@ majority of the set.
    keyword + the binary choice prompt (and the dynamic N path for "endure X").
    → Anafenza Unyielding Lineage, Descendant of Storms, Inspirited Vanguard, Krumar Initiate, …
 
-3. **Flurry** (Jeskai, 10 cards) — "Whenever you cast your **second** spell each turn, …" The
-   `spellsCastThisTurnByPlayer` tracker already exists (powers `YouCastSpellsThisTurn`), but there
-   is **no trigger that fires specifically on the 2nd cast of the turn.** Needs a new trigger type.
-   → Cori Mountain Stalwart, A-Cori-Steel Cutter, Narset Jeskai Waymaster, Voice of Victory-adjacent,
-     Taigam Master Opportunist (see Tier 3), …
+3. **Flurry** (Jeskai, 10 cards) — ✅ **DONE.** "Whenever you cast your **second** spell each turn, …"
+   The `GameEvent.NthSpellCastEvent` trigger already fired on the Nth cast of the turn (it powers the
+   EOE/BLB second-spell cards), so no new trigger type was needed — the gap note above was stale. Added
+   the display-only `Keyword.FLURRY` plus a `card { flurry { … } }` builder helper (mirrors
+   `prowess()` / `rampage()`) that forces `Triggers.NthSpellCast(2, Player.You)` and prefixes the
+   "Flurry — Whenever you cast your second spell each turn," reminder text.
+   Implemented: Cori Mountain Stalwart, Devoted Duelist, Jeskai Devotee, Poised Practitioner,
+   Wingblade Disciple, Wayspeaker Bodyguard, Equilibrium Adept.
+   Still blocked elsewhere: **Taigam, Master Opportunist** (needs Suspend, Tier 3 §14),
+   **Cori-Steel Cutter** + **A-Cori-Steel Cutter** (need "create a token, then attach this Equipment
+   to it" from a trigger — deferred).
 
 4. **Renew** (Sultai, 12 cards) — graveyard-activated ability:
    `{cost}, Exile this card from your graveyard: <effect>. Activate only as a sorcery.`

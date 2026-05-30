@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -326,6 +327,45 @@ class CardBuilder(private val name: String) {
                     toughnessModifier = 1,
                     target = EffectTarget.Self
                 )
+            )
+        )
+    }
+
+    /**
+     * Add Flurry (Tarkir: Dragonstorm, Jeskai) — keyword tag + a "second spell each turn"
+     * triggered ability.
+     *
+     * "Flurry — Whenever you cast your second spell each turn, [effect]." The [Keyword.FLURRY]
+     * tag is display-only (the engine has no dedicated Flurry handler); the behavior lives
+     * entirely in the triggered ability wired here on the [Triggers.NthSpellCast] (n=2, you)
+     * event, which the [com.wingedsheep.sdk.scripting.GameEvent.NthSpellCastEvent] matcher
+     * already fires when its controller casts their second spell of the turn.
+     *
+     * Author the effect/target/optional inside the block exactly like [triggeredAbility]
+     * (the [TriggeredAbilityBuilder.trigger] is ignored — it is always forced to the
+     * second-spell trigger). This helper composes the rendered reminder text as
+     * "Flurry — Whenever you cast your second spell each turn, <effect>." A custom
+     * [TriggeredAbilityBuilder.description] replaces only the `<effect>` portion, keeping
+     * the "Flurry — Whenever you cast your second spell each turn," prefix.
+     */
+    fun flurry(init: TriggeredAbilityBuilder.() -> Unit) {
+        keywordSet.add(Keyword.FLURRY)
+        val builder = TriggeredAbilityBuilder()
+        builder.init()
+        builder.trigger = Triggers.NthSpellCast(2, Player.You)
+        val ability = builder.build()
+        val effectText = (builder.description ?: buildString {
+            if (ability.optional) append("you may ")
+            ability.targetRequirement?.let { append(it.description); append(" ") }
+            append(ability.effect.description.replaceFirstChar { it.lowercase() })
+            ability.elseEffect?.let {
+                append(". If you don't, ")
+                append(it.description.replaceFirstChar { c -> c.lowercase() })
+            }
+        }).trimEnd().trimEnd('.')
+        triggeredAbilities.add(
+            ability.copy(
+                descriptionOverride = "Flurry — Whenever you cast your second spell each turn, $effectText."
             )
         )
     }

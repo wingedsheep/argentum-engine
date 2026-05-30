@@ -1320,7 +1320,7 @@ activatedAbility {
 
 Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all landwalks (Plainswalk … Forestwalk), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
-Flash, Prowess, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Impending, Conspire, Hideaway, Cascade, Plot,
+Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Evoke, Impending, Conspire, Hideaway, Cascade, Plot,
 Offspring, Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
 composite abilities).
 
@@ -1339,6 +1339,13 @@ composite abilities).
 - `Rampage(n)` — +N/+N for each blocker past the first. Display-only; wire the behavior with the
   `card { rampage(n) }` builder helper, which adds this keyword ability plus a "becomes blocked"
   triggered ability granting `+n/+n × (blockers − 1)` until end of turn (mirrors `prowess()`).
+- `Flurry` (Tarkir: Dragonstorm, Jeskai) — "Flurry — Whenever you cast your second spell each turn,
+  [effect]." Display-only `Keyword.FLURRY`; wire the behavior with the `card { flurry { … } }` builder
+  helper. Author the effect/target/optional inside the block exactly like `triggeredAbility { }` — the
+  helper forces the `Triggers.NthSpellCast(2, Player.You)` trigger, adds the FLURRY tag, and prefixes the
+  rendered text with "Flurry — Whenever you cast your second spell each turn," (mirrors `prowess()` /
+  `rampage()`). The second-spell-cast event is matched by `GameEvent.NthSpellCastEvent`; no new engine
+  subsystem is involved. Example: `flurry { effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent), damageSource = EffectTarget.Self) }`.
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` — tap N power worth to animate a Vehicle.
 - `Modular(n)` — ETB with +1/+1 counters, transfer on death.
