@@ -111,3 +111,4 @@ continuations, layer system, mana, priority): [`docs/architecture-principles.md`
 | [`data-contracts.md`](docs/data-contracts.md) | Client/server JSON payloads |
 | [`web-client-architecture.md`](docs/web-client-architecture.md) | Frontend architecture, WebSocket API |
 | [`e2e-test-patterns.md`](docs/e2e-test-patterns.md) | Playwright fixtures, GamePage helpers, scenario config |
+| [`gym-deckbuild-env.md`](docs/gym-deckbuild-env.md) | Sealed deckbuild gym env (build → play pipeline) + how to supply your own win-rate reward |

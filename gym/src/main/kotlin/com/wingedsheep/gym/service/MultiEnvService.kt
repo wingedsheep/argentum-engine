@@ -4,12 +4,11 @@ import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.GameConfig
 import com.wingedsheep.engine.core.PlayerConfig
-import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.gym.GameEnvironment
-import com.wingedsheep.gym.contract.ActionRegistry
-import com.wingedsheep.gym.contract.ObservationBuilder
+import com.wingedsheep.gym.GameGymEnv
+import com.wingedsheep.gym.GymEnv
 import com.wingedsheep.gym.contract.ObservationResult
-import com.wingedsheep.gym.contract.ResolvedAction
+import com.wingedsheep.gym.deckbuild.DeckbuildEnvironment
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.model.EntityId
 import java.util.concurrent.Callable
@@ -20,19 +19,22 @@ import java.util.concurrent.ConcurrentHashMap
  * exposes create / reset / observe / step / fork / snapshot / dispose methods
  * that HTTP, gRPC, or an in-process training loop can call directly.
  *
+ * Environments are polymorphic ([GymEnv]): game envs ([GameGymEnv]) and deckbuild
+ * envs ([DeckbuildEnvironment]) share the observe/step/fork surface. Operations that
+ * only make sense for a game (decision submission, snapshot/restore, reset) require a
+ * [GameGymEnv] and reject other env kinds.
+ *
  * ## Threading
  *
  * Each env is single-threaded — two calls naming the same [EnvId] must not
- * overlap or they race on mutable `GameEnvironment` fields. The intended use
- * is: a trainer owns an env and calls it sequentially, possibly interleaved
- * with N other envs which run in parallel via [stepBatch]. If a caller
- * manually issues concurrent calls to the same env, behaviour is undefined.
+ * overlap or they race on mutable env fields. The intended use is: a trainer
+ * owns an env and calls it sequentially, possibly interleaved with N other
+ * envs which run in parallel via [stepBatch].
  *
  * ## Registry regeneration
  *
- * Every `reset` / `step` rebuilds the [ActionRegistry] for that env. Stored
- * handles from a previous step are invalidated and resolving them returns
- * `Unknown`.
+ * Every `reset` / `step` rebuilds the env's action mapping. Action IDs from a
+ * previous step are invalidated.
  */
 class MultiEnvService(
     val cardRegistry: CardRegistry,
@@ -40,77 +42,46 @@ class MultiEnvService(
     val workerPool: EnvWorkerPool = EnvWorkerPool(),
     val snapshotCodec: SnapshotCodec = SnapshotCodec()
 ) {
-    private val envs = ConcurrentHashMap<EnvId, EnvEntry>()
-    private val observationBuilder = ObservationBuilder()
+    private val envs = ConcurrentHashMap<EnvId, GymEnv>()
     val deckResolver: DeckResolver = DeckResolver(cardRegistry, boosterGenerator)
-
-    /** Book-keeping for a single active environment. */
-    private class EnvEntry(
-        val environment: GameEnvironment,
-        val perspectivePlayerIndex: Int,
-        val revealAll: Boolean,
-        @Volatile var registry: ActionRegistry = ActionRegistry.EMPTY
-    )
 
     // =========================================================================
     // Lifecycle
     // =========================================================================
 
     /**
-     * Create a new env and run `reset` immediately. The returned observation
+     * Create a new game env and run `reset` immediately. The returned observation
      * is the opening state (post-mulligan if [EnvConfig.skipMulligans]).
      */
     fun create(config: EnvConfig): CreatedEnv {
-        val playerConfigs = config.players.map { spec ->
-            PlayerConfig(
-                name = spec.name,
-                deck = deckResolver.resolve(spec.deck),
-                startingLife = spec.startingLife,
-                playerId = spec.playerId
-            )
-        }
-        val gameConfig = GameConfig(
-            players = playerConfigs,
-            startingHandSize = config.startingHandSize,
-            skipMulligans = config.skipMulligans,
-            useHandSmoother = config.useHandSmoother,
-            startingPlayerIndex = config.startingPlayerIndex
-        )
-
+        val gameConfig = config.toGameConfig()
         val env = GameEnvironment.create(cardRegistry)
         env.reset(gameConfig)
-
+        val gymEnv = GameGymEnv(env, config.perspectivePlayerIndex, config.revealAll)
         val envId = EnvId.generate()
-        val entry = EnvEntry(env, config.perspectivePlayerIndex, config.revealAll)
-        envs[envId] = entry
-
-        val observation = buildObservation(envId, entry)
-        return CreatedEnv(envId, observation)
+        envs[envId] = gymEnv
+        return CreatedEnv(envId, gymEnv.observe())
     }
 
-    /** Reset an existing env while keeping the same [EnvId]. Config reuses the constructor's cards. */
-    fun reset(envId: EnvId, config: EnvConfig): ObservationResult {
-        val oldEntry = requireEntry(envId)
-        val playerConfigs = config.players.map { spec ->
-            PlayerConfig(
-                name = spec.name,
-                deck = deckResolver.resolve(spec.deck),
-                startingLife = spec.startingLife,
-                playerId = spec.playerId
-            )
-        }
-        val gameConfig = GameConfig(
-            players = playerConfigs,
-            startingHandSize = config.startingHandSize,
-            skipMulligans = config.skipMulligans,
-            useHandSmoother = config.useHandSmoother,
-            startingPlayerIndex = config.startingPlayerIndex
+    /**
+     * Create a new **deckbuild** env: open a sealed pool from [DeckbuildConfig.setCode]
+     * and hand the agent the build interface. The opening observation lists the pool.
+     */
+    fun createDeckbuild(config: DeckbuildConfig): CreatedEnv {
+        val sealed = deckResolver.openSealedPool(config.setCode, config.boosterCount)
+        val env = DeckbuildEnvironment(
+            pool = sealed.pool,
+            basics = sealed.basics,
+            targetSize = config.targetSize
         )
-        oldEntry.environment.reset(gameConfig)
-        val newEntry = EnvEntry(oldEntry.environment, config.perspectivePlayerIndex, config.revealAll)
-        envs[envId] = newEntry
-        return buildObservation(envId, newEntry)
+        val envId = EnvId.generate()
+        envs[envId] = env
+        return CreatedEnv(envId, env.observe())
     }
+
+    /** Reset an existing game env while keeping the same [EnvId]. */
+    fun reset(envId: EnvId, config: EnvConfig): ObservationResult =
+        requireGameEnv(envId).reset(config.toGameConfig())
 
     /** Drop envs from the registry. Idempotent. */
     fun dispose(envIds: Collection<EnvId>) {
@@ -120,139 +91,81 @@ class MultiEnvService(
     fun listEnvs(): Set<EnvId> = envs.keys.toSet()
 
     // =========================================================================
-    // Observations
+    // Observations / stepping
     // =========================================================================
 
     /** Get the current observation without advancing state. */
-    fun observe(envId: EnvId, revealAll: Boolean? = null): ObservationResult {
-        val entry = requireEntry(envId)
-        val view = revealAll ?: entry.revealAll
-        return buildObservation(envId, entry, revealAll = view)
-    }
-
-    // =========================================================================
-    // Stepping
-    // =========================================================================
+    fun observe(envId: EnvId, revealAll: Boolean? = null): ObservationResult =
+        requireEnv(envId).observe(revealAll)
 
     /**
      * Advance a single env by the given [StepRequest.actionId]. The ID must
-     * come from the most-recent observation for that env — any older ID is
-     * treated as invalid.
+     * come from the most-recent observation for that env.
      */
-    fun step(request: StepRequest): ObservationResult {
-        val entry = requireEntry(request.envId)
-        val resolved = entry.registry.resolve(request.actionId)
-        executeResolved(entry, resolved, request.actionId)
-        return buildObservation(request.envId, entry)
-    }
+    fun step(request: StepRequest): ObservationResult =
+        requireEnv(request.envId).step(request.actionId)
 
-    /**
-     * Advance N envs in parallel. Each env is processed single-threaded
-     * inside its own task; envs do not share state so this is safe.
-     */
+    /** Advance N envs in parallel. Each env is single-threaded inside its own task. */
     fun stepBatch(requests: List<StepRequest>): List<Pair<EnvId, ObservationResult>> {
         if (requests.isEmpty()) return emptyList()
-        val tasks = requests.map { req ->
-            Callable { req.envId to step(req) }
-        }
+        val tasks = requests.map { req -> Callable { req.envId to step(req) } }
         return workerPool.invokeAll(tasks)
     }
 
     /**
-     * Submit a raw `DecisionResponse` for an env that is paused on a complex
-     * pending decision (multi-select, distribute, order, search, etc.).
-     * Simple decisions (yes/no, choose-number, choose-mode, choose-color,
-     * choose-option, single-select cards) should be driven via [step] with a
-     * folded action ID instead.
+     * Submit a raw `DecisionResponse` for a game env paused on a complex pending
+     * decision. Simple decisions are driven via [step] with a folded action ID.
      */
-    fun submitDecision(envId: EnvId, response: DecisionResponse): ObservationResult {
-        val entry = requireEntry(envId)
-        val pending = entry.environment.state.pendingDecision
-            ?: throw IllegalStateException("Env $envId is not paused on a decision")
-        check(response.decisionId == pending.id) {
-            "Decision ID mismatch: response=${response.decisionId}, pending=${pending.id}"
-        }
-        entry.environment.step(SubmitDecision(pending.playerId, response))
-        return buildObservation(envId, entry)
-    }
+    fun submitDecision(envId: EnvId, response: DecisionResponse): ObservationResult =
+        requireGameEnv(envId).submitDecision(response)
 
     // =========================================================================
     // Fork / snapshot / restore
     // =========================================================================
 
-    /**
-     * Fork an env N times. Because `GameState` is immutable, each fork shares
-     * the base state with the source for free; subsequent steps on each
-     * child diverge independently.
-     */
+    /** Fork an env N times. Children diverge independently from the next step on. */
     fun fork(srcEnvId: EnvId, count: Int = 1): List<EnvId> {
         require(count > 0) { "fork count must be positive" }
-        val src = requireEntry(srcEnvId)
+        val src = requireEnv(srcEnvId)
         return List(count) {
-            val forkedEnv = src.environment.fork()
             val newId = EnvId.generate()
-            val newEntry = EnvEntry(forkedEnv, src.perspectivePlayerIndex, src.revealAll)
-            envs[newId] = newEntry
-            // Rebuild the registry so freshly-forked envs have valid action IDs.
-            buildObservation(newId, newEntry)
+            envs[newId] = src.fork()
             newId
         }
     }
 
-    fun snapshot(envId: EnvId): SnapshotHandle {
-        val entry = requireEntry(envId)
-        return snapshotCodec.save(
-            state = entry.environment.state,
-            playerIds = entry.environment.playerIds,
-            stepCount = 0 // stepCount reset on restore — training code doesn't rely on it
-        )
-    }
+    fun snapshot(envId: EnvId): SnapshotHandle =
+        requireGameEnv(envId).snapshot(snapshotCodec)
 
-    /**
-     * Restore an env to a previously-snapshotted state. The perspective and
-     * reveal settings are preserved; only the underlying [com.wingedsheep.engine.state.GameState]
-     * changes.
-     */
-    fun restore(envId: EnvId, handle: SnapshotHandle): ObservationResult {
-        val entry = requireEntry(envId)
-        val snap = snapshotCodec.load(handle)
-        entry.environment.restore(snap.state, snap.playerIds, snap.stepCount)
-        return buildObservation(envId, entry)
-    }
+    /** Restore a game env to a previously-snapshotted state. */
+    fun restore(envId: EnvId, handle: SnapshotHandle): ObservationResult =
+        requireGameEnv(envId).restore(snapshotCodec, handle)
 
     // =========================================================================
     // Internals
     // =========================================================================
 
-    private fun executeResolved(entry: EnvEntry, resolved: ResolvedAction, actionId: Int) {
-        when (resolved) {
-            is ResolvedAction.Legal -> entry.environment.step(resolved.action)
-            is ResolvedAction.Decision -> {
-                val pending = entry.environment.state.pendingDecision
-                    ?: throw IllegalStateException("Registry has a decision response but env is not paused")
-                entry.environment.step(SubmitDecision(pending.playerId, resolved.response))
-            }
-            ResolvedAction.Unknown ->
-                throw IllegalArgumentException("Action ID $actionId is not valid for the current step")
-        }
-    }
+    private fun EnvConfig.toGameConfig(): GameConfig = GameConfig(
+        players = players.map { spec ->
+            PlayerConfig(
+                name = spec.name,
+                deck = deckResolver.resolve(spec.deck),
+                startingLife = spec.startingLife,
+                playerId = spec.playerId
+            )
+        },
+        startingHandSize = startingHandSize,
+        skipMulligans = skipMulligans,
+        useHandSmoother = useHandSmoother,
+        startingPlayerIndex = startingPlayerIndex
+    )
 
-    private fun buildObservation(
-        envId: EnvId,
-        entry: EnvEntry,
-        revealAll: Boolean = entry.revealAll
-    ): ObservationResult {
-        val env = entry.environment
-        val perspective = env.playerIds.getOrNull(entry.perspectivePlayerIndex)
-            ?: throw IllegalStateException("Env $envId has no player at index ${entry.perspectivePlayerIndex}")
-        val legalActions = env.legalActions()
-        val result = observationBuilder.build(env.state, perspective, legalActions, revealAll)
-        entry.registry = result.registry
-        return result
-    }
-
-    private fun requireEntry(envId: EnvId): EnvEntry =
+    private fun requireEnv(envId: EnvId): GymEnv =
         envs[envId] ?: throw NoSuchElementException("Unknown envId: $envId")
+
+    private fun requireGameEnv(envId: EnvId): GameGymEnv =
+        requireEnv(envId) as? GameGymEnv
+            ?: throw IllegalStateException("Env $envId is not a game env; operation not supported")
 }
 
 /** Result of [MultiEnvService.create] — the new env's ID plus its opening observation. */

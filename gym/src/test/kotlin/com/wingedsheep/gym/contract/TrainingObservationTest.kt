@@ -53,7 +53,7 @@ class TrainingObservationTest : FunSpec({
         val perspective = env.playerIds[0]
         val result = ObservationBuilder().build(env.state, perspective, env.legalActions())
 
-        val obs = result.observation
+        val obs = result.observation as TrainingObservation
         obs.perspectivePlayerId shouldBe perspective
         obs.players.size shouldBe 2
         obs.agentToAct.shouldNotBeNull()
@@ -93,7 +93,7 @@ class TrainingObservationTest : FunSpec({
         val opponent = env.playerIds[1]
 
         val masked = ObservationBuilder().build(env.state, me, env.legalActions())
-            .observation
+            .observation as TrainingObservation
         val myHand = masked.zones.single { it.ownerId == me && it.zoneType == Zone.HAND }
         val theirHand = masked.zones.single { it.ownerId == opponent && it.zoneType == Zone.HAND }
         myHand.hidden.shouldBeFalse()
@@ -106,7 +106,7 @@ class TrainingObservationTest : FunSpec({
         masked.zones.filter { it.zoneType == Zone.LIBRARY }.forEach { it.hidden.shouldBeTrue() }
 
         val revealed = ObservationBuilder().build(env.state, me, env.legalActions(), revealAll = true)
-            .observation
+            .observation as TrainingObservation
         val theirHandRevealed = revealed.zones.single { it.ownerId == opponent && it.zoneType == Zone.HAND }
         theirHandRevealed.hidden.shouldBeFalse()
         theirHandRevealed.cards.size shouldBe theirHandRevealed.size
@@ -118,7 +118,7 @@ class TrainingObservationTest : FunSpec({
         val env = newEnv()
         val me = env.playerIds[0]
 
-        val obs = ObservationBuilder().build(env.state, me, env.legalActions()).observation
+        val obs = ObservationBuilder().build(env.state, me, env.legalActions()).observation as TrainingObservation
         val myHand = obs.zones.single { it.ownerId == me && it.zoneType == Zone.HAND }
 
         // At least one card should be in the opening hand; every card there

@@ -2,7 +2,9 @@ package com.wingedsheep.gym.service
 
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.gym.contract.Observation
 import com.wingedsheep.gym.contract.ResolvedAction
+import com.wingedsheep.gym.contract.TrainingObservation
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.blb.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.por.PortalSet
@@ -25,6 +27,8 @@ import io.kotest.matchers.shouldNotBe
  * disposal. Uses Portal for deterministic creature decks and Bloomburrow
  * for the sealed-deck path.
  */
+private val Observation.asGame: TrainingObservation get() = this as TrainingObservation
+
 class MultiEnvServiceTest : FunSpec({
 
     fun registry(): CardRegistry = CardRegistry().apply {
@@ -67,7 +71,7 @@ class MultiEnvServiceTest : FunSpec({
 
         created.envId.value.shouldNotBe("")
         created.observation.observation.terminated.shouldBeFalse()
-        created.observation.observation.players shouldHaveSize 2
+        created.observation.observation.asGame.players shouldHaveSize 2
         created.observation.observation.legalActions.shouldNotBeEmpty()
         svc.listEnvs() shouldContainAll setOf(created.envId)
     }
@@ -93,7 +97,7 @@ class MultiEnvServiceTest : FunSpec({
 
         val after = svc.reset(envId, twoPlayerConfig())
         // After reset, the env should be back at turn 1 with legal actions.
-        after.observation.turnNumber shouldBe 1
+        after.observation.asGame.turnNumber shouldBe 1
         after.observation.legalActions.shouldNotBeEmpty()
         // EnvId is preserved across reset.
         svc.listEnvs() shouldContainAll setOf(envId)
@@ -322,18 +326,18 @@ class MultiEnvServiceTest : FunSpec({
         val svc = MultiEnvService(registry())
         val created = svc.create(twoPlayerConfig(perspective = 1))
 
-        val me = created.observation.observation.perspectivePlayerId
-        created.observation.observation.players
+        val me = created.observation.observation.asGame.perspectivePlayerId
+        created.observation.observation.asGame.players
             .first { it.isPerspective }.id shouldBe me
 
-        val opponent = created.observation.observation.players.first { !it.isPerspective }
+        val opponent = created.observation.observation.asGame.players.first { !it.isPerspective }
         // Opponent hand should be hidden by default.
-        val opponentHand = created.observation.observation.zones
+        val opponentHand = created.observation.observation.asGame.zones
             .first { it.ownerId == opponent.id && it.zoneType == com.wingedsheep.sdk.core.Zone.HAND }
         opponentHand.hidden.shouldBeTrue()
 
         // Now observe with revealAll=true — opponent hand becomes visible.
-        val revealed = svc.observe(created.envId, revealAll = true).observation
+        val revealed = svc.observe(created.envId, revealAll = true).observation.asGame
         val openedHand = revealed.zones.first {
             it.ownerId == opponent.id && it.zoneType == com.wingedsheep.sdk.core.Zone.HAND
         }
@@ -352,7 +356,7 @@ class MultiEnvServiceTest : FunSpec({
         val turnsSeen = mutableListOf<Int>()
         repeat(8) {
             val obs = svc.observe(envId).observation
-            turnsSeen += obs.turnNumber
+            turnsSeen += obs.asGame.turnNumber
             if (obs.terminated) return@repeat
             val nextId = obs.legalActions.firstOrNull()?.actionId ?: return@repeat
             svc.step(StepRequest(envId, nextId))

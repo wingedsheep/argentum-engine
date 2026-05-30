@@ -138,7 +138,7 @@ class EnvControllerTest : FunSpec() {
             val created = json.decodeFromString<CreateEnvResponse>(createResponse.body())
 
             created.envId.value.shouldNotBe("")
-            created.observation.players.size shouldBe 2
+            (created.observation as TrainingObservation).players.size shouldBe 2
             created.observation.terminated.shouldBeFalse()
             created.observation.legalActions.shouldNotBeEmpty()
 
@@ -207,7 +207,7 @@ class EnvControllerTest : FunSpec() {
             val created = json.decodeFromString<CreateEnvResponse>(
                 postJson("/envs", json.encodeToString(twoPlayerConfig())).body()
             )
-            val initialTurn = created.observation.turnNumber
+            val initialTurn = (created.observation as TrainingObservation).turnNumber
 
             repeat(3) {
                 val obs = json.decodeFromString<TrainingObservation>(

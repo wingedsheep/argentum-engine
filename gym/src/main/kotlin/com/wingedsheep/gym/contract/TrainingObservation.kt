@@ -5,10 +5,42 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Root payload sent to a training agent after every `reset()` / `step()`.
+ * The payload an agent receives from any gym environment after `observe` / `step`.
+ *
+ * A gym env is no longer only a game of Magic — deckbuilding is its own env type
+ * ([DeckbuildObservation]) — so the wire observation is a discriminated union. The
+ * `type` field tells a client which variant it holds: `"Game"` for an in-progress
+ * match, `"Deckbuild"` for a sealed-pool build. The fields hoisted here are the ones
+ * every env exposes so a generic driver loop (read `legalActions`, pick one, `step`,
+ * stop on `terminated`) works without knowing the variant up front.
+ */
+@Serializable
+sealed interface Observation {
+    /** Sha256 of the canonical schema — clients compare to abort on drift. */
+    val schemaHash: String
+
+    /** The player/agent who must act next, or null when [terminated]. */
+    val agentToAct: EntityId?
+
+    /** Non-null only for in-game complex decisions; always null for deckbuild. */
+    val pendingDecision: PendingDecisionView?
+
+    /** Every action available to [agentToAct] this step. Action IDs are per-step. */
+    val legalActions: List<LegalActionView>
+
+    /** True once the env reached a terminal state (game over, or deck finalized). */
+    val terminated: Boolean
+
+    /** Deterministic hash of the observable state, for MCTS transposition tables. */
+    val stateDigest: String
+}
+
+/**
+ * Root payload for a **game** env, sent to a training agent after every `reset()` / `step()`.
  *
  * Designed for RL consumers (neural policies, MCTS) — not for human display.
  * The schema is stable across card sets; new mechanics appear as strings in
@@ -19,15 +51,16 @@ import kotlinx.serialization.Serializable
  * time the environment advances and must not be cached across steps.
  */
 @Serializable
+@SerialName("Game")
 data class TrainingObservation(
     /** Sha256 of the canonical schema. Python clients compare this to abort on drift. */
-    val schemaHash: String,
+    override val schemaHash: String,
 
     /** The player whose information-set this observation represents. */
     val perspectivePlayerId: EntityId,
 
     /** The player who needs to act next, or null if the game is over. */
-    val agentToAct: EntityId?,
+    override val agentToAct: EntityId?,
 
     val turnNumber: Int,
     val phase: Phase,
@@ -48,13 +81,13 @@ data class TrainingObservation(
     val stack: List<StackItemView>,
 
     /** Non-null when the engine paused for a player decision. */
-    val pendingDecision: PendingDecisionView?,
+    override val pendingDecision: PendingDecisionView?,
 
     /** All actions available to [agentToAct]. Empty when the game is over. */
-    val legalActions: List<LegalActionView>,
+    override val legalActions: List<LegalActionView>,
 
     /** True if the game ended naturally. */
-    val terminated: Boolean,
+    override val terminated: Boolean,
 
     /** Set if [terminated] and there is a winner (null = draw or ongoing). */
     val winnerId: EntityId?,
@@ -64,8 +97,8 @@ data class TrainingObservation(
      * tables in MCTS. Two observations with the same digest describe the same
      * information-set from the same perspective.
      */
-    val stateDigest: String
-)
+    override val stateDigest: String
+) : Observation
 
 /** Per-player summary. Counts reflect what [perspectivePlayerId] can see. */
 @Serializable

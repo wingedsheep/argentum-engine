@@ -505,11 +505,12 @@ class ObservationBuilder(
 }
 
 /**
- * Build output pairing a [TrainingObservation] with its server-side
- * [ActionRegistry]. The observation is safe to serialize; the registry must
- * be retained on the server so it can resolve incoming action IDs.
+ * Build output pairing an [Observation] with its server-side [ActionRegistry].
+ * The observation is safe to serialize; the registry must be retained on the
+ * server so it can resolve incoming action IDs. Both game envs ([TrainingObservation])
+ * and deckbuild envs ([DeckbuildObservation]) produce this shape.
  */
 data class ObservationResult(
-    val observation: TrainingObservation,
+    val observation: Observation,
     val registry: ActionRegistry
 )

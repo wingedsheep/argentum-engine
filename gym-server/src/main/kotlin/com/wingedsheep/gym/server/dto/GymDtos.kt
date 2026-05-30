@@ -1,18 +1,20 @@
 package com.wingedsheep.gym.server.dto
 
-import com.wingedsheep.gym.contract.TrainingObservation
+import com.wingedsheep.gym.contract.Observation
 import com.wingedsheep.gym.service.EnvId
 import com.wingedsheep.gym.service.SnapshotHandle
 import kotlinx.serialization.Serializable
 
 /**
- * Response for `POST /envs`. Combines the new env's ID with its opening
- * observation so a Python trainer only has to round-trip once to start.
+ * Response for `POST /envs` (and `POST /envs/deckbuild`). Combines the new env's ID
+ * with its opening observation so a caller only has to round-trip once to start.
+ * The [observation] is a discriminated union — `TrainingObservation` for a game env,
+ * `DeckbuildObservation` for a deckbuild env (see the `type` field).
  */
 @Serializable
 data class CreateEnvResponse(
     val envId: EnvId,
-    val observation: TrainingObservation
+    val observation: Observation
 )
 
 /** Body for `POST /envs/{id}/step`. */
@@ -30,7 +32,7 @@ data class StepBatchItem(
 @Serializable
 data class StepBatchResult(
     val envId: EnvId,
-    val observation: TrainingObservation
+    val observation: Observation
 )
 
 /** Body for `POST /envs/{id}/restore`. */

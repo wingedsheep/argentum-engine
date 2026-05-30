@@ -1,7 +1,8 @@
 package com.wingedsheep.gym.server.controller
 
 import com.wingedsheep.engine.core.DecisionResponse
-import com.wingedsheep.gym.contract.TrainingObservation
+import com.wingedsheep.gym.contract.Observation
+import com.wingedsheep.gym.service.DeckbuildConfig
 import com.wingedsheep.gym.service.EnvConfig
 import com.wingedsheep.gym.service.EnvId
 import com.wingedsheep.gym.service.MultiEnvService
@@ -171,6 +172,31 @@ class EnvController(
         return CreateEnvResponse(created.envId, created.observation.observation)
     }
 
+    @Operation(
+        summary = "Create a new deckbuild env",
+        description = """
+            Opens `boosterCount` boosters from `setCode` into a sealed pool and returns a
+            `DeckbuildObservation` (the `type` discriminator is `"Deckbuild"`). The agent then
+            drives the same `/envs/{id}/step` loop using the enumerated build actions —
+            `ADD_CARD`, `ADD_BASIC`, `REMOVE_CARD`, `FINALIZE` — until it commits a
+            `targetSize`-card deck. On `FINALIZE` the env is `terminated`; the terminal
+            observation's `selected` map is the finished decklist, which the caller feeds to a
+            game env via `POST /envs` with `{"deck": {"type": "Explicit", "cards": <selected>}}`.
+
+            `setCode` must be sealed-supported in the server's booster generator.
+
+            Note: `deckScore` on the terminal observation is only an *intrinsic* card-quality
+            estimate. A deck's real value is its win-rate when played — a delayed reward that
+            lands in a separate game env, which the training loop supplies itself. See
+            docs/gym-deckbuild-env.md.
+        """
+    )
+    @PostMapping("/deckbuild")
+    fun createDeckbuild(@RequestBody config: DeckbuildConfig): CreateEnvResponse {
+        val created = multiEnvService.createDeckbuild(config)
+        return CreateEnvResponse(created.envId, created.observation.observation)
+    }
+
     @Operation(summary = "List live env IDs")
     @GetMapping
     fun list(): List<EnvId> = multiEnvService.listEnvs().toList()
@@ -183,7 +209,7 @@ class EnvController(
     fun reset(
         @PathVariable id: String,
         @RequestBody config: EnvConfig
-    ): TrainingObservation =
+    ): Observation =
         multiEnvService.reset(EnvId(id), config).observation
 
     @Operation(
@@ -208,7 +234,7 @@ class EnvController(
     fun observe(
         @PathVariable id: String,
         @RequestParam(required = false) revealAll: Boolean?
-    ): TrainingObservation =
+    ): Observation =
         multiEnvService.observe(EnvId(id), revealAll).observation
 
     // =========================================================================
@@ -223,7 +249,7 @@ class EnvController(
     fun step(
         @PathVariable id: String,
         @RequestBody body: StepBody
-    ): TrainingObservation =
+    ): Observation =
         multiEnvService.step(StepRequest(EnvId(id), body.actionId)).observation
 
     @Operation(
@@ -252,7 +278,7 @@ class EnvController(
     fun submitDecision(
         @PathVariable id: String,
         @RequestBody response: DecisionResponse
-    ): TrainingObservation =
+    ): Observation =
         multiEnvService.submitDecision(EnvId(id), response).observation
 
     // =========================================================================
@@ -283,6 +309,6 @@ class EnvController(
     fun restore(
         @PathVariable id: String,
         @RequestBody body: RestoreBody
-    ): TrainingObservation =
+    ): Observation =
         multiEnvService.restore(EnvId(id), body.handle).observation
 }

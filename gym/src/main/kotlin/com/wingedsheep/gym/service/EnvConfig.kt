@@ -52,6 +52,31 @@ data class EnvConfig(
     }
 }
 
+/**
+ * Everything needed to spin up a new **deckbuild** env (`POST /envs/deckbuild`).
+ *
+ * Opens [boosterCount] boosters from [setCode] into a sealed pool, then hands the agent
+ * an enumerated build interface (add / remove / finalize) until it commits a [targetSize]-card
+ * deck. The finished list is exposed on the terminal observation for the caller to feed into a
+ * game env via [DeckSpec.Explicit].
+ */
+@Serializable
+data class DeckbuildConfig(
+    /** Set to open boosters from (e.g. "BLB"). Must be sealed-supported in the booster generator. */
+    val setCode: String,
+
+    /** Number of 15-card boosters to open. Tournament sealed = 6. */
+    val boosterCount: Int = 6,
+
+    /** Minimum legal deck size; `FINALIZE` unlocks once the build reaches it. */
+    val targetSize: Int = 40
+) {
+    init {
+        require(boosterCount > 0) { "boosterCount must be positive" }
+        require(targetSize > 0) { "targetSize must be positive" }
+    }
+}
+
 /** A single player's identity + deck. */
 @Serializable
 data class PlayerSpec(
