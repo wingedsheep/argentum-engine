@@ -112,8 +112,11 @@ majority of the set.
    future placement, not a one-shot doubling of counters already present.
    → Sage of the Fang
 
-10. **Double power and toughness until end of turn (group).** No double-P/T layer-7 effect found.
-    → Roar of Endless Song
+10. ~~**Double power and toughness until end of turn (group).**~~ ✅ **Done.** Modeled as a
+    fixed +X/+Y layer-7 modification read per-entity from projected state
+    (`DynamicAmount.EntityProperty(EntityReference.IterationEntity, …)`), surfaced as the
+    reusable `EffectPatterns.doublePowerAndToughnessForAll(filter, duration)` helper.
+    → Roar of Endless Song (and Unnatural Growth, refactored onto the same helper)
 
 ---
 

@@ -531,6 +531,10 @@ object EffectPatterns {
     fun destroyAllAndAttachedPipeline(filter: GameObjectFilter, noRegenerate: Boolean = false): CompositeEffect =
         GroupPatterns.destroyAllAndAttachedPipeline(filter, noRegenerate)
 
+    /** Double the power and toughness of every permanent matching [filter] until [duration]. */
+    fun doublePowerAndToughnessForAll(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): ForEachInGroupEffect =
+        GroupPatterns.doublePowerAndToughnessForAll(filter, duration)
+
     fun grantKeywordToAll(keyword: Keyword, filter: GroupFilter, duration: Duration = Duration.EndOfTurn): ForEachInGroupEffect =
         GroupPatterns.grantKeywordToAll(keyword, filter, duration)
 

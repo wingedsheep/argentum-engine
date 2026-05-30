@@ -5,9 +5,6 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
-import com.wingedsheep.sdk.scripting.values.EntityReference
 
 /**
  * Unnatural Growth
@@ -23,11 +20,7 @@ val UnnaturalGrowth = card("Unnatural Growth") {
 
     triggeredAbility {
         trigger = Triggers.EachCombat
-        effect = EffectPatterns.modifyStatsForAll(
-            power = DynamicAmount.EntityProperty(EntityReference.IterationEntity, EntityNumericProperty.Power),
-            toughness = DynamicAmount.EntityProperty(EntityReference.IterationEntity, EntityNumericProperty.Toughness),
-            filter = Filters.Group.creaturesYouControl,
-        )
+        effect = EffectPatterns.doublePowerAndToughnessForAll(Filters.Group.creaturesYouControl)
         description = "At the beginning of each combat, double the power and toughness of each creature you control until end of turn."
     }
 

@@ -21,6 +21,8 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
+import com.wingedsheep.sdk.scripting.values.EntityReference
 
 /**
  * Effect patterns for bulk operations on filtered groups of permanents:
@@ -137,6 +139,31 @@ object GroupPatterns {
         ForEachInGroupEffect(
             filter = filter,
             effect = ModifyStatsEffect(power, toughness, EffectTarget.Self, duration)
+        )
+
+    /**
+     * Double the power and toughness of every permanent matching [filter] until [duration].
+     *
+     * Each affected creature gets +X/+Y where X is its power and Y its toughness *as the
+     * effect begins to apply* — read per-entity from projected state via
+     * [EntityReference.IterationEntity]. Because it resolves to a fixed +X/+Y modification,
+     * the bonus is locked in when the effect resolves (it does not re-double as P/T later
+     * changes), and negative power doubles correctly (a -2/3 creature gets -2/+0). This
+     * applies as a power/toughness *modification* in layer 7 (the +N/+N sublayer), not a
+     * "set" effect, matching the standard "double its power and toughness" ruling.
+     *
+     * The reusable shape behind every "double the power and toughness" card — e.g.
+     * Roar of Endless Song, Unnatural Growth.
+     */
+    fun doublePowerAndToughnessForAll(
+        filter: GroupFilter,
+        duration: Duration = Duration.EndOfTurn
+    ): ForEachInGroupEffect =
+        modifyStatsForAll(
+            power = DynamicAmount.EntityProperty(EntityReference.IterationEntity, EntityNumericProperty.Power),
+            toughness = DynamicAmount.EntityProperty(EntityReference.IterationEntity, EntityNumericProperty.Toughness),
+            filter = filter,
+            duration = duration
         )
 
     fun dealDamageToAll(amount: Int, filter: GroupFilter): ForEachInGroupEffect =
