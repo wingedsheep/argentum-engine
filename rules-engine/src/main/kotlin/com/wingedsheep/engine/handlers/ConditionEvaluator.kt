@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComp
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
@@ -677,6 +678,10 @@ class ConditionEvaluator {
      * target permanent, read its card name, and return true when at least one *other* battlefield
      * permanent shares that exact name. The target itself is excluded so a single copy never
      * satisfies its own check.
+     *
+     * A face-down permanent has no name (CR 708.2), so it neither matches anything (as the target)
+     * nor counts as a same-named permanent (as a candidate) — face-down entities are skipped on
+     * both sides even though they retain a hidden [CardComponent.name].
      */
     private fun evaluateAnotherPermanentWithSameNameAsTarget(
         state: GameState,
@@ -686,10 +691,13 @@ class ConditionEvaluator {
         val target = context.targets.getOrNull(condition.targetIndex) ?: return false
         val entityId = (target as? com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent)
             ?.entityId ?: return false
-        val targetName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: return false
+        val targetEntity = state.getEntity(entityId) ?: return false
+        if (targetEntity.has<FaceDownComponent>()) return false
+        val targetName = targetEntity.get<CardComponent>()?.name ?: return false
         return state.getBattlefield().any { otherId ->
-            otherId != entityId &&
-                state.getEntity(otherId)?.get<CardComponent>()?.name == targetName
+            if (otherId == entityId) return@any false
+            val other = state.getEntity(otherId) ?: return@any false
+            !other.has<FaceDownComponent>() && other.get<CardComponent>()?.name == targetName
         }
     }
 
