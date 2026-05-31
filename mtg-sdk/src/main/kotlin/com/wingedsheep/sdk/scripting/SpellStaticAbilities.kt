@@ -256,3 +256,38 @@ data object CantCastSpellsSharingColorWithLastCast : StaticAbility {
         "Players can't cast a spell that shares a color with the spell most recently cast this turn"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
+
+/**
+ * Your opponents can't cast spells — either unconditionally, or (when [onlyDuringYourTurn] is
+ * true) only while this permanent's controller is the active player.
+ *
+ * An opponent-scoped continuous cast *prohibition*: every player other than the source's
+ * controller is forbidden from casting any spell from any zone. The engine reads it during
+ * cast-legality checks (it never uses the stack), so it composes with every casting path —
+ * hand, graveyard flashback/harmonize, exile, top of library — without per-zone wiring. Control
+ * is read from projected state, so a control-changing effect flips which player is restricted.
+ *
+ * - Voice of Victory (TDM): `OpponentsCantCastSpells(onlyDuringYourTurn = true)` —
+ *   "Your opponents can't cast spells during your turn."
+ * - Grand Abolisher's cast clause is the same shape (its "can't activate abilities" clause is a
+ *   separate ability).
+ *
+ * Deliberately **not** a filtered prohibition: "can't cast spells with even mana value"
+ * (Void Winnower) needs a per-spell [GameObjectFilter] check at a different enforcement point —
+ * add a sibling ability when such a card arrives rather than overloading this one.
+ *
+ * @property onlyDuringYourTurn When true, the restriction applies only while the source's
+ *   controller is the active player; when false, it applies on every turn.
+ */
+@SerialName("OpponentsCantCastSpells")
+@Serializable
+data class OpponentsCantCastSpells(
+    val onlyDuringYourTurn: Boolean = false
+) : StaticAbility {
+    override val description: String = if (onlyDuringYourTurn) {
+        "Your opponents can't cast spells during your turn"
+    } else {
+        "Your opponents can't cast spells"
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

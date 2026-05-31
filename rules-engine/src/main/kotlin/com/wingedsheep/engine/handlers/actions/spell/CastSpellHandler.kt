@@ -179,6 +179,12 @@ class CastSpellHandler(
             return "You can't cast a spell that shares a color with the spell most recently cast this turn"
         }
 
+        // Voice of Victory: an opponent's static ability forbids you from casting spells
+        // (optionally only during that opponent's turn).
+        if (castPermissionUtils.cantCastSpellsDueToOpponentRestriction(state, action.playerId)) {
+            return "An opponent's effect prevents you from casting spells right now"
+        }
+
         if (hasForageFromGraveyard) {
             if (!costHandler.canPayAdditionalCost(state, AdditionalCost.Forage, action.playerId)) {
                 return "Cannot forage: need 3 other cards in graveyard or a Food"

@@ -1247,6 +1247,15 @@ of "type" to count.
   colors of the last spell cast, cleared each turn). Never blocks the first spell of the turn; a
   colorless spell shares no color, so it is always castable and casting one lifts the restriction
   until the next colored spell. (Mana Maze)
+- `OpponentsCantCastSpells(onlyDuringYourTurn = false)` — opponent-scoped continuous cast
+  *prohibition*: every player other than the source's controller can't cast any spell. With
+  `onlyDuringYourTurn = true` the lock applies only while the controller is the active player (Voice
+  of Victory: "Your opponents can't cast spells during your turn."); with `false` it applies on every
+  turn (Grand Abolisher's cast clause). Read at cast-legality time and OR'd into the central
+  `cantCastSpells` gate, so it covers every casting zone (hand, flashback/harmonize, exile, top of
+  library) uniformly; control is read from projected state so a control-changing effect flips who is
+  restricted. Deliberately *not* filtered — a "can't cast spells with even mana value" (Void
+  Winnower) prohibition needs a per-spell filter and should be a sibling ability.
 
 **Tapped-for-mana mana statics** (extra mana / replaced mana when a land is tapped for mana — resolve
 inline as triggered mana abilities, off the stack per CR 605). These fire on the *manual* mana-ability

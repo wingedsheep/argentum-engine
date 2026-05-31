@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
+import com.wingedsheep.sdk.scripting.OpponentsCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
@@ -164,6 +165,35 @@ class CastPermissionUtils(
 
         val spellColors = state.getEntity(spellCardId)?.get<CardComponent>()?.colors ?: return false
         return spellColors.any { it in lastColors }
+    }
+
+    /**
+     * Voice of Victory (CR via [OpponentsCantCastSpells]): true when [playerId] is forbidden from
+     * casting any spell because an *opponent* controls a permanent with that static ability — and,
+     * for the [OpponentsCantCastSpells.onlyDuringYourTurn] form, that opponent is the active player.
+     *
+     * Scans the battlefield once. Control is read from projected state, so a control-changing
+     * effect flips which player is restricted (gaining control of Voice of Victory turns the lock
+     * onto its original controller). Face-down permanents have no abilities and are skipped. This
+     * is OR'd into the central `cantCastSpells` gate, so it covers every casting zone uniformly.
+     */
+    fun cantCastSpellsDueToOpponentRestriction(state: GameState, playerId: EntityId): Boolean {
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (sa in cardDef.script.staticAbilities) {
+                if (sa !is OpponentsCantCastSpells) continue
+                val controller = state.projectedState.getController(permanentId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                    ?: continue
+                if (controller == playerId) continue
+                if (sa.onlyDuringYourTurn && state.activePlayerId != controller) continue
+                return true
+            }
+        }
+        return false
     }
 
     fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {

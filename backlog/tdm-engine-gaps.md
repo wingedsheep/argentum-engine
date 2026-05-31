@@ -4,10 +4,10 @@ Cross-reference of the **252 remaining (unimplemented) TDM cards** against the e
 capabilities (SDK reference + source verification, May 2026). Generated to scope what must be
 built before the set can be completed.
 
-**Status:** 19 / 271 implemented (7%). All 19 implemented are reprints (taplands, Evolving Wilds,
-Snakeskin Veil) plus two simple spells (Awaken the Honored Dead, Strategic Betrayal). **No
-new-mechanic card is implemented yet.** Card list comes from `scripts/card-status --list --set TDM`.
-Oracle text pulled from Scryfall (`set:tdm`, 277 printings → 271 unique cards).
+**Status:** 49 / 271 implemented (18%). All five wedge clan keywords (Tier 1), every Tier-2
+primitive, and all but three Tier-3 one-offs are now built — only items 15, 18, and 20 remain.
+Card list comes from `scripts/card-status --list --set TDM`. Oracle text pulled from Scryfall
+(`set:tdm`, 277 printings → 271 unique cards).
 
 ## Bottom line
 
@@ -42,8 +42,8 @@ work. Once the Tier-1 keywords land, the large majority of remaining cards are b
 What follows are the **genuine gaps** — elements no current SDK primitive expresses.
 
 > **Update (May 2026):** Tier 1 (all five clan keywords + Decayed) and Tier 2 (keyword counters,
-> leaves-graveyard trigger, one-shot counter doubling, group P/T doubling) are now **complete**.
-> Only the Tier-3 one-off complex cards (items 11–20) remain.
+> leaves-graveyard trigger, one-shot counter doubling, group P/T doubling) are **complete**, as are
+> Tier-3 items 11–14, 16, 17, and 19. Only **items 15, 18, and 20** remain.
 
 ---
 
@@ -156,8 +156,14 @@ the overwhelming majority of the set.
     `ControllerComponent`, so it falls back to `ownerId`).
     → **Severance Priest**
 
-14. **Suspend.** Time counters on a card in exile + cast-when-last-counter-removed + haste payoff.
-    Impending/Vanishing use time counters on the battlefield, not the Suspend exile-cast flow.
+14. **Suspend.** ✅ **DONE.** Time counters on a card in exile + cast-when-last-counter-removed + haste
+    payoff. Modeled content-agnostically (CR 702.62): `Effects.Suspend` moves the card to exile, adds N
+    time counters, and sets a suspend marker; the engine synthesizes a single owner's-upkeep countdown
+    triggered ability (`Suspend.countdownAbility`) for any exiled card carrying that marker, so the same
+    machinery serves a card with no printed suspend. The countdown removes a time counter and, when the
+    pile empties, grants haste and plays the card for free through the existing
+    `CastFromCollectionWithoutPayingCostEffect` pipeline; an intervening-if "has a time counter" gate
+    prevents a stale marker from re-casting. Composed from atomics, no bespoke executor.
     → **Taigam, Master Opportunist** (Flurry copies a spell, exiles it with 4 time counters + Suspend)
 
 15. **Event-based "when you next attack this turn" delayed trigger.** Current delayed triggers are
@@ -193,9 +199,14 @@ the overwhelming majority of the set.
     activated (equip) cost by the chosen target's color count.
     → **Dragonfire Blade**
 
-19. **Opponent-scoped continuous cast prohibition.** "Your opponents can't cast spells during your
-    turn." Current cast restrictions are self-controller-scoped (`RestrictSpellsCastPerTurn`); needs a
-    player-group prohibition gated on your turn.
+19. **Opponent-scoped continuous cast prohibition.** ✅ **DONE.** "Your opponents can't cast spells
+    during your turn." Added the `OpponentsCantCastSpells(onlyDuringYourTurn)` static ability —
+    modeled on Mana Maze's `CantCastSpellsSharingColorWithLastCast` (a continuous restriction read at
+    cast-legality time, never on the stack). Enforced via one `CastPermissionUtils` helper OR'd into
+    the central `cantCastSpells` gate, so it covers every casting zone (hand, flashback/harmonize,
+    exile, top of library) uniformly; control is read from projected state. `onlyDuringYourTurn = true`
+    gives Voice of Victory; `false` covers Grand Abolisher's cast clause. Deliberately not filtered —
+    a "can't cast spells with even mana value" (Void Winnower) prohibition is left as a future sibling.
     → **Voice of Victory**
 
 20. **Sacrifice-a-token as a cost** (minor — verify a token-only sacrifice-cost filter exists).
@@ -209,7 +220,7 @@ the overwhelming majority of the set.
    modest. Unlocks ~30 cards quickly.
 2. ✅ **Renew** (enumerator extension) + **Harmonize** (new alt-cost) — bigger lifts, ~22 cards.
 3. ✅ **Keyword counters + Decayed + leaves-graveyard trigger** (Tier 2) — small, scattered unlocks.
-4. **Tier-3 one-offs** as the relevant legendaries / rares come up. *(remaining work — items 11–20)*
+4. **Tier-3 one-offs** as the relevant legendaries / rares come up. *(remaining work — items 15, 18, 20)*
 
 The clan keywords (Tier 1) cover the bulk of the remaining cards. Behold and Omen already being done
 means Temur spells and the 13 DFC dragons are essentially ready once the shared supporting effects
