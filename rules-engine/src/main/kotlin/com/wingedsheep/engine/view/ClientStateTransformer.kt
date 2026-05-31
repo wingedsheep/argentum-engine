@@ -2090,16 +2090,12 @@ class ClientStateTransformer(
                         )
                     )
                 }
-                is SerializableModification.PreventNextDamageFromSourceWithReaction -> {
-                    val description = buildString {
-                        append("The next damage from the chosen source is prevented")
-                        modification.onPrevented?.let { append(". When prevented, ${it.description}") }
-                    }
+                is SerializableModification.PreventNextDamageFromChosenSourceShield -> {
                     effects.add(
                         ClientCardEffect(
                             effectId = "deflect_damage_${modification.damageSourceId}",
                             name = "Deflect",
-                            description = description,
+                            description = "The next damage from the chosen source is prevented; a triggered ability then resolves",
                             icon = "redirect"
                         )
                     )

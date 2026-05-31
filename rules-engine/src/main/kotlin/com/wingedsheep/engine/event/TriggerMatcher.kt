@@ -295,6 +295,9 @@ class TriggerMatcher(
             is GameEvent.StepEvent -> false
             // Creature-dealt-damage-by-source-dies triggers are handled separately
             is GameEvent.CreatureDealtDamageBySourceDiesEvent -> false
+            // "When damage is prevented this way" fires only via its linked delayed trigger
+            // (detectEventBasedDelayedTriggers), never as a battlefield trigger.
+            is GameEvent.DamagePreventedEvent -> false
             // Replacement-effect-only events never match as triggers
             is GameEvent.DamageEvent -> false
             is GameEvent.CounterPlacementEvent -> false

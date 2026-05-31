@@ -53,6 +53,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ZoneChangeEvent::class)
         subclass(LifeChangedEvent::class)
         subclass(DamageDealtEvent::class)
+        subclass(DamagePreventedEvent::class)
         subclass(SpellCastEvent::class)
         subclass(SpellCopiedEvent::class)
         subclass(AbilityActivatedEvent::class)

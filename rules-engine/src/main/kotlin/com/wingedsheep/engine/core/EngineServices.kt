@@ -43,12 +43,6 @@ class EngineServices(
         DamageUtils.cardRegistry = cardRegistry
     }
     val effectExecutorRegistry = EffectExecutorRegistry(cardRegistry = cardRegistry)
-
-    init {
-        // Let prevention shields run their `onPrevented` follow-up effect (Deflecting Palm,
-        // New Way Forward) through the full effect pipeline.
-        DamageUtils.effectRunner = effectExecutorRegistry::execute
-    }
     val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
         cardRegistry = cardRegistry,
         effectExecutor = effectExecutorRegistry::execute

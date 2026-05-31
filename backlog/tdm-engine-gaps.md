@@ -159,14 +159,16 @@ the overwhelming majority of the set.
     → **All-Out Assault**
 
 16. **Prevent-and-redirect-and-draw.** ✅ **DONE.** Prevent the next damage from a chosen source, then deal the
-    *prevented amount* to that source's controller and draw that many cards. No bespoke effect: the
-    chosen-source prevention shield (Deflecting Palm) now carries an **arbitrary `onPrevented: Effect?`**
-    run when the shield fires, with the prevented amount bound as
-    `DynamicAmount.ContextProperty(PREVENTED_DAMAGE_AMOUNT)` and the source's controller reachable as
-    `EffectTarget.ControllerOfTriggeringEntity` (the same pair Tephraderm uses). The payoff is plain
-    effect composition: Deflecting Palm = `DealDamage(ControllerOfTriggeringEntity, preventedAmount)`;
-    New Way Forward = `Composite(DealDamage(…), DrawCards(preventedAmount))`. The shield runs the
-    follow-up via an injected effect runner, so any future "when prevented" payoff composes for free.
+    *prevented amount* to that source's controller and draw that many cards. No bespoke effect, and
+    CR-faithful: the chosen-source prevention shield carries an **arbitrary `onPrevented: Effect?`**
+    that resolves as a real triggered ability on the stack. On resolution the engine creates the
+    shield **and** a linked event-based delayed trigger (effect = `onPrevented`); when the shield
+    prevents an instance it emits an internal `DamagePreventedEvent` that fires only that trigger.
+    The payoff is plain effect composition — prevented amount via
+    `DynamicAmount.ContextProperty(PREVENTED_DAMAGE_AMOUNT)`, source's controller via
+    `EffectTarget.ControllerOfTriggeringEntity` (the pair Tephraderm uses): Deflecting Palm =
+    `DealDamage(ControllerOfTriggeringEntity, preventedAmount)`; New Way Forward =
+    `Composite(DealDamage(…), DrawCards(preventedAmount))`.
     → **New Way Forward**
 
 17. **Free-cast-from-exile gated by a dynamic MV cap.** Exile top X of opponent's library (X =

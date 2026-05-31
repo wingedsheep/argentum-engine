@@ -388,27 +388,20 @@ sealed interface SerializableModification {
     data object RemoveAllAbilities : SerializableModification
 
     /**
-     * Single-instance prevention shield tied to a chosen source, with an arbitrary follow-up effect:
-     * the next time [damageSourceId] would deal damage to the affected player this turn, prevent that
-     * damage, then run [onPrevented] (if any). The shield is consumed after preventing one damage
-     * instance and removed.
-     *
-     * The follow-up runs with the prevented amount bound as
-     * `DynamicAmount.ContextProperty(PREVENTED_DAMAGE_AMOUNT)` and the prevented source's controller
-     * reachable as `EffectTarget.ControllerOfTriggeringEntity`, sourced from [reactionSourceId]. So
-     * Deflecting Palm's `onPrevented` is `DealDamage(ControllerOfTriggeringEntity, preventedAmount)`
-     * and New Way Forward's is that plus `DrawCards(preventedAmount)` — plain effect composition,
-     * not a bespoke reaction type.
+     * Single-instance prevention shield tied to a chosen source: the next time [damageSourceId]
+     * would deal damage to the affected player this turn, prevent that damage. The shield is
+     * consumed after preventing one damage instance and emits a
+     * [com.wingedsheep.engine.core.DamagePreventedEvent] carrying [linkId], which fires the linked
+     * "when damage is prevented this way, …" delayed triggered ability on the stack (Deflecting Palm,
+     * New Way Forward). The payoff is that ordinary triggered ability — not baked into the shield.
      *
      * @property damageSourceId The chosen source whose damage will be prevented
-     * @property reactionSourceId The entity that created this shield (e.g., New Way Forward) — used as the source of the follow-up effect
-     * @property onPrevented Arbitrary follow-up effect run against the prevented amount; null = pure prevention
+     * @property linkId The id of the delayed triggered ability that fires when this shield prevents damage
      */
     @Serializable
-    data class PreventNextDamageFromSourceWithReaction(
+    data class PreventNextDamageFromChosenSourceShield(
         val damageSourceId: EntityId,
-        val reactionSourceId: EntityId,
-        val onPrevented: Effect? = null
+        val linkId: String
     ) : SerializableModification
 
     /**
@@ -496,8 +489,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventCombatDamageToAndBy -> Modification.NoOp
     // RedirectCombatDamageToController doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.RedirectCombatDamageToController -> Modification.NoOp
-    // PreventNextDamageFromSourceWithReaction doesn't map to a layer modification - it's checked during damage resolution directly
-    is SerializableModification.PreventNextDamageFromSourceWithReaction -> Modification.NoOp
+    // PreventNextDamageFromChosenSourceShield doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.PreventNextDamageFromChosenSourceShield -> Modification.NoOp
     // PreventAllDamageFromSource doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventAllDamageFromSource -> Modification.NoOp
     is SerializableModification.RemoveAllAbilities -> Modification.RemoveAllAbilities

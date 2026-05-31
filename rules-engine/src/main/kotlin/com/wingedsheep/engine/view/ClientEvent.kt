@@ -732,6 +732,10 @@ object ClientEventTransformer {
                 isCombatDamage = event.isCombatDamage
             )
 
+            // Internal signal that fires the linked "when damage is prevented this way" delayed
+            // trigger; the trigger's own ability events carry the player-visible effects.
+            is DamagePreventedEvent -> null
+
             is CardsDrawnEvent -> {
                 val isYours = event.playerId == viewingPlayerId
                 if (event.cardIds.isNotEmpty()) {

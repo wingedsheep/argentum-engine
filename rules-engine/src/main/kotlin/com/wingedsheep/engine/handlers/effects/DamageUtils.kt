@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.DamagePreventedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -61,13 +62,6 @@ object DamageUtils {
     private val predicateEvaluator = PredicateEvaluator()
     private val conditionEvaluator = ConditionEvaluator()
     lateinit var cardRegistry: CardRegistry
-
-    /**
-     * Runs an arbitrary [Effect] through the full effect pipeline. Injected by [EngineServices]
-     * (the effect-executor registry) so prevention shields can run their `onPrevented` follow-up
-     * effect without DamageUtils depending on the executor registry directly.
-     */
-    lateinit var effectRunner: (GameState, com.wingedsheep.sdk.scripting.effects.Effect, EffectContext) -> EffectResult
 
     /**
      * Deal damage to a target (player or creature).
@@ -676,27 +670,19 @@ object DamageUtils {
     }
 
     /**
-     * Check for single-instance chosen-source prevention shields with a follow-up effect
-     * (Deflecting Palm, New Way Forward).
+     * Check for single-instance chosen-source prevention shields (Deflecting Palm, New Way Forward).
      *
-     * Scans floating effects for [SerializableModification.PreventNextDamageFromSourceWithReaction]
-     * matching the damage source. If found, consumes the shield (one instance prevented) and runs
-     * its arbitrary `onPrevented` effect through the normal effect pipeline ([effectRunner]) with:
-     * - the prevented amount bound to `DynamicAmount.ContextProperty(PREVENTED_DAMAGE_AMOUNT)`
-     *   (carried in [EffectContext.triggerDamageAmount]),
-     * - the prevented source reachable as `EffectTarget.ControllerOfTriggeringEntity`
-     *   (carried in [EffectContext.triggeringEntityId]),
-     * - the shield's own card as the effect source ([EffectContext.sourceId]) and the protected
-     *   player as the controller ([EffectContext.controllerId], so "you draw" resolves correctly).
-     *
-     * The follow-up runs inline as the damage is prevented (not as a separate stack trigger), so it
-     * must be non-interactive — `DealDamage` to a player and `DrawCards` are, which covers both users.
+     * Scans floating effects for [SerializableModification.PreventNextDamageFromChosenSourceShield]
+     * matching the damage source. If found, consumes the shield (one instance prevented) and emits a
+     * [DamagePreventedEvent] carrying the shield's `linkId`. That event fires the shield's linked
+     * "when damage is prevented this way, …" delayed triggered ability on the stack, which deals the
+     * prevented amount / draws cards through the normal stack — so it can be responded to (CR 603).
      *
      * @param state The current game state
      * @param targetId The entity about to receive damage (the protected player — the shield's affected entity)
      * @param damageAmount The amount of damage about to be dealt (and thus prevented)
      * @param sourceId The entity dealing the damage
-     * @return ExecutionResult if a shield matched (damage prevented + follow-up applied), null otherwise
+     * @return ExecutionResult if a shield matched (damage prevented, event emitted), null otherwise
      */
     fun checkDeflectDamageShield(
         state: GameState,
@@ -706,30 +692,31 @@ object DamageUtils {
     ): EffectResult? {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
             val mod = effect.effect.modification
-            mod is SerializableModification.PreventNextDamageFromSourceWithReaction &&
+            mod is SerializableModification.PreventNextDamageFromChosenSourceShield &&
                 mod.damageSourceId == sourceId &&
                 targetId in effect.effect.affectedEntities
         }
         if (shieldIndex == -1) return null
 
         val shield = state.floatingEffects[shieldIndex]
-        val mod = shield.effect.modification as SerializableModification.PreventNextDamageFromSourceWithReaction
+        val mod = shield.effect.modification as SerializableModification.PreventNextDamageFromChosenSourceShield
 
-        // Consume the shield (one damage instance prevented).
+        // Consume the shield (one damage instance prevented) and announce the prevention so the
+        // linked delayed triggered ability fires on the stack.
         val updatedEffects = state.floatingEffects.toMutableList()
         updatedEffects.removeAt(shieldIndex)
         val newState = state.copy(floatingEffects = updatedEffects)
-
-        // Damage is prevented. Run the follow-up effect (if any) against the prevented amount.
-        val onPrevented = mod.onPrevented ?: return EffectResult.success(newState)
-        val reactionContext = EffectContext(
-            sourceId = mod.reactionSourceId,
-            controllerId = targetId,
-            opponentId = null,
-            triggeringEntityId = sourceId,
-            triggerDamageAmount = damageAmount
+        val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name
+        return EffectResult.success(
+            newState,
+            listOf(DamagePreventedEvent(
+                sourceId = sourceId,
+                recipientId = targetId,
+                amount = damageAmount,
+                linkId = mod.linkId,
+                sourceName = sourceName
+            ))
         )
-        return effectRunner(newState, onPrevented, reactionContext)
     }
 
     /**
