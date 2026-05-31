@@ -370,6 +370,7 @@ class DynamicAmountEvaluator(
         context: EffectContext
     ): Int = when (key) {
         ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT,
+        ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT,
         ContextPropertyKey.TRIGGER_LIFE_GAINED,
         ContextPropertyKey.TRIGGER_LIFE_LOST -> context.triggerDamageAmount ?: 0
 

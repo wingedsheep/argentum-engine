@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.DamagePreventedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -669,17 +670,19 @@ object DamageUtils {
     }
 
     /**
-     * Check for deflect damage shields (Deflecting Palm).
+     * Check for single-instance chosen-source prevention shields (Deflecting Palm, New Way Forward).
      *
-     * Scans floating effects for DeflectNextDamageFromSource matching the damage source.
-     * If found, consumes the shield, prevents all the damage, and deals that much damage
-     * to the source's controller (with the deflecting card as the damage source).
+     * Scans floating effects for [SerializableModification.PreventNextDamageFromChosenSourceShield]
+     * matching the damage source. If found, consumes the shield (one instance prevented) and emits a
+     * [DamagePreventedEvent] carrying the shield's `linkId`. That event fires the shield's linked
+     * "when damage is prevented this way, …" delayed triggered ability on the stack, which deals the
+     * prevented amount / draws cards through the normal stack — so it can be responded to (CR 603).
      *
      * @param state The current game state
-     * @param targetId The entity about to receive damage (must be the shield's affected entity)
-     * @param damageAmount The amount of damage about to be dealt
+     * @param targetId The entity about to receive damage (the protected player — the shield's affected entity)
+     * @param damageAmount The amount of damage about to be dealt (and thus prevented)
      * @param sourceId The entity dealing the damage
-     * @return ExecutionResult if deflection occurred, null otherwise
+     * @return ExecutionResult if a shield matched (damage prevented, event emitted), null otherwise
      */
     fun checkDeflectDamageShield(
         state: GameState,
@@ -689,29 +692,31 @@ object DamageUtils {
     ): EffectResult? {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
             val mod = effect.effect.modification
-            mod is SerializableModification.DeflectNextDamageFromSource &&
+            mod is SerializableModification.PreventNextDamageFromChosenSourceShield &&
                 mod.damageSourceId == sourceId &&
                 targetId in effect.effect.affectedEntities
         }
         if (shieldIndex == -1) return null
 
         val shield = state.floatingEffects[shieldIndex]
-        val mod = shield.effect.modification as SerializableModification.DeflectNextDamageFromSource
+        val mod = shield.effect.modification as SerializableModification.PreventNextDamageFromChosenSourceShield
 
-        // Consume the shield
+        // Consume the shield (one damage instance prevented) and announce the prevention so the
+        // linked delayed triggered ability fires on the stack.
         val updatedEffects = state.floatingEffects.toMutableList()
         updatedEffects.removeAt(shieldIndex)
         val newState = state.copy(floatingEffects = updatedEffects)
-
-        // Find the source's controller to deal reflected damage to
-        val sourceController = newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-        if (sourceController == null) {
-            // Source has no controller (e.g., it left the game) — damage is still prevented
-            return EffectResult.success(newState)
-        }
-
-        // Deal the reflected damage to the source's controller, sourced from the deflecting card
-        return dealDamageToTarget(newState, sourceController, damageAmount, mod.deflectSourceId)
+        val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name
+        return EffectResult.success(
+            newState,
+            listOf(DamagePreventedEvent(
+                sourceId = sourceId,
+                recipientId = targetId,
+                amount = damageAmount,
+                linkId = mod.linkId,
+                sourceName = sourceName
+            ))
+        )
     }
 
     /**

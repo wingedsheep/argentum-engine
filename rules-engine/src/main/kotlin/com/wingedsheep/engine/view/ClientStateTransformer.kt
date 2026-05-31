@@ -2090,12 +2090,12 @@ class ClientStateTransformer(
                         )
                     )
                 }
-                is SerializableModification.DeflectNextDamageFromSource -> {
+                is SerializableModification.PreventNextDamageFromChosenSourceShield -> {
                     effects.add(
                         ClientCardEffect(
                             effectId = "deflect_damage_${modification.damageSourceId}",
                             name = "Deflect",
-                            description = "The next damage from the chosen source is prevented and dealt to that source's controller",
+                            description = "The next damage from the chosen source is prevented; a triggered ability then resolves",
                             icon = "redirect"
                         )
                     )

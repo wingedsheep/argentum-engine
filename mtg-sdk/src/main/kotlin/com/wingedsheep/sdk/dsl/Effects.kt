@@ -2052,13 +2052,30 @@ object Effects {
         )
 
     /**
-     * Choose a source, prevent the next damage it would deal to you this turn,
-     * and deal that much damage to its controller.
+     * Choose a source on resolution, prevent the next damage it would deal to you this turn, then run
+     * [onPrevented] — an arbitrary follow-up effect — as a triggered ability when that damage is
+     * prevented ("When damage is prevented this way, …"). Inside the follow-up the prevented amount is
+     * [DynamicAmounts.preventedDamage] ("that much"/"that many") and the prevented source's controller
+     * is `EffectTarget.ControllerOfTriggeringEntity` ("that source's controller"). Compose the payoff
+     * from ordinary atomic effects — no bespoke reaction type: Deflecting Palm reflects
+     * (`DealDamage(ControllerOfTriggeringEntity, preventedDamage())`); New Way Forward reflects and draws.
      */
-    fun DeflectNextDamageFromChosenSource(): Effect =
+    fun PreventNextDamageFromChosenSource(onPrevented: Effect): Effect =
         PreventDamageEffect(
             sourceFilter = PreventionSourceFilter.ChosenSource,
-            reflect = true
+            onPrevented = onPrevented
+        )
+
+    /**
+     * Choose a source, prevent the next damage it would deal to you this turn, and deal that much
+     * damage to its controller (Deflecting Palm) — the canonical reflect, expressed as a follow-up.
+     */
+    fun DeflectNextDamageFromChosenSource(): Effect =
+        PreventNextDamageFromChosenSource(
+            onPrevented = DealDamageEffect(
+                amount = DynamicAmounts.preventedDamage(),
+                target = EffectTarget.ControllerOfTriggeringEntity
+            )
         )
 
     /**

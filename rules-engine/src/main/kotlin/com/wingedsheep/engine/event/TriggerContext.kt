@@ -98,6 +98,12 @@ data class TriggerContext(
                     triggeringEntityId = event.targetId,
                     damageAmount = event.amount
                 )
+                is com.wingedsheep.engine.core.DamagePreventedEvent -> TriggerContext(
+                    // The prevented source — so "deal that much to that source's controller" resolves
+                    // via EffectTarget.ControllerOfTriggeringEntity, and damageAmount feeds PREVENTED_DAMAGE_AMOUNT.
+                    triggeringEntityId = event.sourceId,
+                    damageAmount = event.amount
+                )
                 is com.wingedsheep.engine.core.CountersAddedEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     counterCount = event.amount

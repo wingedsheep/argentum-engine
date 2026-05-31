@@ -257,11 +257,41 @@ class CombatContinuationResumer(
         val chosenSourceId = response.selectedCards.firstOrNull()
             ?: return ExecutionResult.error(state, "No source selected")
 
-        val (effectiveState, deflectSourceId) = if (continuation.sourceId != null) {
+        // The spell that set up the shield is the source of the follow-up's reflected damage.
+        val (effectiveState, reactionSourceId) = if (continuation.sourceId != null) {
             state to continuation.sourceId
         } else {
             val (id, s) = state.newEntity()
             s to id
+        }
+
+        // Two linked objects, per CR: (1) the one-shot prevention shield, and (2) a delayed
+        // triggered ability "When damage is prevented this way, …" that goes on the stack when the
+        // shield fires. They are linked by the delayed trigger's id, carried on the shield and
+        // echoed back by the DamagePreventedEvent so only this shield's trigger fires.
+        val sourceName = continuation.sourceName
+            ?: state.getEntity(reactionSourceId)?.get<CardComponent>()?.name
+            ?: "Source"
+        val delayedTriggerId = java.util.UUID.randomUUID().toString()
+
+        var newState = effectiveState
+        continuation.onPrevented?.let { onPrevented ->
+            newState = newState.addDelayedTrigger(
+                com.wingedsheep.engine.event.DelayedTriggeredAbility(
+                    id = delayedTriggerId,
+                    effect = onPrevented,
+                    sourceId = reactionSourceId,
+                    sourceName = sourceName,
+                    controllerId = continuation.controllerId,
+                    trigger = com.wingedsheep.sdk.scripting.TriggerSpec(
+                        event = com.wingedsheep.sdk.scripting.GameEvent.DamagePreventedEvent
+                    ),
+                    // Scopes the fired trigger's context to the prevented source (so
+                    // ControllerOfTriggeringEntity = "that source's controller").
+                    watchedEntityId = chosenSourceId,
+                    expiry = com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry.EndOfTurn
+                )
+            )
         }
 
         val context = EffectContext(
@@ -269,11 +299,11 @@ class CombatContinuationResumer(
             controllerId = continuation.controllerId,
             opponentId = null
         )
-        val newState = effectiveState.addFloatingEffect(
+        newState = newState.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.DeflectNextDamageFromSource(
+            modification = SerializableModification.PreventNextDamageFromChosenSourceShield(
                 damageSourceId = chosenSourceId,
-                deflectSourceId = deflectSourceId
+                linkId = delayedTriggerId
             ),
             affectedEntities = setOf(continuation.controllerId),
             duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,

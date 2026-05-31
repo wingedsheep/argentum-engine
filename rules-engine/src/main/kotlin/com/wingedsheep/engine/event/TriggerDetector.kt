@@ -509,7 +509,7 @@ class TriggerDetector(
         for (event in events) {
             for (delayed in eventBased) {
                 val spec = delayed.trigger ?: continue
-                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.controllerId, state)) continue
+                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.id, delayed.controllerId, state)) continue
                 triggers.add(
                     PendingTrigger(
                         ability = TriggeredAbility.create(
@@ -539,6 +539,7 @@ class TriggerDetector(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
         event: EngineGameEvent,
         watchedEntityId: EntityId?,
+        delayedId: String,
         controllerId: EntityId,
         state: GameState
     ): Boolean {
@@ -548,6 +549,11 @@ class TriggerDetector(
                 if (event !is com.wingedsheep.engine.core.DamageDealtEvent) return false
                 if (watchedEntityId != null && event.sourceId != watchedEntityId) return false
                 matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId)
+            }
+            // "When damage is prevented this way": fires only for this delayed trigger's own
+            // shield, matched by the linkId echoed back on the DamagePreventedEvent.
+            is com.wingedsheep.sdk.scripting.GameEvent.DamagePreventedEvent -> {
+                event is com.wingedsheep.engine.core.DamagePreventedEvent && event.linkId == delayedId
             }
             is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent -> {
                 if (event !is ZoneChangeEvent) return false

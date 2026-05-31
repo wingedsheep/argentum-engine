@@ -217,6 +217,18 @@ object DynamicAmounts {
         DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT)
 
     // =========================================================================
+    // Prevention-reaction values
+    // =========================================================================
+
+    /**
+     * "That much" / "that many" — the amount of damage a prevention shield just prevented, readable
+     * inside the shield's `onPrevented` follow-up (New Way Forward, Deflecting Palm). See
+     * [Effects.PreventNextDamageFromChosenSource].
+     */
+    fun preventedDamage(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT)
+
+    // =========================================================================
     // Target-based player values
     // =========================================================================
 

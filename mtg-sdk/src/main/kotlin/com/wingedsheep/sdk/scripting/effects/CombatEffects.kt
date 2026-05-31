@@ -72,14 +72,20 @@ sealed interface PreventionSourceFilter {
  * - "Prevent all combat damage this turn" → `PreventDamageEffect(scope=CombatOnly)`
  * - "Prevent all damage target would deal" → `PreventDamageEffect(target, direction=FromTarget)`
  * - "Prevent combat damage to and by target" → `PreventDamageEffect(target, scope=CombatOnly, direction=Both)`
- * - "Choose a source, prevent + reflect" → `PreventDamageEffect(sourceFilter=ChosenSource, reflect=true)`
+ * - "Choose a source, prevent it, then react" → `PreventDamageEffect(sourceFilter=ChosenSource, onPrevented=…)`
  *
  * @property target The entity the shield is attached to (protected or silenced, depending on direction)
  * @property amount Amount of damage to prevent; null means prevent all
  * @property scope Whether to prevent all damage or only combat damage
  * @property direction Whether to prevent damage TO the target, FROM the target, or BOTH
  * @property sourceFilter Filter on which damage sources are affected
- * @property reflect If true, prevented damage is dealt to the source's controller (Deflecting Palm)
+ * @property onPrevented An arbitrary follow-up effect run when a single-instance chosen-source shield
+ *   ([PreventionSourceFilter.ChosenSource]) prevents an instance of damage. It runs with the prevented
+ *   amount bound as `DynamicAmount.ContextProperty(PREVENTED_DAMAGE_AMOUNT)` and the prevented source's
+ *   controller reachable as `EffectTarget.ControllerOfTriggeringEntity`, with the shield's own card as
+ *   the effect source. This is plain effect composition — Deflecting Palm reflects
+ *   (`DealDamage(ControllerOfTriggeringEntity, preventedAmount)`); New Way Forward reflects and draws
+ *   (`Composite(DealDamage(…), DrawCards(preventedAmount))`). Null = pure prevention.
  * @property gainLifeFromColors If non-empty, whenever damage from a source of one of these colors is
  *   prevented by this shield, the shield's controller gains that much life (Samite Ministration)
  * @property duration When the shield expires
@@ -92,7 +98,7 @@ data class PreventDamageEffect(
     val scope: PreventionScope = PreventionScope.AllDamage,
     val direction: PreventionDirection = PreventionDirection.ToTarget,
     val sourceFilter: PreventionSourceFilter = PreventionSourceFilter.AnySource,
-    val reflect: Boolean = false,
+    val onPrevented: Effect? = null,
     val gainLifeFromColors: Set<Color> = emptySet(),
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
@@ -123,7 +129,7 @@ data class PreventDamageEffect(
                 append(" by ${sourceFilter.filter.description.replaceFirstChar { it.lowercase() }}")
         }
         append(" this turn")
-        if (reflect) append(". If damage is prevented this way, deal that much damage to that source's controller")
+        onPrevented?.let { append(". When damage is prevented this way, ${it.description}") }
         if (gainLifeFromColors.isNotEmpty()) {
             val colorList = gainLifeFromColors.joinToString(" or ") { it.displayName.lowercase() }
             append(". Whenever damage from a $colorList source is prevented this way this turn, you gain that much life")
@@ -145,7 +151,12 @@ data class PreventDamageEffect(
             }
             else -> sourceFilter
         }
-        return if (newAmount !== amount || newFilter !== sourceFilter) copy(amount = newAmount, sourceFilter = newFilter) else this
+        val newOnPrevented = onPrevented?.applyTextReplacement(replacer)
+        return if (newAmount !== amount || newFilter !== sourceFilter || newOnPrevented !== onPrevented) {
+            copy(amount = newAmount, sourceFilter = newFilter, onPrevented = newOnPrevented)
+        } else {
+            this
+        }
     }
 }
 

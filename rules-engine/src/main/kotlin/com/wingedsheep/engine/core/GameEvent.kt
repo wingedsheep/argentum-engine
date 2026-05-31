@@ -126,6 +126,27 @@ data class DamageDealtEvent(
 ) : GameEvent
 
 /**
+ * A "prevent the next damage from a chosen source" shield prevented an instance of damage
+ * (Deflecting Palm, New Way Forward). Emitted when such a shield fires; carries [linkId] so the
+ * shield's own delayed triggered ability ("When damage is prevented this way, …") fires on the
+ * stack and reads [amount] (the prevented amount) and [sourceId] (whose controller to hit).
+ *
+ * @property sourceId The source whose damage was prevented
+ * @property recipientId The protected player the shield was attached to
+ * @property amount The amount of damage prevented
+ * @property linkId The id of the delayed triggered ability linked to this shield
+ */
+@Serializable
+@SerialName("DamagePreventedEvent")
+data class DamagePreventedEvent(
+    val sourceId: EntityId,
+    val recipientId: EntityId,
+    val amount: Int,
+    val linkId: String,
+    val sourceName: String? = null
+) : GameEvent
+
+/**
  * Stats were modified (e.g., +3/+3 until end of turn).
  */
 @Serializable

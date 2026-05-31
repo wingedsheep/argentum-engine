@@ -622,6 +622,19 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
     }
 
+    /**
+     * When a "prevent the next damage from a chosen source" shield prevents damage this way
+     * (Deflecting Palm, New Way Forward). Only used as the spec of an event-based delayed
+     * triggered ability that the shield links to via id — the engine scopes it to the shield's
+     * own prevention, exposing the prevented amount and the source's controller to the effect.
+     */
+    @SerialName("DamagePreventedEvent")
+    @Serializable
+    data object DamagePreventedEvent : GameEvent {
+        override val description: String = "when damage is prevented this way"
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
     // ---- Phase/Step Triggers ----
 
     /**

@@ -79,6 +79,12 @@ enum class TurnTracker {
 enum class ContextPropertyKey(val description: String) {
     /** The amount of damage in the current trigger payload (Tephraderm, Wall of Hope, …). */
     TRIGGER_DAMAGE_AMOUNT("the damage dealt"),
+    /**
+     * The amount of damage prevented by a prevention shield's `onPrevented` reaction context
+     * (New Way Forward, Deflecting Palm) — "that much" / "that many". Shares the trigger-amount
+     * slot in [com.wingedsheep.engine.handlers.EffectContext].
+     */
+    PREVENTED_DAMAGE_AMOUNT("the prevented damage"),
     /** The amount of life gained in the current trigger payload (False Cure, Lich's Mastery). */
     TRIGGER_LIFE_GAINED("the life gained"),
     /** The amount of life lost in the current trigger payload (Lich's Mastery). */

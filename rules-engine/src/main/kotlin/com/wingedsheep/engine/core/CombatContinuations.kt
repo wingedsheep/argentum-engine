@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlinx.serialization.Serializable
 
 /**
@@ -110,7 +111,9 @@ data class DeflectDamageSourceChoiceContinuation(
     override val decisionId: String,
     val controllerId: EntityId,
     val sourceId: EntityId?,
-    val sourceName: String?
+    val sourceName: String?,
+    /** Arbitrary follow-up effect run when the chosen source's damage is prevented (null = pure prevention). */
+    val onPrevented: Effect? = null
 ) : ContinuationFrame
 
 /**
