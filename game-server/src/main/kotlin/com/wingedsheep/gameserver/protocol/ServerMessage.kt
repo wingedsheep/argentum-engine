@@ -377,7 +377,8 @@ sealed interface ServerMessage {
         val name: String,
         val incomplete: Boolean = false,
         val block: String? = null,
-        val implementedCount: Int? = null
+        val implementedCount: Int? = null,
+        val releaseDate: String? = null
     )
 
     /**

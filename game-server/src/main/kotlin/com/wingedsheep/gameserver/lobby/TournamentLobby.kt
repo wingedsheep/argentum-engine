@@ -1391,7 +1391,8 @@ class TournamentLobby(
                 name = config.setName,
                 incomplete = config.incomplete,
                 block = config.block,
-                implementedCount = config.cards.size
+                implementedCount = config.cards.size,
+                releaseDate = config.releaseDate
             )
         }
 

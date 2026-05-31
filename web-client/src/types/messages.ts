@@ -1032,6 +1032,8 @@ export interface AvailableSet {
   readonly incomplete?: boolean
   readonly block?: string
   readonly implementedCount?: number
+  /** Set release date in ISO `YYYY-MM-DD` form, or undefined if unknown. */
+  readonly releaseDate?: string
 }
 
 export interface LobbySettings {

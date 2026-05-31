@@ -37,6 +37,8 @@ class BoosterGenerator(
         val basicLands: List<CardDefinition>,
         val incomplete: Boolean = false,
         val block: String? = null,
+        /** Set release date in ISO `YYYY-MM-DD` form, or null if unknown. Used by clients to sort sets chronologically. */
+        val releaseDate: String? = null,
         val boosterStrategy: BoosterStrategy = StandardBooster(),
     )
 

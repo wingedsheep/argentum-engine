@@ -1504,6 +1504,14 @@
   white-space: nowrap;
 }
 
+.setReleaseDate {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-disabled);
+  white-space: nowrap;
+}
+
 .setPartialBadge {
   flex-shrink: 0;
   padding: 1px 6px;

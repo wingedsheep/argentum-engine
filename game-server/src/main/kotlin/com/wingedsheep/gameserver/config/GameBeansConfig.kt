@@ -103,5 +103,6 @@ private fun MtgSet.toBoosterSetConfig(): BoosterGenerator.SetConfig =
         basicLands = (basicLandsFallback ?: this).basicLands,
         incomplete = incomplete,
         block = block,
+        releaseDate = releaseDate,
         boosterStrategy = boosterStrategy,
     )

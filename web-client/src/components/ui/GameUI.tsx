@@ -778,10 +778,34 @@ function LobbyOverlay({
     updateLobbySettings({ setCodes: newCodes })
   }
 
+  // Format an ISO `YYYY-MM-DD` release date as e.g. "Oct 2002". Parsed manually to avoid timezone shifts.
+  const MONTH_ABBREVS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const formatReleaseDate = (releaseDate?: string): string | null => {
+    if (!releaseDate) return null
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(releaseDate)
+    if (!match) return null
+    const [, year, month] = match
+    if (!year) return null
+    const monthName = MONTH_ABBREVS[Number(month) - 1]
+    return monthName ? `${monthName} ${year}` : year
+  }
+
+  // Newest-first comparator on ISO `YYYY-MM-DD` keys; sets/blocks with no known release date sort last.
+  const UNKNOWN_RELEASE = ''
+  const releaseSortKey = (releaseDate?: string): string => releaseDate ?? UNKNOWN_RELEASE
+  const byNewestFirst = (a: string, b: string): number => {
+    if (a === UNKNOWN_RELEASE || b === UNKNOWN_RELEASE) {
+      if (a === b) return 0
+      return a === UNKNOWN_RELEASE ? 1 : -1 // unknowns always last
+    }
+    return b.localeCompare(a) // later date first
+  }
+
   // One toggle row inside the picker modal. Incomplete sets get a "partial" tag so the host knows
   // those boosters draw from a reduced pool of implemented cards.
   const renderSetPickerRow = (set: AvailableSet) => {
     const isSelected = lobbyState.settings.setCodes.includes(set.code)
+    const released = formatReleaseDate(set.releaseDate)
     return (
       <button
         key={set.code}
@@ -792,6 +816,7 @@ function LobbyOverlay({
         <span className={styles.setPickerCheck} aria-hidden>{isSelected ? '✓' : ''}</span>
         <span className={styles.setPickerName}>{set.name}</span>
         {set.incomplete && <span className={styles.setPartialBadge}>partial</span>}
+        {released && <span className={styles.setReleaseDate}>{released}</span>}
         {set.implementedCount != null && (
           <span className={styles.setButtonCardCount}>{set.implementedCount} cards</span>
         )}
@@ -799,7 +824,9 @@ function LobbyOverlay({
     )
   }
 
-  // Group picker rows by block (first-seen order); ungrouped sets fall under an "Other" section.
+  // Order sets newest-first while keeping blocks grouped: each block is a single unit positioned by
+  // its newest set's release date, and each blockless set is its own unit. Units are sorted by date
+  // (newest on top), and sets within a block are sorted newest-first too.
   const renderGroupedSetRows = (sets: readonly AvailableSet[]) => {
     const blockOrder: string[] = []
     const blockSets = new Map<string, AvailableSet[]>()
@@ -815,18 +842,40 @@ function LobbyOverlay({
         ungrouped.push(set)
       }
     }
-    const groups: Array<{ key: string; label: string; sets: AvailableSet[] }> = blockOrder.map(
-      (name) => ({ key: name, label: `${name} Block`, sets: blockSets.get(name)! }),
-    )
-    if (ungrouped.length > 0) {
-      groups.push({ key: '__other', label: blockOrder.length > 0 ? 'Other sets' : 'All sets', sets: ungrouped })
+
+    type Unit =
+      | { kind: 'block'; key: string; label: string; sets: AvailableSet[]; sortKey: string }
+      | { kind: 'set'; key: string; set: AvailableSet; sortKey: string }
+
+    const units: Unit[] = []
+    for (const name of blockOrder) {
+      const blockMembers = blockSets
+        .get(name)!
+        .slice()
+        .sort((a, b) => byNewestFirst(releaseSortKey(a.releaseDate), releaseSortKey(b.releaseDate)))
+      units.push({
+        kind: 'block',
+        key: name,
+        label: `${name} Block`,
+        sets: blockMembers,
+        sortKey: releaseSortKey(blockMembers[0]?.releaseDate), // newest in block, after sort above
+      })
     }
-    return groups.map((group) => (
-      <div key={group.key} className={styles.setPickerGroup}>
-        <div className={styles.setPickerGroupLabel}>{group.label}</div>
-        {group.sets.map(renderSetPickerRow)}
-      </div>
-    ))
+    for (const set of ungrouped) {
+      units.push({ kind: 'set', key: set.code, set, sortKey: releaseSortKey(set.releaseDate) })
+    }
+    units.sort((a, b) => byNewestFirst(a.sortKey, b.sortKey))
+
+    return units.map((unit) =>
+      unit.kind === 'block' ? (
+        <div key={`block:${unit.key}`} className={styles.setPickerGroup}>
+          <div className={styles.setPickerGroupLabel}>{unit.label}</div>
+          {unit.sets.map(renderSetPickerRow)}
+        </div>
+      ) : (
+        renderSetPickerRow(unit.set)
+      ),
+    )
   }
 
   return (
