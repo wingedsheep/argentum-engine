@@ -158,9 +158,13 @@ the overwhelming majority of the set.
     attack-declaration event.
     → **All-Out Assault**
 
-16. **Prevent-and-redirect-and-draw.** Prevent the next damage from a chosen source, then deal the
-    *prevented amount* to that source's controller and draw that many cards. Prevention shields don't
-    capture/forward the prevented amount.
+16. **Prevent-and-redirect-and-draw.** ✅ **DONE.** Prevent the next damage from a chosen source, then deal the
+    *prevented amount* to that source's controller and draw that many cards. Modeled as a composable
+    **prevent-and-react chain**, not a bespoke effect: the existing chosen-source prevention shield
+    (Deflecting Palm) now carries a `List<PreventionReaction>` keyed to the prevented amount.
+    `DealToSourceController` is the old reflect; `ControllerDrawsCards` is the new draw link.
+    Deflecting Palm = `[DealToSourceController]`; New Way Forward =
+    `PreventNextDamageFromChosenSourceThen(DealToSourceController, ControllerDrawsCards)`.
     → **New Way Forward**
 
 17. **Free-cast-from-exile gated by a dynamic MV cap.** Exile top X of opponent's library (X =

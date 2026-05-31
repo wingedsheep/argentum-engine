@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.PreventionReaction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import kotlinx.serialization.Serializable
@@ -388,19 +389,24 @@ sealed interface SerializableModification {
     data object RemoveAllAbilities : SerializableModification
 
     /**
-     * Damage prevention + reflection shield: the next time the specified source would deal
-     * damage to the affected player this turn, prevent that damage and deal that much damage
-     * to the source's controller.
-     * Used by Deflecting Palm and similar effects.
+     * Single-instance prevention shield tied to a chosen source, with composable reactions keyed to
+     * the prevented amount: the next time [damageSourceId] would deal damage to the affected player
+     * this turn, prevent that damage, then run each [reactions] entry against the prevented amount.
      * The shield is consumed after preventing one damage instance and removed.
+     *
+     * `[DealToSourceController]` reflects the damage to the source's controller (Deflecting Palm);
+     * `[DealToSourceController, ControllerDrawsCards]` additionally draws that many cards
+     * (New Way Forward).
      *
      * @property damageSourceId The chosen source whose damage will be prevented
      * @property deflectSourceId The entity that created this shield (e.g., Deflecting Palm) — used as the source of the reflected damage
+     * @property reactions What to do with the prevented amount, in order. Defaults to reflect-only for backward compatibility.
      */
     @Serializable
     data class DeflectNextDamageFromSource(
         val damageSourceId: EntityId,
-        val deflectSourceId: EntityId
+        val deflectSourceId: EntityId,
+        val reactions: List<PreventionReaction> = listOf(PreventionReaction.DealToSourceController)
     ) : SerializableModification
 
     /**

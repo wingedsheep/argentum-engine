@@ -2091,11 +2091,18 @@ class ClientStateTransformer(
                     )
                 }
                 is SerializableModification.DeflectNextDamageFromSource -> {
+                    val drawsToo = modification.reactions.any {
+                        it is com.wingedsheep.sdk.scripting.effects.PreventionReaction.ControllerDrawsCards
+                    }
+                    val description = buildString {
+                        append("The next damage from the chosen source is prevented and dealt to that source's controller")
+                        if (drawsToo) append("; you then draw that many cards")
+                    }
                     effects.add(
                         ClientCardEffect(
                             effectId = "deflect_damage_${modification.damageSourceId}",
                             name = "Deflect",
-                            description = "The next damage from the chosen source is prevented and dealt to that source's controller",
+                            description = description,
                             icon = "redirect"
                         )
                     )

@@ -273,7 +273,8 @@ class CombatContinuationResumer(
             layer = Layer.ABILITY,
             modification = SerializableModification.DeflectNextDamageFromSource(
                 damageSourceId = chosenSourceId,
-                deflectSourceId = deflectSourceId
+                deflectSourceId = deflectSourceId,
+                reactions = continuation.reactions
             ),
             affectedEntities = setOf(continuation.controllerId),
             duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,

@@ -61,6 +61,38 @@ sealed interface PreventionSourceFilter {
 }
 
 /**
+ * A reaction that fires when a [PreventDamageEffect] shield prevents an instance of damage,
+ * keyed to the amount of damage that was prevented. Reactions compose: a shield runs each one
+ * in listed order against the same prevented amount.
+ *
+ * "Prevent the next damage from a chosen source" cards differ only in what they do with the
+ * prevented amount — Deflecting Palm reflects it ([DealToSourceController]); New Way Forward
+ * reflects it and draws that many cards ([DealToSourceController] + [ControllerDrawsCards]).
+ */
+@Serializable
+sealed interface PreventionReaction {
+    /** Text fragment describing this reaction (used in the composed effect [PreventDamageEffect.description]). */
+    val description: String
+
+    /**
+     * Deal the prevented amount of damage to the controller of the source whose damage was
+     * prevented, sourced from the shield's own card (the old "reflect"). Deflecting Palm.
+     */
+    @SerialName("DealToSourceController")
+    @Serializable
+    data object DealToSourceController : PreventionReaction {
+        override val description: String = "deal that much damage to that source's controller"
+    }
+
+    /** The protected player (the shield's "you") draws cards equal to the prevented amount. New Way Forward. */
+    @SerialName("ControllerDrawsCards")
+    @Serializable
+    data object ControllerDrawsCards : PreventionReaction {
+        override val description: String = "you draw that many cards"
+    }
+}
+
+/**
  * Unified damage prevention effect.
  *
  * Replaces all previous prevention effect types with a single parametrized type that can express
@@ -72,14 +104,17 @@ sealed interface PreventionSourceFilter {
  * - "Prevent all combat damage this turn" → `PreventDamageEffect(scope=CombatOnly)`
  * - "Prevent all damage target would deal" → `PreventDamageEffect(target, direction=FromTarget)`
  * - "Prevent combat damage to and by target" → `PreventDamageEffect(target, scope=CombatOnly, direction=Both)`
- * - "Choose a source, prevent + reflect" → `PreventDamageEffect(sourceFilter=ChosenSource, reflect=true)`
+ * - "Choose a source, prevent + reflect" → `PreventDamageEffect(sourceFilter=ChosenSource, onPrevented=[DealToSourceController])`
  *
  * @property target The entity the shield is attached to (protected or silenced, depending on direction)
  * @property amount Amount of damage to prevent; null means prevent all
  * @property scope Whether to prevent all damage or only combat damage
  * @property direction Whether to prevent damage TO the target, FROM the target, or BOTH
  * @property sourceFilter Filter on which damage sources are affected
- * @property reflect If true, prevented damage is dealt to the source's controller (Deflecting Palm)
+ * @property onPrevented Reactions that fire, keyed to the prevented amount, when this shield prevents
+ *   an instance of damage. Empty = pure prevention. `[DealToSourceController]` = Deflecting Palm;
+ *   `[DealToSourceController, ControllerDrawsCards]` = New Way Forward. Only honored for
+ *   single-instance chosen-source shields ([PreventionSourceFilter.ChosenSource]).
  * @property gainLifeFromColors If non-empty, whenever damage from a source of one of these colors is
  *   prevented by this shield, the shield's controller gains that much life (Samite Ministration)
  * @property duration When the shield expires
@@ -92,7 +127,7 @@ data class PreventDamageEffect(
     val scope: PreventionScope = PreventionScope.AllDamage,
     val direction: PreventionDirection = PreventionDirection.ToTarget,
     val sourceFilter: PreventionSourceFilter = PreventionSourceFilter.AnySource,
-    val reflect: Boolean = false,
+    val onPrevented: List<PreventionReaction> = emptyList(),
     val gainLifeFromColors: Set<Color> = emptySet(),
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
@@ -123,7 +158,10 @@ data class PreventDamageEffect(
                 append(" by ${sourceFilter.filter.description.replaceFirstChar { it.lowercase() }}")
         }
         append(" this turn")
-        if (reflect) append(". If damage is prevented this way, deal that much damage to that source's controller")
+        if (onPrevented.isNotEmpty()) {
+            append(". When damage is prevented this way, ")
+            append(onPrevented.joinToString(" and ") { it.description })
+        }
         if (gainLifeFromColors.isNotEmpty()) {
             val colorList = gainLifeFromColors.joinToString(" or ") { it.displayName.lowercase() }
             append(". Whenever damage from a $colorList source is prevented this way this turn, you gain that much life")

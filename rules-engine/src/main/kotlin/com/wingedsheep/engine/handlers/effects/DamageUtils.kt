@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.EffectResult
@@ -30,6 +31,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
+import com.wingedsheep.engine.handlers.effects.drawing.DrawCardPrimitive
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.scripting.NoncombatDamageBonus
@@ -46,6 +48,7 @@ import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 import com.wingedsheep.sdk.scripting.RedirectDamage
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
+import com.wingedsheep.sdk.scripting.effects.PreventionReaction
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
@@ -669,17 +672,21 @@ object DamageUtils {
     }
 
     /**
-     * Check for deflect damage shields (Deflecting Palm).
+     * Check for single-instance chosen-source prevention shields with reactions (Deflecting Palm,
+     * New Way Forward).
      *
-     * Scans floating effects for DeflectNextDamageFromSource matching the damage source.
-     * If found, consumes the shield, prevents all the damage, and deals that much damage
-     * to the source's controller (with the deflecting card as the damage source).
+     * Scans floating effects for [SerializableModification.DeflectNextDamageFromSource] matching the
+     * damage source. If found, consumes the shield (one instance prevented) and runs each
+     * [PreventionReaction] in order against the prevented amount:
+     * - [PreventionReaction.DealToSourceController] deals that much damage to the source's controller,
+     *   sourced from the shield's own card.
+     * - [PreventionReaction.ControllerDrawsCards] has the protected player draw that many cards.
      *
      * @param state The current game state
-     * @param targetId The entity about to receive damage (must be the shield's affected entity)
-     * @param damageAmount The amount of damage about to be dealt
+     * @param targetId The entity about to receive damage (the protected player — the shield's affected entity)
+     * @param damageAmount The amount of damage about to be dealt (and thus prevented)
      * @param sourceId The entity dealing the damage
-     * @return ExecutionResult if deflection occurred, null otherwise
+     * @return ExecutionResult if a shield matched (damage prevented + reactions applied), null otherwise
      */
     fun checkDeflectDamageShield(
         state: GameState,
@@ -698,20 +705,71 @@ object DamageUtils {
         val shield = state.floatingEffects[shieldIndex]
         val mod = shield.effect.modification as SerializableModification.DeflectNextDamageFromSource
 
-        // Consume the shield
+        // Consume the shield (one damage instance prevented).
         val updatedEffects = state.floatingEffects.toMutableList()
         updatedEffects.removeAt(shieldIndex)
-        val newState = state.copy(floatingEffects = updatedEffects)
+        var newState = state.copy(floatingEffects = updatedEffects)
+        val events = mutableListOf<EngineGameEvent>()
 
-        // Find the source's controller to deal reflected damage to
-        val sourceController = newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-        if (sourceController == null) {
-            // Source has no controller (e.g., it left the game) — damage is still prevented
-            return EffectResult.success(newState)
+        // Run each reaction keyed to the prevented amount, in listed order.
+        for (reaction in mod.reactions) {
+            when (reaction) {
+                is PreventionReaction.DealToSourceController -> {
+                    // Deal the prevented amount to the source's controller, sourced from the shield card.
+                    // If the source has no controller (e.g., it left the game), the damage is still
+                    // prevented — there is just nothing to reflect to.
+                    val sourceController = newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    if (sourceController != null) {
+                        val result = dealDamageToTarget(newState, sourceController, damageAmount, mod.deflectSourceId)
+                        newState = result.state
+                        events.addAll(result.events)
+                    }
+                }
+
+                is PreventionReaction.ControllerDrawsCards -> {
+                    // The protected player draws cards equal to the prevented amount.
+                    val (drawState, drawEvents) = drawCardsInline(newState, targetId, damageAmount)
+                    newState = drawState
+                    events.addAll(drawEvents)
+                }
+            }
         }
 
-        // Deal the reflected damage to the source's controller, sourced from the deflecting card
-        return dealDamageToTarget(newState, sourceController, damageAmount, mod.deflectSourceId)
+        return EffectResult.success(newState, events)
+    }
+
+    /**
+     * Draw [count] cards for [playerId] inline (used by prevention reactions that fire mid-damage,
+     * where pausing for draw-replacement prompts is not possible). Delegates each card to the shared
+     * [DrawCardPrimitive] (which handles empty-library loss, Rule 704.5c) and aggregates a single
+     * [CardsDrawnEvent] over the batch, matching the normal draw path's event shape.
+     */
+    private fun drawCardsInline(
+        state: GameState,
+        playerId: EntityId,
+        count: Int
+    ): Pair<GameState, List<EngineGameEvent>> {
+        if (count <= 0) return state to emptyList()
+        val primitive = DrawCardPrimitive(cardRegistry)
+        var current = state
+        val perCardEvents = mutableListOf<EngineGameEvent>()
+        val drawnIds = mutableListOf<EntityId>()
+        var remaining = count
+        while (remaining > 0) {
+            val result = primitive.drawOne(current, playerId)
+            current = result.state
+            perCardEvents.addAll(result.events)
+            if (result.failed) break // library empty — player is marked as having lost; stop drawing
+            result.drawnCardId?.let { drawnIds.add(it) }
+            remaining--
+        }
+        val events = mutableListOf<EngineGameEvent>()
+        if (drawnIds.isNotEmpty()) {
+            val cardNames = drawnIds.map { current.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            events.add(CardsDrawnEvent(playerId, drawnIds.size, drawnIds, cardNames))
+        }
+        events.addAll(perCardEvents)
+        return current to events
     }
 
     /**

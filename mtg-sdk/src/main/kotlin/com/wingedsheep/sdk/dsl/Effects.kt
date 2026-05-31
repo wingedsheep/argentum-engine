@@ -146,6 +146,7 @@ import com.wingedsheep.sdk.scripting.effects.ForceExileMultiZoneEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
+import com.wingedsheep.sdk.scripting.effects.PreventionReaction
 import com.wingedsheep.sdk.scripting.effects.PreventionScope
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
@@ -2031,14 +2032,23 @@ object Effects {
         )
 
     /**
-     * Choose a source, prevent the next damage it would deal to you this turn,
-     * and deal that much damage to its controller.
+     * Choose a source on resolution, prevent the next damage it would deal to you this turn,
+     * then run [onPrevented] reactions keyed to the prevented amount. The chain primitive behind
+     * the "the next time a source of your choice would deal damage to you this turn, prevent that
+     * damage. When damage is prevented this way, …" cards (Deflecting Palm, New Way Forward).
      */
-    fun DeflectNextDamageFromChosenSource(): Effect =
+    fun PreventNextDamageFromChosenSourceThen(vararg onPrevented: PreventionReaction): Effect =
         PreventDamageEffect(
             sourceFilter = PreventionSourceFilter.ChosenSource,
-            reflect = true
+            onPrevented = onPrevented.toList()
         )
+
+    /**
+     * Choose a source, prevent the next damage it would deal to you this turn,
+     * and deal that much damage to its controller (Deflecting Palm).
+     */
+    fun DeflectNextDamageFromChosenSource(): Effect =
+        PreventNextDamageFromChosenSourceThen(PreventionReaction.DealToSourceController)
 
     /**
      * Prevent the next N damage that would be dealt to a target this turn by a source of your choice.

@@ -104,13 +104,15 @@ class PreventDamageExecutor(
             useTargetingUI = true
         )
 
-        if (effect.reflect) {
-            // Deflecting Palm path: reflect damage back to source's controller
+        if (effect.onPrevented.isNotEmpty()) {
+            // Reaction path (Deflecting Palm, New Way Forward): on prevention, run the reactions
+            // (reflect to source's controller, draw, …) keyed to the prevented amount.
             val continuation = DeflectDamageSourceChoiceContinuation(
                 decisionId = decisionId,
                 controllerId = controllerId,
                 sourceId = context.sourceId,
-                sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+                sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
+                reactions = effect.onPrevented
             )
             val newState = state.withPendingDecision(decision).pushContinuation(continuation)
             return EffectResult.paused(newState, decision)
