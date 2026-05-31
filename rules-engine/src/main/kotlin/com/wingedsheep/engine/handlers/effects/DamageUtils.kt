@@ -1188,7 +1188,7 @@ object DamageUtils {
     ): Boolean {
         if (projected.hasColor(sourceId, color)) return true
         val sourceEntity = state.getEntity(sourceId) ?: return false
-        val card = sourceEntity.components[CardComponent::class.java.name] as? CardComponent ?: return false
+        val card = sourceEntity.components[CardComponent::class.java] as? CardComponent ?: return false
         return card.colors.contains(color)
     }
 
