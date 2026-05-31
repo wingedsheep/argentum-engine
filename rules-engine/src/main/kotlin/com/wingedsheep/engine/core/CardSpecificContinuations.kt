@@ -54,46 +54,44 @@ data class SecretBidContinuation(
 ) : ContinuationFrame
 
 /**
- * Which step of the [LifeAuctionContinuation] the pending decision belongs to.
+ * Which step of the [OpenLifeBidContinuation] the pending decision belongs to.
  */
 @Serializable
-enum class LifeAuctionStage {
-    /** A yes/no: does [LifeAuctionContinuation.bidderToAsk] want to top the high bid? */
+enum class OpenLifeBidStage {
+    /** A yes/no: does [OpenLifeBidContinuation.bidderToAsk] want to top the high bid? */
     AWAITING_TOP_DECISION,
 
-    /** A number choice: how much does [LifeAuctionContinuation.bidderToAsk] bid? */
+    /** A number choice: how much does [OpenLifeBidContinuation.bidderToAsk] bid? */
     AWAITING_BID_AMOUNT
 }
 
 /**
  * Resume an open life-bidding auction (Mages' Contest).
  *
- * The two participants — [casterId] and the controller of [spellId] — alternate topping the
- * high bid. The player currently deciding is [bidderToAsk]; [highBidder] holds the current
- * [highBid]. When [bidderToAsk] declines to top, the auction ends, the high bidder loses
- * [highBid] life, and (only if the caster won) [onCasterWins] runs against [targets].
+ * The two bidders — [casterId] and the resolved participant — alternate topping the high bid.
+ * The player currently deciding is [bidderToAsk]; [highBidder] holds the current [highBid].
+ * When [bidderToAsk] declines to top, the auction ends, the high bidder loses [highBid] life,
+ * and (only if the caster won) [onWin] runs against [targets].
  *
- * @property casterId The player who cast the auction spell (the "you" who wins to apply [onCasterWins])
- * @property spellId The targeted spell on the stack
+ * @property casterId The player who cast the auction spell (the "you" who wins to apply [onWin])
  * @property highBidder The player currently holding the high bid
  * @property highBid The current high bid in life
  * @property bidderToAsk The player whose decision we are waiting for
  * @property stage Whether we await a top yes/no or a bid amount
- * @property onCasterWins Effect run if the caster is the high bidder
- * @property targets Original targets, propagated so [onCasterWins] can reference the spell
+ * @property onWin Effect run if the caster is the high bidder
+ * @property targets Original targets, propagated so [onWin] can reference the spell
  * @property sourceId The auction spell entity (for prompt context)
  * @property sourceName Name of the auction spell (for prompts)
  */
 @Serializable
-data class LifeAuctionContinuation(
+data class OpenLifeBidContinuation(
     override val decisionId: String,
     val casterId: EntityId,
-    val spellId: EntityId,
     val highBidder: EntityId,
     val highBid: Int,
     val bidderToAsk: EntityId,
-    val stage: LifeAuctionStage,
-    val onCasterWins: Effect,
+    val stage: OpenLifeBidStage,
+    val onWin: Effect,
     val targets: List<ChosenTarget>,
     val sourceId: EntityId?,
     val sourceName: String?

@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
-import com.wingedsheep.sdk.scripting.effects.LifeAuctionEffect
+import com.wingedsheep.sdk.scripting.effects.OpenLifeBidEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
@@ -1672,15 +1672,16 @@ object Effects {
         CounterEffect(target = CounterTarget.Ability)
 
     /**
-     * Open life-bidding auction between you and the controller of a targeted spell.
-     * "You and target spell's controller bid life. You start the bidding with a bid of 1.
-     * In turn order, each player may top the high bid. The bidding ends if the high bid
-     * stands. The high bidder loses life equal to the high bid. If you win the bidding,
-     * [onWin]." Pair with a `TargetSpell` requirement; [onWin] runs only if you win, with
-     * the targeted spell in context (e.g. `Effects.CounterSpell()` for Mages' Contest).
+     * Open life-bidding auction between you and another participant.
+     * "You and [participant] bid life. You start the bidding with a bid of 1. In turn order,
+     * each player may top the high bid. The bidding ends if the high bid stands. The high
+     * bidder loses life equal to the high bid. If you win the bidding, [onWin]." [onWin] runs
+     * only if you win, with the original targets in context. For Mages' Contest, bid against
+     * the targeted spell's controller and counter it — pair with a `TargetSpell` requirement:
+     * `Effects.OpenLifeBid(Effects.CounterSpell(), Player.ControllerOf("target spell"))`.
      */
-    fun LifeAuction(onWin: Effect): Effect =
-        LifeAuctionEffect(onCasterWins = onWin)
+    fun OpenLifeBid(onWin: Effect, participant: Player = Player.Opponent): Effect =
+        OpenLifeBidEffect(onWin = onWin, participant = participant)
 
     /**
      * Counter target spell or activated/triggered ability. Used by cards like

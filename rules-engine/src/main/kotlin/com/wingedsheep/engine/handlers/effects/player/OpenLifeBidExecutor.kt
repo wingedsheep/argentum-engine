@@ -2,70 +2,68 @@ package com.wingedsheep.engine.handlers.effects.player
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.core.LifeAuctionContinuation
-import com.wingedsheep.engine.core.LifeAuctionStage
+import com.wingedsheep.engine.core.OpenLifeBidContinuation
+import com.wingedsheep.engine.core.OpenLifeBidStage
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.effects.LifeAuctionEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.OpenLifeBidEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlin.reflect.KClass
 
 /**
- * Executor for [LifeAuctionEffect] (Mages' Contest).
+ * Executor for [OpenLifeBidEffect] (Mages' Contest).
  *
- * Sets up the open life-bidding auction between the caster and the controller of the
- * targeted spell, then hands stepping/resolution to [LifeAuctionLogic] (shared with the
- * resumer). The caster opens with a bid of 1; the spell's controller is asked first.
+ * Resolves the other bidder from the effect's [OpenLifeBidEffect.participant] reference, then
+ * hands stepping/resolution to [OpenLifeBidLogic] (shared with the resumer). The caster opens
+ * with a bid of 1 and the participant is asked first. If the participant resolves to the caster
+ * (or to nobody), the caster is the sole bidder and wins immediately at the opening bid.
  */
-class LifeAuctionExecutor(
+class OpenLifeBidExecutor(
     private val executeEffect: (GameState, Effect, EffectContext) -> EffectResult
-) : EffectExecutor<LifeAuctionEffect> {
+) : EffectExecutor<OpenLifeBidEffect> {
 
-    override val effectType: KClass<LifeAuctionEffect> = LifeAuctionEffect::class
+    override val effectType: KClass<OpenLifeBidEffect> = OpenLifeBidEffect::class
 
     override fun execute(
         state: GameState,
-        effect: LifeAuctionEffect,
+        effect: OpenLifeBidEffect,
         context: EffectContext
     ): EffectResult {
         val casterId = context.controllerId
 
-        // The targeted spell. If it's already gone (e.g. removed from the stack), there's
-        // nothing to bid over — the auction simply does nothing.
-        val spellId = (context.targets.firstOrNull() as? ChosenTarget.Spell)?.spellEntityId
-            ?: return EffectResult.success(state)
-        if (!state.stack.contains(spellId)) return EffectResult.success(state)
-
-        val spellController = state.getEntity(spellId)?.get<SpellOnStackComponent>()?.casterId
-            ?: return EffectResult.success(state)
+        // The other bidder, resolved from the participant player reference (e.g. the controller
+        // of the targeted spell for Mages' Contest). The caster is never their own opponent.
+        val otherBidder = TargetResolutionUtils
+            .resolvePlayerTargets(EffectTarget.PlayerRef(effect.participant), state, context)
+            .firstOrNull { it != casterId }
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         // You open the bidding with a bid of 1.
         return EffectResult.from(
-            if (spellController == casterId) {
-                // You also control the targeted spell — you're the only bidder and win at 1.
-                LifeAuctionLogic.resolve(
+            if (otherBidder == null) {
+                // No opponent in the bid — you're the only bidder and win at the opening bid.
+                OpenLifeBidLogic.resolve(
                     state, casterId, highBidder = casterId, highBid = 1,
-                    onCasterWins = effect.onCasterWins, targets = context.targets,
+                    onWin = effect.onWin, targets = context.targets,
                     sourceId = context.sourceId, executeEffect = executeEffect
                 )
             } else {
-                LifeAuctionLogic.advance(
-                    state, casterId, spellId, highBidder = casterId, highBid = 1,
-                    bidderToAsk = spellController, onCasterWins = effect.onCasterWins,
+                OpenLifeBidLogic.advance(
+                    state, casterId, highBidder = casterId, highBid = 1,
+                    bidderToAsk = otherBidder, onWin = effect.onWin,
                     targets = context.targets, sourceId = context.sourceId, sourceName = sourceName,
                     executeEffect = executeEffect
                 )
@@ -75,14 +73,14 @@ class LifeAuctionExecutor(
 }
 
 /**
- * Shared stepping/resolution logic for the life auction, used by both [LifeAuctionExecutor]
- * (which sets up the first decision) and the continuation resumer (which drives subsequent
- * decisions and resolution).
+ * Shared stepping/resolution logic for the open life-bid auction, used by both
+ * [OpenLifeBidExecutor] (which sets up the first decision) and the continuation resumer (which
+ * drives subsequent decisions and resolution).
  *
- * Bids are capped at the bidding player's current life total — a player who cannot exceed
- * the high bid simply can't top it and the auction ends.
+ * Bids are capped at the bidding player's current life total — a player who cannot exceed the
+ * high bid simply can't top it and the auction ends.
  */
-object LifeAuctionLogic {
+object OpenLifeBidLogic {
 
     private val decisionHandler = DecisionHandler()
 
@@ -96,11 +94,10 @@ object LifeAuctionLogic {
     fun advance(
         state: GameState,
         casterId: EntityId,
-        spellId: EntityId,
         highBidder: EntityId,
         highBid: Int,
         bidderToAsk: EntityId,
-        onCasterWins: Effect,
+        onWin: Effect,
         targets: List<ChosenTarget>,
         sourceId: EntityId?,
         sourceName: String?,
@@ -108,7 +105,7 @@ object LifeAuctionLogic {
     ): ExecutionResult {
         // A player can only top if they can bid strictly more than the high bid.
         if (lifeOf(state, bidderToAsk) <= highBid) {
-            return resolve(state, casterId, highBidder, highBid, onCasterWins, targets, sourceId, executeEffect)
+            return resolve(state, casterId, highBidder, highBid, onWin, targets, sourceId, executeEffect)
         }
 
         val decisionResult = decisionHandler.createYesNoDecision(
@@ -121,15 +118,14 @@ object LifeAuctionLogic {
             noText = "Pass"
         )
 
-        val continuation = LifeAuctionContinuation(
+        val continuation = OpenLifeBidContinuation(
             decisionId = decisionResult.pendingDecision!!.id,
             casterId = casterId,
-            spellId = spellId,
             highBidder = highBidder,
             highBid = highBid,
             bidderToAsk = bidderToAsk,
-            stage = LifeAuctionStage.AWAITING_TOP_DECISION,
-            onCasterWins = onCasterWins,
+            stage = OpenLifeBidStage.AWAITING_TOP_DECISION,
+            onWin = onWin,
             targets = targets,
             sourceId = sourceId,
             sourceName = sourceName
@@ -143,9 +139,9 @@ object LifeAuctionLogic {
     }
 
     /**
-     * Ask [LifeAuctionContinuation.bidderToAsk] for the amount to top the high bid by.
+     * Ask [OpenLifeBidContinuation.bidderToAsk] for the amount to top the high bid by.
      */
-    fun askAmount(state: GameState, continuation: LifeAuctionContinuation): ExecutionResult {
+    fun askAmount(state: GameState, continuation: OpenLifeBidContinuation): ExecutionResult {
         val maxBid = lifeOf(state, continuation.bidderToAsk)
         val decisionResult = decisionHandler.createNumberDecision(
             state = state,
@@ -159,7 +155,7 @@ object LifeAuctionLogic {
 
         val newContinuation = continuation.copy(
             decisionId = decisionResult.pendingDecision!!.id,
-            stage = LifeAuctionStage.AWAITING_BID_AMOUNT
+            stage = OpenLifeBidStage.AWAITING_BID_AMOUNT
         )
 
         return ExecutionResult.paused(
@@ -171,14 +167,14 @@ object LifeAuctionLogic {
 
     /**
      * End the auction: the high bidder loses [highBid] life, and if the caster is the high
-     * bidder, [onCasterWins] runs against the original [targets].
+     * bidder, [onWin] runs against the original [targets].
      */
     fun resolve(
         state: GameState,
         casterId: EntityId,
         highBidder: EntityId,
         highBid: Int,
-        onCasterWins: Effect,
+        onWin: Effect,
         targets: List<ChosenTarget>,
         sourceId: EntityId?,
         executeEffect: (GameState, Effect, EffectContext) -> EffectResult
@@ -205,7 +201,7 @@ object LifeAuctionLogic {
                 opponentId = null,
                 targets = targets
             )
-            val winResult = executeEffect(currentState, onCasterWins, winContext)
+            val winResult = executeEffect(currentState, onWin, winContext)
             currentState = winResult.state
             events.addAll(winResult.events)
             if (winResult.pendingDecision != null) {

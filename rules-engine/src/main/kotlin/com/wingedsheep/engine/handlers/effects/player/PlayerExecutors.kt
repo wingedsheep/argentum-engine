@@ -25,8 +25,8 @@ class PlayerExecutors(
         PayOrSufferExecutor(cardRegistry = cardRegistry, executeEffect = effectExecutor)
     }
 
-    private val lifeAuctionExecutor by lazy {
-        LifeAuctionExecutor(executeEffect = effectExecutor)
+    private val openLifeBidExecutor by lazy {
+        OpenLifeBidExecutor(executeEffect = effectExecutor)
     }
 
     /**
@@ -55,7 +55,7 @@ class PlayerExecutors(
         GrantHexproofExecutor(),
         GrantShroudExecutor(),
         HijackNextTurnExecutor(),
-        lifeAuctionExecutor,
+        openLifeBidExecutor,
         LoseGameExecutor(),
         WinGameExecutor(),
         payOrSufferExecutor,

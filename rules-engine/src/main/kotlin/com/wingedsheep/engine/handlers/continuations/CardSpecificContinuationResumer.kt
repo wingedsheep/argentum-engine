@@ -3,7 +3,7 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.effects.player.LifeAuctionLogic
+import com.wingedsheep.engine.handlers.effects.player.OpenLifeBidLogic
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -14,7 +14,7 @@ class CardSpecificContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(SecretBidContinuation::class, ::resumeSecretBid),
-        resumer(LifeAuctionContinuation::class, ::resumeLifeAuction),
+        resumer(OpenLifeBidContinuation::class, ::resumeOpenLifeBid),
         resumer(ContestedRetargetContinuation::class, ::resumeContestedRetarget)
     )
 
@@ -60,13 +60,13 @@ class CardSpecificContinuationResumer(
     }
 
     /**
-     * Resume an open life-bidding auction (Mages' Contest). On a "top" yes/no we either ask
-     * for the bid amount or resolve (a pass ends the auction); on a bid amount we flip the
-     * high bidder and ask the previous high bidder whether to top again.
+     * Resume an open life-bid auction (Mages' Contest). On a "top" yes/no we either ask for
+     * the bid amount or resolve (a pass ends the auction); on a bid amount we flip the high
+     * bidder and ask the previous high bidder whether to top again.
      */
-    fun resumeLifeAuction(
+    fun resumeOpenLifeBid(
         state: GameState,
-        continuation: LifeAuctionContinuation,
+        continuation: OpenLifeBidContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
@@ -75,32 +75,32 @@ class CardSpecificContinuationResumer(
         }
 
         return when (continuation.stage) {
-            LifeAuctionStage.AWAITING_TOP_DECISION -> {
+            OpenLifeBidStage.AWAITING_TOP_DECISION -> {
                 if (response !is YesNoResponse) {
-                    return ExecutionResult.error(state, "Expected yes/no response for life auction")
+                    return ExecutionResult.error(state, "Expected yes/no response for life bid")
                 }
                 if (!response.choice) {
                     // Pass — the high bid stands; resolve in favor of the current high bidder.
-                    val result = LifeAuctionLogic.resolve(
+                    val result = OpenLifeBidLogic.resolve(
                         state, continuation.casterId, continuation.highBidder, continuation.highBid,
-                        continuation.onCasterWins, continuation.targets, continuation.sourceId, executeEffect
+                        continuation.onWin, continuation.targets, continuation.sourceId, executeEffect
                     )
                     if (result.pendingDecision != null) result else checkForMore(result.state, result.events)
                 } else {
-                    LifeAuctionLogic.askAmount(state, continuation)
+                    OpenLifeBidLogic.askAmount(state, continuation)
                 }
             }
 
-            LifeAuctionStage.AWAITING_BID_AMOUNT -> {
+            OpenLifeBidStage.AWAITING_BID_AMOUNT -> {
                 if (response !is NumberChosenResponse) {
-                    return ExecutionResult.error(state, "Expected number response for life auction")
+                    return ExecutionResult.error(state, "Expected number response for life bid")
                 }
                 val newBid = response.number.coerceAtLeast(continuation.highBid + 1)
                 // The topping player becomes the high bidder; the previous high bidder is asked next.
-                val result = LifeAuctionLogic.advance(
-                    state, continuation.casterId, continuation.spellId,
+                val result = OpenLifeBidLogic.advance(
+                    state, continuation.casterId,
                     highBidder = continuation.bidderToAsk, highBid = newBid,
-                    bidderToAsk = continuation.highBidder, onCasterWins = continuation.onCasterWins,
+                    bidderToAsk = continuation.highBidder, onWin = continuation.onWin,
                     targets = continuation.targets, sourceId = continuation.sourceId,
                     sourceName = continuation.sourceName, executeEffect = executeEffect
                 )
