@@ -31,6 +31,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -268,6 +269,15 @@ class CreateTokenExecutor(
             )
         }
 
-        return EffectResult.success(newState, events + counterEvents)
+        // Publish the freshly-created token entity IDs to the pipeline so sibling effects in a
+        // CompositeEffect can address them via EffectTarget.PipelineTarget(CREATED_TOKENS, index).
+        // Mirrors CreatePredefinedTokenExecutor — lets a composite grant keywords/counters to the
+        // tokens it just made (e.g. Mardu Monument's "create three Warriors; they gain menace and
+        // haste until end of turn").
+        return EffectResult(
+            state = newState,
+            events = events + counterEvents,
+            updatedCollections = mapOf(CREATED_TOKENS to createdTokens)
+        )
     }
 }

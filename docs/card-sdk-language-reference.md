@@ -357,7 +357,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 
 - `CreateToken(name, p, t, colors?, subtypes?, keywords?, count?, tapped?)` — make N tokens. `count` accepts an
   `Int` or a `DynamicAmount` (the latter for "create X tokens" wording — e.g. Verdeloth the Ancient passes
-  `count = DynamicAmount.XValue` to make X Saprolings when kicked).
+  `count = DynamicAmount.XValue` to make X Saprolings when kicked). Publishes the created token entity IDs to the
+  `CREATED_TOKENS` pipeline collection, so a sibling effect in a `CompositeEffect` can address each token via
+  `EffectTarget.PipelineTarget(CREATED_TOKENS, index)` — e.g. Mardu Monument grants menace and haste until end of
+  turn to each of its three freshly-created Warriors with one `GrantKeyword` per token.
 - `CreateDynamicToken(dynamicPower, dynamicToughness, colors?, creatureTypes, keywords?, count?, controller?, imageUri?)` —
   tokens whose P/T is computed at resolution (e.g. Pure Reflection's X/X Reflection where X = the cast spell's mana
   value, via `DynamicAmounts.triggeringManaValue()`). `controller` directs who gets the token (e.g.
