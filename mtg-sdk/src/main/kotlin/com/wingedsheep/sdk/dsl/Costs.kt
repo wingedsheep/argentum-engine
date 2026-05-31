@@ -62,6 +62,12 @@ object Costs {
     fun PayLife(amount: Int): AbilityCost =
         AbilityCost.PayLife(amount)
 
+    /**
+     * Pay X life, where X is the value chosen for the ability's `{X}` mana cost
+     * (e.g. "{X}{B}, {T}, Pay X life: ..." on Krumar Initiate).
+     */
+    val PayXLife: AbilityCost = AbilityCost.PayXLife
+
     // =========================================================================
     // Sacrifice Costs
     // =========================================================================

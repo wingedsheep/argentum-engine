@@ -148,6 +148,16 @@ data class MustAttackPlayerComponent(
 data object MustAttackThisTurnComponent : Component
 
 /**
+ * Marker component letting a creature attack this turn as though it didn't have defender.
+ *
+ * Added by [com.wingedsheep.sdk.scripting.effects.CanAttackThisTurnEffect] (e.g. Krotiq
+ * Nestguard's "{2}{G}: This creature can attack this turn as though it didn't have defender").
+ * The defender attack-restriction rule honors it, and it is removed at end of turn during cleanup.
+ */
+@Serializable
+data object CanAttackDespiteDefenderThisTurnComponent : Component
+
+/**
  * Marker component added to a player when they have declared at least one attacker this turn.
  * Used for Raid abilities and similar "if you attacked this turn" checks.
  * Persists past END_COMBAT; removed at end of turn during cleanup.

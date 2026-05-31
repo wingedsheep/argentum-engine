@@ -142,6 +142,23 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     }
 
     /**
+     * Pay X life, where X is the value chosen for the ability's `{X}` mana cost.
+     *
+     * Mirrors [ExileXFromGraveyard]: an X-linked variable cost that reads the chosen
+     * X (`CostPaymentChoices.xValue`) at payment time. Used by abilities like
+     * "{X}{B}, {T}, Pay X life: ..." (Krumar Initiate) where the life payment must
+     * equal the X paid for the mana cost. The legal-action enumerator caps the
+     * affordable X by the controller's life total (you can't pay more life than you
+     * have, and must survive at 1+).
+     */
+    @SerialName("CostPayXLife")
+    @Serializable
+    data object PayXLife : AbilityCost {
+        override val description: String = "Pay X life"
+        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
+    }
+
+    /**
      * Sacrifice a permanent
      *
      * @property filter Which permanents can be sacrificed

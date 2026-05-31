@@ -108,6 +108,9 @@ the `CardDefinition`.
 - `Costs.Untap` — `{Q}`; untap this permanent.
 - `Costs.Mana("{2}{U}")` — pay the given mana cost (string or `ManaCost`).
 - `Costs.PayLife(amount)` — pay N life.
+- `Costs.PayXLife` — pay X life, where X is the value chosen for the ability's `{X}` mana cost
+  (e.g. "{X}{B}, {T}, Pay X life: …" on Krumar Initiate). The X-linked counterpart to
+  `Costs.PayLife`; `calculateMaxAffordableX` caps X by the controller's life total.
 - `Costs.Sacrifice(filter)` — sacrifice a permanent matching the filter (may include self).
 - `Costs.SacrificeAnother(filter)` — sacrifice a *different* permanent matching the filter.
 - `Costs.DiscardCard` — discard a card you choose (any card).
@@ -385,6 +388,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `CantBlockGroupEffect(filter, condition?)` — group-scoped can't-block.
 - `Effects.Suspect(target)` — target becomes Suspected (MKM keyword). Composite: `SetSuspectedEffect` (named status, CR 701.60d dedup) + `GrantKeywordEffect(MENACE)` + `CantBlockEffect`.
 - `RemoveFromCombatEffect(target)` — yank target out of combat.
+- `Effects.CanAttackThisTurn(target = Self)` (`CanAttackThisTurnEffect`) — target can attack this
+  turn as though it didn't have defender. Adds a transient `CanAttackDespiteDefenderThisTurnComponent`
+  honored by the defender attack-restriction rule and cleaned up at end of turn. The
+  activated/temporary counterpart to the static `CanAttackDespiteDefender` ability (Krotiq Nestguard).
 - `SkipNextTurnEffect(target)` — target skips their next turn.
 - `Effects.SkipNextDrawStep(target = Controller)` (`SkipNextDrawStepEffect`) — target skips their next draw step. Adds a one-shot `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn").
 - `HijackNextTurnEffect(target)` — you control target's next turn.

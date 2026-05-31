@@ -86,6 +86,11 @@ class CostHandler(
                 val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
                 life > cost.amount // Can pay if life is > cost (not <= 0 after)
             }
+            is AbilityCost.PayXLife -> {
+                // X can be 0, so this is always payable as long as the player has a life total.
+                // maxAffordableX is capped by life total in calculateMaxAffordableX.
+                state.getEntity(controllerId)?.has<LifeTotalComponent>() == true
+            }
             is AbilityCost.Sacrifice -> {
                 val candidates = findMatchingPermanentsUnified(state, controllerId, cost.filter)
                 val eligible = if (cost.excludeSelf) candidates.filter { it != sourceId } else candidates
@@ -257,6 +262,24 @@ class CostHandler(
                     newState, manaPool,
                     events = listOf(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.PAYMENT))
                 )
+            }
+            is AbilityCost.PayXLife -> {
+                val amount = choices.xValue
+                if (amount == 0) {
+                    CostPaymentResult.success(state, manaPool)
+                } else {
+                    val currentLife = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life
+                        ?: return CostPaymentResult.failure("Player has no life total")
+                    val newLife = currentLife - amount
+                    var newState = state.updateEntity(controllerId) { container ->
+                        container.with(LifeTotalComponent(newLife))
+                    }
+                    newState = DamageUtils.markLifeLostThisTurn(newState, controllerId)
+                    CostPaymentResult.success(
+                        newState, manaPool,
+                        events = listOf(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.PAYMENT))
+                    )
+                }
             }
             is AbilityCost.Sacrifice, is AbilityCost.SacrificeChosenCreatureType -> {
                 val requiredCount = when (cost) {

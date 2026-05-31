@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFired
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TokenReplacementOfferedThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.CanAttackDespiteDefenderThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
@@ -129,6 +130,15 @@ class CleanupPhaseManager(
         }.keys
         for (entityId in creaturesWithMustAttack) {
             newState = newState.updateEntity(entityId) { it.without<MustAttackThisTurnComponent>() }
+        }
+
+        // Remove CanAttackDespiteDefenderThisTurnComponent (Krotiq Nestguard's "can attack
+        // this turn as though it didn't have defender" activated ability).
+        val creaturesWithCanAttackDespiteDefender = newState.entities.filter { (_, container) ->
+            container.has<CanAttackDespiteDefenderThisTurnComponent>()
+        }.keys
+        for (entityId in creaturesWithCanAttackDespiteDefender) {
+            newState = newState.updateEntity(entityId) { it.without<CanAttackDespiteDefenderThisTurnComponent>() }
         }
 
         // No priority during cleanup (normally)

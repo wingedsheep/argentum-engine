@@ -422,6 +422,28 @@ data class MarkMustAttackThisTurnEffect(
 }
 
 /**
+ * Let a creature attack this turn as though it didn't have defender.
+ * Adds a transient marker the attack-restriction rules honor, cleaned up at end of turn.
+ *
+ * This is the activated/temporary counterpart to the static [CanAttackDespiteDefender]
+ * ability: cards like Krotiq Nestguard ("{2}{G}: This creature can attack this turn as
+ * though it didn't have defender.") grant the permission for one turn rather than
+ * permanently.
+ *
+ * @property target The creature gaining the permission (typically EffectTarget.Self).
+ */
+@SerialName("CanAttackThisTurn")
+@Serializable
+data class CanAttackThisTurnEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String =
+        "${target.description} can attack this turn as though it didn't have defender"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Redirect the next time damage would be dealt to the protected targets this turn.
  * "The next time damage would be dealt to [protected targets] this turn,
  *  that damage is dealt to [redirectTo] instead."

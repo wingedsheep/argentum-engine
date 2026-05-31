@@ -379,6 +379,7 @@ val engineSerializersModule = SerializersModule {
         subclass(BlockersDeclaredThisCombatComponent::class)
         subclass(MustAttackPlayerComponent::class)
         subclass(MustAttackThisTurnComponent::class)
+        subclass(CanAttackDespiteDefenderThisTurnComponent::class)
         subclass(PlayerAttackedThisTurnComponent::class)
         subclass(PlayerAttackersThisTurnComponent::class)
 

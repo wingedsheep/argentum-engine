@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -478,6 +479,18 @@ class CostEnumerationUtils(
         }
         if (tapXCost != null) {
             maxX = minOf(maxX, findAbilityTapTargets(state, playerId, tapXCost.filter).size)
+        }
+
+        // Cap by life total if PayXLife — you can't pay more life than you have, and
+        // (mirroring AbilityCost.PayLife affordability) must keep at least 1 life.
+        val hasPayXLife = when (abilityCost) {
+            is AbilityCost.PayXLife -> true
+            is AbilityCost.Composite -> abilityCost.costs.any { it is AbilityCost.PayXLife }
+            else -> false
+        }
+        if (hasPayXLife) {
+            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+            maxX = minOf(maxX, (life - 1).coerceAtLeast(0))
         }
 
         return maxX

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.CanAttackDespiteDefenderThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -86,6 +87,11 @@ class DefenderAttackRule : AttackRestrictionRule {
         if (!ctx.projected.hasKeyword(ctx.attackerId, Keyword.DEFENDER)) return null
 
         val container = ctx.state.getEntity(ctx.attackerId) ?: return errorMsg(ctx)
+
+        // Temporary "can attack this turn as though it didn't have defender" grant
+        // (e.g. Krotiq Nestguard's activated ability). The marker is removed at end of turn.
+        if (container.has<CanAttackDespiteDefenderThisTurnComponent>()) return null
+
         val cardComp = container.get<CardComponent>() ?: return errorMsg(ctx)
         val cardDef = ctx.cardRegistry.getCard(cardComp.cardDefinitionId) ?: return errorMsg(ctx)
 
