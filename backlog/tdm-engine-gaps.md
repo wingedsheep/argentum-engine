@@ -144,9 +144,16 @@ the overwhelming majority of the set.
     `EntityReference.Sacrificed` is unresolvable there).
     → **Sidisi, Regent of the Mire**
 
-13. **Choose-and-exile from a target opponent's revealed hand.** Existing primitives reveal /
-    look-at hands or force self-discard, but none lets the controller pick a card from the opponent's
-    hand and exile it (with a linked LTB payoff).
+13. **Choose-and-exile from a target opponent's revealed hand.** ✅ **DONE.** No new SDK was needed —
+    the card is a pure pipeline chain (mirrors Deep-Cavern Bat's hand-disruption shape):
+    `RevealHandEffect` → `GatherCards` from the opponent's hand → `SelectFromCollection`
+    (up to one nonland, `Chooser.Controller`) → `MoveCollection` to exile with `linkToSource = true`.
+    The linked LTB payoff is also composed: on `LeavesBattlefield`, re-gather the linked-exiled card
+    (it stays exiled — never returned) and create the Spirit via `CreateTokenEffect` with
+    `count = VariableReference("…_count")` (0 when nothing was exiled), `dynamicPower/Toughness =
+    StoredCardManaValue` (X = the exiled card's mana value), and `controller =
+    ControllerOfPipelineTarget` (resolves to the exiled card's owner — an exile-zone card has no
+    `ControllerComponent`, so it falls back to `ownerId`).
     → **Severance Priest**
 
 14. **Suspend.** Time counters on a card in exile + cast-when-last-counter-removed + haste payoff.
