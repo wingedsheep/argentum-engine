@@ -2,7 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.OpponentsCantCastSpells
+import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
+import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Voice of Victory — Tarkir: Dragonstorm #33
@@ -13,9 +15,9 @@ import com.wingedsheep.sdk.scripting.OpponentsCantCastSpells
  * Your opponents can't cast spells during your turn.
  *
  * Mobilize is the `mobilize(n)` builder helper. The lock clause is the reusable
- * [OpponentsCantCastSpells] static ability — an opponent-scoped continuous cast prohibition the
- * engine reads at cast-legality time, so it blocks every casting zone during this card's
- * controller's turn without any per-zone wiring.
+ * [PlayersCantCastSpells] static ability — here scoped to `EachOpponent` during your turn
+ * (`condition = IsYourTurn`). The engine reads it at cast-legality time, so it blocks every
+ * casting zone during this card's controller's turn without any per-zone wiring.
  */
 val VoiceOfVictory = card("Voice of Victory") {
     manaCost = "{1}{W}"
@@ -29,7 +31,7 @@ val VoiceOfVictory = card("Voice of Victory") {
     mobilize(2)
 
     staticAbility {
-        ability = OpponentsCantCastSpells(onlyDuringYourTurn = true)
+        ability = PlayersCantCastSpells(affected = Player.EachOpponent, condition = IsYourTurn)
     }
 
     metadata {

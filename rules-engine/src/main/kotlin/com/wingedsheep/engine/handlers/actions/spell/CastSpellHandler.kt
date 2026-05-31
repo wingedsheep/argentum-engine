@@ -168,22 +168,10 @@ class CastSpellHandler(
             return "Card is not in your hand"
         }
 
-        // Per-turn spell cast limit (e.g., Yawgmoth's Agenda: "You can't cast more than one
-        // spell each turn."). Already-cast spells are tallied in playerSpellsCastThisTurn.
-        if (castPermissionUtils.hasReachedSpellCastLimit(state, action.playerId)) {
-            return "You can't cast another spell this turn"
-        }
-
-        // Mana Maze: can't cast a spell sharing a color with the spell most recently cast this turn.
-        if (castPermissionUtils.sharesColorWithMostRecentCast(state, action.cardId)) {
-            return "You can't cast a spell that shares a color with the spell most recently cast this turn"
-        }
-
-        // Voice of Victory: an opponent's static ability forbids you from casting spells
-        // (optionally only during that opponent's turn).
-        if (castPermissionUtils.cantCastSpellsDueToOpponentRestriction(state, action.playerId)) {
-            return "An opponent's effect prevents you from casting spells right now"
-        }
+        // Single cast-legality chokepoint: per-turn spell limit (Yawgmoth's Agenda),
+        // Silence-style can't-cast, Mana Maze color sharing, and PlayersCantCastSpells
+        // (Voice of Victory, …) all resolve to a reason here, or null if the cast is allowed.
+        castPermissionUtils.reasonCannotCast(state, action.playerId, action.cardId)?.let { return it }
 
         if (hasForageFromGraveyard) {
             if (!costHandler.canPayAdditionalCost(state, AdditionalCost.Forage, action.playerId)) {

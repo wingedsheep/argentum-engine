@@ -1,6 +1,10 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
+import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
@@ -258,36 +262,56 @@ data object CantCastSpellsSharingColorWithLastCast : StaticAbility {
 }
 
 /**
- * Your opponents can't cast spells — either unconditionally, or (when [onlyDuringYourTurn] is
- * true) only while this permanent's controller is the active player.
+ * A continuous prohibition on casting spells, scoped along three independent axes — each a
+ * reused SDK primitive, so one type covers a whole family of "can't cast" cards:
  *
- * An opponent-scoped continuous cast *prohibition*: every player other than the source's
- * controller is forbidden from casting any spell from any zone. The engine reads it during
- * cast-legality checks (it never uses the stack), so it composes with every casting path —
- * hand, graveyard flashback/harmonize, exile, top of library — without per-zone wiring. Control
- * is read from projected state, so a control-changing effect flips which player is restricted.
+ *  - **who** — [affected], a [Player] reference interpreted *relative to this permanent's
+ *    controller*: `EachOpponent` / `Opponent` (your opponents), `You` (the controller), `Each`
+ *    (everyone).
+ *  - **which** — [spellFilter], matched against the card being cast (card predicates work in any
+ *    zone). Defaults to every spell.
+ *  - **when** — [condition], evaluated in the controller's context, so `IsYourTurn` reads as
+ *    "during your turn" and `IsNotYourTurn` as "during an opponent's turn". `null` = always.
  *
- * - Voice of Victory (TDM): `OpponentsCantCastSpells(onlyDuringYourTurn = true)` —
- *   "Your opponents can't cast spells during your turn."
- * - Grand Abolisher's cast clause is the same shape (its "can't activate abilities" clause is a
- *   separate ability).
+ * Read at cast-legality time (never on the stack), so it composes with every casting path —
+ * hand, graveyard flashback/harmonize, exile, top of library. Control is read from projected
+ * state, so a control-changing effect flips who is restricted.
  *
- * Deliberately **not** a filtered prohibition: "can't cast spells with even mana value"
- * (Void Winnower) needs a per-spell [GameObjectFilter] check at a different enforcement point —
- * add a sibling ability when such a card arrives rather than overloading this one.
+ *  - Voice of Victory: `PlayersCantCastSpells(Player.EachOpponent, condition = IsYourTurn)`
+ *    ("Your opponents can't cast spells during your turn.")
+ *  - Grand Abolisher's cast clause: `PlayersCantCastSpells(Player.EachOpponent)` (every turn).
+ *  - Void Winnower: `PlayersCantCastSpells(Player.EachOpponent, spellFilter =
+ *    GameObjectFilter(cardPredicates = listOf(CardPredicate.ManaValueIsEven)))`.
  *
- * @property onlyDuringYourTurn When true, the restriction applies only while the source's
- *   controller is the active player; when false, it applies on every turn.
+ * @property affected Who is forbidden, relative to the source's controller.
+ * @property spellFilter Which spells are forbidden (matched against the card being cast).
+ * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
  */
-@SerialName("OpponentsCantCastSpells")
+@SerialName("PlayersCantCastSpells")
 @Serializable
-data class OpponentsCantCastSpells(
-    val onlyDuringYourTurn: Boolean = false
+data class PlayersCantCastSpells(
+    val affected: Player = Player.EachOpponent,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    val condition: Condition? = null
 ) : StaticAbility {
-    override val description: String = if (onlyDuringYourTurn) {
-        "Your opponents can't cast spells during your turn"
-    } else {
-        "Your opponents can't cast spells"
+    override val description: String = buildString {
+        when (affected) {
+            is Player.You -> append("You can't cast ")
+            is Player.Opponent, is Player.EachOpponent -> append("Your opponents can't cast ")
+            else -> append("${affected.description.replaceFirstChar { it.uppercase() }} can't cast ")
+        }
+        append(if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells")
+        when (condition) {
+            is IsYourTurn -> append(" during your turn")
+            is IsNotYourTurn -> append(" during your opponents' turns")
+            null -> {}
+            else -> append(" ${condition.description}")
+        }
     }
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newFilter === spellFilter && newCondition === condition) this
+        else copy(spellFilter = newFilter, condition = newCondition)
+    }
 }

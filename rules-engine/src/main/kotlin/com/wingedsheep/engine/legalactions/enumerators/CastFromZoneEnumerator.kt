@@ -98,7 +98,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val hasFlash = cardDef.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
                 context.castPermissionUtils.hasGrantedFlash(state, cardId)
             if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
-            if (context.cantCastSpells) continue
+            if (context.cantCastSpell(cardId)) continue
 
             val castRestrictions = cardDef.script.castRestrictions
             if (!context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)) continue
@@ -366,7 +366,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
             // Non-land spell with play permission
             if (!cardComponent.typeLine.isLand) {
-                if (context.cantCastSpells) {
+                if (context.cantCastSpell(cardId)) {
                     val costString = if (playForFree) "{0}" else cardComponent.manaCost.toString()
                     result.add(
                         LegalAction(
@@ -640,7 +640,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 if (exiledCard.typeLine.isLand) continue
 
                 val exiledCardDef = context.cardRegistry.getCard(exiledCard.name)
-                if (context.cantCastSpells) {
+                if (context.cantCastSpell(exiledId)) {
                     result.add(
                         LegalAction(
                             actionType = "CastSpell",
@@ -832,7 +832,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 if (cardComponent.typeLine.isLand) continue
 
                 val sourceZoneName = zone.name
-                if (context.cantCastSpells) {
+                if (context.cantCastSpell(cardId)) {
                     result.add(
                         LegalAction(
                             actionType = "CastSpell",
@@ -942,7 +942,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
 
-            if (context.cantCastSpells) {
+            if (context.cantCastSpell(cardId)) {
                 result.add(
                     LegalAction(
                         actionType = "CastSpell",
@@ -1046,7 +1046,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val isInstant = cardComponent.typeLine.isInstant
             if (!isInstant && !context.canPlaySorcerySpeed) continue
 
-            if (context.cantCastSpells) {
+            if (context.cantCastSpell(cardId)) {
                 result.add(
                     LegalAction(
                         actionType = "CastWithFlashback",
@@ -1184,7 +1184,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val isInstant = cardComponent.typeLine.isInstant
             if (!isInstant && !context.canPlaySorcerySpeed) continue
 
-            if (context.cantCastSpells) {
+            if (context.cantCastSpell(cardId)) {
                 result.add(
                     LegalAction(
                         actionType = "CastWithHarmonize",
@@ -1315,7 +1315,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val isInstant = cardComponent.typeLine.isInstant
             if (!isInstant && !context.canPlaySorcerySpeed) continue
 
-            if (context.cantCastSpells) {
+            if (context.cantCastSpell(cardId)) {
                 result.add(
                     LegalAction(
                         actionType = "CastWithWarp",
@@ -1459,7 +1459,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val otherGraveyardCards = graveyardCards.filter { it != cardId }
             if (otherGraveyardCards.size < 3 && !hasFood) continue
 
-            if (context.cantCastSpells) {
+            if (context.cantCastSpell(cardId)) {
                 result.add(
                     LegalAction(
                         actionType = "CastSpell",
@@ -1592,7 +1592,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 val isInstant = cardComponent.typeLine.isInstant
                 if (!isInstant && !context.canPlaySorcerySpeed) continue
 
-                if (context.cantCastSpells) continue
+                if (context.cantCastSpell(cardId)) continue
 
                 // Check cast restrictions
                 val castRestrictions = cardDef.script.castRestrictions

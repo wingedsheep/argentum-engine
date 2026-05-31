@@ -80,12 +80,29 @@ class EnumerationContext(
         canPlaySorcerySpeed && (remaining + staticBonus > 0)
     }
 
-    // Cast restrictions
+    // Cast restrictions — blanket, spell-independent locks (a Silence-style CantCastSpellsComponent
+    // or a RestrictSpellsCastPerTurn per-turn limit). Cached once per enumeration pass.
     val cantCastSpells: Boolean by lazy {
         state.getEntity(playerId)?.has<CantCastSpellsComponent>() == true ||
-            castPermissionUtils.hasReachedSpellCastLimit(state, playerId) ||
-            castPermissionUtils.cantCastSpellsDueToOpponentRestriction(state, playerId)
+            castPermissionUtils.hasReachedSpellCastLimit(state, playerId)
     }
+
+    // Whether any per-spell cast restriction (Mana Maze, PlayersCantCastSpells) is in play at all —
+    // a cheap guard so cantCastSpell() stays O(1) when none exists (the common case).
+    private val perSpellCastRestrictionPresent: Boolean by lazy {
+        castPermissionUtils.anyPerSpellCastRestrictionPresent(state)
+    }
+
+    /**
+     * Whether this player can't cast the specific card [cardId] right now — the blanket lock OR a
+     * per-spell static restriction (Mana Maze's color sharing, a filtered [PlayersCantCastSpells]).
+     * Every cast-enumeration site that has a candidate card in hand consults this, so filtered
+     * prohibitions are honoured across every casting zone.
+     */
+    fun cantCastSpell(cardId: EntityId): Boolean =
+        cantCastSpells ||
+            (perSpellCastRestrictionPresent &&
+                castPermissionUtils.spellSpecificallyRestricted(state, playerId, cardId))
 
     // Alternative casting costs from battlefield permanents (e.g., Jodah)
     val alternativeCastingCosts by lazy {

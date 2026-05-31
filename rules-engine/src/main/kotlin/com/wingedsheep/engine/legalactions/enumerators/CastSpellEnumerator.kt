@@ -48,11 +48,9 @@ class CastSpellEnumerator : ActionEnumerator {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (cardComponent.typeLine.isLand) continue
 
-            // Skip all spells if player can't cast spells this turn
-            if (context.cantCastSpells) continue
-
-            // Mana Maze: can't cast a spell sharing a color with the most recently cast spell this turn
-            if (context.castPermissionUtils.sharesColorWithMostRecentCast(state, cardId)) continue
+            // Skip this spell if the player can't cast it — a blanket lock, Mana Maze color
+            // sharing, or a PlayersCantCastSpells restriction (all routed through one chokepoint).
+            if (context.cantCastSpell(cardId)) continue
 
             // Look up card definition for target requirements and cast restrictions
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
@@ -1096,6 +1094,9 @@ class CastSpellEnumerator : ActionEnumerator {
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
             if (!context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONSPIRE)) continue
+            // A per-spell restriction (e.g. PlayersCantCastSpells with a filter) removes the
+            // conspire variant for this card even though the blanket check above passed.
+            if (context.cantCastSpell(cardId)) continue
 
             val spellColors = cardDef.colors
             if (spellColors.isEmpty()) continue
@@ -1198,7 +1199,7 @@ class CastSpellEnumerator : ActionEnumerator {
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (cardComponent.typeLine.isLand) continue
-            if (context.cantCastSpells) continue
+            if (context.cantCastSpell(cardId)) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
             val kickers = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()

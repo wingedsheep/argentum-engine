@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisT
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivationRestriction
@@ -22,12 +24,13 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
-import com.wingedsheep.sdk.scripting.OpponentsCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Extracted permission-checking helpers from LegalActionsCalculator.
@@ -168,33 +171,113 @@ class CastPermissionUtils(
     }
 
     /**
-     * Voice of Victory (CR via [OpponentsCantCastSpells]): true when [playerId] is forbidden from
-     * casting any spell because an *opponent* controls a permanent with that static ability — and,
-     * for the [OpponentsCantCastSpells.onlyDuringYourTurn] form, that opponent is the active player.
+     * The reason [playerId] can't cast [spellCardId] right now, or `null` if they can. The single
+     * cast-legality chokepoint: every cast enumerator (via [EnumerationContext.cantCastSpell]) and
+     * [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler] route through here, so a new
+     * cast restriction is enforced uniformly across every casting zone (hand, flashback, harmonize,
+     * exile, top of library) by adding a case here — not by sprinkling checks at each site.
      *
-     * Scans the battlefield once. Control is read from projected state, so a control-changing
-     * effect flips which player is restricted (gaining control of Voice of Victory turns the lock
-     * onto its original controller). Face-down permanents have no abilities and are skipped. This
-     * is OR'd into the central `cantCastSpells` gate, so it covers every casting zone uniformly.
+     * Folds the blanket per-player locks (a [CantCastSpellsComponent] from a Silence-style effect,
+     * the [RestrictSpellsCastPerTurn] per-turn limit) and the per-spell static restrictions
+     * (Mana Maze's [CantCastSpellsSharingColorWithLastCast], any [PlayersCantCastSpells]).
      */
-    fun cantCastSpellsDueToOpponentRestriction(state: GameState, playerId: EntityId): Boolean {
+    fun reasonCannotCast(state: GameState, playerId: EntityId, spellCardId: EntityId): String? {
+        if (state.getEntity(playerId)?.has<CantCastSpellsComponent>() == true) {
+            return "You can't cast spells right now"
+        }
+        if (hasReachedSpellCastLimit(state, playerId)) {
+            return "You can't cast another spell this turn"
+        }
+        if (sharesColorWithMostRecentCast(state, spellCardId)) {
+            return "You can't cast a spell that shares a color with the spell most recently cast this turn"
+        }
+        if (blockedByPlayersCantCastSpells(state, playerId, spellCardId)) {
+            return "An effect prevents you from casting that spell right now"
+        }
+        return null
+    }
+
+    /**
+     * The per-spell slice of [reasonCannotCast] — restrictions that depend on *which* spell is
+     * being cast (Mana Maze's color sharing, a filtered [PlayersCantCastSpells]). Separated from
+     * the blanket per-player locks so enumeration can cache the latter once per pass and only pay
+     * the per-card scan when [anyPerSpellCastRestrictionPresent] says a relevant static is in play.
+     */
+    fun spellSpecificallyRestricted(state: GameState, playerId: EntityId, spellCardId: EntityId): Boolean =
+        sharesColorWithMostRecentCast(state, spellCardId) ||
+            blockedByPlayersCantCastSpells(state, playerId, spellCardId)
+
+    /**
+     * Cheap guard: does any battlefield permanent carry a per-spell cast restriction
+     * ([CantCastSpellsSharingColorWithLastCast] or [PlayersCantCastSpells])? Lets enumeration skip
+     * the per-card [spellSpecificallyRestricted] scan entirely in the common case where none is in
+     * play. Cached once per enumeration pass by [EnumerationContext].
+     */
+    fun anyPerSpellCastRestrictionPresent(state: GameState): Boolean =
+        state.getBattlefield().any { id ->
+            val cardDef = state.getEntity(id)?.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            cardDef?.script?.staticAbilities?.any {
+                it is CantCastSpellsSharingColorWithLastCast || it is PlayersCantCastSpells
+            } == true
+        }
+
+    /**
+     * True when a [PlayersCantCastSpells] static forbids [castingPlayerId] from casting the card
+     * [spellCardId] — i.e. some battlefield permanent's ability whose [affected][PlayersCantCastSpells.affected]
+     * group (relative to the granter's controller) includes the caster, whose
+     * [condition][PlayersCantCastSpells.condition] holds in the controller's context, and whose
+     * [spellFilter][PlayersCantCastSpells.spellFilter] matches the card. Control is read from
+     * projected state; face-down permanents (no abilities) are skipped.
+     */
+    private fun blockedByPlayersCantCastSpells(
+        state: GameState,
+        castingPlayerId: EntityId,
+        spellCardId: EntityId
+    ): Boolean {
+        val projected = state.projectedState
         for (permanentId in state.getBattlefield()) {
             val container = state.getEntity(permanentId) ?: continue
-            if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val cardDef = container.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
             for (sa in cardDef.script.staticAbilities) {
-                if (sa !is OpponentsCantCastSpells) continue
-                val controller = state.projectedState.getController(permanentId)
+                if (sa !is PlayersCantCastSpells) continue
+                val controller = projected.getController(permanentId)
                     ?: container.get<ControllerComponent>()?.playerId
                     ?: continue
-                if (controller == playerId) continue
-                if (sa.onlyDuringYourTurn && state.activePlayerId != controller) continue
-                return true
+                if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId)) continue
+                val condition = sa.condition
+                if (condition != null) {
+                    val ctx = EffectContext(
+                        sourceId = permanentId,
+                        controllerId = controller,
+                        opponentId = state.turnOrder.firstOrNull { it != controller }
+                    )
+                    if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
+                }
+                // Match the spell filter against the card being cast (card predicates apply in any zone).
+                if (predicateEvaluator.matches(
+                        state, projected, spellCardId, sa.spellFilter,
+                        PredicateContext(controllerId = castingPlayerId)
+                    )
+                ) {
+                    return true
+                }
             }
         }
         return false
     }
+
+    /** Whether [affected] (interpreted relative to [controllerId]) includes [castingPlayerId]. */
+    private fun affectedPlayerMatches(affected: Player, controllerId: EntityId, castingPlayerId: EntityId): Boolean =
+        when (affected) {
+            is Player.You -> castingPlayerId == controllerId
+            is Player.Opponent, is Player.EachOpponent -> castingPlayerId != controllerId
+            is Player.Each, is Player.Any, is Player.ActivePlayerFirst -> true
+            // Target-bound references (TargetPlayer, …) have no meaning for a continuous static.
+            else -> false
+        }
 
     fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
         for (entityId in state.getBattlefield(playerId)) {
