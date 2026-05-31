@@ -1167,6 +1167,16 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Find all cards in a player's library matching the given name.
+         */
+        fun findCardsInLibrary(playerNumber: Int, cardName: String): List<EntityId> {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            return state.getLibrary(playerId).filter { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
+            }
+        }
+
+        /**
          * Submit a target selection for a triggered ability (e.g., Gravedigger's ETB).
          * @param targets List of entity IDs to select as targets
          */
