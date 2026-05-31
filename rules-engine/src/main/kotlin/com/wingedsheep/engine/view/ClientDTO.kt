@@ -145,6 +145,9 @@ data class ClientCard(
     /** Hexproof-from-color colors (for colored hexproof shield icons) */
     val hexproofFromColors: List<Color> = emptyList(),
 
+    /** Hexproof from monocolored (CR 105.2) — shows an uncolored hexproof shield chip */
+    val hexproofFromMonocolored: Boolean = false,
+
     /** Counters on the card */
     val counters: Map<CounterType, Int>,
 

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -144,5 +145,9 @@ class DragonfireBladeTest : FunSpec({
         // The controller can still target their own creature with a monocolored source.
         validator.validateTargets(driver.state, target, req, casterId = player, sourceColors = setOf(Color.RED))
             .shouldBeNull()
+
+        // The client DTO surfaces the quality so the FE can render the hexproof-from-monocolored chip.
+        val view = ClientStateTransformer(cardRegistry = driver.cardRegistry).transform(driver.state, viewingPlayerId = opponent)
+        view.cards[beast]?.hexproofFromMonocolored shouldBe true
     }
 })

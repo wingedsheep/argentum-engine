@@ -22,6 +22,9 @@ const COLOR_TINTS: Record<string, string> = {
   GREEN: '#40a050',
 }
 
+/** Neutral tint for quality-scoped hexproof shields (e.g. "from monocolored") — no single color fits. */
+const HEXPROOF_QUALITY_TINT = '#c8b86a'
+
 /**
  * Renders a single keyword glyph: prefer a local SVG when mapped (for keywords
  * the mana-font Arena set lacks, e.g. PERSIST), otherwise fall back to mana-font.
@@ -53,6 +56,7 @@ export function KeywordIcons({
   abilityFlags,
   protections,
   hexproofFromColors,
+  hexproofFromMonocolored,
   isSuspected,
   size,
 }: {
@@ -60,6 +64,8 @@ export function KeywordIcons({
   abilityFlags?: readonly AbilityFlag[]
   protections: readonly Color[]
   hexproofFromColors?: readonly Color[]
+  /** Hexproof from monocolored (CR 105.2) — an uncolored hexproof-quality shield. */
+  hexproofFromMonocolored?: boolean
   /** Whether the permanent currently has the suspected status (CR 701.60). */
   isSuspected?: boolean
   size: number
@@ -68,17 +74,20 @@ export function KeywordIcons({
   // Also drop generic HEXPROOF when the creature only has per-color hexproof — the colored shields below
   // already convey the protection set, and showing an uncolored shield alongside misleads the player.
   const hexproofFromList = hexproofFromColors ?? []
+  const hasHexproofFromMonocolored = hexproofFromMonocolored === true
+  // Any "hexproof from [quality]" — per-color or monocolored — that conveys the protection set.
+  const hasScopedHexproof = hexproofFromList.length > 0 || hasHexproofFromMonocolored
   const hasFullHexproof = keywords.includes('HEXPROOF' as Keyword)
   const hasDoubleStrike = keywords.includes('DOUBLE_STRIKE' as Keyword)
   const filteredKeywords = keywords.filter(k =>
     displayableKeywords.has(k)
     && k !== 'PROTECTION'
     && !(k === 'FIRST_STRIKE' && hasDoubleStrike)
-    && !(k === 'HEXPROOF' && !hasFullHexproof && hexproofFromList.length > 0)
+    && !(k === 'HEXPROOF' && !hasFullHexproof && hasScopedHexproof)
   )
   const displayableFlags = (abilityFlags ?? []).filter(f => displayableKeywords.has(f))
   const hasProtections = protections.length > 0
-  const hasHexproofFrom = hexproofFromList.length > 0
+  const hasHexproofFrom = hasScopedHexproof
   const hasKeywords = filteredKeywords.length > 0 || displayableFlags.length > 0
   const hasSuspected = isSuspected === true
 
@@ -140,6 +149,28 @@ export function KeywordIcons({
           />
         </div>
       ))}
+      {hasHexproofFromMonocolored && (
+        <div
+          key="hexproof-monocolored"
+          style={{
+            ...styles.keywordIconWrapper,
+            // Neutral grey ring distinguishes the quality shield from the per-color ones.
+            border: `1px solid ${HEXPROOF_QUALITY_TINT}`,
+            boxShadow: `0 0 4px ${HEXPROOF_QUALITY_TINT}`,
+          }}
+          title="Hexproof from monocolored"
+        >
+          <i
+            className="ms ms-ability-hexproof"
+            style={{
+              fontSize: size,
+              color: HEXPROOF_QUALITY_TINT,
+              display: 'block',
+              lineHeight: 1,
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

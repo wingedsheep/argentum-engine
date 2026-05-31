@@ -124,6 +124,9 @@ export interface ClientCard {
   /** Hexproof-from-color colors (for colored hexproof shield icons) */
   readonly hexproofFromColors?: readonly Color[]
 
+  /** Hexproof from monocolored (CR 105.2) — shows an uncolored hexproof shield chip */
+  readonly hexproofFromMonocolored?: boolean
+
   /** Counters on the card */
   readonly counters: Partial<Record<CounterType, number>>
 
