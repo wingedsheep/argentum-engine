@@ -27,6 +27,11 @@ internal fun effectTargetToChooser(target: EffectTarget): Chooser = when (target
         is Player.You -> Chooser.Controller
         is Player.Opponent, is Player.TargetOpponent, is Player.EachOpponent -> Chooser.Opponent
         is Player.TriggeringPlayer -> Chooser.TriggeringPlayer
+        // "Its owner" (e.g. Recoil: "Return target permanent to its owner's hand. Then that
+        // player discards a card.") resolves to whoever owns the targeted permanent, which may be
+        // the controller or an opponent. The discarding player chooses from their own hand, so
+        // derive the chooser from the gathered cards rather than the spell's controller.
+        is Player.OwnerOf -> Chooser.ControllerOfSelection
         else -> Chooser.Controller
     }
     else -> Chooser.Controller
