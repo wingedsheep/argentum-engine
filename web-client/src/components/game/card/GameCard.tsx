@@ -85,7 +85,7 @@ interface GameCardProps {
 /**
  * Single card display.
  */
-export function GameCard({
+function GameCardImpl({
   card,
   count = 1,
   faceDown = false,
@@ -105,7 +105,11 @@ export function GameCard({
     (state) => (state.spectatingState?.gameState ?? state.gameState)?.voidActive ?? false
   )
   const selectCard = useGameStore((state) => state.selectCard)
-  const selectedCardId = useGameStore((state) => state.selectedCardId)
+  // Subscribe to the per-card boolean, not the global selectedCardId, so that
+  // selecting a card only re-renders the two cards whose selection state flips
+  // (Zustand bails out on Object.is-equal selector results) instead of every
+  // card on the battlefield.
+  const isSelected = useGameStore((state) => state.selectedCardId === card.id)
   const hoverCard = useGameStore((state) => state.hoverCard)
   const targetingState = useGameStore((state) => state.targetingState)
   const addTarget = useGameStore((state) => state.addTarget)
@@ -212,8 +216,13 @@ export function GameCard({
   // Check if card has legal actions (is playable)
   const hasLegalActions = useHasLegalActions(card.id)
 
-  const hoveredCardId = useGameStore((state) => state.hoveredCardId)
-  const autoTapPreview = useGameStore((state) => state.autoTapPreview)
+  // Per-card boolean selectors (see isSelected above): hover and auto-tap
+  // preview change on every mouse move between cards, so subscribing to the
+  // raw global values here would re-render the entire battlefield on each
+  // hover transition. Selecting the boolean confines re-renders to the cards
+  // whose state actually changes.
+  const isHovered = useGameStore((state) => state.hoveredCardId === card.id)
+  const isInAutoTapPreview = useGameStore((state) => state.autoTapPreview?.includes(card.id) ?? false)
 
   const isTapped = suppressTapRotation ? false : (card.isTapped || forceTapped)
   const isPhasedOut = card.isPhasedOut === true
@@ -224,9 +233,6 @@ export function GameCard({
   const isRoomLandscape = !faceDown && !!battlefield && card.isRoom === true
   const totalRotateDeg = (isRoomLandscape ? 90 : 0) + (isTapped ? 90 : 0)
   const needsLandscapeContainer = Math.abs(totalRotateDeg) % 180 === 90
-  const isSelected = selectedCardId === card.id
-  const isInAutoTapPreview = autoTapPreview?.includes(card.id) ?? false
-  const isHovered = hoveredCardId === card.id
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
   const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
@@ -2427,3 +2433,11 @@ export function GameCard({
 
   return <RenderProfiler id={profilerId}>{cardElement}</RenderProfiler>
 }
+
+// Memoized so a parent re-render (e.g. BattlefieldContent reacting to a
+// legalActions/targetingState change) only re-renders cards whose props
+// actually changed. Props from CardStack are all primitives or content-stable
+// `card` objects (see toSinglesStable/groupCards in selectors), so the default
+// shallow comparison is correct. Cards still re-render when their own store
+// subscriptions change.
+export const GameCard = React.memo(GameCardImpl)

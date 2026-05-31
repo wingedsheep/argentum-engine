@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { GroupedCard } from '@/store/selectors.ts'
 import { useResponsiveContext } from '../board/shared'
 import { GameCard } from './GameCard'
@@ -6,7 +7,7 @@ import { GameCard } from './GameCard'
  * Renders a group of identical cards as an overlapping stack.
  * Each card has its own data-card-id for targeting arrows.
  */
-export function CardStack({
+function CardStackImpl({
   group,
   interactive,
   isOpponentCard,
@@ -78,3 +79,8 @@ export function CardStack({
     </div>
   )
 }
+
+// Memoized: BattlefieldContent re-renders on many store changes, but a stack's
+// `group` is a content-stable reference (groupCards/toSinglesStable) so most
+// stacks can skip re-rendering when an unrelated card changes.
+export const CardStack = memo(CardStackImpl)
