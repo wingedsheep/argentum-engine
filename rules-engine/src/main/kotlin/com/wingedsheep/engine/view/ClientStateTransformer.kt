@@ -1809,12 +1809,12 @@ class ClientStateTransformer(
         if (pendingCopies.isNotEmpty()) {
             val totalCopies = pendingCopies.sumOf { it.copies }
             val sourceName = pendingCopies.joinToString(", ") { it.sourceName }
-            val copyWord = if (totalCopies == 1) "copy" else "copies"
+            val filterDesc = pendingCopies.map { it.spellFilter.description }.distinct().joinToString("/")
             effects.add(
                 ClientPlayerEffect(
                     effectId = "pending_spell_copy",
                     name = "Copy Spell",
-                    description = "Your next instant or sorcery spell will be copied $totalCopies time(s) ($sourceName)",
+                    description = "Your next $filterDesc spell will be copied $totalCopies time(s) ($sourceName)",
                     icon = "copy-spell"
                 )
             )

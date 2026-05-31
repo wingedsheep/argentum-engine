@@ -2199,14 +2199,23 @@ class CastSpellHandler(
                 } else emptyList()
             } else emptyList()
 
-        // Handle pending spell copies (e.g., Howl of the Horde) — copy next instant/sorcery
-        if (!action.castFaceDown && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {
-            val matchingCopies = currentCastState.pendingSpellCopies.filter { it.controllerId == action.playerId }
+        // Handle pending spell copies (e.g., Howl of the Horde). Each pending entry carries its own
+        // spellFilter (instant or sorcery by default, but e.g. "creature" is expressible), matched
+        // against the spell just cast. Face-down spells have no characteristics, so they never match.
+        if (!action.castFaceDown) {
+            val copyEvalContext = PredicateContext(controllerId = action.playerId)
+            val matchingCopies = currentCastState.pendingSpellCopies.filter { pending ->
+                pending.controllerId == action.playerId &&
+                    predicateEvaluator.matches(
+                        currentCastState, currentCastState.projectedState, action.cardId, pending.spellFilter, copyEvalContext
+                    )
+            }
             if (matchingCopies.isNotEmpty()) {
                 val totalCopies = matchingCopies.sumOf { it.copies }
-                // Remove consumed pending copies (keep persistent ones like The Mirari Conjecture Ch. III)
-                val remainingPending = currentCastState.pendingSpellCopies.filter {
-                    it.controllerId != action.playerId || it.persistent
+                // Remove consumed pending copies (keep persistent ones like The Mirari Conjecture Ch. III,
+                // and any non-matching entries waiting for a different spell type).
+                val remainingPending = currentCastState.pendingSpellCopies.filter { pending ->
+                    pending.persistent || pending !in matchingCopies
                 }
                 currentCastState = currentCastState.copy(pendingSpellCopies = remainingPending)
 

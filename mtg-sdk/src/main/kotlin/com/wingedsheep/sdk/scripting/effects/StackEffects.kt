@@ -567,52 +567,58 @@ data class CopyTargetTriggeredAbilityEffect(
 }
 
 /**
- * When you next cast an instant or sorcery spell this turn, copy that spell.
+ * When you next cast a spell matching [spellFilter] this turn, copy that spell.
  * You may choose new targets for the copies.
  *
  * Creates a pending spell copy entry on the game state. When the controller next casts
- * an instant or sorcery spell this turn, the engine creates [copies] copies of it.
+ * a spell matching [spellFilter] this turn, the engine creates [copies] copies of it.
  * Used by Howl of the Horde and similar effects.
  *
  * @property copies Number of copies to create when the next spell is cast
+ * @property spellFilter Which spell to wait for (defaults to instant or sorcery)
  */
 @SerialName("CopyNextSpellCast")
 @Serializable
 data class CopyNextSpellCastEffect(
-    val copies: Int = 1
+    val copies: Int = 1,
+    val spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery
 ) : Effect {
     override val description: String = if (copies == 1) {
-        "When you next cast an instant or sorcery spell this turn, copy that spell"
+        "When you next cast a ${spellFilter.description} spell this turn, copy that spell"
     } else {
-        "When you next cast an instant or sorcery spell this turn, copy that spell $copies times"
+        "When you next cast a ${spellFilter.description} spell this turn, copy that spell $copies times"
     }
 
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
 }
 
 /**
- * Until end of turn, whenever you cast an instant or sorcery spell, copy it.
+ * Until end of turn, whenever you cast a spell matching [spellFilter], copy it.
  * You may choose new targets for the copies.
  *
  * Creates a persistent pending spell copy entry on the game state. Unlike
  * CopyNextSpellCastEffect which is consumed after one use, this entry persists
- * for the rest of the turn, copying every instant or sorcery spell cast.
+ * for the rest of the turn, copying every matching spell cast.
  * Used by The Mirari Conjecture Chapter III and similar effects.
  *
  * @property copies Number of copies to create for each spell cast
+ * @property spellFilter Which spells to copy (defaults to instant or sorcery)
  */
 @SerialName("CopyEachSpellCast")
 @Serializable
 data class CopyEachSpellCastEffect(
-    val copies: Int = 1
+    val copies: Int = 1,
+    val spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery
 ) : Effect {
     override val description: String = if (copies == 1) {
-        "Until end of turn, whenever you cast an instant or sorcery spell, copy it"
+        "Until end of turn, whenever you cast a ${spellFilter.description} spell, copy it"
     } else {
-        "Until end of turn, whenever you cast an instant or sorcery spell, copy it $copies times"
+        "Until end of turn, whenever you cast a ${spellFilter.description} spell, copy it $copies times"
     }
 
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
 }
 
 // =============================================================================

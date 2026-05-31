@@ -38,7 +38,8 @@ class CopyNextSpellCastExecutor : EffectExecutor<CopyNextSpellCastEffect> {
             controllerId = context.controllerId,
             copies = effect.copies,
             sourceId = sourceId,
-            sourceName = sourceName
+            sourceName = sourceName,
+            spellFilter = effect.spellFilter
         )
         val newState = effectiveState.copy(
             pendingSpellCopies = state.pendingSpellCopies + pending

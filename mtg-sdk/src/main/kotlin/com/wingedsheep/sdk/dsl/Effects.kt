@@ -1781,18 +1781,22 @@ object Effects {
         CopyTargetTriggeredAbilityEffect(target)
 
     /**
-     * When you next cast an instant or sorcery spell this turn, copy that spell.
-     * You may choose new targets for the copies.
+     * When you next cast a spell matching [spellFilter] this turn, copy that spell.
+     * You may choose new targets for the copies. Defaults to instant or sorcery.
      */
-    fun CopyNextSpellCast(copies: Int = 1): Effect =
-        CopyNextSpellCastEffect(copies)
+    fun CopyNextSpellCast(
+        copies: Int = 1,
+        spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery
+    ): Effect = CopyNextSpellCastEffect(copies, spellFilter)
 
     /**
-     * Until end of turn, whenever you cast an instant or sorcery spell, copy it.
-     * You may choose new targets for the copies.
+     * Until end of turn, whenever you cast a spell matching [spellFilter], copy it.
+     * You may choose new targets for the copies. Defaults to instant or sorcery.
      */
-    fun CopyEachSpellCast(copies: Int = 1): Effect =
-        CopyEachSpellCastEffect(copies)
+    fun CopyEachSpellCast(
+        copies: Int = 1,
+        spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery
+    ): Effect = CopyEachSpellCastEffect(copies, spellFilter)
 
     // =========================================================================
     // Sacrifice Effects

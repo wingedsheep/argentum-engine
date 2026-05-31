@@ -39,6 +39,7 @@ class CopyEachSpellCastExecutor : EffectExecutor<CopyEachSpellCastEffect> {
             copies = effect.copies,
             sourceId = sourceId,
             sourceName = sourceName,
+            spellFilter = effect.spellFilter,
             persistent = true
         )
         val newState = effectiveState.copy(
