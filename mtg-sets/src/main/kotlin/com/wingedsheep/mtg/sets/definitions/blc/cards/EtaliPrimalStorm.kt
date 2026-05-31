@@ -7,12 +7,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -45,8 +44,9 @@ val EtaliPrimalStorm = card("Etali, Primal Storm") {
                     filter = CollectionFilter.MatchesFilter(GameObjectFilter.Nonland),
                     storeMatching = "castable"
                 ),
-                GrantMayPlayFromExileEffect("castable"),
-                GrantPlayWithoutPayingCostEffect("castable")
+                // Cast any number of them for free, during this trigger's resolution (the
+                // controller can't wait until later in the turn — see the 2021-03-19 ruling).
+                CastAnyNumberFromCollectionWithoutPayingCostEffect("castable")
             )
         )
     }

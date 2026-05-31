@@ -7,12 +7,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -55,9 +54,9 @@ val VillainousWealth = card("Villainous Wealth") {
                     filter = CollectionFilter.ManaValueAtMost(DynamicAmount.XValue),
                     storeMatching = "castable"
                 ),
-                // Grant free casting permission until end of turn
-                GrantMayPlayFromExileEffect("castable"),
-                GrantPlayWithoutPayingCostEffect("castable")
+                // Cast any number of them for free, during this spell's resolution (the
+                // controller can't wait until later in the turn — see the 2014-09-20 ruling).
+                CastAnyNumberFromCollectionWithoutPayingCostEffect("castable")
             )
         )
     }
