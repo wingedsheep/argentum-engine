@@ -72,9 +72,19 @@ the next card? Does the name match the semantics?*
    — the full inventory of existing effects, triggers, conditions, filters, costs, keywords,
    dynamic amounts, modal/choice shapes, and replacement effects. **Most features are 80% already
    built.** Find the closest existing primitive before designing a new one.
-3. **Search for prior art.** `grep -r "<mechanic-or-effect>" mtg-sdk/ rules-engine/` and look at how
+3. **Research the actual MTG rules online — don't work from memory.** Before designing anything,
+   look up how the mechanic *actually* works in the Comprehensive Rules at
+   <https://yawgatog.com/resources/magic-rules/>, and check Gatherer / Scryfall oracle rulings for
+   the cards that use it (<https://gatherer.wizards.com/> · <https://scryfall.com/>). Use `WebSearch`
+   / `WebFetch` to pull the relevant CR section and any official rulings. Mechanics are full of
+   edge cases that are easy to misremember — replacement vs. trigger ordering, what counts as
+   "last-known information", layer interactions, timing/priority windows, what happens with zero or
+   multiple instances. Capture the exact rule numbers and the edge cases they imply; these become
+   both your design constraints and your test matrix (Step 7). If a rule contradicts your mental
+   model, the rules win — design to them.
+4. **Search for prior art.** `grep -r "<mechanic-or-effect>" mtg-sdk/ rules-engine/` and look at how
    the nearest analogous feature is wired end-to-end. Mirror its structure; don't invent a new one.
-4. **State the boundary in one sentence.** Write down what the new vocabulary *is* and what it is
+5. **State the boundary in one sentence.** Write down what the new vocabulary *is* and what it is
    deliberately *not* — this is the contract the rest of the system depends on. If you can't state
    it crisply, the design isn't ready.
 
@@ -189,6 +199,13 @@ pass, every AI/MCTS node). Cheap-looking work in a primitive multiplies.
 The client is a dumb terminal (`docs/architecture-principles.md` §4): it renders what the server
 sends and captures intent. Server-side feature design *is* the UX.
 
+**If the feature surfaces anything to the player — a new decision, action, choice prompt, keyword,
+icon, badge, label, or any new client-visible state — the UX/UI side is part of this feature, not a
+follow-up.** Design and implement it in the same change, trace the full player flow end to end (a
+human must be able to actually see and act on the feature in the running client), and don't declare
+the feature done until that flow works. A purely internal engine feature with no player-facing
+surface can skip this step — but say so explicitly rather than silently leaving the UI unbuilt.
+
 - **Server-authoritative interactivity.** The feature becomes clickable only because it appears in
   the server's legal actions / `PendingDecision`. Make sure the new action/decision is enumerated;
   never add client-side rules to make something interactive.
@@ -213,7 +230,10 @@ Pick the layer that proves the feature, per `docs/architecture-principles.md` §
 - **Engine unit/integration** (`rules-engine`) — the executor/projector/detector behaves in
   isolation; construct `GameState` directly and assert on the result.
 - **Scenario** (`ScenarioTestBase`) — the feature works in a realistic board state, exercised
-  through a card that uses it. **Every rule the implementation cites must have a paired test**
+  through a card that uses it. **Every rule you looked up in Step 1.3 must have a paired test that
+  asserts the engine behaves as the CR / oracle rulings say** — including the tricky edge cases
+  (replacement vs. trigger ordering, last-known info, layer interactions, timing/priority windows,
+  zero/multiple instances). A rule cited in a code comment without a test that pins it down is a gap
   (`review-changes` §5). Cover the edge cases you traced in Step 4. Put these in `rules-engine` by
   default; only use `game-server` when the feature is genuinely a game-server concern (state masking,
   DTO transformation, session/tournament orchestration) rather than an engine feature.
@@ -272,7 +292,8 @@ signature changed, run the broader module suite.
 7. **Mind performance** on projection/enumeration hot paths and client re-renders.
 8. **Server-authoritative UX**; the client only renders and captures intent.
 9. **Update `card-sdk-language-reference.md`** for every SDK addition, same change.
-10. **Verify CR rule numbers**; test every cited rule.
+10. **Research the real MTG rules online up front** (CR + oracle rulings), design to them, **verify
+    CR rule numbers, and write a paired test for every rule and edge case** you looked up.
 11. **Be elegant — no monolithic one-off shortcuts.** If you can't find the reusable shape, say so
     and explain why rather than shipping the monolith.
 12. **Refactor freely; backwards compat is not sacred.** There are no external API consumers — if
