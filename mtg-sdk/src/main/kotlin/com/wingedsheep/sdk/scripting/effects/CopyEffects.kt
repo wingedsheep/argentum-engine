@@ -34,3 +34,41 @@ data class EachPermanentBecomesCopyOfTargetEffect(
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
+
+/**
+ * Copy a single card referenced by [source] and store the copy's entity id in the pipeline
+ * collection [storeAs].
+ *
+ * Per Rule 707.12 the copy is created in the **same zone the original card currently is in**
+ * (under the effect's controller). The copy keeps the original's copiable characteristics
+ * (name, mana cost, type line, colors, P/T, keywords, spell effect) via a cloned
+ * `CardComponent`, and is tagged as a stack-style copy (a `CopyOfComponent` with no
+ * pre-copy snapshot) so that — once cast — it becomes a token if it's a permanent spell and
+ * ceases to exist if it's an instant/sorcery (Rule 707.10).
+ *
+ * This is the zone-side half of the "copy a card, then cast the copy" pattern: pair it with
+ * [CastFromCollectionWithoutPayingCostEffect] (wrapped in `MayEffect` for "you may cast")
+ * reading the same [storeAs] collection. A copy that is never cast is removed by the
+ * Rule 707.10a state-based action (a copy of a card outside the stack/battlefield ceases to
+ * exist), so no explicit cleanup step is needed.
+ *
+ *     // Shiko, Paragon of the Way — exile a graveyard card, copy it, then may cast the copy
+ *     CompositeEffect(listOf(
+ *         MoveToZoneEffect(target, Zone.EXILE),
+ *         CopyCardIntoCollectionEffect(target, storeAs = "copy"),
+ *         MayEffect(CastFromCollectionWithoutPayingCostEffect("copy")),
+ *     ))
+ *
+ * @property source The card to copy (e.g. `ContextTarget(0)` for a targeted graveyard card).
+ * @property storeAs Pipeline collection key under which the new copy's entity id is stored.
+ */
+@SerialName("CopyCardIntoCollection")
+@Serializable
+data class CopyCardIntoCollectionEffect(
+    val source: EffectTarget = EffectTarget.ContextTarget(0),
+    val storeAs: String,
+) : Effect {
+    override val description: String = "Copy ${source.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

@@ -17,5 +17,6 @@ object SbaOrder {
     const val SAGA_SACRIFICE = 900          // 714.4
     const val COMMANDER_ZONE_CHOICE = 950   // 903.9a (Commander format)
     const val TOKENS_IN_WRONG_ZONES = 1000  // 704.5s
+    const val PHANTOM_CARD_COPIES = 1050    // 707.10a
     const val GAME_END = 9999
 }

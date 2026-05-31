@@ -126,9 +126,12 @@ the overwhelming majority of the set.
 
 ## Tier 3 — One-off complex cards (each needs unique new functionality)
 
-11. **Copy a card in a zone, then cast the copy.** All copy primitives operate on stack objects
-    (`CopyTargetSpellEffect`, `ChainCopyEffect`, `CopyNextSpellCast`) or make token copies of
-    permanents — none copies a card *in the graveyard* into a castable spell copy.
+11. **Copy a card in a zone, then cast the copy.** ✅ **DONE.** Added the atomic
+    `CopyCardIntoCollectionEffect` (copy a card in its zone → pipeline collection, Rule 707.12)
+    composed with the existing `CastFromCollectionWithoutPayingCostEffect` (wrapped in `MayEffect`)
+    — no bespoke executor. Uncast copies are swept by a new Rule 707.10a state-based action
+    (`PhantomCardCopiesCheck`). A resolving permanent copy becomes a token, an instant/sorcery
+    copy ceases to exist (existing Rule 707.10 paths).
     → **Shiko, Paragon of the Way**
 
 12. **Cost-linked relative mana value target.** Sacrifice a creature of MV X → return a creature of

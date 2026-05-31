@@ -53,6 +53,7 @@ class LibraryExecutors(
         ChooseCreatureTypePipelineExecutor(),
         ChooseOptionPipelineExecutor(cardRegistry = cardRegistry),
         GatherCardsExecutor(),
+        CopyCardIntoCollectionExecutor(),
         SelectFromCollectionExecutor(),
         ChoosePileExecutor(),
         SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),

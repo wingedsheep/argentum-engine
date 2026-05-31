@@ -47,6 +47,8 @@ import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.PreventLandPlaysThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.CopyCardIntoCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
@@ -1533,6 +1535,21 @@ object Effects {
      */
     fun Composite(effects: List<Effect>): Effect =
         CompositeEffect(effects)
+
+    /**
+     * Copy a card referenced by [source] into the pipeline collection [storeAs] (Rule 707.12).
+     * The copy is created in the card's current zone and becomes castable; pair with
+     * [CastFromCollectionWithoutPayingCost] reading the same key to "cast the copy".
+     */
+    fun CopyCardIntoCollection(source: EffectTarget, storeAs: String): Effect =
+        CopyCardIntoCollectionEffect(source = source, storeAs = storeAs)
+
+    /**
+     * Cast the (0..1) card stored under [from] without paying its mana cost. The card must
+     * already be in a zone where casting is legal (e.g. exile after a move/copy step).
+     */
+    fun CastFromCollectionWithoutPayingCost(from: String): Effect =
+        CastFromCollectionWithoutPayingCostEffect(from = from)
 
     /**
      * Repeat a body effect in a do-while loop controlled by a repeat condition.
