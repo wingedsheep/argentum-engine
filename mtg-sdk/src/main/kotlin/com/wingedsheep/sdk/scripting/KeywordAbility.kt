@@ -272,9 +272,10 @@ sealed interface KeywordAbility {
         val branchesEffect: Boolean = true,
         /**
          * If `true`, paying the optional cost grants flash timing — the spell may be
-         * cast as though it had flash. Used by pre-kicker cards like Ghitu Fire whose
-         * printed text reads "You may cast this spell as though it had flash if you
-         * pay {N} more to cast it."
+         * cast as though it had flash. The optional cost may be a [manaCost] (Ghitu
+         * Fire: "you may cast this as though it had flash if you pay {2} more") or a
+         * non-mana [additionalCost] such as Behold (Molten Exhale: "you may cast this
+         * as though it had flash if you behold a Dragon as an additional cost").
          */
         val grantsFlashTiming: Boolean = false
     ) : KeywordAbility {
@@ -282,13 +283,11 @@ sealed interface KeywordAbility {
             require(manaCost != null || additionalCost != null) {
                 "OptionalAdditionalCost requires either a manaCost or an additionalCost"
             }
-            if (grantsFlashTiming) {
-                require(manaCost != null) {
-                    "grantsFlashTiming requires a manaCost"
-                }
-            }
         }
         override val description: String = when {
+            grantsFlashTiming && additionalCost != null ->
+                "You may cast this spell as though it had flash if you " +
+                    "${additionalCost.description.replaceFirstChar { it.lowercase() }} as an additional cost to cast it."
             grantsFlashTiming ->
                 "You may cast this spell as though it had flash if you pay $manaCost more to cast it."
             manaCost != null && additionalCost != null -> "$displayPrefix—$manaCost, ${additionalCost.description}"
@@ -692,6 +691,20 @@ sealed interface KeywordAbility {
          */
         fun flashKicker(cost: String): KeywordAbility = OptionalAdditionalCost(
             manaCost = ManaCost.parse(cost),
+            grantsFlashTiming = true,
+            branchesEffect = false
+        )
+
+        /**
+         * Create a flash-timing unlock whose cost is a non-mana [additionalCost]
+         * (Molten Exhale pattern) — paying it (e.g. beholding a Dragon) lets you cast
+         * the spell as though it had flash. As with the mana form, the payment is
+         * invisible to [com.wingedsheep.sdk.scripting.conditions.WasKicked]
+         * ([OptionalAdditionalCost.branchesEffect] is `false`), so the spell's effect
+         * is unchanged.
+         */
+        fun flashKicker(additionalCost: AdditionalCost): KeywordAbility = OptionalAdditionalCost(
+            additionalCost = additionalCost,
             grantsFlashTiming = true,
             branchesEffect = false
         )

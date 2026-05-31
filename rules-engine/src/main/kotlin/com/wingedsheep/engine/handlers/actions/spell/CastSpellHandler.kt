@@ -201,9 +201,11 @@ class CastSpellHandler(
         if (!effectiveTypeLine.isInstant) {
             val hasFlash = cardDef?.keywords?.contains(Keyword.FLASH) == true
             val grantedFlash = hasFlash || zoneResolver.hasGrantedFlash(state, action.cardId)
+            // A flash-timing kicker unlocks instant-speed casting when paid — whether the
+            // optional cost is mana (Ghitu Fire) or a non-mana cost like Behold (Molten Exhale).
             val flashTimingKicker = action.wasKicked && cardDef?.keywordAbilities
                 ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
-                ?.any { it.grantsFlashTiming && it.manaCost != null } == true
+                ?.any { it.grantsFlashTiming } == true
             if (!grantedFlash && !flashTimingKicker && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
                 return "You can only cast sorcery-speed spells during your main phase with an empty stack"
             }

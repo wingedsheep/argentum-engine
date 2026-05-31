@@ -1219,7 +1219,8 @@ class CastSpellEnumerator : ActionEnumerator {
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
             val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
-            val flashKicker = manaKicker?.grantsFlashTiming == true
+            val flashKicker = manaKicker?.grantsFlashTiming == true ||
+                additionalCostKicker?.grantsFlashTiming == true
             if (!isInstant && !grantedFlash && !flashKicker && !context.canPlaySorcerySpeed) continue
 
             // Check cast restrictions
@@ -1273,6 +1274,30 @@ class CastSpellEnumerator : ActionEnumerator {
                                 costType = "SacrificePermanent",
                                 validSacrificeTargets = validSacTargets,
                                 sacrificeCount = cost.count
+                            )
+                        }
+                    }
+                    is AdditionalCost.Behold -> {
+                        // Behold a matching permanent you control or reveal a matching
+                        // card from hand (e.g. Molten Exhale's "behold a Dragon" flash
+                        // unlock). Mirrors the mandatory-additional-cost Behold path.
+                        val projected = state.projectedState
+                        val predicateContext = PredicateContext(controllerId = playerId)
+                        val battlefieldMatches = projected.getBattlefieldControlledBy(playerId).filter { permId ->
+                            context.predicateEvaluator.matches(state, projected, permId, cost.filter, predicateContext)
+                        }
+                        val handMatches = state.getZone(ZoneKey(playerId, Zone.HAND))
+                            .filter { it != cardId }
+                            .filter { context.predicateEvaluator.matches(state, state.projectedState, it, cost.filter, predicateContext) }
+                        val beholdTargets = battlefieldMatches + handMatches
+                        if (beholdTargets.size < cost.count) {
+                            canPayKickerAdditionalCost = false
+                        } else {
+                            kickerCostInfo = AdditionalCostData(
+                                description = cost.description,
+                                costType = "Behold",
+                                validBeholdTargets = beholdTargets,
+                                beholdCount = cost.count
                             )
                         }
                     }

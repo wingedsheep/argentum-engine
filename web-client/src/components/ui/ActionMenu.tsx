@@ -176,7 +176,9 @@ function buildActionOptions(
   if (kickerAction) {
     options.push({
       key: 'castWithKicker',
-      label: `Cast ${cardInfo.name} (Kicked)`,
+      // Server picks the suffix — "(Kicked)", "(Offspring)", or "(with Flash)" for
+      // flash-timing kickers like Ghitu Fire / Molten Exhale. Fall back if absent.
+      label: kickerAction.description || `Cast ${cardInfo.name} (Kicked)`,
       manaCost: kickerAction.manaCostString || null,
       isAvailable: kickerAction.isAffordable !== false,
       action: kickerAction,
