@@ -113,7 +113,7 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
             .with(ControllerComponent(controller))
         extras.forEach { component ->
             @Suppress("UNCHECKED_CAST")
-            c = c.copy(components = c.components + (component::class.java.name to component))
+            c = c.copy(components = c.components + (component::class.java to component))
         }
         return c
     }
