@@ -1,12 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.conditions.AnyCondition
-import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -33,12 +32,10 @@ val AlaniaDivergentStorm = card("Alania, Divergent Storm") {
 
     triggeredAbility {
         trigger = Triggers.YouCastSpell
-        triggerCondition = AnyCondition(
-            listOf(
-                IsFirstSpellOfTypeCastThisTurn(GameObjectFilter.Instant),
-                IsFirstSpellOfTypeCastThisTurn(GameObjectFilter.Sorcery),
-                IsFirstSpellOfTypeCastThisTurn(GameObjectFilter.Any.withSubtype(com.wingedsheep.sdk.core.Subtype("Otter")))
-            )
+        triggerCondition = Conditions.Any(
+            Conditions.YouCastFirstSpellOfTypeThisTurn(GameObjectFilter.Instant),
+            Conditions.YouCastFirstSpellOfTypeThisTurn(GameObjectFilter.Sorcery),
+            Conditions.YouCastFirstSpellOfTypeThisTurn(GameObjectFilter.Any.withSubtype(com.wingedsheep.sdk.core.Subtype("Otter")))
         )
         val opponent = target("opponent", Targets.Opponent)
         effect = ReflexiveTriggerEffect(

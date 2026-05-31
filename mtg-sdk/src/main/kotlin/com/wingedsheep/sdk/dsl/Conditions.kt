@@ -733,6 +733,27 @@ object Conditions {
     val TriggeringSpellHasSingleTarget: ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.TriggeringSpellHasSingleTarget
 
+    /**
+     * If the spell that triggered this ability matches [filter].
+     * General intervening-if guard for "whenever you cast a spell, if it's a/an X ..." cards.
+     */
+    fun TriggeringSpellMatches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringSpellMatchesFilter(filter)
+
+    /**
+     * If the spell that triggered this ability is the first spell matching [filter] you've cast
+     * this turn. True iff the triggering spell matches [filter] and no second matching spell has
+     * been cast yet. Composed from [TriggeringSpellMatches] + the [YouCastSpellsThisTurn] count
+     * primitive (no bespoke counting logic). Used by Alania, Divergent Storm.
+     */
+    fun YouCastFirstSpellOfTypeThisTurn(
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    ): ConditionInterface =
+        All(
+            TriggeringSpellMatches(filter),
+            Not(YouCastSpellsThisTurn(atLeast = 2, filter = filter))
+        )
+
     // =========================================================================
     // Collection Conditions (pipeline-based)
     // =========================================================================

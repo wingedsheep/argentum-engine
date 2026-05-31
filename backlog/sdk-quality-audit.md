@@ -83,16 +83,23 @@ User counts are caller _files_ in `mtg-sets/src/main` (worktree copies excluded)
   Delete the variant + its evaluator branch. (Bonus: gives the unused `SharesCreatureTypeWith`
   predicate its first real user.)
 
-### 4. `IsFirstSpellOfTypeCastThisTurn` — duplicate of `PlayerCastSpellsThisTurn`, no facade
+### 4. `IsFirstSpellOfTypeCastThisTurn` — duplicate of `PlayerCastSpellsThisTurn`, no facade ✅ RESOLVED
 - **Location:** `scripting/conditions/TurnConditions.kt:136`
 - **Standards:** #3, #4, plus the "use the facades" load-bearing rule (card builds the raw type)
 - **Why:** Means "exactly one matching spell cast by you this turn." Expressible as
   `All(YouCastSpellsThisTurn(1, filter), Not(YouCastSpellsThisTurn(2, filter)))` over the existing
   `PlayerCastSpellsThisTurn` primitive. Has **no `Conditions.*` facade entry**.
 - **Users:** 1 (`AlaniaDivergentStorm.kt`).
-- **Fix:** Delete the type; express Alania via the `PlayerCastSpellsThisTurn`-backed
-  `Conditions.YouCastSpellsThisTurn` composed with `Conditions.Not`. If "first of type" is worth
-  keeping, add a facade helper re-implemented on top of `PlayerCastSpellsThisTurn`.
+- **Resolution:** Type deleted. The count-only decomposition above was **rejected as buggy** — it
+  drops the evaluator's guard that *the triggering spell itself matches the filter*, so casting a
+  non-matching spell after one matching spell would wrongly fire (an instant cast earlier this turn
+  would satisfy `YouCastSpellsThisTurn(1, Instant)` even while a creature is the spell being cast).
+  Instead added a small, genuinely-general primitive `TriggeringSpellMatchesFilter(filter)` (facade
+  `Conditions.TriggeringSpellMatches`) and a composing facade
+  `Conditions.YouCastFirstSpellOfTypeThisTurn(filter)` =
+  `All(TriggeringSpellMatches(filter), Not(YouCastSpellsThisTurn(2, filter)))` — reusing the
+  `PlayerCastSpellsThisTurn` count instead of a bespoke loop. Alania now uses the facade. Covered by
+  `AlaniaDivergentStormTest` (incl. the guard case). See `card-sdk-language-reference.md`.
 
 ---
 
@@ -218,7 +225,7 @@ Each touches shared SDK types with cross-layer wiring, so route through the **`a
 1. #1 `TapTargetCreaturesEffect` (kills the `20` sentinel)
 2. #2 `CreateGlobalTriggeredAbility*` 3→1 collapse
 3. #3 `CreaturesSharingTypeWithEntity` delete
-4. #4 `IsFirstSpellOfTypeCastThisTurn` delete
+4. #4 `IsFirstSpellOfTypeCastThisTurn` delete ✅ done
 5. #5 delete zero-user protection-Group variant; then MEDIUM batch
 6. #9 inline single-card `EffectPatterns` helpers
 7. LOW cleanup

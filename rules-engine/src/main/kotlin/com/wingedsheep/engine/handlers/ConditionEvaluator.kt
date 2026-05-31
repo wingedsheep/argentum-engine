@@ -71,8 +71,8 @@ import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadMinusOneMinus
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasNotPutByThisSource
 import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellHasSingleTarget
+import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellMatchesFilter
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
-import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellPaidWithTreasureManaCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
 import com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes
@@ -216,13 +216,13 @@ class ConditionEvaluator {
             is TriggeringEntityWasNotPutByThisSource ->
                 ifResolution { evaluateTriggeringEntityWasNotPutByThisSource(state, it) }
             is TriggeringSpellHasSingleTarget -> ifResolution { evaluateTriggeringSpellHasSingleTarget(state, it) }
+            is TriggeringSpellMatchesFilter -> ifResolution { evaluateTriggeringSpellMatchesFilter(state, condition, it) }
             is TargetMatchesFilter -> ifResolution { evaluateTargetMatchesFilter(state, condition, it) }
             is TargetSharesMostCommonColor -> ifResolution { evaluateTargetSharesMostCommonColor(state, condition, it) }
             is AnotherPermanentWithSameNameAsTarget ->
                 ifResolution { evaluateAnotherPermanentWithSameNameAsTarget(state, condition, it) }
             is IsInPhase -> ifResolution { evaluateIsInPhase(state, condition, it) }
             is YouWereAttackedThisStep -> ifResolution { evaluateYouWereAttackedThisStep(state, it) }
-            is IsFirstSpellOfTypeCastThisTurn -> ifResolution { evaluateFirstSpellOfType(state, condition, it) }
             is IsFirstSpellPaidWithTreasureManaCastThisTurn ->
                 ifResolution { evaluateFirstSpellPaidWithTreasureMana(state, it) }
             is SourceAbilityResolvedNTimesThisTurn -> ifResolution { evaluateSourceAbilityResolvedNTimes(state, condition, it) }
@@ -745,13 +745,15 @@ class ConditionEvaluator {
         return colorCounts.filterValues { it == maxCount }.keys
     }
 
-    private fun evaluateFirstSpellOfType(
+    private fun evaluateTriggeringSpellMatchesFilter(
         state: GameState,
-        condition: IsFirstSpellOfTypeCastThisTurn,
+        condition: TriggeringSpellMatchesFilter,
         context: EffectContext
     ): Boolean {
-        // The triggering spell itself must match the filter — otherwise casting an artifact
-        // when one instant was already cast this turn would incorrectly match the Instant filter.
+        // Match the triggering spell by its static card characteristics so the check stays correct
+        // even after the spell has left the stack. Composes with PlayerCastSpellsThisTurn (via
+        // Conditions.YouCastFirstSpellOfTypeThisTurn) to express "first X spell this turn" — this
+        // guard is what stops a non-matching cast from satisfying that count-based payoff.
         val triggeringId = context.triggeringEntityId ?: return false
         val entity = state.getEntity(triggeringId) ?: return false
         val card = entity.get<CardComponent>() ?: return false
@@ -761,12 +763,7 @@ class ConditionEvaluator {
             colors = card.colors,
             isFaceDown = entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()
         )
-        val evaluator = PredicateEvaluator()
-        if (!evaluator.matchesFilter(triggeringRecord, condition.spellFilter)) return false
-
-        val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
-        val count = records.count { evaluator.matchesFilter(it, condition.spellFilter) }
-        return count == 1
+        return PredicateEvaluator().matchesFilter(triggeringRecord, condition.filter)
     }
 
     private fun evaluateFirstSpellPaidWithTreasureMana(

@@ -152,6 +152,29 @@ data object TriggeringSpellHasSingleTarget : Condition {
 }
 
 /**
+ * Condition: "if it's a/an [filter] spell" — true iff the spell that triggered this ability
+ * matches [filter]. Reads the triggering entity (the spell of a "whenever you cast a spell"
+ * trigger) by its static card characteristics, so it stays correct even after the spell has
+ * left the stack. Resolution-only.
+ *
+ * General intervening-if guard for "whenever you cast a spell, if it's a/an X ..." cards. Compose
+ * with [PlayerCastSpellsThisTurn] for "first X spell this turn" payoffs — see
+ * `Conditions.YouCastFirstSpellOfTypeThisTurn`, which ANDs this with
+ * `Not(PlayerCastSpellsThisTurn(filter, atLeast = 2))` so the count machinery isn't duplicated.
+ */
+@SerialName("TriggeringSpellMatchesFilter")
+@Serializable
+data class TriggeringSpellMatchesFilter(
+    val filter: GameObjectFilter
+) : Condition {
+    override val description: String = "if it's ${filter.description.ifEmpty { "a matching" }} spell"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Condition: "if [target] is [filter]"
  * Checks whether a context target matches a GameObjectFilter.
  * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."

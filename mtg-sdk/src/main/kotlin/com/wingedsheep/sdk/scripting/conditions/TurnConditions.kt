@@ -129,20 +129,6 @@ data class PlayerCastSpellsThisTurn(
 }
 
 /**
- * Condition: "if this is the first spell matching the given filter cast by you this turn"
- * Checks the per-player spell record tracker. The condition is true if exactly one spell
- * matching the filter has been cast (just this spell). Used for Alania, Divergent Storm.
- */
-@SerialName("IsFirstSpellOfTypeCastThisTurn")
-@Serializable
-data class IsFirstSpellOfTypeCastThisTurn(
-    val spellFilter: GameObjectFilter
-) : Condition {
-    override val description: String = "if it's the first ${spellFilter.description} spell you've cast this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
-}
-
-/**
  * Condition: "if this is the first spell you've cast this turn that mana from a Treasure
  * was spent to cast." Used by Rain of Riches.
  *

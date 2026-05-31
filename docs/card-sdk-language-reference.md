@@ -1571,6 +1571,16 @@ default to "you" so card authors don't need to pass it explicitly.
   `PlayerAttackedWithCreaturesThisTurn(Player.You, filter, atLeast)`.
 - `YouCastSpellsThisTurn(atLeast, filter)` — Prowess/Magecraft shape. Backed by
   `PlayerCastSpellsThisTurn(Player.You, filter, atLeast)`.
+- `TriggeringSpellMatches(filter)` — intervening-if guard: the spell that triggered this ability
+  matches `filter`. Reads the triggering entity's static card characteristics (so it stays correct
+  after the spell leaves the stack). General "whenever you cast a spell, if it's a/an X ..." gate.
+  Backed by `TriggeringSpellMatchesFilter(filter)`.
+- `YouCastFirstSpellOfTypeThisTurn(filter)` — true when the triggering spell is the *first* spell
+  matching `filter` you've cast this turn. Pure composition, no bespoke counting:
+  `All(TriggeringSpellMatches(filter), Not(YouCastSpellsThisTurn(atLeast = 2, filter)))`. The
+  `TriggeringSpellMatches` half is load-bearing — it stops a later non-matching cast from satisfying
+  the count once one matching spell exists. Used by Alania, Divergent Storm (first instant / first
+  sorcery / first Otter).
 - `YouHaveCitysBlessing` — Ascend gate. Backed by `PlayerHasCitysBlessing(Player.You)`.
 - `IsFirstSpellPaidWithTreasureManaCastThisTurn` — gates a triggered ability to fire only
   on the first spell each turn that mana from a Treasure was spent to cast (Rain of
