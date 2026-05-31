@@ -206,11 +206,24 @@ data class ManaPool(
                 is ManaSymbol.Phyrexian -> {
                     remaining = remaining.trySpendColored(symbol.color, spellContext) ?: return false
                 }
+                is ManaSymbol.MonocolorHybrid -> {
+                    // Resolved after strict pips below so a strict pip of the same color claims
+                    // its mana first.
+                }
             }
         }
 
+        // Monocolored hybrids ({2/B}): prefer one mana of the color (cheaper, fewer mana),
+        // otherwise treat as the generic amount. Strict pips are already paid above, so spending
+        // the color here can't rob them, and any other hybrid can still fall back to generic.
+        var monoHybridGeneric = 0
+        for (symbol in cost.symbols.filterIsInstance<ManaSymbol.MonocolorHybrid>()) {
+            val spent = remaining.trySpendColored(symbol.color, spellContext)
+            if (spent != null) remaining = spent else monoHybridGeneric += symbol.generic
+        }
+
         // Then, pay generic costs with any remaining mana (restricted first, then unrestricted)
-        val genericAmount = cost.genericAmount
+        val genericAmount = cost.genericAmount + monoHybridGeneric
         val availableForGeneric = if (spellContext != null) {
             remaining.total + remaining.getTotalEligibleRestricted(spellContext)
         } else {
@@ -274,11 +287,22 @@ data class ManaPool(
                 is ManaSymbol.Phyrexian -> {
                     remaining = remaining.trySpendColored(symbol.color, spellContext)!!
                 }
+                is ManaSymbol.MonocolorHybrid -> {
+                    // Resolved after strict pips below (mirrors canPay).
+                }
             }
         }
 
+        // Monocolored hybrids ({2/B}): prefer one mana of the color, else fall back to generic.
+        // Mirrors canPay so a cost canPay accepts is always payable here.
+        var monoHybridGeneric = 0
+        for (symbol in cost.symbols.filterIsInstance<ManaSymbol.MonocolorHybrid>()) {
+            val spent = remaining.trySpendColored(symbol.color, spellContext)
+            if (spent != null) remaining = spent else monoHybridGeneric += symbol.generic
+        }
+
         // Pay generic costs - spend eligible restricted first, then colorless, then colored
-        var genericRemaining = cost.genericAmount
+        var genericRemaining = cost.genericAmount + monoHybridGeneric
 
         // Spend eligible restricted mana for generic costs (any color)
         if (spellContext != null) {
@@ -385,6 +409,18 @@ data class ManaPool(
                     }
                 }
                 is ManaSymbol.Phyrexian -> {
+                    val spent = remaining.trySpendColored(symbol.color, spellContext)
+                    if (spent != null) {
+                        remaining = spent
+                        trackColorSpent(symbol.color)
+                    } else {
+                        unpaidSymbols.add(symbol)
+                    }
+                }
+                is ManaSymbol.MonocolorHybrid -> {
+                    // Spend floating mana of the color if available; otherwise leave the hybrid
+                    // unpaid (as-is) so the land solver keeps the color-vs-generic choice rather
+                    // than locking it to the generic amount.
                     val spent = remaining.trySpendColored(symbol.color, spellContext)
                     if (spent != null) {
                         remaining = spent

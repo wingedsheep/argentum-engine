@@ -50,6 +50,20 @@ sealed interface ManaSymbol {
         override fun toString(): String = "{${color.symbol}/P}"
     }
 
+    /**
+     * Monocolored hybrid ("twobrid") mana symbol - can be paid with either [generic]
+     * generic mana OR a single mana of [color]. Example: {2/B} can be paid with {2} or {B}.
+     *
+     * Its mana value is the generic component (the larger of the two options), per the
+     * hybrid mana-value rule (CR 202.3f). For printed cards [generic] is always 2, but the
+     * field is kept general so future "{N/C}" twobrid pips need no new type.
+     */
+    @Serializable
+    data class MonocolorHybrid(val generic: Int, val color: Color) : ManaSymbol {
+        override val cmc: Int = generic
+        override fun toString(): String = "{$generic/${color.symbol}}"
+    }
+
     companion object {
         val W = Colored(Color.WHITE)
         val U = Colored(Color.BLUE)

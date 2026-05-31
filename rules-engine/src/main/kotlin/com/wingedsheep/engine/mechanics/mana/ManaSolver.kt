@@ -457,9 +457,28 @@ class ManaSolver(
                     manaProduced[source.entityId] = ManaProduction(colorless = source.manaAmount)
                     useSource(source, null)
                 }
+                is ManaSymbol.MonocolorHybrid -> {
+                    // Handle in pass 1a below, after all strict colored pips have claimed sources.
+                }
                 is ManaSymbol.Generic, is ManaSymbol.X -> {
                     // Handle in the generic pass below
                 }
+            }
+        }
+
+        // 1a. Pay monocolored hybrid costs ({2/B}). Prefer one mana of the color (one tap vs the
+        //     generic amount); fall back to the generic side, paid in the generic pass below. This
+        //     runs after pass 1 so strict pips reserve their colored sources first.
+        var monoHybridGeneric = 0
+        for (symbol in cost.symbols) {
+            if (symbol !is ManaSymbol.MonocolorHybrid) continue
+            if (spendBonusMana(symbol.color)) continue
+            val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor, spellContext)
+            if (source != null) {
+                manaProduced[source.entityId] = ManaProduction(color = symbol.color, amount = source.manaAmount)
+                useSource(source, symbol.color)
+            } else {
+                monoHybridGeneric += symbol.generic
             }
         }
 
@@ -532,7 +551,8 @@ class ManaSolver(
         // 2. Pay generic costs (and unrestricted X), using bonus mana first.
         // xValue here is the total extra generic mana needed for X (callers handle XX multiplication).
         // When X is color-restricted it was already paid by pass 1c above, so it's excluded here.
-        var genericRemaining = cost.genericAmount + (if (xManaRestriction.isEmpty()) xValue else 0)
+        var genericRemaining = cost.genericAmount + monoHybridGeneric +
+            (if (xManaRestriction.isEmpty()) xValue else 0)
 
         while (genericRemaining > 0) {
             // Try to spend bonus mana first
@@ -1988,6 +2008,8 @@ class ManaSolver(
                     colorNeeds[symbol.color1] = (colorNeeds[symbol.color1] ?: 0) + 1
                     colorNeeds[symbol.color2] = (colorNeeds[symbol.color2] ?: 0) + 1
                 }
+                is ManaSymbol.MonocolorHybrid ->
+                    colorNeeds[symbol.color] = (colorNeeds[symbol.color] ?: 0) + 1
                 else -> {}
             }
         }

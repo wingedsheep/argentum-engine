@@ -24,7 +24,11 @@ section; do not let SDK additions land without a corresponding doc update.
 
 **Card builder properties**
 
-- `manaCost: String` — mana cost in `{X}{R}{U}` syntax.
+- `manaCost: String` — mana cost in `{X}{R}{U}` syntax. Supported pip forms: generic (`{2}`),
+  colored (`{R}`), colorless (`{C}`), variable (`{X}`), hybrid (`{W/U}` — either colour),
+  Phyrexian (`{W/P}` — colour or 2 life), and monocolored hybrid / "twobrid" (`{2/B}` — two
+  generic **or** one mana of the colour; mana value counts the generic side per CR 202.3f).
+  Gurmag Nightwatch's `{2/B}{2/G}{2/U}` is the canonical twobrid example.
 - `typeLine: String` — full type line including supertypes and subtypes.
 - `oracleText: String` — rules text; auto-generated from abilities if omitted.
 - `power: Int?`, `toughness: Int?` — base P/T for creatures.

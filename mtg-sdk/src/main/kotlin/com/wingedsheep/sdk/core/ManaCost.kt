@@ -15,6 +15,7 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                 is ManaSymbol.Colored -> listOf(symbol.color)
                 is ManaSymbol.Hybrid -> listOf(symbol.color1, symbol.color2)
                 is ManaSymbol.Phyrexian -> listOf(symbol.color)
+                is ManaSymbol.MonocolorHybrid -> listOf(symbol.color)
                 else -> emptyList()
             }
         }.toSet()
@@ -95,13 +96,16 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
      */
     fun relaxColors(): ManaCost {
         if (symbols.none { it is ManaSymbol.Colored || it is ManaSymbol.Hybrid ||
-                it is ManaSymbol.Phyrexian || it is ManaSymbol.Colorless }) return this
+                it is ManaSymbol.Phyrexian || it is ManaSymbol.Colorless ||
+                it is ManaSymbol.MonocolorHybrid }) return this
         var addedGeneric = 0
         val keptSymbols = mutableListOf<ManaSymbol>()
         for (symbol in symbols) {
             when (symbol) {
-                is ManaSymbol.Colored, is ManaSymbol.Hybrid,
-                is ManaSymbol.Phyrexian, is ManaSymbol.Colorless -> addedGeneric++
+                // Each of these is a single-mana requirement once colors are relaxed: a
+                // monocolored hybrid's colored side ({B} in {2/B}) is 1 mana of any type.
+                is ManaSymbol.Colored, is ManaSymbol.Hybrid, is ManaSymbol.Phyrexian,
+                is ManaSymbol.Colorless, is ManaSymbol.MonocolorHybrid -> addedGeneric++
                 is ManaSymbol.Generic, is ManaSymbol.X -> keptSymbols.add(symbol)
             }
         }
@@ -153,6 +157,18 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
                     content == "C" -> ManaSymbol.C
                     content == "X" -> ManaSymbol.X
                     content.toIntOrNull() != null -> ManaSymbol.generic(content.toInt())
+                    // Monocolored hybrid ("twobrid") mana: {2/B}, {2/G}, etc. — pay generic OR
+                    // one mana of the color. Must precede the two-color hybrid branch below, which
+                    // would otherwise try to read a color from the leading digit and fail.
+                    content.contains("/") && content.substringBefore("/").toIntOrNull() != null -> {
+                        val generic = content.substringBefore("/").toInt()
+                        val color = content.substringAfter("/").firstOrNull()?.let { Color.fromSymbol(it) }
+                        if (color != null) {
+                            ManaSymbol.MonocolorHybrid(generic, color)
+                        } else {
+                            throw IllegalArgumentException("Unknown monocolored hybrid mana symbol: {$content}")
+                        }
+                    }
                     // Hybrid mana: {W/U}, {G/U}, etc.
                     content.contains("/") && !content.contains("P") -> {
                         val parts = content.split("/")
