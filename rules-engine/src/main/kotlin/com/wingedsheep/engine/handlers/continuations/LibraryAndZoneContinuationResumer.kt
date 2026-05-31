@@ -13,6 +13,8 @@ import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
+import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -22,6 +24,9 @@ class LibraryAndZoneContinuationResumer(
 ) : ContinuationResumerModule {
 
     private val castSpellHandler: CastSpellHandler by lazy { CastSpellHandler.create(services) }
+    private val effectRunner: EffectContinuationRunner by lazy {
+        EffectContinuationRunner(services.effectExecutorRegistry)
+    }
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ReturnFromGraveyardContinuation::class, ::resumeReturnFromGraveyard),
@@ -34,7 +39,8 @@ class LibraryAndZoneContinuationResumer(
         resumer(MoveCollectionAuraTargetContinuation::class, ::resumeMoveCollectionAuraTarget),
         resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom),
         resumer(CascadeMayCastContinuation::class, ::resumeCascadeMayCast),
-        resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets)
+        resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
+        resumer(CastAnyNumberFromCollectionContinuation::class, ::resumeCastAnyNumberFromCollection)
     )
 
     fun resumeReturnFromGraveyard(
@@ -831,5 +837,62 @@ class LibraryAndZoneContinuationResumer(
         }
 
         return checkForMore(castResult.state, castResult.events)
+    }
+
+    /**
+     * Resume a [CastAnyNumberFromCollectionContinuation] — one iteration of the
+     * "cast any number of them for free" loop.
+     *
+     * The controller picked 0..1 cards from the still-castable set:
+     *  - **0** → done; uncast cards stay in exile (no later-in-turn permission was granted).
+     *  - **1** → cast it for free, then loop over the rest. Both steps run through
+     *    [effectRunner]: it casts the single chosen card via
+     *    [CastFromCollectionWithoutPayingCostEffect] (which handles target / X / mode pauses
+     *    exactly as Cascade and Shiko do — and, going through `CastSpellHandler.execute`
+     *    directly, ignores card-type timing) and then re-runs
+     *    [CastAnyNumberFromCollectionWithoutPayingCostEffect] over the remaining cards. The
+     *    runner's per-effect `EffectContinuation` makes a paused cast auto-resume into the
+     *    next loop iteration.
+     *
+     * The chosen card is keyed under a private collection name and the loop collection is
+     * trimmed to the remainder, so each iteration's bookkeeping is self-contained.
+     */
+    fun resumeCastAnyNumberFromCollection(
+        state: GameState,
+        continuation: CastAnyNumberFromCollectionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for free-cast loop")
+        }
+
+        val ctx = continuation.effectContext
+        val collection = ctx.pipeline.storedCollections[continuation.from].orEmpty()
+        val chosenId = response.selectedCards.firstOrNull()
+
+        // Declined, or a stale / no-longer-offered pick: end the loop. Uncast cards remain
+        // wherever they are.
+        if (chosenId == null || chosenId !in collection) {
+            return checkForMore(state, emptyList())
+        }
+
+        val singleKey = "${continuation.from}\$next"
+        val remaining = collection - chosenId
+        val loopContext = ctx.copy(
+            pipeline = ctx.pipeline.copy(
+                storedCollections = ctx.pipeline.storedCollections +
+                    (singleKey to listOf(chosenId)) +
+                    (continuation.from to remaining)
+            )
+        )
+
+        val effects = listOf(
+            CastFromCollectionWithoutPayingCostEffect(from = singleKey),
+            CastAnyNumberFromCollectionWithoutPayingCostEffect(from = continuation.from),
+        )
+        val result = effectRunner.executeRemainingEffects(state, effects, loopContext)
+        if (result.isPaused) return result.toExecutionResult()
+        return checkForMore(result.state, result.events.toList())
     }
 }

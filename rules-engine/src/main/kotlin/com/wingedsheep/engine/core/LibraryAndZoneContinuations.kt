@@ -284,3 +284,33 @@ data class CastFromCollectionTargetsContinuation(
     val casterId: EntityId,
 ) : ContinuationFrame
 
+/**
+ * Resume after the controller picks (or declines) the next card to cast for free during a
+ * [com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect]
+ * loop (Kotis, the Fangkeeper; Villainous-Wealth-shaped "cast any number of spells … from
+ * among them" cards).
+ *
+ * The executor pauses with a 0..1 `SelectCardsDecision` over the cards in [from] still in
+ * exile. On resume:
+ *  - **0 cards** → the controller is done; the rest stay where they are (no lingering
+ *    "you may cast it later" permission — per the rulings the casts can't wait).
+ *  - **1 card** → it is cast for free by re-running, through
+ *    [com.wingedsheep.engine.handlers.continuations.EffectContinuationRunner], the two-step
+ *    chain `CastFromCollectionWithoutPayingCost(thisCard)` then the loop effect over the
+ *    remaining cards. Because the runner pushes an `EffectContinuation` for the trailing loop
+ *    step before each cast, a cast that pauses for targets / X / modes auto-resumes straight
+ *    back into the next loop iteration.
+ *
+ * @property from The collection name the loop draws from.
+ * @property effectContext The effect context captured when the loop paused — carries the
+ *   controller, source, and pipeline collections (including [from]). Re-injected verbatim so
+ *   the synthesized casts see the same context as the resolving ability (Rule: continuations
+ *   carry targets).
+ */
+@Serializable
+data class CastAnyNumberFromCollectionContinuation(
+    override val decisionId: String,
+    val from: String,
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext,
+) : ContinuationFrame
+

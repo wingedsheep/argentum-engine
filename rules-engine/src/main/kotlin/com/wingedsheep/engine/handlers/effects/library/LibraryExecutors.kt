@@ -48,6 +48,7 @@ class LibraryExecutors(
             cardRegistry = cardRegistry,
             targetFinder = targetFinder ?: TargetFinder(),
         ),
+        CastAnyNumberFromCollectionWithoutPayingCostExecutor(),
         GatherSubtypesExecutor(),
         CaptureControllersExecutor(),
         ChooseCreatureTypePipelineExecutor(),

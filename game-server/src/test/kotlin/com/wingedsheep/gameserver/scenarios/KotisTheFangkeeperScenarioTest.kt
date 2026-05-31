@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.scenarios
 
-import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -16,24 +16,24 @@ import io.kotest.matchers.shouldBe
  * their library, where X is the amount of damage dealt. You may cast any number of spells with
  * mana value X or less from among them without paying their mana costs."
  *
- * Exercises the reusable "exile top X, free-cast the spells with mana value ≤ X" chain
- * (GatherCards(top of triggering player's library) → MoveCollection(exile) →
- * FilterCollection(nonland) → FilterCollection(ManaValueAtMost(damage)) →
- * GrantMayPlayFromExile + GrantPlayWithoutPayingCost), the same shape as Villainous Wealth but
- * driven by a combat-damage trigger. The dynamic mana-value cap comes straight from
- * [com.wingedsheep.sdk.scripting.effects.CollectionFilter.ManaValueAtMost] over the trigger's
- * damage amount — no bespoke effect.
+ * Exercises the reusable `CastAnyNumberFromCollectionWithoutPayingCostEffect` loop and the
+ * filter chain that feeds it (GatherCards(top of triggering player's library) → exile →
+ * keep nonland → keep mana value ≤ X). Kotis is a 2/1, so X = 2 each combat: the top two cards
+ * of the defender's library are exiled, and only nonland cards with mana value ≤ 2 among them
+ * are offered to be cast for free, **during the trigger's resolution**.
  *
- * Kotis is a 2/1, so X = 2 each combat: the top two cards of the defender's library are exiled,
- * and only the nonland cards with mana value ≤ 2 among them become free-castable by Kotis's
- * controller.
+ * The casts happen mid-resolution (not via an until-end-of-turn grant), so:
+ *  - card-type timing is ignored — a *creature* (sorcery-speed) is cast during the combat
+ *    damage step;
+ *  - the controller can't wait — declining grants no lingering may-play permission, and uncast
+ *    cards just stay exiled.
  */
 class KotisTheFangkeeperScenarioTest : ScenarioTestBase() {
 
     init {
         context("Kotis, the Fangkeeper combat damage trigger") {
 
-            test("exiles top X and grants a free cast on the spell with mana value ≤ X") {
+            test("offers only the mana-value-≤-X spells and casts the chosen one for free during resolution") {
                 // Defender's top two: Grizzly Bears (MV 2, castable) and Hill Giant (MV 4, too big).
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
@@ -46,7 +46,7 @@ class KotisTheFangkeeperScenarioTest : ScenarioTestBase() {
                     .build()
 
                 game.declareAttackers(mapOf("Kotis, the Fangkeeper" to 2))
-                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+                advanceToCastDecision(game)
 
                 withClue("Kotis (2/1) deals 2 combat damage to the defender") {
                     game.getLifeTotal(2) shouldBe 18
@@ -55,33 +55,83 @@ class KotisTheFangkeeperScenarioTest : ScenarioTestBase() {
                     namesInExile(game, 2) shouldBe setOf("Grizzly Bears", "Hill Giant")
                 }
 
-                val freeCastable = freeCastableIds(game)
-                withClue("Grizzly Bears (MV 2 ≤ X) may be cast for free") {
-                    freeCastable.contains(exileId(game, 2, "Grizzly Bears")) shouldBe true
+                // The trigger pauses mid-resolution to let Player1 cast from among the exiled cards.
+                val decision = game.getPendingDecision()
+                withClue("Kotis pauses for a cast-from-exile choice during resolution") {
+                    (decision is SelectCardsDecision) shouldBe true
                 }
-                withClue("Hill Giant (MV 4 > X) is exiled but NOT free-castable") {
-                    freeCastable.contains(exileId(game, 2, "Hill Giant")) shouldBe false
+                decision as SelectCardsDecision
+                withClue("Only the nonland card with mana value ≤ X (Grizzly Bears) is offered; Hill Giant (MV 4) is not") {
+                    optionNames(game, decision) shouldBe setOf("Grizzly Bears")
                 }
 
-                // Player1 has no mana; a successful cast proves it is free. The card is owned by
-                // and sits in Player2's exile, but Player1 casts it via the granted permission.
-                val bearsId = exileId(game, 2, "Grizzly Bears")
-                val result = game.execute(CastSpell(game.player1Id, bearsId, emptyList()))
-                withClue("Casting Grizzly Bears from exile for free must succeed with no mana") {
-                    (result.error == null) shouldBe true
-                }
+                // Cast Grizzly Bears for free. Player1 has no mana, and it's a creature cast during
+                // the combat damage step — proving the cast is free and ignores sorcery-speed timing.
+                val bearsId = decision.options.first { idNamed(game, it, "Grizzly Bears") }
+                game.selectCards(listOf(bearsId))
                 game.resolveStack()
 
                 withClue("The free-cast Grizzly Bears resolves onto the battlefield") {
                     game.isOnBattlefield("Grizzly Bears") shouldBe true
                 }
-                withClue("Hill Giant stays in exile — uncast cards remain exiled") {
+                withClue("Hill Giant (MV 4 > X) was never castable and stays in exile") {
                     namesInExile(game, 2).contains("Hill Giant") shouldBe true
                 }
             }
 
-            test("lands among the exiled cards can't be played this way (spells only)") {
-                // Defender's top two: Shock (MV 1, castable spell) and Forest (a land).
+            test("casts several spells in one resolution — a targeted spell pauses, then the loop offers the next") {
+                // Defender's top two: Shock (MV 1, targets any target) and Grizzly Bears (MV 2).
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Kotis, the Fangkeeper", tapped = false, summoningSickness = false)
+                    .withCardInLibrary(2, "Shock")
+                    .withCardInLibrary(2, "Grizzly Bears")
+                    .withLifeTotal(2, 20)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                game.declareAttackers(mapOf("Kotis, the Fangkeeper" to 2))
+                advanceToCastDecision(game)
+
+                // Both MV-≤-2 spells are offered together.
+                val first = game.getPendingDecision() as SelectCardsDecision
+                withClue("Both exiled spells (MV ≤ 2) are castable") {
+                    optionNames(game, first) shouldBe setOf("Shock", "Grizzly Bears")
+                }
+
+                // Cast Shock first — it targets, so the loop pauses for target selection mid-cast.
+                val shockId = first.options.first { idNamed(game, it, "Shock") }
+                game.selectCards(listOf(shockId))
+                withClue("Casting the targeted Shock pauses for its target during the loop") {
+                    (game.getPendingDecision() is com.wingedsheep.engine.core.ChooseTargetsDecision) shouldBe true
+                }
+                game.selectTargets(listOf(game.player2Id))
+
+                // After Shock is on the stack the loop re-enters and offers the remaining spell.
+                val second = game.getPendingDecision() as SelectCardsDecision
+                withClue("After the targeted cast, the loop offers only the remaining spell") {
+                    optionNames(game, second) shouldBe setOf("Grizzly Bears")
+                }
+                val bearsId = second.options.first { idNamed(game, it, "Grizzly Bears") }
+                game.selectCards(listOf(bearsId))
+
+                // Both spells are now on the stack; let them resolve.
+                game.resolveStack()
+
+                withClue("Grizzly Bears (the second free cast) resolves onto the battlefield") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe true
+                }
+                withClue("Shock dealt 2 to the defender on top of the 2 combat damage (20 → 18 → 16)") {
+                    game.getLifeTotal(2) shouldBe 16
+                }
+                withClue("Both exiled spells were cast, so neither remains in exile") {
+                    namesInExile(game, 2) shouldBe emptySet()
+                }
+            }
+
+            test("lands are never offered, and declining leaves the cards exiled with no later permission") {
+                // Defender's top two: Shock (MV 1, a spell) and Forest (a land).
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Kotis, the Fangkeeper", tapped = false, summoningSickness = false)
@@ -93,36 +143,51 @@ class KotisTheFangkeeperScenarioTest : ScenarioTestBase() {
                     .build()
 
                 game.declareAttackers(mapOf("Kotis, the Fangkeeper" to 2))
-                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+                advanceToCastDecision(game)
 
-                withClue("Both top cards are exiled") {
+                val decision = game.getPendingDecision()
+                decision as SelectCardsDecision
+                withClue("'You may cast spells' — the Forest (a land) is not offered, only Shock") {
+                    optionNames(game, decision) shouldBe setOf("Shock")
+                }
+
+                // Decline the cast entirely.
+                game.selectCards(emptyList())
+                game.resolveStack()
+
+                withClue("Both cards remain in exile when the cast is declined") {
                     namesInExile(game, 2) shouldBe setOf("Shock", "Forest")
                 }
-
-                val freeCastable = freeCastableIds(game)
-                withClue("Shock (a spell with MV 1 ≤ X) is free-castable") {
-                    freeCastable.contains(exileId(game, 2, "Shock")) shouldBe true
-                }
-                withClue("Forest is a land — 'you may cast spells', so it is excluded") {
-                    freeCastable.contains(exileId(game, 2, "Forest")) shouldBe false
+                withClue("Per the rulings the casts can't wait — no may-play permission lingers for Player1") {
+                    playablePermissionCardIds(game).intersect(
+                        game.state.getExile(game.player2Id).toSet()
+                    ) shouldBe emptySet()
                 }
             }
         }
     }
 
-    /** All card ids the given game's Player1 may currently cast/play via a may-play permission. */
-    private fun freeCastableIds(game: TestGame): Set<EntityId> =
-        game.state.mayPlayPermissions
-            .filter { it.controllerId == game.player1Id }
-            .flatMap { it.cardIds }
-            .toSet()
-
-    private fun exileId(game: TestGame, playerNumber: Int, name: String): EntityId {
-        val playerId = if (playerNumber == 1) game.player1Id else game.player2Id
-        return game.state.getExile(playerId).first { id ->
-            game.state.getEntity(id)?.get<CardComponent>()?.name == name
+    /**
+     * Declare-attackers is already set; advance to the combat damage step (auto-submitting the
+     * defender's empty blockers along the way), where Kotis deals damage and its trigger goes on
+     * the stack, then pass priority until the trigger pauses mid-resolution for the cast choice.
+     */
+    private fun advanceToCastDecision(game: TestGame) {
+        game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
+        var iterations = 0
+        while (game.state.pendingDecision == null &&
+            game.state.step != Step.POSTCOMBAT_MAIN &&
+            iterations++ < 20
+        ) {
+            game.passPriority()
         }
     }
+
+    private fun optionNames(game: TestGame, decision: SelectCardsDecision): Set<String> =
+        decision.options.mapNotNull { game.state.getEntity(it)?.get<CardComponent>()?.name }.toSet()
+
+    private fun idNamed(game: TestGame, id: EntityId, name: String): Boolean =
+        game.state.getEntity(id)?.get<CardComponent>()?.name == name
 
     private fun namesInExile(game: TestGame, playerNumber: Int): Set<String> {
         val playerId = if (playerNumber == 1) game.player1Id else game.player2Id
@@ -130,4 +195,10 @@ class KotisTheFangkeeperScenarioTest : ScenarioTestBase() {
             game.state.getEntity(id)?.get<CardComponent>()?.name
         }.toSet()
     }
+
+    private fun playablePermissionCardIds(game: TestGame): Set<EntityId> =
+        game.state.mayPlayPermissions
+            .filter { it.controllerId == game.player1Id }
+            .flatMap { it.cardIds }
+            .toSet()
 }

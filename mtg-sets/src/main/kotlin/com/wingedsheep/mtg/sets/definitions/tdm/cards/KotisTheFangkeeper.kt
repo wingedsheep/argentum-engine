@@ -8,12 +8,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
@@ -28,22 +27,22 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * library, where X is the amount of damage dealt. You may cast any number of spells
  * with mana value X or less from among them without paying their mana costs.
  *
- * This is the same "exile top X, free-cast the spells with mana value ≤ X" shape as
- * Villainous Wealth, just driven by a combat-damage trigger instead of an {X} spell.
- * It needs no bespoke effect — the dynamic mana-value cap the backlog flagged as a gap
- * is already expressible via [CollectionFilter.ManaValueAtMost] over a [DynamicAmount].
- * The ability is a resolution-time chain over existing pipeline primitives:
+ * This is the "exile top X, free-cast the spells with mana value ≤ X" shape, driven by a
+ * combat-damage trigger. It's a resolution-time chain over existing pipeline primitives:
  *   1. gather the top X of the damaged player's library, where X is the combat damage
  *      read from the trigger context ([ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT]),
  *   2. exile that whole batch ([Player.TriggeringPlayer] is the damaged player),
  *   3. keep only nonland cards (you may cast *spells*, not play lands),
- *   4. of those, keep only mana value ≤ X (the same X, re-read from the context),
- *   5. grant free-cast permission on that filtered subset.
+ *   4. of those, keep only mana value ≤ X (the same X, re-read from the context — the
+ *      dynamic cap comes straight from [CollectionFilter.ManaValueAtMost] over a
+ *      [DynamicAmount], no bespoke filter),
+ *   5. cast any number of that filtered set for free, *during resolution*.
  *
- * Per the official ruling the spells are cast for free with type-based timing ignored;
- * cards left uncast stay in exile. As with Villainous Wealth and Etali, Primal Storm,
- * the free cast is modeled through the grant primitives rather than a during-resolution
- * cast loop.
+ * Step 5 uses [CastAnyNumberFromCollectionWithoutPayingCostEffect]: the controller is
+ * offered the eligible cards one at a time and may stop whenever they like. Per the official
+ * rulings the casts happen while this ability is resolving (the controller can't wait until
+ * later in the turn) and type-based timing is ignored — both fall out of casting through the
+ * synthesized-cast path, exactly as Cascade does. Cards left uncast stay in exile.
  */
 val KotisTheFangkeeper = card("Kotis, the Fangkeeper") {
     manaCost = "{1}{B}{G}{U}"
@@ -91,9 +90,8 @@ val KotisTheFangkeeper = card("Kotis, the Fangkeeper") {
                     ),
                     storeMatching = "castable"
                 ),
-                // You may cast any number of them without paying their mana costs.
-                GrantMayPlayFromExileEffect("castable"),
-                GrantPlayWithoutPayingCostEffect("castable")
+                // Cast any number of them for free, during this ability's resolution.
+                CastAnyNumberFromCollectionWithoutPayingCostEffect("castable")
             )
         )
     }

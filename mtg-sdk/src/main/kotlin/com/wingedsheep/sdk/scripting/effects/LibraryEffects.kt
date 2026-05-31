@@ -190,6 +190,39 @@ data class CastFromCollectionWithoutPayingCostEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
+/**
+ * Cast ANY NUMBER of cards from a named pipeline collection **during this effect's
+ * resolution**, each without paying its mana cost, with timing restrictions based on card
+ * type ignored (Rule 608.2 / "cast … while [the source] is resolving").
+ *
+ * The multi-cast sibling of [CastFromCollectionWithoutPayingCostEffect]. It loops: the
+ * controller is repeatedly offered the cards still in the collection and may pick one to cast
+ * for free (its targets / X / modes flow through the normal cast machinery), then is offered
+ * the rest, until they decline. Because the casts happen synchronously while the source
+ * resolves — exactly like Cascade — sorcery-speed timing does not apply, and no lingering
+ * "you may play it later" permission is granted, so cards left uncast can't be cast later.
+ *
+ * Hand it the already-eligible set: filter the collection upstream (e.g. nonland +
+ * `FilterCollection(ManaValueAtMost(...))`); this effect casts from whatever it's given and
+ * leaves the rest in place.
+ *
+ * Models the "you may cast any number of spells with mana value X or less from among them
+ * without paying their mana costs" clause (Kotis, the Fangkeeper; Villainous-Wealth-shaped
+ * cards once migrated).
+ *
+ * @property from Name of the collection of already-exiled candidate cards.
+ */
+@SerialName("CastAnyNumberFromCollectionWithoutPayingCost")
+@Serializable
+data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
+    val from: String,
+) : Effect {
+    override val description: String =
+        "Cast any number of the $from cards without paying their mana costs"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 @SerialName("Cascade")
 @Serializable
 data object CascadeEffect : Effect {

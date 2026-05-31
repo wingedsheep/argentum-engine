@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventLandPlaysThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CopyCardIntoCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
+import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
@@ -1550,6 +1551,15 @@ object Effects {
      */
     fun CastFromCollectionWithoutPayingCost(from: String): Effect =
         CastFromCollectionWithoutPayingCostEffect(from = from)
+
+    /**
+     * Cast any number of the cards stored under [from] without paying their mana costs,
+     * during this effect's resolution, with card-type timing restrictions ignored. The
+     * controller is offered the cards one at a time and may stop at any point; cards left
+     * uncast stay where they are. Filter the collection to the eligible set upstream.
+     */
+    fun CastAnyNumberFromCollectionWithoutPayingCost(from: String): Effect =
+        CastAnyNumberFromCollectionWithoutPayingCostEffect(from = from)
 
     /**
      * Repeat a body effect in a do-while loop controlled by a repeat condition.

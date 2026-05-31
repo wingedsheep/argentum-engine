@@ -164,13 +164,15 @@ the overwhelming majority of the set.
     → **New Way Forward**
 
 17. **Free-cast-from-exile gated by a dynamic MV cap.** ✅ **DONE.** Exile top X of the damaged
-    player's library (X = combat damage) and cast any number of those with MV ≤ X for free. No new
-    effect was needed: the dynamic cap is already expressible as
-    `CollectionFilter.ManaValueAtMost(DynamicAmount.ContextProperty(TRIGGER_DAMAGE_AMOUNT))`, and the
-    free cast reuses the existing `GrantMayPlayFromExile` + `GrantPlayWithoutPayingCost` grants — the
-    same chain as Villainous Wealth, driven by `Triggers.DealsCombatDamageToPlayer` over
-    `Player.TriggeringPlayer`'s library. Modeled as a resolution-time pipeline (gather top X → exile →
-    keep nonland → keep MV ≤ X → grant free cast).
+    player's library (X = combat damage) and cast any number of those with MV ≤ X for free. The
+    dynamic cap is `CollectionFilter.ManaValueAtMost(DynamicAmount.ContextProperty(TRIGGER_DAMAGE_AMOUNT))`;
+    the multi-cast itself needed a new primitive,
+    `CastAnyNumberFromCollectionWithoutPayingCostEffect`, which casts any number of cards from a
+    pipeline collection **during the ability's resolution** — per the rulings the casts can't wait
+    until later in the turn and card-type timing is ignored (it reuses
+    `CastFromCollectionWithoutPayingCost` per cast through the synthesized-cast path, looped via
+    `EffectContinuationRunner`). Chain: gather top X (`Player.TriggeringPlayer`) → exile → keep
+    nonland → keep MV ≤ X → cast any number for free.
     → **Kotis, the Fangkeeper**
 
 18. **Per-activation cost reduction by a target's color count.** Equip cost "costs {1} less to
