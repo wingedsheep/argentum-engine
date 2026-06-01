@@ -51,7 +51,8 @@ val RuinLurkerBat = card("Ruin-Lurker Bat") {
         flavorText = "\"Look! Aclazotz sends his children to watch over our pilgrimage.\"\n" +
             "—Clavileño, First of the Blessed"
         imageUri = "https://cards.scryfall.io/normal/front/d/6/d6bedf13-c2bc-4e5d-aba3-3c0d5495a9bb.jpg?1699043372"
-        ruling("2023-11-10", "You descended if a permanent card was put into your graveyard from anywhere this turn. Tokens are not cards, and putting a token into the graveyard doesn't count.")
-        ruling("2023-11-10", "The ability triggers only once during your end step, no matter how many times you descended that turn. If you haven't descended by the time your end step begins, it won't trigger at all.")
+        ruling("2023-11-10", "Some cards refer to a player who has \"descended this turn.\" This means that a permanent card has been put into that player's graveyard from anywhere this turn.")
+        ruling("2023-11-10", "A permanent card is an artifact, battle, creature, enchantment, land, or planeswalker card. Tokens are not cards, and while tokens are put into the graveyard before ceasing to exist, that action doesn't count as a player having descended.")
+        ruling("2023-11-10", "Abilities that begin with \"At the beginning of your end step, if you descended this turn\" will trigger only once during your end step, no matter how many times you descended this turn. However, if you haven't descended this turn as your end step begins, the ability won't trigger at all. It's not possible to put a permanent card into your graveyard during the end step in time to have the ability trigger.")
     }
 }
