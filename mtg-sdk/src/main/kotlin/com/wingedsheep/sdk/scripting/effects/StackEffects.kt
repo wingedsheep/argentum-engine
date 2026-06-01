@@ -621,6 +621,31 @@ data class CopyEachSpellCastEffect(
         copy(spellFilter = spellFilter.applyTextReplacement(replacer))
 }
 
+/**
+ * The next spell its controller casts this turn matching [spellFilter] can't be countered.
+ *
+ * One-shot rider: it attaches to the very next matching spell that player casts (stamping it
+ * uncounterable for as long as it's on the stack) and is then consumed. Unlike
+ * [com.wingedsheep.sdk.scripting.effects.GrantSpellsCantBeCounteredEffect], which protects
+ * *every* matching spell cast for a whole duration, this protects only one spell. Mirrors the
+ * pending-rider shape of [CopyNextSpellCastEffect] ("copy your next spell").
+ *
+ * Used by Mistrise Village ("{U}, {T}: The next spell you cast this turn can't be countered.").
+ *
+ * @property spellFilter Which spell the rider waits for (defaults to any spell).
+ */
+@SerialName("MakeNextSpellUncounterable")
+@Serializable
+data class MakeNextSpellUncounterableEffect(
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any
+) : Effect {
+    override val description: String =
+        "The next ${spellFilter.description} spell you cast this turn can't be countered"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
+}
+
 // =============================================================================
 // Stack Effects — Mark for Exile-After-Resolve with Counters
 // =============================================================================

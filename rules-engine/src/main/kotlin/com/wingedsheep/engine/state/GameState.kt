@@ -101,6 +101,9 @@ data class GameState(
     /** Pending spell copies — copy the next instant/sorcery spell cast by a player (e.g., Howl of the Horde) */
     val pendingSpellCopies: List<PendingSpellCopy> = emptyList(),
 
+    /** Pending "next spell can't be countered" riders — stamp the next matching spell cast (e.g., Mistrise Village) */
+    val pendingUncounterableSpells: List<PendingUncounterableSpell> = emptyList(),
+
     /** Whether a spell was warped this turn (for Void condition: "a spell was warped this turn") */
     val spellWarpedThisTurn: Boolean = false,
 

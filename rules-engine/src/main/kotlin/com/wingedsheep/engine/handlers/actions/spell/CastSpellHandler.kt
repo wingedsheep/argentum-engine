@@ -2307,6 +2307,27 @@ class CastSpellHandler(
             }
         }
 
+        // Handle pending "next spell can't be countered" riders (e.g., Mistrise Village). Each entry
+        // carries its own spellFilter (any spell by default) matched against the spell just cast. The
+        // first matching cast stamps the spell uncounterable and consumes every matching entry; later
+        // spells aren't protected. Unlike the copy rider above, face-down spells aren't excluded — a
+        // face-down spell is still "the next spell you cast", and the default Any filter matches it.
+        run {
+            val uncounterableEvalContext = PredicateContext(controllerId = action.playerId)
+            val matchingRiders = currentCastState.pendingUncounterableSpells.filter { pending ->
+                pending.controllerId == action.playerId &&
+                    predicateEvaluator.matches(
+                        currentCastState, currentCastState.projectedState, action.cardId, pending.spellFilter, uncounterableEvalContext
+                    )
+            }
+            if (matchingRiders.isNotEmpty()) {
+                val remainingRiders = currentCastState.pendingUncounterableSpells.filter { it !in matchingRiders }
+                currentCastState = currentCastState
+                    .copy(pendingUncounterableSpells = remainingRiders)
+                    .updateEntity(action.cardId) { c -> c.with(CantBeCounteredComponent) }
+            }
+        }
+
         // Detect and process triggers from casting (including additional cost events like sacrifice).
         // Storm pending triggers (built above) are prepended so they go on the stack just above the
         // spell itself — per CR 603.3b Storm goes on top of the spell that caused it to trigger.

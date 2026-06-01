@@ -1825,6 +1825,21 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for pending "next spell can't be countered" riders (e.g., Mistrise Village)
+        val pendingUncounterable = state.pendingUncounterableSpells.filter { it.controllerId == playerId }
+        if (pendingUncounterable.isNotEmpty()) {
+            val sourceName = pendingUncounterable.map { it.sourceName }.distinct().joinToString(", ")
+            val filterDesc = pendingUncounterable.map { it.spellFilter.description }.distinct().joinToString("/")
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "pending_uncounterable_spell",
+                    name = "Uncounterable",
+                    description = "Your next $filterDesc spell can't be countered ($sourceName)",
+                    icon = "no-counter"
+                )
+            )
+        }
+
         // Check for global triggered abilities controlled by this player
         // Group by source name so abilities from the same source show as one badge
         val globalAbilitiesBySource = state.globalGrantedTriggeredAbilities

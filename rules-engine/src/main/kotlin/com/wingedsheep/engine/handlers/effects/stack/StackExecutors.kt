@@ -23,6 +23,7 @@ class StackExecutors(
         CopyTargetTriggeredAbilityExecutor(cardRegistry),
         CopyNextSpellCastExecutor(),
         CopyEachSpellCastExecutor(),
+        MakeNextSpellUncounterableExecutor(),
         ReselectTargetRandomlyExecutor(),
         ChangeTriggeringObjectTargetsExecutor(),
         GrantKeywordToSpellExecutor(),

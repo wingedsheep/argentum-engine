@@ -98,6 +98,7 @@ class TurnManager(
             playerSpellsCastThisTurn = emptyMap(),
             spellsCastThisTurnByPlayer = emptyMap(),
             pendingSpellCopies = emptyList(),
+            pendingUncounterableSpells = emptyList(),
             spellWarpedThisTurn = false,
             nonlandPermanentLeftBattlefieldThisTurn = false,
             lastCastSpellColors = null

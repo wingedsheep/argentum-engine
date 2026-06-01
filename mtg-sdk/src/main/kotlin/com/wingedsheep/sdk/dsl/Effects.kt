@@ -1807,6 +1807,15 @@ object Effects {
         spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery
     ): Effect = CopyEachSpellCastEffect(copies, spellFilter)
 
+    /**
+     * The next spell matching [spellFilter] you cast this turn can't be countered (one-shot).
+     * Unlike [GrantSpellsCantBeCountered], which protects every matching spell for a duration,
+     * this protects only the next one. Defaults to any spell. Used by Mistrise Village.
+     */
+    fun MakeNextSpellUncounterable(
+        spellFilter: GameObjectFilter = GameObjectFilter.Any
+    ): Effect = com.wingedsheep.sdk.scripting.effects.MakeNextSpellUncounterableEffect(spellFilter)
+
     // =========================================================================
     // Sacrifice Effects
     // =========================================================================
