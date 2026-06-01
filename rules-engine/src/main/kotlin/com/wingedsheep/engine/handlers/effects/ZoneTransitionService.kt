@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -91,6 +92,16 @@ data class ZoneTransitionResult(
  * 9. Apply redirect additional effects if any
  */
 object ZoneTransitionService {
+
+    /**
+     * Handler used to register static abilities and replacement effects on permanents that
+     * enter the battlefield through [moveToZone] (reanimation, returns from exile, leyline
+     * starts, etc.). Wired by [com.wingedsheep.engine.core.EngineServices] at construction
+     * time. The cast pipeline ([com.wingedsheep.engine.mechanics.stack.StackResolver]) places
+     * permanents via [GameState.addToZone] directly, not [moveToZone], so it owns its own
+     * call to the handler and is unaffected by this wiring.
+     */
+    lateinit var staticAbilityHandler: StaticAbilityHandler
 
     /**
      * Move one entity between zones with full cleanup + setup.
@@ -613,6 +624,18 @@ object ZoneTransitionService {
                 if (options.morphData != null) {
                     updated = updated.with(options.morphData)
                 }
+            }
+
+            // Register static abilities (continuous effects) and runtime replacement effects.
+            // Without this, a permanent placed on the battlefield via moveToZone — leyline
+            // starts, reanimation, returns from exile — would carry its CardComponent but
+            // never surface its static / replacement payload to the projector or the
+            // replacement-application paths. Face-down entries are excluded because face-down
+            // permanents have no abilities (CR 708.2). The cast pipeline owns its own call,
+            // so this does not double-run for cast spells.
+            if (!options.faceDown && ::staticAbilityHandler.isInitialized) {
+                updated = staticAbilityHandler.addContinuousEffectComponent(updated)
+                updated = staticAbilityHandler.addReplacementEffectComponent(updated)
             }
 
             updated

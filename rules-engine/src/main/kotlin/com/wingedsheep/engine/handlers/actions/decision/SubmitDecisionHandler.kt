@@ -73,7 +73,13 @@ class SubmitDecisionHandler(
                 )
             }
 
-            // Handle untap step completion (MAY_NOT_UNTAP decision resolved)
+            // Handle untap step completion. Two clients land here:
+            //   1. A MAY_NOT_UNTAP decision (e.g., Frozen Solid / Static Orb) just resolved.
+            //   2. The CR 103.6 leyline phase (LeylineContinuationResumer) just resolved its
+            //      last yes/no decision. The engine starts a new game at Step.UNTAP, and the
+            //      leyline phase deliberately leaves state.step == UNTAP with no pending
+            //      decision so this branch advances into turn 1's actual UNTAP processing.
+            // If you refactor either flow, make sure both still trigger this advance.
             if (result.isSuccess && !result.isPaused &&
                 result.state.step == Step.UNTAP &&
                 result.state.pendingDecision == null

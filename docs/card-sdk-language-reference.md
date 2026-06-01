@@ -57,6 +57,11 @@ section; do not let SDK additions land without a corresponding doc update.
 - `replacementEffect { ... }` — "instead/if … would" replacement.
 - `keywords(...)` / `keywordAbility(...)` / `keywordAbilities(...)` — add keyword abilities.
 - `spell { ... }` — define the spell payload for instants/sorceries and Adventure / Omen faces.
+- `leyline()` — Leyline mechanic ("If this card is in your opening hand, you may begin the game with it on the
+  battlefield"). Sets `CardScript.mayStartOnBattlefield = true`. After all mulligans and bottoming resolve, the
+  engine walks each player in turn order from the active player and presents a yes/no decision per leyline card
+  in their opening hand; a "yes" routes the card to the battlefield through the standard zone-change pipeline
+  before the first turn begins, a "no" leaves it in hand.
 
 ---
 
@@ -2059,6 +2064,14 @@ replacementEffect {
   use a source-relative condition instead. Use for "if you would draw one or more cards, you draw
   that many cards plus N instead" (Quantum Riddler:
   `ModifyDrawAmount(modifier = 1, restrictions = listOf(Conditions.CardsInHandAtMost(1)), appliesTo = DrawEvent(player = Player.You))`).
+- `ModifyLifeGain(multiplier, modifier, appliesTo)` — modify life gain by a multiplicative *and/or* additive
+  factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent` whose
+  `player` filter (default `Player.Each`) gates which players the replacement applies to. Used by Alhammarret's
+  Archive (`multiplier = 2`), Leyline of Hope (`multiplier = 1, modifier = 1, player = Player.You`). Multiple
+  instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to every life-gain event.
+- `ModifyLifeLoss(multiplier, modifier, restrictions, appliesTo)` — same shape as `ModifyLifeGain` for life loss
+  events (`LifeLossEvent`), plus a `restrictions: List<Condition>` list that further gates the replacement.
+- `PreventLifeGain(appliesTo)` — life gain matching the event is fully prevented (Sulfuric Vortex, Erebos).
 - Custom — implement the `ReplacementEffect` interface directly.
 
 Amount-modifying replacements expose **both** `multiplier` (×) and `modifier` (±) on the same type — do not split into

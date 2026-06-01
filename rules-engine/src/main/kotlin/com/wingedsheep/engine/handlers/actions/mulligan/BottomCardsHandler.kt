@@ -2,7 +2,6 @@ package com.wingedsheep.engine.handlers.actions.mulligan
 
 import com.wingedsheep.engine.core.BottomCards
 import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.core.EngineServices
@@ -16,6 +15,9 @@ import kotlin.reflect.KClass
  *
  * After keeping a mulligan hand, players must put a number of cards
  * equal to their mulligans on the bottom of their library (London mulligan).
+ * Once bottoming is complete (and the other player has also kept/bottomed),
+ * [MulliganHandler.tryAdvancePastMulliganPhase] runs the CR 103.6 leyline phase
+ * and advances to turn 1.
  */
 class BottomCardsHandler(
     private val mulliganHandler: MulliganHandler,
@@ -48,22 +50,7 @@ class BottomCardsHandler(
     override fun execute(state: GameState, action: BottomCards): ExecutionResult {
         val result = mulliganHandler.handleBottomCards(state, action)
         if (!result.isSuccess) return result
-        return checkMulliganCompletion(result.newState, result.events)
-    }
-
-    /**
-     * Check if all mulligans are complete and advance the game to the first turn if so.
-     */
-    private fun checkMulliganCompletion(state: GameState, events: List<GameEvent>): ExecutionResult {
-        if (mulliganHandler.isInMulliganPhase(state) || mulliganHandler.needsBottomCards(state)) {
-            return ExecutionResult.success(state, events)
-        }
-
-        val advanceResult = turnManager.advanceStep(state)
-        return ExecutionResult.success(
-            advanceResult.newState,
-            events + advanceResult.events
-        )
+        return mulliganHandler.tryAdvancePastMulliganPhase(result.newState, result.events, turnManager)
     }
 
     companion object {

@@ -607,6 +607,7 @@ class StaticAbilityHandler(
         it is PreventDamage || it is DoubleDamage || it is ModifyDamageAmount || it is PreventLifeGain ||
         it is com.wingedsheep.sdk.scripting.CapDamage || it is com.wingedsheep.sdk.scripting.RedirectDamage ||
         it is com.wingedsheep.sdk.scripting.ModifyLifeLoss ||
+        it is com.wingedsheep.sdk.scripting.ModifyLifeGain ||
         it is com.wingedsheep.sdk.scripting.PreventDraw ||
         it is com.wingedsheep.sdk.scripting.DamageCantBePrevented || it is ReplaceDamageWithCounters ||
         it is com.wingedsheep.sdk.scripting.ReplaceDrawWithEffect || it is com.wingedsheep.sdk.scripting.ModifyDrawAmount ||

@@ -270,7 +270,9 @@ object DamageUtils {
         val targetIsFaceDown = targetContainer?.has<FaceDownComponent>() == true
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer, targetWasFaceDown = targetIsFaceDown, excessAmount = creatureExcessDamage))
 
-        // Lifelink: if the source has lifelink, its controller gains life equal to the damage dealt (Rule 702.15)
+        // Lifelink: if the source has lifelink, its controller gains life equal to the damage dealt (Rule 702.15).
+        // Per CR 119.9 the lifelink life-gain is a separate event; ModifyLifeGain (Alhammarret's
+        // Archive, Leyline of Hope) replaces the actual amount gained.
         if (sourceId != null) {
             val projected = newState.projectedState
             if (projected.hasKeyword(sourceId, Keyword.LIFELINK.name)) {
@@ -279,11 +281,14 @@ object DamageUtils {
                 if (controllerId != null && !isLifeGainPrevented(newState, controllerId)) {
                     val currentLife = newState.getEntity(controllerId)?.get<LifeTotalComponent>()?.life
                     if (currentLife != null) {
-                        val newLife = currentLife + effectiveAmount
-                        newState = newState.updateEntity(controllerId) { container ->
-                            container.with(LifeTotalComponent(newLife))
+                        val modifiedAmount = LifeGainModifiers.apply(newState, controllerId, effectiveAmount)
+                        if (modifiedAmount > 0) {
+                            val newLife = currentLife + modifiedAmount
+                            newState = newState.updateEntity(controllerId) { container ->
+                                container.with(LifeTotalComponent(newLife))
+                            }
+                            events.add(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
                         }
-                        events.add(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
                     }
                 }
             }

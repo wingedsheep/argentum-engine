@@ -48,6 +48,7 @@ class ContinuationHandler(
         registerModule(TokenContinuationResumer(services))
         registerModule(RingTemptContinuationResumer(services))
         registerModule(AmassContinuationResumer(services))
+        registerModule(LeylineContinuationResumer(services))
     }
 
     /**

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.LifeGainModifiers
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -45,12 +46,18 @@ class GainLifeExecutor(
         for (playerId in playerIds) {
             if (isLifeGainPrevented(state, playerId, context.controllerId)) continue
 
+            // Apply ModifyLifeGain replacements (Alhammarret's Archive, Leyline of Hope).
+            // Per CR 614 / the Leyline of Hope rulings, the modifier is applied **once per
+            // life-gain event** regardless of the original amount.
+            val modifiedAmount = LifeGainModifiers.apply(newState, playerId, amount)
+            if (modifiedAmount <= 0) continue
+
             val currentLife = newState.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: continue
-            val newLife = currentLife + amount
+            val newLife = currentLife + modifiedAmount
             newState = newState.updateEntity(playerId) { container ->
                 container.with(LifeTotalComponent(newLife))
             }
-            newState = DamageUtils.markLifeGainedThisTurn(newState, playerId, amount)
+            newState = DamageUtils.markLifeGainedThisTurn(newState, playerId, modifiedAmount)
             events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
         }
 

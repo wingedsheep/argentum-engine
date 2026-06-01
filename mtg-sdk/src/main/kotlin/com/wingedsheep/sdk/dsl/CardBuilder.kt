@@ -276,6 +276,26 @@ class CardBuilder(private val name: String) {
      */
     var layout: CardLayout = CardLayout.NORMAL
 
+    /**
+     * Leyline marker. When true, the card carries the "If this card is in your opening
+     * hand, you may begin the game with it on the battlefield" ability. Set via the
+     * [leyline] DSL helper rather than by hand.
+     */
+    var mayStartOnBattlefield: Boolean = false
+
+    /**
+     * Leyline mechanic (Future Sight / M11 / M20 / Duskmourn cycles). "If this card is in
+     * your opening hand, you may begin the game with it on the battlefield." The engine
+     * resolves all Leyline choices after mulligans and bottoming complete, walking each
+     * player in turn order starting with the active player.
+     *
+     * Display-only at the SDK level; the engine reads [CardScript.mayStartOnBattlefield]
+     * to drive the per-card yes/no prompt during the leyline phase.
+     */
+    fun leyline() {
+        mayStartOnBattlefield = true
+    }
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -956,7 +976,8 @@ class CardBuilder(private val name: String) {
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
             selfAlternativeCost = selfAlternativeCost,
-            xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet()
+            xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
+            mayStartOnBattlefield = mayStartOnBattlefield
         )
 
         // Build metadata

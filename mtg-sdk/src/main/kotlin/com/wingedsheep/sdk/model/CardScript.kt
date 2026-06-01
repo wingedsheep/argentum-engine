@@ -226,7 +226,19 @@ data class CardScript(
      * and the per-color amount actually spent on X is exposed via
      * [com.wingedsheep.sdk.scripting.values.DynamicAmount.ManaSpentOnX].
      */
-    val xManaRestriction: Set<Color> = emptySet()
+    val xManaRestriction: Set<Color> = emptySet(),
+
+    /**
+     * Leyline mechanic. "If this card is in your opening hand, you may begin the game
+     * with it on the battlefield." After all mulligans and bottoming resolve, the engine
+     * walks each player in turn order (starting with the active player) and presents a
+     * yes/no choice per Leyline card still in that player's opening hand. A "yes" puts the
+     * card onto the battlefield under its owner's control through the standard zone-change
+     * pipeline before the first turn begins; a "no" leaves it in hand.
+     *
+     * Wired via the `leyline()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    val mayStartOnBattlefield: Boolean = false
 ) {
     /**
      * Whether this card has any scripted behavior.

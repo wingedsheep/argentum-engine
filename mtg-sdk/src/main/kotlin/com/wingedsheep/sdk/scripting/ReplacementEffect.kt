@@ -677,19 +677,46 @@ data class ReplaceLifeGain(
 }
 
 /**
- * Modify life gain amount.
- * Example: Alhammarret's Archive (double life gain)
+ * Modify life gain amount. Combines multiplicative and additive modifications:
+ * `newAmount = (originalAmount * multiplier) + modifier`, clamped to ≥ 0.
+ *
+ * Examples:
+ * - Alhammarret's Archive — double life gain: `ModifyLifeGain(multiplier = 2)`
+ * - Leyline of Hope — "you gain that much life plus 1 instead":
+ *     `ModifyLifeGain(modifier = 1, appliesTo = LifeGainEvent(player = Player.You))`
+ *
+ * @param multiplier Multiplicative factor applied first (default 2 to preserve the
+ *        historical Alhammarret's Archive default).
+ * @param modifier Flat amount added after multiplication (default 0 = unchanged).
  */
 @SerialName("ModifyLifeGain")
 @Serializable
 data class ModifyLifeGain(
     val multiplier: Int = 2,
+    val modifier: Int = 0,
     override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
 ) : ReplacementEffect {
-    override val description: String = when (multiplier) {
-        2 -> "If ${appliesTo.description}, gain twice that much life instead"
-        0 -> "If ${appliesTo.description}, gain no life instead"
-        else -> "If ${appliesTo.description}, gain $multiplier times that much life instead"
+    override val description: String = buildString {
+        append("If ")
+        append(appliesTo.description)
+        append(", gain ")
+        when {
+            multiplier == 0 && modifier == 0 -> append("no life")
+            multiplier == 1 && modifier > 0 -> append("that much life plus $modifier")
+            multiplier == 1 && modifier < 0 -> append("${-modifier} less life")
+            multiplier != 1 && modifier == 0 -> when (multiplier) {
+                2 -> append("twice that much life")
+                else -> append("$multiplier times that much life")
+            }
+            else -> {
+                when (multiplier) {
+                    2 -> append("twice that much life")
+                    else -> append("$multiplier times that much life")
+                }
+                if (modifier > 0) append(" plus $modifier") else append(" minus ${-modifier}")
+            }
+        }
+        append(" instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {

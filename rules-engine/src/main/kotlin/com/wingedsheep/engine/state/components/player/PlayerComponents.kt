@@ -167,7 +167,23 @@ data class MulliganStateComponent(
     /** Number of mulligans taken so far */
     val mulligansTaken: Int = 0,
     /** Whether the player has decided to keep their current hand */
-    val hasKept: Boolean = false
+    val hasKept: Boolean = false,
+    /**
+     * Whether the Leyline phase has already been initiated for this player.
+     *
+     * The leyline phase runs once per player after all mulligans and bottoming complete:
+     * the engine populates [pendingLeylineCardIds] with the leyline cards currently in this
+     * player's opening hand and walks each one through a yes/no decision. Setting this flag
+     * prevents the phase from being re-initiated if the player draws another leyline card
+     * into hand later (per CR 103.5, the opening-hand window closes once the first turn begins).
+     */
+    val leylinePhaseStarted: Boolean = false,
+    /**
+     * Card entity IDs in this player's opening hand that still need a leyline yes/no decision.
+     * Drained as the player resolves each prompt (yes = card moved to battlefield, no = card
+     * stays in hand). The leyline phase for this player is "complete" once the list is empty.
+     */
+    val pendingLeylineCardIds: List<EntityId> = emptyList()
 ) : Component {
     companion object {
         const val STARTING_HAND_SIZE = 7
@@ -193,6 +209,11 @@ data class MulliganStateComponent(
      * Record that the player keeps their hand.
      */
     fun keep(): MulliganStateComponent = copy(hasKept = true)
+
+    /**
+     * Whether this player still has leyline cards awaiting a yes/no choice.
+     */
+    val hasPendingLeylineChoices: Boolean get() = pendingLeylineCardIds.isNotEmpty()
 }
 
 /**

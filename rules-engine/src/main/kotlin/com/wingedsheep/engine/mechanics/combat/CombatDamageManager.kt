@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.LifeGainModifiers
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
@@ -1343,11 +1344,16 @@ internal class CombatDamageManager(
             if (DamageUtils.isLifeGainPrevented(newState, controllerId)) continue
 
             val currentLife = newState.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: continue
-            val newLife = currentLife + totalDamage
+            // Route through the shared replacement pipeline so Alhammarret's Archive,
+            // Leyline of Hope, etc. apply to combat lifelink the same way they do to
+            // noncombat lifelink (DamageUtils) and direct GainLife effects.
+            val modifiedAmount = LifeGainModifiers.apply(newState, controllerId, totalDamage)
+            if (modifiedAmount <= 0) continue
+            val newLife = currentLife + modifiedAmount
             newState = newState.updateEntity(controllerId) { container ->
                 container.with(LifeTotalComponent(newLife))
             }
-            newState = DamageUtils.markLifeGainedThisTurn(newState, controllerId, totalDamage)
+            newState = DamageUtils.markLifeGainedThisTurn(newState, controllerId, modifiedAmount)
             lifelinkEvents.add(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
         }
 

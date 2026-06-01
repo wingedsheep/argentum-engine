@@ -11,7 +11,9 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -41,6 +43,11 @@ class EngineServices(
 ) {
     init {
         DamageUtils.cardRegistry = cardRegistry
+        // ZoneTransitionService.applyBattlefieldEntry registers a permanent's static abilities
+        // and replacement effects on entry, so any code that moves a card to the battlefield
+        // (reanimation, exile returns, leyline starts) gets the same wiring the cast pipeline
+        // does. The handler is stateless beyond the registry, so a singleton is sufficient.
+        ZoneTransitionService.staticAbilityHandler = StaticAbilityHandler(cardRegistry)
     }
     val effectExecutorRegistry = EffectExecutorRegistry(cardRegistry = cardRegistry)
     val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
@@ -59,7 +66,7 @@ class EngineServices(
     val grantedKeywordResolver = GrantedKeywordResolver(cardRegistry)
     val alternativePaymentHandler = AlternativePaymentHandler(grantedKeywordResolver)
     val costHandler = CostHandler()
-    val mulliganHandler = MulliganHandler()
+    val mulliganHandler = MulliganHandler(cardRegistry)
     val conditionEvaluator = ConditionEvaluator()
     val targetValidator = TargetValidator()
     val targetFinder = TargetFinder()

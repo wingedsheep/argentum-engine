@@ -1,12 +1,14 @@
 package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import java.util.UUID
 
 /**
  * Handles mulligan-related actions during game setup.
@@ -24,7 +26,15 @@ import com.wingedsheep.sdk.model.EntityId
  * - [KeepHand]: Player accepts current hand
  * - [BottomCards]: Player puts cards on bottom after keeping
  */
-class MulliganHandler {
+class MulliganHandler(
+    /**
+     * Card registry used to look up [com.wingedsheep.sdk.model.CardDefinition]s during the
+     * leyline phase. Mulligan and bottoming themselves don't need the registry — it's only
+     * consulted when scanning a player's opening hand for leyline-marked cards once all
+     * players have kept and bottomed.
+     */
+    private val cardRegistry: CardRegistry? = null
+) {
 
     /**
      * Check if the game is still in mulligan phase.
@@ -278,5 +288,164 @@ class MulliganHandler {
         return state.getEntity(playerId)
             ?.get<MulliganStateComponent>()
             ?: MulliganStateComponent()
+    }
+
+    // =========================================================================
+    // Leyline phase
+    // =========================================================================
+
+    /**
+     * Whether any player still has pending leyline yes/no decisions, OR the leyline phase
+     * hasn't been initiated yet for at least one player (but mulligans are complete). This
+     * blocks the transition to turn 1 — see [com.wingedsheep.engine.handlers.actions.mulligan.KeepHandHandler]
+     * and `BottomCardsHandler.checkMulliganCompletion`.
+     */
+    fun isInLeylinePhase(state: GameState): Boolean {
+        return state.turnOrder.any { playerId ->
+            val mullState = getMulliganState(state, playerId)
+            mullState.hasPendingLeylineChoices
+        }
+    }
+
+    /**
+     * Populate each player's [MulliganStateComponent.pendingLeylineCardIds] by scanning
+     * their opening hand for cards whose [com.wingedsheep.sdk.model.CardScript.mayStartOnBattlefield]
+     * is true. Idempotent — sets `leylinePhaseStarted = true` so re-entry into the mulligan
+     * completion path doesn't re-scan.
+     *
+     * Returns the updated state. Callers should then call [tryStartNextLeylineDecision] to
+     * see whether a yes/no decision needs to be paused on.
+     */
+    fun initiateLeylinePhase(state: GameState): GameState {
+        val registry = cardRegistry ?: return state
+        var newState = state
+        for (playerId in newState.turnOrder) {
+            val mullState = getMulliganState(newState, playerId)
+            if (mullState.leylinePhaseStarted) continue
+
+            val hand = newState.getHand(playerId)
+            val leylineCardIds = hand.filter { cardId ->
+                val cardComponent = newState.getEntity(cardId)?.get<CardComponent>() ?: return@filter false
+                val cardDef = registry.getCard(cardComponent.cardDefinitionId) ?: return@filter false
+                cardDef.script.mayStartOnBattlefield
+            }
+
+            val updatedMullState = mullState.copy(
+                leylinePhaseStarted = true,
+                pendingLeylineCardIds = leylineCardIds
+            )
+            newState = newState.updateEntity(playerId) { container ->
+                container.with(updatedMullState)
+            }
+        }
+        return newState
+    }
+
+    /**
+     * Find the next leyline yes/no decision that needs to be asked, in turn order starting
+     * with the active player (CR 103.6: once mulligans are done, the starting player takes
+     * their opening-hand actions first, then each other player in turn order). Returns null
+     * if no decisions remain.
+     *
+     * The returned pair is `(playerId, cardId)` — the player making the choice and the
+     * specific leyline card in their hand.
+     */
+    fun getNextLeylineChoice(state: GameState): Pair<EntityId, EntityId>? {
+        val activePlayerId = state.activePlayerId
+        val ordered = if (activePlayerId != null && state.turnOrder.contains(activePlayerId)) {
+            val idx = state.turnOrder.indexOf(activePlayerId)
+            state.turnOrder.subList(idx, state.turnOrder.size) + state.turnOrder.subList(0, idx)
+        } else {
+            state.turnOrder
+        }
+        for (playerId in ordered) {
+            val mullState = getMulliganState(state, playerId)
+            val firstLeyline = mullState.pendingLeylineCardIds.firstOrNull() ?: continue
+            return playerId to firstLeyline
+        }
+        return null
+    }
+
+    /**
+     * Try to advance the game past the mulligan/leyline setup.
+     *
+     * Called from [com.wingedsheep.engine.handlers.actions.mulligan.KeepHandHandler] and
+     * [com.wingedsheep.engine.handlers.actions.mulligan.BottomCardsHandler] once their own
+     * work completes. Three outcomes:
+     *  - Mulligans/bottoming still pending → return the carried-through events; the next
+     *    KeepHand / BottomCards action will resume the flow.
+     *  - A leyline yes/no is still needed → pause with that decision.
+     *  - Setup is done → call [TurnManager.advanceStep] to start turn 1.
+     *
+     * Centralising the logic here keeps the two handlers from drifting and gives the leyline
+     * phase a single point of truth.
+     */
+    fun tryAdvancePastMulliganPhase(
+        state: GameState,
+        events: List<GameEvent>,
+        turnManager: TurnManager
+    ): ExecutionResult {
+        if (isInMulliganPhase(state) || needsBottomCards(state)) {
+            return ExecutionResult.success(state, events)
+        }
+
+        val stateWithLeylineScan = initiateLeylinePhase(state)
+        val nextLeyline = getNextLeylineChoice(stateWithLeylineScan)
+        if (nextLeyline != null) {
+            val (playerId, cardId) = nextLeyline
+            val (decision, continuation) = createLeylineDecision(stateWithLeylineScan, playerId, cardId)
+                ?: return ExecutionResult.success(stateWithLeylineScan, events)
+            val pausedState = stateWithLeylineScan
+                .pushContinuation(continuation)
+                .withPendingDecision(decision)
+            return ExecutionResult.paused(
+                pausedState,
+                decision,
+                events + DecisionRequestedEvent(
+                    decisionId = decision.id,
+                    playerId = playerId,
+                    decisionType = "YES_NO",
+                    prompt = decision.prompt
+                )
+            )
+        }
+
+        val advanceResult = turnManager.advanceStep(stateWithLeylineScan)
+        return ExecutionResult.success(
+            advanceResult.newState,
+            events + advanceResult.events
+        )
+    }
+
+    /**
+     * Build the [YesNoDecision] + [LeylineDecisionContinuation] pair for a specific leyline
+     * card in a player's opening hand. The caller is responsible for pushing the continuation
+     * and setting the pending decision on state.
+     *
+     * Returns null when the card no longer has a [CardComponent] (defensive — shouldn't happen).
+     */
+    fun createLeylineDecision(state: GameState, playerId: EntityId, leylineCardId: EntityId): Pair<YesNoDecision, LeylineDecisionContinuation>? {
+        val cardName = state.getEntity(leylineCardId)?.get<CardComponent>()?.name ?: return null
+        val decisionId = "leyline-${leylineCardId.value}-${UUID.randomUUID()}"
+        val decision = YesNoDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Begin the game with $cardName on the battlefield?",
+            context = DecisionContext(
+                sourceId = leylineCardId,
+                sourceName = cardName,
+                phase = DecisionPhase.CASTING
+            ),
+            yesText = "Yes",
+            noText = "No",
+            hint = "Leyline — If this card is in your opening hand, you may begin the game with it on the battlefield."
+        )
+        val continuation = LeylineDecisionContinuation(
+            decisionId = decisionId,
+            playerId = playerId,
+            leylineCardId = leylineCardId,
+            cardName = cardName
+        )
+        return decision to continuation
     }
 }

@@ -276,6 +276,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CastAnyNumberFromCollectionContinuation::class)
         subclass(StaticDrawReplacementContinuation::class)
         subclass(TokenCreationReplacementContinuation::class)
+        subclass(LeylineDecisionContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

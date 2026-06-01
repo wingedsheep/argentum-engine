@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.LifeGainModifiers
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -50,12 +51,18 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
             return EffectResult.success(state)
         }
 
-        // Apply life gain
-        val newLife = currentLife + effect.amount
+        // Apply ModifyLifeGain replacements before any life is actually gained
+        // (Alhammarret's Archive, Leyline of Hope).
+        val modifiedAmount = LifeGainModifiers.apply(state, ownerId, effect.amount)
+        if (modifiedAmount <= 0) {
+            return EffectResult.success(state)
+        }
+
+        val newLife = currentLife + modifiedAmount
         var newState = state.updateEntity(ownerId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
-        newState = DamageUtils.markLifeGainedThisTurn(newState, ownerId, effect.amount)
+        newState = DamageUtils.markLifeGainedThisTurn(newState, ownerId, modifiedAmount)
 
         return EffectResult.success(
             newState,
