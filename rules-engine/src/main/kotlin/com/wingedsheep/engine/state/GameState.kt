@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.event.GlobalGrantedTriggeredAbility
 import com.wingedsheep.engine.event.GrantedActivatedAbility
+import com.wingedsheep.engine.event.GrantedKeywordAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Color
@@ -82,6 +83,9 @@ data class GameState(
 
     /** Activated abilities granted to entities temporarily (e.g., Run Wild) */
     val grantedActivatedAbilities: List<GrantedActivatedAbility> = emptyList(),
+
+    /** Cast-keyword abilities granted to card entities temporarily (e.g., Songcrafter Mage grants Harmonize) */
+    val grantedKeywordAbilities: List<GrantedKeywordAbility> = emptyList(),
 
     /** Global triggered abilities not attached to any permanent (e.g., False Cure) */
     val globalGrantedTriggeredAbilities: List<GlobalGrantedTriggeredAbility> = emptyList(),

@@ -2362,6 +2362,20 @@ class ClientStateTransformer(
                 )
             )
         }
+        // Surface a temporarily-granted cast keyword (Songcrafter Mage grants harmonize to an
+        // instant/sorcery in the graveyard). The grant is real game state but not reflected in
+        // the card's printed text, so a badge shows the player the card is now castable.
+        for (granted in state.grantedKeywordAbilities) {
+            if (granted.entityId != entityId) continue
+            effects.add(
+                ClientCardEffect(
+                    effectId = "granted_kw_${granted.ability.keyword?.name ?: "keyword"}",
+                    name = "Granted Ability",
+                    description = granted.ability.description,
+                    icon = "granted-ability"
+                )
+            )
+        }
 
         return effects
     }

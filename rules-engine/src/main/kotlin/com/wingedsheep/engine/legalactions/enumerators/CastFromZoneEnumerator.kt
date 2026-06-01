@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 
@@ -1175,9 +1176,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val cardComponent = container.get<CardComponent>() ?: continue
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
 
-            val harmonize = cardDef.keywordAbilities
-                .filterIsInstance<KeywordAbility.Harmonize>()
-                .firstOrNull() ?: continue
+            // Harmonize may be printed on the card or granted at runtime (Songcrafter Mage).
+            val harmonize = HarmonizeGrants.effectiveHarmonize(state, cardId, cardDef) ?: continue
 
             // Timing: instants at instant speed, sorceries at sorcery speed (all current
             // Harmonize cards are sorceries, but gate generically).

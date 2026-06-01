@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.EffectHandler
+import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -1305,11 +1306,11 @@ class StackResolver(
                 val pausedResolvedScript = spellComponent.faceIndex?.let { pausedCardDef?.cardFaces?.getOrNull(it)?.script }
                     ?: pausedCardDef?.script
                 val pausedSelfExile = pausedResolvedScript?.selfExileOnResolve == true
-                // Flashback and Harmonize both cast from the graveyard and exile on resolution.
+                // Flashback (printed) or Harmonize (printed or granted — Songcrafter Mage): a
+                // graveyard cast exiles on resolution instead of returning to the graveyard.
                 val pausedFlashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-                    pausedCardDef?.keywordAbilities?.any {
-                        it is KeywordAbility.Flashback || it is KeywordAbility.Harmonize
-                    } == true
+                    (pausedCardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true ||
+                        HarmonizeGrants.effectiveHarmonize(state, spellId, pausedCardDef) != null)
                 val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
                 val pausedExileAfterResolve = pausedExileAfterResolveComp != null
                 val pausedAdventureFaceExile = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE &&
@@ -1405,11 +1406,11 @@ class StackResolver(
         val resolvedScript = spellComponent.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.script }
             ?: cardDef?.script
         val selfExile = resolvedScript?.selfExileOnResolve == true
-        // Flashback and Harmonize both cast from the graveyard and exile on resolution.
+        // Flashback (printed) or Harmonize (printed or granted — Songcrafter Mage): a graveyard
+        // cast exiles on resolution instead of returning to the graveyard.
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            cardDef?.keywordAbilities?.any {
-                it is KeywordAbility.Flashback || it is KeywordAbility.Harmonize
-            } == true
+            (cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true ||
+                HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
         val exileAfterResolveComp = newState.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         val exileAfterResolve = exileAfterResolveComp != null
         // Adventure face (CR 715.3d): when an Adventure resolves, exile it instead of putting
@@ -1568,11 +1569,11 @@ class StackResolver(
 
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
-        // Flashback and Harmonize both cast from the graveyard and exile on resolution.
+        // Flashback (printed) or Harmonize (printed or granted — Songcrafter Mage): a graveyard
+        // cast exiles on resolution instead of returning to the graveyard.
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            cardDef?.keywordAbilities?.any {
-                it is KeywordAbility.Flashback || it is KeywordAbility.Harmonize
-            } == true
+            (cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true ||
+                HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
         val exileAfterResolveComp = state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         // Goliath Daydreamer-style components only exile on actual resolution; if the spell
         // fizzles or is countered they go to graveyard normally.

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -218,8 +219,9 @@ class CastZoneResolver(
     }
 
     /**
-     * Check if a card in the graveyard has a Harmonize keyword ability, allowing it to
-     * be cast from the graveyard for its harmonize cost (and exiled on resolution).
+     * Check if a card in the graveyard has a Harmonize keyword ability — printed on the card or
+     * granted at runtime (Songcrafter Mage) — allowing it to be cast from the graveyard for its
+     * harmonize cost (and exiled on resolution).
      */
     fun hasHarmonizePermission(
         state: GameState,
@@ -229,8 +231,8 @@ class CastZoneResolver(
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         if (cardId !in state.getZone(graveyardZone)) return false
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
-        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
-        return cardDef.keywordAbilities.any { it is KeywordAbility.Harmonize }
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        return HarmonizeGrants.effectiveHarmonize(state, cardId, cardDef) != null
     }
 
     /**

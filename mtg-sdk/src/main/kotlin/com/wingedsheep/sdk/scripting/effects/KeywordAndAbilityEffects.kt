@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -157,6 +158,38 @@ data class GrantActivatedAbilityEffect(
         val newAbility = ability.applyTextReplacement(replacer)
         return if (newAbility !== ability) copy(ability = newAbility) else this
     }
+}
+
+/**
+ * Grant Harmonize (CR 702.180) to a target instant or sorcery card in a graveyard.
+ * "Target instant or sorcery card in your graveyard gains harmonize until end of turn. Its
+ * harmonize cost is equal to its mana cost." — Songcrafter Mage.
+ *
+ * Unlike the other ability-grant effects (which target battlefield creatures), this grants a
+ * *graveyard-cast* keyword ability that the cast-from-graveyard enumerator and the
+ * alternative-payment handler consult through the runtime granted-keyword record. The grant is
+ * keyed to the card entity, so it survives the graveyard → stack move and drives the
+ * exile-on-resolution clause for the spell cast this way.
+ *
+ * @property target The instant or sorcery card (in a graveyard) gaining harmonize
+ * @property cost The harmonize cost. `null` (the default) means "equal to the card's mana cost"
+ *   per Songcrafter Mage; a non-null value grants a fixed harmonize cost for any future card.
+ * @property duration How long the grant lasts (until end of turn for Songcrafter Mage)
+ */
+@SerialName("GrantHarmonize")
+@Serializable
+data class GrantHarmonizeEffect(
+    val target: EffectTarget,
+    val cost: ManaCost? = null,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains harmonize")
+        append(if (cost != null) " $cost" else " (its harmonize cost is equal to its mana cost)")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**

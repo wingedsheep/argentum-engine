@@ -251,17 +251,18 @@ the overwhelming majority of the set.
     the Saga's post-III sacrifice).
     → **Thunder of Unity**
 
-22. **Grant Harmonize to a graveyard card until end of turn.** ❌ **NOT DONE — blocks Songcrafter Mage.**
-    Harmonize today is only a *static* `KeywordAbility.Harmonize(cost)` printed on a card; the
-    cast-from-graveyard path (`CastFromZoneEnumerator.enumerateHarmonize`) and the payment path
-    (`AlternativePaymentHandler.hasHarmonize`, 3 call sites) read it straight off `cardDef.keywordAbilities`.
-    Songcrafter Mage needs to *grant* harmonize at resolution to a chosen instant/sorcery in your
-    graveyard, **until end of turn**, with the granted harmonize cost equal to that card's mana cost.
-    That requires a runtime "granted harmonize" component (cost + EndOfTurn duration), the enumerator
-    and payment handler consulting it alongside the static keyword, end-of-turn cleanup, and the
-    harmonize-creature power reduction interacting with the granted cost. This is an `add-feature`-sized,
-    multi-layer change (SDK effect + component → enumerator → payment handler → cleanup → client), not a
-    single-card composition, so Songcrafter Mage is deferred until that feature lands.
+22. **Runtime-granted Harmonize (Rule 702.180).** ✅ **DONE.** "Target instant or sorcery card in your
+    graveyard gains harmonize until end of turn. Its harmonize cost is equal to its mana cost."
+    Harmonize was only a *printed* `KeywordAbility.Harmonize(cost)` read straight off
+    `cardDef.keywordAbilities` by the cast-from-graveyard enumerator and the alternative-payment
+    handler, so a card couldn't grant it. Added a runtime `GrantedKeywordAbility(entityId, ability,
+    duration)` record on `GameState` (mirroring `GrantedActivatedAbility`), an `Effects.GrantHarmonize`
+    effect + executor (cost defaults to the targeted card's own mana cost), end-of-turn cleanup, and a
+    single `HarmonizeGrants.effectiveHarmonize` resolver that every read site now consults
+    (enumerator, `CastZoneResolver`/`CastSpellHandler` cost + X-payment, `AlternativePaymentHandler`
+    tap-for-power reduction, and `StackResolver`'s exile-on-resolution clause). The grant is keyed to
+    the card entity so it survives the graveyard → stack move; a "Granted Ability" badge surfaces it on
+    the client. Locked in by `SongcrafterMageTest`.
     → **Songcrafter Mage**
 
 ---

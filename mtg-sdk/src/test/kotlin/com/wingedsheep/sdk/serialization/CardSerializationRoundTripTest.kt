@@ -13,6 +13,9 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GrantHarmonizeEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
@@ -92,6 +95,31 @@ class CardSerializationRoundTripTest : DescribeSpec({
             deserialized.name shouldBe "Siege-Gang Commander"
             deserialized.script.triggeredAbilities.size shouldBe 1
             deserialized.script.triggeredAbilities[0].effect.shouldBeInstanceOf<CreateTokenEffect>()
+        }
+
+        it("should round-trip a GrantHarmonize effect (Songcrafter Mage)") {
+            val card = card("Songcrafter Mage") {
+                manaCost = "{G}{U}{R}"
+                typeLine = "Creature — Human Bard"
+                power = 3
+                toughness = 2
+
+                triggeredAbility {
+                    trigger = Triggers.EntersBattlefield
+                    target = TargetObject(filter = TargetFilter.InstantOrSorceryInGraveyard.ownedByYou())
+                    effect = Effects.GrantHarmonize(EffectTarget.ContextTarget(0))
+                }
+            }
+
+            val serialized = CardLoader.toJson(card)
+            serialized shouldContain "GrantHarmonize"
+
+            val deserialized = CardLoader.fromJson(serialized)
+            val effect = deserialized.script.triggeredAbilities[0].effect
+                .shouldBeInstanceOf<GrantHarmonizeEffect>()
+            // Default: cost is null (equal to the card's own mana cost) and grant lasts EOT.
+            effect.cost shouldBe null
+            effect.duration shouldBe Duration.EndOfTurn
         }
 
         it("should round-trip a composite effect") {

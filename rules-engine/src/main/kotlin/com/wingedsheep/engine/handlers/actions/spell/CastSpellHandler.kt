@@ -14,6 +14,7 @@ import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
+import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
@@ -330,12 +331,13 @@ class CastSpellHandler(
         } else if (action.useAlternativeCost && cardDef != null) {
             // Check flashback cost first (card in graveyard with Flashback keyword)
             val flashbackAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Flashback>().firstOrNull()
-            val harmonizeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Harmonize>().firstOrNull()
+            // Harmonize may be printed on the card or granted at runtime (Songcrafter Mage).
+            val harmonizeAbility = HarmonizeGrants.effectiveHarmonize(state, action.cardId, cardDef)
             if (flashbackAbility != null && zoneResolver.hasFlashbackPermission(state, action.playerId, action.cardId)) {
                 costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, flashbackAbility.cost, action.playerId)
             } else if (harmonizeAbility != null && zoneResolver.hasHarmonizePermission(state, action.playerId, action.cardId)) {
-                // Harmonize cost (card in graveyard with Harmonize keyword). The per-creature
-                // power reduction is applied afterward via alternativePayment.
+                // Harmonize cost (printed or granted). The per-creature power reduction is
+                // applied afterward via alternativePayment.
                 costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, harmonizeAbility.cost, action.playerId)
             } else {
                 // Check warp cost (hand only — CR 702.185a). Re-casts from exile pay the regular mana cost.
@@ -447,7 +449,8 @@ class CastSpellHandler(
                 action.alternativePayment,
                 cardDef,
                 state,
-                action.playerId
+                action.playerId,
+                action.cardId
             )
         } else {
             effectiveCost
@@ -585,7 +588,8 @@ class CastSpellHandler(
         val xValue = action.xValue ?: 0
         if (xValue <= 0) return xValue
         val creatureId = action.alternativePayment?.harmonizeCreature ?: return xValue
-        if (cardDef == null || cardDef.keywordAbilities.none { it is KeywordAbility.Harmonize }) return xValue
+        // Harmonize may be printed or granted at runtime (Songcrafter Mage).
+        if (HarmonizeGrants.effectiveHarmonize(state, action.cardId, cardDef) == null) return xValue
         if (!zoneResolver.hasHarmonizePermission(state, action.playerId, action.cardId)) return xValue
         // Mirror applyHarmonize's validity gate: a creature that wouldn't actually be tapped
         // grants no reduction, so payment must not assume one.
@@ -1307,7 +1311,8 @@ class CastSpellHandler(
         } else if (action.useAlternativeCost && cardDef != null) {
             // Check flashback cost first
             val flashbackAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Flashback>().firstOrNull()
-            val harmonizeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Harmonize>().firstOrNull()
+            // Harmonize may be printed on the card or granted at runtime (Songcrafter Mage).
+            val harmonizeAbility = HarmonizeGrants.effectiveHarmonize(currentState, action.cardId, cardDef)
             if (flashbackAbility != null && zoneResolver.hasFlashbackPermission(currentState, action.playerId, action.cardId)) {
                 costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, flashbackAbility.cost, action.playerId)
             } else if (harmonizeAbility != null && zoneResolver.hasHarmonizePermission(currentState, action.playerId, action.cardId)) {
@@ -1867,7 +1872,8 @@ class CastSpellHandler(
                 effectiveCost,
                 action.alternativePayment,
                 action.playerId,
-                cardDef
+                cardDef,
+                action.cardId
             )
             effectiveCost = altPaymentResult.reducedCost
             currentState = altPaymentResult.newState

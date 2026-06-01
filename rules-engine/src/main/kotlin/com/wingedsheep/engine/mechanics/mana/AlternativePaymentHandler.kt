@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -54,6 +55,8 @@ class AlternativePaymentHandler(
      * @param payment The player's alternative payment choices
      * @param playerId The player making the payment
      * @param cardDef The card being cast (to verify it has Delve/Convoke)
+     * @param cardId The spell's entity id, used to honor a runtime-granted Harmonize
+     *   (Songcrafter Mage) keyed to that entity. Null falls back to the printed keyword only.
      * @return Result containing reduced cost, updated state, and generated events
      */
     fun apply(
@@ -61,7 +64,8 @@ class AlternativePaymentHandler(
         cost: ManaCost,
         payment: AlternativePaymentChoice,
         playerId: EntityId,
-        cardDef: CardDefinition
+        cardDef: CardDefinition,
+        cardId: EntityId? = null
     ): AlternativePaymentResult {
         var currentState = state
         var reducedCost = cost
@@ -91,7 +95,7 @@ class AlternativePaymentHandler(
 
         // Handle Harmonize — tap one creature you control to reduce the generic cost by its power.
         val harmonizeCreature = payment.harmonizeCreature
-        if (harmonizeCreature != null && hasHarmonize(cardDef)) {
+        if (harmonizeCreature != null && hasHarmonize(state, cardId, cardDef)) {
             val harmonizeResult = applyHarmonize(currentState, reducedCost, harmonizeCreature, playerId)
             currentState = harmonizeResult.newState
             reducedCost = harmonizeResult.reducedCost
@@ -244,8 +248,16 @@ class AlternativePaymentHandler(
         return AlternativePaymentResult(reducedCost, newState, events)
     }
 
-    private fun hasHarmonize(cardDef: CardDefinition): Boolean =
-        cardDef.keywordAbilities.any { it is KeywordAbility.Harmonize }
+    /**
+     * True when the card effectively has Harmonize — printed on [cardDef] or granted at runtime
+     * to [cardId] (Songcrafter Mage). Falls back to the printed keyword when state/cardId are
+     * unavailable.
+     */
+    private fun hasHarmonize(state: GameState?, cardId: EntityId?, cardDef: CardDefinition): Boolean {
+        if (cardDef.keywordAbilities.any { it is KeywordAbility.Harmonize }) return true
+        if (state == null || cardId == null) return false
+        return HarmonizeGrants.effectiveHarmonize(state, cardId, cardDef) != null
+    }
 
     /**
      * Reduce generic mana cost by specified amount.
@@ -298,7 +310,8 @@ class AlternativePaymentHandler(
         payment: AlternativePaymentChoice,
         cardDef: CardDefinition,
         state: GameState? = null,
-        playerId: EntityId? = null
+        playerId: EntityId? = null,
+        cardId: EntityId? = null
     ): ManaCost {
         var reducedCost = cost
 
@@ -320,7 +333,7 @@ class AlternativePaymentHandler(
         }
 
         val harmonizeCreature = payment.harmonizeCreature
-        if (harmonizeCreature != null && state != null && hasHarmonize(cardDef)) {
+        if (harmonizeCreature != null && state != null && hasHarmonize(state, cardId, cardDef)) {
             val power = (state.projectedState.getPower(harmonizeCreature) ?: 0).coerceAtLeast(0)
             if (power > 0) reducedCost = reduceGenericCost(reducedCost, power)
         }

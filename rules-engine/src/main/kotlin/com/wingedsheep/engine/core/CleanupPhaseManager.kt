@@ -485,6 +485,15 @@ class CleanupPhaseManager(
             newState = newState.copy(grantedActivatedAbilities = remainingGrants)
         }
 
+        // 7b. Expire granted cast-keyword abilities (e.g. Songcrafter Mage's harmonize) with
+        // EndOfTurn duration.
+        if (newState.grantedKeywordAbilities.isNotEmpty()) {
+            val remainingGrants = newState.grantedKeywordAbilities.filter { grant ->
+                grant.duration !is Duration.EndOfTurn
+            }
+            newState = newState.copy(grantedKeywordAbilities = remainingGrants)
+        }
+
         // 8. Expire global granted triggered abilities with EndOfTurn duration
         if (newState.globalGrantedTriggeredAbilities.isNotEmpty()) {
             val remainingGrants = newState.globalGrantedTriggeredAbilities.filter { grant ->

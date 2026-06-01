@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantHarmonizeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantToxicEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
@@ -1455,6 +1456,20 @@ object Effects {
         target: EffectTarget = EffectTarget.ContextTarget(0),
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantToxicEffect(amount, target, duration)
+
+    /**
+     * Grant Harmonize (CR 702.180) to a target instant or sorcery card in a graveyard.
+     * "Target instant or sorcery card in your graveyard gains harmonize until end of turn. Its
+     * harmonize cost is equal to its mana cost." — Songcrafter Mage.
+     *
+     * [cost] defaults to `null`, meaning the harmonize cost equals the card's own mana cost;
+     * pass a [ManaCost] to grant a fixed harmonize cost instead.
+     */
+    fun GrantHarmonize(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        cost: ManaCost? = null,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantHarmonizeEffect(target, cost, duration)
 
     /**
      * Grant "hexproof from the chosen color" to a target. Must run inside a
