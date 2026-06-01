@@ -10,7 +10,7 @@ import { ManaCost } from '@/components/ui/ManaSymbols.tsx'
 import { HoverCardPreview } from '@/components/ui/HoverCardPreview.tsx'
 import {
   useResponsiveContext,
-  hasMultipleCastingOptions,
+  shouldShowCastModal as computeShouldShowCastModal,
   getPTColor,
   getCounterStatModifier,
   hasStatCounters,
@@ -402,12 +402,11 @@ function GameCardImpl({
            (action.type === 'PlotCard' && action.cardId === card.id)
   }), [legalActions, card.id])
   const playableAction = playableActions[0]
-  // Show modal if multiple legal actions OR if card has multiple potential options (e.g., morph + normal cast)
-  const hasMultiplePotentialOptions = hasMultipleCastingOptions(playableActions)
-  // Also show modal for cycling lands where play land is unavailable (so player sees grayed-out "Play land")
-  const isCyclingLandWithoutPlayLand = card.cardTypes.includes('LAND') &&
-    playableActions.length === 1 && (playableActions[0]?.action.type === 'CycleCard' || playableActions[0]?.action.type === 'TypecycleCard')
-  const shouldShowCastModal = playableActions.length > 1 || (hasMultiplePotentialOptions && playableActions.length > 0) || isCyclingLandWithoutPlayLand
+  // Open the action menu when the card has more than one way to be played — including cards
+  // whose only affordable option is an alternative cast (cycling/typecycling/plot), so the
+  // player still sees the grayed-out "Cast"/"Play land" and can choose deliberately or cancel
+  // instead of silently auto-firing the lone affordable action.
+  const shouldShowCastModal = computeShouldShowCastModal(playableActions)
   const canDragToPlay = (inHand || enableDragToCast) && playableAction && !isInCombatMode && !isInTargetingMode
 
   // Determine mana cost display for cards the player can cast directly from a face-up zone

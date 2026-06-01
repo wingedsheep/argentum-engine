@@ -198,6 +198,38 @@ export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): 
 }
 
 /**
+ * Decide whether dragging a card to play should open the action menu (so the player
+ * deliberately picks a casting mode) rather than immediately firing the single available
+ * action.
+ *
+ * The menu must appear whenever a card has more than one way to be played — *even when some
+ * of those ways are currently unaffordable*. The server omits an unaffordable normal cast
+ * from `legalActions`, so a card you can only afford to cycle arrives with just its
+ * `CycleCard` action. But a non-land card that can be cycled/typecycled/plotted always carries
+ * an implicit, grayed-out "Cast" option in the menu (see `ActionMenu.buildActionOptions`), and
+ * a land that already played a land this turn carries a grayed-out "Play land". Treat both as
+ * multi-option so we never silently cycle a card the player might have meant to hard-cast (or
+ * cancel). (Whether the grayed-out button reads "Cast" or "Play land" is decided later, by
+ * `ActionMenu.buildActionOptions`, from the card's types — it doesn't affect this decision.)
+ *
+ * @param cardLegalActions Legal actions for this specific card from the server
+ */
+export function shouldShowCastModal(cardLegalActions: LegalActionInfo[]): boolean {
+  if (cardLegalActions.length === 0) return false
+  // More than one legal action, or multiple casting variants (morph + normal cast, etc.).
+  if (cardLegalActions.length > 1) return true
+  if (hasMultipleCastingOptions(cardLegalActions)) return true
+  // A lone alternative play mode still implies a second (possibly-unaffordable) option the
+  // menu surfaces as a grayed-out button: "Play land" for lands, "Cast" for everything else.
+  return cardLegalActions.some(
+    (a) =>
+      a.action.type === 'CycleCard' ||
+      a.action.type === 'TypecycleCard' ||
+      a.action.type === 'PlotCard'
+  )
+}
+
+/**
  * Handle image load error by falling back to Scryfall API.
  */
 export function handleImageError(
