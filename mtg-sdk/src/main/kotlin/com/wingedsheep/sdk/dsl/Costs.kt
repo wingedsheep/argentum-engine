@@ -62,6 +62,11 @@ object Costs {
     fun PayLife(amount: Int): AbilityCost =
         AbilityCost.PayLife(amount)
 
+    /**
+     * Pay life equal to the ability's X value (e.g. "Pay X life" alongside an `{X}` mana cost).
+     */
+    val PayXLife: AbilityCost = AbilityCost.PayXLife
+
     // =========================================================================
     // Sacrifice Costs
     // =========================================================================

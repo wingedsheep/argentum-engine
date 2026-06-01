@@ -349,6 +349,22 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         }
     }
 
+    /**
+     * Pay a variable amount of life equal to the ability's X value.
+     * Example: "{X}{B}, {T}, Pay X life: ..." for Krumar Initiate.
+     *
+     * Mirrors [ExileXFromGraveyard] / [TapXPermanents]: the engine reads X from the
+     * activation's chosen X (the `{X}` mana symbol) and pays that much life. X can be 0.
+     * The legal-action enumerator caps X so the player can't reduce their own life to 0
+     * or below via this cost.
+     */
+    @SerialName("CostPayXLife")
+    @Serializable
+    data object PayXLife : AbilityCost {
+        override val description: String = "Pay X life"
+        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
+    }
+
     /** Multiple costs combined */
     @SerialName("CostComposite")
     @Serializable

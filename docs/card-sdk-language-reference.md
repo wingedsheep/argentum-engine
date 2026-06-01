@@ -108,6 +108,9 @@ the `CardDefinition`.
 - `Costs.Untap` — `{Q}`; untap this permanent.
 - `Costs.Mana("{2}{U}")` — pay the given mana cost (string or `ManaCost`).
 - `Costs.PayLife(amount)` — pay N life.
+- `Costs.PayXLife` — pay life equal to the ability's X value (e.g. "{X}{B}, {T}, Pay X life", Krumar
+  Initiate). X is shared with the `{X}` mana symbol; the legal-action enumerator caps X at the
+  player's current life (CR 119.4 — paying down to exactly 0 is legal).
 - `Costs.Sacrifice(filter)` — sacrifice a permanent matching the filter (may include self).
 - `Costs.SacrificeAnother(filter)` — sacrifice a *different* permanent matching the filter.
 - `Costs.DiscardCard` — discard a card you choose (any card).

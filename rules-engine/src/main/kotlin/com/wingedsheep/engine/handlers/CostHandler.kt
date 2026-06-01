@@ -144,6 +144,11 @@ class CostHandler(
                 // maxAffordableX is capped by untapped permanent count in LegalActionsCalculator
                 true
             }
+            is AbilityCost.PayXLife -> {
+                // X can be 0, so this is always payable
+                // maxAffordableX is capped by current life (must stay > 0) in LegalActionsCalculator
+                true
+            }
             is AbilityCost.TapAttachedCreature -> {
                 val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
                     ?: return false
@@ -257,6 +262,24 @@ class CostHandler(
                     newState, manaPool,
                     events = listOf(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.PAYMENT))
                 )
+            }
+            is AbilityCost.PayXLife -> {
+                val amount = choices.xValue
+                if (amount == 0) {
+                    CostPaymentResult.success(state, manaPool)
+                } else {
+                    val currentLife = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life
+                        ?: return CostPaymentResult.failure("Player has no life total")
+                    val newLife = currentLife - amount
+                    var newState = state.updateEntity(controllerId) { container ->
+                        container.with(LifeTotalComponent(newLife))
+                    }
+                    newState = DamageUtils.markLifeLostThisTurn(newState, controllerId)
+                    CostPaymentResult.success(
+                        newState, manaPool,
+                        events = listOf(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.PAYMENT))
+                    )
+                }
             }
             is AbilityCost.Sacrifice, is AbilityCost.SacrificeChosenCreatureType -> {
                 val requiredCount = when (cost) {

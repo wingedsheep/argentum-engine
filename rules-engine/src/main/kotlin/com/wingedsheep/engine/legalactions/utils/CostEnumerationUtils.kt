@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -478,6 +479,19 @@ class CostEnumerationUtils(
         }
         if (tapXCost != null) {
             maxX = minOf(maxX, findAbilityTapTargets(state, playerId, tapXCost.filter).size)
+        }
+
+        // Cap by current life if PayXLife. Per CR 119.4 a player may pay an amount of life
+        // greater than 0 only if their life total is greater than or equal to that amount —
+        // so X can be at most the player's current life (paying down to exactly 0 is legal).
+        val hasPayXLife = when (abilityCost) {
+            is AbilityCost.PayXLife -> true
+            is AbilityCost.Composite -> abilityCost.costs.any { it is AbilityCost.PayXLife }
+            else -> false
+        }
+        if (hasPayXLife) {
+            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+            maxX = minOf(maxX, life.coerceAtLeast(0))
         }
 
         return maxX
