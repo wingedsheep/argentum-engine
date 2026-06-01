@@ -123,7 +123,9 @@ the `CardDefinition`.
 - `Costs.PayLife(amount)` — pay N life.
 - `Costs.PayXLife` — pay X life, where X is the value chosen for the ability's `{X}` mana cost
   (e.g. "{X}{B}, {T}, Pay X life: …" on Krumar Initiate). The X-linked counterpart to
-  `Costs.PayLife`; `calculateMaxAffordableX` caps X by the controller's life total.
+  `Costs.PayLife`; `calculateMaxAffordableX` caps X at the controller's life total — X may go as
+  high as their current life, paying down to exactly 0 (legal per CR 119.4; they then lose to a
+  state-based action).
 - `Costs.Sacrifice(filter)` — sacrifice a permanent matching the filter (may include self).
 - `Costs.SacrificeAnother(filter)` — sacrifice a *different* permanent matching the filter.
 - `Costs.DiscardCard` — discard a card you choose (any card).

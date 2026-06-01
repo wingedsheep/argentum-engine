@@ -516,8 +516,10 @@ class CostEnumerationUtils(
             maxX = minOf(maxX, findAbilityTapTargets(state, playerId, tapXCost.filter).size)
         }
 
-        // Cap by life total if PayXLife — you can't pay more life than you have, and
-        // (mirroring AbilityCost.PayLife affordability) must keep at least 1 life.
+        // Cap by life total if PayXLife. Per CR 119.4 a player may pay an amount of life greater
+        // than 0 only if their life total is at least that amount — so X can be as large as the
+        // player's current life, paying down to exactly 0 (they then lose to a state-based action
+        // per CR 104.3b/704.5, but the payment itself is legal).
         val hasPayXLife = when (abilityCost) {
             is AbilityCost.PayXLife -> true
             is AbilityCost.Composite -> abilityCost.costs.any { it is AbilityCost.PayXLife }
@@ -525,7 +527,7 @@ class CostEnumerationUtils(
         }
         if (hasPayXLife) {
             val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
-            maxX = minOf(maxX, (life - 1).coerceAtLeast(0))
+            maxX = minOf(maxX, life.coerceAtLeast(0))
         }
 
         return maxX
