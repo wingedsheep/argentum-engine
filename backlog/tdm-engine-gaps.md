@@ -251,6 +251,19 @@ the overwhelming majority of the set.
     the Saga's post-III sacrifice).
     → **Thunder of Unity**
 
+22. **Grant Harmonize to a graveyard card until end of turn.** ❌ **NOT DONE — blocks Songcrafter Mage.**
+    Harmonize today is only a *static* `KeywordAbility.Harmonize(cost)` printed on a card; the
+    cast-from-graveyard path (`CastFromZoneEnumerator.enumerateHarmonize`) and the payment path
+    (`AlternativePaymentHandler.hasHarmonize`, 3 call sites) read it straight off `cardDef.keywordAbilities`.
+    Songcrafter Mage needs to *grant* harmonize at resolution to a chosen instant/sorcery in your
+    graveyard, **until end of turn**, with the granted harmonize cost equal to that card's mana cost.
+    That requires a runtime "granted harmonize" component (cost + EndOfTurn duration), the enumerator
+    and payment handler consulting it alongside the static keyword, end-of-turn cleanup, and the
+    harmonize-creature power reduction interacting with the granted cost. This is an `add-feature`-sized,
+    multi-layer change (SDK effect + component → enumerator → payment handler → cleanup → client), not a
+    single-card composition, so Songcrafter Mage is deferred until that feature lands.
+    → **Songcrafter Mage**
+
 ---
 
 ## Recommended build order
