@@ -23,7 +23,6 @@ import type { PrintingRef } from '@/types'
 import { PrintingPicker, type PrintingDTO } from './PrintingPicker'
 import { ManaCost, ManaSymbol } from '@/components/ui/ManaSymbols'
 import { HoverCardPreview } from '@/components/ui/HoverCardPreview'
-import { useDfcHoverFlip } from '@/components/ui/useDfcHoverFlip'
 import { SetIcon } from '@/components/ui/SetIcon'
 import { getCardImageUrl } from '@/utils/cardImages'
 import {
@@ -913,27 +912,12 @@ export function DeckbuilderPage() {
         }
       : deckHoverCard
     : null
-  const deckHoverDfc = useDfcHoverFlip(
-    effectiveDeckHoverCard
-      ? {
-          name: effectiveDeckHoverCard.name,
-          imageUri: effectiveDeckHoverCard.imageUri ?? null,
-          isDoubleFaced: effectiveDeckHoverCard.isDoubleFaced ?? false,
-          backFaceName: effectiveDeckHoverCard.backFaceName ?? null,
-          backFaceImageUri: effectiveDeckHoverCard.backFaceImageUri ?? null,
-        }
-      : null,
-  )
-  const resetDeckHoverDfc = deckHoverDfc.resetFlip
   const handleDeckHoverEnter = useCallback(
     (entry: { name: string; card: CardSummary | undefined }) => {
-      setDeckHoverName((prev) => {
-        if (prev !== entry.name) resetDeckHoverDfc()
-        return entry.name
-      })
+      setDeckHoverName(entry.name)
       setDeckHoverCard(entry.card ?? null)
     },
-    [resetDeckHoverDfc],
+    [],
   )
   const handleDeckHoverLeave = useCallback(() => {
     setDeckHoverName(null)
@@ -1054,13 +1038,9 @@ export function DeckbuilderPage() {
         />
         {viewMode === 'deck' ? (
           <DeckHoverPreview
-            name={deckHoverName ? (deckHoverDfc.displayName ?? deckHoverName) : null}
-            imageUri={
-              deckHoverName
-                ? (deckHoverDfc.displayImageUri ?? effectiveDeckHoverCard?.imageUri ?? null)
-                : null
-            }
-            overlay={deckHoverDfc.hint}
+            name={deckHoverName ? (effectiveDeckHoverCard?.name ?? deckHoverName) : null}
+            imageUri={deckHoverName ? (effectiveDeckHoverCard?.imageUri ?? null) : null}
+            {...dfcBackFace(deckHoverName ? effectiveDeckHoverCard : null)}
           />
         ) : (
           <FilterSection
@@ -3299,31 +3279,11 @@ function CardGrid({
   onShowMore: () => void
 }) {
   const [hoverCard, setHoverCard] = useState<CardSummary | null>(null)
-  const dfc = useDfcHoverFlip(
-    hoverCard
-      ? {
-          name: hoverCard.name,
-          imageUri: hoverCard.imageUri ?? null,
-          isDoubleFaced: hoverCard.isDoubleFaced ?? false,
-          backFaceName: hoverCard.backFaceName ?? null,
-          backFaceImageUri: hoverCard.backFaceImageUri ?? null,
-        }
-      : null,
-  )
-  const resetDfcFlip = dfc.resetFlip
 
   // Stable hover handlers so memoized CardTiles don't re-render every time the
   // hovered card changes — without this, swapping hovered card replaces both
   // closures' identity for all ~100 visible tiles.
-  const handleTileHover = useCallback(
-    (c: CardSummary) => {
-      setHoverCard((prev) => {
-        if (prev?.name !== c.name) resetDfcFlip()
-        return c
-      })
-    },
-    [resetDfcFlip],
-  )
+  const handleTileHover = useCallback((c: CardSummary) => setHoverCard(c), [])
   const handleTileLeave = useCallback(() => setHoverCard(null), [])
 
   if (cards.length === 0) {
@@ -3361,9 +3321,9 @@ function CardGrid({
         )}
       </div>
       <HoverFollowPreview
-        name={hoverCard ? (dfc.displayName ?? hoverCard.name) : null}
-        imageUri={hoverCard ? (dfc.displayImageUri ?? hoverCard.imageUri ?? null) : null}
-        overlay={dfc.hint}
+        name={hoverCard?.name ?? null}
+        imageUri={hoverCard?.imageUri ?? null}
+        {...dfcBackFace(hoverCard)}
       />
     </>
   )
@@ -3469,6 +3429,27 @@ function resolveImageUrl(card: CardSummary): string {
 }
 
 /**
+ * Back-face image to show beside the front in a deckbuilder hover preview. Only true
+ * double-faced cards qualify (mirrors the gating the old flip preview used), so single-faced
+ * cards return nulls and render as a single image.
+ */
+function dfcBackFace(
+  card:
+    | {
+        isDoubleFaced?: boolean | undefined
+        backFaceName?: string | null | undefined
+        backFaceImageUri?: string | null | undefined
+      }
+    | null
+    | undefined,
+): { backFaceName: string | null; backFaceImageUri: string | null } {
+  if (!card || card.isDoubleFaced !== true || !card.backFaceImageUri) {
+    return { backFaceName: null, backFaceImageUri: null }
+  }
+  return { backFaceName: card.backFaceName ?? null, backFaceImageUri: card.backFaceImageUri }
+}
+
+/**
  * Floats a card preview that follows the cursor while a row/tile is hovered.
  * The position state lives here, not on the parent panel — so mouse motion
  * doesn't re-render the (potentially large) sibling list. The parent only
@@ -3477,11 +3458,13 @@ function resolveImageUrl(card: CardSummary): string {
 function HoverFollowPreview({
   name,
   imageUri,
-  overlay,
+  backFaceName,
+  backFaceImageUri,
 }: {
   name: string | null
   imageUri: string | null
-  overlay?: React.ReactNode
+  backFaceName?: string | null
+  backFaceImageUri?: string | null
 }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
   useEffect(() => {
@@ -3506,7 +3489,15 @@ function HoverFollowPreview({
     }
   }, [name])
   if (!name || !pos) return null
-  return <HoverCardPreview name={name} imageUri={imageUri} pos={pos} overlay={overlay} />
+  return (
+    <HoverCardPreview
+      name={name}
+      imageUri={imageUri}
+      pos={pos}
+      backFaceName={backFaceName ?? null}
+      backFaceImageUri={backFaceImageUri ?? null}
+    />
+  )
 }
 
 /**
@@ -3517,11 +3508,13 @@ function HoverFollowPreview({
 function DeckHoverPreview({
   name,
   imageUri,
-  overlay,
+  backFaceName,
+  backFaceImageUri,
 }: {
   name: string | null
   imageUri: string | null
-  overlay?: React.ReactNode
+  backFaceName?: string | null
+  backFaceImageUri?: string | null
 }) {
   if (!name) {
     return (
@@ -3531,12 +3524,19 @@ function DeckHoverPreview({
     )
   }
   const imageUrl = getCardImageUrl(name, imageUri, 'large')
+  // Double-faced card: show both faces side by side in the rail rather than hiding the
+  // back behind a flip key.
+  const backImageUrl = backFaceImageUri != null ? getCardImageUrl(backFaceName ?? name, backFaceImageUri, 'large') : null
   return (
-    <div className={styles.deckHoverPreview}>
+    <div className={`${styles.deckHoverPreview} ${backImageUrl ? styles.deckHoverPreviewDual : ''}`}>
       <div className={styles.deckHoverPreviewImageWrap}>
         <img className={styles.deckHoverPreviewImage} src={imageUrl} alt={name} />
-        {overlay}
       </div>
+      {backImageUrl && (
+        <div className={styles.deckHoverPreviewImageWrap}>
+          <img className={styles.deckHoverPreviewImage} src={backImageUrl} alt={backFaceName ?? name} />
+        </div>
+      )}
     </div>
   )
 }
@@ -3595,31 +3595,15 @@ function DeckListPanel({
         }
       : hoverCard
     : null
-  const dfc = useDfcHoverFlip(
-    effectiveHoverCard
-      ? {
-          name: effectiveHoverCard.name,
-          imageUri: effectiveHoverCard.imageUri ?? null,
-          isDoubleFaced: effectiveHoverCard.isDoubleFaced ?? false,
-          backFaceName: effectiveHoverCard.backFaceName ?? null,
-          backFaceImageUri: effectiveHoverCard.backFaceImageUri ?? null,
-        }
-      : null,
-  )
-  const resetDfcFlip = dfc.resetFlip
-
   // Stable identities so memoized DeckRow children skip re-render when hover
   // state changes. Functional setters keep us correct without putting hoverName
   // in the deps array.
   const handleEnter = useCallback(
     (entry: { name: string; card: CardSummary | undefined }) => {
-      setHoverName((prev) => {
-        if (prev !== entry.name) resetDfcFlip()
-        return entry.name
-      })
+      setHoverName(entry.name)
       setHoverCard(entry.card ?? null)
     },
-    [resetDfcFlip],
+    [],
   )
   const handleLeave = useCallback(() => {
     setHoverName(null)
@@ -3681,9 +3665,9 @@ function DeckListPanel({
         </p>
       )}
       <HoverFollowPreview
-        name={hoverName ? (dfc.displayName ?? hoverName) : null}
-        imageUri={hoverName ? (dfc.displayImageUri ?? effectiveHoverCard?.imageUri ?? null) : null}
-        overlay={dfc.hint}
+        name={hoverName ? (effectiveHoverCard?.name ?? hoverName) : null}
+        imageUri={hoverName ? (effectiveHoverCard?.imageUri ?? null) : null}
+        {...dfcBackFace(hoverName ? effectiveHoverCard : null)}
       />
     </div>
   )
@@ -3925,18 +3909,6 @@ function AddCardSearch({
   const [hoverCard, setHoverCard] = useState<CardSummary | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const dfc = useDfcHoverFlip(
-    hoverCard
-      ? {
-          name: hoverCard.name,
-          imageUri: hoverCard.imageUri ?? null,
-          isDoubleFaced: hoverCard.isDoubleFaced ?? false,
-          backFaceName: hoverCard.backFaceName ?? null,
-          backFaceImageUri: hoverCard.backFaceImageUri ?? null,
-        }
-      : null,
-  )
-  const resetDfcFlip = dfc.resetFlip
 
   const matches = useMemo(() => {
     const t = text.trim().toLowerCase()
@@ -4027,10 +3999,7 @@ function AddCardSearch({
                 aria-selected={false}
                 className={styles.addCardResult}
                 onClick={() => handleAdd(card)}
-                onMouseEnter={() => {
-                  if (hoverCard?.name !== card.name) resetDfcFlip()
-                  setHoverCard(card)
-                }}
+                onMouseEnter={() => setHoverCard(card)}
                 onMouseLeave={() => setHoverCard(null)}
                 disabled={atCap}
                 title={atCap ? 'At copy limit' : `Add ${card.name}`}
@@ -4046,9 +4015,9 @@ function AddCardSearch({
         </div>
       )}
       <HoverFollowPreview
-        name={hoverCard ? (dfc.displayName ?? hoverCard.name) : null}
-        imageUri={hoverCard ? (dfc.displayImageUri ?? hoverCard.imageUri ?? null) : null}
-        overlay={dfc.hint}
+        name={hoverCard?.name ?? null}
+        imageUri={hoverCard?.imageUri ?? null}
+        {...dfcBackFace(hoverCard)}
       />
     </div>
   )

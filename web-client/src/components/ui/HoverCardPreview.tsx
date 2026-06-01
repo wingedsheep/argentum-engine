@@ -14,8 +14,16 @@ export interface HoverCardPreviewProps {
   rulings?: readonly { date: string; text: string }[] | undefined
   /** Extra content rendered below the card image (e.g., stats breakdown, keywords) */
   children?: ReactNode
-  /** Content rendered as an overlay on top of the card image */
+  /** Content rendered as an overlay on top of the (front) card image */
   overlay?: ReactNode
+  /**
+   * Back face of a double-faced card. When both fields are provided, the preview shows
+   * both faces side by side horizontally instead of a single image — the deckbuilder has
+   * the room for it, so there's no need to flip. Leave unset for single-faced cards (and
+   * for the in-game preview, which stays compact).
+   */
+  backFaceName?: string | null
+  backFaceImageUri?: string | null
   /** Estimated extra height from children, used for vertical positioning (default 0) */
   extraHeight?: number
   /**
@@ -31,7 +39,7 @@ export interface HoverCardPreviewProps {
  * Shared card hover preview — positions a large card image near the cursor.
  * Used by the game board, deck builder, and all draft overlays.
  */
-export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, extraHeight = 0, imageRotateDeg = 0 }: HoverCardPreviewProps) {
+export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, backFaceName, backFaceImageUri, extraHeight = 0, imageRotateDeg = 0 }: HoverCardPreviewProps) {
   const [showRulings, setShowRulings] = useState(false)
   const [lastCardName, setLastCardName] = useState<string | null>(null)
 
@@ -50,6 +58,10 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   }, [name, lastCardName])
 
   const imageUrl = getCardImageUrl(name, imageUri, imageSize)
+  // Double-faced cards show both faces horizontally. Rotation (Rooms) and DFCs never
+  // coincide, so they don't need to compose.
+  const backImageUrl =
+    backFaceImageUri != null ? getCardImageUrl(backFaceName ?? name, backFaceImageUri, imageSize) : null
   const portraitWidth = PREVIEW_WIDTH
   const portraitHeight = Math.round(portraitWidth * 1.4)
   // For sideways layouts (Rooms), the displayed container is landscape; the image element
@@ -57,6 +69,10 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   const isLandscape = imageRotateDeg === 90 || imageRotateDeg === 270
   const previewWidth = isLandscape ? portraitHeight : portraitWidth
   const previewHeight = isLandscape ? portraitWidth : portraitHeight
+  const FACE_GAP = 10
+  // Total horizontal footprint used for viewport clamping — doubles (plus a gap) when the
+  // back face sits beside the front.
+  const contentWidth = backImageUrl ? previewWidth * 2 + FACE_GAP : previewWidth
   const hasRulings = rulings && rulings.length > 0
 
   // Estimate total height for positioning
@@ -72,14 +88,14 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   if (pos) {
     const vw = window.innerWidth
 
-    if (pos.x + previewWidth + MARGIN < vw - VIEWPORT_PADDING) {
+    if (pos.x + contentWidth + MARGIN < vw - VIEWPORT_PADDING) {
       left = pos.x + MARGIN
-    } else if (pos.x - previewWidth - MARGIN > VIEWPORT_PADDING) {
-      left = pos.x - previewWidth - MARGIN
+    } else if (pos.x - contentWidth - MARGIN > VIEWPORT_PADDING) {
+      left = pos.x - contentWidth - MARGIN
     } else {
-      left = Math.max(VIEWPORT_PADDING, (vw - previewWidth) / 2)
+      left = Math.max(VIEWPORT_PADDING, (vw - contentWidth) / 2)
     }
-    left = Math.max(VIEWPORT_PADDING, Math.min(left, vw - previewWidth - VIEWPORT_PADDING))
+    left = Math.max(VIEWPORT_PADDING, Math.min(left, vw - contentWidth - VIEWPORT_PADDING))
 
     // Place the preview above the cursor, falling back to below if too close to top
     const aboveTop = pos.y - estimatedHeight - MARGIN
@@ -103,33 +119,53 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
         gap: GAP,
       }}
     >
-      <div
-        style={{
-          position: 'relative',
-          width: previewWidth,
-          height: previewHeight,
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1)',
-        }}
-      >
-        <img
-          src={imageUrl}
-          alt={name}
-          style={imageRotateDeg
-            ? {
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: portraitWidth,
-                height: portraitHeight,
-                transform: `translate(-50%, -50%) rotate(${imageRotateDeg}deg)`,
-                objectFit: 'cover',
-              }
-            : { width: '100%', height: '100%', objectFit: 'cover' }
-          }
-        />
-        {overlay}
+      <div style={{ display: 'flex', flexDirection: 'row', gap: FACE_GAP }}>
+        <div
+          style={{
+            position: 'relative',
+            width: previewWidth,
+            height: previewHeight,
+            borderRadius: 12,
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt={name}
+            style={imageRotateDeg
+              ? {
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: portraitWidth,
+                  height: portraitHeight,
+                  transform: `translate(-50%, -50%) rotate(${imageRotateDeg}deg)`,
+                  objectFit: 'cover',
+                }
+              : { width: '100%', height: '100%', objectFit: 'cover' }
+            }
+          />
+          {overlay}
+        </div>
+        {backImageUrl && (
+          <div
+            style={{
+              position: 'relative',
+              width: previewWidth,
+              height: previewHeight,
+              borderRadius: 12,
+              overflow: 'hidden',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <img
+              src={backImageUrl}
+              alt={backFaceName ?? name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+        )}
       </div>
 
       {children}
