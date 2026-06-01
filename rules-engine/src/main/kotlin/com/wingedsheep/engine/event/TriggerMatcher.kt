@@ -836,20 +836,14 @@ class TriggerMatcher(
                 event.targetId in state.turnOrder && event.targetId != controllerId
             }
             RecipientFilter.CreatureOpponentControls -> {
-                val targetEntity = state.getEntity(event.targetId)
-                val targetCard = targetEntity?.get<CardComponent>()
-                val targetController = targetEntity?.get<ControllerComponent>()?.playerId
-                targetCard?.typeLine?.isCreature == true && targetController != null && targetController != controllerId
+                val targetController = recipientControllerLki(event, state)
+                recipientIsCreatureLki(event, state) && targetController != null && targetController != controllerId
             }
             RecipientFilter.CreatureYouControl -> {
-                val targetEntity = state.getEntity(event.targetId)
-                val targetCard = targetEntity?.get<CardComponent>()
-                val targetController = targetEntity?.get<ControllerComponent>()?.playerId
-                targetCard?.typeLine?.isCreature == true && targetController == controllerId
+                recipientIsCreatureLki(event, state) && recipientControllerLki(event, state) == controllerId
             }
             RecipientFilter.PermanentYouControl -> {
-                val targetController = state.getEntity(event.targetId)?.get<ControllerComponent>()?.playerId
-                targetController == controllerId
+                recipientControllerLki(event, state) == controllerId
             }
             RecipientFilter.AnyPermanent -> event.targetId !in state.turnOrder
             RecipientFilter.Self -> false // handled elsewhere
@@ -873,6 +867,23 @@ class TriggerMatcher(
         val excessMatches = !trigger.requireExcess || event.excessAmount > 0
         return combatMatches && recipientMatches && sourceMatches && excessMatches
     }
+
+    /**
+     * The damage recipient's controller, preferring live state but falling back to the controller
+     * captured at damage time ([DamageDealtEvent.targetControllerId]). A creature destroyed by the
+     * same damage event has already moved to the graveyard — losing its [ControllerComponent] — by
+     * the time combat-damage triggers are detected, so without the LKI fallback a recipient-based
+     * trigger ("a creature you control / an opponent controls is dealt damage") would silently miss
+     * the killing blow (CR 603.10).
+     */
+    private fun recipientControllerLki(event: DamageDealtEvent, state: GameState): EntityId? =
+        state.getEntity(event.targetId)?.get<ControllerComponent>()?.playerId
+            ?: event.targetControllerId
+
+    /** Whether the damage recipient was a creature, with the same LKI fallback as [recipientControllerLki]. */
+    private fun recipientIsCreatureLki(event: DamageDealtEvent, state: GameState): Boolean =
+        state.getEntity(event.targetId)?.get<CardComponent>()?.typeLine?.isCreature == true ||
+            event.targetWasCreature
 
     fun matchesStepTrigger(
         trigger: GameEvent,

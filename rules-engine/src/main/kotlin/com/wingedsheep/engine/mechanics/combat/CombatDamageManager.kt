@@ -1103,8 +1103,15 @@ internal class CombatDamageManager(
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
             val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
             val targetIsFaceDown = newState.getEntity(targetId)?.has<FaceDownComponent>() == true
+            // Capture the recipient's controller + creature-ness now, while it's still on the
+            // battlefield. Combat-damage SBAs strip the dead creature's ControllerComponent
+            // before trigger detection, so recipient-based triggers ("a creature you control /
+            // an opponent controls is dealt damage") rely on this LKI to still match (CR 603.10).
+            val targetControllerId = projected.getController(targetId)
+            val targetWasCreature = projected.isCreature(targetId)
             events.add(DamageDealtEvent(sourceId, targetId, amount, true,
-                sourceName = sourceName, targetName = targetName, targetIsPlayer = false, targetWasFaceDown = targetIsFaceDown, excessAmount = excess))
+                sourceName = sourceName, targetName = targetName, targetIsPlayer = false, targetWasFaceDown = targetIsFaceDown,
+                targetControllerId = targetControllerId, targetWasCreature = targetWasCreature, excessAmount = excess))
         }
 
         return newState
