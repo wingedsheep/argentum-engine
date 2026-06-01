@@ -125,8 +125,8 @@ sealed interface StatePredicate {
     }
 
     /**
-     * Was declared as an attacker at least once during the current turn (CR 506.2 — applies
-     * once the controller has declared attackers). Backed by the controller's
+     * Was declared as an attacker at least once during the current turn (set during the
+     * declare-attackers step, CR 508.1). Backed by the controller's
      * [com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent] (which
      * the engine already maintains for raid / "attacked this turn" tribal triggers), so it
      * does not need a separate per-entity marker. Survives leaving combat / blockers being

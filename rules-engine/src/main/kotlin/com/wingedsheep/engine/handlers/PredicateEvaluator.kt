@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTur
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -667,7 +668,7 @@ class PredicateEvaluator {
                 val controllerId = container.get<ControllerComponent>()?.playerId
                     ?: return false
                 val attackerSet = state.getEntity(controllerId)
-                    ?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent>()
+                    ?.get<PlayerAttackersThisTurnComponent>()
                     ?.attackerIds ?: emptySet()
                 entityId in attackerSet
             }
