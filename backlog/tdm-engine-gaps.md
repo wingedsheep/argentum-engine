@@ -237,6 +237,20 @@ the overwhelming majority of the set.
     `withCardOnBattlefield` so tests can place real tokens.
     → **Hardened Tactician**
 
+21. **Filter-scoped "whenever a creature you control enters this turn" delayed trigger.** ✅ **DONE.**
+    No new SDK was needed — a Saga chapter installs the existing `CreateDelayedTriggerEffect` with
+    `trigger = Triggers.entersBattlefield(GameObjectFilter.Creature.youControl(), binding = ANY)`,
+    `fireOnce = false`, `expiry = EndOfTurn`. The engine fix: `TriggerDetector.matchesEventForWatchedEntity`
+    ignored the spec's `GameObjectFilter` for `ZoneChangeEvent` delayed triggers (it only narrowed by a
+    `watchedEntityId`), so a "creature you control enters" trigger would have fired for *every* permanent
+    entering. Split the ZoneChange branch: entity-scoped (`watchedEntityId != null`) keeps the
+    moving-entity narrowing; **filter-scoped** (`watchedEntityId == null`) delegates to
+    `TriggerMatcher.matchesZoneChangeTrigger`, so the type and `you control` predicates are honored
+    exactly like a battlefield-resident trigger. Locked in by `ThunderOfUnityTest` (creature-you-control
+    pings; non-creature and opponent-controlled creature do not; fires per creature; expires; survives
+    the Saga's post-III sacrifice).
+    → **Thunder of Unity**
+
 ---
 
 ## Recommended build order

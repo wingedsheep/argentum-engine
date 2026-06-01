@@ -538,11 +538,17 @@ class TriggerDetector(
     }
 
     /**
-     * Match an event against a delayed-trigger TriggerSpec, scoped to a watched entity.
-     * Supports DealsDamageEvent (scoped on damage source), ZoneChangeEvent (scoped on the
-     * moving entity — "when that creature dies this turn"), and the attack-declaration events
-     * (player-scoped — "when you next attack this turn"), which delegate to the shared
-     * [TriggerMatcher.matchesTrigger] logic so they behave identically to battlefield triggers.
+     * Match an event against a delayed-trigger TriggerSpec.
+     *
+     * Two scoping modes:
+     *  - **Entity-scoped** (`watchedEntityId != null`): the trigger watches one concrete entity —
+     *    DealsDamageEvent (scoped on damage source) and ZoneChangeEvent ("when *that* creature dies
+     *    this turn"). The spec's GameObjectFilter is not applied; the watched entity is the scope.
+     *  - **Filter-scoped** (`watchedEntityId == null`): the trigger watches a *group* described by
+     *    the spec's GameObjectFilter + TriggerBinding — the attack-declaration events ("when you next
+     *    attack this turn") and ZoneChangeEvent ("whenever a creature you control enters this turn").
+     *    These delegate to the shared [TriggerMatcher] so they behave identically to battlefield
+     *    triggers, honoring the filter (including its controller predicate) and binding.
      */
     private fun matchesEventForWatchedEntity(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
@@ -574,11 +580,23 @@ class TriggerDetector(
             }
             is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent -> {
                 if (event !is ZoneChangeEvent) return false
-                if (watchedEntityId != null && event.entityId != watchedEntityId) return false
-                if (specEvent.from != null && event.fromZone != specEvent.from) return false
-                if (specEvent.to != null && event.toZone != specEvent.to) return false
-                if (specEvent.excludeTo != null && event.toZone == specEvent.excludeTo) return false
-                true
+                if (watchedEntityId != null) {
+                    // Entity-scoped: "when *that* creature dies/leaves this turn". The watched
+                    // entity already narrows the trigger, so we only check the zone transition —
+                    // the spec's GameObjectFilter does not apply.
+                    if (event.entityId != watchedEntityId) return false
+                    if (specEvent.from != null && event.fromZone != specEvent.from) return false
+                    if (specEvent.to != null && event.toZone != specEvent.to) return false
+                    if (specEvent.excludeTo != null && event.toZone == specEvent.excludeTo) return false
+                    true
+                } else {
+                    // Filter-scoped: "whenever a creature you control enters this turn". There is no
+                    // single watched entity, so the spec's GameObjectFilter and TriggerBinding are
+                    // what scope the trigger. Delegate to the canonical zone-change matcher so it
+                    // behaves identically to a battlefield-resident "whenever a [filtered] permanent
+                    // enters/leaves" trigger (Thunder of Unity chapters II/III).
+                    matcher.matchesZoneChangeTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
+                }
             }
             else -> false
         }

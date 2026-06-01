@@ -1166,11 +1166,21 @@ Triggers.youCastSpell(
       upcoming own turn rather than an intervening opponent turn. (Kav Landseeker.)
 - **Event-based delayed triggers** — pass `trigger = <TriggerSpec>` (instead of `step`) and the
   delayed ability fires whenever a matching *event* occurs, staying resident until `expiry`
-  (`DelayedTriggerExpiry.EndOfTurn`) removes it. `watchedTarget` scopes it to one entity (e.g.
-  "when **that** creature deals combat damage / dies this turn" — Long River Lurker, Deflecting
-  Palm). Matching delegates to the same `TriggerMatcher` the battlefield triggers use, so supported
-  events include `DealsDamageEvent`, `ZoneChangeEvent`, the internal `DamagePreventedEvent`, and the
-  attack-declaration events `YouAttackEvent` / `AttackEvent`.
+  (`DelayedTriggerExpiry.EndOfTurn`) removes it. Supported events include `DealsDamageEvent`,
+  `ZoneChangeEvent`, the internal `DamagePreventedEvent`, and the attack-declaration events
+  `YouAttackEvent` / `AttackEvent`. There are two ways to scope which events match:
+  - **Entity-scoped** — set `watchedTarget` to bind the trigger to one concrete entity (resolved at
+    creation time): "when **that** creature deals combat damage / dies this turn" (Long River Lurker,
+    Deflecting Palm). Only `DealsDamageEvent` (scoped on the damage source) and `ZoneChangeEvent`
+    (scoped on the moving entity) use this; the spec's `GameObjectFilter` is *not* applied — the
+    watched entity is the whole scope.
+  - **Filter-scoped** — leave `watchedTarget` null and let the `TriggerSpec`'s `GameObjectFilter` +
+    `TriggerBinding` describe the group, exactly like a battlefield-resident trigger. Use this for
+    "whenever a creature you control enters this turn, …" (Thunder of Unity chapters II/III):
+    `trigger = Triggers.entersBattlefield(GameObjectFilter.Creature.youControl(), binding = ANY)`.
+    Matching delegates to the same `TriggerMatcher` the battlefield triggers use, so the filter's
+    type **and** controller predicates are honored — it fires only for *your* creatures, not every
+    permanent that enters. (`YouAttackEvent` / `AttackEvent` are always filter-scoped this way.)
   - `fireOnce = true` makes it a **one-shot**: it's consumed the first time it fires, then gone —
     "when you **next** [event] this turn". Combine with `trigger = Triggers.YouAttack` for the
     common "when you next attack this turn, …" template (All-Out Assault: untap each creature you
