@@ -114,6 +114,12 @@ class CardsController(
         val backFaceName: String? = null,
         val backFaceImageUri: String? = null,
         /**
+         * The card's printed layout (e.g. `NORMAL`, `SPLIT`, `ADVENTURE`). Lets the deckbuilder
+         * render split cards (Pain // Suffering, Rooms like Unholy Annex // Ritual Chamber) rotated
+         * to landscape in the hover preview, since their single catalog image is printed sideways.
+         */
+        val layout: String = "NORMAL",
+        /**
          * The printing the catalog grid renders by default. Lets the deckbuilder picker
          * highlight the row that matches the catalog thumbnail without re-deriving it from
          * `setCode + collectorNumber` on the client. Null only for cards missing both
@@ -156,6 +162,7 @@ class CardsController(
             isDoubleFaced = isDoubleFaced,
             backFaceName = backFace?.name,
             backFaceImageUri = latest?.backFaceImageUri ?: backFace?.metadata?.imageUri,
+            layout = layout.name,
             defaultPrinting = latestRef ?: defaultPrintingRef,
             printingSetCodes = printingRegistry.printingsOf(name)
                 .map { it.setCode }

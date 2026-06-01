@@ -1061,6 +1061,7 @@ export function DeckbuilderPage() {
                 : null
             }
             overlay={deckHoverDfc.hint}
+            imageRotateDeg={splitImageRotateDeg(effectiveDeckHoverCard)}
           />
         ) : (
           <FilterSection
@@ -3364,6 +3365,7 @@ function CardGrid({
         name={hoverCard ? (dfc.displayName ?? hoverCard.name) : null}
         imageUri={hoverCard ? (dfc.displayImageUri ?? hoverCard.imageUri ?? null) : null}
         overlay={dfc.hint}
+        imageRotateDeg={splitImageRotateDeg(hoverCard)}
       />
     </>
   )
@@ -3469,6 +3471,15 @@ function resolveImageUrl(card: CardSummary): string {
 }
 
 /**
+ * Split-layout cards (Pain // Suffering, Rooms like Unholy Annex // Ritual Chamber) have a
+ * single image that's printed sideways, so the hover preview rotates it 90° to read landscape.
+ * Mirrors the game-board treatment in CardPreview.tsx.
+ */
+function splitImageRotateDeg(card: { layout?: string } | null | undefined): 0 | 90 {
+  return card?.layout === 'SPLIT' ? 90 : 0
+}
+
+/**
  * Floats a card preview that follows the cursor while a row/tile is hovered.
  * The position state lives here, not on the parent panel — so mouse motion
  * doesn't re-render the (potentially large) sibling list. The parent only
@@ -3478,10 +3489,12 @@ function HoverFollowPreview({
   name,
   imageUri,
   overlay,
+  imageRotateDeg = 0,
 }: {
   name: string | null
   imageUri: string | null
   overlay?: React.ReactNode
+  imageRotateDeg?: 0 | 90
 }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
   useEffect(() => {
@@ -3506,7 +3519,15 @@ function HoverFollowPreview({
     }
   }, [name])
   if (!name || !pos) return null
-  return <HoverCardPreview name={name} imageUri={imageUri} pos={pos} overlay={overlay} />
+  return (
+    <HoverCardPreview
+      name={name}
+      imageUri={imageUri}
+      pos={pos}
+      overlay={overlay}
+      imageRotateDeg={imageRotateDeg}
+    />
+  )
 }
 
 /**
@@ -3518,10 +3539,12 @@ function DeckHoverPreview({
   name,
   imageUri,
   overlay,
+  imageRotateDeg = 0,
 }: {
   name: string | null
   imageUri: string | null
   overlay?: React.ReactNode
+  imageRotateDeg?: 0 | 90
 }) {
   if (!name) {
     return (
@@ -3531,10 +3554,34 @@ function DeckHoverPreview({
     )
   }
   const imageUrl = getCardImageUrl(name, imageUri, 'large')
+  const landscape = imageRotateDeg === 90
   return (
     <div className={styles.deckHoverPreview}>
-      <div className={styles.deckHoverPreviewImageWrap}>
-        <img className={styles.deckHoverPreviewImage} src={imageUrl} alt={name} />
+      {/* Split cards (Rooms etc.) are printed sideways: swap the wrap to a landscape aspect
+          ratio and rotate the portrait image into it. The percentage dims are the relative
+          equivalent of HoverCardPreview's pixel approach — width 5/7 and height 7/5 of the
+          landscape box make the rotated 5:7 image fill it exactly. */}
+      <div
+        className={styles.deckHoverPreviewImageWrap}
+        style={landscape ? { aspectRatio: '7 / 5' } : undefined}
+      >
+        <img
+          className={styles.deckHoverPreviewImage}
+          src={imageUrl}
+          alt={name}
+          style={
+            landscape
+              ? {
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: '71.4286%',
+                  height: '140%',
+                  transform: 'translate(-50%, -50%) rotate(90deg)',
+                }
+              : undefined
+          }
+        />
         {overlay}
       </div>
     </div>
@@ -3684,6 +3731,7 @@ function DeckListPanel({
         name={hoverName ? (dfc.displayName ?? hoverName) : null}
         imageUri={hoverName ? (dfc.displayImageUri ?? effectiveHoverCard?.imageUri ?? null) : null}
         overlay={dfc.hint}
+        imageRotateDeg={splitImageRotateDeg(effectiveHoverCard)}
       />
     </div>
   )
@@ -4049,6 +4097,7 @@ function AddCardSearch({
         name={hoverCard ? (dfc.displayName ?? hoverCard.name) : null}
         imageUri={hoverCard ? (dfc.displayImageUri ?? hoverCard.imageUri ?? null) : null}
         overlay={dfc.hint}
+        imageRotateDeg={splitImageRotateDeg(hoverCard)}
       />
     </div>
   )

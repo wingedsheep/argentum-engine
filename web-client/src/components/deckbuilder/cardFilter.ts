@@ -56,6 +56,12 @@ export interface CardSummary {
   isDoubleFaced?: boolean
   backFaceName?: string | null
   backFaceImageUri?: string | null
+  /**
+   * Printed layout (`NORMAL`, `SPLIT`, `ADVENTURE`, …). `SPLIT` cards (Pain // Suffering, Rooms
+   * like Unholy Annex // Ritual Chamber) have a single sideways-printed image, so the hover
+   * preview rotates them 90° to read landscape. Defaults to `NORMAL` for legacy fixtures.
+   */
+  layout?: string
 }
 
 export type { CardPredicate, ParseResult, ParseError } from './query'
