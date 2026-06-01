@@ -20,7 +20,9 @@ import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponen
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.CantActivateLoyaltyAbilitiesComponent
@@ -466,6 +468,23 @@ class CleanupPhaseManager(
             newState = newState.updateEntity(entityId) { c ->
                 if (remaining.isEmpty()) c.without<TextReplacementComponent>()
                 else c.with(textReplacement.copy(replacements = remaining))
+            }
+        }
+
+        // 5c. Revert "becomes a copy of … until end of turn" group copies (Naga Fleshcrafter's
+        // renew). Restore each tagged permanent's pre-copy CardComponent from its CopyOfComponent
+        // snapshot and drop both the marker and the copy tag. Permanent copies (Mirrorform, Clone)
+        // are never tagged, so they are untouched. If the snapshot is missing (defensive), only the
+        // marker is removed so the entity isn't left flagged.
+        for ((entityId, container) in newState.entities) {
+            if (!container.has<RevertCopyAtEndOfTurnComponent>()) continue
+            val originalCard = container.get<CopyOfComponent>()?.originalCardComponent
+            newState = newState.updateEntity(entityId) { c ->
+                var reverted = c.without<RevertCopyAtEndOfTurnComponent>()
+                if (originalCard != null) {
+                    reverted = reverted.with(originalCard).without<CopyOfComponent>()
+                }
+                reverted
             }
         }
 

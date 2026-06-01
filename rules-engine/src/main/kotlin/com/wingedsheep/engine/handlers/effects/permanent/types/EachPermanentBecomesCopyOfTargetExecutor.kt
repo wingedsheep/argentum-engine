@@ -7,6 +7,8 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
+import com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import kotlin.reflect.KClass
 
@@ -53,10 +55,17 @@ class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBec
             context,
             excludeSelfId = if (effect.filter.excludeSelf) context.sourceId else null
         )
+            // "each OTHER … becomes a copy of that …" — the copy source keeps its own identity
+            // (and any counter just placed on it), so exclude the target from the affected set.
+            .filterNot { effect.excludeTarget && it == targetId }
 
         if (affected.isEmpty()) {
             return EffectResult.success(state)
         }
+
+        // Only `Permanent` (Mirrorform/Clone, baked forever) and `EndOfTurn` (reverted at
+        // cleanup) are supported; anything else degrades gracefully to permanent.
+        val temporary = effect.duration == Duration.EndOfTurn
 
         var newState = state
         for (entityId in affected) {
@@ -74,7 +83,7 @@ class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBec
                 existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
 
             newState = newState.updateEntity(entityId) { c ->
-                c.with(copiedCard)
+                var updated = c.with(copiedCard)
                     .with(
                         CopyOfComponent(
                             originalCardDefinitionId = originalDefinitionId,
@@ -82,6 +91,10 @@ class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBec
                             originalCardComponent = originalCardSnapshot
                         )
                     )
+                if (temporary) {
+                    updated = updated.with(RevertCopyAtEndOfTurnComponent)
+                }
+                updated
             }
         }
 

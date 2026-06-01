@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -17,6 +18,15 @@ import kotlinx.serialization.Serializable
  *
  * @property target The permanent whose characteristics are copied (usually `ContextTarget(0)`).
  * @property filter Which permanents become copies (defaults to all nonland permanents you control).
+ * @property duration How long the copy persists. [Duration.Permanent] (default) bakes the copy
+ *   into base state for good (Mirrorform). [Duration.EndOfTurn] makes a temporary copy that the
+ *   end-of-turn cleanup reverts to each permanent's pre-copy identity (Naga Fleshcrafter's renew —
+ *   "becomes a copy of that creature until end of turn"). Only `Permanent` and `EndOfTurn` are
+ *   supported; other durations fall back to permanent.
+ * @property excludeTarget When true, the copy source [target] itself is excluded from the set of
+ *   permanents that become copies — for "each **other** creature you control becomes a copy of
+ *   that creature" wordings, where the target keeps its own identity (and any counter just placed
+ *   on it).
  */
 @SerialName("EachPermanentBecomesCopyOfTarget")
 @Serializable
@@ -24,10 +34,13 @@ data class EachPermanentBecomesCopyOfTargetEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
     val filter: GroupFilter = GroupFilter(
         com.wingedsheep.sdk.scripting.GameObjectFilter.NonlandPermanent.youControl()
-    )
+    ),
+    val duration: Duration = Duration.Permanent,
+    val excludeTarget: Boolean = false,
 ) : Effect {
     override val description: String =
-        "Each ${filter.baseFilter.description} becomes a copy of ${target.description}"
+        "Each ${if (excludeTarget) "other " else ""}${filter.baseFilter.description} becomes a copy of ${target.description}" +
+            if (duration == Duration.EndOfTurn) " until end of turn" else ""
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = filter.applyTextReplacement(replacer)

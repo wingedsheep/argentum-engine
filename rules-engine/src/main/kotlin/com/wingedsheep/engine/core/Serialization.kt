@@ -296,6 +296,7 @@ val engineSerializersModule = SerializersModule {
         subclass(HexproofFromColorComponent::class)
         subclass(ToxicComponent::class)
         subclass(CopyOfComponent::class)
+        subclass(RevertCopyAtEndOfTurnComponent::class)
         subclass(DoubleFacedComponent::class)
         subclass(RoomComponent::class)
         subclass(ChosenColorComponent::class)

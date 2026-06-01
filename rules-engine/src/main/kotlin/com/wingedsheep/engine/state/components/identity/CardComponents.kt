@@ -73,6 +73,18 @@ data class CopyOfComponent(
 ) : Component
 
 /**
+ * Marks a permanent whose current copy identity is temporary and must revert to its
+ * pre-copy [CardComponent] at the next end-of-turn cleanup.
+ *
+ * Set by "becomes a copy of … until end of turn" group-copy effects (Naga Fleshcrafter's
+ * renew). The pre-copy snapshot lives on the entity's [CopyOfComponent.originalCardComponent];
+ * cleanup restores it and drops both this marker and the `CopyOfComponent`. Permanent copies
+ * (Mirrorform, Clone) never carry this marker, so they are unaffected by cleanup.
+ */
+@Serializable
+data object RevertCopyAtEndOfTurnComponent : Component
+
+/**
  * Marks a spell as uncounterable.
  * Applied to entities whose card definition has cantBeCountered = true,
  * or granted by permanents like Root Sliver.

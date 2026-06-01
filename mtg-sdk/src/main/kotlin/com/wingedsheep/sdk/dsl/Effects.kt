@@ -2363,13 +2363,19 @@ object Effects {
      * Used by Mirrorform ("Each nonland permanent you control becomes a copy of
      * target non-Aura permanent"). Copies printable/copiable characteristics only
      * (Rule 707) — counters, tapped state, and attached auras/equipment stay put.
+     *
+     * Pass [duration] = [Duration.EndOfTurn] for "until end of turn" copies that revert at
+     * cleanup, and [excludeTarget] = true for "each **other** … becomes a copy of that …"
+     * wordings where the copy source keeps its own identity (Naga Fleshcrafter's renew).
      */
     fun EachPermanentBecomesCopyOfTarget(
         target: EffectTarget = EffectTarget.ContextTarget(0),
         filter: GroupFilter = GroupFilter(
             com.wingedsheep.sdk.scripting.GameObjectFilter.NonlandPermanent.youControl()
-        )
-    ): Effect = EachPermanentBecomesCopyOfTargetEffect(target, filter)
+        ),
+        duration: Duration = Duration.Permanent,
+        excludeTarget: Boolean = false,
+    ): Effect = EachPermanentBecomesCopyOfTargetEffect(target, filter, duration, excludeTarget)
 
     // =========================================================================
     // Pipeline Targeting
