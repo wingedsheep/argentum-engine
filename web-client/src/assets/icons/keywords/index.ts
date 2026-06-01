@@ -98,5 +98,5 @@ export const counterManaClass: Record<string, string> = {
   GROWTH: 'counter-charge',
   TIME: 'counter-time',
   FEATHER: 'counter-charge',
-  DECAYED: 'counter-skull',
+  DECAYED: 'ability-decayed',
 }
