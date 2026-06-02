@@ -57,6 +57,12 @@ class DeathAndLeaveTriggerDetector(
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
+        // The entity had its abilities stripped at leaving time (e.g. Xu-Ifit's
+        // "It's a Skeleton ... and has no abilities" rider). Its own dies triggers don't
+        // fire. Other creatures' "Whenever a creature dies" triggers are detected from
+        // their own sources elsewhere, so they're unaffected by this short-circuit.
+        if (event.lastKnownLostAllAbilities) return
+
         val entityId = event.entityId
         val info = resolveDyingEntity(state, event) ?: return
 
@@ -134,6 +140,11 @@ class DeathAndLeaveTriggerDetector(
             // Skip if this creature is still on the battlefield (already handled by main loop)
             if (deadEntityId in state.getBattlefield()) continue
 
+            // Skip creatures whose abilities were stripped at leaving time (Xu-Ifit's
+            // ability-stripped reanimate target contributes no triggers of its own even
+            // when it dies alongside other creatures).
+            if (deadEvent.lastKnownLostAllAbilities) continue
+
             val info = resolveDyingEntity(state, deadEvent) ?: continue
 
             val abilities = abilityResolver.getTriggeredAbilities(deadEntityId, info.cardDefinitionId, state)
@@ -172,6 +183,11 @@ class DeathAndLeaveTriggerDetector(
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
+        // An aura whose abilities were stripped at leaving time (e.g. via a Xu-Ifit-shaped
+        // reanimate on an aura, or Humility-style suppression in effect at LTB) contributes
+        // no attached zone-change triggers.
+        if (event.lastKnownLostAllAbilities) return
+
         val attachedEntityId = event.lastKnownAttachedTo ?: return
 
         val auraEntityId = event.entityId
@@ -314,6 +330,10 @@ class DeathAndLeaveTriggerDetector(
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
+        // See [detectDeathTriggers]: an entity that lost all its abilities at leaving time
+        // contributes no SELF/ANY leaves-battlefield triggers from itself.
+        if (event.lastKnownLostAllAbilities) return
+
         val entityId = event.entityId
         val info = resolveDyingEntity(state, event) ?: return
 

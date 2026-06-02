@@ -65,6 +65,14 @@ data class ZoneChangeEvent(
     /** Last known projected keywords when leaving battlefield (for trigger filters needing keyword info after death) */
     val lastKnownKeywords: Set<String> = emptySet(),
     /**
+     * True if the leaving entity had its abilities stripped (via a layer-6 `RemoveAllAbilities`
+     * floating effect) at the moment it left the battlefield. CR 603.10a — leaves-the-battlefield
+     * triggers look back in time at the object's appearance immediately prior to the event — so
+     * the dies / leaves-battlefield detector reads this snapshot, not the (now-cleared) projected
+     * `lostAllAbilities` flag.
+     */
+    val lastKnownLostAllAbilities: Boolean = false,
+    /**
      * Last-known counter map (counter-type-string → count) when leaving the battlefield.
      * Used by triggers that move every counter (e.g., Essence Channeler), not just one
      * specific kind. Counter-type strings match the wire format used on counter effects

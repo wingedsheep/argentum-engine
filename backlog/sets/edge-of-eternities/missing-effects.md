@@ -4,7 +4,7 @@ Engine features required to implement the remaining EOE cards. Each section list
 unblocks, the exact oracle clause that can't be expressed with current primitives, and a sketch of
 the engine/SDK work needed.
 
-As of the latest pass, **251 / 261** booster cards are implemented. The cards below remain
+As of the latest pass, **252 / 261** booster cards are implemented. The cards below remain
 blocked on the engine features listed here. Cards whose every clause maps to an existing primitive
 have already been implemented and are not listed. Section numbers are preserved from earlier
 revisions of this document so that [`problem-cards.md`](problem-cards.md) cross-references stay
@@ -115,18 +115,6 @@ its mana cost."
 **Plan:** Add a static that grants free-cast permission to the first spell each player casts on each
 of their own turns (per-player, per-turn gate). The ETB "shuffle hand and graveyard into library,
 then draw seven" is already expressible.
-
----
-
-## 21. Reanimate as a typed, ability-stripped permanent
-
-**Cards:** Xu-Ifit, Osteoharmonist.
-
-**Clause:** "Return target creature card from your graveyard to the battlefield. It's a Skeleton in
-addition to its other types and has no abilities."
-
-**Plan:** Add a continuous effect, tied to the reanimated permanent, that adds the Skeleton subtype
-(layer 4) and removes all abilities (layer 6). Plain reanimation already exists.
 
 ---
 

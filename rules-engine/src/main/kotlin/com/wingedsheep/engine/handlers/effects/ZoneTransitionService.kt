@@ -146,6 +146,7 @@ object ZoneTransitionService {
         var lastKnownToughness: Int? = null
         var lastKnownTypeLine: TypeLine? = null
         var lastKnownKeywords: Set<String> = emptySet()
+        var lastKnownLostAllAbilities = false
         var lastKnownAttachedTo = options.lastKnownAttachedTo
         var lastKnownWasToken = false
         var lastKnownDamageDealtByPlayers: Map<EntityId, Int> = emptyMap()
@@ -172,6 +173,10 @@ object ZoneTransitionService {
             // Capture projected keywords so dies/leaves triggers can check keyword filters
             // (e.g., Jackdaw Savior: "whenever a creature you control with flying dies").
             lastKnownKeywords = projected.getKeywords(entityId)
+            // Capture whether the entity had its abilities stripped at leaving time so the
+            // dies / leaves-battlefield detectors can suppress the entity's own triggers
+            // (e.g., Xu-Ifit reanimating Festering Goblin without its "When this dies" trigger).
+            lastKnownLostAllAbilities = projected.hasLostAllAbilities(entityId)
             if (lastKnownAttachedTo == null) {
                 lastKnownAttachedTo = container.get<AttachedToComponent>()?.targetId
             }
@@ -378,6 +383,7 @@ object ZoneTransitionService {
                 lastKnownToughness = lastKnownToughness,
                 lastKnownTypeLine = lastKnownTypeLine,
                 lastKnownKeywords = lastKnownKeywords,
+                lastKnownLostAllAbilities = lastKnownLostAllAbilities,
                 lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null,
                 lastKnownCardDefinitionId = if (leavingBattlefield) cardComponent.cardDefinitionId else null,
                 lastKnownDamageDealtByPlayers = lastKnownDamageDealtByPlayers
