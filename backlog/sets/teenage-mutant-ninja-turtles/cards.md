@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 40 / 190
+**Implemented:** 41 / 190
 ---
 
 - [ ] Action News Crew
@@ -111,7 +111,7 @@
 - [x] Negate
 - [ ] New Generation's Technique
 - [ ] Ninja Teen
-- [ ] Nobody
+- [x] Nobody
 - [ ] North Wind Avatar
 - [ ] Northampton Farm
 - [ ] Novel Nunchaku
