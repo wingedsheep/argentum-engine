@@ -1,0 +1,50 @@
+{
+  "player1Name": "Raph Pilot",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Raph & Mikey, Troublemakers"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Forest",
+      "Hill Giant",
+      "Mountain",
+      "Forest",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Grizzly Bears",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": ["DECLARE_BLOCKERS"],
+  "player2OpponentStopAtSteps": []
+}

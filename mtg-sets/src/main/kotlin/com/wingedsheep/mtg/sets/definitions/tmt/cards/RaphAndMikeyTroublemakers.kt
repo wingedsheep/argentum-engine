@@ -8,7 +8,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
@@ -58,8 +60,17 @@ val RaphAndMikeyTroublemakers = card("Raph & Mikey, Troublemakers") {
                     ZonePlacement.TappedAndAttacking
                 )
             ),
-            MoveCollectionEffect(
+            // Everything revealed minus the creature that hit the battlefield goes to
+            // the bottom of the library. Without this split, the creature's entity id
+            // is still in "raph_revealed" and the next MoveCollection would pull it
+            // off the battlefield right after it landed.
+            FilterCollectionEffect(
                 from = "raph_revealed",
+                filter = CollectionFilter.ExcludeOtherCollection("raph_creature"),
+                storeMatching = "raph_rest"
+            ),
+            MoveCollectionEffect(
+                from = "raph_rest",
                 destination = CardDestination.ToZone(
                     Zone.LIBRARY,
                     Player.You,
