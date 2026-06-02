@@ -459,6 +459,23 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /**
+     * Power strictly greater than the projected power of a referenced entity. Mirrors
+     * [ManaValueAtMostEntity] in shape and resolution: the entity is looked up via
+     * [PredicateContext] (Source / Triggering / AffectedEntity), and the comparison reads
+     * its [com.wingedsheep.sdk.model.CardComponent] power (projected when available).
+     *
+     * Used by Éowyn, Fearless Knight: "exile target creature an opponent controls with
+     * greater power" — the candidate's power is compared against Éowyn's
+     * ([EntityReference.Source]) at target choice and at resolution-time legality re-check.
+     */
+    @SerialName("PowerGreaterThanEntity")
+    @Serializable
+    data class PowerGreaterThanEntity(val reference: EntityReference) : CardPredicate {
+        override val description: String = "with power greater than ${reference.description}"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Context-relative Predicates (Pipeline Variable References)
     // =============================================================================

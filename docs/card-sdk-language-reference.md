@@ -746,6 +746,9 @@ Every `TargetRequirement` carries count semantics (defaults shown):
 - `.manaValueEqualsX()` — mana value **exactly equal** to the number chosen for the source spell/ability
   (set by `Effects.ChooseNumberThen`; resolution-time only — matches nothing without a chosen number). Used by Void.
 - `.manaValueAtMostEntity(ref)` — mana value ≤ a referenced entity's mana value (e.g. Kodama of the East Tree).
+- `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
+  Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
+  with `EntityReference.Source` to express "greater power than the ability's source".
 - `.manaValueAtMostEntityManaSpent(ref)` — mana value ≤ the mana **actually spent** to cast a referenced
   entity. Reads the live `SpellOnStackComponent` buckets while the entity is still a spell, or the
   `CastRecordComponent` snapshot once it has resolved onto the battlefield (0 if it was never cast).
@@ -2108,6 +2111,13 @@ staticAbility { ability = GrantLandwalkOfChosenType() }
 - `ChooseActionEffect(choices)` — pick one effect from a list.
 - `ChooseColorThenEffect(whenChosen)` — pick a color, then apply a function of the color.
 - `GrantHexproofFromChosenColorEffect(target)` / `GrantProtectionFromChosenColorEffect(target)` — atoms that run inside `ChooseColorThen` and read the chosen color from context (hexproof / protection from that color). Wrap in `ForEachInGroup` for "creatures you control gain protection from the chosen color" (Akroma's Blessing).
+- `Effects.GrantProtectionFromColorsOfEntity(filter, source, duration?)` — read the projected colors
+  of the entity referenced by `source` and add one `PROTECTION_FROM_<COLOR>` floating effect per color
+  for the snapshot of permanents matching `filter`. One-shot at resolution; colorless source grants
+  nothing. Source colors come from projected state when the source is still on the battlefield, else
+  fall back to its base `CardComponent.colors` (LKI). Compose with `Composite(GrantProtection…,
+  Exile(…))` so the projected colors are read while the source is still on the battlefield, as Éowyn,
+  Fearless Knight does.
 - `ChooseCreatureTypeEffect(...)` — pause for creature-type selection.
 - `Effects.ChooseCardName(storeAs, prompt?, excludeBasicLandNames?)` — name a card (`ChooseOptionEffect(OptionType.CARD_NAME)`); the chosen name is stored in `chosenValues[storeAs]`. Options are every registry card name (searchable list, not free text); `excludeBasicLandNames` drops the five basics. Match cards by it with `GameObjectFilter.namedFromVariable(storeAs)`. (Desperate Research)
 - `Effects.StoreCardName(from, storeAs)` — capture the name of the first card in collection `from` into `chosenValues[storeAs]`. The "choose a card, then act on cards of that name" counterpart to `ChooseCardName`. (Lobotomy)

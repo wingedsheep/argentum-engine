@@ -268,6 +268,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.PowerAtLeast(min)
     )
 
+    /** Power strictly greater than the projected power of a referenced entity (source, triggering, etc.) */
+    fun powerGreaterThanEntity(reference: EntityReference) = copy(
+        cardPredicates = cardPredicates + CardPredicate.PowerGreaterThanEntity(reference)
+    )
+
     /** Toughness at most */
     fun toughnessAtMost(max: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.ToughnessAtMost(max)

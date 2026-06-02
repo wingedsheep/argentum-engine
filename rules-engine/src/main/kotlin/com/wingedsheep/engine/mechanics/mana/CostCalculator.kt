@@ -883,6 +883,7 @@ class CostCalculator(
             // CostCalculator has no entity context; predicate has no static answer here.
             is CardPredicate.ManaValueAtMostEntity -> false
             is CardPredicate.ManaValueAtMostEntityManaSpent -> false
+            is CardPredicate.PowerGreaterThanEntity -> false
             CardPredicate.ManaValueIsEven -> cardDef.manaCost.cmc % 2 == 0
             CardPredicate.ManaValueIsOdd -> cardDef.manaCost.cmc % 2 != 0
 

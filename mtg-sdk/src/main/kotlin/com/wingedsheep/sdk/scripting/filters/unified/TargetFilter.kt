@@ -255,6 +255,10 @@ data class TargetFilter(
     /** Power at least */
     fun powerAtLeast(min: Int) = copy(baseFilter = baseFilter.powerAtLeast(min))
 
+    /** Power strictly greater than the projected power of a referenced entity (source, triggering, etc.) */
+    fun powerGreaterThanEntity(reference: com.wingedsheep.sdk.scripting.values.EntityReference) =
+        copy(baseFilter = baseFilter.powerGreaterThanEntity(reference))
+
     /** Toughness at most */
     fun toughnessAtMost(max: Int) = copy(baseFilter = baseFilter.toughnessAtMost(max))
 

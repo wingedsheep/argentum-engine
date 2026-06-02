@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEff
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
+import com.wingedsheep.sdk.scripting.values.EntityReference
 import com.wingedsheep.sdk.scripting.values.LandControllerScope
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
@@ -37,6 +38,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromColorsOfEntityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHarmonizeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantToxicEffect
@@ -1491,6 +1493,23 @@ object Effects {
         target: EffectTarget = EffectTarget.ContextTarget(0),
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantProtectionFromChosenColorEffect(target, duration)
+
+    /**
+     * Grant "protection from each of [source]'s colors" to every battlefield permanent
+     * matching [filter], for [duration]. Reads the projected colors of the referenced
+     * entity at execution time and adds one floating `PROTECTION_FROM_<COLOR>` per color
+     * for the snapshot of matching entities (colorless source grants nothing). One-shot
+     * at resolution — permanents that enter [filter] later don't gain the grant.
+     *
+     * Compose with an exile/destroy step **first** when the source is the about-to-leave
+     * permanent (e.g. Éowyn, Fearless Knight) so the projected colors are read while the
+     * source is still on the battlefield.
+     */
+    fun GrantProtectionFromColorsOfEntity(
+        filter: GroupFilter,
+        source: EntityReference,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantProtectionFromColorsOfEntityEffect(filter, source, duration)
 
     /**
      * Grant "can't be blocked by creatures of the chosen color" to a target.
