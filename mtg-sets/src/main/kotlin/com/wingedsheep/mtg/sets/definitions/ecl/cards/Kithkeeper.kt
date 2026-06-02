@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -46,7 +45,7 @@ val Kithkeeper = card("Kithkeeper") {
 
     activatedAbility {
         cost = Costs.TapPermanents(3, GameObjectFilter.Creature)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(3, 0, EffectTarget.Self),
                 Effects.GrantKeyword(Keyword.FLYING, EffectTarget.Self)

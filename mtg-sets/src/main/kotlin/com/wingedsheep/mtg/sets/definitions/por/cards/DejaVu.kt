@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Déjà Vu
@@ -23,7 +23,7 @@ val DejaVu = card("Déjà Vu") {
         val t = target("target", TargetObject(
             filter = TargetFilter(GameObjectFilter.Sorcery.ownedByYou(), zone = Zone.GRAVEYARD)
         ))
-        effect = MoveToZoneEffect(t, Zone.HAND)
+        effect = Effects.Move(t, Zone.HAND)
     }
 
     metadata {

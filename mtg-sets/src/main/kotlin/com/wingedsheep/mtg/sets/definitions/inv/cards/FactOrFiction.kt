@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Fact or Fiction {3}{U}
@@ -20,7 +20,7 @@ val FactOrFiction = card("Fact or Fiction") {
     oracleText = "Reveal the top five cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard."
 
     spell {
-        effect = EffectPatterns.factOrFiction(count = 5)
+        effect = LibraryPatterns.factOrFiction(count = 5)
     }
 
     metadata {

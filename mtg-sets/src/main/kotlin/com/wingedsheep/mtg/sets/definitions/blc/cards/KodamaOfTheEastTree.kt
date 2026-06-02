@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -18,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Kodama of the East Tree
@@ -66,7 +66,7 @@ val KodamaOfTheEastTree = card("Kodama of the East Tree") {
         triggerCondition = Conditions.TriggeringEntityWasNotPutByThisSource
         // The "you may" is modeled by `ChooseUpTo(1)` — the player can pick zero cards
         // to decline. No separate yes/no decision is required.
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.FromZone(

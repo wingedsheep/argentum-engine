@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -56,7 +55,7 @@ val DarkstarAugur = card("Darkstar Augur") {
     // At the beginning of your upkeep, reveal top card → hand, lose life = its mana value
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.You),

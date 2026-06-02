@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Treetop Sentries
@@ -31,7 +31,7 @@ val TreetopSentries = card("Treetop Sentries") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = ReflexiveTriggerEffect(
-            action = EffectPatterns.forage(),
+            action = MiscPatterns.forage(),
             optional = true,
             reflexiveEffect = Effects.DrawCards(1)
         )

@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -69,7 +68,7 @@ val WarrenWarleader = card("Warren Warleader") {
             ),
             // Attacking creatures you control get +1/+1 until end of turn
             Mode.noTarget(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter.AllCreaturesYouControl.attacking(),
                     effect = ModifyStatsEffect(
                         powerModifier = 1,

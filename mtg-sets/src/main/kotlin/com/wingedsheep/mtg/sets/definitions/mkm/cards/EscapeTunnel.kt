@@ -2,13 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.mkm.cards
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Escape Tunnel
@@ -27,7 +27,7 @@ val EscapeTunnel = card("Escape Tunnel") {
             Costs.Tap,
             Costs.SacrificeSelf
         )
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             count = 1,
             destination = SearchDestination.BATTLEFIELD,

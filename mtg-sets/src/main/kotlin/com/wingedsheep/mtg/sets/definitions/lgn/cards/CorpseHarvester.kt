@@ -2,11 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Corpse Harvester
@@ -30,13 +30,13 @@ val CorpseHarvester = card("Corpse Harvester") {
             Costs.Tap,
             Costs.Sacrifice(GameObjectFilter.Creature)
         )
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter(
                 cardPredicates = listOf(CardPredicate.HasSubtype(Subtype("Zombie")))
             ),
             reveal = true,
             shuffleAfter = false
-        ) then EffectPatterns.searchLibrary(
+        ) then LibraryPatterns.searchLibrary(
             filter = GameObjectFilter(
                 cardPredicates = listOf(CardPredicate.HasSubtype(Subtype("Swamp")))
             ),

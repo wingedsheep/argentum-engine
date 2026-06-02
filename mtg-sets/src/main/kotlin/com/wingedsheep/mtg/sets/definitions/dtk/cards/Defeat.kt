@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.dtk.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Defeat
@@ -21,7 +21,7 @@ val Defeat = card("Defeat") {
 
     spell {
         val t = target("target", TargetCreature(filter = TargetFilter.Creature.powerAtMost(2)))
-        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

@@ -6,10 +6,10 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Honored Knight-Captain
@@ -43,7 +43,7 @@ val HonoredKnightCaptain = card("Honored Knight-Captain") {
             com.wingedsheep.sdk.dsl.Costs.Mana("{4}{W}{W}"),
             com.wingedsheep.sdk.dsl.Costs.SacrificeSelf
         )
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter(
                 cardPredicates = listOf(
                     CardPredicate.HasSubtype(Subtype("Equipment"))

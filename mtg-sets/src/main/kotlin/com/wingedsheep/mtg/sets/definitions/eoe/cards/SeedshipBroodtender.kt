@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -12,6 +11,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Seedship Broodtender
@@ -31,7 +31,7 @@ val SeedshipBroodtender = card("Seedship Broodtender") {
     // ETB ability: mill three cards
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.mill(3)
+        effect = LibraryPatterns.mill(3)
     }
 
     // Activated ability: reanimation, sorcery speed only

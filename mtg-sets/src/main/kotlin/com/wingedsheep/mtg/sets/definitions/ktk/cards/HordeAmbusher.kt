@@ -7,9 +7,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Horde Ambusher
@@ -33,7 +33,7 @@ val HordeAmbusher = card("Horde Ambusher") {
         effect = Effects.DealDamage(1, EffectTarget.Controller)
     }
 
-    morphCost = PayCost.RevealCard(filter = GameObjectFilter.Any.withColor(Color.RED))
+    morphCost = Costs.pay.RevealCard(filter = GameObjectFilter.Any.withColor(Color.RED))
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp

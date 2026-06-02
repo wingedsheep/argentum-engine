@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -35,7 +34,7 @@ val DesperateResearch = card("Desperate Research") {
         "your library and put all of them with that name into your hand. Exile the rest."
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // 1. Name a card (no basic land card names).
                 Effects.ChooseCardName(

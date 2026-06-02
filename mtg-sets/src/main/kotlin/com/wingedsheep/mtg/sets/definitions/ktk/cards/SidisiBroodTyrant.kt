@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Sidisi, Brood Tyrant
@@ -30,13 +30,13 @@ val SidisiBroodTyrant = card("Sidisi, Brood Tyrant") {
     // Whenever Sidisi enters the battlefield, mill three cards.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.mill(3)
+        effect = LibraryPatterns.mill(3)
     }
 
     // Whenever Sidisi attacks, mill three cards.
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = EffectPatterns.mill(3)
+        effect = LibraryPatterns.mill(3)
     }
 
     // Whenever one or more creature cards are put into your graveyard from your library,

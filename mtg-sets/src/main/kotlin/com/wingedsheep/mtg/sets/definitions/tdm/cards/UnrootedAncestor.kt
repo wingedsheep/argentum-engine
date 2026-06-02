@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -35,7 +34,7 @@ val UnrootedAncestor = card("Unrooted Ancestor") {
             Costs.Mana("{1}"),
             Costs.SacrificeAnother(GameObjectFilter.Creature)
         )
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.GrantKeyword(Keyword.INDESTRUCTIBLE, EffectTarget.Self),
                 Effects.Tap(EffectTarget.Self)

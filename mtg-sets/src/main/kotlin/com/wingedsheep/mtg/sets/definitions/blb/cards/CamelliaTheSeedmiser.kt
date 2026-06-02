@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -66,7 +65,7 @@ val CamelliaTheSeedmiser = card("Camellia, the Seedmiser") {
             Costs.Mana("{2}"),
             Costs.Forage()
         )
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter(
                 GameObjectFilter.Creature.withSubtype("Squirrel").youControl(),
                 excludeSelf = true

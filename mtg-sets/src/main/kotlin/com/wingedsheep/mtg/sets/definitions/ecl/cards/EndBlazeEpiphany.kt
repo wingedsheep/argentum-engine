@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -39,14 +38,14 @@ val EndBlazeEpiphany = card("End-Blaze Epiphany") {
 
     spell {
         val creature = target("creature", Targets.Creature)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DealDamage(DynamicAmount.XValue, creature),
                 CreateDelayedTriggerEffect(
                     trigger = Triggers.Dies,
                     watchedTarget = creature,
                     expiry = DelayedTriggerExpiry.EndOfTurn,
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             GatherCardsEffect(
                                 source = CardSource.TopOfLibrary(

@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -23,7 +22,7 @@ val Hurricane = card("Hurricane") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures.withKeyword(Keyword.FLYING), DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self)) then
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures.withKeyword(Keyword.FLYING), DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self)) then
             Effects.DealDamage(DynamicAmount.XValue, EffectTarget.PlayerRef(Player.Each))
     }
 

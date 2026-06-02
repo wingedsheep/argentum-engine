@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Thing from the Deep
@@ -25,7 +25,7 @@ val ThingFromTheDeep = card("Thing from the Deep") {
     triggeredAbility {
         trigger = Triggers.Attacks
         effect = PayOrSufferEffect(
-            cost = PayCost.Sacrifice(GameObjectFilter.Land.withSubtype("Island")),
+            cost = Costs.pay.Sacrifice(GameObjectFilter.Land.withSubtype("Island")),
             suffer = SacrificeSelfEffect
         )
     }

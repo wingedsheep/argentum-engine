@@ -4,8 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Dauntless Scrapbot
  * {3}
@@ -24,7 +22,7 @@ val DauntlessScrapbot = card("Dauntless Scrapbot") {
     // ETB: exile each opponent's graveyard and create a Lander token
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.ExileOpponentsGraveyards(),
             Effects.CreateLander()
         ))

@@ -1,18 +1,16 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Consumed by Greed {1}{B}{B}
@@ -38,7 +36,7 @@ val ConsumedByGreed = card("Consumed by Greed") {
     )
 
     spell {
-        effect = EffectPatterns.giftSpell(
+        effect = MiscPatterns.giftSpell(
             // Mode 1: No gift — target opponent sacrifices creature with greatest power
             Mode.withTarget(
                 sacrificeEffect,
@@ -47,7 +45,7 @@ val ConsumedByGreed = card("Consumed by Greed") {
             ),
             // Mode 2: Gift a card — opponent draws, sacrifice, return creature from graveyard
             Mode(
-                effect = CompositeEffect(
+                effect = Effects.Composite(
                     listOf(
                         DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                         sacrificeEffect,

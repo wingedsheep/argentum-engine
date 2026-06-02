@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -32,7 +31,7 @@ val CerebralDownload = card("Cerebral Download") {
 
     spell {
         val artifactCount = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Artifact).count()
-        val surveilEffect = CompositeEffect(
+        val surveilEffect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.TopOfLibrary(artifactCount),

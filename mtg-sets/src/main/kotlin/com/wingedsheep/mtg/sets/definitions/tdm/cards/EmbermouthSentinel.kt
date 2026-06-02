@@ -2,13 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Embermouth Sentinel
@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.SearchDestination
  * battlefield tapped instead.
  *
  * Modeled as a [ConditionalEffect] on "you control a Dragon", checked at resolution. The
- * search is a single optional library search (ChooseUpTo via [EffectPatterns.searchLibrary]);
+ * search is a single optional library search (ChooseUpTo via [LibraryPatterns.searchLibrary]);
  * only one destination branch runs:
  *  - Control a Dragon → put the basic land onto the battlefield tapped, then shuffle.
  *  - Otherwise → shuffle, then put the basic land on top of the library.
@@ -41,7 +41,7 @@ val EmbermouthSentinel = card("Embermouth Sentinel") {
         effect = ConditionalEffect(
             condition = Conditions.ControlCreatureOfType(Subtype.DRAGON),
             // Control a Dragon: put the basic land onto the battlefield tapped instead.
-            effect = EffectPatterns.searchLibrary(
+            effect = LibraryPatterns.searchLibrary(
                 filter = Filters.BasicLand,
                 count = 1,
                 destination = SearchDestination.BATTLEFIELD,
@@ -50,7 +50,7 @@ val EmbermouthSentinel = card("Embermouth Sentinel") {
                 reveal = true
             ),
             // Otherwise: shuffle and put the basic land on top of the library.
-            elseEffect = EffectPatterns.searchLibrary(
+            elseEffect = LibraryPatterns.searchLibrary(
                 filter = Filters.BasicLand,
                 count = 1,
                 destination = SearchDestination.TOP_OF_LIBRARY,

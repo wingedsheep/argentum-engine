@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -35,7 +34,7 @@ val DesperateMeasures = card("Desperate Measures") {
 
     spell {
         val t = target("target", Targets.Creature)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             ModifyStatsEffect(1, -1, t),
             CreateDelayedTriggerEffect(
                 effect = Effects.DrawCards(2),

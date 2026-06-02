@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -9,6 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Vibrance
@@ -45,7 +45,7 @@ val Vibrance = card("Vibrance") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.ManaSpentToCastIncludes(requiredGreen = 2)
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.Land,
             count = 1,
             destination = SearchDestination.HAND,

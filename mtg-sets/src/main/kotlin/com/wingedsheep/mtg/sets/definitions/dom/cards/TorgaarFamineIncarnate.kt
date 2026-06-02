@@ -5,10 +5,10 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Torgaar, Famine Incarnate
@@ -28,7 +28,7 @@ val TorgaarFamineIncarnate = card("Torgaar, Famine Incarnate") {
     toughness = 6
     oracleText = "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} less to cast for each creature sacrificed this way.\nWhen Torgaar, Famine Incarnate enters, up to one target player's life total becomes half their starting life total, rounded down."
 
-    additionalCost(AdditionalCost.SacrificeCreaturesForCostReduction())
+    additionalCost(Costs.additional.SacrificeCreaturesForCostReduction())
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

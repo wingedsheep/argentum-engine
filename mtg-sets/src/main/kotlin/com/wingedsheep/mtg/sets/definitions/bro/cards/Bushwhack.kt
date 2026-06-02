@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bro.cards
 
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -9,6 +8,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Bushwhack
@@ -29,7 +29,7 @@ val Bushwhack = card("Bushwhack") {
     spell {
         modal(chooseCount = 1) {
             mode("Search your library for a basic land card, reveal it, put it into your hand, then shuffle") {
-                effect = EffectPatterns.searchLibrary(
+                effect = LibraryPatterns.searchLibrary(
                     filter = GameObjectFilter.BasicLand,
                     count = 1,
                     destination = SearchDestination.HAND,

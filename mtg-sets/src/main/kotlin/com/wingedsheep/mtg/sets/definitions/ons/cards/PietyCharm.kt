@@ -5,11 +5,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -33,7 +31,7 @@ val PietyCharm = card("Piety Charm") {
         modal(chooseCount = 1) {
             mode("Destroy target Aura attached to a creature") {
                 val t = target("target", TargetPermanent(filter = TargetFilter.Enchantment.withSubtype("Aura")))
-                effect = MoveToZoneEffect(
+                effect = Effects.Move(
                     target = t,
                     destination = Zone.GRAVEYARD,
                     byDestruction = true
@@ -44,7 +42,7 @@ val PietyCharm = card("Piety Charm") {
                 effect = Effects.ModifyStats(2, 2, t)
             }
             mode("Creatures you control gain vigilance until end of turn") {
-                effect = ForEachInGroupEffect(
+                effect = Effects.ForEachInGroup(
                     filter = GroupFilter.AllCreaturesYouControl,
                     effect = GrantKeywordEffect(Keyword.VIGILANCE, EffectTarget.Self)
                 )

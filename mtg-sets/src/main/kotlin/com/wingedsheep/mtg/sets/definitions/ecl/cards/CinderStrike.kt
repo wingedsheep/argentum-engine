@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Cinder Strike
@@ -27,7 +27,7 @@ val CinderStrike = card("Cinder Strike") {
         "Cinder Strike deals 2 damage to target creature. It deals 4 damage to that creature " +
         "instead if this spell's additional cost was paid."
 
-    additionalCost(AdditionalCost.BlightOrPay(blightAmount = 1, alternativeManaCost = ""))
+    additionalCost(Costs.additional.BlightOrPay(blightAmount = 1, alternativeManaCost = ""))
 
     spell {
         val creature = target("creature", Targets.Creature)

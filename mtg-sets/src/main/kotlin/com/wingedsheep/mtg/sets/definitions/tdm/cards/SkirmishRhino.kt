@@ -4,12 +4,12 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Skirmish Rhino
@@ -32,7 +32,7 @@ val SkirmishRhino = card("Skirmish Rhino") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 LoseLifeEffect(DynamicAmount.Fixed(2), EffectTarget.PlayerRef(Player.EachOpponent)),
                 GainLifeEffect(DynamicAmount.Fixed(2), EffectTarget.Controller)

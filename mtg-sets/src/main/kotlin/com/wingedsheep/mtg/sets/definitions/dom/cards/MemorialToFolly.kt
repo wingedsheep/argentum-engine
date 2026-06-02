@@ -10,9 +10,9 @@ import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Memorial to Folly
@@ -43,7 +43,7 @@ val MemorialToFolly = card("Memorial to Folly") {
                 zone = Zone.GRAVEYARD
             )
         ))
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = creature,
             destination = Zone.HAND
         )

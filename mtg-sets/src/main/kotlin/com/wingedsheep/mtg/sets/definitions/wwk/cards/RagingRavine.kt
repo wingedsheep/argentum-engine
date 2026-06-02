@@ -15,9 +15,9 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Raging Ravine
@@ -54,7 +54,7 @@ val RagingRavine = card("Raging Ravine") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{R}{G}")
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 BecomeCreatureEffect(
                     target = EffectTarget.Self,

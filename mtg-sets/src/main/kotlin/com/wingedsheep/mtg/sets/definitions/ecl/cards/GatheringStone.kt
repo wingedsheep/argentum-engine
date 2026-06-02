@@ -13,13 +13,13 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Gathering Stone
@@ -52,7 +52,7 @@ val GatheringStone = card("Gathering Stone") {
         )
     }
 
-    val lookAtTopEffect = CompositeEffect(
+    val lookAtTopEffect = Effects.Composite(
         listOf(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),

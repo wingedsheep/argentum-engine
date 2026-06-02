@@ -8,10 +8,10 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Rite of Belzenlok
@@ -64,7 +64,7 @@ val RiteOfBelzenlok = card("Rite of Belzenlok") {
                     trigger = Triggers.YourUpkeep.event,
                     binding = Triggers.YourUpkeep.binding,
                     effect = PayOrSufferEffect(
-                        cost = PayCost.Sacrifice(GameObjectFilter.Creature),
+                        cost = Costs.pay.Sacrifice(GameObjectFilter.Creature),
                         suffer = Effects.DealDamage(6, EffectTarget.Controller)
                     )
                 )

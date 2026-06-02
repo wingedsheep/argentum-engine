@@ -6,8 +6,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Silvergill Mentor
  * {1}{U}
@@ -29,7 +28,7 @@ val SilvergillMentor = card("Silvergill Mentor") {
         "When this creature enters, create a 1/1 white and blue Merfolk creature token."
 
     additionalCost(
-        AdditionalCost.BeholdOrPay(
+        Costs.additional.BeholdOrPay(
             filter = Filters.WithSubtype("Merfolk"),
             alternativeManaCost = "{2}"
         )

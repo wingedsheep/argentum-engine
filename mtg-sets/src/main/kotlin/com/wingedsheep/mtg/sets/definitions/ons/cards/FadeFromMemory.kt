@@ -5,8 +5,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Fade from Memory
  * {B}
@@ -22,7 +21,7 @@ val FadeFromMemory = card("Fade from Memory") {
 
     spell {
         val t = target("target", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(t, Zone.EXILE)
+        effect = Effects.Move(t, Zone.EXILE)
     }
 
     keywordAbility(KeywordAbility.cycling("{B}"))

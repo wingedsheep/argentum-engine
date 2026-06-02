@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -13,8 +12,6 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -62,14 +59,14 @@ val SongOfFreyalise = card("Song of Freyalise") {
     }
 
     sagaChapter(3) {
-        effect = CompositeEffect(listOf(
-            ForEachInGroupEffect(
+        effect = Effects.Composite(listOf(
+            Effects.ForEachInGroup(
                 filter = creaturesYouControl,
                 effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
             ),
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 filter = creaturesYouControl,
-                effect = CompositeEffect(listOf(
+                effect = Effects.Composite(listOf(
                     GrantKeywordEffect(Keyword.VIGILANCE.name, EffectTarget.Self, Duration.EndOfTurn),
                     GrantKeywordEffect(Keyword.TRAMPLE.name, EffectTarget.Self, Duration.EndOfTurn),
                     GrantKeywordEffect(Keyword.INDESTRUCTIBLE.name, EffectTarget.Self, Duration.EndOfTurn)

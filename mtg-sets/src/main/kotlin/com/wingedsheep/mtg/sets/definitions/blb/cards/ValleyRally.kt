@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
@@ -10,6 +9,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Valley Rally
@@ -28,10 +29,10 @@ val ValleyRally = card("Valley Rally") {
     typeLine = "Instant"
     oracleText = "Gift a Food (You may promise an opponent a gift as you cast this spell. If you do, they create a Food token before its other effects. It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nCreatures you control get +2/+0 until end of turn. If the gift was promised, target creature you control gains first strike until end of turn."
 
-    val pumpAll = EffectPatterns.modifyStatsForAll(2, 0, Filters.Group.creaturesYouControl)
+    val pumpAll = GroupPatterns.modifyStatsForAll(2, 0, Filters.Group.creaturesYouControl)
 
     spell {
-        effect = EffectPatterns.giftSpell(
+        effect = MiscPatterns.giftSpell(
             // Mode 1: No gift — creatures you control get +2/+0 until end of turn
             Mode.noTarget(
                 pumpAll,

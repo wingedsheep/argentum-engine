@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -42,7 +41,7 @@ val BristlyBillSpineSower = card("Bristly Bill, Spine Sower") {
     // {3}{G}{G}: Double the number of +1/+1 counters on each creature you control
     activatedAbility {
         cost = Costs.Mana("{3}{G}{G}")
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesYouControl,
             effect = Effects.AddDynamicCounters(
                 counterType = Counters.PLUS_ONE_PLUS_ONE,

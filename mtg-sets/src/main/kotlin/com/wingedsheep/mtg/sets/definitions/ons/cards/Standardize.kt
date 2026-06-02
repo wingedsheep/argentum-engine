@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.CreatureTypePatterns
 
 /**
  * Standardize
@@ -17,7 +17,7 @@ val Standardize = card("Standardize") {
     oracleText = "Choose a creature type other than Wall. Each creature becomes that type until end of turn."
 
     spell {
-        effect = EffectPatterns.becomeChosenTypeAllCreatures(
+        effect = CreatureTypePatterns.becomeChosenTypeAllCreatures(
             excludedTypes = listOf("Wall")
         )
     }

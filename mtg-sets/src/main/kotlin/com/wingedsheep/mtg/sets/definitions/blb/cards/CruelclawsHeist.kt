@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -10,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -23,6 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Cruelclaw's Heist
@@ -67,17 +66,17 @@ val CruelclawsHeist = card("Cruelclaw's Heist") {
     )
 
     spell {
-        effect = EffectPatterns.giftSpell(
+        effect = MiscPatterns.giftSpell(
             // Mode 1: No gift — reveal, choose nonland, exile (can't cast it)
             Mode.withTarget(
-                CompositeEffect(revealChooseExile),
+                Effects.Composite(revealChooseExile),
                 Targets.Opponent,
                 "Don't promise a gift — exile a nonland card from target opponent's hand"
             ),
             // Mode 2: Gift a card — opponent draws, then reveal, choose nonland, exile
             //         with permanent cast-from-exile permission
             Mode.withTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(DrawCardsEffect(1, EffectTarget.ContextTarget(0))) +
                     revealChooseExile +
                     listOf(GrantMayPlayFromExileEffect(from = "chosenCard", expiry = MayPlayExpiry.Permanent)) +

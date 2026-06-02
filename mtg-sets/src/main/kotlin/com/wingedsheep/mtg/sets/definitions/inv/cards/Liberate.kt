@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.ExilePatterns
 
 /**
  * Liberate
@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.model.Rarity
  * Exile target creature you control. Return that card to the battlefield under its
  * owner's control at the beginning of the next end step.
  *
- * A "blink" of your own creature: [EffectPatterns.exileUntilEndStep] exiles the target
+ * A "blink" of your own creature: [ExilePatterns.exileUntilEndStep] exiles the target
  * and schedules a delayed trigger at the next end step that returns it to the
  * battlefield. Cards return to the battlefield under their owner's control by default,
  * matching the oracle wording.
@@ -26,7 +26,7 @@ val Liberate = card("Liberate") {
 
     spell {
         val creature = target("target creature you control", Targets.CreatureYouControl)
-        effect = EffectPatterns.exileUntilEndStep(creature)
+        effect = ExilePatterns.exileUntilEndStep(creature)
     }
 
     metadata {

@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Curious Forager
@@ -37,7 +37,7 @@ val CuriousForager = card("Curious Forager") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = ReflexiveTriggerEffect(
-            action = EffectPatterns.forage(),
+            action = MiscPatterns.forage(),
             optional = true,
             reflexiveEffect = Effects.ReturnToHand(EffectTarget.ContextTarget(0)),
             reflexiveTargetRequirements = listOf(

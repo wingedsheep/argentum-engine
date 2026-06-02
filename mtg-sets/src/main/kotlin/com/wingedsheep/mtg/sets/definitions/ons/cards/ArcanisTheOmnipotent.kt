@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 
 /**
@@ -32,7 +31,7 @@ val ArcanisTheOmnipotent = card("Arcanis the Omnipotent") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{U}{U}")
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
     }
 
     metadata {

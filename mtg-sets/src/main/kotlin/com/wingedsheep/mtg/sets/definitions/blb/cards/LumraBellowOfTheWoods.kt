@@ -2,19 +2,19 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 // Lumra, Bellow of the Woods - {4}{G}{G}
 // Legendary Creature — Elemental Bear - star/star
@@ -34,9 +34,9 @@ val LumraBellowOfTheWoods = card("Lumra, Bellow of the Woods") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.mill(4)
+        effect = LibraryPatterns.mill(4)
             .then(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Land),

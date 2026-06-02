@@ -2,10 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Man-o'-War
@@ -24,7 +24,7 @@ val ManOWar = card("Man-o'-War") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val t = target("target", TargetCreature())
-        effect = MoveToZoneEffect(t, Zone.HAND)
+        effect = Effects.Move(t, Zone.HAND)
     }
 
     metadata {

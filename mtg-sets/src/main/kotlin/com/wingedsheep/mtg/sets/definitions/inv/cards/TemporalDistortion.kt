@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -60,7 +59,7 @@ val TemporalDistortion = card("Temporal Distortion") {
     // that player controls (the upkeep player is the active player).
     triggeredAbility {
         trigger = Triggers.EachUpkeep
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter(GameObjectFilter.Permanent.controlledByActivePlayer()),
             RemoveCountersEffect(Counters.HOURGLASS, Int.MAX_VALUE, EffectTarget.Self)
         )

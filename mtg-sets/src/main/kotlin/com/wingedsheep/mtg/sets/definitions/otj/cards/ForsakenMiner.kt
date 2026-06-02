@@ -7,9 +7,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Forsaken Miner
@@ -37,7 +37,7 @@ val ForsakenMiner = card("Forsaken Miner") {
         triggerZone = Zone.GRAVEYARD
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{B}"),
-            effect = MoveToZoneEffect(
+            effect = Effects.Move(
                 target = EffectTarget.Self,
                 destination = Zone.BATTLEFIELD
             )

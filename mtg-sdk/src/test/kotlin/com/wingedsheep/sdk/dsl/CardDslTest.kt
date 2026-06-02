@@ -1,7 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.Rarity
@@ -493,7 +492,7 @@ class CardDslTest : DescribeSpec({
                 startingLoyalty = 3
 
                 loyaltyAbility(+1) {
-                    effect = EffectPatterns.discardCards(1)
+                    effect = HandPatterns.discardCards(1)
                     target = Targets.AllPlayers
                 }
 
@@ -525,7 +524,7 @@ class CardDslTest : DescribeSpec({
                 spell {
                     effect = Effects.Composite(
                         Effects.DrawCards(3),
-                        EffectPatterns.discardCards(2)
+                        HandPatterns.discardCards(2)
                     )
                 }
             }
@@ -545,7 +544,7 @@ class CardDslTest : DescribeSpec({
 
                 spell {
                     condition = Conditions.OpponentControlsMoreLands
-                    effect = EffectPatterns.searchLibrary(
+                    effect = LibraryPatterns.searchLibrary(
                         filter = Filters.PlainsCard,
                         count = 3,
                         destination = SearchDestination.HAND
@@ -765,10 +764,10 @@ class CardDslTest : DescribeSpec({
 
                 spell {
                     // Sacrifice any number of lands, then search for that many
-                    effect = EffectPatterns.sacrificeFor(
+                    effect = MiscPatterns.sacrificeFor(
                         filter = GameObjectFilter.Land,
                         countName = "sacrificedLands",
-                        thenEffect = EffectPatterns.searchLibrary(
+                        thenEffect = LibraryPatterns.searchLibrary(
                             filter = GameObjectFilter.Land,
                             count = 0, // Engine will read from VariableReference
                             destination = SearchDestination.BATTLEFIELD,
@@ -895,7 +894,7 @@ class CardDslTest : DescribeSpec({
     describe("Effect Patterns Helper") {
 
         it("should create sacrifice-for pattern with variable binding") {
-            val effect = EffectPatterns.sacrificeFor(
+            val effect = MiscPatterns.sacrificeFor(
                 filter = GameObjectFilter.Land,
                 countName = "landCount",
                 thenEffect = DrawCardsEffect(1)
@@ -907,7 +906,7 @@ class CardDslTest : DescribeSpec({
         }
 
         it("should create may-pay shorthand") {
-            val effect = EffectPatterns.mayPay(
+            val effect = MiscPatterns.mayPay(
                 PayLifeEffect(3),
                 DrawCardsEffect(2)
             )
@@ -918,7 +917,7 @@ class CardDslTest : DescribeSpec({
         }
 
         it("should create reflexive trigger shorthand") {
-            val effect = EffectPatterns.reflexiveTrigger(
+            val effect = MiscPatterns.reflexiveTrigger(
                 action = SacrificeEffect(GameObjectFilter.Creature),
                 whenYouDo = GainLifeEffect(5)
             )
@@ -928,7 +927,7 @@ class CardDslTest : DescribeSpec({
         }
 
         it("should create store entity shorthand") {
-            val effect = EffectPatterns.storeEntity(
+            val effect = MiscPatterns.storeEntity(
                 effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
                 `as` = "exiledCreature"
             )

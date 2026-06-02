@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Headhunter
@@ -23,7 +23,7 @@ val Headhunter = card("Headhunter") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = EffectPatterns.eachOpponentDiscards(1)
+        effect = HandPatterns.eachOpponentDiscards(1)
     }
 
     morph = "{B}"

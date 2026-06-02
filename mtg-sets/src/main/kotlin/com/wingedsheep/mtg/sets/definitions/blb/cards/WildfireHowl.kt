@@ -1,18 +1,16 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Wildfire Howl
@@ -34,13 +32,13 @@ val WildfireHowl = card("Wildfire Howl") {
     typeLine = "Sorcery"
     oracleText = "Gift a card (You may promise an opponent a gift as you cast this spell. If you do, they draw a card before its other effects.)\nWildfire Howl deals 2 damage to each creature. If the gift was promised, instead Wildfire Howl deals 1 damage to any target and 2 damage to each creature."
 
-    val damageToEachCreature = ForEachInGroupEffect(
+    val damageToEachCreature = Effects.ForEachInGroup(
         filter = GroupFilter.AllCreatures,
         effect = DealDamageEffect(2, EffectTarget.Self)
     )
 
     spell {
-        effect = EffectPatterns.giftSpell(
+        effect = MiscPatterns.giftSpell(
             // Mode 1: No gift — just 2 damage to each creature
             Mode.noTarget(
                 damageToEachCreature,
@@ -48,7 +46,7 @@ val WildfireHowl = card("Wildfire Howl") {
             ),
             // Mode 2: Gift a card — opponent draws, then 1 damage to any target, then 2 damage to each creature
             Mode.withTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                         DealDamageEffect(1, EffectTarget.ContextTarget(0)),

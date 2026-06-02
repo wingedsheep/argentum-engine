@@ -4,8 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Wild Unraveling
  * {U}{U}
@@ -23,7 +22,7 @@ val WildUnraveling = card("Wild Unraveling") {
         "(To blight 2, put two -1/-1 counters on a creature you control.)\n" +
         "Counter target spell."
 
-    additionalCost(AdditionalCost.BlightOrPay(blightAmount = 2, alternativeManaCost = "{1}"))
+    additionalCost(Costs.additional.BlightOrPay(blightAmount = 2, alternativeManaCost = "{1}"))
 
     spell {
         target = Targets.Spell

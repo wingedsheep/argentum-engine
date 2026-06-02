@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -14,7 +13,6 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -25,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Doors of Durin
@@ -44,9 +43,9 @@ val DoorsOfDurin = card("Doors of Durin") {
 
     triggeredAbility {
         trigger = Triggers.YouAttack
-        effect = EffectPatterns.scry(2).then(
+        effect = LibraryPatterns.scry(2).then(
             MayEffect(
-                effect = CompositeEffect(listOf(
+                effect = Effects.Composite(listOf(
                     GatherCardsEffect(
                         source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.You),
                         storeAs = "top"

@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -13,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Vaultguard Trooper
@@ -41,7 +41,7 @@ val VaultguardTrooper = card("Vaultguard Trooper") {
         )
         effect = MayEffect(
             IfYouDoEffect(
-                action = EffectPatterns.discardHand(EffectTarget.Controller),
+                action = HandPatterns.discardHand(EffectTarget.Controller),
                 ifYouDo = Effects.DrawCards(2)
             )
         )

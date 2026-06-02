@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -17,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Jaya Ballard
@@ -49,7 +49,7 @@ val JayaBallard = card("Jaya Ballard") {
     // +1: Discard up to three cards, then draw that many cards
     loyaltyAbility(+1) {
         description = "+1: Discard up to three cards, then draw that many cards."
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.FromZone(Zone.HAND, Player.You),
@@ -77,7 +77,7 @@ val JayaBallard = card("Jaya Ballard") {
     //  - Replacement effect: exile instead of graveyard for spells cast this way
     loyaltyAbility(-8) {
         description = "\u22128: You get an emblem with \"You may cast instant and sorcery spells from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead.\""
-        effect = CompositeEffect(emptyList())
+        effect = Effects.Composite(emptyList())
     }
 
     metadata {

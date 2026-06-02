@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -13,6 +12,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Sunderflock
@@ -49,7 +49,7 @@ val Sunderflock = card("Sunderflock") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.WasCast
-        effect = EffectPatterns.returnAllToHand(
+        effect = GroupPatterns.returnAllToHand(
             GroupFilter(GameObjectFilter.Creature.notSubtype(Subtype("Elemental")))
         )
     }

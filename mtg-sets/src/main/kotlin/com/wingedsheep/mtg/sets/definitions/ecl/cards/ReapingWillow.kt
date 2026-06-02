@@ -9,10 +9,10 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Reaping Willow
@@ -60,7 +60,7 @@ val ReapingWillow = card("Reaping Willow") {
                 )
             )
         )
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = creature,
             destination = Zone.BATTLEFIELD
         )

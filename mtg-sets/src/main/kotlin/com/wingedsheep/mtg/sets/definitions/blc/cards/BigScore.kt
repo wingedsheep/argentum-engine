@@ -3,9 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.blc.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Big Score
  * {3}{R}
@@ -20,10 +18,10 @@ val BigScore = card("Big Score") {
     typeLine = "Instant"
     oracleText = "As an additional cost to cast this spell, discard a card.\nDraw two cards and create two Treasure tokens. (They're artifacts with \"{T}, Sacrifice this token: Add one mana of any color.\")"
 
-    additionalCost(AdditionalCost.DiscardCards())
+    additionalCost(Costs.additional.DiscardCards())
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(2),
                 Effects.CreateTreasure(count = 2)

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -18,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Anticausal Vestige — {6}
@@ -38,7 +38,7 @@ val AnticausalVestige = card("Anticausal Vestige") {
 
     triggeredAbility {
         trigger = Triggers.LeavesBattlefield
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             DrawCardsEffect(1),
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Permanent),

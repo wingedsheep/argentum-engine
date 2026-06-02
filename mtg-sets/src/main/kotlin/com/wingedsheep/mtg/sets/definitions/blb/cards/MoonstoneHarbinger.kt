@@ -2,12 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Moonstone Harbinger
@@ -38,10 +38,10 @@ val MoonstoneHarbinger = card("Moonstone Harbinger") {
         triggerCondition = Conditions.IsYourTurn
         oncePerTurn = true
         val batsYouControl = GroupFilter.allCreaturesWithSubtype("Bat").youControl()
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                EffectPatterns.modifyStatsForAll(1, 0, batsYouControl),
-                EffectPatterns.grantKeywordToAll(Keyword.DEATHTOUCH, batsYouControl)
+                GroupPatterns.modifyStatsForAll(1, 0, batsYouControl),
+                GroupPatterns.grantKeywordToAll(Keyword.DEATHTOUCH, batsYouControl)
             )
         )
     }

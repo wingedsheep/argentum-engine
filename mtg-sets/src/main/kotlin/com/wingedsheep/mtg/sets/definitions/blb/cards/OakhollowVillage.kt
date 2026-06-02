@@ -14,10 +14,10 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Oakhollow Village
@@ -51,7 +51,7 @@ val OakhollowVillage = card("Oakhollow Village") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{G}"), Costs.Tap)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.FromZone(
                     Zone.BATTLEFIELD,

@@ -3,11 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.lci.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Bitter Triumph
@@ -36,14 +36,14 @@ val BitterTriumph = card("Bitter Triumph") {
                 effect = Effects.Destroy(EffectTarget.ContextTarget(0)),
                 targetRequirements = listOf(TargetCreatureOrPlaneswalker()),
                 description = "Discard a card — destroy target creature or planeswalker",
-                additionalCosts = listOf(AdditionalCost.DiscardCards(count = 1))
+                additionalCosts = listOf(Costs.additional.DiscardCards(count = 1))
             ),
             // Mode 2: Pay 3 life
             Mode(
                 effect = Effects.Destroy(EffectTarget.ContextTarget(0)),
                 targetRequirements = listOf(TargetCreatureOrPlaneswalker()),
                 description = "Pay 3 life — destroy target creature or planeswalker",
-                additionalCosts = listOf(AdditionalCost.PayLife(amount = 3))
+                additionalCosts = listOf(Costs.additional.PayLife(amount = 3))
             ),
             countsAsModalSpell = false
         )

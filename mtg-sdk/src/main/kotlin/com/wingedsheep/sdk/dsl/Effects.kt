@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.CantActivateLoyaltyAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.PreventLandPlaysThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CopyCardIntoCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
@@ -169,8 +170,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 /**
  * Facade object providing convenient factory methods for creating atomic Effects.
  *
- * For composite effect patterns (search, scry, mill, discard, etc.),
- * use [EffectPatterns] directly.
+ * For composite effect patterns (search, scry, mill, discard, etc.), use the domain
+ * pattern objects directly: [LibraryPatterns], [HandPatterns], [GroupPatterns],
+ * [ExilePatterns], [CreatureTypePatterns], [MiscPatterns].
  *
  * Usage:
  * ```kotlin
@@ -335,31 +337,31 @@ object Effects {
 
     /**
      * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
-     * Composed from atomic pipeline primitives — see [EffectPatterns.readTheRunes].
+     * Composed from atomic pipeline primitives — see [HandPatterns.readTheRunes].
      */
-    fun ReadTheRunes(): Effect = EffectPatterns.readTheRunes()
+    fun ReadTheRunes(): Effect = HandPatterns.readTheRunes()
 
     /**
      * Target player discards N cards (controller chooses, mandatory).
-     * Delegates to the EffectPatterns pipeline: Gather → Select → Move (Discard).
+     * Delegates to the LibraryPatterns/HandPatterns pipeline: Gather → Select → Move (Discard).
      */
     fun Discard(count: Int = 1, target: EffectTarget = EffectTarget.Controller): Effect =
-        EffectPatterns.discardCards(count, target)
+        HandPatterns.discardCards(count, target)
 
     /**
      * Connive (CR 702.166): draw a card, then discard a card. If the discarded card
      * is a nonland, put a +1/+1 counter on [target].
      *
-     * Composed entirely from atomic pipeline primitives — see [EffectPatterns.connive].
+     * Composed entirely from atomic pipeline primitives — see [HandPatterns.connive].
      */
     fun Connive(target: EffectTarget = EffectTarget.Self): Effect =
-        EffectPatterns.connive(target)
+        HandPatterns.connive(target)
 
     /**
      * Each opponent discards N cards.
-     * Delegates to the EffectPatterns pipeline: ForEachPlayer(EachOpponent) → Gather → Select → Move.
+     * Delegates to the LibraryPatterns/HandPatterns pipeline: ForEachPlayer(EachOpponent) → Gather → Select → Move.
      */
-    fun EachOpponentDiscards(count: Int = 1): Effect = EffectPatterns.eachOpponentDiscards(count)
+    fun EachOpponentDiscards(count: Int = 1): Effect = HandPatterns.eachOpponentDiscards(count)
 
     /**
      * "Any player may [cost]. If a player does, [consequence]."
@@ -424,7 +426,7 @@ object Effects {
         noRegenerate: Boolean = false,
         storeDestroyedAs: String? = null,
         excludeTriggering: Boolean = false
-    ): Effect = EffectPatterns.destroyAllPipeline(filter, noRegenerate, storeDestroyedAs, excludeTriggering)
+    ): Effect = GroupPatterns.destroyAllPipeline(filter, noRegenerate, storeDestroyedAs, excludeTriggering)
 
     /**
      * Destroy all permanents matching [filter] and all permanents attached to them.
@@ -433,7 +435,7 @@ object Effects {
     fun DestroyAllAndAttached(
         filter: GameObjectFilter,
         noRegenerate: Boolean = false
-    ): Effect = EffectPatterns.destroyAllAndAttachedPipeline(filter, noRegenerate)
+    ): Effect = GroupPatterns.destroyAllAndAttachedPipeline(filter, noRegenerate)
 
     /**
      * Destroy all creatures sharing a creature type with the sacrificed creature.
@@ -441,7 +443,7 @@ object Effects {
      */
     fun DestroyAllSharingTypeWithSacrificed(
         noRegenerate: Boolean = false
-    ): Effect = EffectPatterns.destroyAllSharingTypeWithSacrificed(noRegenerate)
+    ): Effect = CreatureTypePatterns.destroyAllSharingTypeWithSacrificed(noRegenerate)
 
     /**
      * Destroy all Equipment attached to the target permanent.
@@ -483,19 +485,19 @@ object Effects {
      * The count is available as DynamicAmount.VariableReference("{storeAs}_count").
      */
     fun ExileGroupAndLink(filter: GroupFilter, storeAs: String = "linked_exile"): Effect =
-        EffectPatterns.exileGroupAndLink(filter, storeAs)
+        ExilePatterns.exileGroupAndLink(filter, storeAs)
 
     /**
      * Return all cards linked to the source permanent (via LinkedExileComponent)
      * to the battlefield under the controller's control.
      */
-    fun ReturnLinkedExile(): Effect = EffectPatterns.returnLinkedExile()
+    fun ReturnLinkedExile(): Effect = ExilePatterns.returnLinkedExile()
 
     /**
      * Return all cards linked to the source permanent (via LinkedExileComponent)
      * to the battlefield under their owners' control.
      */
-    fun ReturnLinkedExileUnderOwnersControl(): Effect = EffectPatterns.returnLinkedExile(underOwnersControl = true)
+    fun ReturnLinkedExileUnderOwnersControl(): Effect = ExilePatterns.returnLinkedExile(underOwnersControl = true)
 
     /**
      * Return all cards linked to the source permanent (via LinkedExileComponent)
@@ -716,7 +718,7 @@ object Effects {
      * Take the top card from the source's linked exile pile and put it into your hand.
      * Used by Parallel Thoughts and similar cards.
      */
-    fun TakeFromLinkedExile(): Effect = EffectPatterns.takeFromLinkedExile()
+    fun TakeFromLinkedExile(): Effect = ExilePatterns.takeFromLinkedExile()
 
     /**
      * Repeatedly exile cards from the top of your library until you exile a card
@@ -1366,14 +1368,14 @@ object Effects {
      * created token's entity ID into pipeline collection [CREATED_TOKENS], and a
      * subsequent [AddCountersEffect] places the +1/+1 counters via [EffectTarget.PipelineTarget].
      */
-    fun Incubate(n: Int): Effect = EffectPatterns.incubate(n)
+    fun Incubate(n: Int): Effect = MiscPatterns.incubate(n)
 
     /**
      * Incubate X (CR 701.53), where the +1/+1 counter count is a [DynamicAmount]
      * resolved at resolution time (e.g., the triggering spell's mana value).
      */
     fun Incubate(amount: com.wingedsheep.sdk.scripting.values.DynamicAmount): Effect =
-        EffectPatterns.incubate(amount)
+        MiscPatterns.incubate(amount)
 
     /**
      * Target creature explores.
@@ -1570,7 +1572,7 @@ object Effects {
      * other player, gain control of all creatures of that type.
      */
     fun ChooseCreatureTypeGainControl(duration: Duration = Duration.Permanent): Effect =
-        EffectPatterns.chooseCreatureTypeGainControl(duration)
+        CreatureTypePatterns.chooseCreatureTypeGainControl(duration)
 
     // =========================================================================
     // Composite Effects
@@ -1584,9 +1586,61 @@ object Effects {
 
     /**
      * Combine multiple effects from a list.
+     *
+     * @param stopOnError when true, abort the remaining effects if one fails.
+     * @param descriptionOverride render a single hand-written sentence instead of joining sub-effects.
+     * @param descriptionAmounts dynamic values interpolated into `{0}`, `{1}`, … of [descriptionOverride] at runtime.
      */
-    fun Composite(effects: List<Effect>): Effect =
-        CompositeEffect(effects)
+    fun Composite(
+        effects: List<Effect>,
+        stopOnError: Boolean = false,
+        descriptionOverride: String? = null,
+        descriptionAmounts: List<DynamicAmount> = emptyList()
+    ): Effect = CompositeEffect(effects, stopOnError, descriptionOverride, descriptionAmounts)
+
+    /**
+     * Move [target] to [destination] zone — the foundational single-target zone-change effect.
+     *
+     * Prefer the named shortcuts ([Destroy], [Exile], [ReturnToHand], [PutOnTopOfLibrary],
+     * [ShuffleIntoLibrary], [PutOntoBattlefield], …) when one fits; reach for `Move` for the
+     * less-common shapes (custom placement, `fromZone` gating, face-down entry, linked exile,
+     * `positionFromTop`, controller override).
+     */
+    fun Move(
+        target: EffectTarget,
+        destination: Zone,
+        placement: ZonePlacement = ZonePlacement.Default,
+        byDestruction: Boolean = false,
+        controllerOverride: EffectTarget? = null,
+        fromZone: Zone? = null,
+        faceDown: Boolean = false,
+        linkToSource: Boolean = false,
+        positionFromTop: Int? = null
+    ): Effect = MoveToZoneEffect(
+        target = target,
+        destination = destination,
+        placement = placement,
+        byDestruction = byDestruction,
+        controllerOverride = controllerOverride,
+        fromZone = fromZone,
+        faceDown = faceDown,
+        linkToSource = linkToSource,
+        positionFromTop = positionFromTop
+    )
+
+    /**
+     * Apply [effect] to every entity matching [filter] (Rule: "each", "all"). Within the inner
+     * effect, [EffectTarget.Self] resolves to the current iteration entity.
+     *
+     * @param noRegenerate affected entities cannot be regenerated.
+     * @param simultaneous snapshot the group before applying (default true).
+     */
+    fun ForEachInGroup(
+        filter: GroupFilter,
+        effect: Effect,
+        noRegenerate: Boolean = false,
+        simultaneous: Boolean = true
+    ): Effect = ForEachInGroupEffect(filter, effect, noRegenerate, simultaneous)
 
     /**
      * Copy a card referenced by [source] into the pipeline collection [storeAs] (Rule 707.12).
@@ -2488,7 +2542,7 @@ object Effects {
         toughnessModifier: DynamicAmount,
         duration: Duration = Duration.EndOfTurn,
         grantKeyword: Keyword? = null
-    ): Effect = EffectPatterns.chooseCreatureTypeModifyStats(powerModifier, toughnessModifier, duration, grantKeyword)
+    ): Effect = CreatureTypePatterns.chooseCreatureTypeModifyStats(powerModifier, toughnessModifier, duration, grantKeyword)
 
     /**
      * Choose a creature type. Creatures of the chosen type get +X/+Y until end of turn,
@@ -2499,7 +2553,7 @@ object Effects {
         toughnessModifier: Int,
         duration: Duration = Duration.EndOfTurn,
         grantKeyword: Keyword? = null
-    ): Effect = EffectPatterns.chooseCreatureTypeModifyStats(
+    ): Effect = CreatureTypePatterns.chooseCreatureTypeModifyStats(
         DynamicAmount.Fixed(powerModifier), DynamicAmount.Fixed(toughnessModifier), duration, grantKeyword
     )
 
@@ -2570,7 +2624,7 @@ object Effects {
         target: EffectTarget,
         spellName: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.ChainCopyEffect(
-        action = EffectPatterns.discardCards(count, target),
+        action = HandPatterns.discardCards(count, target),
         target = target,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_PLAYER,
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetPlayer(),

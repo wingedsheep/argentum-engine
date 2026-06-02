@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -36,7 +35,7 @@ val JailbreakScheme = card("Jailbreak Scheme") {
         effect = ModalEffect(
             modes = listOf(
                 Mode(
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.ContextTarget(0)),
                             Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, EffectTarget.ContextTarget(0))

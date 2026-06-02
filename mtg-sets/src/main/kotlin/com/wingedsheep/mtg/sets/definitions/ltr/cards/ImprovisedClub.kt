@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Improvised Club
@@ -22,7 +22,7 @@ val ImprovisedClub = card("Improvised Club") {
     oracleText = "As an additional cost to cast this spell, sacrifice an artifact or creature.\nImprovised Club deals 4 damage to any target."
 
     additionalCost(
-        AdditionalCost.SacrificePermanent(
+        Costs.additional.SacrificePermanent(
             filter = GameObjectFilter.Artifact or GameObjectFilter.Creature
         )
     )

@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.mir.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Phyrexian Purge
@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetCreature
  *
  * Implementation: "any number of target creatures" uses `unlimited = true`, so the
  * target count has no cap — the client offers every legal target. The per-target life
- * payment uses [AdditionalCost.PayLifePerTarget] — the engine multiplies the
+ * payment uses [Costs.additional.PayLifePerTarget] — the engine multiplies the
  * payment by `action.targets.size` at cast resolution.
  */
 val PhyrexianPurge = card("Phyrexian Purge") {
@@ -30,7 +30,7 @@ val PhyrexianPurge = card("Phyrexian Purge") {
     typeLine = "Sorcery"
     oracleText = "This spell costs 3 life more to cast for each target.\nDestroy any number of target creatures."
 
-    additionalCost(AdditionalCost.PayLifePerTarget(amountPerTarget = 3))
+    additionalCost(Costs.additional.PayLifePerTarget(amountPerTarget = 3))
 
     spell {
         target = TargetCreature(unlimited = true)

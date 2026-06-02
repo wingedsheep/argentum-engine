@@ -1,13 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Tempest Hawk — Tarkir: Dragonstorm #31
@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
  * A deck can have any number of cards named Tempest Hawk.
  *
  * The combat-damage trigger reuses [Triggers.DealsCombatDamageToPlayer] + the
- * `EffectPatterns.searchLibrary` Gather→Select→Move pipeline, filtered to the card's own name via
+ * `LibraryPatterns.searchLibrary` Gather→Select→Move pipeline, filtered to the card's own name via
  * `CardPredicate.NameEquals`. The search is `ChooseUpTo(1)`, so selecting zero cards is the "you may"
  * decline (no separate yes/no needed) — the same idiom as Embermouth Sentinel's optional ETB search.
  *
@@ -42,7 +42,7 @@ val TempestHawk = card("Tempest Hawk") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter(cardPredicates = listOf(CardPredicate.NameEquals("Tempest Hawk"))),
             count = 1,
             destination = SearchDestination.HAND,

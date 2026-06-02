@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -19,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Sanar, Innovative First-Year
@@ -56,7 +56,7 @@ val SanarInnovativeFirstYear = card("Sanar, Innovative First-Year") {
 
     triggeredAbility {
         trigger = Triggers.FirstMainPhase
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Walk the library until X nonland cards have been revealed.
             GatherUntilMatchEffect(
                 filter = GameObjectFilter.Nonland,

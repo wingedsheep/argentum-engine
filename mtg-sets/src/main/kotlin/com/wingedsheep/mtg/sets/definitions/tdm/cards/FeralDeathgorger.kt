@@ -55,7 +55,7 @@ val FeralDeathgorger = card("Feral Deathgorger") {
             )
         )
         effect = ForEachTargetEffect(
-            effects = listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE))
+            effects = listOf(Effects.Move(EffectTarget.ContextTarget(0), Zone.EXILE))
         )
     }
 

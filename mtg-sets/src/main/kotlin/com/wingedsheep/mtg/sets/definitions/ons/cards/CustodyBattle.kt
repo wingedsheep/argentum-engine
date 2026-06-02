@@ -9,9 +9,9 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Custody Battle
@@ -33,7 +33,7 @@ val CustodyBattle = card("Custody Battle") {
         trigger = Triggers.phase(Step.UPKEEP, binding = TriggerBinding.ATTACHED)
         val t = target("target", TargetOpponent())
         effect = PayOrSufferEffect(
-            cost = PayCost.Sacrifice(GameObjectFilter.Land),
+            cost = Costs.pay.Sacrifice(GameObjectFilter.Land),
             suffer = GiveControlToTargetPlayerEffect(
                 permanent = EffectTarget.EnchantedCreature,
                 newController = t

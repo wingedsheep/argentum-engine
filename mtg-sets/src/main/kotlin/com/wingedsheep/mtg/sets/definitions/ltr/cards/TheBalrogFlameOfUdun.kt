@@ -7,9 +7,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * The Balrog, Flame of Udûn
@@ -38,7 +38,7 @@ val TheBalrogFlameOfUdun = card("The Balrog, Flame of Udûn") {
             to = Zone.GRAVEYARD,
             binding = TriggerBinding.ANY
         )
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             EffectTarget.Self,
             Zone.LIBRARY,
             placement = ZonePlacement.Bottom

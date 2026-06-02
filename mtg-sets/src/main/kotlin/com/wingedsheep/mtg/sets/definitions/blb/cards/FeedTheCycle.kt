@@ -3,11 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Feed the Cycle
@@ -46,7 +46,7 @@ val FeedTheCycle = card("Feed the Cycle") {
                 effect = Effects.Destroy(EffectTarget.ContextTarget(0)),
                 targetRequirements = listOf(TargetCreatureOrPlaneswalker()),
                 description = "Forage — destroy target creature or planeswalker",
-                additionalCosts = listOf(AdditionalCost.Forage)
+                additionalCosts = listOf(Costs.additional.Forage)
             ),
             countsAsModalSpell = false
         )

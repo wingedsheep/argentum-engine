@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -29,7 +28,7 @@ val AbzanCharm = card("Abzan Charm") {
         modal(chooseCount = 1) {
             mode("Exile target creature with power 3 or greater") {
                 val t = target("target", TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.powerAtLeast(3))))
-                effect = MoveToZoneEffect(t, Zone.EXILE)
+                effect = Effects.Move(t, Zone.EXILE)
             }
             mode("You draw two cards and you lose 2 life") {
                 effect = Effects.DrawCards(2) then Effects.LoseLife(2, EffectTarget.Controller)

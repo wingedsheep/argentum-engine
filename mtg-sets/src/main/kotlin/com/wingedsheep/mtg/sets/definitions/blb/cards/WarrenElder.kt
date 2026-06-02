@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Warren Elder
@@ -24,7 +24,7 @@ val WarrenElder = card("Warren Elder") {
 
     activatedAbility {
         cost = Costs.Mana("{3}{W}")
-        effect = EffectPatterns.modifyStatsForAll(1, 1, GroupFilter.AllCreaturesYouControl)
+        effect = GroupPatterns.modifyStatsForAll(1, 1, GroupFilter.AllCreaturesYouControl)
     }
 
     metadata {

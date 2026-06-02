@@ -5,13 +5,12 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Ruinous Rampage
@@ -34,9 +33,9 @@ val RuinousRampage = card("Ruinous Rampage") {
                 "Ruinous Rampage deals 3 damage to each opponent"
             ),
             Mode.noTarget(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter(GameObjectFilter.Artifact.manaValueAtMost(3)),
-                    effect = MoveToZoneEffect(EffectTarget.Self, Zone.EXILE)
+                    effect = Effects.Move(EffectTarget.Self, Zone.EXILE)
                 ),
                 "Exile all artifacts with mana value 3 or less"
             )

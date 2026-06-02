@@ -23,6 +23,7 @@ execution logic. Consumed by `mtg-sets` (content) and `rules-engine` (execution)
   catalog and rots fast otherwise.
 - **All `Effect`, `Trigger`, `StaticAbility`, `TargetRequirement`, `Condition`, etc. subtypes must be
   `@Serializable`.** `CardDefinition` is serialized for transport; a missing annotation fails at runtime.
-- **Use the facades, not raw constructors** — `Effects.*`, `EffectPatterns.*`, `Triggers.*`, `Costs.*`,
+- **Use the facades, not raw constructors** — `Effects.*`, the pattern objects (`LibraryPatterns.*`,
+  `HandPatterns.*`, `GroupPatterns.*`, `ExilePatterns.*`, `CreatureTypePatterns.*`, `MiscPatterns.*`), `Triggers.*`, `Costs.*`,
   `Conditions.*`, `Filters.*`. Direct data-class construction bypasses the curated API surface and
   ages badly when the underlying shape changes.

@@ -6,9 +6,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Retched Wretch
@@ -31,7 +31,7 @@ val RetchedWretch = card("Retched Wretch") {
     triggeredAbility {
         trigger = Triggers.Dies
         triggerCondition = Conditions.TriggeringEntityHadMinusOneMinusOneCounter
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = EffectTarget.Self,
             destination = Zone.BATTLEFIELD
         ) then RemoveAllAbilitiesEffect(

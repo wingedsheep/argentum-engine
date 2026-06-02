@@ -6,8 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Gangrenous Goliath
  * {3}{B}{B}
@@ -25,7 +24,7 @@ val GangrenousGoliath = card("Gangrenous Goliath") {
 
     activatedAbility {
         cost = Costs.TapPermanents(3, GameObjectFilter.Creature.withSubtype("Cleric"))
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         activateFromZone = Zone.GRAVEYARD
     }
 

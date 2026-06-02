@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Temur Charger
  * {1}{G}
@@ -26,7 +25,7 @@ val TemurCharger = card("Temur Charger") {
     toughness = 1
     oracleText = "Morph—Reveal a green card in your hand. (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)\nWhen Temur Charger is turned face up, target creature gains trample until end of turn."
 
-    morphCost = PayCost.RevealCard(filter = GameObjectFilter.Any.withColor(Color.GREEN))
+    morphCost = Costs.pay.RevealCard(filter = GameObjectFilter.Any.withColor(Color.GREEN))
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp

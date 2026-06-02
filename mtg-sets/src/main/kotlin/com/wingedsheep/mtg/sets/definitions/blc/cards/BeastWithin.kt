@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -23,7 +22,7 @@ val BeastWithin = card("Beast Within") {
 
     spell {
         val permanent = target("permanent", Targets.Permanent)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.Destroy(permanent),
                 Effects.CreateToken(

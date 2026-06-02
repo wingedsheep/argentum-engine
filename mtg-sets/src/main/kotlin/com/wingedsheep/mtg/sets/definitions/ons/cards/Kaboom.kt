@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Kaboom!
@@ -22,7 +22,7 @@ val Kaboom = card("Kaboom!") {
 
     spell {
         target = TargetPlayer(unlimited = true)
-        effect = EffectPatterns.revealUntilNonlandDealDamageEachTarget()
+        effect = LibraryPatterns.revealUntilNonlandDealDamageEachTarget()
     }
 
     metadata {

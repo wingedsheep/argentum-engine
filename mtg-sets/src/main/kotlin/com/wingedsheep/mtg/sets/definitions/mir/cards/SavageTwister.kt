@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.mir.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Savage Twister
@@ -19,7 +19,7 @@ val SavageTwister = card("Savage Twister") {
     oracleText = "Savage Twister deals X damage to each creature."
 
     spell {
-        effect = EffectPatterns.dealDamageToAll(DynamicAmount.XValue, GroupFilter.AllCreatures)
+        effect = GroupPatterns.dealDamageToAll(DynamicAmount.XValue, GroupFilter.AllCreatures)
     }
 
     metadata {

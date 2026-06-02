@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Overlord of the Balemurk
@@ -54,7 +54,7 @@ val OverlordOfTheBalemurk = card("Overlord of the Balemurk") {
     // "Mill four cards, then you may return a non-Avatar creature card or a planeswalker
     // card from your graveyard to your hand." Shared by the enters and attacks triggers.
     val returnableFilter = GameObjectFilter.Creature.notSubtype(Subtype.AVATAR) or GameObjectFilter.Planeswalker
-    val millAndReturn: Effect = CompositeEffect(
+    val millAndReturn: Effect = Effects.Composite(
         listOf(
             // Mill four cards.
             GatherCardsEffect(

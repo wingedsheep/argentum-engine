@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
@@ -40,7 +39,7 @@ val Void = card("Void") {
     spell {
         val targetPlayer = target("target player", TargetPlayer())
         effect = Effects.ChooseNumberThen(
-            then = CompositeEffect(
+            then = Effects.Composite(
                 listOf(
                     // Destroy all artifacts and creatures with mana value equal to the chosen number.
                     Effects.DestroyAll(

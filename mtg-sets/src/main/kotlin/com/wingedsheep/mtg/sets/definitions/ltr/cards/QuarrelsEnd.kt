@@ -4,9 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Quarrel's End
  * {2}{R}
@@ -21,10 +19,10 @@ val QuarrelsEnd = card("Quarrel's End") {
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, discard a card.\nDraw two cards and create a 1/1 white Human Soldier creature token."
 
-    additionalCost(AdditionalCost.DiscardCards())
+    additionalCost(Costs.additional.DiscardCards())
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(2),
                 Effects.CreateToken(

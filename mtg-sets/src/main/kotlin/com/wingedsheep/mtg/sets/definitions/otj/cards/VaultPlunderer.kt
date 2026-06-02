@@ -5,8 +5,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Vault Plunderer
  * {2}{B}
@@ -25,7 +23,7 @@ val VaultPlunderer = card("Vault Plunderer") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val t = target("target", Targets.Player)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(1, t),
                 Effects.LoseLife(1, t),

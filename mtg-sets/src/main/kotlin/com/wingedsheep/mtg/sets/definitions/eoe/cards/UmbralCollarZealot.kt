@@ -2,10 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Umbral Collar Zealot
@@ -24,7 +24,7 @@ val UmbralCollarZealot = card("Umbral Collar Zealot") {
 
     activatedAbility {
         cost = Costs.SacrificeAnother(GameObjectFilter.Creature.or(GameObjectFilter.Artifact))
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
         description = "Sacrifice another creature or artifact: Surveil 1."
     }
 

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -34,7 +33,7 @@ val Metamorphose = card("Metamorphose") {
 
     spell {
         val permanent = target("permanent an opponent controls", Targets.PermanentOpponentControls)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Put targeted permanent on top of its owner's library
                 Effects.PutOnTopOfLibrary(permanent),

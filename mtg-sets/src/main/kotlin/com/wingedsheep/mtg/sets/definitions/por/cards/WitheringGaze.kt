@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -26,7 +25,7 @@ val WitheringGaze = card("Withering Gaze") {
 
     spell {
         target = TargetOpponent()
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 RevealHandEffect(EffectTarget.ContextTarget(0)),
                 Effects.DrawCards(

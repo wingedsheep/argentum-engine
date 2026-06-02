@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Roar of Endless Song
@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
  * I, II — Create a 5/5 green Elephant creature token.
  * III — Double the power and toughness of each creature you control until end of turn.
  *
- * Chapter III composes the reusable [EffectPatterns.doublePowerAndToughnessForAll] helper
+ * Chapter III composes the reusable [GroupPatterns.doublePowerAndToughnessForAll] helper
  * (shared with Unnatural Growth) — no card-specific doubling logic.
  */
 val RoarOfEndlessSong = card("Roar of Endless Song") {
@@ -50,7 +50,7 @@ val RoarOfEndlessSong = card("Roar of Endless Song") {
     }
 
     sagaChapter(3) {
-        effect = EffectPatterns.doublePowerAndToughnessForAll(Filters.Group.creaturesYouControl)
+        effect = GroupPatterns.doublePowerAndToughnessForAll(Filters.Group.creaturesYouControl)
     }
 
     metadata {

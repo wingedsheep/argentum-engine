@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 
@@ -39,11 +38,11 @@ val KamahlFistOfKrosa = card("Kamahl, Fist of Krosa") {
         cost = Costs.Mana("{2}{G}{G}{G}")
         description = "{2}{G}{G}{G}: Creatures you control get +3/+3 and gain trample until end of turn."
         effect = Effects.Composite(
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl()),
                 effect = ModifyStatsEffect(3, 3, EffectTarget.Self)
             ),
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl()),
                 effect = GrantKeywordEffect(Keyword.TRAMPLE, EffectTarget.Self)
             )

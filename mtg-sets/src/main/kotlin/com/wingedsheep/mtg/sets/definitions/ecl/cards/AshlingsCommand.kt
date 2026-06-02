@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Ashling's Command
@@ -47,7 +47,7 @@ val AshlingsCommand = card("Ashling's Command") {
             }
             mode("Ashling's Command deals 2 damage to each creature target player controls") {
                 val player = target("target player", TargetPlayer())
-                effect = EffectPatterns.dealDamageToAll(
+                effect = GroupPatterns.dealDamageToAll(
                     amount = 2,
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
                 )

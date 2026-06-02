@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -17,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Thornplate Intimidator {3}{B}
@@ -66,7 +66,7 @@ val ThornplateIntimidator = card("Thornplate Intimidator") {
                 ),
                 EffectChoice(
                     label = "Discard a card",
-                    effect = EffectPatterns.discardCards(1, opponent),
+                    effect = HandPatterns.discardCards(1, opponent),
                     feasibilityCheck = FeasibilityCheck.HasCardsInZone(Zone.HAND)
                 ),
                 EffectChoice(

@@ -2,10 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Pillaging Horde
@@ -24,7 +24,7 @@ val PillagingHorde = card("Pillaging Horde") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = PayOrSufferEffect(
-            cost = PayCost.Discard(random = true),
+            cost = Costs.pay.Discard(random = true),
             suffer = SacrificeSelfEffect
         )
     }

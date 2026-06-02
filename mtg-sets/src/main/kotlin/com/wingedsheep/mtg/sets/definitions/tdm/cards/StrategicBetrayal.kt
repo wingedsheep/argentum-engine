@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Strategic Betrayal — Tarkir: Dragonstorm #94
@@ -34,7 +34,7 @@ val StrategicBetrayal = card("Strategic Betrayal") {
 
     spell {
         target("target opponent", Targets.Opponent)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.BattlefieldMatching(
@@ -45,7 +45,7 @@ val StrategicBetrayal = card("Strategic Betrayal") {
                 ),
                 ConditionalOnCollectionEffect(
                     collection = "creaturesCanExile",
-                    ifNotEmpty = CompositeEffect(
+                    ifNotEmpty = Effects.Composite(
                         listOf(
                             SelectFromCollectionEffect(
                                 from = "creaturesCanExile",

@@ -8,9 +8,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Deathmark Prelate
@@ -37,7 +37,7 @@ val DeathmarkPrelate = card("Deathmark Prelate") {
         timing = TimingRule.SorcerySpeed
         val t = target("non-Zombie creature", TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype("Zombie")))))
         effect = CantBeRegeneratedEffect(t) then
-                MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+                Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

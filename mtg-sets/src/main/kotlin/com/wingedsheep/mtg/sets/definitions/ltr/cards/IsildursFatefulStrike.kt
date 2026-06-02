@@ -7,14 +7,13 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Isildur's Fateful Strike
@@ -43,9 +42,9 @@ val IsildursFatefulStrike = card("Isildur's Fateful Strike") {
             )
         )
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                MoveToZoneEffect(creature, Zone.GRAVEYARD, byDestruction = true),
+                Effects.Move(creature, Zone.GRAVEYARD, byDestruction = true),
                 GatherCardsEffect(
                     source = CardSource.FromZone(Zone.HAND, controller),
                     storeAs = "controllerHand"

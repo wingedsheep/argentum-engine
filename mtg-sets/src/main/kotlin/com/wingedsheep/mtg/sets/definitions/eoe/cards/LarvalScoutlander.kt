@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -22,6 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Larval Scoutlander
@@ -56,7 +56,7 @@ val LarvalScoutlander = card("Larval Scoutlander") {
                 count = 1,
                 target = EffectTarget.Controller
             ).then(
-                EffectPatterns.searchLibrary(
+                LibraryPatterns.searchLibrary(
                     filter = GameObjectFilter.BasicLand,
                     count = 2,
                     destination = SearchDestination.BATTLEFIELD,

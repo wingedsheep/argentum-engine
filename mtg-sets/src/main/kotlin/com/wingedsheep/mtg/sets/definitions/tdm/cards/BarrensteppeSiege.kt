@@ -12,7 +12,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModeOption
 import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -69,7 +68,7 @@ val BarrensteppeSiege = card("Barrensteppe Siege") {
     triggeredAbility {
         trigger = Triggers.YourEndStep
         triggerCondition = SourceChosenModeIs("abzan")
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesYouControl,
             effect = AddCountersEffect(
                 counterType = Counters.PLUS_ONE_PLUS_ONE,

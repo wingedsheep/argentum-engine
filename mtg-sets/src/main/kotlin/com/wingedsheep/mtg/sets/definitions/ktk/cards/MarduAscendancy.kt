@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Mardu Ascendancy
@@ -45,7 +45,7 @@ val MarduAscendancy = card("Mardu Ascendancy") {
 
     activatedAbility {
         cost = Costs.SacrificeSelf
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             power = 0,
             toughness = 3,
             filter = GroupFilter.AllCreaturesYouControl

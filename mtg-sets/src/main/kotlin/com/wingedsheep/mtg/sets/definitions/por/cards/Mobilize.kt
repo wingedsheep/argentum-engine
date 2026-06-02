@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Mobilize
@@ -19,7 +19,7 @@ val Mobilize = card("Mobilize") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(GroupFilter.AllCreaturesYouControl, TapUntapEffect(EffectTarget.Self, tap = false))
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreaturesYouControl, TapUntapEffect(EffectTarget.Self, tap = false))
     }
 
     metadata {

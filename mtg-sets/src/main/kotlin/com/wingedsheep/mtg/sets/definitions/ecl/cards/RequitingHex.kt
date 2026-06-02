@@ -4,11 +4,11 @@ import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Requiting Hex
@@ -29,7 +29,7 @@ val RequitingHex = card("Requiting Hex") {
         "Destroy target creature with mana value 2 or less. " +
         "If this spell's additional cost was paid, you gain 2 life."
 
-    additionalCost(AdditionalCost.BlightOrPay(blightAmount = 1, alternativeManaCost = ""))
+    additionalCost(Costs.additional.BlightOrPay(blightAmount = 1, alternativeManaCost = ""))
 
     spell {
         val creature = target(

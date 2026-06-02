@@ -3,8 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Endemic Plague
@@ -20,7 +20,7 @@ val EndemicPlague = card("Endemic Plague") {
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, sacrifice a creature. Destroy all creatures that share a creature type with the sacrificed creature. They can't be regenerated."
 
-    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Creature))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
 
     spell {
         effect = Effects.DestroyAllSharingTypeWithSacrificed(noRegenerate = true)

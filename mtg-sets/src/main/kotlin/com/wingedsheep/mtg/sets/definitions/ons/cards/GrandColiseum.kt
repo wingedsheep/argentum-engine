@@ -5,12 +5,12 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Grand Coliseum
@@ -35,7 +35,7 @@ val GrandColiseum = card("Grand Coliseum") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 AddManaOfChoiceEffect(ManaColorSet.AnyColor, 1),
                 DealDamageEffect(1, EffectTarget.Controller, damageSource = EffectTarget.Self)

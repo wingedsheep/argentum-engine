@@ -7,11 +7,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Ifh-Bíff Efreet
@@ -34,7 +34,7 @@ val IfhBiffEfreet = card("Ifh-Bíff Efreet") {
 
     activatedAbility {
         cost = Costs.Mana("{G}")
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter(GameObjectFilter.Creature.withKeyword(Keyword.FLYING)),
             DealDamageEffect(1, EffectTarget.Self),
         ).then(

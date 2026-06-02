@@ -14,9 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
@@ -68,7 +66,7 @@ val KastralTheWindcrested = card("Kastral, the Windcrested") {
             // Mode 1: Put a Bird creature card from your hand or graveyard onto the battlefield
             // with a finality counter on it (optional — "you may")
             Mode.noTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.FromMultipleZones(
@@ -95,7 +93,7 @@ val KastralTheWindcrested = card("Kastral, the Windcrested") {
             ),
             // Mode 2: Put a +1/+1 counter on each Bird you control
             Mode.noTarget(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Bird").youControl()),
                     effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
                 ),

@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -49,7 +48,7 @@ val GlacialDragonhunt = card("Glacial Dragonhunt") {
         "Then exile this spell.)"
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(1),
                 GatherCardsEffect(
@@ -73,7 +72,7 @@ val GlacialDragonhunt = card("Glacial Dragonhunt") {
                 ConditionalOnCollectionEffect(
                     collection = "discarded",
                     filter = GameObjectFilter.Nonland,
-                    ifNotEmpty = CompositeEffect(
+                    ifNotEmpty = Effects.Composite(
                         listOf(
                             GatherCardsEffect(
                                 source = CardSource.BattlefieldMatching(

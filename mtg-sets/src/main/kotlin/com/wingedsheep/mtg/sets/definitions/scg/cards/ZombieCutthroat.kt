@@ -2,8 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.scg.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Zombie Cutthroat
  * {3}{B}{B}
@@ -20,7 +19,7 @@ val ZombieCutthroat = card("Zombie Cutthroat") {
     toughness = 4
     oracleText = "Morph—Pay 5 life."
 
-    morphCost = PayCost.PayLife(5)
+    morphCost = Costs.pay.PayLife(5)
 
     metadata {
         rarity = Rarity.COMMON

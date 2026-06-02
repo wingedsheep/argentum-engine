@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -17,6 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Champion of the Path
@@ -40,7 +40,7 @@ val ChampionOfThePath = card("Champion of the Path") {
         "Whenever another Elemental you control enters, it deals damage equal to its power to each opponent.\n" +
         "When this creature leaves the battlefield, return the exiled card to its owner's hand."
 
-    additionalCost(AdditionalCost.BeholdAndExile(filter = Filters.WithSubtype("Elemental")))
+    additionalCost(Costs.additional.BeholdAndExile(filter = Filters.WithSubtype("Elemental")))
 
     triggeredAbility {
         trigger = TriggerSpec(

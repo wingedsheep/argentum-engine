@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Esquire of the King
@@ -30,7 +30,7 @@ val EsquireOfTheKing = card("Esquire of the King") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{4}{W}"), Costs.Tap)
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             1, 1,
             GroupFilter(GameObjectFilter.Creature.youControl())
         )

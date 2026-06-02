@@ -5,8 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
 /**
  * Cremate
  * {B}
@@ -22,7 +20,7 @@ val Cremate = card("Cremate") {
 
     spell {
         val t = target("target", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(t, Zone.EXILE)
+        effect = Effects.Move(t, Zone.EXILE)
             .then(Effects.DrawCards(1))
     }
 

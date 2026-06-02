@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -37,9 +35,9 @@ val AragornAndArwenWed = card("Aragorn and Arwen, Wed") {
 
     keywords(Keyword.VIGILANCE)
 
-    val effectBody = CompositeEffect(
+    val effectBody = Effects.Composite(
         listOf(
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true),
                 effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
             ),

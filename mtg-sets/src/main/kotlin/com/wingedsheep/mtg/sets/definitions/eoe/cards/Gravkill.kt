@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Gravkill
@@ -23,7 +23,7 @@ val Gravkill = card("Gravkill") {
 
     spell {
         val target = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Creature or GameObjectFilter.Permanent.withSubtype("Spacecraft"))))
-        effect = MoveToZoneEffect(target, Zone.EXILE)
+        effect = Effects.Move(target, Zone.EXILE)
     }
 
     metadata {

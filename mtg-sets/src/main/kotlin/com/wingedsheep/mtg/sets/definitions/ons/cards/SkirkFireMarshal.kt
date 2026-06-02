@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -34,7 +33,7 @@ val SkirkFireMarshal = card("Skirk Fire Marshal") {
 
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Goblin"))
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(10, EffectTarget.Self)) then Effects.DealDamage(10, EffectTarget.PlayerRef(Player.Each))
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures, DealDamageEffect(10, EffectTarget.Self)) then Effects.DealDamage(10, EffectTarget.PlayerRef(Player.Each))
     }
 
     metadata {

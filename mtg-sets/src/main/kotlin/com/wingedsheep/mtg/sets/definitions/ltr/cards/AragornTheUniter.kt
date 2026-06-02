@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -12,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Aragorn, the Uniter
@@ -49,7 +49,7 @@ val AragornTheUniter = card("Aragorn, the Uniter") {
 
     triggeredAbility {
         trigger = Triggers.youCastSpell(spellFilter = GameObjectFilter.Any.withColor(Color.BLUE))
-        effect = EffectPatterns.scry(2)
+        effect = LibraryPatterns.scry(2)
     }
 
     triggeredAbility {

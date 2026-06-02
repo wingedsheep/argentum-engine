@@ -7,10 +7,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -19,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Aether Rift
@@ -46,7 +45,7 @@ val AetherRift = card("Aether Rift") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Discard a card at random, remembering it as "discarded".
                 GatherCardsEffect(
@@ -67,7 +66,7 @@ val AetherRift = card("Aether Rift") {
                 ConditionalEffect(
                     condition = Conditions.CollectionContainsMatch("discarded", GameObjectFilter.Creature),
                     effect = Effects.UnlessAnyPlayerPays(
-                        cost = PayCost.PayLife(5),
+                        cost = Costs.pay.PayLife(5),
                         effect = MoveCollectionEffect(
                             from = "discarded",
                             destination = CardDestination.ToZone(Zone.BATTLEFIELD, Player.You)

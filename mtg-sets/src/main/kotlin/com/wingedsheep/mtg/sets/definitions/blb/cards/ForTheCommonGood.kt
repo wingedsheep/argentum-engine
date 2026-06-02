@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -15,6 +14,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * For the Common Good
@@ -38,7 +38,7 @@ val ForTheCommonGood = card("For the Common Good") {
             target = token,
             count = DynamicAmount.XValue
         ).then(
-            EffectPatterns.grantKeywordToAll(
+            GroupPatterns.grantKeywordToAll(
                 keyword = Keyword.INDESTRUCTIBLE,
                 filter = GroupFilter(baseFilter = GameObjectFilter.Token.youControl()),
                 duration = Duration.UntilYourNextTurn

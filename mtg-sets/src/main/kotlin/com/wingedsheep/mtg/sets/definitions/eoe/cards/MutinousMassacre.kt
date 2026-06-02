@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -38,17 +37,17 @@ val MutinousMassacre = card("Mutinous Massacre") {
             mode("Odd") {
                 effect = Effects.Composite(
                     Effects.DestroyAll(GameObjectFilter.Creature.manaValueIsOdd()),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, GainControlEffect(EffectTarget.Self, Duration.EndOfTurn)),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = false)),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self, Duration.EndOfTurn))
+                    Effects.ForEachInGroup(GroupFilter.AllCreatures, GainControlEffect(EffectTarget.Self, Duration.EndOfTurn)),
+                    Effects.ForEachInGroup(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = false)),
+                    Effects.ForEachInGroup(GroupFilter.AllCreatures, GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self, Duration.EndOfTurn))
                 )
             }
             mode("Even") {
                 effect = Effects.Composite(
                     Effects.DestroyAll(GameObjectFilter.Creature.manaValueIsEven()),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, GainControlEffect(EffectTarget.Self, Duration.EndOfTurn)),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = false)),
-                    ForEachInGroupEffect(GroupFilter.AllCreatures, GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self, Duration.EndOfTurn))
+                    Effects.ForEachInGroup(GroupFilter.AllCreatures, GainControlEffect(EffectTarget.Self, Duration.EndOfTurn)),
+                    Effects.ForEachInGroup(GroupFilter.AllCreatures, TapUntapEffect(EffectTarget.Self, tap = false)),
+                    Effects.ForEachInGroup(GroupFilter.AllCreatures, GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self, Duration.EndOfTurn))
                 )
             }
         }

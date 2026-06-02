@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -84,7 +83,7 @@ val TeferiTemporalPilgrim = card("Teferi, Temporal Pilgrim") {
     //      hand. Then they shuffle each nonland permanent they control into its owner's library.
     loyaltyAbility(-12) {
         target("opponent", Targets.Opponent)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Target opponent picks a permanent they control; return it to its owner's hand.
                 GatherCardsEffect(

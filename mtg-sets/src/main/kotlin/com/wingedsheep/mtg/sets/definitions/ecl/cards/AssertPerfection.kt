@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -31,7 +30,7 @@ val AssertPerfection = card("Assert Perfection") {
             "up to one creature an opponent controls",
             TargetCreature(optional = true, filter = TargetFilter.CreatureOpponentControls)
         )
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(1, 0, myCreature),
                 Effects.DealDamage(

@@ -2,11 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Carrot Cake {1}{W}
@@ -32,7 +32,7 @@ val CarrotCake = card("Carrot Cake") {
         colors = setOf(Color.WHITE),
         creatureTypes = setOf("Rabbit"),
         imageUri = "https://cards.scryfall.io/normal/front/8/1/81de52ef-7515-4958-abea-fb8ebdcef93c.jpg?1721431122"
-    ).then(EffectPatterns.scry(1))
+    ).then(LibraryPatterns.scry(1))
 
     // When this artifact enters — create Rabbit token + scry 1
     triggeredAbility {

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -37,7 +36,7 @@ val PulsarSquadronAce = card("Pulsar Squadron Ace") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // 1. Look at the top five cards of your library
                 GatherCardsEffect(
@@ -67,7 +66,7 @@ val PulsarSquadronAce = card("Pulsar Squadron Ace") {
                 // 4. If you didn't put a card into your hand this way, put a +1/+1 counter on this creature
                 ConditionalOnCollectionEffect(
                     collection = "kept",
-                    ifNotEmpty = CompositeEffect(listOf()), // If cards were kept, do nothing
+                    ifNotEmpty = Effects.Composite(listOf()), // If cards were kept, do nothing
                     ifEmpty = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self) // If no cards kept, add counter
                 ),
                 MoveCollectionEffect(

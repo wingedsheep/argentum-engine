@@ -1,15 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Wear Down
@@ -32,7 +31,7 @@ val WearDown = card("Wear Down") {
     oracleText = "Gift a card (You may promise an opponent a gift as you cast this spell. If you do, they draw a card before its other effects.)\nDestroy target artifact or enchantment. If the gift was promised, instead destroy two target artifacts and/or enchantments."
 
     spell {
-        effect = EffectPatterns.giftSpell(
+        effect = MiscPatterns.giftSpell(
             // Mode 1: No gift — destroy one artifact or enchantment
             Mode.withTarget(
                 Effects.Destroy(EffectTarget.ContextTarget(0)),
@@ -41,7 +40,7 @@ val WearDown = card("Wear Down") {
             ),
             // Mode 2: Gift a card — opponent draws, then destroy two artifacts and/or enchantments
             Mode(
-                effect = CompositeEffect(
+                effect = Effects.Composite(
                     listOf(
                         DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                         Effects.Destroy(EffectTarget.ContextTarget(0)),

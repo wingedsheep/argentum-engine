@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.dsl.CreatureTypePatterns
 
 /**
  * Bloodline Shaman
@@ -24,7 +24,7 @@ val BloodlineShaman = card("Bloodline Shaman") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = EffectPatterns.chooseCreatureTypeRevealTop()
+        effect = CreatureTypePatterns.chooseCreatureTypeRevealTop()
     }
 
     metadata {

@@ -270,9 +270,9 @@ class ManaPaymentContinuationResumer(
         }
 
         val discardEffect = if (continuation.random) {
-            com.wingedsheep.sdk.dsl.EffectPatterns.discardRandom(continuation.count)
+            com.wingedsheep.sdk.dsl.HandPatterns.discardRandom(continuation.count)
         } else {
-            com.wingedsheep.sdk.dsl.EffectPatterns.discardCards(continuation.count)
+            com.wingedsheep.sdk.dsl.HandPatterns.discardCards(continuation.count)
         }
 
         val opponentId = state.turnOrder.firstOrNull { it != continuation.payingPlayerId }

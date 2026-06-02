@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
@@ -42,7 +41,7 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
     // ETB: Choose four nonenchantment permanents you don't control, put aim counters on them
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.Nonenchantment.opponentControls()
@@ -72,7 +71,7 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(2)
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.Any.withCounter(Counters.AIM).opponentControls()

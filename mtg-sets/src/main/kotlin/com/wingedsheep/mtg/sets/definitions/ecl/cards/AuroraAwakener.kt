@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Aurora Awakener
@@ -43,7 +43,7 @@ val AuroraAwakener = card("Aurora Awakener") {
     keywords(Keyword.TRAMPLE)
 
     vividEtb { colorCount ->
-        CompositeEffect(listOf(
+        Effects.Composite(listOf(
             GatherUntilMatchEffect(
                 filter = GameObjectFilter.Permanent,
                 storeMatch = "permanentsFound",

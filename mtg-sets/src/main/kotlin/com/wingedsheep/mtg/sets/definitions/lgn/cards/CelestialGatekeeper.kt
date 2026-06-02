@@ -7,12 +7,12 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Celestial Gatekeeper
@@ -49,9 +49,9 @@ val CelestialGatekeeper = card("Celestial Gatekeeper") {
                 zone = Zone.GRAVEYARD
             )
         )
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.EXILE) then
+        effect = Effects.Move(EffectTarget.Self, Zone.EXILE) then
             ForEachTargetEffect(
-                effects = listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD))
+                effects = listOf(Effects.Move(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD))
             )
     }
 

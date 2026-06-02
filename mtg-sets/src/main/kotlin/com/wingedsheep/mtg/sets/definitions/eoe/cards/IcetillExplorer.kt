@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantAdditionalLandDrop
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Icetill Explorer
@@ -34,7 +34,7 @@ val IcetillExplorer = card("Icetill Explorer") {
 
     triggeredAbility {
         trigger = Triggers.LandYouControlEnters
-        effect = EffectPatterns.mill(1)
+        effect = LibraryPatterns.mill(1)
         description = "Landfall — Whenever a land you control enters, mill a card."
     }
 

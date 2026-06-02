@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Counters
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Poised Practitioner
@@ -26,7 +26,7 @@ val PoisedPractitioner = card("Poised Practitioner") {
 
     flurry {
         effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
-            .then(EffectPatterns.scry(1))
+            .then(LibraryPatterns.scry(1))
     }
 
     metadata {

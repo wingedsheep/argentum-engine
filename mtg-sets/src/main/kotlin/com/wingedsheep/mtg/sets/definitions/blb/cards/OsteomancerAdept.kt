@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantCastCreaturesFromGraveyardWith
  *
  * Engine support:
  * - Finality counter death replacement: implemented in ZoneMovementUtils
- * - Forage additional cost: AdditionalCost.Forage + CostHandler validation
+ * - Forage additional cost: Costs.additional.Forage + CostHandler validation
  * - Graveyard casting permission: MayCastCreaturesFromGraveyardWithForageComponent
  * - Legal action enumeration: CastFromZoneEnumerator.enumerateGraveyardCreaturesWithForage
  *

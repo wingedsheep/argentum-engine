@@ -4,12 +4,11 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Aggravated Assault
@@ -27,9 +26,9 @@ val AggravatedAssault = card("Aggravated Assault") {
     activatedAbility {
         cost = Costs.Mana("{3}{R}{R}")
         timing = TimingRule.SorcerySpeed
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                ForEachInGroupEffect(GroupFilter.AllCreaturesYouControl, TapUntapEffect(EffectTarget.Self, tap = false)),
+                Effects.ForEachInGroup(GroupFilter.AllCreaturesYouControl, TapUntapEffect(EffectTarget.Self, tap = false)),
                 AddCombatPhaseEffect
             )
         )

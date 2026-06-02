@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Ruthless Ripper
  * {B}
@@ -29,7 +28,7 @@ val RuthlessRipper = card("Ruthless Ripper") {
 
     keywords(Keyword.DEATHTOUCH)
 
-    morphCost = PayCost.RevealCard(filter = GameObjectFilter.Any.withColor(Color.BLACK))
+    morphCost = Costs.pay.RevealCard(filter = GameObjectFilter.Any.withColor(Color.BLACK))
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp

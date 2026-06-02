@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.effects.BudgetModalEffect
 import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -57,7 +56,7 @@ val SeasonOfTheBold = card("Season of the Bold") {
                 // {P}{P} — Exile top 2 and play until end of next turn
                 BudgetMode(
                     cost = 2,
-                    effect = CompositeEffect(listOf(
+                    effect = Effects.Composite(listOf(
                         GatherCardsEffect(
                             source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
                             storeAs = "exiledCards"

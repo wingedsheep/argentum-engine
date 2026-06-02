@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Hymn of the Faller
@@ -23,7 +23,7 @@ val HymnOfTheFaller = card("Hymn of the Faller") {
         "Void — If a nonland permanent left the battlefield this turn or a spell was warped this turn, draw another card."
 
     spell {
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
             .then(Effects.DrawCards(1))
             .then(Effects.LoseLife(1, EffectTarget.Controller))
             .then(ConditionalEffect(Conditions.Void, Effects.DrawCards(1)))

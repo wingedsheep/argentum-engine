@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Sultai Soothsayer
@@ -23,7 +23,7 @@ val SultaiSoothsayer = card("Sultai Soothsayer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.lookAtTopAndKeep(
+        effect = LibraryPatterns.lookAtTopAndKeep(
             count = 4,
             keepCount = 1
         )

@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Taigam's Scheming
@@ -21,7 +21,7 @@ val TaigamsScheming = card("Taigam's Scheming") {
     oracleText = "Surveil 5. (Look at the top five cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)"
 
     spell {
-        effect = EffectPatterns.surveil(5)
+        effect = LibraryPatterns.surveil(5)
     }
 
     metadata {

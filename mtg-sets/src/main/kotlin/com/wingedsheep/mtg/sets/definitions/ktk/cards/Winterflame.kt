@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -35,7 +34,7 @@ val Winterflame = card("Winterflame") {
             mode("Tap target creature and deal 2 damage to target creature") {
                 val tapTarget = target("creature to tap", TargetCreature())
                 val damageTarget = target("creature to damage", TargetCreature())
-                effect = CompositeEffect(listOf(
+                effect = Effects.Composite(listOf(
                     Effects.Tap(tapTarget),
                     DealDamageEffect(2, damageTarget)
                 ))

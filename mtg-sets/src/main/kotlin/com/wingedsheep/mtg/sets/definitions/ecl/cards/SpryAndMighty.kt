@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -43,7 +42,7 @@ val SpryAndMighty = card("Spry and Mighty") {
         )
         val x = DynamicAmount.VariableReference("x")
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             effects = listOf(
                 Effects.StoreNumber("x", diff),
                 Effects.DrawCards(x),

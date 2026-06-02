@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 
 /**
@@ -31,7 +30,7 @@ val PhyrexianScriptures = card("Phyrexian Scriptures") {
 
     sagaChapter(1) {
         val creature = target("creature", Targets.UpToCreatures(1))
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature),
             Effects.AddCardType("ARTIFACT", creature)
         ))

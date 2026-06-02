@@ -4,10 +4,10 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Hasran Ogress
@@ -27,7 +27,7 @@ val HasranOgress = card("Hasran Ogress") {
     triggeredAbility {
         trigger = Triggers.Attacks
         effect = PayOrSufferEffect(
-            cost = PayCost.Mana(ManaCost.parse("{2}")),
+            cost = Costs.pay.Mana(ManaCost.parse("{2}")),
             suffer = DealDamageEffect(3, EffectTarget.Controller),
         )
     }

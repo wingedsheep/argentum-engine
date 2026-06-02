@@ -4,8 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Bogslither's Embrace
  * {1}{B}
@@ -23,7 +22,7 @@ val BogslithersEmbrace = card("Bogslither's Embrace") {
         "(To blight 1, put a -1/-1 counter on a creature you control.)\n" +
         "Exile target creature."
 
-    additionalCost(AdditionalCost.BlightOrPay(blightAmount = 1, alternativeManaCost = "{3}"))
+    additionalCost(Costs.additional.BlightOrPay(blightAmount = 1, alternativeManaCost = "{3}"))
 
     spell {
         val creature = target("creature", Targets.Creature)

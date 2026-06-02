@@ -5,11 +5,11 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Close Encounter
@@ -38,7 +38,7 @@ val CloseEncounter = card("Close Encounter") {
     // "You control" / "you own" are implicit — per-zone iteration already
     // restricts to the caster's battlefield and the caster's exile sub-zone.
     additionalCost(
-        AdditionalCost.ChooseEntity(
+        Costs.additional.ChooseEntity(
             zoneFilters = mapOf(
                 Zone.BATTLEFIELD to GameObjectFilter.Creature,
                 Zone.EXILE to GameObjectFilter.Creature.warpExiled(),

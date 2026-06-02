@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Tempting Wurm
@@ -24,7 +24,7 @@ val TemptingWurm = card("Tempting Wurm") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.eachOpponentMayPutFromHand(
+        effect = HandPatterns.eachOpponentMayPutFromHand(
             filter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment or GameObjectFilter.Land
         )
     }

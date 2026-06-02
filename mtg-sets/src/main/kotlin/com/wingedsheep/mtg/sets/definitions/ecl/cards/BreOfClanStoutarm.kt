@@ -13,7 +13,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -49,7 +48,7 @@ val BreOfClanStoutarm = card("Bre of Clan Stoutarm") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{W}"), Costs.Tap)
         val creature = target("creature", TargetCreature(filter = TargetFilter.CreatureYouControl.other()))
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.GrantKeyword(Keyword.FLYING, creature),
             Effects.GrantKeyword(Keyword.LIFELINK, creature)
         ))
@@ -63,7 +62,7 @@ val BreOfClanStoutarm = card("Bre of Clan Stoutarm") {
     triggeredAbility {
         trigger = Triggers.YourEndStep
         triggerCondition = Conditions.YouGainedLifeThisTurn
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Exile from top until nonland — same pipeline as The Infamous Cruelclaw.
             GatherUntilMatchEffect(
                 filter = GameObjectFilter.Nonland,
@@ -82,7 +81,7 @@ val BreOfClanStoutarm = card("Bre of Clan Stoutarm") {
                     operator = ComparisonOperator.LTE,
                     right = DynamicAmounts.lifeGainedThisTurn()
                 ),
-                effect = CompositeEffect(listOf(
+                effect = Effects.Composite(listOf(
                     GrantMayPlayFromExileEffect("nonland"),
                     GrantPlayWithoutPayingCostEffect("nonland")
                 )),

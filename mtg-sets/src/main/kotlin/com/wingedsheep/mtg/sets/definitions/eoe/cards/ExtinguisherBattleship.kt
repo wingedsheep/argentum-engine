@@ -14,9 +14,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -46,10 +44,10 @@ val ExtinguisherBattleship = card("Extinguisher Battleship") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val target = target("target noncreature permanent", TargetPermanent(filter = TargetFilter.NoncreaturePermanent))
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.Destroy(target),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter.AllCreatures,
                     effect = DealDamageEffect(4, EffectTarget.Self)
                 )

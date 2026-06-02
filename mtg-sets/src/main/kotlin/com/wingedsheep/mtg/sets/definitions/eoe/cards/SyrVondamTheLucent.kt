@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Syr Vondam, the Lucent
@@ -28,10 +28,10 @@ val SyrVondamTheLucent = card("Syr Vondam, the Lucent") {
     keywords(Keyword.DEATHTOUCH, Keyword.LIFELINK)
 
     // Whenever Syr Vondam enters the battlefield or attacks, other creatures you control get +1/+0 and gain deathtouch until end of turn
-    val pumpOtherCreatures = CompositeEffect(
+    val pumpOtherCreatures = Effects.Composite(
         listOf(
-            EffectPatterns.modifyStatsForAll(1, 0, GroupFilter.OtherCreaturesYouControl),
-            EffectPatterns.grantKeywordToAll(Keyword.DEATHTOUCH, GroupFilter.OtherCreaturesYouControl)
+            GroupPatterns.modifyStatsForAll(1, 0, GroupFilter.OtherCreaturesYouControl),
+            GroupPatterns.grantKeywordToAll(Keyword.DEATHTOUCH, GroupFilter.OtherCreaturesYouControl)
         )
     )
     val pumpDescription = "other creatures you control get +1/+0 and gain deathtouch until end of turn"

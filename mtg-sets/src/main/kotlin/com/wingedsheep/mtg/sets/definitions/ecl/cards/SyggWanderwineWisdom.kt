@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
@@ -53,7 +53,7 @@ private val drawOnCombatDamage = TriggeredAbility.create(
 
 // Protection from each color until your next turn — compose five keyword grants so each
 // color is independently tracked by the floating-effect cleanup system.
-private fun protectionFromEachColor(target: EffectTarget): CompositeEffect = CompositeEffect(
+private fun protectionFromEachColor(target: EffectTarget): Effect = Effects.Composite(
     Color.entries.map { color ->
         GrantKeywordEffect(
             keyword = "PROTECTION_FROM_${color.name}",

@@ -8,13 +8,12 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Dragon Throne of Tarkir
@@ -48,13 +47,13 @@ val DragonThroneOfTarkir = card("Dragon Throne of Tarkir") {
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap),
-                effect = CompositeEffect(
+                effect = Effects.Composite(
                     listOf(
-                        ForEachInGroupEffect(
+                        Effects.ForEachInGroup(
                             GroupFilter.OtherCreaturesYouControl,
                             GrantKeywordEffect(Keyword.TRAMPLE, EffectTarget.Self)
                         ),
-                        ForEachInGroupEffect(
+                        Effects.ForEachInGroup(
                             GroupFilter.OtherCreaturesYouControl,
                             ModifyStatsEffect(DynamicAmounts.sourcePower(), DynamicAmounts.sourcePower(), EffectTarget.Self)
                         )

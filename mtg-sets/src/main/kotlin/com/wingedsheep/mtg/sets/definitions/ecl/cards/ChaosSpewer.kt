@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.ManaCost
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.dsl.MiscPatterns
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Chaos Spewer
@@ -29,8 +29,8 @@ val ChaosSpewer = card("Chaos Spewer") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = PayOrSufferEffect(
-            cost = PayCost.Mana(ManaCost.parse("{2}")),
-            suffer = EffectPatterns.blight(2)
+            cost = Costs.pay.Mana(ManaCost.parse("{2}")),
+            suffer = MiscPatterns.blight(2)
         )
     }
 

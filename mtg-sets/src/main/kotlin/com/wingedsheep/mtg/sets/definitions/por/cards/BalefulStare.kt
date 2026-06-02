@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -25,7 +24,7 @@ val BalefulStare = card("Baleful Stare") {
 
     spell {
         val t = target("target", TargetOpponent())
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 RevealHandEffect(t),
                 Effects.DrawCards(

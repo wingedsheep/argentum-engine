@@ -12,10 +12,10 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Tiana, Ship's Caretaker
@@ -57,7 +57,7 @@ val TianaShipsCaretaker = card("Tiana, Ship's Caretaker") {
         effect = MayEffect(
             CreateDelayedTriggerEffect(
                 step = Step.END,
-                effect = MoveToZoneEffect(
+                effect = Effects.Move(
                     target = EffectTarget.TriggeringEntity,
                     destination = Zone.HAND
                 )

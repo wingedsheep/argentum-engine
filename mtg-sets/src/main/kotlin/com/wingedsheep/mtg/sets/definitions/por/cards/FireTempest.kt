@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -21,7 +20,7 @@ val FireTempest = card("Fire Tempest") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(6, EffectTarget.Self)) then Effects.DealDamage(6, EffectTarget.PlayerRef(Player.Each))
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures, DealDamageEffect(6, EffectTarget.Self)) then Effects.DealDamage(6, EffectTarget.PlayerRef(Player.Each))
     }
 
     metadata {

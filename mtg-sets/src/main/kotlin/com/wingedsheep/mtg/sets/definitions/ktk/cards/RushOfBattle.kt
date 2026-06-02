@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Rush of Battle
@@ -20,12 +20,12 @@ val RushOfBattle = card("Rush of Battle") {
     oracleText = "Creatures you control get +2/+1 until end of turn. Warrior creatures you control gain lifelink until end of turn."
 
     spell {
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             power = 2,
             toughness = 1,
             filter = GroupFilter.AllCreaturesYouControl
         ).then(
-            EffectPatterns.grantKeywordToAll(
+            GroupPatterns.grantKeywordToAll(
                 keyword = Keyword.LIFELINK,
                 filter = GroupFilter.AllCreaturesYouControl.withSubtype("Warrior")
             )

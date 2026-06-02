@@ -4,12 +4,11 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Walking Desecration
@@ -28,13 +27,13 @@ val WalkingDesecration = card("Walking Desecration") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 ChooseOptionEffect(
                     optionType = OptionType.CREATURE_TYPE,
                     storeAs = "chosenCreatureType"
                 ),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter.ChosenSubtypeCreatures("chosenCreatureType"),
                     effect = MarkMustAttackThisTurnEffect(
                         target = EffectTarget.Self

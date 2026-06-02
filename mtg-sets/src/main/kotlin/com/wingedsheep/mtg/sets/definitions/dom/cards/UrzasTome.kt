@@ -2,13 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Urza's Tome
@@ -28,12 +27,12 @@ val UrzasTome = card("Urza's Tome") {
         effect = Effects.DrawCards(1)
             .then(
                 PayOrSufferEffect(
-                    cost = PayCost.Exile(
+                    cost = Costs.pay.Exile(
                         filter = GameObjectFilter.Historic,
                         zone = Zone.GRAVEYARD,
                         count = 1
                     ),
-                    suffer = EffectPatterns.discardCards(1)
+                    suffer = HandPatterns.discardCards(1)
                 )
             )
     }

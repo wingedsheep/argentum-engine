@@ -5,8 +5,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Caustic Exhale
  * {B}
@@ -25,7 +24,7 @@ val CausticExhale = card("Caustic Exhale") {
         "Target creature gets -3/-3 until end of turn."
 
     additionalCost(
-        AdditionalCost.BeholdOrPay(
+        Costs.additional.BeholdOrPay(
             filter = Filters.WithSubtype("Dragon"),
             alternativeManaCost = "{1}"
         )

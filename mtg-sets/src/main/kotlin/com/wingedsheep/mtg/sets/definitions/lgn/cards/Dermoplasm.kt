@@ -2,14 +2,14 @@ package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Dermoplasm
@@ -35,11 +35,11 @@ val Dermoplasm = card("Dermoplasm") {
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp
-        effect = EffectPatterns.putFromHand(
+        effect = HandPatterns.putFromHand(
             filter = GameObjectFilter.Creature.withMorph()
         ) then ConditionalOnCollectionEffect(
             collection = "putting",
-            ifNotEmpty = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+            ifNotEmpty = Effects.Move(EffectTarget.Self, Zone.HAND)
         )
     }
 

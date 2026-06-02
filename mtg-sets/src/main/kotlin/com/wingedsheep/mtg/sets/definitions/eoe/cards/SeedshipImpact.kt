@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -28,7 +27,7 @@ val SeedshipImpact = card("Seedship Impact") {
         val target = target("target artifact or enchantment", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Enchantment)
         ))
-        effect = MoveToZoneEffect(target, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(target, Zone.GRAVEYARD, byDestruction = true)
             .then(
                 ConditionalEffect(
                     condition = Conditions.TargetSpellManaValueAtMost(DynamicAmount.Fixed(2)),

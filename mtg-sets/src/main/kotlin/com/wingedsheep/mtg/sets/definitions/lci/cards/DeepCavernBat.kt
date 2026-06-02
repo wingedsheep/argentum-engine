@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -49,7 +48,7 @@ val DeepCavernBat = card("Deep-Cavern Bat") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val opponent = target("target opponent", Targets.Opponent)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 LookAtTargetHandEffect(opponent),
                 GatherCardsEffect(

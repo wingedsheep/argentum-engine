@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -13,6 +12,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Morcant's Eyes
@@ -35,7 +35,7 @@ val MorcantsEyes = card("Morcant's Eyes") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
     }
 
     activatedAbility {

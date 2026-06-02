@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -32,7 +31,7 @@ val MemorialVault = card("Memorial Vault") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.SacrificeAnother(GameObjectFilter.Artifact))
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(
                     DynamicAmount.Add(

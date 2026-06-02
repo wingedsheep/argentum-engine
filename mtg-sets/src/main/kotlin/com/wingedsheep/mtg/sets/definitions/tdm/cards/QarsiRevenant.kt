@@ -6,8 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Qarsi Revenant — Tarkir: Dragonstorm #86
  * {1}{B}{B} · Creature — Vampire · 3/3
@@ -34,7 +32,7 @@ val QarsiRevenant = card("Qarsi Revenant") {
 
     renew("{2}{B}") {
         val creature = target("creature", Targets.Creature)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.AddCounters(Counters.FLYING, 1, creature),
             Effects.AddCounters(Counters.DEATHTOUCH, 1, creature),
             Effects.AddCounters(Counters.LIFELINK, 1, creature)

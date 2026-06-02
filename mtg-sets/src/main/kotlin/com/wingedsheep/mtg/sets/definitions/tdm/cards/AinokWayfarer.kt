@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -44,7 +43,7 @@ val AinokWayfarer = card("Ainok Wayfarer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Mill three: gather the top three, then move them to the graveyard.
                 GatherCardsEffect(
@@ -63,7 +62,7 @@ val AinokWayfarer = card("Ainok Wayfarer") {
                 // declines or no land is among the milled cards. There is no "if you do"
                 // payoff, so that branch is an empty composite.
                 Effects.IfYouDo(
-                    action = CompositeEffect(
+                    action = Effects.Composite(
                         listOf(
                             SelectFromCollectionEffect(
                                 from = "milled",

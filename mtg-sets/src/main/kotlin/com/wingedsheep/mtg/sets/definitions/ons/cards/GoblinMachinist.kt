@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -15,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Goblin Machinist
@@ -35,7 +35,7 @@ val GoblinMachinist = card("Goblin Machinist") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{R}")
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherUntilMatchEffect(
                     filter = GameObjectFilter.Nonland,

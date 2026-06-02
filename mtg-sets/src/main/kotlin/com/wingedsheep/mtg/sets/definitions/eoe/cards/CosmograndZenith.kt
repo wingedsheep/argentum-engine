@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -50,7 +49,7 @@ val CosmograndZenith = card("Cosmogrand Zenith") {
                 "Create two 1/1 white Human Soldier creature tokens"
             ),
             Mode.noTarget(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter.AllCreaturesYouControl,
                     effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
                 ),

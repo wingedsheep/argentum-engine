@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -29,7 +28,7 @@ val AssaultOnOsgiliath = card("Assault on Osgiliath") {
     spell {
         effect = Effects.Amass(DynamicAmount.XValue, "Orc")
             .then(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter(
                         com.wingedsheep.sdk.scripting.GameObjectFilter.Creature
                             .withAnySubtype("Goblin", "Orc").youControl()

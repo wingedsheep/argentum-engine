@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -50,7 +49,7 @@ val HerdHeirloom = card("Herd Heirloom") {
             "creature",
             TargetCreature(filter = TargetFilter.CreatureYouControl.powerAtLeast(4))
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.GrantKeyword(Keyword.TRAMPLE, creature, Duration.EndOfTurn),
             GrantTriggeredAbilityEffect(
                 ability = TriggeredAbility.create(

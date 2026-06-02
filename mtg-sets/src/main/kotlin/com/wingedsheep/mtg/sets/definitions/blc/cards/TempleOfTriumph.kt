@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blc.cards
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -9,6 +8,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Temple of Triumph
@@ -27,7 +27,7 @@ val TempleOfTriumph = card("Temple of Triumph") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.scry(1)
+        effect = LibraryPatterns.scry(1)
     }
 
     activatedAbility {

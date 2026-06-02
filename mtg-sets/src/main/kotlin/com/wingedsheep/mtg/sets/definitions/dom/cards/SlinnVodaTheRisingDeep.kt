@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Slinn Voda, the Rising Deep
@@ -34,7 +34,7 @@ val SlinnVodaTheRisingDeep = card("Slinn Voda, the Rising Deep") {
         trigger = Triggers.EntersBattlefield
         effect = ConditionalEffect(
             condition = WasKicked,
-            effect = EffectPatterns.returnAllToHand(
+            effect = GroupPatterns.returnAllToHand(
                 GroupFilter(
                     baseFilter = GameObjectFilter.Creature
                         .notSubtype(Subtype.MERFOLK)

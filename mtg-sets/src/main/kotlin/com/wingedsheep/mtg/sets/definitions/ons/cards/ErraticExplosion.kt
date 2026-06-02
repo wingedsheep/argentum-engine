@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Erratic Explosion
@@ -21,7 +21,7 @@ val ErraticExplosion = card("Erratic Explosion") {
 
     spell {
         val t = target("target", AnyTarget())
-        effect = EffectPatterns.revealUntilNonlandDealDamage(t)
+        effect = LibraryPatterns.revealUntilNonlandDealDamage(t)
     }
 
     metadata {

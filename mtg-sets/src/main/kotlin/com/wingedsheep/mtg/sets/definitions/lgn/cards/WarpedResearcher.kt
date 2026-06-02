@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -26,7 +25,7 @@ val WarpedResearcher = card("Warped Researcher") {
 
     triggeredAbility {
         trigger = Triggers.AnyPlayerCycles
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.GrantKeyword(Keyword.FLYING, EffectTarget.Self),
             Effects.GrantKeyword(Keyword.SHROUD, EffectTarget.Self)
         ))

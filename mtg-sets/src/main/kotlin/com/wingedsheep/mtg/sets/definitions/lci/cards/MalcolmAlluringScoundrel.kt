@@ -12,7 +12,6 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
@@ -57,7 +56,7 @@ val MalcolmAlluringScoundrel = card("Malcolm, Alluring Scoundrel") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Put a chorus counter on Malcolm.
                 Effects.AddCounters(Counters.CHORUS, 1, EffectTarget.Self),

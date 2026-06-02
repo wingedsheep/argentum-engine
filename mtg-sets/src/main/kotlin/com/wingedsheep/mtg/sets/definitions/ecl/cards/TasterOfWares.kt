@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -23,6 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Taster of Wares
@@ -59,7 +59,7 @@ val TasterOfWares = card("Taster of Wares") {
             "where X is the number of Goblins you control. You choose one of those cards. " +
             "That player exiles it. If an instant or sorcery card is exiled this way, you may cast it " +
             "for as long as you control this creature, and mana of any type can be spent to cast that spell."
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Snapshot the number of Goblins you control as X
                 StoreNumberEffect(

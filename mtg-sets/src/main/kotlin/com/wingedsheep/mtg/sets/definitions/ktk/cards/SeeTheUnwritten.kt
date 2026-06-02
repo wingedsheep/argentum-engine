@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -15,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * See the Unwritten
@@ -34,7 +34,7 @@ val SeeTheUnwritten = card("See the Unwritten") {
     spell {
         val ferocious = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.powerAtLeast(4))
 
-        fun selectAndMove(count: Int) = CompositeEffect(
+        fun selectAndMove(count: Int) = Effects.Composite(
             listOf(
                 SelectFromCollectionEffect(
                     from = "revealed",
@@ -58,7 +58,7 @@ val SeeTheUnwritten = card("See the Unwritten") {
             )
         )
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.TopOfLibrary(DynamicAmount.Fixed(8)),

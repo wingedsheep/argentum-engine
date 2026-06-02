@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Smother
@@ -23,7 +23,7 @@ val Smother = card("Smother") {
     spell {
         val t = target("target", TargetCreature(filter = TargetFilter.Creature.manaValueAtMost(3)))
         effect = CantBeRegeneratedEffect(t) then
-                MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+                Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

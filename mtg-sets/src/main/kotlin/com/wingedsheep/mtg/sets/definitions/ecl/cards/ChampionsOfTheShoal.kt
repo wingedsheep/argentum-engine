@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Champions of the Shoal
@@ -32,7 +32,7 @@ val ChampionsOfTheShoal = card("Champions of the Shoal") {
         "and put a stun counter on it.\n" +
         "When this creature leaves the battlefield, return the exiled card to its owner's hand."
 
-    additionalCost(AdditionalCost.BeholdAndExile(filter = Filters.WithSubtype("Merfolk")))
+    additionalCost(Costs.additional.BeholdAndExile(filter = Filters.WithSubtype("Merfolk")))
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

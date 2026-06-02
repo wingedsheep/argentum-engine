@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -56,7 +55,7 @@ val AegisSculptor = card("Aegis Sculptor") {
         trigger = Triggers.YourUpkeep
         effect = MayEffect(
             IfYouDoEffect(
-                action = CompositeEffect(
+                action = Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.FromZone(zone = Zone.GRAVEYARD),

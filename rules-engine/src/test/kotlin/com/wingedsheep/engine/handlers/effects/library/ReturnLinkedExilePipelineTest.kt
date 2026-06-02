@@ -15,13 +15,13 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.core.ZoneChangeEvent
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import com.wingedsheep.sdk.dsl.ExilePatterns
 
 class ReturnLinkedExilePipelineTest : FunSpec({
 
@@ -81,7 +81,7 @@ class ReturnLinkedExilePipelineTest : FunSpec({
         state = state.addToZone(ZoneKey(playerId, Zone.EXILE), exiledCard2)
 
         val registry = createRegistry()
-        val effect = EffectPatterns.returnLinkedExile()
+        val effect = ExilePatterns.returnLinkedExile()
         val result = registry.execute(state, effect, context())
 
         result.isSuccess shouldBe true
@@ -121,7 +121,7 @@ class ReturnLinkedExilePipelineTest : FunSpec({
         state = state.addToZone(ZoneKey(opponentId, Zone.EXILE), exiledCard2)
 
         val registry = createRegistry()
-        val effect = EffectPatterns.returnLinkedExile(underOwnersControl = true)
+        val effect = ExilePatterns.returnLinkedExile(underOwnersControl = true)
         val result = registry.execute(state, effect, context())
 
         result.isSuccess shouldBe true
@@ -153,7 +153,7 @@ class ReturnLinkedExilePipelineTest : FunSpec({
         state = state.addToZone(ZoneKey(opponentId, Zone.EXILE), exiledCard2)
 
         val registry = createRegistry()
-        val effect = EffectPatterns.returnLinkedExile(underOwnersControl = false)
+        val effect = ExilePatterns.returnLinkedExile(underOwnersControl = false)
         val result = registry.execute(state, effect, context())
 
         result.isSuccess shouldBe true
@@ -179,7 +179,7 @@ class ReturnLinkedExilePipelineTest : FunSpec({
         state = state.withEntity(sourceId, sourceContainer)
 
         val registry = createRegistry()
-        val effect = EffectPatterns.returnLinkedExile()
+        val effect = ExilePatterns.returnLinkedExile()
         val result = registry.execute(state, effect, context())
 
         result.isSuccess shouldBe true
@@ -202,7 +202,7 @@ class ReturnLinkedExilePipelineTest : FunSpec({
         state = state.addToZone(ZoneKey(playerId, Zone.GRAVEYARD), exiledCard2)
 
         val registry = createRegistry()
-        val effect = EffectPatterns.returnLinkedExile()
+        val effect = ExilePatterns.returnLinkedExile()
         val result = registry.execute(state, effect, context())
 
         result.isSuccess shouldBe true

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -36,7 +35,7 @@ val ManipulateFate = card("Manipulate Fate") {
     oracleText = "Search your library for three cards, exile them, then shuffle.\nDraw a card."
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Search your library.
                 GatherCardsEffect(

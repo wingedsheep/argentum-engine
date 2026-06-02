@@ -5,11 +5,11 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Urza's Ruinous Blast
@@ -27,7 +27,7 @@ val UrzasRuinousBlast = card("Urza's Ruinous Blast") {
     spell {
         castOnlyIf(Conditions.ControlLegendaryCreatureOrPlaneswalker)
 
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.NonlandPermanent.nonlegendary()

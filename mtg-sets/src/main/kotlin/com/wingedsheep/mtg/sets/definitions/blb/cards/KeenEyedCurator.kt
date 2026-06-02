@@ -12,10 +12,10 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 // Keen-Eyed Curator - {G}{G}
 // Creature — Raccoon Scout - 3/3
@@ -53,7 +53,7 @@ val KeenEyedCurator = card("Keen-Eyed Curator") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         val t = target("card in a graveyard", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = t,
             destination = Zone.EXILE,
             linkToSource = true

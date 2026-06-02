@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.BudgetModalEffect
 import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
@@ -56,7 +55,7 @@ val SeasonOfGathering = card("Season of Gathering") {
                     cost = 2,
                     effect = ModalEffect.chooseOne(
                         Mode.noTarget(
-                            ForEachInGroupEffect(
+                            Effects.ForEachInGroup(
                                 filter = GroupFilter(GameObjectFilter.Artifact),
                                 effect = Effects.Destroy(EffectTarget.Self),
                                 simultaneous = true
@@ -64,7 +63,7 @@ val SeasonOfGathering = card("Season of Gathering") {
                             "Destroy all artifacts"
                         ),
                         Mode.noTarget(
-                            ForEachInGroupEffect(
+                            Effects.ForEachInGroup(
                                 filter = GroupFilter(GameObjectFilter.Enchantment),
                                 effect = Effects.Destroy(EffectTarget.Self),
                                 simultaneous = true

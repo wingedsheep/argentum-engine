@@ -2,12 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Shoreline Looter
@@ -33,7 +33,7 @@ val ShorelineLooter = card("Shoreline Looter") {
         effect = Effects.DrawCards(1)
             .then(ConditionalEffect(
                 condition = Conditions.Not(Conditions.CardsInGraveyardAtLeast(7)),
-                effect = EffectPatterns.discardCards(1)
+                effect = HandPatterns.discardCards(1)
             ))
     }
 

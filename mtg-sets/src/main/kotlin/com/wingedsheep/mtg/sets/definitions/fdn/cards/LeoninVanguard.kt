@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -28,7 +27,7 @@ val LeoninVanguard = card("Leonin Vanguard") {
     triggeredAbility {
         trigger = Triggers.BeginCombat
         triggerCondition = Conditions.ControlCreaturesAtLeast(3)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(1, 1, EffectTarget.Self),
                 Effects.GainLife(1)

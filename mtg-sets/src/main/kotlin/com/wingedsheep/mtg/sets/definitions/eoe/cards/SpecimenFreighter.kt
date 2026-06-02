@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -25,6 +24,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Specimen Freighter
@@ -103,7 +103,7 @@ val SpecimenFreighter = card("Specimen Freighter") {
     // Whenever this Spacecraft attacks, defending player mills four cards
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = EffectPatterns.mill(4, EffectTarget.PlayerRef(Player.Opponent))
+        effect = LibraryPatterns.mill(4, EffectTarget.PlayerRef(Player.Opponent))
     }
 
     metadata {

@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Lembas
@@ -27,7 +27,7 @@ val Lembas = card("Lembas") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.scry(1) then Effects.DrawCards(1)
+        effect = LibraryPatterns.scry(1) then Effects.DrawCards(1)
     }
 
     activatedAbility {

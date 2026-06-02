@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -9,6 +8,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Elvish Mariner
@@ -32,7 +32,7 @@ val ElvishMariner = card("Elvish Mariner") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = EffectPatterns.scry(1)
+        effect = LibraryPatterns.scry(1)
     }
 
     triggeredAbility {

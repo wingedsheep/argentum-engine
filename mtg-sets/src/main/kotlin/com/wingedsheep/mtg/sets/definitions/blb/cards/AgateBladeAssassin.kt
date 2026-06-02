@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -28,7 +27,7 @@ val AgateBladeAssassin = card("Agate-Blade Assassin") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 LoseLifeEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                 GainLifeEffect(1, EffectTarget.Controller)

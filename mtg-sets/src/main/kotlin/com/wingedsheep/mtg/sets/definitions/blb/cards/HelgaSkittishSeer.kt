@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -52,7 +51,7 @@ val HelgaSkittishSeer = card("Helga, Skittish Seer") {
             ),
             TriggerBinding.ANY
         )
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 DrawCardsEffect(1),
                 GainLifeEffect(1),

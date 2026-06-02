@@ -9,11 +9,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Bringer of the Last Gift
@@ -49,7 +49,7 @@ val BringerOfTheLastGift = card("Bringer of the Last Gift") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.WasCast
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Snapshot every creature card already in a graveyard, before the sacrifice.
                 // These are the cards "not put there this way" that will be returned.

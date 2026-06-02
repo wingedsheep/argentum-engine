@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Book of Mazarbul
@@ -33,8 +33,8 @@ val BookOfMazarbul = card("Book of Mazarbul") {
         effect = Effects.Amass(2, "Orc")
     }
     sagaChapter(3) {
-        effect = EffectPatterns.modifyStatsForAll(1, 0, GroupFilter.AllCreaturesYouControl)
-            .then(EffectPatterns.grantKeywordToAll(Keyword.MENACE, GroupFilter.AllCreaturesYouControl))
+        effect = GroupPatterns.modifyStatsForAll(1, 0, GroupFilter.AllCreaturesYouControl)
+            .then(GroupPatterns.grantKeywordToAll(Keyword.MENACE, GroupFilter.AllCreaturesYouControl))
     }
 
     metadata {

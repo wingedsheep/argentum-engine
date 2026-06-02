@@ -6,8 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
 /**
  * Personify
  * {1}{W}
@@ -25,8 +23,8 @@ val Personify = card("Personify") {
 
     spell {
         val creature = target("creature you control", Targets.CreatureYouControl)
-        effect = MoveToZoneEffect(creature, Zone.EXILE)
-            .then(MoveToZoneEffect(creature, Zone.BATTLEFIELD))
+        effect = Effects.Move(creature, Zone.EXILE)
+            .then(Effects.Move(creature, Zone.BATTLEFIELD))
             .then(
                 Effects.CreateToken(
                     power = 1,

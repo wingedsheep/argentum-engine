@@ -6,8 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Withered Wretch
  * {B}{B}
@@ -26,7 +25,7 @@ val WitheredWretch = card("Withered Wretch") {
     activatedAbility {
         cost = AbilityCost.Mana(ManaCost.parse("{1}"))
         val t = target("target card in a graveyard", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(t, Zone.EXILE)
+        effect = Effects.Move(t, Zone.EXILE)
     }
 
     metadata {

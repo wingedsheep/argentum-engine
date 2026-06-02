@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
@@ -36,8 +35,8 @@ val LilysplashMentor = card("Lilysplash Mentor") {
         cost = Costs.Mana("{1}{G}{U}")
         timing = TimingRule.SorcerySpeed
         val creature = target("another creature you control", TargetCreature(filter = TargetFilter.OtherCreatureYouControl))
-        effect = MoveToZoneEffect(creature, Zone.EXILE)
-            .then(MoveToZoneEffect(creature, Zone.BATTLEFIELD))
+        effect = Effects.Move(creature, Zone.EXILE)
+            .then(Effects.Move(creature, Zone.BATTLEFIELD))
             .then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature))
     }
 

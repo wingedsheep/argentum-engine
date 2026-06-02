@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -51,7 +50,7 @@ val CrosisThePurger = card("Crosis, the Purger") {
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{2}{B}"),
             effect = Effects.ChooseColorThen(
-                then = CompositeEffect(
+                then = Effects.Composite(
                     listOf(
                         RevealHandEffect(EffectTarget.PlayerRef(Player.TriggeringPlayer)),
                         GatherCardsEffect(

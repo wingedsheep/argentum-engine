@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -12,6 +11,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Sygg's Command
@@ -45,7 +45,7 @@ val SyggsCommand = card("Sygg's Command") {
             }
             mode("Creatures target player controls gain lifelink until end of turn") {
                 val player = target("target player", TargetPlayer())
-                effect = EffectPatterns.grantKeywordToAll(
+                effect = GroupPatterns.grantKeywordToAll(
                     keyword = Keyword.LIFELINK,
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
                 )

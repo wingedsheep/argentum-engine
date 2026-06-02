@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -19,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Dyadrine, Synthesis Amalgam
@@ -54,7 +54,7 @@ val DyadrineSynthesisAmalgam = card("Dyadrine, Synthesis Amalgam") {
     triggeredAbility {
         trigger = Triggers.YouAttack
         effect = MayEffect(
-            effect = CompositeEffect(
+            effect = Effects.Composite(
                 listOf(
                     GatherCardsEffect(
                         source = CardSource.BattlefieldMatching(

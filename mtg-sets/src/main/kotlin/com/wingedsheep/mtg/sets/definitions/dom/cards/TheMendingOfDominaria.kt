@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -9,13 +8,14 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * The Mending of Dominaria
@@ -36,7 +36,7 @@ val TheMendingOfDominaria = card("The Mending of Dominaria") {
         "III — Return all land cards from your graveyard to the battlefield, then shuffle your graveyard into your library."
 
     // Chapter I & II: Mill 2, then may return a creature card from graveyard to hand
-    val chapterOneAndTwoEffect = EffectPatterns.mill(2) then CompositeEffect(
+    val chapterOneAndTwoEffect = LibraryPatterns.mill(2) then Effects.Composite(
         listOf(
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
@@ -65,7 +65,7 @@ val TheMendingOfDominaria = card("The Mending of Dominaria") {
 
     // Chapter III: Return all land cards from graveyard to battlefield, then shuffle graveyard into library
     sagaChapter(3) {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Land),
@@ -81,7 +81,7 @@ val TheMendingOfDominaria = card("The Mending of Dominaria") {
                     destination = CardDestination.ToZone(Zone.BATTLEFIELD)
                 )
             )
-        ) then EffectPatterns.shuffleGraveyardIntoLibrary(EffectTarget.Controller)
+        ) then LibraryPatterns.shuffleGraveyardIntoLibrary(EffectTarget.Controller)
     }
 
     metadata {

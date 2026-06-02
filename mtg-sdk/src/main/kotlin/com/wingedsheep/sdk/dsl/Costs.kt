@@ -1,11 +1,20 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.costs.PayCost
 
 /**
- * Facade object providing convenient access to AbilityCost types.
+ * Facade object providing convenient access to cost types.
+ *
+ * Three cost families live here behind a single namespace:
+ * - [Costs] top-level members wrap [AbilityCost] (activated-ability costs).
+ * - [Costs.additional] wraps [AdditionalCost] (extra costs paid while casting a spell).
+ * - [Costs.pay] wraps [PayCost] (payable costs for "unless you …" / morph / choice mechanics).
  *
  * Usage:
  * ```kotlin
@@ -13,6 +22,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * Costs.Mana("{2}")
  * Costs.Sacrifice(Filters.Creature)
  * Costs.Composite(Costs.Tap, Costs.Sacrifice(Filters.Self))
+ * Costs.additional.SacrificePermanent(Filters.Creature)
+ * Costs.pay.PayLife(3)
  * ```
  */
 object Costs {
@@ -280,4 +291,161 @@ object Costs {
      */
     fun Craft(filter: GameObjectFilter, minCount: Int = 1): AbilityCost =
         AbilityCost.Craft(filter, minCount)
+
+    // =========================================================================
+    // Additional Costs (paid while casting a spell) — wraps AdditionalCost
+    // =========================================================================
+
+    /**
+     * Facade for [AdditionalCost] — extra costs declared on a spell and paid as it is cast
+     * (sacrifice, discard, pay life, behold, blight, …). Prefer these factories over raw
+     * `AdditionalCost.*` construction so the underlying type can evolve behind the facade.
+     */
+    object additional {
+
+        /** Sacrifice [count] permanents matching [filter] (Natural Order). */
+        fun SacrificePermanent(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): AdditionalCost =
+            AdditionalCost.SacrificePermanent(filter, count)
+
+        /** Discard [count] cards matching [filter] (Force of Will). */
+        fun DiscardCards(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Any): AdditionalCost =
+            AdditionalCost.DiscardCards(count, filter)
+
+        /** Pay [amount] life. */
+        fun PayLife(amount: Int): AdditionalCost = AdditionalCost.PayLife(amount)
+
+        /** Pay [amountPerTarget] life for each target chosen by this spell (Phyrexian Purge). */
+        fun PayLifePerTarget(amountPerTarget: Int): AdditionalCost =
+            AdditionalCost.PayLifePerTarget(amountPerTarget)
+
+        /** Exile [count] cards matching [filter] from [fromZone]. */
+        fun ExileCards(
+            count: Int = 1,
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            fromZone: CostZone = CostZone.GRAVEYARD
+        ): AdditionalCost = AdditionalCost.ExileCards(count, filter, fromZone)
+
+        /** Exile a variable number (at least [minCount]) of cards matching [filter] from [fromZone] (Chill Haunting). */
+        fun ExileVariableCards(
+            minCount: Int = 1,
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            fromZone: CostZone = CostZone.GRAVEYARD
+        ): AdditionalCost = AdditionalCost.ExileVariableCards(minCount, filter, fromZone)
+
+        /** Sacrifice any number of [filter] permanents, each reducing generic cost by [costReductionPerCreature]. */
+        fun SacrificeCreaturesForCostReduction(
+            filter: GameObjectFilter = GameObjectFilter.Creature,
+            costReductionPerCreature: Int = 2
+        ): AdditionalCost = AdditionalCost.SacrificeCreaturesForCostReduction(filter, costReductionPerCreature)
+
+        /** Forage (exile three cards from your graveyard or sacrifice a Food). */
+        val Forage: AdditionalCost = AdditionalCost.Forage
+
+        /** Blight X — put X -1/-1 counters on a creature you control (X declared at cast time, min [minCount]). */
+        fun BlightVariable(minCount: Int = 0): AdditionalCost = AdditionalCost.BlightVariable(minCount)
+
+        /** Blight [blightAmount] or pay [alternativeManaCost] instead. */
+        fun BlightOrPay(blightAmount: Int, alternativeManaCost: String): AdditionalCost =
+            AdditionalCost.BlightOrPay(blightAmount, alternativeManaCost)
+
+        /** Behold [count] cards matching [filter], recording them under [storeAs]. */
+        fun Behold(
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            count: Int = 1,
+            storeAs: String = "beheld"
+        ): AdditionalCost = AdditionalCost.Behold(filter, count, storeAs)
+
+        /** Behold a [filter] card or pay [alternativeManaCost] instead. */
+        fun BeholdOrPay(
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            alternativeManaCost: String,
+            storeAs: String = "beheld"
+        ): AdditionalCost = AdditionalCost.BeholdOrPay(filter, alternativeManaCost, storeAs)
+
+        /** "Behold a [filter] and exile it" — [Behold] + [ExileFromStorage] composed. */
+        fun BeholdAndExile(
+            filter: GameObjectFilter,
+            count: Int = 1,
+            storeAs: String = "beheld"
+        ): AdditionalCost = AdditionalCost.BeholdAndExile(filter, count, storeAs)
+
+        /** Exile cards from pipeline storage key [from], optionally linking them to the source. */
+        fun ExileFromStorage(from: String, linkToSource: Boolean = false): AdditionalCost =
+            AdditionalCost.ExileFromStorage(from, linkToSource)
+
+        /** Group multiple additional costs into one logical cost (steps run in order). */
+        fun Composite(steps: List<AdditionalCost>): AdditionalCost = AdditionalCost.Composite(steps)
+
+        /** Remove [totalCount] counters from among creatures you control (Dawnhand Dissident). */
+        fun RemoveCountersFromYourCreatures(totalCount: Int): AdditionalCost =
+            AdditionalCost.RemoveCountersFromYourCreatures(totalCount)
+
+        /** Tap [count] untapped permanents matching [filter] you control. */
+        fun TapPermanents(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Creature): AdditionalCost =
+            AdditionalCost.TapPermanents(count, filter)
+
+        /** Choose one entity across [zoneFilters] without moving it, recording it under [storeAs] (Close Encounter). */
+        fun ChooseEntity(
+            zoneFilters: Map<Zone, GameObjectFilter> = mapOf(Zone.BATTLEFIELD to GameObjectFilter.Any),
+            storeAs: String = "chosen",
+            captureSnapshot: Boolean = false,
+            descriptionOverride: String? = null
+        ): AdditionalCost = AdditionalCost.ChooseEntity(zoneFilters, storeAs, captureSnapshot, descriptionOverride)
+    }
+
+    // =========================================================================
+    // Payable Costs ("unless you …", morph, choice) — wraps PayCost
+    // =========================================================================
+
+    /**
+     * Facade for [PayCost] — a payable cost used by morph face-up costs, "unless you …"
+     * mechanics, and player-choice costs. Prefer these factories over raw `PayCost.*`.
+     */
+    object pay {
+
+        /** Pay a mana cost. */
+        fun Mana(cost: ManaCost): PayCost = PayCost.Mana(cost)
+
+        /** Pay a mana cost parsed from a string (e.g. "{2}{U}"). */
+        fun Mana(cost: String): PayCost = PayCost.Mana(ManaCost.parse(cost))
+
+        /** Pay the source permanent's own mana cost (Essence Leak). */
+        val OwnManaCost: PayCost = PayCost.OwnManaCost
+
+        /** Discard [count] cards matching [filter] (optionally [random]). */
+        fun Discard(
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            count: Int = 1,
+            random: Boolean = false
+        ): PayCost = PayCost.Discard(filter, count, random)
+
+        /** Sacrifice [count] permanents matching [filter]. */
+        fun Sacrifice(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
+            PayCost.Sacrifice(filter, count)
+
+        /** Pay [amount] life. */
+        fun PayLife(amount: Int): PayCost = PayCost.PayLife(amount)
+
+        /** Exile [count] cards matching [filter] from [zone]. */
+        fun Exile(
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            zone: Zone = Zone.HAND,
+            count: Int = 1
+        ): PayCost = PayCost.Exile(filter, zone, count)
+
+        /** Reveal [count] cards matching [filter] from hand. */
+        fun RevealCard(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
+            PayCost.RevealCard(filter, count)
+
+        /** Choose one of [options] to pay. */
+        fun Choice(options: List<PayCost>): PayCost = PayCost.Choice(options)
+
+        /** Return [count] permanents matching [filter] you control to their owner's hand. */
+        fun ReturnToHand(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
+            PayCost.ReturnToHand(filter, count)
+
+        /** Tap [count] untapped permanents matching [filter] you control. */
+        fun Tap(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
+            PayCost.Tap(filter, count)
+    }
 }

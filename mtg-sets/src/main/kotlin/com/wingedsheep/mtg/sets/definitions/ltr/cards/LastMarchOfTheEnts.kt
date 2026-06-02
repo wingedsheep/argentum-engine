@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -36,7 +35,7 @@ val LastMarchOfTheEnts = card("Last March of the Ents") {
         effect = Effects.DrawCards(
             DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).maxToughness()
         ).then(
-            CompositeEffect(
+            Effects.Composite(
                 listOf(
                     GatherCardsEffect(
                         source = CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature),

@@ -3,12 +3,12 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Lash of the Balrog
@@ -35,7 +35,7 @@ val LashOfTheBalrog = card("Lash of the Balrog") {
                 targetRequirements = listOf(TargetCreature()),
                 description = "Sacrifice a creature — destroy target creature",
                 additionalCosts = listOf(
-                    AdditionalCost.SacrificePermanent(filter = GameObjectFilter.Creature)
+                    Costs.additional.SacrificePermanent(filter = GameObjectFilter.Creature)
                 )
             ),
             // Pay {4}

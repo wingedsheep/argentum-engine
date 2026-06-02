@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.IncrementAbilityResolutionCountEffect
 
@@ -36,7 +35,7 @@ val SoulbrightSeeker = card("Soulbright Seeker") {
         "this ability has resolved this turn, add {R}{R}{R}{R}."
 
     additionalCost(
-        AdditionalCost.BeholdOrPay(
+        Costs.additional.BeholdOrPay(
             filter = Filters.WithSubtype("Elemental"),
             alternativeManaCost = "{2}"
         )

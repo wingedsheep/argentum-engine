@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -12,6 +11,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Sapling Nursery
@@ -46,7 +46,7 @@ val SaplingNursery = card("Sapling Nursery") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{G}"), Costs.ExileSelf)
-        effect = EffectPatterns.grantKeywordToAll(
+        effect = GroupPatterns.grantKeywordToAll(
             keyword = Keyword.INDESTRUCTIBLE,
             filter = GroupFilter(
                 (GameObjectFilter.Permanent.withSubtype(Subtype.TREEFOLK) or

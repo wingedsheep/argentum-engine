@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.mid.cards
 
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Consider
@@ -20,7 +20,7 @@ val Consider = card("Consider") {
 
     spell {
         effect = Effects.Composite(
-            EffectPatterns.surveil(1),
+            LibraryPatterns.surveil(1),
             Effects.DrawCards(1)
         )
     }

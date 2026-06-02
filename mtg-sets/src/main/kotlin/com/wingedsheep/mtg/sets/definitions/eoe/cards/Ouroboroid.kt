@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -32,7 +31,7 @@ val Ouroboroid = card("Ouroboroid") {
         // increase X for the remaining creatures mid-loop.
         effect = Effects.Composite(
             Effects.StoreNumber("ouroboroid_power", DynamicAmount.EntityProperty(EntityReference.Source, EntityNumericProperty.Power)),
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 filter = GroupFilter.AllCreaturesYouControl,
                 effect = Effects.AddDynamicCounters(
                     counterType = "+1/+1",

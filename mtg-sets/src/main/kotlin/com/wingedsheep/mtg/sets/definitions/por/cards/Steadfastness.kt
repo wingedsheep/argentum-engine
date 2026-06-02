@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Steadfastness
@@ -19,7 +19,7 @@ val Steadfastness = card("Steadfastness") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter.AllCreaturesYouControl,
             ModifyStatsEffect(0, 3, EffectTarget.Self)
         )

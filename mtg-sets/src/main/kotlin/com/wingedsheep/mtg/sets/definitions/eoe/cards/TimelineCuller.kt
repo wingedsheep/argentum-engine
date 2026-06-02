@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Timeline Culler
@@ -36,7 +36,7 @@ val TimelineCuller = card("Timeline Culler") {
     keywordAbility(
         KeywordAbility.Warp(
             cost = ManaCost.parse("{B}"),
-            additionalCost = AdditionalCost.PayLife(2),
+            additionalCost = Costs.additional.PayLife(2),
             fromGraveyard = true,
         )
     )

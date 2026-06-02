@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -40,7 +39,7 @@ val CouncilsDeliberation = card("Council's Deliberation") {
         triggerCondition = Conditions.YouControl(GameObjectFilter.Land.withSubtype(Subtype.ISLAND))
         effect = MayEffect(
             IfYouDoEffect(
-                action = MoveToZoneEffect(EffectTarget.Self, Zone.EXILE),
+                action = Effects.Move(EffectTarget.Self, Zone.EXILE),
                 ifYouDo = Effects.DrawCards(1)
             )
         )

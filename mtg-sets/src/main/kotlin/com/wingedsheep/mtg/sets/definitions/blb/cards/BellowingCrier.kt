@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Bellowing Crier
@@ -23,7 +23,7 @@ val BellowingCrier = card("Bellowing Crier") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.loot()
+        effect = HandPatterns.loot()
     }
 
     metadata {

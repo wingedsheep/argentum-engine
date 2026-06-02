@@ -6,8 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Snakeskin Veil
  * {G}
@@ -22,7 +20,7 @@ val SnakeskinVeil = card("Snakeskin Veil") {
 
     spell {
         val target = target("target creature you control", Targets.CreatureYouControl)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, target),
             Effects.GrantKeyword(Keyword.HEXPROOF, target)
         ))

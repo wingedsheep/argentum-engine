@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -36,7 +35,7 @@ val LoafingGiant = card("Loafing Giant") {
     toughness = 6
     oracleText = "Whenever this creature attacks or blocks, mill a card. If a land card was milled this way, prevent all combat damage this creature would deal this turn."
 
-    val millAndMaybePrevent = CompositeEffect(
+    val millAndMaybePrevent = Effects.Composite(
         listOf(
             // Mill a card: gather top card, move it to the graveyard.
             GatherCardsEffect(

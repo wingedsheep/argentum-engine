@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Seek the Horizon
@@ -20,7 +20,7 @@ val SeekTheHorizon = card("Seek the Horizon") {
     oracleText = "Search your library for up to three basic land cards, reveal them, put them into your hand, then shuffle."
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             count = 3,
             destination = SearchDestination.HAND,

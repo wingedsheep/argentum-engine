@@ -8,12 +8,12 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Bloodline Bidding
@@ -34,7 +34,7 @@ val BloodlineBidding = card("Bloodline Bidding") {
     keywords(Keyword.CONVOKE)
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 ChooseCreatureTypeEffect,
                 GatherCardsEffect(

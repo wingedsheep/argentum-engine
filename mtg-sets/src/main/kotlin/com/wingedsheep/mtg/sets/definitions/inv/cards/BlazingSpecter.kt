@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Blazing Specter
@@ -28,7 +28,7 @@ val BlazingSpecter = card("Blazing Specter") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = EffectPatterns.discardCards(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
+        effect = HandPatterns.discardCards(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
     }
 
     metadata {

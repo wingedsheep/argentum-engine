@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Diligent Excavator
@@ -26,7 +26,7 @@ val DiligentExcavator = card("Diligent Excavator") {
     triggeredAbility {
         trigger = Triggers.YouCastHistoric
         val t = target("target", Targets.Player)
-        effect = EffectPatterns.mill(2, t)
+        effect = LibraryPatterns.mill(2, t)
     }
 
     metadata {

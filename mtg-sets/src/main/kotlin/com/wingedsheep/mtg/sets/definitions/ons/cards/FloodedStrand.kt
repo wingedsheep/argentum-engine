@@ -7,8 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.dsl.EffectPatterns
-
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 /**
  * Flooded Strand
  * Land
@@ -22,7 +21,7 @@ val FloodedStrand = card("Flooded Strand") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.PayLife(1), Costs.SacrificeSelf)
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter(
                 cardPredicates = listOf(
                     CardPredicate.IsLand,

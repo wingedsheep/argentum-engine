@@ -6,15 +6,14 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Polymorph
@@ -33,10 +32,10 @@ val Polymorph = card("Polymorph") {
     spell {
         val t = target("target creature", TargetCreature())
         val controllerOfTarget = Player.ControllerOf("target creature")
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 CantBeRegeneratedEffect(t),
-                MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true),
+                Effects.Move(t, Zone.GRAVEYARD, byDestruction = true),
                 GatherUntilMatchEffect(
                     player = controllerOfTarget,
                     filter = GameObjectFilter.Creature,

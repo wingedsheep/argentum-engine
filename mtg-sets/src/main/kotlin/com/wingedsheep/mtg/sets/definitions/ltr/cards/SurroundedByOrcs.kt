@@ -1,14 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Surrounded by Orcs
@@ -32,9 +31,9 @@ val SurroundedByOrcs = card("Surrounded by Orcs") {
 
     spell {
         val player = target("target player", Targets.Player)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.Amass(3, "Orc"),
-            EffectPatterns.mill(
+            LibraryPatterns.mill(
                 DynamicAmount.EntityProperty(EntityReference.AmassedArmy, EntityNumericProperty.Power),
                 player
             )

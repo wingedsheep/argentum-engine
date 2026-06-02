@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -18,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Gishath, Sun's Avatar
@@ -44,7 +44,7 @@ val GishathSunsAvatar = card("Gishath, Sun's Avatar") {
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
         val damageDealt = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(count = damageDealt, player = Player.You),
                 storeAs = "gishath_revealed",

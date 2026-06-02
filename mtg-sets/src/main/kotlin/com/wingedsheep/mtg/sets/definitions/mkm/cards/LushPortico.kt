@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.mkm.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Lush Portico
@@ -25,7 +25,7 @@ val LushPortico = card("Lush Portico") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
     }
 
     metadata {

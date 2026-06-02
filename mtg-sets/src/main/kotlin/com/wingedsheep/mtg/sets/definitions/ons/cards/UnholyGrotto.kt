@@ -7,11 +7,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Unholy Grotto
@@ -39,7 +39,7 @@ val UnholyGrotto = card("Unholy Grotto") {
                 zone = Zone.GRAVEYARD
             )
         ))
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = t,
             destination = Zone.LIBRARY,
             placement = ZonePlacement.Top

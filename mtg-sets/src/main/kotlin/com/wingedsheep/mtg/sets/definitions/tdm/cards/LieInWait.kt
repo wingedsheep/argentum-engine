@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
@@ -33,7 +32,7 @@ val LieInWait = card("Lie in Wait") {
     spell {
         target("target creature card in your graveyard", Targets.CreatureCardInYourGraveyard)
         target("target creature", Targets.Creature)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ReturnToHand(EffectTarget.ContextTarget(0)),
                 Effects.DealDamage(

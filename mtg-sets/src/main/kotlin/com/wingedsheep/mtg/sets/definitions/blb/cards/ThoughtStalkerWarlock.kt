@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Conditions
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -13,7 +12,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -24,6 +22,8 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Thought-Stalker Warlock
@@ -52,7 +52,7 @@ val ThoughtStalkerWarlock = card("Thought-Stalker Warlock") {
         effect = ConditionalEffect(
             condition = Conditions.OpponentLostLifeThisTurn,
             // If they lost life: reveal hand, controller chooses nonland, discard it
-            effect = CompositeEffect(
+            effect = Effects.Composite(
                 listOf(
                     RevealHandEffect(opponent),
                     GatherCardsEffect(
@@ -74,7 +74,7 @@ val ThoughtStalkerWarlock = card("Thought-Stalker Warlock") {
                 )
             ),
             // Otherwise: they discard a card (their choice)
-            elseEffect = EffectPatterns.discardCards(1, opponent)
+            elseEffect = HandPatterns.discardCards(1, opponent)
         )
     }
 

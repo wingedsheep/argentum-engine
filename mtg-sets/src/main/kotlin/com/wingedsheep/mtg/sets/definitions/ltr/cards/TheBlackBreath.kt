@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -23,7 +22,7 @@ val TheBlackBreath = card("The Black Breath") {
     oracleText = "Creatures your opponents control get -1/-1 until end of turn. The Ring tempts you."
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesOpponentsControl,
             effect = ModifyStatsEffect(
                 powerModifier = -1,

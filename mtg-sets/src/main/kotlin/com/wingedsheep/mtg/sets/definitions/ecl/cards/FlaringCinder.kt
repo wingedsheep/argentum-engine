@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Flaring Cinder
@@ -32,7 +32,7 @@ val FlaringCinder = card("Flaring Cinder") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = MayEffect(
-            effect = EffectPatterns.discardCards(1)
+            effect = HandPatterns.discardCards(1)
                 .then(Effects.DrawCards(1)),
             descriptionOverride = "You may discard a card. If you do, draw a card."
         )
@@ -47,7 +47,7 @@ val FlaringCinder = card("Flaring Cinder") {
             TriggerBinding.ANY
         )
         effect = MayEffect(
-            effect = EffectPatterns.discardCards(1)
+            effect = HandPatterns.discardCards(1)
                 .then(Effects.DrawCards(1)),
             descriptionOverride = "You may discard a card. If you do, draw a card."
         )

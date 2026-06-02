@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Bitter Revelation
@@ -20,7 +20,7 @@ val BitterRevelation = card("Bitter Revelation") {
     oracleText = "Look at the top four cards of your library. Put two of them into your hand and the rest into your graveyard. You lose 2 life."
 
     spell {
-        effect = EffectPatterns.lookAtTopAndKeep(
+        effect = LibraryPatterns.lookAtTopAndKeep(
             count = 4,
             keepCount = 2
         ) then Effects.LoseLife(2, EffectTarget.Controller)

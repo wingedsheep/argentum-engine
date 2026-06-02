@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -27,7 +26,7 @@ val Tangle = card("Tangle") {
     spell {
         effect = Effects.PreventAllCombatDamage()
             .then(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AttackingCreatures,
                     GrantKeywordEffect(
                         AbilityFlag.DOESNT_UNTAP.name,

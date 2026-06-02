@@ -5,11 +5,11 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Harmonized Crescendo
@@ -29,7 +29,7 @@ val HarmonizedCrescendo = card("Harmonized Crescendo") {
     keywords(Keyword.CONVOKE)
 
     spell {
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             ChooseOptionEffect(
                 optionType = OptionType.CREATURE_TYPE,
                 storeAs = "chosenType"

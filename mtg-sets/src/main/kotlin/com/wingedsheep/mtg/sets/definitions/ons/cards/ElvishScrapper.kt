@@ -5,8 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Elvish Scrapper
  * {G}
@@ -25,7 +24,7 @@ val ElvishScrapper = card("Elvish Scrapper") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{G}"), Costs.Tap, Costs.SacrificeSelf)
         val t = target("target", Targets.Artifact)
-        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

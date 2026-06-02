@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
@@ -22,6 +21,7 @@ import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Wishing Well {3}{U}
@@ -42,7 +42,7 @@ val WishingWell = card("Wishing Well") {
         cost = Costs.Tap
         timing = TimingRule.SorcerySpeed
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Put a coin counter on this artifact
                 AddCountersEffect("coin", 1, EffectTarget.Self),

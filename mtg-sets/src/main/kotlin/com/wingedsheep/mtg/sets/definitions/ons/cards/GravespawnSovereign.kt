@@ -6,8 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Gravespawn Sovereign
  * {4}{B}{B}
@@ -26,7 +25,7 @@ val GravespawnSovereign = card("Gravespawn Sovereign") {
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Zombie"))
         val t = target("target", Targets.CreatureCardInGraveyard)
-        effect = MoveToZoneEffect(t, Zone.BATTLEFIELD)
+        effect = Effects.Move(t, Zone.BATTLEFIELD)
     }
 
     metadata {

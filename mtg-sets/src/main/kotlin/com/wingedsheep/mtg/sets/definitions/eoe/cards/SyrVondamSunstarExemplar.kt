@@ -13,7 +13,6 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -41,7 +40,7 @@ val SyrVondamSunstarExemplar = card("Syr Vondam, Sunstar Exemplar") {
     keywords(Keyword.VIGILANCE, Keyword.MENACE)
 
     // Shared effect for ability 1: +1/+1 counter on self + gain 1 life
-    val counterAndLife = CompositeEffect(
+    val counterAndLife = Effects.Composite(
         listOf(
             Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
             Effects.GainLife(1)

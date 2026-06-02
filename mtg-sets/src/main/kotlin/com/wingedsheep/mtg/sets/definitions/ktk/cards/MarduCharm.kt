@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -23,6 +22,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Mardu Charm
@@ -59,7 +59,7 @@ val MarduCharm = card("Mardu Charm") {
             }
             mode("Target opponent reveals their hand, discard a noncreature, nonland card") {
                 val t = target("target", TargetOpponent())
-                effect = CompositeEffect(
+                effect = Effects.Composite(
                     listOf(
                         RevealHandEffect(t),
                         GatherCardsEffect(

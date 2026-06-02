@@ -5,10 +5,10 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Embrace Oblivion
@@ -24,7 +24,7 @@ val EmbraceOblivion = card("Embrace Oblivion") {
     oracleText = "As an additional cost to cast this spell, sacrifice an artifact or creature.\nDestroy target creature or Spacecraft."
 
     // Additional cost: sacrifice an artifact or creature
-    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Artifact.or(GameObjectFilter.Creature)))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Artifact.or(GameObjectFilter.Creature)))
 
     spell {
         val t = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Creature or GameObjectFilter.Permanent.withSubtype("Spacecraft"))))

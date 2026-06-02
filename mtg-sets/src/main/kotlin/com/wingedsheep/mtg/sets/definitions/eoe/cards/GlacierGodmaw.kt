@@ -5,8 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -39,9 +37,9 @@ val GlacierGodmaw = card("Glacier Godmaw") {
     // Landfall: creatures you control get +1/+1 and gain vigilance and haste until end of turn
     triggeredAbility {
         trigger = Triggers.LandYouControlEnters
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesYouControl,
-            effect = CompositeEffect(
+            effect = Effects.Composite(
                 listOf(
                     Effects.ModifyStats(+1, +1, EffectTarget.ContextTarget(0)),
                     Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.ContextTarget(0)),

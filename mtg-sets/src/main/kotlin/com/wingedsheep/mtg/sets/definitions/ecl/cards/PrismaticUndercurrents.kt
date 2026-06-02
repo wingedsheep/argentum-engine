@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -9,6 +8,7 @@ import com.wingedsheep.sdk.scripting.GrantAdditionalLandDrop
 import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Prismatic Undercurrents
@@ -30,7 +30,7 @@ val PrismaticUndercurrents = card("Prismatic Undercurrents") {
     // put them into your hand, then shuffle.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = Filters.BasicLand,
             count = DynamicAmount.AggregateBattlefield(
                 player = Player.You,

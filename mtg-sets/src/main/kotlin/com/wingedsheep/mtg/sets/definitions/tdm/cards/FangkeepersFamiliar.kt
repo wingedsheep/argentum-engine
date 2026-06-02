@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Fangkeeper's Familiar
@@ -45,7 +45,7 @@ val FangkeepersFamiliar = card("Fangkeeper's Familiar") {
         trigger = Triggers.EntersBattlefield
         effect = ModalEffect.chooseOne(
             Mode.noTarget(
-                Effects.GainLife(3).then(EffectPatterns.surveil(3)),
+                Effects.GainLife(3).then(LibraryPatterns.surveil(3)),
                 "You gain 3 life and surveil 3"
             ),
             Mode.withTarget(

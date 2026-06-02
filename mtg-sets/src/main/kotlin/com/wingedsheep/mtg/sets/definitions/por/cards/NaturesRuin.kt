@@ -5,11 +5,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Nature's Ruin
  * {2}{B}
@@ -22,9 +20,9 @@ val NaturesRuin = card("Nature's Ruin") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN)),
-            MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
+            Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
         )
     }
 

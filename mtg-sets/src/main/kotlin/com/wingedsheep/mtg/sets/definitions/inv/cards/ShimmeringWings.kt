@@ -7,8 +7,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Shimmering Wings
@@ -34,7 +34,7 @@ val ShimmeringWings = card("Shimmering Wings") {
 
     activatedAbility {
         cost = Costs.Mana("{U}")
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         description = "{U}: Return this Aura to its owner's hand."
     }
 

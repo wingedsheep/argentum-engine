@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.conditions.YouControlSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.SecretBidEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -36,7 +35,7 @@ val MenacingOgre = card("Menacing Ogre") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = SecretBidEffect(
-            highestBidderEffect = CompositeEffect(listOf(
+            highestBidderEffect = Effects.Composite(listOf(
                 // Each highest bidder loses life equal to their bid
                 Effects.LoseLife(DynamicAmount.XValue, EffectTarget.Controller),
                 // If the controller is among them, put counters on this creature

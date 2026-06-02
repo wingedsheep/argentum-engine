@@ -2,12 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Rabbit Response
@@ -22,12 +23,12 @@ val RabbitResponse = card("Rabbit Response") {
     oracleText = "Creatures you control get +2/+1 until end of turn. If you control a Rabbit, scry 2."
 
     spell {
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             2, 1,
             GroupFilter(GameObjectFilter.Creature.youControl())
         ).then(ConditionalEffect(
             condition = Conditions.ControlCreatureOfType(Subtype("Rabbit")),
-            effect = EffectPatterns.scry(2)
+            effect = LibraryPatterns.scry(2)
         ))
     }
 

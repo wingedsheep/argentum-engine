@@ -1,15 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Death Frenzy
@@ -24,9 +23,9 @@ val DeathFrenzy = card("Death Frenzy") {
     oracleText = "All creatures get -2/-2 until end of turn. Whenever a creature dies this turn, you gain 1 life."
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                EffectPatterns.modifyStatsForAll(-2, -2, GroupFilter.AllCreatures),
+                GroupPatterns.modifyStatsForAll(-2, -2, GroupFilter.AllCreatures),
                 Effects.CreateGlobalTriggeredAbility(
                     duration = Duration.EndOfTurn,
                     ability = TriggeredAbility.create(

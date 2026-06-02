@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Endless Cockroaches
@@ -23,7 +23,7 @@ val EndlessCockroaches = card("Endless Cockroaches") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
     }
 
     metadata {

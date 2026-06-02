@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -23,7 +22,7 @@ val RiverguardsReflexes = card("Riverguard's Reflexes") {
 
     spell {
         val creature = target("creature", TargetCreature())
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(2, 2, creature),
                 Effects.GrantKeyword(Keyword.FIRST_STRIKE, creature),

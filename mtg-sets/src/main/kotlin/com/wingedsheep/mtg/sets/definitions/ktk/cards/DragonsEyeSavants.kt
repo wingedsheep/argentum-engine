@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Dragon's Eye Savants
@@ -25,7 +25,7 @@ val DragonsEyeSavants = card("Dragon's Eye Savants") {
     toughness = 6
     oracleText = "Morph—Reveal a blue card in your hand. (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)\nWhen this creature is turned face up, look at target opponent's hand."
 
-    morphCost = PayCost.RevealCard(filter = GameObjectFilter.Any.withColor(Color.BLUE))
+    morphCost = Costs.pay.RevealCard(filter = GameObjectFilter.Any.withColor(Color.BLUE))
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp

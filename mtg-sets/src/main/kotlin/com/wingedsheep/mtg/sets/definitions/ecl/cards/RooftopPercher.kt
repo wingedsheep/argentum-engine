@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -41,7 +40,7 @@ val RooftopPercher = card("Rooftop Percher") {
             TargetObject(count = 2, optional = true, filter = TargetFilter.CardInGraveyard)
         )
         effect = ForEachTargetEffect(
-            listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE))
+            listOf(Effects.Move(EffectTarget.ContextTarget(0), Zone.EXILE))
         ).then(Effects.GainLife(3))
     }
 

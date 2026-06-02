@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -47,7 +46,7 @@ val OverwhelmingSurge = card("Overwhelming Surge") {
             mode("Deal 3 damage to target creature and destroy target noncreature artifact") {
                 val creature = target("creature", TargetCreature())
                 val artifact = target("noncreature artifact", TargetPermanent(filter = NoncreatureArtifact))
-                effect = CompositeEffect(
+                effect = Effects.Composite(
                     listOf(
                         Effects.DealDamage(3, creature),
                         Effects.Destroy(artifact),

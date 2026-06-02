@@ -2820,7 +2820,7 @@ class CastSpellHandler(
             id = AbilityId.generate(),
             trigger = SdkGameEvent.SpellCastEvent(player = Player.You),
             binding = TriggerBinding.SELF,
-            effect = com.wingedsheep.sdk.dsl.EffectPatterns.scry(amount),
+            effect = com.wingedsheep.sdk.dsl.LibraryPatterns.scry(amount),
             activeZone = Zone.STACK,
             descriptionOverride = "Scry $amount"
         )

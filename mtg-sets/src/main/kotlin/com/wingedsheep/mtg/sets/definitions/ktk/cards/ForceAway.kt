@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Force Away
@@ -32,7 +32,7 @@ val ForceAway = card("Force Away") {
         effect = Effects.ReturnToHand(creature)
             .then(ConditionalEffect(
                 condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.powerAtLeast(4)),
-                effect = MayEffect(EffectPatterns.loot())
+                effect = MayEffect(HandPatterns.loot())
             ))
     }
 

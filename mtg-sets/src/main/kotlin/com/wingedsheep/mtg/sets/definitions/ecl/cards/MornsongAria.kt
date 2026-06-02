@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -50,7 +49,7 @@ val MornsongAria = card("Mornsong Aria") {
         )
         effect = Effects.LoseLife(3, target = EffectTarget.PlayerRef(Player.TriggeringPlayer))
             .then(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.FromZone(Zone.LIBRARY, Player.TriggeringPlayer, GameObjectFilter.Any),

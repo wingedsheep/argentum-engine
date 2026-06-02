@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Spellgyre
@@ -31,7 +31,7 @@ val Spellgyre = card("Spellgyre") {
                 "Counter target spell"
             ),
             Mode.noTarget(
-                EffectPatterns.surveil(2).then(Effects.DrawCards(2)),
+                LibraryPatterns.surveil(2).then(Effects.DrawCards(2)),
                 "Surveil 2, then draw two cards"
             )
         )

@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -39,14 +38,14 @@ val ErrandRiderOfGondor = card("Errand-Rider of Gondor") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(1),
                 ConditionalEffect(
                     condition = Conditions.Not(
                         Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.legendary())
                     ),
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             GatherCardsEffect(
                                 source = CardSource.FromZone(Zone.HAND, Player.You),

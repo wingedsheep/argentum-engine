@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -24,10 +23,11 @@ import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Substrate tests for the "Whenever you scry" trigger (CR 701.18):
- * `EffectPatterns.scry(N)` ends by emitting [ScriedEvent], which drives
+ * `LibraryPatterns.scry(N)` ends by emitting [ScriedEvent], which drives
  * `Triggers.WheneverYouScry` and surfaces "the number of cards looked at" via
  * [ContextPropertyKey.TRIGGER_SCRY_COUNT].
  */
@@ -38,7 +38,7 @@ class ScryTriggerScenarioTest : FunSpec({
         manaCost = "{0}"
         typeLine = "Sorcery"
         oracleText = "Scry $n."
-        spell { effect = EffectPatterns.scry(n) }
+        spell { effect = LibraryPatterns.scry(n) }
     }
     val ScryOne = scrySpell("Scry One", 1)
     val ScryThree = scrySpell("Scry Three", 3)

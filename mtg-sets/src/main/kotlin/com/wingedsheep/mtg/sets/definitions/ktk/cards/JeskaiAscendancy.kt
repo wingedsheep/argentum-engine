@@ -1,16 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Jeskai Ascendancy
@@ -28,13 +27,13 @@ val JeskaiAscendancy = card("Jeskai Ascendancy") {
 
     triggeredAbility {
         trigger = Triggers.YouCastNoncreature
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     ModifyStatsEffect(1, 1, EffectTarget.Self)
                 ),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     TapUntapEffect(EffectTarget.Self, tap = false)
                 )
@@ -44,7 +43,7 @@ val JeskaiAscendancy = card("Jeskai Ascendancy") {
 
     triggeredAbility {
         trigger = Triggers.YouCastNoncreature
-        effect = MayEffect(EffectPatterns.loot())
+        effect = MayEffect(HandPatterns.loot())
     }
 
     metadata {

@@ -3,9 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -22,9 +20,9 @@ val SymbolOfUnsummoning = card("Symbol of Unsummoning") {
 
     spell {
         target = TargetCreature()
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND),
+                Effects.Move(EffectTarget.ContextTarget(0), Zone.HAND),
                 Effects.DrawCards(1)
             )
         )

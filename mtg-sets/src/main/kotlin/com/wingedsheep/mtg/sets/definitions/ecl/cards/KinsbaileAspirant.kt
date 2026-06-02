@@ -4,10 +4,10 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Kinsbaile Aspirant
@@ -30,7 +30,7 @@ val KinsbaileAspirant = card("Kinsbaile Aspirant") {
         "Whenever another creature you control enters, this creature gets +1/+1 until end of turn."
 
     additionalCost(
-        AdditionalCost.BeholdOrPay(
+        Costs.additional.BeholdOrPay(
             filter = Filters.WithSubtype("Kithkin"),
             alternativeManaCost = "{2}"
         )

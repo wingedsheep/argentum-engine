@@ -4,11 +4,11 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Chill Haunting
@@ -23,7 +23,7 @@ val ChillHaunting = card("Chill Haunting") {
     typeLine = "Instant"
     oracleText = "As an additional cost to cast this spell, exile X creature cards from your graveyard.\nTarget creature gets -X/-X until end of turn."
 
-    additionalCost(AdditionalCost.ExileVariableCards(
+    additionalCost(Costs.additional.ExileVariableCards(
         minCount = 1,
         filter = GameObjectFilter.Creature,
         fromZone = CostZone.GRAVEYARD

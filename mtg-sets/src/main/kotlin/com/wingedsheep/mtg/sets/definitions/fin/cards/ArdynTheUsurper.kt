@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -53,7 +52,7 @@ val ArdynTheUsurper = card("Ardyn, the Usurper") {
             "creature card from a graveyard",
             TargetObject(optional = true, filter = TargetFilter.CreatureInGraveyard)
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.Exile(graveyardCard),
             Effects.CreateTokenCopyOfTarget(
                 graveyardCard,

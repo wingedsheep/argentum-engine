@@ -7,10 +7,10 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Timely Hordemate
@@ -39,7 +39,7 @@ val TimelyHordemate = card("Timely Hordemate") {
                 )
             )
         )
-        effect = MoveToZoneEffect(t, Zone.BATTLEFIELD)
+        effect = Effects.Move(t, Zone.BATTLEFIELD)
     }
 
     metadata {

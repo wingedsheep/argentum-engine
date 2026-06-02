@@ -5,8 +5,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Champions of the Perfect
  * {3}{G}
@@ -26,7 +25,7 @@ val ChampionsOfThePerfect = card("Champions of the Perfect") {
     toughness = 6
     oracleText = "As an additional cost to cast this spell, behold an Elf and exile it. (Exile an Elf you control or an Elf card from your hand.)\nWhenever you cast a creature spell, draw a card.\nWhen this creature leaves the battlefield, return the exiled card to its owner's hand."
 
-    additionalCost(AdditionalCost.BeholdAndExile(filter = Filters.WithSubtype("Elf")))
+    additionalCost(Costs.additional.BeholdAndExile(filter = Filters.WithSubtype("Elf")))
 
     triggeredAbility {
         trigger = Triggers.YouCastCreature

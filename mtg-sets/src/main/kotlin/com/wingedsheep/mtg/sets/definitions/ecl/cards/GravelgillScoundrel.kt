@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -31,7 +30,7 @@ val GravelgillScoundrel = card("Gravelgill Scoundrel") {
         // Selection happens via SelectTargetEffect after the player accepts the optional,
         // so declining doesn't force them to commit to one.
         effect = ReflexiveTriggerEffect(
-            action = CompositeEffect(listOf(
+            action = Effects.Composite(listOf(
                 SelectTargetEffect(
                     requirement = TargetObject(
                         filter = TargetFilter.OtherCreatureYouControl.untapped()

@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Starstorm
@@ -23,7 +23,7 @@ val Starstorm = card("Starstorm") {
     oracleText = "Starstorm deals X damage to each creature.\nCycling {3}"
 
     spell {
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self))
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures, DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self))
     }
 
     keywordAbility(KeywordAbility.cycling("{3}"))

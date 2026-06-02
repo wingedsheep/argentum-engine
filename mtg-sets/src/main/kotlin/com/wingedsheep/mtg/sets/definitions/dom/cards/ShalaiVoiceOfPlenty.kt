@@ -8,9 +8,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Shalai, Voice of Plenty
@@ -55,7 +55,7 @@ val ShalaiVoiceOfPlenty = card("Shalai, Voice of Plenty") {
     // {4}{G}{G}: Put a +1/+1 counter on each creature you control
     activatedAbility {
         cost = Costs.Mana("{4}{G}{G}")
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesYouControl,
             effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
         )

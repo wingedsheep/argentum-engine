@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Requiem Monolith
@@ -40,7 +40,7 @@ val RequiemMonolith = card("Requiem Monolith") {
         val grantedAbility = TriggeredAbility.create(
             trigger = Triggers.TakesDamage.event,
             binding = Triggers.TakesDamage.binding,
-            effect = CompositeEffect(
+            effect = Effects.Composite(
                 listOf(
                     DrawCardsEffect(damage, EffectTarget.Controller),
                     LoseLifeEffect(damage, EffectTarget.Controller)
@@ -49,7 +49,7 @@ val RequiemMonolith = card("Requiem Monolith") {
             descriptionOverride = "Whenever this creature is dealt damage, you draw that many cards and lose that much life"
         )
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GrantTriggeredAbilityEffect(ability = grantedAbility, target = creature),
                 MayEffect(

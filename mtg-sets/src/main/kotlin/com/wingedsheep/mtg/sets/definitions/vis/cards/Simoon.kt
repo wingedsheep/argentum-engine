@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Simoon
@@ -26,7 +26,7 @@ val Simoon = card("Simoon") {
 
     spell {
         target = Targets.Opponent
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter(Filters.Creature.targetOpponentControls()),
             DealDamageEffect(1, EffectTarget.Self)
         )

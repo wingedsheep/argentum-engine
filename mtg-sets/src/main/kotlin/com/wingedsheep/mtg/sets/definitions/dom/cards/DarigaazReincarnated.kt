@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.dsl.DynamicAmounts
@@ -72,7 +71,7 @@ val DarigaazReincarnated = card("Darigaaz Reincarnated") {
                     ComparisonOperator.EQ,
                     DynamicAmount.Fixed(0)
                 ),
-                effect = MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD)
+                effect = Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD)
             )
     }
 

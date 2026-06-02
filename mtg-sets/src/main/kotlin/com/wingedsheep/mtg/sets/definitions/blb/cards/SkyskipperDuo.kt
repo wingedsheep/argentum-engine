@@ -7,12 +7,11 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Skyskipper Duo
@@ -45,11 +44,11 @@ val SkyskipperDuo = card("Skyskipper Duo") {
                 optional = true
             )
         )
-        effect = CompositeEffect(listOf(
-            MoveToZoneEffect(creature, Zone.EXILE),
+        effect = Effects.Composite(listOf(
+            Effects.Move(creature, Zone.EXILE),
             CreateDelayedTriggerEffect(
                 step = Step.END,
-                effect = MoveToZoneEffect(creature, Zone.BATTLEFIELD)
+                effect = Effects.Move(creature, Zone.BATTLEFIELD)
             )
         ))
     }

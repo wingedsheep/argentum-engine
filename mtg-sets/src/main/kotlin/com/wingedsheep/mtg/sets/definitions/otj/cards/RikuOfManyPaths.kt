@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
@@ -67,7 +66,7 @@ val RikuOfManyPaths = card("Riku of Many Paths") {
             ),
             // Mode 1 — impulse-draw with extended window.
             Mode.noTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
@@ -87,7 +86,7 @@ val RikuOfManyPaths = card("Riku of Many Paths") {
             ),
             // Mode 2 — +1/+1 counter + trample until end of turn.
             Mode.noTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
                         Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.Self, Duration.EndOfTurn)

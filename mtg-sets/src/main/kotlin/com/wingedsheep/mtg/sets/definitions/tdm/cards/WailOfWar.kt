@@ -1,17 +1,17 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Wail of War
@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetOpponent
  *
  * Mode 1 scopes the group debuff to the chosen opponent via
  * [GameObjectFilter.Creature.targetOpponentControls] + the standard
- * [EffectPatterns.modifyStatsForAll]; mode 2 reuses the up-to-two graveyard-return
+ * [GroupPatterns.modifyStatsForAll]; mode 2 reuses the up-to-two graveyard-return
  * shape (see Dutiful Return).
  */
 val WailOfWar = card("Wail of War") {
@@ -39,7 +39,7 @@ val WailOfWar = card("Wail of War") {
         modal(chooseCount = 1) {
             mode("Creatures target opponent controls get -1/-1 until end of turn") {
                 val opponent = target("target opponent", TargetOpponent())
-                effect = EffectPatterns.modifyStatsForAll(
+                effect = GroupPatterns.modifyStatsForAll(
                     power = -1,
                     toughness = -1,
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(opponent))
@@ -52,7 +52,7 @@ val WailOfWar = card("Wail of War") {
                     filter = TargetFilter.CreatureInYourGraveyard
                 )
                 effect = ForEachTargetEffect(
-                    effects = listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND))
+                    effects = listOf(Effects.Move(EffectTarget.ContextTarget(0), Zone.HAND))
                 )
             }
         }

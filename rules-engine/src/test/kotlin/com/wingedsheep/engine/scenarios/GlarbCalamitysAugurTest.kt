@@ -5,7 +5,6 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -16,6 +15,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Tests for Glarb, Calamity's Augur.
@@ -50,7 +50,7 @@ class GlarbCalamitysAugurTest : FunSpec({
 
         activatedAbility {
             cost = AbilityCost.Tap
-            effect = EffectPatterns.surveil(2)
+            effect = LibraryPatterns.surveil(2)
         }
     }
 

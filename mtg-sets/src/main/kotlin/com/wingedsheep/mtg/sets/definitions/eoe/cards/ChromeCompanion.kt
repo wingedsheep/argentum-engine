@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -38,7 +37,7 @@ val ChromeCompanion = card("Chrome Companion") {
             "target card from a graveyard",
             TargetObject(filter = TargetFilter.CardInGraveyard)
         )
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = cardInGraveyard,
             destination = Zone.LIBRARY,
             placement = ZonePlacement.Bottom

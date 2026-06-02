@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -39,19 +37,19 @@ val SelflessSafewright = card("Selfless Safewright") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 ChooseOptionEffect(
                     optionType = OptionType.CREATURE_TYPE,
                     storeAs = "chosenCreatureType"
                 ),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter(
                         baseFilter = GameObjectFilter.Permanent.youControl(),
                         excludeSelf = true,
                         chosenSubtypeKey = "chosenCreatureType"
                     ),
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             Effects.GrantKeyword(Keyword.HEXPROOF, EffectTarget.Self, Duration.EndOfTurn),
                             Effects.GrantKeyword(Keyword.INDESTRUCTIBLE, EffectTarget.Self, Duration.EndOfTurn)

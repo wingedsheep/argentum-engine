@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Skirk Volcanist
@@ -35,7 +35,7 @@ val SkirkVolcanist = card("Skirk Volcanist") {
         )
     }
 
-    morphCost = PayCost.Sacrifice(GameObjectFilter.Land.withSubtype("Mountain"), count = 2)
+    morphCost = Costs.pay.Sacrifice(GameObjectFilter.Land.withSubtype("Mountain"), count = 2)
 
     metadata {
         rarity = Rarity.UNCOMMON

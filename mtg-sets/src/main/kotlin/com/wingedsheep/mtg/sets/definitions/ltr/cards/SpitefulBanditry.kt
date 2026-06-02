@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -32,7 +31,7 @@ val SpitefulBanditry = card("Spiteful Banditry") {
     // When this enchantment enters, it deals X damage to each creature.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreatures,
             effect = DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self)
         )

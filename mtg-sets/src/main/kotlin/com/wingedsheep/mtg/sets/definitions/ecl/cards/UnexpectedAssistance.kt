@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Unexpected Assistance
@@ -25,7 +25,7 @@ val UnexpectedAssistance = card("Unexpected Assistance") {
     keywords(Keyword.CONVOKE)
 
     spell {
-        effect = Effects.DrawCards(3).then(EffectPatterns.discardCards(1))
+        effect = Effects.DrawCards(3).then(HandPatterns.discardCards(1))
     }
 
     metadata {

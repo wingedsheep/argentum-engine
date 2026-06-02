@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -55,7 +54,7 @@ val SunpearlKirin = card("Sunpearl Kirin") {
                 filter = TargetFilter.NonlandPermanent.youControl().other()
             )
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Capture the chosen permanent so we can inspect its token status before it leaves.
             GatherCardsEffect(source = CardSource.ChosenTargets, storeAs = "returned"),
             // If the captured permanent was a token, draw a card (resolved while it's still in play).

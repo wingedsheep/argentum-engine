@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Rain of Blades
@@ -20,7 +20,7 @@ val RainOfBlades = card("Rain of Blades") {
     oracleText = "Rain of Blades deals 1 damage to each attacking creature."
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AttackingCreatures,
             effect = DealDamageEffect(1, EffectTarget.Self)
         )

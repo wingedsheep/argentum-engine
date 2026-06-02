@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -18,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Cauldron Dance
@@ -69,7 +69,7 @@ val CauldronDance = card("Cauldron Dance") {
 
         // Part 2 — optionally drop a creature from hand, give it haste, and sacrifice it
         // at the next end step.
-        val fromHand = EffectPatterns.putFromHand(
+        val fromHand = HandPatterns.putFromHand(
             filter = GameObjectFilter.Creature
         ).then(
             ConditionalOnCollectionEffect(

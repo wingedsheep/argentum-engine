@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Calamitous Tide
@@ -24,7 +24,7 @@ val CalamitousTide = card("Calamitous Tide") {
         val (c1, c2) = targets("creature", TargetCreature(count = 2, optional = true))
         effect = Effects.ReturnToHand(c1)
             .then(Effects.ReturnToHand(c2))
-            .then(EffectPatterns.loot(draw = 2, discard = 1))
+            .then(HandPatterns.loot(draw = 2, discard = 1))
     }
 
     metadata {

@@ -7,8 +7,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
@@ -16,11 +14,11 @@ import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Tsabo's Decree
@@ -46,7 +44,7 @@ val TsabosDecree = card("Tsabo's Decree") {
 
     spell {
         val targetPlayer = target("target player", TargetPlayer())
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 ChooseCreatureTypeEffect,
                 // Target player reveals their hand and discards all creature cards of that type.
@@ -71,15 +69,15 @@ val TsabosDecree = card("Tsabo's Decree") {
                     moveType = MoveType.Discard,
                 ),
                 // Then destroy all creatures of that type that player controls; no regeneration.
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter(
                         baseFilter = GameObjectFilter.Creature.targetPlayerControls(),
                         chosenSubtypeKey = "chosenCreatureType",
                     ),
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             CantBeRegeneratedEffect(EffectTarget.Self),
-                            MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true),
+                            Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true),
                         ),
                     ),
                 ),

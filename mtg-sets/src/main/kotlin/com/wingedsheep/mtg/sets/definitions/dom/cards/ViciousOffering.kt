@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Vicious Offering
@@ -26,7 +26,7 @@ val ViciousOffering = card("Vicious Offering") {
     typeLine = "Instant"
     oracleText = "Kicker—Sacrifice a creature. (You may sacrifice a creature in addition to any other costs as you cast this spell.)\nTarget creature gets -2/-2 until end of turn. If this spell was kicked, that creature gets -5/-5 until end of turn instead."
 
-    keywordAbility(KeywordAbility.kicker(AdditionalCost.SacrificePermanent(filter = GameObjectFilter.Creature)))
+    keywordAbility(KeywordAbility.kicker(Costs.additional.SacrificePermanent(filter = GameObjectFilter.Creature)))
 
     spell {
         val t = target("target", Targets.Creature)

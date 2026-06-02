@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
@@ -23,7 +22,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * "Look at the top 7 cards of your library. Put 2 of them into your hand
  * and the rest into your graveyard."
  *
- * Uses the pipeline-based implementation (EffectPatterns.lookAtTopAndKeep)
+ * Uses the pipeline-based implementation (LibraryPatterns.lookAtTopAndKeep)
  * instead of the deprecated LookAtTopCardsEffect.
  */
 class AncestralMemoriesPipelineTest : FunSpec({

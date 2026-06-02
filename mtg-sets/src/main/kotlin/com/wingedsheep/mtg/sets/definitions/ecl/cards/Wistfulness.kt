@@ -1,13 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Wistfulness
@@ -45,7 +45,7 @@ val Wistfulness = card("Wistfulness") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.ManaSpentToCastIncludes(requiredBlue = 2)
-        effect = EffectPatterns.loot(draw = 2, discard = 1)
+        effect = HandPatterns.loot(draw = 2, discard = 1)
     }
 
     metadata {

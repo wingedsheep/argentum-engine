@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Noxious Toad
@@ -21,7 +21,7 @@ val NoxiousToad = card("Noxious Toad") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = EffectPatterns.eachOpponentDiscards(1)
+        effect = HandPatterns.eachOpponentDiscards(1)
     }
 
     metadata {

@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -36,7 +35,7 @@ val VigorousCharge = card("Vigorous Charge") {
 
     spell {
         val t = target("target", Targets.Creature)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.GrantKeyword(Keyword.TRAMPLE, t),
                 ConditionalEffect(

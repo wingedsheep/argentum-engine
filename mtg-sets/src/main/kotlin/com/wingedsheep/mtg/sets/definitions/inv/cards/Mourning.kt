@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Mourning
@@ -33,7 +33,7 @@ val Mourning = card("Mourning") {
 
     activatedAbility {
         cost = Costs.Mana("{B}")
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         description = "{B}: Return this Aura to its owner's hand."
     }
 

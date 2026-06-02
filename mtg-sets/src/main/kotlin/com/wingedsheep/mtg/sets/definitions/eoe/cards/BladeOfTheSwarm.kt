@@ -49,7 +49,7 @@ val BladeOfTheSwarm = card("Blade of the Swarm") {
                 "Put two +1/+1 counters on this creature",
             ),
             Mode.withTarget(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.LIBRARY, ZonePlacement.Bottom),
+                Effects.Move(EffectTarget.ContextTarget(0), Zone.LIBRARY, ZonePlacement.Bottom),
                 TargetObject(
                     filter = TargetFilter(
                         GameObjectFilter.Any.warpExiled(),

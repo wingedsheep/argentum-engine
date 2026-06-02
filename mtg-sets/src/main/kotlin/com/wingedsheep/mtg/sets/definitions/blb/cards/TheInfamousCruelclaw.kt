@@ -6,16 +6,15 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithAdditionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * The Infamous Cruelclaw
@@ -41,7 +40,7 @@ val TheInfamousCruelclaw = card("The Infamous Cruelclaw") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Exile from top until nonland
                 GatherUntilMatchEffect(
@@ -62,7 +61,7 @@ val TheInfamousCruelclaw = card("The Infamous Cruelclaw") {
                 // Require discarding a card as additional cost
                 GrantPlayWithAdditionalCostEffect(
                     from = "nonland",
-                    additionalCost = AdditionalCost.DiscardCards(1)
+                    additionalCost = Costs.additional.DiscardCards(1)
                 )
             )
         )

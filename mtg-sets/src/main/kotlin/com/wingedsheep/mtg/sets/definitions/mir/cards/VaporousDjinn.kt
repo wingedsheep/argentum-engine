@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Vaporous Djinn
@@ -34,7 +34,7 @@ val VaporousDjinn = card("Vaporous Djinn") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         effect = PayOrSufferEffect(
-            cost = PayCost.Mana(ManaCost.parse("{U}{U}")),
+            cost = Costs.pay.Mana(ManaCost.parse("{U}{U}")),
             suffer = Effects.PhaseOut()
         )
     }

@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.tokens
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
@@ -20,6 +19,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Predefined token CardDefinitions.
@@ -89,7 +89,7 @@ object PredefinedTokens {
                 Costs.Tap,
                 Costs.SacrificeSelf
             )
-            effect = EffectPatterns.searchLibrary(
+            effect = LibraryPatterns.searchLibrary(
                 filter = GameObjectFilter.BasicLand,
                 count = 1,
                 destination = SearchDestination.BATTLEFIELD,
@@ -224,7 +224,7 @@ object PredefinedTokens {
 
         triggeredAbility {
             trigger = Triggers.attacks(binding = TriggerBinding.ATTACHED)
-            effect = EffectPatterns.scry(1)
+            effect = LibraryPatterns.scry(1)
         }
 
         metadata {

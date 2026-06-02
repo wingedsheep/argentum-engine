@@ -5,8 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -33,10 +31,10 @@ val DaringWaverider = card("Daring Waverider") {
         target = TargetObject(
             filter = TargetFilter.InstantOrSorceryInGraveyard.ownedByYou().manaValueAtMost(4)
         )
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Move the targeted card from graveyard to exile
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
+                Effects.Move(EffectTarget.ContextTarget(0), Zone.EXILE),
                 // Grant free cast from exile + exile after resolve
                 Effects.GrantFreeCastTargetFromExile(
                     target = EffectTarget.ContextTarget(0),

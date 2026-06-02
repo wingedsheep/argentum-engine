@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
@@ -35,7 +34,7 @@ val DragonTyrant = card("Dragon Tyrant") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         effect = PayOrSufferEffect(
-            cost = PayCost.Mana(ManaCost.parse("{R}{R}{R}{R}")),
+            cost = Costs.pay.Mana(ManaCost.parse("{R}{R}{R}{R}")),
             suffer = SacrificeSelfEffect
         )
     }

@@ -8,12 +8,12 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Thicket Elemental
@@ -42,7 +42,7 @@ val ThicketElemental = card("Thicket Elemental") {
         trigger = Triggers.EntersBattlefield
         triggerCondition = WasKicked
         effect = MayEffect(
-            CompositeEffect(
+            Effects.Composite(
                 listOf(
                     GatherUntilMatchEffect(
                         filter = GameObjectFilter.Creature,

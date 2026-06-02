@@ -2,17 +2,17 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * All-Out Assault — Tarkir: Dragonstorm #167
@@ -53,7 +53,7 @@ val AllOutAssault = card("All-Out Assault") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.IsYourMainPhase
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // "there is an additional combat phase after this phase followed by an
                 // additional main phase"
@@ -62,7 +62,7 @@ val AllOutAssault = card("All-Out Assault") {
                 CreateDelayedTriggerEffect(
                     trigger = Triggers.YouAttack,
                     fireOnce = true,
-                    effect = EffectPatterns.untapGroup(GroupFilter.AllCreaturesYouControl),
+                    effect = GroupPatterns.untapGroup(GroupFilter.AllCreaturesYouControl),
                     expiry = DelayedTriggerExpiry.EndOfTurn
                 )
             )

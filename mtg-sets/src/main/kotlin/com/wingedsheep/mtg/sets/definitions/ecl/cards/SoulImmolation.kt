@@ -3,14 +3,13 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Soul Immolation
@@ -28,13 +27,13 @@ val SoulImmolation = card("Soul Immolation") {
     oracleText = "As an additional cost to cast this spell, blight X. X can't be greater than the greatest toughness among creatures you control. (Put X -1/-1 counters on a creature you control.)\n" +
         "Soul Immolation deals X damage to each opponent and each creature they control."
 
-    additionalCost(AdditionalCost.BlightVariable())
+    additionalCost(Costs.additional.BlightVariable())
 
     spell {
         effect = Effects.DealDamage(
             DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_BLIGHT_AMOUNT),
             EffectTarget.PlayerRef(Player.EachOpponent)
-        ) then ForEachInGroupEffect(
+        ) then Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesOpponentsControl,
             effect = DealDamageEffect(
                 DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_BLIGHT_AMOUNT),

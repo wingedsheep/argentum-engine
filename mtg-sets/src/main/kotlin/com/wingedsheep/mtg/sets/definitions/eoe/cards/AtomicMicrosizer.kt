@@ -10,8 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.SetBasePowerToughnessEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Atomic Microsizer
  * {U}
@@ -38,7 +36,7 @@ val AtomicMicrosizer = card("Atomic Microsizer") {
             "up to one target creature", 
             com.wingedsheep.sdk.scripting.targets.TargetObject(optional = true, filter = com.wingedsheep.sdk.scripting.filters.unified.TargetFilter.Creature)
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Can't be blocked this turn
             Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, target),
             // Has base power and toughness 1/1 until end of turn

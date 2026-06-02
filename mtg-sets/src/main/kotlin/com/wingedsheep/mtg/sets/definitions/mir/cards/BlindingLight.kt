@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Blinding Light
@@ -24,7 +24,7 @@ val BlindingLight = card("Blinding Light") {
     oracleText = "Tap all nonwhite creatures."
 
     spell {
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures.notColor(Color.WHITE), TapUntapEffect(EffectTarget.Self, tap = true))
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures.notColor(Color.WHITE), TapUntapEffect(EffectTarget.Self, tap = true))
     }
 
     metadata {

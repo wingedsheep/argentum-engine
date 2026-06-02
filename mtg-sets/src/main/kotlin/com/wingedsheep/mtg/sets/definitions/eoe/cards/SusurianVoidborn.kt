@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Susurian Voidborn
  * {2}{B}
@@ -35,7 +33,7 @@ val SusurianVoidborn = card("Susurian Voidborn") {
             binding = TriggerBinding.ANY
         )
         val opponent = target("target opponent", Targets.Opponent)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.LoseLife(1, opponent),
                 Effects.GainLife(1)

@@ -7,12 +7,11 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Valley Floodcaller
@@ -57,9 +56,9 @@ val ValleyFloodcaller = card("Valley Floodcaller") {
 
     triggeredAbility {
         trigger = Triggers.YouCastNoncreature
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = creatureFilter,
-            effect = CompositeEffect(
+            effect = Effects.Composite(
                 listOf(
                     ModifyStatsEffect(1, 1, EffectTarget.Self),
                     TapUntapEffect(EffectTarget.Self, tap = false)

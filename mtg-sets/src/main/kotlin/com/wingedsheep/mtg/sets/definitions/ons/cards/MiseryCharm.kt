@@ -5,11 +5,11 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Misery Charm
@@ -30,7 +30,7 @@ val MiseryCharm = card("Misery Charm") {
         modal(chooseCount = 1) {
             mode("Destroy target Cleric") {
                 val t = target("target", TargetCreature(filter = TargetFilter.Creature.withSubtype("Cleric")))
-                effect = MoveToZoneEffect(
+                effect = Effects.Move(
                     target = t,
                     destination = Zone.GRAVEYARD,
                     byDestruction = true
@@ -43,7 +43,7 @@ val MiseryCharm = card("Misery Charm") {
                         zone = Zone.GRAVEYARD
                     )
                 ))
-                effect = MoveToZoneEffect(
+                effect = Effects.Move(
                     target = t,
                     destination = Zone.HAND
                 )

@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.arn.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Army of Allah
@@ -18,7 +18,7 @@ val ArmyOfAllah = card("Army of Allah") {
     oracleText = "Attacking creatures get +2/+0 until end of turn."
 
     spell {
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             power = 2,
             toughness = 0,
             filter = GroupFilter.AttackingCreatures,

@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Weird Harvest
@@ -20,7 +20,7 @@ val WeirdHarvest = card("Weird Harvest") {
     oracleText = "Each player may search their library for up to X creature cards, reveal those cards, put them into their hand, then shuffle."
 
     spell {
-        effect = EffectPatterns.eachPlayerSearchesLibrary(
+        effect = MiscPatterns.eachPlayerSearchesLibrary(
             filter = Filters.Creature,
             count = DynamicAmount.XValue
         )

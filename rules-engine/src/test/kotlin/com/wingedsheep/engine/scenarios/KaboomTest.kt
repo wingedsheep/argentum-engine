@@ -13,11 +13,11 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Tests for Kaboom!:
@@ -44,7 +44,7 @@ class KaboomTest : FunSpec({
         typeLine = TypeLine.sorcery(),
         oracleText = "Choose any number of target players or planeswalkers. For each of them, reveal cards from the top of your library until you reveal a nonland card, Kaboom! deals damage equal to that card's mana value to that player or planeswalker, then you put the revealed cards on the bottom of your library in any order.",
         script = CardScript.spell(
-            effect = EffectPatterns.revealUntilNonlandDealDamageEachTarget(),
+            effect = LibraryPatterns.revealUntilNonlandDealDamageEachTarget(),
             TargetPlayer(count = 99, optional = true)
         )
     )

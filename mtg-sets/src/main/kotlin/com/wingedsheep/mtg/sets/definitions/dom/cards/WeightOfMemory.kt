@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Weight of Memory
@@ -21,7 +21,7 @@ val WeightOfMemory = card("Weight of Memory") {
     spell {
         val t = target("target", Targets.Player)
         effect = Effects.DrawCards(3)
-            .then(EffectPatterns.mill(3, t))
+            .then(LibraryPatterns.mill(3, t))
     }
 
     metadata {

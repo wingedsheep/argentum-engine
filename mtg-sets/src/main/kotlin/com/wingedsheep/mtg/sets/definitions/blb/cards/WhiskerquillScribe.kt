@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Whiskerquill Scribe
@@ -28,7 +28,7 @@ val WhiskerquillScribe = card("Whiskerquill Scribe") {
         trigger = Triggers.Valiant
         effect = MayEffect(
             effect = IfYouDoEffect(
-                action = EffectPatterns.discardCards(1),
+                action = HandPatterns.discardCards(1),
                 ifYouDo = Effects.DrawCards(1)
             ),
             descriptionOverride = "You may discard a card. If you do, draw a card."

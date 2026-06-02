@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -15,7 +14,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -27,6 +25,7 @@ import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Trystan, Callous Cultivator // Trystan, Penitent Culler
@@ -47,9 +46,9 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *   At the beginning of your first main phase, you may pay {G}. If you do, transform Trystan.
  */
 
-private val millThenGainLifeIfElf = CompositeEffect(
+private val millThenGainLifeIfElf = Effects.Composite(
     listOf(
-        EffectPatterns.mill(3),
+        LibraryPatterns.mill(3),
         ConditionalEffect(
             condition = Conditions.GraveyardContainsSubtype(Subtype.ELF),
             effect = Effects.GainLife(2)
@@ -57,9 +56,9 @@ private val millThenGainLifeIfElf = CompositeEffect(
     )
 )
 
-private val millThenExileElfThenDrain = CompositeEffect(
+private val millThenExileElfThenDrain = Effects.Composite(
     listOf(
-        EffectPatterns.mill(3),
+        LibraryPatterns.mill(3),
         GatherCardsEffect(
             source = CardSource.FromZone(
                 zone = Zone.GRAVEYARD,

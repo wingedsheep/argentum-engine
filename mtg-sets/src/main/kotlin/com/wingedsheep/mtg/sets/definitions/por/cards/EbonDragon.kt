@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Ebon Dragon
@@ -27,7 +27,7 @@ val EbonDragon = card("Ebon Dragon") {
         trigger = Triggers.EntersBattlefield
         optional = true
         val t = target("target", TargetOpponent())
-        effect = EffectPatterns.discardCards(1, t)
+        effect = HandPatterns.discardCards(1, t)
     }
 
     metadata {

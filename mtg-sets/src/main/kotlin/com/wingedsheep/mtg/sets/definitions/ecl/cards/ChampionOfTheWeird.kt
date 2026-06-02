@@ -1,16 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Champion of the Weird
@@ -34,12 +33,12 @@ val ChampionOfTheWeird = card("Champion of the Weird") {
         "Pay 1 life, Blight 2: Target opponent blights 2. Activate only as a sorcery.\n" +
         "When this creature leaves the battlefield, return the exiled card to its owner's hand."
 
-    additionalCost(AdditionalCost.BeholdAndExile(filter = Filters.WithSubtype("Goblin")))
+    additionalCost(Costs.additional.BeholdAndExile(filter = Filters.WithSubtype("Goblin")))
 
     activatedAbility {
         cost = Costs.Composite(Costs.PayLife(1), Costs.Blight(2))
         target = Targets.Opponent
-        effect = EffectPatterns.blight(2, Player.TargetOpponent)
+        effect = MiscPatterns.blight(2, Player.TargetOpponent)
         timing = TimingRule.SorcerySpeed
     }
 

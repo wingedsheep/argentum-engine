@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -93,7 +92,7 @@ val ZoralineCosmosCaller = card("Zoraline, Cosmos Caller") {
  * May pay {W}{B} and 2 life → return nonland permanent card MV ≤ 3
  * from graveyard to battlefield with a finality counter.
  */
-private fun zoralineReanimateEffect() = CompositeEffect(
+private fun zoralineReanimateEffect() = Effects.Composite(
     listOf(
         // Gather nonland permanent cards with MV ≤ 3 from your graveyard first,
         // so the player can see eligible cards before deciding to pay
@@ -106,13 +105,13 @@ private fun zoralineReanimateEffect() = CompositeEffect(
             storeAs = "eligible"
         ),
         OptionalCostEffect(
-            cost = CompositeEffect(
+            cost = Effects.Composite(
                 listOf(
                     PayManaCostEffect(ManaCost.parse("{W}{B}")),
                     PayLifeEffect(2)
                 )
             ),
-            ifPaid = CompositeEffect(
+            ifPaid = Effects.Composite(
                 listOf(
                     // Select one to return
                     SelectFromCollectionEffect(

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
@@ -52,7 +51,7 @@ val Unbury = card("Unbury") {
                 "Return target creature card from your graveyard to your hand"
             ),
             Mode.noTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         ChooseCreatureTypeEffect,
                         GatherCardsEffect(

@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
@@ -21,7 +20,7 @@ val SorcerousSight = card("Sorcerous Sight") {
 
     spell {
         target = TargetOpponent()
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 LookAtTargetHandEffect(EffectTarget.ContextTarget(0)),
                 Effects.DrawCards(1)

@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -12,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Elven Farsight
@@ -27,7 +27,7 @@ val ElvenFarsight = card("Elven Farsight") {
 
     spell {
         // Scry 3, then reveal the top card; if it's a creature card, put it into your hand (draw it).
-        effect = EffectPatterns.scry(3) then
+        effect = LibraryPatterns.scry(3) then
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
                 storeAs = "revealed",

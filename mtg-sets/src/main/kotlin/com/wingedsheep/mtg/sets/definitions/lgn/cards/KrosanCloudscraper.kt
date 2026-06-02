@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Krosan Cloudscraper
@@ -27,7 +27,7 @@ val KrosanCloudscraper = card("Krosan Cloudscraper") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         effect = PayOrSufferEffect(
-            cost = PayCost.Mana(ManaCost.parse("{G}{G}")),
+            cost = Costs.pay.Mana(ManaCost.parse("{G}{G}")),
             suffer = SacrificeSelfEffect
         )
     }

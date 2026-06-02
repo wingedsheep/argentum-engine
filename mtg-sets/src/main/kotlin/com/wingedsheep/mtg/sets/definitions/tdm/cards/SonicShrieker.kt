@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -43,7 +42,7 @@ val SonicShrieker = card("Sonic Shrieker") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val anyTarget = target("any target", Targets.Any)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.DealDamage(2, anyTarget),
             Effects.GainLife(2),
             ConditionalEffect(

@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Cloudreader Sphinx
@@ -26,7 +26,7 @@ val CloudreaderSphinx = card("Cloudreader Sphinx") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.scry(2)
+        effect = LibraryPatterns.scry(2)
     }
 
     metadata {

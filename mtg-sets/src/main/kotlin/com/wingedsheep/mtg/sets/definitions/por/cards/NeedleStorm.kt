@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Needle Storm
@@ -20,7 +20,7 @@ val NeedleStorm = card("Needle Storm") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter.AllCreatures.withKeyword(Keyword.FLYING),
             DealDamageEffect(4, EffectTarget.Self)
         )

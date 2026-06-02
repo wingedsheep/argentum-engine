@@ -4,10 +4,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Wrath of God
  * {2}{W}{W}
@@ -20,7 +18,7 @@ val WrathOfGod = card("Wrath of God") {
     typeLine = "Sorcery"
 
     spell {
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures, MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true), noRegenerate = true)
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures, Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true), noRegenerate = true)
     }
 
     metadata {

@@ -3,8 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.scg.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Putrid Raptor
  * {4}{B}{B}
@@ -20,7 +19,7 @@ val PutridRaptor = card("Putrid Raptor") {
     toughness = 4
     oracleText = "Morph—Discard a Zombie card."
 
-    morphCost = PayCost.Discard(GameObjectFilter.Any.withSubtype("Zombie"))
+    morphCost = Costs.pay.Discard(GameObjectFilter.Any.withSubtype("Zombie"))
 
     metadata {
         rarity = Rarity.UNCOMMON

@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -48,7 +47,7 @@ val ValleyRotcaller = card("Valley Rotcaller") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 LoseLifeEffect(xAmount, EffectTarget.PlayerRef(Player.EachOpponent)),
                 GainLifeEffect(xAmount, EffectTarget.Controller)

@@ -3,15 +3,14 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Duty Beyond Death — Tarkir: Dragonstorm #10
@@ -32,18 +31,18 @@ val DutyBeyondDeath = card("Duty Beyond Death") {
         "Creatures you control gain indestructible until end of turn. Put a +1/+1 counter on " +
         "each creature you control."
 
-    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Creature))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Creatures you control gain indestructible until end of turn.
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter.AllCreaturesYouControl,
                     effect = GrantKeywordEffect(Keyword.INDESTRUCTIBLE, EffectTarget.Self)
                 ),
                 // Put a +1/+1 counter on each creature you control.
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     filter = GroupFilter.AllCreaturesYouControl,
                     effect = AddCountersEffect(
                         counterType = Counters.PLUS_ONE_PLUS_ONE,

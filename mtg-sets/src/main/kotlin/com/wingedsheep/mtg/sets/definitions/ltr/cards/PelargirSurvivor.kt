@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -9,6 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Pelargir Survivor
@@ -38,7 +38,7 @@ val PelargirSurvivor = card("Pelargir Survivor") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{5}{U}"), Costs.Tap)
         val player = target("target player", Targets.Player)
-        effect = EffectPatterns.mill(3, player)
+        effect = LibraryPatterns.mill(3, player)
     }
 
     metadata {

@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Goblin Chainwhirler
@@ -33,7 +33,7 @@ val GoblinChainwhirler = card("Goblin Chainwhirler") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent))
-            .then(EffectPatterns.dealDamageToAll(1, GroupFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls())))
+            .then(GroupPatterns.dealDamageToAll(1, GroupFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls())))
     }
 
     metadata {

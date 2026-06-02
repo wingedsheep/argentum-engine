@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Wipe Clean
@@ -24,7 +24,7 @@ val WipeClean = card("Wipe Clean") {
 
     spell {
         val t = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Enchantment)))
-        effect = MoveToZoneEffect(t, Zone.EXILE)
+        effect = Effects.Move(t, Zone.EXILE)
     }
 
     keywordAbility(KeywordAbility.cycling("{3}"))

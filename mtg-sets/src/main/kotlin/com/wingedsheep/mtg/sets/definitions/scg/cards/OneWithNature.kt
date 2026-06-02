@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * One with Nature
@@ -35,7 +35,7 @@ val OneWithNature = card("One with Nature") {
             binding = TriggerBinding.ATTACHED,
         )
         effect = MayEffect(
-            EffectPatterns.searchLibrary(
+            LibraryPatterns.searchLibrary(
                 filter = Filters.BasicLand,
                 destination = SearchDestination.BATTLEFIELD,
                 entersTapped = true

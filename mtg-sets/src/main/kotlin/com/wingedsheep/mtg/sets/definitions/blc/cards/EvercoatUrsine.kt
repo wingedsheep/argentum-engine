@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Evercoat Ursine
@@ -68,7 +69,7 @@ val EvercoatUrsine = card("Evercoat Ursine") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.FromLinkedExile(),
@@ -100,7 +101,7 @@ val EvercoatUrsine = card("Evercoat Ursine") {
  * order. Collection names are suffixed so two instances on the same card don't collide
  * when both ETB triggers resolve sequentially.
  */
-private fun hideawayThree(suffix: String): CompositeEffect = CompositeEffect(
+private fun hideawayThree(suffix: String): Effect = Effects.Composite(
     listOf(
         GatherCardsEffect(
             source = CardSource.TopOfLibrary(

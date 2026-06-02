@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
@@ -41,7 +40,7 @@ val AbzanDevotee = card("Abzan Devotee") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{B}")
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         activateFromZone = Zone.GRAVEYARD
         description = "{2}{B}: Return this card from your graveyard to your hand."
     }

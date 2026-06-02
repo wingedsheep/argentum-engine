@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Nature's Rhythm — Tarkir: Dragonstorm #150
@@ -33,7 +33,7 @@ val NaturesRhythm = card("Nature's Rhythm") {
         "You may tap a creature you control to reduce that cost by an amount of generic mana equal to its power. Then exile this spell.)"
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.Creature.manaValueAtMostX(),
             count = 1,
             destination = SearchDestination.BATTLEFIELD,

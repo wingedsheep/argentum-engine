@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Bane of the Living
@@ -25,7 +25,7 @@ val BaneOfTheLiving = card("Bane of the Living") {
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             power = DynamicAmount.Multiply(DynamicAmount.XValue, -1),
             toughness = DynamicAmount.Multiply(DynamicAmount.XValue, -1),
             filter = GroupFilter.AllCreatures

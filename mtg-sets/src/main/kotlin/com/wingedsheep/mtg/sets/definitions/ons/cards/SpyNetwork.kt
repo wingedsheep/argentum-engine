@@ -1,14 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.FaceDownLookScope
 import com.wingedsheep.sdk.scripting.effects.LookAtFaceDownEffect
@@ -18,6 +16,8 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Spy Network
@@ -37,7 +37,7 @@ val SpyNetwork = card("Spy Network") {
         val t = target("target", TargetPlayer())
         effect = LookAtTargetHandEffect(t)
             .then(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
@@ -56,7 +56,7 @@ val SpyNetwork = card("Spy Network") {
                 )
             )
             .then(LookAtFaceDownEffect(t, FaceDownLookScope.ALL_CONTROLLED_BY_TARGET_PLAYER))
-            .then(EffectPatterns.lookAtTopAndReorder(4))
+            .then(LibraryPatterns.lookAtTopAndReorder(4))
     }
 
     metadata {

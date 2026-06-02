@@ -6,10 +6,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Meneldor, Swift Savior
@@ -42,9 +41,9 @@ val MeneldorSwiftSavior = card("Meneldor, Swift Savior") {
                 filter = TargetFilter(GameObjectFilter.Creature.ownedByYou())
             )
         )
-        effect = CompositeEffect(listOf(
-            MoveToZoneEffect(creature, Zone.EXILE),
-            MoveToZoneEffect(creature, Zone.BATTLEFIELD)
+        effect = Effects.Composite(listOf(
+            Effects.Move(creature, Zone.EXILE),
+            Effects.Move(creature, Zone.BATTLEFIELD)
         ))
     }
 

@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 
@@ -44,7 +43,7 @@ val TerritorialBruntar = card("Territorial Bruntar") {
 
     triggeredAbility {
         trigger = Triggers.LandYouControlEnters
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherUntilMatchEffect(
                     filter = GameObjectFilter.Nonland,

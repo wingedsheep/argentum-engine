@@ -6,11 +6,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -35,9 +33,9 @@ val CanopySurge = card("Canopy Surge") {
 
     keywordAbility(KeywordAbility.kicker("{2}"))
 
-    fun damageToFliersAndPlayers(amount: Int): Effect = CompositeEffect(
+    fun damageToFliersAndPlayers(amount: Int): Effect = Effects.Composite(
         listOf(
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 GroupFilter.AllCreatures.withKeyword(Keyword.FLYING),
                 DealDamageEffect(amount, EffectTarget.Self)
             ),

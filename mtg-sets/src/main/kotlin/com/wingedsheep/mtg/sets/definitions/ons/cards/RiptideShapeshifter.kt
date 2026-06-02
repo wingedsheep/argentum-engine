@@ -7,11 +7,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Riptide Shapeshifter
@@ -32,7 +32,7 @@ val RiptideShapeshifter = card("Riptide Shapeshifter") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{U}{U}"), Costs.SacrificeSelf)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 ChooseCreatureTypeEffect,
                 GatherUntilMatchEffect(

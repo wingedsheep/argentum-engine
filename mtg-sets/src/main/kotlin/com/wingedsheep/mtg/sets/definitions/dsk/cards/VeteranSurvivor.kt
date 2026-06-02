@@ -13,9 +13,9 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Veteran Survivor
@@ -43,7 +43,7 @@ val VeteranSurvivor = card("Veteran Survivor") {
         triggerCondition = Conditions.SourceIsTapped
         optional = true
         val card = target("card in a graveyard", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = card,
             destination = Zone.EXILE,
             linkToSource = true

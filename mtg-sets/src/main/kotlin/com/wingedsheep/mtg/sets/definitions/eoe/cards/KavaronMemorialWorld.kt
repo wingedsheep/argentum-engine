@@ -17,7 +17,6 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -97,7 +96,7 @@ val KavaronMemorialWorld = card("Kavaron, Memorial World") {
                         imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130"
                     ),
                     // Creatures you control get +1/+0 and gain haste until end of turn
-                    ForEachInGroupEffect(
+                    Effects.ForEachInGroup(
                         GroupFilter.AllCreaturesYouControl,
                         com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect(
                             powerModifier = DynamicAmount.Fixed(1),
@@ -106,7 +105,7 @@ val KavaronMemorialWorld = card("Kavaron, Memorial World") {
                             duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
                         )
                     ),
-                    ForEachInGroupEffect(
+                    Effects.ForEachInGroup(
                         GroupFilter.AllCreaturesYouControl,
                         com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect(
                             keyword = Keyword.HASTE,

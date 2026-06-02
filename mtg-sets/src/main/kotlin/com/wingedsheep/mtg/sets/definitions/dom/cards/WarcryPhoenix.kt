@@ -9,9 +9,9 @@ import com.wingedsheep.sdk.scripting.EventPattern.YouAttackEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Warcry Phoenix
@@ -37,7 +37,7 @@ val WarcryPhoenix = card("Warcry Phoenix") {
         triggerZone = Zone.GRAVEYARD
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{2}{R}"),
-            effect = MoveToZoneEffect(
+            effect = Effects.Move(
                 target = EffectTarget.Self,
                 destination = Zone.BATTLEFIELD,
                 placement = ZonePlacement.TappedAndAttacking

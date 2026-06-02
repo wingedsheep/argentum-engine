@@ -3,8 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Elven Cache
@@ -19,7 +19,7 @@ val ElvenCache = card("Elven Cache") {
 
     spell {
         val t = target("target", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(t, Zone.HAND)
+        effect = Effects.Move(t, Zone.HAND)
     }
 
     metadata {

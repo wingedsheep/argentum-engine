@@ -3,11 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.dsl.EffectPatterns
-
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Natural Order
  * {2}{G}{G}
@@ -20,12 +19,12 @@ val NaturalOrder = card("Natural Order") {
     colorIdentity = "G"
     typeLine = "Sorcery"
 
-    additionalCost(AdditionalCost.SacrificePermanent(
+    additionalCost(Costs.additional.SacrificePermanent(
         filter = GameObjectFilter.Creature.withColor(Color.GREEN)
     ))
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.Creature.withColor(Color.GREEN),
             destination = SearchDestination.BATTLEFIELD
         )

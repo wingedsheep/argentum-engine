@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.blc.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 val SakuraTribeElder = card("Sakura-Tribe Elder") {
     manaCost = "{1}{G}"
@@ -17,7 +17,7 @@ val SakuraTribeElder = card("Sakura-Tribe Elder") {
 
     activatedAbility {
         cost = Costs.SacrificeSelf
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = Filters.BasicLand,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = true

@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Celeborn the Wise
@@ -31,7 +31,7 @@ val CelebornTheWise = card("Celeborn the Wise") {
 
     triggeredAbility {
         trigger = Triggers.YouAttackWithFilter(GameObjectFilter.Creature.withSubtype(Subtype.ELF))
-        effect = EffectPatterns.scry(1)
+        effect = LibraryPatterns.scry(1)
     }
 
     triggeredAbility {

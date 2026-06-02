@@ -7,12 +7,12 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerChoosesCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Harsh Mercy
@@ -29,7 +29,7 @@ val HarshMercy = card("Harsh Mercy") {
 
     spell {
         effect = EachPlayerChoosesCreatureTypeEffect(storeAs = "chosenTypes")
-            .then(CompositeEffect(listOf(
+            .then(Effects.Composite(listOf(
                 GatherCardsEffect(
                     source = CardSource.BattlefieldMatching(filter = GameObjectFilter.Creature),
                     storeAs = "destroyAll_gathered"

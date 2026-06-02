@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
@@ -11,12 +10,12 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Starforged Sword
@@ -42,10 +41,10 @@ val StarforgedSword = card("Starforged Sword") {
     // Gift modeled as a modal ETB triggered ability
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.giftSpell(
+        effect = MiscPatterns.giftSpell(
             // Mode 1: No gift — do nothing
             Mode.noTarget(
-                CompositeEffect(emptyList()),
+                Effects.Composite(emptyList()),
                 "Don't promise a gift"
             ),
             // Mode 2: Gift — opponent gets tapped Fish token, attach to target creature

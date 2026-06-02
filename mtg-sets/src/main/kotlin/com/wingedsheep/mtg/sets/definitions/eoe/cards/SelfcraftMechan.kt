@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -33,7 +32,7 @@ val SelfcraftMechan = card("Selfcraft Mechan") {
         effect = ReflexiveTriggerEffect(
             action = SacrificeEffect(GameObjectFilter.Artifact),
             optional = true,
-            reflexiveEffect = CompositeEffect(
+            reflexiveEffect = Effects.Composite(
                 listOf(
                     Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.ContextTarget(0)),
                     Effects.DrawCards(1)

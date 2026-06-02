@@ -1,20 +1,20 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.ManaCost
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorForTargetEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Ashling, Rekindled // Ashling, Rimebound
@@ -35,11 +35,11 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
  */
 
 private val rummageMay = MayEffect(
-    effect = EffectPatterns.rummage(1),
+    effect = HandPatterns.rummage(1),
     descriptionOverride = "You may discard a card. If you do, draw a card."
 )
 
-private val addRimeboundMana = CompositeEffect(
+private val addRimeboundMana = Effects.Composite(
     listOf(
         ChooseColorForTargetEffect(
             target = EffectTarget.Self,

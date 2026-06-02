@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -13,6 +12,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Arwen's Gift
@@ -47,7 +47,7 @@ val ArwensGift = card("Arwen's Gift") {
     }
 
     spell {
-        effect = EffectPatterns.scry(2).then(Effects.DrawCards(2))
+        effect = LibraryPatterns.scry(2).then(Effects.DrawCards(2))
     }
 
     metadata {

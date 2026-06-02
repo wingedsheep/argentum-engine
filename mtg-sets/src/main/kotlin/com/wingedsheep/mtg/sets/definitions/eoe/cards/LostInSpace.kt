@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -8,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Lost in Space
@@ -26,7 +26,7 @@ val LostInSpace = card("Lost in Space") {
         effect = Effects.Composite(
             listOf(
                 Effects.PutOnTopOrBottomOfLibrary(target),
-                EffectPatterns.surveil(1)
+                LibraryPatterns.surveil(1)
             )
         )
     }

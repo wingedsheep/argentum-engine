@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Do or Die
@@ -38,7 +38,7 @@ val DoOrDie = card("Do or Die") {
 
     spell {
         target = TargetPlayer()
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // 1. Gather every creature the target player controls (projected).
                 GatherCardsEffect(

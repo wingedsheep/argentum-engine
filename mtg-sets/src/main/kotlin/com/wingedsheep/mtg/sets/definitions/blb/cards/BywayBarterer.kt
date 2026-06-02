@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Byway Barterer {2}{R}
@@ -29,7 +29,7 @@ val BywayBarterer = card("Byway Barterer") {
     triggeredAbility {
         trigger = Triggers.Expend(4)
         effect = MayEffect(
-            EffectPatterns.discardHand().then(Effects.DrawCards(2))
+            HandPatterns.discardHand().then(Effects.DrawCards(2))
         )
     }
 

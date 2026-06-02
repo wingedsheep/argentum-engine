@@ -5,12 +5,10 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Akroma's Vengeance
  * {4}{W}{W}
@@ -25,7 +23,7 @@ val AkromasVengeance = card("Akroma's Vengeance") {
     oracleText = "Destroy all artifacts, creatures, and enchantments.\nCycling {3}"
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter(
                 GameObjectFilter(
                     cardPredicates = listOf(
@@ -39,7 +37,7 @@ val AkromasVengeance = card("Akroma's Vengeance") {
                     )
                 )
             ),
-            effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
+            effect = Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
         )
     }
 

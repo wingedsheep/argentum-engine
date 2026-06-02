@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -23,7 +22,7 @@ val AkromasBlessing = card("Akroma's Blessing") {
 
     spell {
         effect = Effects.ChooseColorThen(
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 GroupFilter.AllCreaturesYouControl,
                 Effects.GrantProtectionFromChosenColor(EffectTarget.Self)
             )

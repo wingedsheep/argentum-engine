@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
@@ -22,6 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Celestial Reunion
@@ -55,12 +55,12 @@ val CelestialReunion = card("Celestial Reunion") {
         "your hand."
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Optional: choose a creature type and behold two creatures of that type.
                 MayEffect(
                     descriptionOverride = "Choose a creature type and behold two creatures of that type?",
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             ChooseOptionEffect(
                                 optionType = OptionType.CREATURE_TYPE,

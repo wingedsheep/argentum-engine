@@ -3,11 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Venerated Stormsinger — Tarkir: Dragonstorm #97
@@ -35,7 +35,7 @@ val VeneratedStormsinger = card("Venerated Stormsinger") {
 
     triggeredAbility {
         trigger = Triggers.YourCreatureDies
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 LoseLifeEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                 GainLifeEffect(1, EffectTarget.Controller)

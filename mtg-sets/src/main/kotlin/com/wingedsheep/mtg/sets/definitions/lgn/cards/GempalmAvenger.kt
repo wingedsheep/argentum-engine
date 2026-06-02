@@ -1,13 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Gempalm Avenger
@@ -29,10 +29,10 @@ val GempalmAvenger = card("Gempalm Avenger") {
 
     triggeredAbility {
         trigger = Triggers.YouCycleThis
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                EffectPatterns.modifyStatsForAll(1, 1, GroupFilter.allCreaturesWithSubtype("Soldier")),
-                EffectPatterns.grantKeywordToAll(Keyword.FIRST_STRIKE, GroupFilter.allCreaturesWithSubtype("Soldier"))
+                GroupPatterns.modifyStatsForAll(1, 1, GroupFilter.allCreaturesWithSubtype("Soldier")),
+                GroupPatterns.grantKeywordToAll(Keyword.FIRST_STRIKE, GroupFilter.allCreaturesWithSubtype("Soldier"))
             )
         )
     }

@@ -9,14 +9,13 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Rona, Disciple of Gix
@@ -46,7 +45,7 @@ val RonaDiscipleOfGix = card("Rona, Disciple of Gix") {
                 zone = Zone.GRAVEYARD
             ).ownedByYou()
         ))
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = t,
             destination = Zone.EXILE,
             linkToSource = true
@@ -61,7 +60,7 @@ val RonaDiscipleOfGix = card("Rona, Disciple of Gix") {
     // Activated: {4}, {T}: Exile the top card of your library (linked to Rona)
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{4}"), Costs.Tap)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),

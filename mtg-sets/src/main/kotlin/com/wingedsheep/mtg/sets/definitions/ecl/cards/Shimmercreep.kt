@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -31,7 +30,7 @@ val Shimmercreep = card("Shimmercreep") {
     keywords(Keyword.MENACE)
 
     vividEtb { colorCount ->
-        CompositeEffect(listOf(
+        Effects.Composite(listOf(
             Effects.LoseLife(colorCount, EffectTarget.PlayerRef(Player.EachOpponent)),
             Effects.GainLife(colorCount, EffectTarget.Controller)
         ))

@@ -2,13 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Gigapede
@@ -33,9 +33,9 @@ val Gigapede = card("Gigapede") {
         trigger = Triggers.YourUpkeep
         triggerZone = Zone.GRAVEYARD
         effect = ReflexiveTriggerEffect(
-            action = EffectPatterns.discardCards(1),
+            action = HandPatterns.discardCards(1),
             optional = true,
-            reflexiveEffect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+            reflexiveEffect = Effects.Move(EffectTarget.Self, Zone.HAND)
         )
     }
 

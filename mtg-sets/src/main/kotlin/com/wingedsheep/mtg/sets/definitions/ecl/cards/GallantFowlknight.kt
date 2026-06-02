@@ -5,11 +5,11 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 val GallantFowlknight = card("Gallant Fowlknight") {
     manaCost = "{3}{W}"
@@ -22,10 +22,10 @@ val GallantFowlknight = card("Gallant Fowlknight") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             GroupFilter.AllCreaturesYouControl,
             ModifyStatsEffect(1, 0, EffectTarget.Self)
-        ) then ForEachInGroupEffect(
+        ) then Effects.ForEachInGroup(
             GroupFilter.AllCreaturesYouControl.withSubtype(Subtype.KITHKIN),
             GrantKeywordEffect(Keyword.FIRST_STRIKE, EffectTarget.Self)
         )

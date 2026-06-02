@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 
 /**
@@ -33,7 +32,7 @@ val BiomechanEngineer = card("Biomechan Engineer") {
     // Activated ability: {8}: Draw two cards and create a 2/2 Robot token
     activatedAbility {
         cost = Costs.Mana("{8}")
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(2),
                 CreateTokenEffect(

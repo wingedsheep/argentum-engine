@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Bloodfire Mentor
@@ -22,7 +22,7 @@ val BloodfireMentor = card("Bloodfire Mentor") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{U}"), Costs.Tap)
-        effect = EffectPatterns.loot()
+        effect = HandPatterns.loot()
     }
 
     metadata {

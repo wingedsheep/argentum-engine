@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Ruthless Negotiation
@@ -28,7 +28,7 @@ val RuthlessNegotiation = card("Ruthless Negotiation") {
 
     spell {
         val opponent = target("opponent", Targets.Opponent)
-        effect = EffectPatterns.exileFromHand(1, opponent)
+        effect = HandPatterns.exileFromHand(1, opponent)
             .then(ConditionalEffect(
                 condition = Conditions.WasCastFromZone(Zone.GRAVEYARD),
                 effect = Effects.DrawCards(1)

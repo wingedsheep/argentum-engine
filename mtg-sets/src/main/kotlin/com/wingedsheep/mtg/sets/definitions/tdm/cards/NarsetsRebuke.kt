@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -33,7 +32,7 @@ val NarsetsRebuke = card("Narset's Rebuke") {
         val creature = target("target creature", TargetCreature(filter = TargetFilter.Creature))
         effect = Effects.DealDamage(5, creature)
             .then(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         Effects.AddMana(Color.BLUE),
                         Effects.AddMana(Color.RED),

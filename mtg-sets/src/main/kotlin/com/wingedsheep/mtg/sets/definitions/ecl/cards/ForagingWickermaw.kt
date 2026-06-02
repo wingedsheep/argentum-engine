@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Foraging Wickermaw
@@ -31,7 +31,7 @@ val ForagingWickermaw = card("Foraging Wickermaw") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
     }
 
     activatedAbility {

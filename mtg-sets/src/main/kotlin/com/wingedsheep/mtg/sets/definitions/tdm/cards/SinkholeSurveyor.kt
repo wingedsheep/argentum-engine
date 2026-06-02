@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -30,7 +29,7 @@ val SinkholeSurveyor = card("Sinkhole Surveyor") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.LoseLife(1, EffectTarget.Controller),
                 Effects.Endure(1)

@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Captain of Umbar
@@ -22,7 +22,7 @@ val CaptainOfUmbar = card("Captain of Umbar") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}"), Costs.Tap)
-        effect = EffectPatterns.loot(draw = 1, discard = 1)
+        effect = HandPatterns.loot(draw = 1, discard = 1)
     }
 
     metadata {

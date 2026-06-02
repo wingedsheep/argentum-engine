@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.spm.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.ExilePatterns
 
 /**
  * Hide on the Ceiling
@@ -27,7 +27,7 @@ val HideOnTheCeiling = card("Hide on the Ceiling") {
         // proper DynamicAmount-driven target count.
         target = TargetPermanent(count = 20, optional = true, filter = TargetFilter.CreatureOrArtifact)
         effect = ForEachTargetEffect(
-            listOf(EffectPatterns.exileUntilEndStep(EffectTarget.ContextTarget(0)))
+            listOf(ExilePatterns.exileUntilEndStep(EffectTarget.ContextTarget(0)))
         )
     }
 

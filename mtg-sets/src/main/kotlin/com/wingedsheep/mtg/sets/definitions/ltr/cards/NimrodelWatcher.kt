@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -29,7 +28,7 @@ val NimrodelWatcher = card("Nimrodel Watcher") {
     triggeredAbility {
         trigger = Triggers.WheneverYouScry
         oncePerTurn = true
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.ModifyStats(power = 1, toughness = 0, target = EffectTarget.Self),
             Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, EffectTarget.Self)
         ))

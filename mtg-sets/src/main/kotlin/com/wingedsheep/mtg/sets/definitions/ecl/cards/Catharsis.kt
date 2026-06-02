@@ -7,8 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -43,13 +41,13 @@ val Catharsis = card("Catharsis") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.ManaSpentToCastIncludes(requiredRed = 2)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     ModifyStatsEffect(1, 1, EffectTarget.Self)
                 ),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self)
                 )

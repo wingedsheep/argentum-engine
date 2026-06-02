@@ -1,12 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Keldon Raider
@@ -26,8 +25,8 @@ val KeldonRaider = card("Keldon Raider") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = MayEffect(
-            CompositeEffect(listOf(
-                EffectPatterns.discardCards(1),
+            Effects.Composite(listOf(
+                HandPatterns.discardCards(1),
                 Effects.DrawCards(1)
             ))
         )

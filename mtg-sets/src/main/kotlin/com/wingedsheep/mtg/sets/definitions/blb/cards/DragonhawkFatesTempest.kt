@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
@@ -20,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Dragonhawk, Fate's Tempest {3}{R}{R}
@@ -42,7 +42,7 @@ val DragonhawkFatesTempest = card("Dragonhawk, Fate's Tempest") {
 
     keywords(Keyword.FLYING)
 
-    val impulseDrawEffect: Effect = CompositeEffect(listOf(
+    val impulseDrawEffect: Effect = Effects.Composite(listOf(
         GatherCardsEffect(
             source = CardSource.TopOfLibrary(
                 DynamicAmount.AggregateBattlefield(

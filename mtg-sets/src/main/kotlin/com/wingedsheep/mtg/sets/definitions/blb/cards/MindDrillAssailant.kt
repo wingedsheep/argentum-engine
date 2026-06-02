@@ -3,11 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Mind Drill Assailant
@@ -38,7 +38,7 @@ val MindDrillAssailant = card("Mind Drill Assailant") {
     // {2}{U/B}: Surveil 1
     activatedAbility {
         cost = Costs.Mana("{2}{U/B}")
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
     }
 
     metadata {

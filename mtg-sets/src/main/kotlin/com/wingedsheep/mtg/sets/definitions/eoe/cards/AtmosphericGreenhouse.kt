@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -42,7 +41,7 @@ val AtmosphericGreenhouse = card("Atmospheric Greenhouse") {
     // ETB: Put a +1/+1 counter on each creature you control
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesYouControl,
             effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.ContextTarget(0))
         )

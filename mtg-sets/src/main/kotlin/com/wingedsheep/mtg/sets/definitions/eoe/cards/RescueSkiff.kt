@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -55,7 +54,7 @@ val RescueSkiff = card("Rescue Skiff") {
             "target creature or enchantment card from your graveyard",
             TargetObject(filter = TargetFilter(GameObjectFilter.CreatureOrEnchantment.ownedByYou(), zone = Zone.GRAVEYARD))
         )
-        effect = MoveToZoneEffect(target = t, destination = Zone.BATTLEFIELD)
+        effect = Effects.Move(target = t, destination = Zone.BATTLEFIELD)
         description = "return target creature or enchantment card from your graveyard to the battlefield"
     }
 

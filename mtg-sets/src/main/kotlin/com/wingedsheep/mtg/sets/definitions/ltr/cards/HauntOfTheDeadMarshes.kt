@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -10,10 +9,11 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Haunt of the Dead Marshes
@@ -35,7 +35,7 @@ val HauntOfTheDeadMarshes = card("Haunt of the Dead Marshes") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.scry(1)
+        effect = LibraryPatterns.scry(1)
     }
 
     activatedAbility {
@@ -46,7 +46,7 @@ val HauntOfTheDeadMarshes = card("Haunt of the Dead Marshes") {
                 Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.legendary())
             )
         )
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = EffectTarget.Self,
             destination = Zone.BATTLEFIELD,
             placement = ZonePlacement.Tapped

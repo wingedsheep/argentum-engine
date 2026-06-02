@@ -2,11 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Final Strike
@@ -21,7 +21,7 @@ val FinalStrike = card("Final Strike") {
     colorIdentity = "B"
     typeLine = "Sorcery"
 
-    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Creature))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
 
     spell {
         val t = target("target", TargetOpponent())

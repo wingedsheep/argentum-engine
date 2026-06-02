@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -28,7 +27,7 @@ val Stargaze = card("Stargaze") {
     oracleText = "Look at twice X cards from the top of your library. Put X cards from among them into your hand and the rest into your graveyard. You lose X life."
 
     spell {
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Gather twice X cards from top of library
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Multiply(DynamicAmount.XValue, 2)),

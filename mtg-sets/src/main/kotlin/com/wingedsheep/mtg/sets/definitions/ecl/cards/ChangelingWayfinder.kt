@@ -1,13 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Changeling Wayfinder
@@ -34,7 +34,7 @@ val ChangelingWayfinder = card("Changeling Wayfinder") {
         trigger = Triggers.EntersBattlefield
         description = "When this creature enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle."
         effect = MayEffect(
-            EffectPatterns.searchLibrary(
+            LibraryPatterns.searchLibrary(
                 filter = GameObjectFilter.BasicLand,
                 count = 1,
                 destination = SearchDestination.HAND,

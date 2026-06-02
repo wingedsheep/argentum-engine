@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -32,7 +31,7 @@ val Mechanozoa = card("Mechanozoa") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         target("target artifact or creature an opponent controls", TargetPermanent(filter = TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls())))
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.Tap(EffectTarget.ContextTarget(0)),
                 Effects.AddCounters(Counters.STUN, 1, EffectTarget.ContextTarget(0))

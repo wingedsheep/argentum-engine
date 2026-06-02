@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Time Ebb
@@ -21,7 +21,7 @@ val TimeEbb = card("Time Ebb") {
 
     spell {
         target = TargetCreature()
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.LIBRARY, ZonePlacement.Top)
+        effect = Effects.Move(EffectTarget.ContextTarget(0), Zone.LIBRARY, ZonePlacement.Top)
     }
 
     metadata {

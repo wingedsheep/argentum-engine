@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Encroaching Dragonstorm — Tarkir: Dragonstorm #142
@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * onto the battlefield tapped, then shuffle.
  * When a Dragon you control enters, return this enchantment to its owner's hand.
  *
- * ETB is a standard "up to two" basic-land ramp ([EffectPatterns.searchLibrary] with
+ * ETB is a standard "up to two" basic-land ramp ([LibraryPatterns.searchLibrary] with
  * [GameObjectFilter.BasicLand], `count = 2` → `SelectionMode.ChooseUpTo(2)`,
  * [SearchDestination.BATTLEFIELD] `entersTapped = true`, shuffle after). Shares the
  * Dragonstorm-cycle Dragon-bounce trigger.
@@ -34,7 +34,7 @@ val EncroachingDragonstorm = card("Encroaching Dragonstorm") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             count = 2,
             destination = SearchDestination.BATTLEFIELD,

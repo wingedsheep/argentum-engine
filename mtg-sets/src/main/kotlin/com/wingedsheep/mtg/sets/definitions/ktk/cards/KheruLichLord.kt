@@ -12,13 +12,11 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
@@ -52,7 +50,7 @@ val KheruLichLord = card("Kheru Lich Lord") {
         trigger = Triggers.YourUpkeep
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{2}{B}"),
-            effect = CompositeEffect(
+            effect = Effects.Composite(
                 listOf(
                     // Gather all creature cards from your graveyard
                     GatherCardsEffect(
@@ -78,7 +76,7 @@ val KheruLichLord = card("Kheru Lich Lord") {
                     // Exile at the beginning of your next end step
                     CreateDelayedTriggerEffect(
                         step = Step.END,
-                        effect = MoveToZoneEffect(returned, Zone.EXILE)
+                        effect = Effects.Move(returned, Zone.EXILE)
                     ),
                     // If it would leave the battlefield, exile it instead
                     Effects.GrantExileOnLeave(returned)

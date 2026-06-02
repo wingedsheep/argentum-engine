@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -21,7 +20,7 @@ val CloakOfFeathers = card("Cloak of Feathers") {
 
     spell {
         val t = target("target", TargetCreature())
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GrantKeywordEffect(Keyword.FLYING, t),
                 Effects.DrawCards(1)

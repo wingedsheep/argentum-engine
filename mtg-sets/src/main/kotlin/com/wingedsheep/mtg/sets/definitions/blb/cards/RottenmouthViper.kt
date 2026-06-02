@@ -3,15 +3,12 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
@@ -22,6 +19,8 @@ import com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Rottenmouth Viper {5}{B}
@@ -46,7 +45,7 @@ val RottenmouthViper = card("Rottenmouth Viper") {
         "each opponent loses 4 life unless that player sacrifices a nonland permanent of their choice or discards a card."
 
     additionalCost(
-        AdditionalCost.SacrificeCreaturesForCostReduction(
+        Costs.additional.SacrificeCreaturesForCostReduction(
             filter = GameObjectFilter.NonlandPermanent,
             costReductionPerCreature = 1
         )
@@ -89,7 +88,7 @@ val RottenmouthViper = card("Rottenmouth Viper") {
  * Put a blight counter on it, then for each blight counter,
  * each opponent chooses: sacrifice nonland permanent, discard, or lose 4 life.
  */
-private fun rottenmouthViperEffect(): Effect = CompositeEffect(
+private fun rottenmouthViperEffect(): Effect = Effects.Composite(
     listOf(
         // Step 1: Put a blight counter on Rottenmouth Viper
         Effects.AddCounters(Counters.BLIGHT, 1, EffectTarget.Self),
@@ -115,7 +114,7 @@ private fun rottenmouthViperEffect(): Effect = CompositeEffect(
                             ),
                             EffectChoice(
                                 label = "Discard a card",
-                                effect = EffectPatterns.discardCards(1, EffectTarget.Controller),
+                                effect = HandPatterns.discardCards(1, EffectTarget.Controller),
                                 feasibilityCheck = FeasibilityCheck.HasCardsInZone(Zone.HAND)
                             ),
                             EffectChoice(

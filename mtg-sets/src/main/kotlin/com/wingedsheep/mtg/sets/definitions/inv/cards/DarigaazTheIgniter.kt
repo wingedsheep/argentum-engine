@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -49,7 +48,7 @@ val DarigaazTheIgniter = card("Darigaaz, the Igniter") {
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{2}{R}"),
             effect = Effects.ChooseColorThen(
-                then = CompositeEffect(
+                then = Effects.Composite(
                     listOf(
                         RevealHandEffect(EffectTarget.PlayerRef(Player.TriggeringPlayer)),
                         Effects.DealDamage(

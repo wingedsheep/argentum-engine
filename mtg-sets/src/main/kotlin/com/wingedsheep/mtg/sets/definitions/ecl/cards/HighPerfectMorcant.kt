@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
@@ -14,6 +13,7 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * High Perfect Morcant
@@ -52,7 +52,7 @@ val HighPerfectMorcant = card("High Perfect Morcant") {
         // iterating opponent, so the stock blight pipeline picks one of THEIR creatures.
         effect = ForEachPlayerEffect(
             players = Player.EachOpponent,
-            effects = EffectPatterns.blight(1).effects
+            effects = MiscPatterns.blight(1).effects
         )
     }
 

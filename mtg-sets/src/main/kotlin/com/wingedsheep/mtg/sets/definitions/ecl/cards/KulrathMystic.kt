@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -38,7 +37,7 @@ val KulrathMystic = card("Kulrath Mystic") {
             ),
             TriggerBinding.ANY
         )
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(2, 0, EffectTarget.Self),
                 Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.Self)

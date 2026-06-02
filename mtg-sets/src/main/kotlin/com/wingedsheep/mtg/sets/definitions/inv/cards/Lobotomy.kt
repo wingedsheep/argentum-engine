@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
@@ -45,7 +44,7 @@ val Lobotomy = card("Lobotomy") {
 
     spell {
         val player = target("player", TargetPlayer())
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // 1. Target player reveals their hand.
                 RevealHandEffect(player),

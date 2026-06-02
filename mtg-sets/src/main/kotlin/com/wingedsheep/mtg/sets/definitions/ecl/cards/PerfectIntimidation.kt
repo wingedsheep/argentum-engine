@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -40,7 +39,7 @@ val PerfectIntimidation = card("Perfect Intimidation") {
         "• Target opponent exiles two cards from their hand.\n" +
         "• Remove all counters from target creature."
 
-    val opponentExilesTwo = CompositeEffect(
+    val opponentExilesTwo = Effects.Composite(
         listOf(
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0), GameObjectFilter.Any),

@@ -6,8 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Molecular Modifier
  * {2}{R}
@@ -27,7 +25,7 @@ val MolecularModifier = card("Molecular Modifier") {
     triggeredAbility {
         trigger = Triggers.BeginCombat
         val creature = target("target creature you control", Targets.CreatureYouControl)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(+1, 0, creature),
                 Effects.GrantKeyword(Keyword.FIRST_STRIKE, creature)

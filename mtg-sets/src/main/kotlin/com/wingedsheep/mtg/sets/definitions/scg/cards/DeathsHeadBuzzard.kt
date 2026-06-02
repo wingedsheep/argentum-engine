@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Death's-Head Buzzard
@@ -29,7 +29,7 @@ val DeathsHeadBuzzard = card("Death's-Head Buzzard") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreatures,
             effect = ModifyStatsEffect(-1, -1, EffectTarget.Self)
         )

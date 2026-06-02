@@ -2,9 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Eviscerate
@@ -20,7 +20,7 @@ val Eviscerate = card("Eviscerate") {
 
     spell {
         val t = target("target", TargetCreature())
-        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

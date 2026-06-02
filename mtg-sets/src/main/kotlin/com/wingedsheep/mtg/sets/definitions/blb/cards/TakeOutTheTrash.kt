@@ -2,14 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Take Out the Trash
@@ -26,13 +25,13 @@ val TakeOutTheTrash = card("Take Out the Trash") {
 
     spell {
         val creatureOrPw = target("target creature or planeswalker to deal 3 damage", Targets.CreatureOrPlaneswalker)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.DealDamage(3, creatureOrPw),
             ConditionalEffect(
                 condition = Conditions.ControlCreatureOfType(Subtype("Raccoon")),
                 effect = MayEffect(
-                    CompositeEffect(listOf(
-                        EffectPatterns.discardCards(1),
+                    Effects.Composite(listOf(
+                        HandPatterns.discardCards(1),
                         Effects.DrawCards(1)
                     ))
                 )

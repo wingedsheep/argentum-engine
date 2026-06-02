@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -37,7 +36,7 @@ val PhyrexianDelver = card("Phyrexian Delver") {
             TargetObject(filter = TargetFilter.CreatureInYourGraveyard),
         )
         effect = Effects.Composite(
-            MoveToZoneEffect(returned, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD),
+            Effects.Move(returned, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD),
             Effects.LoseLife(
                 DynamicAmount.EntityProperty(EntityReference.Target(0), EntityNumericProperty.ManaValue),
                 EffectTarget.Controller,

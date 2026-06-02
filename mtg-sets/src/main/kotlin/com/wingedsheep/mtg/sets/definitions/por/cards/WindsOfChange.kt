@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Winds of Change
@@ -17,7 +17,7 @@ val WindsOfChange = card("Winds of Change") {
     typeLine = "Sorcery"
 
     spell {
-        effect = EffectPatterns.wheelEffect(Player.Each)
+        effect = HandPatterns.wheelEffect(Player.Each)
     }
 
     metadata {

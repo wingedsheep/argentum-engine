@@ -165,42 +165,43 @@ the `CardDefinition`.
   Soul Burn (`spell { xManaRestriction = setOf(Color.BLACK, Color.RED) }`) and Atalya, Samite Master
   (`activatedAbility { xManaRestriction = setOf(Color.WHITE) }`) are the first users.
 
-**`AdditionalCost`** — extra costs paid alongside the mana cost.
+**`Costs.additional.*`** (wraps `AdditionalCost`) — extra costs paid alongside the mana cost. Card
+definitions construct these through the facade, e.g. `Costs.additional.SacrificePermanent(Filters.Creature)`.
 
-- `AdditionalCost.BlightVariable` — "as you cast, you may pay X life" (Blight X); X exposed via
+- `Costs.additional.BlightVariable` — "as you cast, you may pay X life" (Blight X); X exposed via
   `DynamicAmount.AdditionalCostBlightAmount`.
-- `AdditionalCost.PayLifePerTarget(amountPerTarget)` — "this spell costs N life more to cast for
+- `Costs.additional.PayLifePerTarget(amountPerTarget)` — "this spell costs N life more to cast for
   each target." Pair with an unbounded `TargetCreature(unlimited = true)` etc.; the engine
   auto-pays `amountPerTarget × action.targets.size` at cast resolution (Phyrexian Purge).
 
-**`PayCost`** — payable costs used by [`PayOrSufferEffect`](#15-replacement-effects) ("do X
+**`Costs.pay.*`** (wraps `PayCost`) — payable costs used by [`PayOrSufferEffect`](#15-replacement-effects) ("do X
 unless you Y") and by `morphCost` (non-mana face-up cost). Distinct from `AbilityCost` / `Costs.*`
 which model an ability's activation cost; `PayCost` models a single cost the engine prompts the
 player to pay against an alternative consequence.
 
-- `PayCost.Mana(ManaCost)` — pay mana (auto-taps lands via the solver). "...unless you pay {U}{U}"
+- `Costs.pay.Mana(ManaCost)` — pay mana (auto-taps lands via the solver). "...unless you pay {U}{U}"
   (Vaporous Djinn).
-- `PayCost.OwnManaCost` — pay the mana cost of the permanent the cost applies to (its *own* mana
+- `Costs.pay.OwnManaCost` — pay the mana cost of the permanent the cost applies to (its *own* mana
   cost, read from `CardComponent.manaCost` at payment time). Use for granted abilities like
   Essence Leak ("...sacrifice this permanent unless you pay its mana cost"), where the affected
   permanent — not a fixed cost — owns the mana cost. The engine resolves it into a concrete
-  `PayCost.Mana` against that permanent before prompting.
-- `PayCost.PayLife(amount)` — pay N life; offered only when the player has more than N life.
+  `Costs.pay.Mana` against that permanent before prompting.
+- `Costs.pay.PayLife(amount)` — pay N life; offered only when the player has more than N life.
   "...unless you pay 3 life."
-- `PayCost.Discard(filter = Any, count = 1, random = false)` — discard cards matching `filter`.
+- `Costs.pay.Discard(filter = Any, count = 1, random = false)` — discard cards matching `filter`.
   Random variant prompts a yes/no and the engine picks the discards (Pillaging Horde).
-- `PayCost.Sacrifice(filter = Any, count = 1)` — sacrifice permanents you control matching
+- `Costs.pay.Sacrifice(filter = Any, count = 1)` — sacrifice permanents you control matching
   `filter`. Source is auto-excluded. "...unless you sacrifice three Forests" (Primeval Force).
-- `PayCost.Exile(filter = Any, zone = HAND, count = 1)` — exile cards from `zone` matching
+- `Costs.pay.Exile(filter = Any, zone = HAND, count = 1)` — exile cards from `zone` matching
   `filter`. "...unless you exile a blue card from your hand."
-- `PayCost.Tap(filter = Any, count = 1)` — tap untapped permanents you control matching `filter`.
+- `Costs.pay.Tap(filter = Any, count = 1)` — tap untapped permanents you control matching `filter`.
   Source is auto-excluded. Tapping each emits a `TappedEvent` so "becomes tapped" triggers fire.
   "...unless you tap an untapped permanent you control" (Command Bridge).
-- `PayCost.Choice(options)` — present several `PayCost`s; player picks one (or the suffer effect).
+- `Costs.pay.Choice(options)` — present several `PayCost`s; player picks one (or the suffer effect).
   Unaffordable options are hidden. "...unless they sacrifice a nonland permanent or discard a card."
-- `PayCost.ReturnToHand(filter, count = 1)` — return permanents you control to their owner's hand.
+- `Costs.pay.ReturnToHand(filter, count = 1)` — return permanents you control to their owner's hand.
   Currently only consumed by `morphCost`; not yet wired into `PayOrSufferEffect`.
-- `PayCost.RevealCard(filter, count = 1)` — reveal a card from hand matching `filter`. Currently
+- `Costs.pay.RevealCard(filter, count = 1)` — reveal a card from hand matching `filter`. Currently
   only consumed by `morphCost`; not yet wired into `PayOrSufferEffect`.
 
 ---
@@ -495,7 +496,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   duplicated on the effect. For "tap X target creatures" use `dynamicMaxCount = DynamicAmount.XValue`
   on the target (Icy Blast); for a fixed cap use `count = N` (Tidal Surge, Choking Tethers, Eddymurk
   Crab). Do **not** pass a magic `count = 20` to mean "any number" — use `unlimited`/`dynamicMaxCount`.
-- `PhaseOutEffect(target = Self)` — phase the target permanent out (Rule 702.26); facade `Effects.PhaseOut(target)`. While phased out it's treated as though it doesn't exist (excluded from `getBattlefield`, so from projection, triggers, combat, targeting, and SBAs) and phases back in before its controller's next untap step. Indirect phasing (attached Auras/Equipment) is handled automatically. Used as the `suffer` branch of a pay-or-phase trigger (Vaporous Djinn: "phases out unless you pay {U}{U}" = `PayOrSufferEffect(PayCost.Mana(...), Effects.PhaseOut())`).
+- `PhaseOutEffect(target = Self)` — phase the target permanent out (Rule 702.26); facade `Effects.PhaseOut(target)`. While phased out it's treated as though it doesn't exist (excluded from `getBattlefield`, so from projection, triggers, combat, targeting, and SBAs) and phases back in before its controller's next untap step. Indirect phasing (attached Auras/Equipment) is handled automatically. Used as the `suffer` branch of a pay-or-phase trigger (Vaporous Djinn: "phases out unless you pay {U}{U}" = `PayOrSufferEffect(Costs.pay.Mana(...), Effects.PhaseOut())`).
 - `MarkExileOnDeathEffect(target)` — replace next "to graveyard" with "to exile".
 - `OptionalCostEffect(cost, effect)` — pay cost to trigger an effect.
 - `Effects.AnyPlayerMayPay(cost, consequence)` / `Effects.UnlessAnyPlayerPays(cost, effect)` —
@@ -504,7 +505,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   the loop; if no one pays, `consequenceIfNonePaid` runs. `AnyPlayerMayPay` reads the
   "if a player does, X" direction (Prowling Pangolin); `UnlessAnyPlayerPays` reads the inverse
   "X unless any player pays" direction (Aether Rift: "return it… unless any player pays 5 life").
-  Supported costs: `PayCost.Sacrifice` (card selection) and `PayCost.PayLife` (yes/no). The
+  Supported costs: `Costs.pay.Sacrifice` (card selection) and `Costs.pay.PayLife` (yes/no). The
   surrounding pipeline's stored collections are carried into whichever consequence fires, so the
   consequence can reference cards gathered earlier in the same resolution (e.g. the discarded card,
   via `MoveCollection(from = "discarded", …)`).
@@ -514,7 +515,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 
 ### Sequencing & conditional
 
-- `CompositeEffect(effects)` / `Composite(e1, e2, ...)` — run effects in order.
+- `CompositeEffect(effects)` — run effects in order. Card definitions use the facade
+  `Effects.Composite(e1, e2, ...)` (vararg) or `Effects.Composite(effects, stopOnError?,
+  descriptionOverride?, descriptionAmounts?)` (list + render options).
+- `ForEachInGroupEffect(filter, effect, …)` — apply `effect` to every entity matching a group
+  filter; facade `Effects.ForEachInGroup(filter, effect, noRegenerate?, simultaneous?)`.
 - `ConditionalEffect(condition, ifTrue, ifFalse?)` / `Branch(...)` — conditional branch.
 - `IfYouDoEffect(action, reflexive, optional)` — if optional action is taken, run reflexive effect.
 - `ReflexiveTriggerEffect(action, reflexive, optional)` — same shape but the reflexive effect goes on the stack.
@@ -541,7 +546,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 
 ---
 
-## 5. Effect patterns (`EffectPatterns.*`)
+## 5. Effect patterns (`LibraryPatterns.*` / `HandPatterns.*` / `GroupPatterns.*` / `ExilePatterns.*` / `CreatureTypePatterns.*` / `MiscPatterns.*`)
 
 Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` shapes and similar).
 
@@ -1169,7 +1174,7 @@ Triggers.youCastSpell(
 - `WheneverYouScry` — fires once per scry resolution (CR 701.18), after the cards have
   been placed on top/bottom. Pair with `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)`
   for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
-  Automatically emitted by `EffectPatterns.scry(N)`; no card has to opt in.
+  Automatically emitted by `LibraryPatterns.scry(N)`; no card has to opt in.
 
 ### Sacrifice & counters
 
@@ -1635,7 +1640,7 @@ composite abilities).
 - `Plot(cost)` — `KeywordAbility.plot(cost)`. Special action available during your main phase while the stack is empty: pay [cost] and exile the card from your hand. It becomes plotted (stamped with a `PlottedComponent`). On a later turn you may cast it from exile without paying its mana cost, as a sorcery (CR 718). Cast permission is granted via the engine's standard `MayPlayPermission` + `PlayWithoutPayingCostComponent`, gated by `Conditions.SourcePlottedOnPriorTurn`. No card-side wiring needed — declare the keyword ability on the card and the engine handles the rest.
 - `Hideaway(n)` — `KeywordAbility.hideaway(n)`; display tag rendered "Hideaway N". Mechanic is composed manually via `MoveCollectionEffect(faceDown = true, linkToSource = true)` + `CardSource.FromLinkedExile()` — the keyword itself carries no engine behavior.
 - `Harmonize(cost)` — `KeywordAbility.harmonize(cost)` (Tarkir: Dragonstorm). An alternative cost to cast an instant/sorcery **from your graveyard**, like Flashback, then exile it as it resolves. As you cast it you may tap **a single** untapped creature you control to reduce the **generic** portion of the harmonize cost by that creature's (projected) power — a Convoke-style reduction, but one creature paying generic-equal-to-power instead of one mana per creature. No card-side wiring: declare the keyword ability and the engine handles graveyard-cast enumeration (`CastWithHarmonize`), the per-creature reduction (routed through `AlternativePaymentChoice.harmonizeCreature`), and the exile-on-resolution. The chosen creature and its power are surfaced to the client via `LegalAction.harmonizeCreatures` / `hasHarmonize`; the client offers an on-battlefield single-creature tap step (the `harmonize` pipeline phase + `HarmonizeSelector` HUD, mirroring Convoke). **Harmonize {X}** (e.g. Nature's Rhythm `{X}{G}{G}{G}{G}`): the `CastWithHarmonize` action surfaces `hasXCost`/`maxAffordableX` (max X folds in the best single-creature tap reduction) so the client prompts for X. {X} is generic mana, so the tap reduces the mana paid *for X* — `CastSpellHandler.harmonizePaymentXValue` lowers the X mana once `reduceGeneric` has consumed any printed generic — while the chosen X stamped onto `SpellOnStackComponent.xValue` (and read by the effect, e.g. "mana value X or less") is unchanged. Colored pips are never reduced. **Granting harmonize at runtime:** harmonize can also be granted to a graveyard card that doesn't print it via `Effects.GrantHarmonize(target, cost?, duration)` (Songcrafter Mage). The grant is a `GrantedKeywordAbility` record keyed to the card entity; every harmonize read site consults printed-**or**-granted harmonize through the `HarmonizeGrants.effectiveHarmonize` resolver, so a granted harmonize is castable, reducible, and exiled exactly like a printed one. The grant survives the graveyard → stack move (so exile-on-resolution still fires) and is cleared in the cleanup step.
-- `OptionalAdditionalCost(manaCost?, additionalCost?, multi, displayPrefix, branchesEffect, grantsFlashTiming)` — generalised "pay an optional extra cost while casting" primitive. Backs printed Kicker / Multikicker / Offspring **and** the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire). When `branchesEffect = true` (default) paying the cost marks the spell so `WasKicked` fires for the card's own effect/triggers; when `false` the payment is invisible to `WasKicked` (used by `flashKicker`). When `grantsFlashTiming = true` paying the cost unlocks instant-speed casting in addition to whatever else it does — the optional cost may be mana (Ghitu Fire: `KeywordAbility.flashKicker("{2}")`) **or** a non-mana `additionalCost` such as Behold (Molten Exhale: "you may cast this as though it had flash if you behold a Dragon", `KeywordAbility.flashKicker(AdditionalCost.Behold(filter = Filters.WithSubtype("Dragon")))`). Prefer the factories: `KeywordAbility.kicker(cost)`, `KeywordAbility.kicker(additionalCost)`, `KeywordAbility.multikicker(cost)`, `KeywordAbility.offspring(cost)`, `KeywordAbility.flashKicker(cost)`, `KeywordAbility.flashKicker(additionalCost)`. Serial name is `Kicker` for wire compatibility. **Kicker {X}** (variable kicker, e.g. `KeywordAbility.kicker("{X}")` on Verdeloth the Ancient): the kicked cast surfaces `hasXCost`/`maxAffordableX` so the client prompts for X exactly like a base-cost X spell; the chosen X is paid as part of the kicker and stamped onto `SpellOnStackComponent.xValue`, so the card's ETB trigger reads it via `DynamicAmount.XValue` ("create X tokens").
+- `OptionalAdditionalCost(manaCost?, additionalCost?, multi, displayPrefix, branchesEffect, grantsFlashTiming)` — generalised "pay an optional extra cost while casting" primitive. Backs printed Kicker / Multikicker / Offspring **and** the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire). When `branchesEffect = true` (default) paying the cost marks the spell so `WasKicked` fires for the card's own effect/triggers; when `false` the payment is invisible to `WasKicked` (used by `flashKicker`). When `grantsFlashTiming = true` paying the cost unlocks instant-speed casting in addition to whatever else it does — the optional cost may be mana (Ghitu Fire: `KeywordAbility.flashKicker("{2}")`) **or** a non-mana `additionalCost` such as Behold (Molten Exhale: "you may cast this as though it had flash if you behold a Dragon", `KeywordAbility.flashKicker(Costs.additional.Behold(filter = Filters.WithSubtype("Dragon")))`). Prefer the factories: `KeywordAbility.kicker(cost)`, `KeywordAbility.kicker(additionalCost)`, `KeywordAbility.multikicker(cost)`, `KeywordAbility.offspring(cost)`, `KeywordAbility.flashKicker(cost)`, `KeywordAbility.flashKicker(additionalCost)`. Serial name is `Kicker` for wire compatibility. **Kicker {X}** (variable kicker, e.g. `KeywordAbility.kicker("{X}")` on Verdeloth the Ancient): the kicked cast surfaces `hasXCost`/`maxAffordableX` so the client prompts for X exactly like a base-cost X spell; the chosen X is paid as part of the kicker and stamped onto `SpellOnStackComponent.xValue`, so the card's ETB trigger reads it via `DynamicAmount.XValue` ("create X tokens").
 - `Impending(time, cost)` — `card { impending(n, cost) }` builder helper (CR 702.175, Duskmourn). A self-alternative
   cost: pay [cost] instead of the mana cost and the permanent enters with N **time counters**, isn't a creature until
   the last is removed, and loses one at the beginning of your end step. The helper wires everything from one call — the
@@ -2352,7 +2357,9 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 
 **Primitives**
 
-- `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move.
+- `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move. Card
+  definitions construct it via the facade `Effects.Move(target, destination, …)` (or the named
+  shortcuts `Effects.Destroy/Exile/ReturnToHand/PutOnTopOfLibrary/ShuffleIntoLibrary/…`).
 - `MoveCollectionEffect(collectionName, zone, faceDown?, linkToSource?, asOwner?, likelyPosition?)` — pipeline move of a
   stored collection.
 - `GatherCardsEffect(source, filter, into)` — pipeline gather from a zone into a named collection. `CardSource`
@@ -2490,10 +2497,10 @@ Card authors rarely reference these directly; they are created/updated by the ma
   is `DynamicAmount.Fixed` for "endure 2" or any dynamic value for "endure X" (e.g. Warden of the Grove reads
   `EntityProperty(Source, CounterCount(...))`); `target` defaults to `Self` ("it endures") but takes
   `EffectTarget.TriggeringEntity` when a card endures the creature that triggered it.
-- **Forage** — `EffectPatterns.forage`; cast-from-graveyard permissions need a branch in `CastSpellHandler.validate`.
-- **Blight X** — `AdditionalCost.BlightVariable` + `DynamicAmount.AdditionalCostBlightAmount` +
+- **Forage** — `MiscPatterns.forage`; cast-from-graveyard permissions need a branch in `CastSpellHandler.validate`.
+- **Blight X** — `Costs.additional.BlightVariable` + `DynamicAmount.AdditionalCostBlightAmount` +
   `Conditions.BlightWasPaid(n)`.
-- **Divvy (Fact-or-Fiction)** — `EffectPatterns.factOrFiction(...)`; `SplitPilesDecision` stays dormant until N > 2.
+- **Divvy (Fact-or-Fiction)** — `LibraryPatterns.factOrFiction(...)`; `SplitPilesDecision` stays dormant until N > 2.
 - **Astral Slide / delayed return** — `ExileUntilEndStepEffect` + `DelayedTriggeredAbility`.
 - **Lord effects** — multiple `staticAbility { }` blocks + `ModifyStatsForCreatureGroup` /
   `AffectsFilter.OtherCreaturesWithSubtype`.
@@ -2535,7 +2542,7 @@ Card authors rarely reference these directly; they are created/updated by the ma
 |--------------------|-----------------------------------------------------------------|
 | Card DSL           | `mtg-sdk/src/main/kotlin/.../dsl/CardBuilder.kt`                |
 | Effects            | `mtg-sdk/src/main/kotlin/.../dsl/Effects.kt`                    |
-| Effect patterns    | `mtg-sdk/src/main/kotlin/.../dsl/EffectPatterns.kt`             |
+| Effect patterns    | `mtg-sdk/src/main/kotlin/.../dsl/{Library,Hand,Group,Exile,CreatureType,Misc}Patterns.kt` |
 | Triggers           | `mtg-sdk/src/main/kotlin/.../dsl/Triggers.kt`                   |
 | Costs              | `mtg-sdk/src/main/kotlin/.../dsl/Costs.kt`                      |
 | Conditions         | `mtg-sdk/src/main/kotlin/.../dsl/Conditions.kt`                 |

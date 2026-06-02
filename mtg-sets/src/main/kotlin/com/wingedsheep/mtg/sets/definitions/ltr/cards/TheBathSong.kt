@@ -2,17 +2,17 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * The Bath Song
@@ -32,11 +32,11 @@ val TheBathSong = card("The Bath Song") {
         "III — Shuffle any number of target cards from your graveyard into your library. Add {U}{U}."
 
     sagaChapter(1) {
-        effect = EffectPatterns.loot(draw = 2, discard = 1)
+        effect = HandPatterns.loot(draw = 2, discard = 1)
     }
 
     sagaChapter(2) {
-        effect = EffectPatterns.loot(draw = 2, discard = 1)
+        effect = HandPatterns.loot(draw = 2, discard = 1)
     }
 
     sagaChapter(3) {
@@ -49,7 +49,7 @@ val TheBathSong = card("The Bath Song") {
             )
         )
         effect = ForEachTargetEffect(
-            effects = listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.LIBRARY))
+            effects = listOf(Effects.Move(EffectTarget.ContextTarget(0), Zone.LIBRARY))
         ).then(ShuffleLibraryEffect())
             .then(AddManaEffect(Color.BLUE, 2))
     }

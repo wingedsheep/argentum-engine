@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -43,7 +42,7 @@ val TriumphOfGerrard = card("Triumph of Gerrard") {
 
     sagaChapter(3) {
         val creature = target("creature you control with the greatest power", greatestPowerTarget)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.GrantKeyword(Keyword.FLYING, creature),
             Effects.GrantKeyword(Keyword.FIRST_STRIKE, creature),
             Effects.GrantKeyword(Keyword.LIFELINK, creature)

@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Undead Gladiator
  * {1}{B}{B}
@@ -29,7 +28,7 @@ val UndeadGladiator = card("Undead Gladiator") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{B}"), Costs.DiscardCard)
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         activateFromZone = Zone.GRAVEYARD
         restrictions = listOf(
             ActivationRestriction.All(

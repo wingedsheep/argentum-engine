@@ -1,18 +1,17 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Trystan's Command
@@ -51,7 +50,7 @@ val TrystansCommand = card("Trystan's Command") {
                     filter = TargetFilter(GameObjectFilter.Permanent.ownedByYou(), zone = Zone.GRAVEYARD)
                 )
                 effect = ForEachTargetEffect(
-                    effects = listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND))
+                    effects = listOf(Effects.Move(EffectTarget.ContextTarget(0), Zone.HAND))
                 )
             }
             mode("Destroy target creature or enchantment") {
@@ -63,11 +62,11 @@ val TrystansCommand = card("Trystan's Command") {
             }
             mode("Creatures target player controls get +3/+3 until end of turn. Untap them") {
                 val player = target("target player", TargetPlayer())
-                effect = EffectPatterns.modifyStatsForAll(
+                effect = GroupPatterns.modifyStatsForAll(
                     power = 3,
                     toughness = 3,
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
-                ) then EffectPatterns.untapGroup(
+                ) then GroupPatterns.untapGroup(
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
                 )
             }

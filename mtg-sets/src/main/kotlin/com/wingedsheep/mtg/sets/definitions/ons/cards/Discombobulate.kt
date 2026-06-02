@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Discombobulate
@@ -20,7 +20,7 @@ val Discombobulate = card("Discombobulate") {
 
     spell {
         target = Targets.Spell
-        effect = CounterEffect() then EffectPatterns.lookAtTopAndReorder(4)
+        effect = CounterEffect() then LibraryPatterns.lookAtTopAndReorder(4)
     }
 
     metadata {

@@ -9,8 +9,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Evershrike's Gift
@@ -42,7 +42,7 @@ val EvershrikesGift = card("Evershrike's Gift") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{W}"), Costs.Blight(2))
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         activateFromZone = Zone.GRAVEYARD
         timing = TimingRule.SorcerySpeed
     }

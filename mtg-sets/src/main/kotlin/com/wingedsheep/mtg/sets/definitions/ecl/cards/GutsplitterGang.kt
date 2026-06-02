@@ -1,13 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Gutsplitter Gang
@@ -31,8 +30,8 @@ val GutsplitterGang = card("Gutsplitter Gang") {
     triggeredAbility {
         trigger = Triggers.FirstMainPhase
         effect = OptionalCostEffect(
-            cost = EffectPatterns.blight(2),
-            ifPaid = CompositeEffect(emptyList()),
+            cost = MiscPatterns.blight(2),
+            ifPaid = Effects.Composite(emptyList()),
             ifNotPaid = Effects.LoseLife(3, EffectTarget.Controller),
             descriptionOverride = "You may blight 2. If you don't, you lose 3 life"
         )

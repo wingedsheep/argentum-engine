@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Thran Temporal Gateway
@@ -25,7 +25,7 @@ val ThranTemporalGateway = card("Thran Temporal Gateway") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{4}"), Costs.Tap)
-        effect = EffectPatterns.putFromHand(
+        effect = HandPatterns.putFromHand(
             filter = GameObjectFilter.Historic and GameObjectFilter.Permanent
         )
     }

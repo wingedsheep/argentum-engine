@@ -8,11 +8,10 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Éomer, Marshal of Rohan
@@ -42,10 +41,10 @@ val EomerMarshalOfRohan = card("Éomer, Marshal of Rohan") {
             binding = TriggerBinding.OTHER
         )
         oncePerTurn = true
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Untap all creatures you control
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     TapUntapEffect(EffectTarget.Self, tap = false)
                 ),

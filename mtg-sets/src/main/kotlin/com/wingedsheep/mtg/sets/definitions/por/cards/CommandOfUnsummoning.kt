@@ -3,11 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Command of Unsummoning
@@ -30,8 +30,8 @@ val CommandOfUnsummoning = card("Command of Unsummoning") {
             minCount = 1,
             filter = TargetFilter.AttackingCreature
         ))
-        effect = MoveToZoneEffect(c1, Zone.HAND) then
-                MoveToZoneEffect(c2, Zone.HAND)
+        effect = Effects.Move(c1, Zone.HAND) then
+                Effects.Move(c2, Zone.HAND)
     }
 
     metadata {

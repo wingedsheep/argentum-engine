@@ -3,15 +3,15 @@ package com.wingedsheep.mtg.sets.definitions.scg.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Bladewing the Risen
@@ -42,7 +42,7 @@ val BladewingTheRisen = card("Bladewing the Risen") {
                 zone = Zone.GRAVEYARD
             )
         ))
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = t,
             destination = Zone.BATTLEFIELD
         )
@@ -50,7 +50,7 @@ val BladewingTheRisen = card("Bladewing the Risen") {
 
     activatedAbility {
         cost = Costs.Mana("{B}{R}")
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             power = 1,
             toughness = 1,
             filter = GroupFilter.allCreaturesWithSubtype("Dragon")

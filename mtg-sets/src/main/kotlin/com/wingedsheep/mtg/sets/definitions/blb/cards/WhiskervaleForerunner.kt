@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Whiskervale Forerunner
@@ -42,7 +42,7 @@ val WhiskervaleForerunner = card("Whiskervale Forerunner") {
     // If your turn: choose battlefield or hand. If not your turn: hand.
     triggeredAbility {
         trigger = Triggers.Valiant
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Look at top 5
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
@@ -67,7 +67,7 @@ val WhiskervaleForerunner = card("Whiskervale Forerunner") {
             // If not your turn: put in hand
             ConditionalEffect(
                 condition = IsYourTurn,
-                effect = CompositeEffect(listOf(
+                effect = Effects.Composite(listOf(
                     SelectFromCollectionEffect(
                         from = "kept",
                         selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),

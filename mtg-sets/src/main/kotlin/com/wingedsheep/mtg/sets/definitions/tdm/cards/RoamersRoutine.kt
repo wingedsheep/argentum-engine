@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Roamer's Routine — Tarkir: Dragonstorm #154
@@ -25,7 +25,7 @@ val RoamersRoutine = card("Roamer's Routine") {
         "you control to reduce that cost by {X}, where X is its power. Then exile this spell.)"
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             count = 1,
             destination = SearchDestination.BATTLEFIELD,

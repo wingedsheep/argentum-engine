@@ -4,10 +4,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -15,6 +13,8 @@ import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Burning Curiosity
@@ -35,7 +35,7 @@ val BurningCuriosity = card("Burning Curiosity") {
         "Exile the top two cards of your library. If this spell's additional cost was paid, " +
         "exile the top three cards instead. Until the end of your next turn, you may play those cards."
 
-    additionalCost(AdditionalCost.BlightOrPay(blightAmount = 1, alternativeManaCost = ""))
+    additionalCost(Costs.additional.BlightOrPay(blightAmount = 1, alternativeManaCost = ""))
 
     spell {
         effect = ConditionalEffect(
@@ -59,7 +59,7 @@ val BurningCuriosity = card("Burning Curiosity") {
     }
 }
 
-private fun exileTopAndMayPlay(count: Int): Effect = CompositeEffect(
+private fun exileTopAndMayPlay(count: Int): Effect = Effects.Composite(
     listOf(
         GatherCardsEffect(
             source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),

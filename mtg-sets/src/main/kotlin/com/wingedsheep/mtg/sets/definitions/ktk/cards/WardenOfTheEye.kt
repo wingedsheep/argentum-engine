@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Warden of the Eye
@@ -34,7 +34,7 @@ val WardenOfTheEye = card("Warden of the Eye") {
                 )
             )
         )
-        effect = MoveToZoneEffect(t, Zone.HAND)
+        effect = Effects.Move(t, Zone.HAND)
     }
 
     metadata {

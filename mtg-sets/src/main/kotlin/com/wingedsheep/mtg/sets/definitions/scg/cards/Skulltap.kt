@@ -3,8 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.scg.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Skulltap
@@ -19,7 +19,7 @@ val Skulltap = card("Skulltap") {
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards."
 
-    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Creature))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Creature))
 
     spell {
         effect = Effects.DrawCards(2)

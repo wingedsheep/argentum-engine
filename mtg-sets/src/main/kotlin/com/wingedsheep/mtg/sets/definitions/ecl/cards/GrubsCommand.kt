@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -10,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -21,6 +19,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Grub's Command
@@ -54,11 +53,11 @@ val GrubsCommand = card("Grub's Command") {
             }
             mode("Creatures target player controls get +1/+1 and gain haste until end of turn") {
                 val player = target("target player", TargetPlayer())
-                effect = EffectPatterns.modifyStatsForAll(
+                effect = GroupPatterns.modifyStatsForAll(
                     power = 1,
                     toughness = 1,
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
-                ) then EffectPatterns.grantKeywordToAll(
+                ) then GroupPatterns.grantKeywordToAll(
                     keyword = Keyword.HASTE,
                     filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
                 )
@@ -69,7 +68,7 @@ val GrubsCommand = card("Grub's Command") {
             }
             mode("Target player mills five cards, then puts each Goblin card milled this way into their hand") {
                 target("target player", TargetPlayer())
-                effect = CompositeEffect(
+                effect = Effects.Composite(
                     listOf(
                         GatherCardsEffect(
                             source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5), Player.ContextPlayer(0)),

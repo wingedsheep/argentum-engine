@@ -3,12 +3,11 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Flying Crane Technique
@@ -23,17 +22,17 @@ val FlyingCraneTechnique = card("Flying Crane Technique") {
     oracleText = "Untap all creatures you control. They gain flying and double strike until end of turn."
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     TapUntapEffect(EffectTarget.Self, tap = false)
                 ),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     GrantKeywordEffect(Keyword.FLYING, EffectTarget.Self)
                 ),
-                ForEachInGroupEffect(
+                Effects.ForEachInGroup(
                     GroupFilter.AllCreaturesYouControl,
                     GrantKeywordEffect(Keyword.DOUBLE_STRIKE, EffectTarget.Self)
                 )

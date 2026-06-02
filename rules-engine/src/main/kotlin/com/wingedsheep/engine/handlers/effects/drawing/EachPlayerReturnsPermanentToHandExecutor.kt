@@ -4,15 +4,15 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlin.reflect.KClass
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Executor for [EachPlayerReturnsPermanentToHandEffect].
  *
- * Delegates to [EffectPatterns.eachPlayerReturnsPermanentToHand] via the injected
+ * Delegates to [MiscPatterns.eachPlayerReturnsPermanentToHand] via the injected
  * effect executor, which runs the ForEachPlayer pipeline (gather controlled permanents,
  * select one, move to hand).
  */
@@ -31,7 +31,7 @@ class EachPlayerReturnsPermanentToHandExecutor(
         val executor = effectExecutor
             ?: return EffectResult.error(state, "No effect executor available for EachPlayerReturnsPermanentToHand")
 
-        val pipeline = EffectPatterns.eachPlayerReturnsPermanentToHand()
+        val pipeline = MiscPatterns.eachPlayerReturnsPermanentToHand()
         return executor(state, pipeline, context)
     }
 }

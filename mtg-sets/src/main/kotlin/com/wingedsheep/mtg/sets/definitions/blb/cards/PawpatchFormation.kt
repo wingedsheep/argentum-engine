@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -45,7 +44,7 @@ val PawpatchFormation = card("Pawpatch Formation") {
             ),
             // Mode 3: Draw a card, create a Food token
             Mode.noTarget(
-                CompositeEffect(
+                Effects.Composite(
                     listOf(
                         Effects.DrawCards(1),
                         Effects.CreateFood()

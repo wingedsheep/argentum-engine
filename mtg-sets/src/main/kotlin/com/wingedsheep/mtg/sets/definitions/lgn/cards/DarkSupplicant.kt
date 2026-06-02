@@ -2,11 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Dark Supplicant
@@ -30,7 +30,7 @@ val DarkSupplicant = card("Dark Supplicant") {
             Costs.Tap,
             Costs.SacrificeMultiple(3, GameObjectFilter.Creature.withSubtype("Cleric"))
         )
-        effect = EffectPatterns.searchMultipleZones(
+        effect = LibraryPatterns.searchMultipleZones(
             zones = listOf(Zone.GRAVEYARD, Zone.HAND, Zone.LIBRARY),
             filter = GameObjectFilter.Any.named("Scion of Darkness"),
             count = 1,

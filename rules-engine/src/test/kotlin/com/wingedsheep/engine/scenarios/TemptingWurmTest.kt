@@ -8,7 +8,6 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
@@ -20,6 +19,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Tests for Tempting Wurm's ETB trigger.
@@ -40,7 +40,7 @@ class TemptingWurmTest : FunSpec({
             TriggeredAbility.create(
                 trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
-                effect = EffectPatterns.eachOpponentMayPutFromHand(
+                effect = HandPatterns.eachOpponentMayPutFromHand(
                     filter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment or GameObjectFilter.Land
                 )
             )

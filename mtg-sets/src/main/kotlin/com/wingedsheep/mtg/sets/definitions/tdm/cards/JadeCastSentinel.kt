@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Jade-Cast Sentinel — Tarkir: Dragonstorm #243
@@ -38,7 +39,7 @@ val JadeCastSentinel = card("Jade-Cast Sentinel") {
             "target card from a graveyard",
             TargetObject(filter = TargetFilter.CardInGraveyard)
         )
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = cardInGraveyard,
             destination = Zone.LIBRARY,
             placement = ZonePlacement.Bottom

@@ -2,11 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Psychic Whorl
@@ -22,10 +23,10 @@ val PsychicWhorl = card("Psychic Whorl") {
 
     spell {
         val t = target("target opponent", TargetOpponent())
-        effect = EffectPatterns.discardCards(2, t)
+        effect = HandPatterns.discardCards(2, t)
             .then(ConditionalEffect(
                 condition = Conditions.ControlCreatureOfType(Subtype("Rat")),
-                effect = EffectPatterns.surveil(2)
+                effect = LibraryPatterns.surveil(2)
             ))
     }
 

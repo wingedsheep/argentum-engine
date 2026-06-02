@@ -65,7 +65,7 @@ val AncestralMemories = card("Ancestral Memories") {
     typeLine = "Sorcery"
 
     spell {
-        effect = EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)
+        effect = LibraryPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)
     }
 }
 ```
@@ -255,14 +255,15 @@ CompositeEffect(listOf(
 ))
 ```
 
-Higher-level helpers in `EffectPatterns` provide common recipes:
+Higher-level helpers in the domain pattern objects (`LibraryPatterns`, `HandPatterns`,
+`GroupPatterns`, `ExilePatterns`, `CreatureTypePatterns`, `MiscPatterns`) provide common recipes:
 
 ```kotlin
-EffectPatterns.scry(2)          // Scry 2
-EffectPatterns.surveil(2)       // Surveil 2 (like scry but to graveyard)
-EffectPatterns.mill(3)          // Mill 3
-EffectPatterns.searchLibrary(filter)  // Tutor effect
-EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)  // Ancestral Memories
+LibraryPatterns.scry(2)          // Scry 2
+LibraryPatterns.surveil(2)       // Surveil 2 (like scry but to graveyard)
+LibraryPatterns.mill(3)          // Mill 3
+LibraryPatterns.searchLibrary(filter)  // Tutor effect
+LibraryPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)  // Ancestral Memories
 ```
 
 **Why not one effect class per card?**
@@ -271,7 +272,8 @@ EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)  // Ancestral Memories
   pipeline model lets you express virtually all of them by composing the same three primitives with
   different parameters.
 - **Zero new code for new cards.** Adding a card that says "Look at the top 5, put 2 on bottom, rest
-  on top" requires zero new effect executors — just a new pipeline composition in `EffectPatterns`.
+  on top" requires zero new effect executors — just a new pipeline composition in the relevant
+  pattern object (e.g. `LibraryPatterns`).
 - **Consistent player UX.** All library manipulation flows through the same `SelectFromCollectionEffect`
   executor, which means the UI for choosing cards is consistent across all cards that use this pattern.
 - **Testability.** Each primitive is unit-testable in isolation. The pipeline as a whole is tested via

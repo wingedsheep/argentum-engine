@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -47,7 +46,7 @@ val FlowerfootSwordmaster = card("Flowerfoot Swordmaster") {
     // Valiant — Mice you control get +1/+0 until end of turn
     triggeredAbility {
         trigger = Triggers.Valiant
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Mouse")).youControl(),
             effect = ModifyStatsEffect(
                 powerModifier = 1,

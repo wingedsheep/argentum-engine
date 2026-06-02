@@ -4,11 +4,11 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Wicked Pact
@@ -30,8 +30,8 @@ val WickedPact = card("Wicked Pact") {
             filter = TargetFilter.Creature.notColor(Color.BLACK)
         ))
 
-        effect = MoveToZoneEffect(creature1, Zone.GRAVEYARD, byDestruction = true) then
-                MoveToZoneEffect(creature2, Zone.GRAVEYARD, byDestruction = true) then
+        effect = Effects.Move(creature1, Zone.GRAVEYARD, byDestruction = true) then
+                Effects.Move(creature2, Zone.GRAVEYARD, byDestruction = true) then
                 LoseLifeEffect(5, EffectTarget.Controller)
     }
 

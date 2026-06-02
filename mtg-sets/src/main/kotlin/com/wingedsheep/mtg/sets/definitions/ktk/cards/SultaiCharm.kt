@@ -1,15 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Sultai Charm
@@ -34,16 +34,16 @@ val SultaiCharm = card("Sultai Charm") {
                         GameObjectFilter(cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.IsMonocolored))
                     )
                 ))
-                effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+                effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
             }
             mode("Destroy target artifact or enchantment") {
                 val t = target("target", TargetPermanent(
                     filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Enchantment)
                 ))
-                effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+                effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
             }
             mode("Draw two cards, then discard a card") {
-                effect = EffectPatterns.loot(draw = 2, discard = 1)
+                effect = HandPatterns.loot(draw = 2, discard = 1)
             }
         }
     }

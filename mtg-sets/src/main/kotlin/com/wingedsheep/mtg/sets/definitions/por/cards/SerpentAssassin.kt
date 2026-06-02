@@ -4,11 +4,11 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Serpent Assassin
@@ -28,7 +28,7 @@ val SerpentAssassin = card("Serpent Assassin") {
         trigger = Triggers.EntersBattlefield
         optional = true
         target = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

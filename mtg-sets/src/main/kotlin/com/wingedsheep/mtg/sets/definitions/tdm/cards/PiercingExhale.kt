@@ -2,14 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
@@ -19,6 +17,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Piercing Exhale
@@ -48,7 +47,7 @@ val PiercingExhale = card("Piercing Exhale") {
     spell {
         val myCreature = target("target creature you control", Targets.CreatureYouControl)
         val victim = target("target creature or planeswalker", Targets.CreatureOrPlaneswalker)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Optional behold: gather your Dragons and choose up to one of them.
                 GatherCardsEffect(
@@ -73,7 +72,7 @@ val PiercingExhale = card("Piercing Exhale") {
                 ),
                 ConditionalEffect(
                     condition = Conditions.CollectionContainsMatch("beheld"),
-                    effect = EffectPatterns.surveil(2)
+                    effect = LibraryPatterns.surveil(2)
                 )
             )
         )

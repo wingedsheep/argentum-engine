@@ -9,13 +9,13 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Raph & Mikey, Troublemakers
@@ -41,7 +41,7 @@ val RaphAndMikeyTroublemakers = card("Raph & Mikey, Troublemakers") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherUntilMatchEffect(
                 filter = GameObjectFilter.Creature,
                 storeMatch = "raph_creature",

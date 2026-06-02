@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -23,7 +22,7 @@ val BitterbloomBearer = card("Bitterbloom Bearer") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.LoseLife(1, EffectTarget.Controller),
             CreateTokenEffect(
                 count = 1,

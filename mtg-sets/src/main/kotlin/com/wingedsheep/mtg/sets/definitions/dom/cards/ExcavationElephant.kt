@@ -7,9 +7,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Excavation Elephant
@@ -39,7 +39,7 @@ val ExcavationElephant = card("Excavation Elephant") {
                 zone = Zone.GRAVEYARD
             )
         ))
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = t,
             destination = Zone.HAND
         )

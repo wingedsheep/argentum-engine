@@ -4,8 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.dsl.EffectPatterns
-
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 /**
  * Untamed Wilds
  * {2}{G}
@@ -18,7 +17,7 @@ val UntamedWilds = card("Untamed Wilds") {
     typeLine = "Sorcery"
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false

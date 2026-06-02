@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.SelfAlternativeCost
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Zahid, Djinn of the Lamp
@@ -29,7 +29,7 @@ val ZahidDjinnOfTheLamp = card("Zahid, Djinn of the Lamp") {
     selfAlternativeCost = SelfAlternativeCost(
         manaCost = ManaCost.parse("{3}{U}"),
         additionalCosts = listOf(
-            AdditionalCost.TapPermanents(count = 1, filter = GameObjectFilter.Artifact)
+            Costs.additional.TapPermanents(count = 1, filter = GameObjectFilter.Artifact)
         )
     )
 

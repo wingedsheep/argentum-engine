@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -24,7 +23,7 @@ val TheBattleOfBywater = card("The Battle of Bywater") {
 
     spell {
         effect = Effects.DestroyAll(GameObjectFilter.Creature.powerAtLeast(3)) then
-            ForEachInGroupEffect(
+            Effects.ForEachInGroup(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl()),
                 effect = Effects.CreateFood()
             )

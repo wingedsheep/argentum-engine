@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.blc.cards
 
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Farseek {1}{G}
@@ -26,7 +26,7 @@ val Farseek = card("Farseek") {
         "put it onto the battlefield tapped, then shuffle."
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.Any.withAnyOfSubtypes(
                 listOf(Subtype.PLAINS, Subtype.ISLAND, Subtype.SWAMP, Subtype.MOUNTAIN)
             ),

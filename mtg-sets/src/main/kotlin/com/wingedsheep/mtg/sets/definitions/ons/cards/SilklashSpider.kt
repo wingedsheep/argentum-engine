@@ -7,8 +7,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Silklash Spider
@@ -30,7 +30,7 @@ val SilklashSpider = card("Silklash Spider") {
 
     activatedAbility {
         cost = Costs.Mana("{X}{G}{G}")
-        effect = ForEachInGroupEffect(GroupFilter.AllCreatures.withKeyword(Keyword.FLYING), DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self))
+        effect = Effects.ForEachInGroup(GroupFilter.AllCreatures.withKeyword(Keyword.FLYING), DealDamageEffect(DynamicAmount.XValue, EffectTarget.Self))
     }
 
     metadata {

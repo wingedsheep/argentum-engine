@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Pyrrhic Strike
@@ -29,7 +29,7 @@ val PyrrhicStrike = card("Pyrrhic Strike") {
         "• Destroy target artifact or enchantment.\n" +
         "• Destroy target creature with mana value 3 or greater."
 
-    additionalCost(AdditionalCost.BlightOrPay(blightAmount = 2, alternativeManaCost = ""))
+    additionalCost(Costs.additional.BlightOrPay(blightAmount = 2, alternativeManaCost = ""))
 
     spell {
         modal(chooseCount = 2, minChooseCount = 1, chooseAllIfBlightPaid = true) {

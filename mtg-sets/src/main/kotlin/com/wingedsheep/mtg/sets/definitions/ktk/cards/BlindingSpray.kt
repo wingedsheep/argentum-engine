@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Blinding Spray
@@ -20,7 +20,7 @@ val BlindingSpray = card("Blinding Spray") {
     oracleText = "Creatures your opponents control get -4/-0 until end of turn.\nDraw a card."
 
     spell {
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             power = -4,
             toughness = 0,
             filter = GroupFilter.AllCreaturesOpponentsControl

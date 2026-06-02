@@ -60,7 +60,7 @@ val ShikoParagonOfTheWay = card("Shiko, Paragon of the Way") {
             )
         )
         effect = Effects.Composite(
-            MoveToZoneEffect(exiledCard, Zone.EXILE),
+            Effects.Move(exiledCard, Zone.EXILE),
             Effects.CopyCardIntoCollection(exiledCard, storeAs = "copy"),
             MayEffect(
                 Effects.CastFromCollectionWithoutPayingCost("copy"),

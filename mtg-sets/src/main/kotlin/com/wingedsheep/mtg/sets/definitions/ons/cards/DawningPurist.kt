@@ -4,10 +4,10 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Dawning Purist
@@ -29,7 +29,7 @@ val DawningPurist = card("Dawning Purist") {
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
         val t = target("target", TargetPermanent(filter = TargetFilter.Enchantment.opponentControls()))
-        effect = MayEffect(MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true))
+        effect = MayEffect(Effects.Move(t, Zone.GRAVEYARD, byDestruction = true))
     }
 
     morph = "{1}{W}"

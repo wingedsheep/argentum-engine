@@ -1,13 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Tweeze
@@ -24,11 +23,11 @@ val Tweeze = card("Tweeze") {
 
     spell {
         val damageTarget = target("target to deal 3 damage", Targets.Any)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.DealDamage(3, damageTarget),
             MayEffect(
                 effect = IfYouDoEffect(
-                    action = EffectPatterns.discardCards(1),
+                    action = HandPatterns.discardCards(1),
                     ifYouDo = Effects.DrawCards(1)
                 ),
                 descriptionOverride = "You may discard a card. If you do, draw a card."

@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -36,7 +35,7 @@ val KishlaTrawlers = card("Kishla Trawlers") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = ReflexiveTriggerEffect(
-            action = CompositeEffect(
+            action = Effects.Composite(
                 listOf(
                     Effects.SelectTarget(Targets.CreatureCardInYourGraveyard, storeAs = "exiledCreature"),
                     Effects.Exile(EffectTarget.PipelineTarget("exiledCreature"))

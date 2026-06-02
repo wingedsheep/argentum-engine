@@ -3,8 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Tormenting Voice
  * {1}{R}
@@ -18,7 +17,7 @@ val TormentingVoice = card("Tormenting Voice") {
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, discard a card.\nDraw two cards."
 
-    additionalCost(AdditionalCost.DiscardCards())
+    additionalCost(Costs.additional.DiscardCards())
 
     spell {
         effect = Effects.DrawCards(2)

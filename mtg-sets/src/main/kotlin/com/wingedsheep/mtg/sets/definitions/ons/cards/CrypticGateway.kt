@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -15,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Cryptic Gateway
@@ -31,7 +31,7 @@ val CrypticGateway = card("Cryptic Gateway") {
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             GatherCardsEffect(source = CardSource.TappedAsCost, storeAs = "tappedPermanents"),
             GatherSubtypesEffect(from = "tappedPermanents", storeAs = "tappedSubtypes"),
             GatherCardsEffect(source = CardSource.FromZone(zone = Zone.HAND, player = Player.You, filter = GameObjectFilter.Creature.withSubtypeInEachStoredGroup("tappedSubtypes")), storeAs = "candidates"),

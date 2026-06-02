@@ -3,8 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.scg.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.PayCost
-
+import com.wingedsheep.sdk.dsl.Costs
 /**
  * Raven Guild Initiate
  * {2}{U}
@@ -20,7 +19,7 @@ val RavenGuildInitiate = card("Raven Guild Initiate") {
     toughness = 4
     oracleText = "Morph—Return a Bird you control to its owner's hand."
 
-    morphCost = PayCost.ReturnToHand(GameObjectFilter.Creature.withSubtype("Bird"))
+    morphCost = Costs.pay.ReturnToHand(GameObjectFilter.Creature.withSubtype("Bird"))
 
     metadata {
         rarity = Rarity.COMMON

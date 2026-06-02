@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.conditions.SourceMatches
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 
@@ -48,7 +47,7 @@ val VaultbornTyrant = card("Vaultborn Tyrant") {
             ),
             binding = TriggerBinding.ANY
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.GainLife(3),
             Effects.DrawCards(1)
         ))

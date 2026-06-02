@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Molten Exhale
@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
  * Molten Exhale deals 4 damage to target creature or planeswalker.
  *
  * The behold-grants-flash clause is modelled with [KeywordAbility.flashKicker] over a
- * non-mana [AdditionalCost.Behold]: paying the optional behold cost unlocks instant-speed
+ * non-mana [Costs.additional.Behold]: paying the optional behold cost unlocks instant-speed
  * casting without branching the effect (the 4 damage is unconditional).
  */
 val MoltenExhale = card("Molten Exhale") {
@@ -31,7 +31,7 @@ val MoltenExhale = card("Molten Exhale") {
         "reveal a Dragon card from your hand.)\n" +
         "Molten Exhale deals 4 damage to target creature or planeswalker."
 
-    keywordAbility(KeywordAbility.flashKicker(AdditionalCost.Behold(filter = Filters.WithSubtype("Dragon"))))
+    keywordAbility(KeywordAbility.flashKicker(Costs.additional.Behold(filter = Filters.WithSubtype("Dragon"))))
 
     spell {
         val t = target("target", Targets.CreatureOrPlaneswalker)

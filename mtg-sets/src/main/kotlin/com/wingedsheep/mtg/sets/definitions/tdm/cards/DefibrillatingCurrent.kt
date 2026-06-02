@@ -4,8 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Defibrillating Current
  * {2/R}{2/W}{2/B}
@@ -21,7 +19,7 @@ val DefibrillatingCurrent = card("Defibrillating Current") {
 
     spell {
         val t = target("target creature or planeswalker", Targets.CreatureOrPlaneswalker)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DealDamage(4, t),
                 Effects.GainLife(2)

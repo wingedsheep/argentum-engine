@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -15,7 +14,6 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -25,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Alpharael, Dreaming Acolyte
@@ -52,7 +51,7 @@ val AlpharaelDreamingAcolyte = card("Alpharael, Dreaming Acolyte") {
                     choices = listOf(
                         EffectChoice(
                             label = "Discard an artifact card",
-                            effect = CompositeEffect(
+                            effect = Effects.Composite(
                                 listOf(
                                     GatherCardsEffect(
                                         source = CardSource.FromZone(
@@ -83,7 +82,7 @@ val AlpharaelDreamingAcolyte = card("Alpharael, Dreaming Acolyte") {
                         ),
                         EffectChoice(
                             label = "Discard two cards",
-                            effect = EffectPatterns.discardCards(2)
+                            effect = HandPatterns.discardCards(2)
                         )
                     )
                 )

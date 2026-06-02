@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Erkenbrand, Lord of Westfold
@@ -29,7 +29,7 @@ val ErkenbrandLordOfWestfold = card("Erkenbrand, Lord of Westfold") {
             filter = GameObjectFilter.Creature.youControl().withSubtype("Human"),
             binding = TriggerBinding.ANY
         )
-        effect = EffectPatterns.modifyStatsForAll(
+        effect = GroupPatterns.modifyStatsForAll(
             1, 0,
             GroupFilter(GameObjectFilter.Creature.youControl())
         )

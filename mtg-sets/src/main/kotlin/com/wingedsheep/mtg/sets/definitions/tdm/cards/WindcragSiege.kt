@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModeOption
 import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -79,7 +78,7 @@ val WindcragSiege = card("Windcrag Siege") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         triggerCondition = SourceChosenModeIs("jeskai")
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.CreateToken(
                     power = 1,

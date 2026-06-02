@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -21,6 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Sledge-Class Seedship
@@ -87,7 +87,7 @@ val SledgeClassSeedship = card("Sledge-Class Seedship") {
     // Attack trigger: you may put a creature card from hand onto the battlefield
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = EffectPatterns.putFromHand(filter = GameObjectFilter.Creature)
+        effect = HandPatterns.putFromHand(filter = GameObjectFilter.Creature)
     }
 
     metadata {

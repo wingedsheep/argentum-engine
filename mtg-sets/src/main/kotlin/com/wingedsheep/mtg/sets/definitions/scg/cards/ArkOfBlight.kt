@@ -5,8 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Ark of Blight
  * {2}
@@ -22,7 +21,7 @@ val ArkOfBlight = card("Ark of Blight") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{3}"), Costs.Tap, Costs.SacrificeSelf)
         val t = target("target", Targets.Land)
-        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

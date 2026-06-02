@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -8,6 +7,7 @@ import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.ExilePatterns
 
 /**
  * Oath of Teferi
@@ -29,7 +29,7 @@ val OathOfTeferi = card("Oath of Teferi") {
         val t = target("permanent", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Permanent.youControl(), excludeSelf = true)
         ))
-        effect = EffectPatterns.exileUntilEndStep(t)
+        effect = ExilePatterns.exileUntilEndStep(t)
     }
 
     staticAbility {

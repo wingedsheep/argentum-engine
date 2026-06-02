@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Lingering Phantom
@@ -30,7 +30,7 @@ val LingeringPhantom = card("Lingering Phantom") {
         triggerZone = Zone.GRAVEYARD
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{B}"),
-            effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+            effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         )
     }
 

@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
@@ -15,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Portent of Calamity
@@ -47,7 +47,7 @@ val PortentOfCalamity = card("Portent of Calamity") {
     oracleText = "Reveal the top X cards of your library. For each card type, you may exile a card of that type from among them. Put the rest into your graveyard. You may cast a spell from among the exiled cards without paying its mana cost if you exiled four or more cards this way. Then put the rest of the exiled cards into your hand."
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // 1. Reveal the top X cards.
                 GatherCardsEffect(
@@ -85,7 +85,7 @@ val PortentOfCalamity = card("Portent of Calamity") {
                     collection = "exiled",
                     minSize = 4,
                     countDistinctCardTypes = true,
-                    ifNotEmpty = CompositeEffect(
+                    ifNotEmpty = Effects.Composite(
                         listOf(
                             SelectFromCollectionEffect(
                                 from = "exiled",

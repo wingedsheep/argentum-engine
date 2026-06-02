@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 
 val OriginOfSpiderMan = card("Origin of Spider-Man") {
@@ -35,7 +34,7 @@ val OriginOfSpiderMan = card("Origin of Spider-Man") {
 
     sagaChapter(2) {
         val creature = target("creature you control", Targets.CreatureYouControl)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, creature),
             AddCardTypeEffect("LEGENDARY", creature, Duration.Permanent),
             Effects.AddCreatureType("Spider", creature, Duration.Permanent),

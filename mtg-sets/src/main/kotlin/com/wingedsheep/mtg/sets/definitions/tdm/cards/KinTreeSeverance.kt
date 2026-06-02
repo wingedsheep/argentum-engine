@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Kin-Tree Severance — Tarkir: Dragonstorm #200
@@ -24,7 +24,7 @@ val KinTreeSeverance = card("Kin-Tree Severance") {
             "target permanent with mana value 3 or greater",
             TargetPermanent(filter = TargetFilter.Permanent.manaValueAtLeast(3))
         )
-        effect = MoveToZoneEffect(t, Zone.EXILE)
+        effect = Effects.Move(t, Zone.EXILE)
     }
 
     metadata {

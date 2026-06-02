@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 
@@ -33,7 +32,7 @@ val LysAlanaDignitary = card("Lys Alana Dignitary") {
         "{T}: Add {G}{G}. Activate only if there is an Elf card in your graveyard."
 
     additionalCost(
-        AdditionalCost.BeholdOrPay(
+        Costs.additional.BeholdOrPay(
             filter = Filters.WithSubtype("Elf"),
             alternativeManaCost = "{2}"
         )

@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Vodalian Merchant
@@ -22,7 +22,7 @@ val VodalianMerchant = card("Vodalian Merchant") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.loot()
+        effect = HandPatterns.loot()
     }
 
     metadata {

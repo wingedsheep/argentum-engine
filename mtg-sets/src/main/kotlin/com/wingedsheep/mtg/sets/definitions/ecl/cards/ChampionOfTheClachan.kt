@@ -6,10 +6,10 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Champion of the Clachan
@@ -37,7 +37,7 @@ val ChampionOfTheClachan = card("Champion of the Clachan") {
 
     keywords(Keyword.FLASH)
 
-    additionalCost(AdditionalCost.BeholdAndExile(filter = Filters.WithSubtype("Kithkin")))
+    additionalCost(Costs.additional.BeholdAndExile(filter = Filters.WithSubtype("Kithkin")))
 
     staticAbility {
         ability = ModifyStats(

@@ -19,7 +19,6 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -31,6 +30,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Clement, the Worrywort
@@ -69,7 +69,7 @@ val ClementTheWorrywort = card("Clement, the Worrywort") {
             ),
             binding = TriggerBinding.ANY
         )
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Gather all creatures you control on the battlefield
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.BATTLEFIELD, Player.You, GameObjectFilter.Creature),

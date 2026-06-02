@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Awaken the Honored Dead — Tarkir: Dragonstorm #170
@@ -41,7 +41,7 @@ val AwakenTheHonoredDead = card("Awaken the Honored Dead") {
     }
 
     sagaChapter(2) {
-        effect = EffectPatterns.mill(3)
+        effect = LibraryPatterns.mill(3)
     }
 
     sagaChapter(3) {

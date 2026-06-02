@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.p02.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Ravenous Rats
@@ -28,7 +28,7 @@ val RavenousRats = card("Ravenous Rats") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val t = target("target opponent", TargetOpponent())
-        effect = EffectPatterns.discardCards(1, t)
+        effect = HandPatterns.discardCards(1, t)
     }
 
     metadata {

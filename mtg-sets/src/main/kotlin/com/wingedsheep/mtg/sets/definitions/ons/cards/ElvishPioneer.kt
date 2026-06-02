@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Elvish Pioneer
@@ -24,7 +24,7 @@ val ElvishPioneer = card("Elvish Pioneer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.putFromHand(
+        effect = HandPatterns.putFromHand(
             filter = GameObjectFilter.BasicLand,
             entersTapped = true
         )

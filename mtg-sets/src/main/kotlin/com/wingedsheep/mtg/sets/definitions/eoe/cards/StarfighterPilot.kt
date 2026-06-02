@@ -22,7 +22,7 @@ val StarfighterPilot = card("Starfighter Pilot") {
 
     triggeredAbility {
         trigger = Triggers.BecomesTapped
-        effect = com.wingedsheep.sdk.dsl.EffectPatterns.surveil(1)
+        effect = com.wingedsheep.sdk.dsl.LibraryPatterns.surveil(1)
     }
 
     metadata {

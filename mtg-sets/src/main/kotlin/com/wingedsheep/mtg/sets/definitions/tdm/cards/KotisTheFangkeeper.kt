@@ -10,13 +10,13 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Kotis, the Fangkeeper — Tarkir: Dragonstorm #202
@@ -63,7 +63,7 @@ val KotisTheFangkeeper = card("Kotis, the Fangkeeper") {
             "of their library, where X is the amount of damage dealt. You may cast any number " +
             "of spells with mana value X or less from among them without paying their mana costs."
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 // Exile the top X cards of the damaged player's library (X = combat damage).
                 GatherCardsEffect(

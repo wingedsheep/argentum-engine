@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CastTimeCreatureTypeSource
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.CreatureTypePatterns
 
 /**
  * Aphetto Dredging
@@ -21,7 +21,7 @@ val AphettoDredging = card("Aphetto Dredging") {
     castTimeCreatureTypeChoice = CastTimeCreatureTypeSource.GRAVEYARD
 
     spell {
-        effect = EffectPatterns.chooseCreatureTypeReturnFromGraveyard(count = 3)
+        effect = CreatureTypePatterns.chooseCreatureTypeReturnFromGraveyard(count = 3)
     }
 
     metadata {

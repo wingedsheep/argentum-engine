@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -21,6 +20,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Severance Priest
@@ -62,7 +62,7 @@ val SeverancePriest = card("Severance Priest") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val opponent = target("target opponent", Targets.Opponent)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 RevealHandEffect(opponent),
                 GatherCardsEffect(
@@ -90,7 +90,7 @@ val SeverancePriest = card("Severance Priest") {
 
     triggeredAbility {
         trigger = Triggers.LeavesBattlefield
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.FromLinkedExile(),

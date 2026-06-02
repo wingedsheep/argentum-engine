@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -17,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Urgoros, the Empty One
@@ -39,7 +39,7 @@ val UrgorosTheEmptyOne = card("Urgoros, the Empty One") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Gather the damaged player's hand
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.HAND, Player.TriggeringPlayer),
@@ -48,7 +48,7 @@ val UrgorosTheEmptyOne = card("Urgoros, the Empty One") {
             // If hand not empty, discard one at random; if empty, controller draws
             ConditionalOnCollectionEffect(
                 collection = "hand",
-                ifNotEmpty = CompositeEffect(listOf(
+                ifNotEmpty = Effects.Composite(listOf(
                     SelectFromCollectionEffect(
                         from = "hand",
                         selection = SelectionMode.Random(DynamicAmount.Fixed(1)),

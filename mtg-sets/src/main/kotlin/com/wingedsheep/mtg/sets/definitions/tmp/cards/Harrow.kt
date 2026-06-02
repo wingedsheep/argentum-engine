@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.tmp.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Harrow
@@ -23,10 +23,10 @@ val Harrow = card("Harrow") {
     oracleText = "As an additional cost to cast this spell, sacrifice a land.\n" +
         "Search your library for up to two basic land cards, put them onto the battlefield, then shuffle."
 
-    additionalCost(AdditionalCost.SacrificePermanent(filter = GameObjectFilter.Land))
+    additionalCost(Costs.additional.SacrificePermanent(filter = GameObjectFilter.Land))
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             count = 2,
             destination = SearchDestination.BATTLEFIELD,

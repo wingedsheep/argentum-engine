@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Temur Tawnyback — Tarkir: Dragonstorm #229
@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.model.Rarity
  *
  * When this creature enters, draw a card, then discard a card.
  *
- * Straight loot ETB via [EffectPatterns.loot] (draw a card, then discard a card). The mana
+ * Straight loot ETB via [HandPatterns.loot] (draw a card, then discard a card). The mana
  * cost is monocolored hybrid ("twobrid"): each symbol can be paid with 2 generic or one
  * mana of the listed color, so it's castable in any of G/U/R decks.
  */
@@ -25,7 +25,7 @@ val TemurTawnyback = card("Temur Tawnyback") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.loot()
+        effect = HandPatterns.loot()
         description = "When this creature enters, draw a card, then discard a card."
     }
 

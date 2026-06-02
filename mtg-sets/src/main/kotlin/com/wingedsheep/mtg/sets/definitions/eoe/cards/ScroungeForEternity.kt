@@ -4,12 +4,11 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Scrounge for Eternity
@@ -24,7 +23,7 @@ val ScroungeForEternity = card("Scrounge for Eternity") {
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, sacrifice an artifact or creature.\nReturn target creature or Spacecraft card with mana value 5 or less from your graveyard to the battlefield. Then create a Lander token. (It's an artifact with \"{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\")"
 
-    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Artifact.or(GameObjectFilter.Creature)))
+    additionalCost(Costs.additional.SacrificePermanent(GameObjectFilter.Artifact.or(GameObjectFilter.Creature)))
 
     spell {
         val graveyardTarget = target("creature or Spacecraft card with mana value 5 or less from your graveyard", TargetObject(
@@ -34,7 +33,7 @@ val ScroungeForEternity = card("Scrounge for Eternity") {
             )
         ))
 
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.PutOntoBattlefield(graveyardTarget),
             Effects.CreateLander()
         ))

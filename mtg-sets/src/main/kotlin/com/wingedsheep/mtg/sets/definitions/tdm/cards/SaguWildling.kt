@@ -1,13 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Sagu Wildling // Roost Seek
@@ -54,7 +54,7 @@ val SaguWildling = card("Sagu Wildling") {
         oracleText = "Search your library for a basic land card, reveal it, put it into your hand, " +
             "then shuffle. (Also shuffle this card.)"
         spell {
-            effect = EffectPatterns.searchLibrary(
+            effect = LibraryPatterns.searchLibrary(
                 filter = Filters.BasicLand,
                 count = 1,
                 destination = SearchDestination.HAND,

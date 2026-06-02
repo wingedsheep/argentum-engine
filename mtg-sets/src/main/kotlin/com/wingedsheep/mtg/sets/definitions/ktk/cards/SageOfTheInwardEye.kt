@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Sage of the Inward Eye
@@ -27,7 +27,7 @@ val SageOfTheInwardEye = card("Sage of the Inward Eye") {
 
     triggeredAbility {
         trigger = Triggers.YouCastNoncreature
-        effect = EffectPatterns.grantKeywordToAll(
+        effect = GroupPatterns.grantKeywordToAll(
             keyword = Keyword.LIFELINK,
             filter = GroupFilter.AllCreaturesYouControl
         )

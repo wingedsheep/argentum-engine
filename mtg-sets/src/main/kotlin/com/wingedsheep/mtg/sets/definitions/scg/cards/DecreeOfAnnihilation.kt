@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -9,15 +8,15 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.GroupPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Decree of Annihilation
@@ -41,9 +40,9 @@ val DecreeOfAnnihilation = card("Decree of Annihilation") {
             )
         )
 
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter(artifactCreatureOrLand),
-            effect = MoveToZoneEffect(EffectTarget.Self, Zone.EXILE)
+            effect = Effects.Move(EffectTarget.Self, Zone.EXILE)
         ).then(
             ForEachPlayerEffect(
                 players = Player.Each,
@@ -61,7 +60,7 @@ val DecreeOfAnnihilation = card("Decree of Annihilation") {
 
     triggeredAbility {
         trigger = Triggers.YouCycleThis
-        effect = EffectPatterns.destroyAll(GroupFilter.AllLands)
+        effect = GroupPatterns.destroyAll(GroupFilter.AllLands)
     }
 
     metadata {

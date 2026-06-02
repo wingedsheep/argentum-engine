@@ -5,10 +5,8 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Nova Cleric
  * {W}
@@ -26,9 +24,9 @@ val NovaCleric = card("Nova Cleric") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{W}"), Costs.Tap, Costs.SacrificeSelf)
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllEnchantments,
-            effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
+            effect = Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
         )
     }
 

@@ -2,14 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.dsl.LibraryPatterns
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Dawnhand Dissident
@@ -38,14 +37,14 @@ val DawnhandDissident = card("Dawnhand Dissident") {
     // {T}, Blight 1: Surveil 1.
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.Blight(1))
-        effect = EffectPatterns.surveil(1)
+        effect = LibraryPatterns.surveil(1)
     }
 
     // {T}, Blight 2: Exile target card from a graveyard, linked to this creature.
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.Blight(2))
         val graveyardTarget = target("target card in a graveyard", Targets.CardInGraveyard)
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = graveyardTarget,
             destination = Zone.EXILE,
             linkToSource = true
@@ -58,7 +57,7 @@ val DawnhandDissident = card("Dawnhand Dissident") {
         ability = GrantMayCastFromLinkedExile(
             filter = GameObjectFilter.Creature,
             duringYourTurnOnly = true,
-            additionalCost = AdditionalCost.RemoveCountersFromYourCreatures(totalCount = 3),
+            additionalCost = Costs.additional.RemoveCountersFromYourCreatures(totalCount = 3),
             ownedByYou = true
         )
     }

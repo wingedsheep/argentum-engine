@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -50,7 +49,7 @@ val SlumberingWalker = card("Slumbering Walker") {
         effect = ReflexiveTriggerEffect(
             action = Effects.RemoveCounters(Counters.MINUS_ONE_MINUS_ONE, 1, EffectTarget.Self),
             optional = true,
-            reflexiveEffect = MoveToZoneEffect(
+            reflexiveEffect = Effects.Move(
                 target = EffectTarget.ContextTarget(0),
                 destination = Zone.BATTLEFIELD
             ),

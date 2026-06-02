@@ -3,8 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Sami's Curiosity
  * {G}
@@ -19,7 +17,7 @@ val SamisCuriosity = card("Sami's Curiosity") {
 
     // You gain 2 life, then create a Lander token
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.GainLife(2),
                 Effects.CreateLander()

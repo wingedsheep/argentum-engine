@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -29,8 +28,8 @@ val SplashPortal = card("Splash Portal") {
 
     spell {
         val creature = target("creature you control", Targets.CreatureYouControl)
-        effect = MoveToZoneEffect(creature, Zone.EXILE)
-            .then(MoveToZoneEffect(creature, Zone.BATTLEFIELD))
+        effect = Effects.Move(creature, Zone.EXILE)
+            .then(Effects.Move(creature, Zone.BATTLEFIELD))
             .then(
                 ConditionalEffect(
                     condition = Conditions.TargetMatchesFilter(

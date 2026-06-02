@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Valley Questcaller
@@ -44,7 +44,7 @@ val ValleyQuestcaller = card("Valley Questcaller") {
             ),
             binding = TriggerBinding.OTHER
         )
-        effect = EffectPatterns.scry(1)
+        effect = LibraryPatterns.scry(1)
     }
 
     // Static lord: other Rabbits, Bats, Birds, and Mice you control get +1/+1

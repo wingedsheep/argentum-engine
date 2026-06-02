@@ -6,8 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Biosynthic Burst
  * {1}{G}
@@ -22,7 +20,7 @@ val BiosynthicBurst = card("Biosynthic Burst") {
 
     spell {
         val target = target("target creature you control", Targets.CreatureYouControl)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             // Put a +1/+1 counter on target creature
             Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, target),
             // It gains reach, trample, and indestructible until end of turn

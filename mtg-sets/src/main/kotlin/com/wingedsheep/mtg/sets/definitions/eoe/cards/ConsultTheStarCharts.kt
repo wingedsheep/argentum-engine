@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Consult the Star Charts
@@ -35,7 +35,7 @@ val ConsultTheStarCharts = card("Consult the Star Charts") {
 
     spell {
         // Unkicked: look at top X (X = lands you control), keep one, rest on bottom in random order.
-        effect = EffectPatterns.lookAtTopAndKeep(
+        effect = LibraryPatterns.lookAtTopAndKeep(
             count = DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land),
             keepCount = DynamicAmount.Fixed(1),
             keepDestination = CardDestination.ToZone(Zone.HAND),
@@ -44,7 +44,7 @@ val ConsultTheStarCharts = card("Consult the Star Charts") {
         )
 
         // Kicked: keep two instead.
-        kickerEffect = EffectPatterns.lookAtTopAndKeep(
+        kickerEffect = LibraryPatterns.lookAtTopAndKeep(
             count = DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land),
             keepCount = DynamicAmount.Fixed(2),
             keepDestination = CardDestination.ToZone(Zone.HAND),

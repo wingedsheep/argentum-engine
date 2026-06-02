@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Trail of Mystery
@@ -32,7 +32,7 @@ val TrailOfMystery = card("Trail of Mystery") {
             binding = TriggerBinding.ANY,
         )
         effect = MayEffect(
-            EffectPatterns.searchLibrary(
+            LibraryPatterns.searchLibrary(
                 filter = Filters.BasicLand,
                 count = 1,
                 reveal = true

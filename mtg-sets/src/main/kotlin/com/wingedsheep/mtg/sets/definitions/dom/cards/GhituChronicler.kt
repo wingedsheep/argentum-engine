@@ -7,8 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Ghitu Chronicler
  * {1}{R}
@@ -32,7 +31,7 @@ val GhituChronicler = card("Ghitu Chronicler") {
         trigger = Triggers.EntersBattlefield
         triggerCondition = WasKicked
         val t = target("target", Targets.InstantOrSorceryInGraveyard)
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = t,
             destination = Zone.HAND
         )

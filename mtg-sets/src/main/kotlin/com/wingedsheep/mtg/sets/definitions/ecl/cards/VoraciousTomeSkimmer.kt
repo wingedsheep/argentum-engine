@@ -2,12 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Voracious Tome-Skimmer
@@ -32,7 +32,7 @@ val VoraciousTomeSkimmer = card("Voracious Tome-Skimmer") {
     triggeredAbility {
         trigger = Triggers.YouCastSpell
         triggerCondition = Conditions.IsNotYourTurn
-        effect = EffectPatterns.mayPay(PayLifeEffect(1), Effects.DrawCards(1))
+        effect = MiscPatterns.mayPay(PayLifeEffect(1), Effects.DrawCards(1))
     }
 
     metadata {

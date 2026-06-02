@@ -4,10 +4,10 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Thundermare
@@ -28,7 +28,7 @@ val Thundermare = card("Thundermare") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ForEachInGroupEffect(GroupFilter.AllOtherCreatures, TapUntapEffect(EffectTarget.Self, tap = true))
+        effect = Effects.ForEachInGroup(GroupFilter.AllOtherCreatures, TapUntapEffect(EffectTarget.Self, tap = true))
     }
 
     metadata {

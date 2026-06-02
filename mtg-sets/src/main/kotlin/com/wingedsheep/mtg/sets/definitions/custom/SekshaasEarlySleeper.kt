@@ -10,11 +10,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -65,13 +63,13 @@ val SekshaasEarlySleeper = card("Sekshaas, Early Sleeper") {
     // Early to Rest — exile at each end step, return at your next upkeep with haste
     triggeredAbility {
         trigger = Triggers.EachEndStep
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
-                MoveToZoneEffect(EffectTarget.Self, Zone.EXILE),
+                Effects.Move(EffectTarget.Self, Zone.EXILE),
                 CreateDelayedTriggerEffect(
                     step = Step.UPKEEP,
-                    effect = CompositeEffect(listOf(
-                        MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD),
+                    effect = Effects.Composite(listOf(
+                        Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD),
                         GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self)
                     )),
                     fireOnlyOnControllersTurn = true

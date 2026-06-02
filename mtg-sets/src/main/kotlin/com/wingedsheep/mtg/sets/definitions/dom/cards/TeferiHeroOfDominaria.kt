@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -39,12 +38,12 @@ val TeferiHeroOfDominaria = card("Teferi, Hero of Dominaria") {
 
     // +1: Draw a card. At the beginning of the next end step, untap up to two lands.
     loyaltyAbility(+1) {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(1),
                 CreateDelayedTriggerEffect(
                     step = Step.END,
-                    effect = CompositeEffect(
+                    effect = Effects.Composite(
                         listOf(
                             GatherCardsEffect(
                                 source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Land),

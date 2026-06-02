@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Aura Extraction
@@ -23,7 +23,7 @@ val AuraExtraction = card("Aura Extraction") {
 
     spell {
         val t = target("target", Targets.Enchantment)
-        effect = MoveToZoneEffect(t, Zone.LIBRARY, ZonePlacement.Top)
+        effect = Effects.Move(t, Zone.LIBRARY, ZonePlacement.Top)
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

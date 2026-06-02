@@ -5,11 +5,9 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-
+import com.wingedsheep.sdk.dsl.Effects
 /**
  * Goblin Pyromancer
  * {3}{R}
@@ -28,7 +26,7 @@ val GoblinPyromancer = card("Goblin Pyromancer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.allCreaturesWithSubtype("Goblin"),
             effect = ModifyStatsEffect(3, 0, EffectTarget.Self)
         )
@@ -36,9 +34,9 @@ val GoblinPyromancer = card("Goblin Pyromancer") {
 
     triggeredAbility {
         trigger = Triggers.EachEndStep
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.allCreaturesWithSubtype("Goblin"),
-            effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
+            effect = Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true)
         )
     }
 

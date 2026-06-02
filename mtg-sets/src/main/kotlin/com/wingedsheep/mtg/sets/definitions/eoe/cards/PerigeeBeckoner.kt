@@ -9,9 +9,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -48,7 +46,7 @@ val PerigeeBeckoner = card("Perigee Beckoner") {
         val diesReturnTapped = TriggeredAbility.create(
             trigger = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
             binding = TriggerBinding.SELF,
-            effect = MoveToZoneEffect(
+            effect = Effects.Move(
                 target = EffectTarget.Self,
                 destination = Zone.BATTLEFIELD,
                 placement = ZonePlacement.Tapped,
@@ -57,7 +55,7 @@ val PerigeeBeckoner = card("Perigee Beckoner") {
             descriptionOverride = "When this creature dies, return it to the battlefield tapped under its owner's control."
         )
 
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.ModifyStats(2, 0, creature),
                 GrantTriggeredAbilityEffect(

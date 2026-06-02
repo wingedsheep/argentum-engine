@@ -2,12 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.HandPatterns
 
 /**
  * Mardu Skullhunter
@@ -32,7 +32,7 @@ val MarduSkullhunter = card("Mardu Skullhunter") {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.YouAttackedThisTurn
         val t = target("target opponent", TargetOpponent())
-        effect = EffectPatterns.discardCards(1, t)
+        effect = HandPatterns.discardCards(1, t)
     }
 
     metadata {

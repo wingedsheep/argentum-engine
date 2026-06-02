@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Dark Bargain
@@ -20,7 +20,7 @@ val DarkBargain = card("Dark Bargain") {
     oracleText = "Look at the top three cards of your library. Put two of them into your hand and the other into your graveyard. Dark Bargain deals 2 damage to you."
 
     spell {
-        effect = EffectPatterns.lookAtTopAndKeep(count = 3, keepCount = 2)
+        effect = LibraryPatterns.lookAtTopAndKeep(count = 3, keepCount = 2)
             .then(Effects.DealDamage(2, EffectTarget.Controller))
     }
 

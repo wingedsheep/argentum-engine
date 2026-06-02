@@ -15,7 +15,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
@@ -67,7 +66,7 @@ private val OkoShadowmoorScion = card("Oko, Shadowmoor Scion") {
 
     // −1: Mill three cards. You may put a permanent card from among them into your hand.
     loyaltyAbility(-1) {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.TopOfLibrary(DynamicAmount.Fixed(3)),
@@ -111,7 +110,7 @@ private val OkoShadowmoorScion = card("Oko, Shadowmoor Scion") {
     // −6: Choose a creature type. You get an emblem with "Creatures you control of the chosen
     //     type get +3/+3 and have vigilance and hexproof."
     loyaltyAbility(-6) {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 ChooseCreatureTypeEffect,
                 Effects.CreatePermanentEmblem(

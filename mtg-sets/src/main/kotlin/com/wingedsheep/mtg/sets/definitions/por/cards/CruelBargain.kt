@@ -3,8 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Cruel Bargain
  * {B}{B}{B}
@@ -17,7 +15,7 @@ val CruelBargain = card("Cruel Bargain") {
     typeLine = "Sorcery"
 
     spell {
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.DrawCards(4),
                 Effects.LoseHalfLife(roundUp = true)

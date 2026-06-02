@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Dual-Sun Adepts
@@ -29,7 +29,7 @@ val DualSunAdepts = card("Dual-Sun Adepts") {
     // Activated ability: {5}: Creatures you control get +1/+1 until end of turn
     activatedAbility {
         cost = Costs.Mana("{5}")
-        effect = EffectPatterns.modifyStatsForAll(1, 1, GroupFilter.AllCreaturesYouControl)
+        effect = GroupPatterns.modifyStatsForAll(1, 1, GroupFilter.AllCreaturesYouControl)
         description = "{5}: Creatures you control get +1/+1 until end of turn."
     }
 

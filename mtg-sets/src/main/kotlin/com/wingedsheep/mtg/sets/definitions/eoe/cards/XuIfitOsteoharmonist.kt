@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-
 /**
  * Xu-Ifit, Osteoharmonist
  * {1}{B}{B}
@@ -37,7 +35,7 @@ val XuIfitOsteoharmonist = card("Xu-Ifit, Osteoharmonist") {
     activatedAbility {
         cost = Costs.Tap
         val creature = target("target creature card in your graveyard", Targets.CreatureCardInYourGraveyard)
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.PutOntoBattlefield(creature),
                 Effects.AddCreatureType(Subtype.SKELETON.value, creature, Duration.Permanent),

@@ -7,10 +7,10 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Costs
 
 /**
  * Kindle the Inner Flame
@@ -49,7 +49,7 @@ val KindleTheInnerFlame = card("Kindle the Inner Flame") {
     keywordAbility(
         KeywordAbility.flashback(
             "{1}{R}",
-            AdditionalCost.Behold(filter = Filters.WithSubtype("Elemental"), count = 3)
+            Costs.additional.Behold(filter = Filters.WithSubtype("Elemental"), count = 3)
         )
     )
 

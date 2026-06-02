@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.dsl.MiscPatterns
 
 /**
  * Warren Torchmaster
@@ -35,7 +35,7 @@ val WarrenTorchmaster = card("Warren Torchmaster") {
         // The haste target is chosen at resolution of the reflexive trigger, not when this
         // ability triggers (per Scryfall ruling).
         effect = ReflexiveTriggerEffect(
-            action = EffectPatterns.blight(1),
+            action = MiscPatterns.blight(1),
             optional = true,
             reflexiveEffect = Effects.GrantKeyword(
                 keyword = Keyword.HASTE,

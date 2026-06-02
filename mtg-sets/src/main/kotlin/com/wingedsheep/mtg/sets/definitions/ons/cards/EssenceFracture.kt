@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Essence Fracture
@@ -23,8 +23,8 @@ val EssenceFracture = card("Essence Fracture") {
 
     spell {
         val (c1, c2) = targets("creature", TargetCreature(count = 2))
-        effect = MoveToZoneEffect(c1, Zone.HAND) then
-                MoveToZoneEffect(c2, Zone.HAND)
+        effect = Effects.Move(c1, Zone.HAND) then
+                Effects.Move(c2, Zone.HAND)
     }
 
     keywordAbility(KeywordAbility.Cycling(ManaCost.parse("{2}{U}")))

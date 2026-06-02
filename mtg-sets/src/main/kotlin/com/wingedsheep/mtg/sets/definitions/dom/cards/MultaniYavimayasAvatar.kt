@@ -6,10 +6,10 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Multani, Yavimaya's Avatar
@@ -44,7 +44,7 @@ val MultaniYavimayasAvatar = card("Multani, Yavimaya's Avatar") {
             Costs.Mana("{1}{G}"),
             Costs.ReturnToHand(GameObjectFilter.Land, count = 2)
         )
-        effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
         activateFromZone = Zone.GRAVEYARD
     }
 

@@ -2,10 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Rain of Salt
@@ -20,8 +20,8 @@ val RainOfSalt = card("Rain of Salt") {
 
     spell {
         val (l1, l2) = targets("land", TargetPermanent(count = 2, filter = TargetFilter.Land))
-        effect = MoveToZoneEffect(l1, Zone.GRAVEYARD, byDestruction = true) then
-                MoveToZoneEffect(l2, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Move(l1, Zone.GRAVEYARD, byDestruction = true) then
+                Effects.Move(l2, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

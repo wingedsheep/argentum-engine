@@ -4,8 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.dsl.EffectPatterns
-
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 /**
  * Nature's Lore
  * {1}{G}
@@ -18,7 +17,7 @@ val NaturesLore = card("Nature's Lore") {
     typeLine = "Sorcery"
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.Land.withSubtype("Forest"),
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = false

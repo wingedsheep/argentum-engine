@@ -80,12 +80,13 @@ anti-corruption layer between engine and clients.
 - **Cards are data:** define via `cardDef { }` DSL, not class inheritance. Register in the set file
   (`definitions/{set}/{Set}Set.kt`) — the engine auto-loads via `ServiceLoader`.
 - **Use the `Effects.*` facade** (e.g., `Effects.DrawCards(1)`, `Effects.Destroy()`), not raw constructors.
-- **Prefer atomic pipeline effects** (Gather → Select → Move via `EffectPatterns`) over monolithic executors for
-  library/zone mechanics. `Effects.kt` holds foundational atomic facades; `EffectPatterns.kt` holds compositions like
-  Scry, Mill, SearchLibrary.
+- **Prefer atomic pipeline effects** (Gather → Select → Move via the domain pattern objects) over monolithic executors
+  for library/zone mechanics. `Effects.kt` holds foundational atomic facades; the `*Patterns.kt` objects
+  (`LibraryPatterns`, `HandPatterns`, `GroupPatterns`, `ExilePatterns`, `CreatureTypePatterns`, `MiscPatterns`) hold
+  compositions like Scry, Mill, SearchLibrary.
 - **Adding a card** → use the `add-card` skill (handles Scryfall lookup, oracle errata, set registration,
   scenario test).
-- **Adding a mechanic** → prefer composing in `EffectPatterns.kt` first; only add a new `Effect` type + executor in
+- **Adding a mechanic** → prefer composing in the relevant `*Patterns.kt` object first; only add a new `Effect` type + executor in
   `rules-engine/handlers/effects/` when atomic primitives don't suffice.
 - **Adding an engine/SDK/server/client feature** (a new primitive, mechanic, decision flow, or capability that isn't a
   single card) → use the `add-feature` skill. It enforces composition-over-monoliths, designing each new SDK type for

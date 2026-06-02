@@ -15,7 +15,6 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -36,6 +35,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Tests for Spy Network.
@@ -75,7 +75,7 @@ class SpyNetworkTest : FunSpec({
                         )
                     ),
                     LookAtFaceDownEffect(EffectTarget.ContextTarget(0), FaceDownLookScope.ALL_CONTROLLED_BY_TARGET_PLAYER),
-                    EffectPatterns.lookAtTopAndReorder(4)
+                    LibraryPatterns.lookAtTopAndReorder(4)
                 )
             ),
             TargetPlayer()

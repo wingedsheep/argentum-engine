@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.mid.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.GroupPatterns
 
 /**
  * Unnatural Growth
@@ -20,7 +20,7 @@ val UnnaturalGrowth = card("Unnatural Growth") {
 
     triggeredAbility {
         trigger = Triggers.EachCombat
-        effect = EffectPatterns.doublePowerAndToughnessForAll(Filters.Group.creaturesYouControl)
+        effect = GroupPatterns.doublePowerAndToughnessForAll(Filters.Group.creaturesYouControl)
         description = "At the beginning of each combat, double the power and toughness of each creature you control until end of turn."
     }
 

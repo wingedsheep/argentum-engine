@@ -3,8 +3,12 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
+import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
@@ -16,6 +20,8 @@ import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
@@ -276,4 +282,72 @@ object MiscPatterns {
             )
         )
     }
+
+    // =========================================================================
+    // Gift Pattern (Bloomburrow)
+    // =========================================================================
+
+    /**
+     * Bloomburrow Gift: "You may promise an opponent a gift as you cast this spell."
+     *
+     * Modelled as a two-mode [ModalEffect] where mode 0 is "don't promise a gift" and
+     * mode 1 is the gift-promised branch (whose effect chain should end in
+     * [com.wingedsheep.sdk.scripting.effects.GiftGivenEffect] via
+     * [com.wingedsheep.sdk.dsl.Effects.GiftGiven]). The flag `countsAsModalSpell = false`
+     * keeps "Whenever you cast a modal spell" triggers from misreading Gift as modal.
+     *
+     * Standard usage:
+     * ```kotlin
+     * spell {
+     *     effect = MiscPatterns.giftSpell(
+     *         noGiftMode = Mode.noTarget(baseEffect, "Don't promise a gift — …"),
+     *         giftMode = Mode.noTarget(baseEffect.then(opponentDraws).then(Effects.GiftGiven()),
+     *                                  "Promise a gift — …")
+     *     )
+     * }
+     * ```
+     */
+    fun giftSpell(noGiftMode: Mode, giftMode: Mode): ModalEffect =
+        ModalEffect.chooseOne(noGiftMode, giftMode, countsAsModalSpell = false)
+
+    // =========================================================================
+    // Incubate Pattern (CR 701.53)
+    // =========================================================================
+
+    /**
+     * Incubate N (CR 701.53). Atomic composition: create the (DFC) Incubator token, then
+     * place N +1/+1 counters on it via the pipeline-published entity ID.
+     *
+     * The Incubator's `{2}: Transform this token` activated ability is declared on the
+     * front-face CardDefinition in `PredefinedTokens.kt`. The transform mechanism is the
+     * same one used for ordinary DFCs.
+     */
+    fun incubate(n: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            CreatePredefinedTokenEffect(tokenType = "Incubator", count = 1),
+            AddCountersEffect(
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
+                count = n,
+                target = EffectTarget.PipelineTarget(CREATED_TOKENS, 0)
+            )
+        )
+    )
+
+    /**
+     * Incubate X (CR 701.53), where X is a [DynamicAmount] resolved at trigger/spell
+     * resolution time (e.g., the triggering spell's mana value for Chrome Host Seedshark).
+     *
+     * Same shape as [incubate] but uses [AddDynamicCountersEffect] so the +1/+1 counter
+     * count is evaluated against the live effect context.
+     */
+    fun incubate(amount: DynamicAmount): CompositeEffect = CompositeEffect(
+        listOf(
+            CreatePredefinedTokenEffect(tokenType = "Incubator", count = 1),
+            AddDynamicCountersEffect(
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
+                amount = amount,
+                target = EffectTarget.PipelineTarget(CREATED_TOKENS, 0)
+            )
+        )
+    )
 }

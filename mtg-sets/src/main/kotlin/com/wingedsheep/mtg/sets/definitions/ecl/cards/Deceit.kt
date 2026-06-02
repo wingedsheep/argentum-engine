@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
@@ -67,7 +66,7 @@ val Deceit = card("Deceit") {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.ManaSpentToCastIncludes(requiredBlack = 2)
         val opponent = target("target opponent", TargetOpponent())
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 RevealHandEffect(opponent),
                 GatherCardsEffect(

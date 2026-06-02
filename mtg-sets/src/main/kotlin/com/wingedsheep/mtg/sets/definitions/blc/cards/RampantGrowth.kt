@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.blc.cards
 
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 
 /**
  * Rampant Growth {1}{G}
@@ -20,7 +20,7 @@ val RampantGrowth = card("Rampant Growth") {
     oracleText = "Search your library for a basic land card, put that card onto the battlefield tapped, then shuffle."
 
     spell {
-        effect = EffectPatterns.searchLibrary(
+        effect = LibraryPatterns.searchLibrary(
             filter = GameObjectFilter.BasicLand,
             count = 1,
             destination = SearchDestination.BATTLEFIELD,

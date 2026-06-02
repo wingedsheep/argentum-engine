@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -31,7 +30,7 @@ val KnockoutManeuver = card("Knockout Maneuver") {
     spell {
         val mine = target("creature you control", Targets.CreatureYouControl)
         val theirs = target("creature an opponent controls", Targets.CreatureOpponentControls)
-        effect = CompositeEffect(listOf(
+        effect = Effects.Composite(listOf(
             Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, mine),
             Effects.DealDamage(
                 amount = DynamicAmounts.targetPower(0),

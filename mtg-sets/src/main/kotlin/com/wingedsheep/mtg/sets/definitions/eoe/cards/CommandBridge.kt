@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 
@@ -32,7 +31,7 @@ val CommandBridge = card("Command Bridge") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = PayOrSufferEffect(
-            cost = PayCost.Tap(),
+            cost = Costs.pay.Tap(),
             suffer = SacrificeSelfEffect,
         )
         description = "When this land enters, sacrifice it unless you tap an untapped permanent you control."

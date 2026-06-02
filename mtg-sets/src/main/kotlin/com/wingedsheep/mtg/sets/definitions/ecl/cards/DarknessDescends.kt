@@ -4,9 +4,9 @@ import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Darkness Descends
@@ -21,7 +21,7 @@ val DarknessDescends = card("Darkness Descends") {
     oracleText = "Put two -1/-1 counters on each creature."
 
     spell {
-        effect = ForEachInGroupEffect(
+        effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreatures,
             effect = AddCountersEffect(
                 counterType = Counters.MINUS_ONE_MINUS_ONE,
