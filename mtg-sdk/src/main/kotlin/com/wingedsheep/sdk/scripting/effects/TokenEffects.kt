@@ -230,14 +230,34 @@ data class CreateTokenCopyOfSourceEffect(
     /** Override the token's base toughness (null = copy source's toughness) */
     val overrideToughness: Int? = null,
     /** If set, create delayed triggers to exile the created tokens at this step. */
-    val exileAtStep: Step? = null
+    val exileAtStep: Step? = null,
+    /**
+     * Extra card types to union onto the token's type line on top of the source's types.
+     * Use the [com.wingedsheep.sdk.core.CardType] `name` (e.g. `"ARTIFACT"`).
+     *
+     * Models the "except it's a [type] in addition to its other types" copy clause —
+     * the token has every type the source had, plus the listed types. First used for
+     * Vaultborn Tyrant's death trigger ("create a token that's a copy of it, except
+     * it's an artifact in addition to its other types"); any future copy-token effect
+     * with the same shape can reuse the same field.
+     */
+    val addCardTypes: Set<String> = emptySet()
 ) : Effect {
     override val description: String = buildString {
         append("Create ")
         if (count == 1) append("a token that's a copy of this creature")
         else append("$count tokens that are copies of this creature")
+        val excepts = mutableListOf<String>()
         if (overridePower != null && overrideToughness != null) {
-            append(", except it's $overridePower/$overrideToughness")
+            excepts.add("it's $overridePower/$overrideToughness")
+        }
+        if (addCardTypes.isNotEmpty()) {
+            val typeWords = addCardTypes.map { it.lowercase() }
+            excepts.add("it's ${if (count == 1) "an " else ""}${typeWords.joinToString(" ")} in addition to its other types")
+        }
+        if (excepts.isNotEmpty()) {
+            append(", except ")
+            append(excepts.joinToString(" and "))
         }
         if (exileAtStep != null) {
             append(". Exile ${if (count == 1) "it" else "them"} at the beginning of the next ${exileAtStep.displayName}")

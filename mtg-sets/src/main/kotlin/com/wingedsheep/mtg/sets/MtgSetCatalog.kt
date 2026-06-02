@@ -5,6 +5,7 @@ import com.wingedsheep.mtg.sets.definitions.ala.ShardsOfAlaraSet
 import com.wingedsheep.mtg.sets.definitions.arn.ArabianNightsSet
 import com.wingedsheep.mtg.sets.definitions.avr.AvacynRestoredSet
 import com.wingedsheep.mtg.sets.definitions.bfz.BattleForZendikarSet
+import com.wingedsheep.mtg.sets.definitions.big.TheBigScoreSet
 import com.wingedsheep.mtg.sets.definitions.blb.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.blc.BloomburrowCommanderSet
 import com.wingedsheep.mtg.sets.definitions.bro.BrothersWarSet
@@ -135,6 +136,7 @@ object MtgSetCatalog {
         EdgeOfEternitiesSet,
         LorwynEclipsedSet,
         OutlawsOfThunderJunctionSet,
+        TheBigScoreSet,
         SpiderManSet,
         TarkirDragonstormSet,
         AvatarTheLastAirbenderSet,

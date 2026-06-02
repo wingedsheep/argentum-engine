@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
@@ -71,8 +72,21 @@ class CreateTokenCopyOfSourceExecutor(
             val overrideStats = if (op != null && ot != null) {
                 CreatureStats(op, ot)
             } else null
+            val extraCardTypes = effect.addCardTypes
+                .mapNotNull { name ->
+                    runCatching { CardType.valueOf(name.uppercase()) }.getOrNull()
+                }
+                .toSet()
+            val unionedTypeLine = if (extraCardTypes.isEmpty()) {
+                sourceCard.typeLine
+            } else {
+                sourceCard.typeLine.copy(
+                    cardTypes = sourceCard.typeLine.cardTypes + extraCardTypes
+                )
+            }
             val tokenCard = sourceCard.copy(
                 ownerId = controllerId,
+                typeLine = unionedTypeLine,
                 baseStats = overrideStats ?: sourceCard.baseStats
             )
 
