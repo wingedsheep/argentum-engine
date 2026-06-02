@@ -6,6 +6,17 @@
 Counts below are cards in the set that use the mechanic. A card may appear under
 multiple entries (e.g. a creature with Flying + Sneak).
 
+**Implementation progress (27 / 190).** Mechanics already exercised by the cards
+landed so far: Flying, Vigilance, Trample, Haste, Flash, Deathtouch, Double
+strike, Reach (granted), Equip, ETB triggers, LTB triggers, begin-of-combat
+triggers, attack triggers, intervening-if conditions, exile-until-leaves,
+filtered "another permanent enters" triggers, Food artifact baseline, EntersTapped
+land replacement, multi-color mana abilities, GatherCards/SelectFromCollection/
+MoveCollection pipelines, scry, modal Or-predicate filters, ForEachTarget +
+ContextTarget, and the standard sacrifice-for-life/sac-for-draw Food activations.
+None of the **new TMT mechanics** (Sneak, Alliance, Disappear) are exercised yet —
+they remain blocked on the Gap A / B / C engine work documented in TODO.md.
+
 ---
 
 ## New mechanics in TMT

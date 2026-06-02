@@ -10,13 +10,16 @@ Verify status anytime with: `scripts/card-status --set TMT` (and `--list --set T
 
 ## Status
 
-1 / 190 implemented (basics excluded — handled by `basicLandsFallback`).
+27 / 190 implemented (basics excluded — handled by `basicLandsFallback`).
 
-Implemented today:
-- **Raph & Mikey, Troublemakers** — Trample/haste + attack-trigger reveal-until-creature
-  into play tapped-and-attacking. Composes existing primitives only
-  (`Triggers.Attacks`, `GatherUntilMatchEffect`, `MoveCollectionEffect`,
-  `FilterCollectionEffect`, `RevealCollectionEffect`).
+Implemented so far (alphabetical):
+Agent Bishop · Man in Black, Anchovy & Banana Pizza, April · Reporter of the Weird,
+Armaggon · Future Shark, Bespoke Bō, Bot Bashing Time, Buzz Bots, Casey Jones ·
+Jury-Rig Justiciar, Cowabunga!, Death in the Family, Dimension X, Donatello · Turtle
+Techie, Donatello · Way with Machines, Dream Beavers, Featherbrained Filcher, Foot
+Headquarters, Frog Butler, Guac & Marshmallow Pizza, Hamato Guardian Stance,
+Hard-Won Jitte, Henchbots, High-Flying Ace, Ice Cream Kitty, Illegitimate Business,
+Mutant Town, Raph & Mikey · Troublemakers, TCRI Building.
 
 New-mechanic work blocks the bulk of the set: 26 cards wait on Sneak, 9 on Disappear,
 10 on Alliance. See "Engine gaps blocking the remaining cards" below.
@@ -237,3 +240,193 @@ Each is its own PR; they don't share a clean reusable gap with others.
   tapped-and-attacking; condition is the new piece.
 
 (Continue listing as `add-card` discovers more during implementation.)
+
+---
+
+## New engine gaps discovered during implementation
+
+These were found while walking the alphabetical card list. Each is one card today
+unless noted; group with Gap M if they stay solo, lift to their own gap if more
+cards turn up wanting the same primitive.
+
+### Gap N — distinct-card-types-among-spells-cast-this-turn dynamic amount
+**Engine change:** add `DynamicAmount.DistinctCardTypesAmongSpellsCastByYouThisTurn`
+(or a parameterized aggregator over the existing spell-cast-this-turn log).
+- **April O'Neil, Hacktivist** — end step: "draw a card for each card type among
+  spells you've cast this turn."
+
+### Gap O — "can't be blocked by creatures with power N or greater"
+**Engine change:** a static / target-filtered evasion gating creatures by power.
+The blocking-static plumbing exists (`BlockingStaticAbilities.kt`); generalize to
+read the blocker's projected power.
+- **April O'Neil, Kunoichi Trainee** — "can't be blocked by creatures with power
+  3 or greater."
+
+### Gap P — "unless you discard a card" cost-mitigation rider
+**Engine change:** a triggered-ability shape that says "sacrifice X unless you
+[pay alternate cost]," where the player chooses on resolution.
+- **Bebop & Rocksteady** — "Whenever Bebop & Rocksteady attack or block, sacrifice
+  a permanent unless you discard a card."
+
+### Gap Q — graveyard reanimate as a typed-override token
+**Engine change:** a return-from-graveyard variant that puts the card on the
+battlefield as if it were a token with overridden card types, P/T, color, and
+granted keywords. Different from current copy-with-overrides (which targets a
+permanent in play) — this overrides a card on its way out of the graveyard.
+- **Brilliance Unleashed** — second mode: non-artifact-creature artifact card
+  comes back as "a 3/3 Robot artifact creature with flying."
+
+### Gap R — gain control of all matching permanents UEOT + untap + grant haste
+**Engine change:** a bulk gain-control effect over a filter (all artifacts an
+opponent controls), composed with Untap and GrantKeyword(HASTE, UEOT). Existing
+gain-control primitives are single-target (LTR Gap 37 covers duration-based).
+- **Broadcast Takeover** — "Gain control of all artifacts your opponents control
+  until end of turn. Untap them. They gain haste until end of turn."
+
+### Gap S — delayed trigger "at the beginning of your NEXT upkeep"
+**Engine change:** delayed-trigger plumbing for "next" timing windows (not the
+end-of-turn cleanup the engine already wires up).
+- **Casey Jones, Vigilante** — ETB draw 3, then "at the beginning of your next
+  upkeep, discard three cards at random."
+
+### Gap T — copy-an-artifact-token with sacrifice at the next end step
+**Engine change:** activated "create a token that's a copy of target artifact you
+control" + "sacrifice it at the beginning of the next end step." Existing
+token-copy effects are creature-typed and don't carry a self-sac timer.
+- **Chrome Dome** — "{5}: Create a token that's a copy of another target artifact
+  you control. That token gains haste. Sacrifice it at the beginning of the next
+  end step."
+
+### Gap U — Class enchantments (level-up subtype) — 2 cards
+**Engine change:** the Class card type (Strixhaven CR 716) — sorcery-speed
+level-up costs, per-level static/triggered abilities, "becomes level N" trigger.
+Likely a sizable build; coordinates with future Strixhaven / Adventures in the
+Forgotten Realms work.
+- **Cool but Rude** — Class with 3 levels.
+- **Does Machines** — Class with 2 levels.
+
+### Gap V — search-or-fail conditional ETB effect
+**Engine change:** an "ETB: search library for X; if no X is put into hand this
+way, create a Y token" composite. Composes existing primitives but needs the
+post-search "did anything land in hand" condition exposed.
+- **Courier of Comestibles** — "search your library for a Food card …; if you
+  don't put a card into your hand this way, create a Food token."
+
+### Gap W — Mutagen token (artifact token with an activated counter ability)
+**Engine change:** generic "create a Mutagen token" facade — an artifact token
+with "{1}, {T}, Sacrifice: put a +1/+1 counter on target creature. Activate only
+as a sorcery." Several cards reference it; once defined, they're all composable.
+- **Crustacean Commando** — "create a Mutagen token."
+- **Genghis Frog** — "Whenever … another Mutant you control enters, create a
+  Mutagen token."
+
+### Gap X — flicker a pair (artifact + creature) and return together
+**Engine change:** an exile-and-return effect that takes two targets and returns
+both at the same time (so synchronous ETB triggers see each other).
+- **Don & Leo, Problem Solvers** — "exile up to one target artifact you control
+  and up to one target creature you control. Then return them to the battlefield
+  under their owners' control."
+
+### Gap Y — grant a keyword (Affinity) to the next spell of a kind you cast
+**Engine change:** a delayed continuous effect that watches the next noncreature
+spell cast by you this turn and grants it Affinity-for-artifacts at cast time.
+Different from cost-reduction-this-turn auras because the granted ability fires
+at the *next-cast* moment with a specific filter.
+- **Don & Raph, Hard Science** — "the next noncreature spell you cast this turn
+  has affinity for artifacts."
+
+### Gap Z — "an artifact entered the battlefield under your control this turn"
+**Engine change:** per-controller "has X entered this turn" tracking that
+includes artifacts (and ideally lands/creatures), and a `Condition` reading it
+for static unblockability. Adjacent to the `nonlandPermanentLeftBattlefield`
+plumbing but on the *entered* side.
+- **Fugitive Droid** — "This creature can't be blocked if an artifact entered
+  the battlefield under your control this turn." Second ability ("counter target
+  spell that targets an artifact or creature you control") also needs a target-
+  spell-targets-filter check that the engine doesn't expose generically yet.
+
+### Gap AA — "when you do" sub-trigger off an optional sacrifice
+**Engine change:** the "may [cost]. When you do, [effect]" two-step pattern,
+where the inner trigger only fires if the optional cost was paid.
+- **General Traag, Heart of Stone** — "you may sacrifice another artifact. When
+  you do, General Traag deals 4 damage to target creature."
+
+### Gap BB — "damage equal to the greatest power among creatures you control"
+**Engine change:** `DynamicAmount.GreatestPowerAmong(filter)` (and the
+single-creature filter for "the creature with the greatest power"). Read via
+projected state. Pairs with several existing damage effects via
+`Effects.DealDamage(dynamicAmount, target)`.
+- **Go Ninja Go** — Mode 2: "deals damage equal to the greatest power among
+  creatures you control to target creature an opponent controls."
+
+### Gap CC — "Whenever you tap a land for mana, add X" trigger
+**Engine change:** a triggered ability on mana abilities — the trigger fires
+when the player taps a land specifically *to add mana*, not every time it
+becomes tapped.
+- **Groundchuck & Dirtbag** — "Whenever you tap a land for mana, add {G}."
+
+### Gap DD — cost reduction conditioned on target's state
+**Engine change:** spell-cost discount evaluated against the spell's intended
+target (a tapped creature here). Different from "if you control X" reductions
+because the predicate reads the chosen target during cast.
+- **Grounded for Life** — "This spell costs {3} less to cast if it targets a
+  tapped creature."
+
+---
+
+## Composable — deferred for time
+
+These cards appear to compose from primitives the engine already has, but were
+skipped during the alphabetical first pass to keep pace. Pick them up next.
+
+- **Baxter Stockman** — ETB Robot token + begin-combat pump on target artifact
+  creature you control. Needs an inline `TargetFilter(GameObjectFilter(
+  cardPredicates = [IsCreature, IsArtifact]).youControl())`.
+- **Bebop, Warthog Warrior** — Menace + "Rhinos you control have menace" anthem
+  + Swampcycling {2}. All primitives exist; Swampcycling uses
+  `KeywordAbility.Cycling(searchFilter = …, displayPrefix = "Swampcycling")`.
+- **Dimensional Exile** — Aura "enchant basic land you control" with ETB exile
+  target creature until LTB. Need the basic-land-you-control aura target.
+- **Foot Elite** — attack-trigger pump "+1/+0 and gains indestructible UEOT" on
+  a target creature you control. Composes ModifyStats + GrantKeyword
+  (INDESTRUCTIBLE, EndOfTurn).
+
+---
+
+## Skip log — cards inspected and skipped (alphabetical)
+
+Each row is a card encountered during the alphabetical pass that was not
+implemented in this session, with the underlying blocker. Gaps reference the
+sections above (existing Gap A–M or the new Gap N–DD).
+
+| Card                                  | Blocker / Gap                               |
+|---------------------------------------|---------------------------------------------|
+| Action News Crew                      | Gap D (Channel)                             |
+| April O'Neil, Hacktivist              | Gap N (card-types-cast amount)              |
+| April O'Neil, Kunoichi Trainee        | Gap O (can't-be-blocked-by-power)           |
+| Baxter Stockman                       | Composable — deferred                       |
+| Bebop & Rocksteady                    | Gap P (unless-you-discard rider)            |
+| Bebop, Warthog Warrior                | Composable — deferred                       |
+| Brilliance Unleashed                  | Gap Q (typed-override reanimate token)      |
+| Broadcast Takeover                    | Gap R (mass gain-control UEOT)              |
+| Casey Jones, Vigilante                | Gap S (delayed next-upkeep trigger)         |
+| Chrome Dome                           | Gap T (copy-artifact + next-end-step sac)   |
+| Cool but Rude                         | Gap U (Class)                               |
+| Courier of Comestibles                | Gap V (search-or-fail-then-token)           |
+| Crustacean Commando                   | Gap W (Mutagen token)                       |
+| Dark Leo & Shredder                   | Gap A (Sneak)                               |
+| Dimensional Exile                     | Composable — deferred                       |
+| Does Machines                         | Gap U (Class)                               |
+| Don & Leo, Problem Solvers            | Gap X (paired flicker)                      |
+| Don & Raph, Hard Science              | Gap Y (grant Affinity to next spell)        |
+| Donatello's Technique                 | Gap A (Sneak)                               |
+| Donatello, Gadget Master              | Gap A (Sneak) + token-with-overrides        |
+| Donatello, Mutant Mechanic            | Gap M (Pizza-Face-style type-grant)         |
+| Foot Elite                            | Composable — deferred                       |
+| Foot Ninjas                           | Gap A (Sneak)                               |
+| Fugitive Droid                        | Gap Z (artifact-ETB-this-turn + sac-counter)|
+| General Traag, Heart of Stone         | Gap AA (when-you-do sub-trigger)            |
+| Genghis Frog                          | Gap W (Mutagen token)                       |
+| Go Ninja Go                           | Gap BB (greatest-power-among amount)        |
+| Groundchuck & Dirtbag                 | Gap CC (tap-land-for-mana trigger)          |
+| Grounded for Life                     | Gap DD (cost reduction if target tapped)    |
