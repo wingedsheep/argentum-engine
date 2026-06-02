@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 15 / 190
+**Implemented:** 16 / 190
 ---
 
 - [ ] Action News Crew
@@ -168,7 +168,7 @@
 - [ ] Stomped by the Foot
 - [ ] Super Shredder
 - [ ] Tainted Treats
-- [ ] TCRI Building
+- [x] TCRI Building
 - [ ] Technodrome
 - [ ] Tenderize
 - [ ] The Cloning of Shredder
