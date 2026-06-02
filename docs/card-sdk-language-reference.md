@@ -1612,10 +1612,13 @@ composite abilities).
   ("Mastercraft Raptor's power is equal to the total power of the exiled cards used to craft it", CR 702.167c)
   can read them via `DynamicAmount.CraftedMaterialsTotalPower`. Declares `Keyword.CRAFT` for display.
 
-  Material selection: the engine accepts the chosen materials via
-  `ActivateAbility.costPayment.exiledCards`. The cost handler validates that every chosen entity is either a
-  permanent the activator controls or a card in their graveyard matching `filter`. Client-side material
-  selection UI is not yet plumbed through — game-server callers must supply the chosen IDs directly.
+  Material selection: the engine surfaces the combined BF + GY candidate pool on each Craft activation as
+  `AdditionalCostData.validCraftMaterials` / `craftMinCount`. The web client renders both zones side-by-side
+  via the dedicated `CraftMaterialOverlay` (routed by the `Craft` cost-type branch in `pipelinePhases`) and
+  submits the picked IDs back as `ActivateAbility.costPayment.exiledCards`. Headless / game-server callers can
+  supply the chosen IDs directly. The cost handler validates that every chosen entity is either a permanent
+  the activator controls or a card in their graveyard matching `filter`, and rejects activation when no
+  choices are supplied (no silent auto-pick).
 
 - `Renew(cost)` — `card { renew(cost) { effect = … } }` builder helper (Tarkir: Dragonstorm, Sultai clan keyword).
   A graveyard-activated ability: "Renew — [cost], Exile this card from your graveyard: [effect]. Activate only as a

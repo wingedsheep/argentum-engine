@@ -536,6 +536,15 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
      * Pair with [com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect]
      * as the ability effect and `timing = TimingRule.SorcerySpeed`.
      *
+     * **Composition note.** The legal-action enumerator surfaces a Craft sub-cost as the sole
+     * payload on [com.wingedsheep.engine.legalactions.AdditionalCostData]: any sibling
+     * AdditionalCost-bearing sub-cost inside the same `Composite` (tap, sacrifice, discard,
+     * counter-removal, …) will be dropped from the legal-action DTO. In practice the
+     * `card { craft(...) }` helper only pairs Craft with `Mana`, which travels through the
+     * separate mana-payment channel, so this is exhaustive. If you ever compose Craft with a
+     * second AdditionalCost-bearing sub-cost, generalize `ActivatedAbilityEnumerator.buildAdditionalCostData`
+     * to merge both payloads first.
+     *
      * @property filter Material filter (typically the same one used in the Craft display text,
      *   e.g. `Filters.Dinosaur` for Saheeli's Lattice).
      * @property minCount Minimum number of materials to exile (1 for "one or more").

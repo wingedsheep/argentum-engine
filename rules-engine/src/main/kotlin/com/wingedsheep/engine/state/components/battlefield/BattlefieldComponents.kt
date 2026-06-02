@@ -532,10 +532,12 @@ data class LinkedExileComponent(
  * when the Craft ability resolves; read by the `DynamicAmount.CraftedMaterialsTotalPower`
  * evaluator on the back face.
  *
- * Stripped on every battlefield entry by [applyBattlefieldEntry] — Rule 400.7 makes the
- * re-entering object a new object, so a Mastercraft Raptor that subsequently leaves and
- * returns by some other means (blink, reanimate) starts fresh with no crafted materials.
- * The craft-return effect explicitly re-attaches it on its specific entry path.
+ * Stripped on battlefield exit by `ZoneMovementUtils.stripBattlefieldComponents` and on
+ * battlefield entry by `ZoneTransitionService.applyBattlefieldEntry` — Rule 400.7 makes any
+ * re-entering object a new object with no memory of its prior existence, so a Mastercraft
+ * Raptor that subsequently leaves and returns by some other means (blink, reanimate) starts
+ * fresh with no crafted materials. The craft-return effect explicitly re-attaches the
+ * component on its specific entry path, after the entry strip has run.
  */
 @Serializable
 data class CraftedFromExiledComponent(

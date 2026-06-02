@@ -1068,8 +1068,17 @@ class CostHandler(
         choices: CostPaymentChoices
     ): CostPaymentResult {
         val candidates = findCraftMaterialCandidates(state, controllerId, cost.filter, sourceId).toSet()
-        val chosen = choices.exileChoices.takeIf { it.isNotEmpty() }
-            ?: candidates.take(cost.minCount)
+        // Materials are a player choice (CR 702.167a-b): the activator picks which permanents
+        // and/or graveyard cards to exile. No silent auto-pick — callers must supply the
+        // chosen IDs via CostPaymentChoices.exileChoices (web client routes them through the
+        // CraftMaterialOverlay; game-server callers populate the field directly).
+        val chosen = choices.exileChoices
+        if (chosen.isEmpty()) {
+            return CostPaymentResult.failure(
+                "Craft requires the activator to choose at least ${cost.minCount} " +
+                    "${cost.filter.description}(s) to exile via costPayment.exiledCards"
+            )
+        }
         if (chosen.size < cost.minCount) {
             return CostPaymentResult.failure(
                 "Craft requires at least ${cost.minCount} ${cost.filter.description}(s) to exile"

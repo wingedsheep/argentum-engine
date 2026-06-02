@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.components.battlefield.WarpedComponent
 import com.wingedsheep.engine.state.components.battlefield.EvokedComponent
 import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
+import com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -304,6 +305,10 @@ object ZoneMovementUtils {
             // Strip linked exile tracking so the new instance starts with no exiled cards.
             .without<LinkedExileComponent>()
             .without<MayCastFromLinkedExileUsedThisTurnComponent>()
+            // Craft materials linked to the prior battlefield existence (CR 702.167c) — the
+            // re-entering object is a new object, so it has no recorded materials. The
+            // craft-return executor explicitly re-attaches this component on its own entry path.
+            .without<CraftedFromExiledComponent>()
             // Combat
             .without<AttackingComponent>()
             .without<BlockingComponent>()

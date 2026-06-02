@@ -70,7 +70,7 @@ class TransformEffectExecutor(
         val currentCard = container.get<CardComponent>()
             ?: return EffectResult.error(state, "Target has no CardComponent")
 
-        val swappedCard = buildCardComponentForFace(currentCard, nextCardDef)
+        val swappedCard = buildCardComponentForDfcFace(currentCard, nextCardDef)
 
         val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
 
@@ -110,25 +110,28 @@ class TransformEffectExecutor(
         )
     }
 
-    /**
-     * Build a fresh [CardComponent] for the given face while preserving the permanent's
-     * owner identity. This mirrors the wholesale-swap approach used by Clone's copy effect.
-     */
-    private fun buildCardComponentForFace(
-        current: CardComponent,
-        face: CardDefinition
-    ): CardComponent = CardComponent(
-        cardDefinitionId = face.name,
-        name = face.name,
-        manaCost = face.manaCost,
-        typeLine = face.typeLine,
-        oracleText = face.oracleText,
-        baseStats = face.creatureStats,
-        baseKeywords = face.keywords,
-        baseFlags = face.flags,
-        colors = face.colors,
-        ownerId = current.ownerId,
-        spellEffect = face.spellEffect,
-        imageUri = face.metadata.imageUri ?: current.imageUri
-    )
 }
+
+/**
+ * Build a fresh [CardComponent] for the given DFC face while preserving the permanent's
+ * owner identity and inheriting the prior face's `imageUri` when the new face doesn't
+ * declare its own. Shared by [TransformEffectExecutor] (CR 701.27 transform on the
+ * battlefield) and [ReturnSelfFromExileTransformedExecutor] (CR 702.167 Craft return).
+ */
+internal fun buildCardComponentForDfcFace(
+    current: CardComponent,
+    face: CardDefinition
+): CardComponent = CardComponent(
+    cardDefinitionId = face.name,
+    name = face.name,
+    manaCost = face.manaCost,
+    typeLine = face.typeLine,
+    oracleText = face.oracleText,
+    baseStats = face.creatureStats,
+    baseKeywords = face.keywords,
+    baseFlags = face.flags,
+    colors = face.colors,
+    ownerId = current.ownerId,
+    spellEffect = face.spellEffect,
+    imageUri = face.metadata.imageUri ?: current.imageUri
+)

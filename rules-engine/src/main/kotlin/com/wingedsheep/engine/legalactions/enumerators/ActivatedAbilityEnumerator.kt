@@ -831,6 +831,14 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         craftMaterials: List<EntityId> = emptyList()
     ): AdditionalCostData? {
         if (craftCost != null) {
+            // Craft (CR 702.167) is handled exclusively: when a Composite cost contains a
+            // [AbilityCost.Craft] sub-cost, we surface only the Craft payload, dropping any
+            // sibling AdditionalCost data (tap, sacrifice, discard, etc.). The DSL helper
+            // `card { craft(...) }` always pairs Craft with `Mana` only — mana is handled
+            // separately via [costPayment.manaPayment] — so this is exhaustive in practice.
+            // Composing Craft with another AdditionalCost-bearing sub-cost (e.g.
+            // `Composite(Tap, Craft(...))`) would need this branch generalized to merge the
+            // two payloads; flag any such authoring upstream until that's added.
             return AdditionalCostData(
                 description = craftCost.description,
                 costType = "Craft",

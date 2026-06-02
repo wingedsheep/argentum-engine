@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.core.TransformedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
@@ -13,7 +12,6 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import kotlin.reflect.KClass
 
@@ -31,7 +29,11 @@ import kotlin.reflect.KClass
  *  3. Moves the source from EXILE → BATTLEFIELD under its owner's control via the standard
  *     zone-transition pipeline (ETB triggers, static-ability registration, etc.).
  *
- * Emits a [TransformedEvent] so triggers keyed on "when this transforms" fire.
+ * Does **not** emit a `TransformedEvent` — CR 701.27a defines transforming as turning over
+ * a permanent that is already on the battlefield. Craft's "return ... transformed" produces
+ * a new battlefield object with its back face up; no transform action occurs, so triggers
+ * keyed on `Triggers.TransformsToBack` / `TransformsToFront` must not fire. ETB triggers on
+ * the back face are dispatched normally by the `ZoneChangeEvent` emitted from the move.
  */
 class ReturnSelfFromExileTransformedExecutor(
     private val cardRegistry: CardRegistry
@@ -53,7 +55,7 @@ class ReturnSelfFromExileTransformedExecutor(
         val dfc = container.get<DoubleFacedComponent>()
             ?: return EffectResult.error(state, "Craft source is not a double-faced permanent")
 
-        val backDef: CardDefinition = cardRegistry.getCard(dfc.backCardDefinitionId)
+        val backDef = cardRegistry.getCard(dfc.backCardDefinitionId)
             ?: return EffectResult.error(state, "Back face not registered: ${dfc.backCardDefinitionId}")
 
         val ownerId = container.get<OwnerComponent>()?.playerId
@@ -69,21 +71,8 @@ class ReturnSelfFromExileTransformedExecutor(
         val frontFaceCard = container.get<CardComponent>()
             ?: return EffectResult.error(state, "Craft source has no CardComponent")
 
-        // Build the back face's CardComponent (mirrors TransformEffectExecutor.buildCardComponentForFace).
-        val backCard = CardComponent(
-            cardDefinitionId = backDef.name,
-            name = backDef.name,
-            manaCost = backDef.manaCost,
-            typeLine = backDef.typeLine,
-            oracleText = backDef.oracleText,
-            baseStats = backDef.creatureStats,
-            baseKeywords = backDef.keywords,
-            baseFlags = backDef.flags,
-            colors = backDef.colors,
-            ownerId = frontFaceCard.ownerId ?: ownerId,
-            spellEffect = backDef.spellEffect,
-            imageUri = backDef.metadata.imageUri ?: frontFaceCard.imageUri
-        )
+        // Build the back face's CardComponent via the same helper TransformEffectExecutor uses.
+        val backCard = buildCardComponentForDfcFace(frontFaceCard, backDef)
 
         // Flip the DFC face + swap CardComponent while the entity is still in exile so the
         // zone transition picks up the back face's static abilities cleanly. Save the front
@@ -106,20 +95,14 @@ class ReturnSelfFromExileTransformedExecutor(
         )
         newState = transition.state
 
-        // Re-attach CraftedFromExiledComponent after applyBattlefieldEntry strips it (it strips
-        // every transient battlefield component on entry per Rule 400.7 — the deliberate craft
-        // path re-establishes the materials link here).
+        // Re-attach CraftedFromExiledComponent: ZoneTransitionService.applyBattlefieldEntry
+        // strips it as part of the Rule 400.7 "new object" cleanup (alongside
+        // LinkedExileComponent), so this is the deliberate re-establishment of the materials
+        // link on the craft-return entry path.
         if (materials != null && newState.getEntity(sourceId) != null) {
             newState = newState.updateEntity(sourceId) { c -> c.with(materials) }
         }
 
-        val events = transition.events + TransformedEvent(
-            entityId = sourceId,
-            intoBackFace = true,
-            newFaceName = backDef.name,
-            controllerId = ownerId
-        )
-
-        return EffectResult.success(newState, events)
+        return EffectResult.success(newState, transition.events)
     }
 }

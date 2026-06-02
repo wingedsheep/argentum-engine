@@ -590,6 +590,12 @@ object ZoneTransitionService {
             // its previous existence, so it should not retain links to previously exiled cards)
             updated = updated.without<LinkedExileComponent>()
 
+            // Same for CraftedFromExiledComponent (CR 702.167c materials link): the
+            // re-entering object is a new object, so it has no recorded materials. The
+            // craft-return executor explicitly re-attaches the component immediately after
+            // this entry path runs.
+            updated = updated.without<CraftedFromExiledComponent>()
+
             // Track that this permanent entered the battlefield this turn
             updated = updated.with(EnteredThisTurnComponent)
 

@@ -163,6 +163,30 @@ class SaheelisLatticeCraftScenarioTest : FunSpec({
         projected.getPower(saheeli) shouldBe 6
     }
 
+    test("rejects activation when the activator supplies no chosen materials even though candidates exist") {
+        // Materials are a player choice (CR 702.167a-b). With at least one valid Dinosaur on
+        // the battlefield the ability is *legal* to activate, but the activator must still
+        // explicitly pick the materials — the engine must not auto-pick silently.
+        val driver = setup()
+        val p1 = driver.activePlayer!!
+
+        val saheeli = driver.putPermanentOnBattlefield(p1, "Saheeli's Lattice")
+        driver.putCreatureOnBattlefield(p1, "Test Big Dino")
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.giveMana(p1, Color.RED, 5)
+
+        val result = driver.submit(
+            ActivateAbility(
+                playerId = p1,
+                sourceId = saheeli,
+                abilityId = craftAbilityId()
+                // costPayment intentionally omitted
+            )
+        )
+        result.isSuccess shouldBe false
+        result.error.shouldNotBeNull() shouldContain "Craft"
+    }
+
     test("rejects activation when no Dinosaur material is available") {
         val driver = setup()
         val p1 = driver.activePlayer!!
@@ -227,13 +251,16 @@ class SaheelisLatticeCraftScenarioTest : FunSpec({
     }
 
     test("rejects activation at instant speed (CR 702.167a: \"Activate only as a sorcery\")") {
+        // Use UPKEEP so the active player has priority but it is *not* a main phase — that's
+        // the cleanest "instant speed but not sorcery speed" canvas (combat steps also have
+        // stack-empty subtleties that conflate the test).
         val driver = setup()
         val p1 = driver.activePlayer!!
 
         val saheeli = driver.putPermanentOnBattlefield(p1, "Saheeli's Lattice")
         driver.putCreatureOnBattlefield(p1, "Test Tiny Dino")
         driver.giveMana(p1, Color.RED, 5)
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.passPriorityUntil(Step.UPKEEP)
 
         val result = driver.submit(
             ActivateAbility(
