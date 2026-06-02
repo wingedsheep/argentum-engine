@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.scripting.GameEvent.AttackEvent
+import com.wingedsheep.sdk.scripting.EventPattern.AttackEvent
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.Duration

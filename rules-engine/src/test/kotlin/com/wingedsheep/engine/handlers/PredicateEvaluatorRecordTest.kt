@@ -33,8 +33,8 @@ class PredicateEvaluatorRecordTest : FunSpec({
         isFaceDown: Boolean = false
     ) = CastSpellRecord(typeLine, manaValue, colors, isFaceDown)
 
-    fun filter(vararg predicates: CardPredicate, matchAll: Boolean = true) =
-        GameObjectFilter(cardPredicates = predicates.toList(), matchAll = matchAll)
+    fun filter(vararg predicates: CardPredicate) =
+        GameObjectFilter(cardPredicates = predicates.toList())
 
     // --- Core filter shape --------------------------------------------------
 
@@ -55,7 +55,7 @@ class PredicateEvaluatorRecordTest : FunSpec({
             ) shouldBe false
         }
 
-        test("matchAll=true requires every predicate to match (AND)") {
+        test("conjunction (AND) requires every predicate to match") {
             val rec = record(TypeLine.creature(setOf(Subtype.BIRD)), manaValue = 3)
             // IsCreature AND HasSubtype Bird AND ManaValueAtLeast 3 all hold
             evaluator.matchesFilter(
@@ -77,24 +77,16 @@ class PredicateEvaluatorRecordTest : FunSpec({
             ) shouldBe false
         }
 
-        test("matchAll=false matches when any predicate matches (OR)") {
+        test("CardPredicate.Or matches when any inner predicate matches (OR)") {
             val rec = record(TypeLine.instant())
             evaluator.matchesFilter(
                 rec,
-                filter(
-                    CardPredicate.IsSorcery,
-                    CardPredicate.IsInstant,
-                    matchAll = false
-                )
+                filter(CardPredicate.Or(listOf(CardPredicate.IsSorcery, CardPredicate.IsInstant)))
             ) shouldBe true
 
             evaluator.matchesFilter(
                 rec,
-                filter(
-                    CardPredicate.IsSorcery,
-                    CardPredicate.IsCreature,
-                    matchAll = false
-                )
+                filter(CardPredicate.Or(listOf(CardPredicate.IsSorcery, CardPredicate.IsCreature)))
             ) shouldBe false
         }
     }

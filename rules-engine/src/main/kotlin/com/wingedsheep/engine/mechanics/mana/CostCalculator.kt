@@ -829,12 +829,14 @@ class CostCalculator(
         state: GameState? = null,
         projectedState: com.wingedsheep.engine.mechanics.layers.ProjectedState? = null
     ): Boolean {
-        if (filter.cardPredicates.isEmpty()) return true
-        return if (filter.matchAll) {
-            filter.cardPredicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
-        } else {
-            filter.cardPredicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
+        if (filter.cardPredicates.isEmpty() && filter.anyOf.isEmpty()) return true
+        // Conjunction over card predicates; OR lives inside a CardPredicate.Or.
+        if (!filter.cardPredicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }) return false
+        // Recursive union (`or` infix): match if any branch matches.
+        if (filter.anyOf.isNotEmpty()) {
+            return filter.anyOf.any { matchesCardDefinition(cardDef, it, sourceEntityId, state, projectedState) }
         }
+        return true
     }
 
     private fun matchesCardPredicate(

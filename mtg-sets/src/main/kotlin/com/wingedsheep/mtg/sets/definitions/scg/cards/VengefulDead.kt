@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DamageCantBePrevented
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCantBeCountered
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -35,7 +35,7 @@ val FrenziedBaloth = card("Frenzied Baloth") {
     }
 
     replacementEffect(
-        DamageCantBePrevented(appliesTo = GameEvent.DamageEvent(damageType = DamageType.Combat))
+        DamageCantBePrevented(appliesTo = EventPattern.DamageEvent(damageType = DamageType.Combat))
     )
 
     metadata {

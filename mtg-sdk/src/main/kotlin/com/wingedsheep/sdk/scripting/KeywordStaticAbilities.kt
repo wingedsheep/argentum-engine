@@ -134,5 +134,4 @@ data class GrantKeywordByCounter(
 ) : StaticAbility {
     override val description: String =
         "Each creature ${if (controllerOnly) "you control " else ""}with a $counterType counter on it has ${keyword.name.lowercase().replace('_', ' ')}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }

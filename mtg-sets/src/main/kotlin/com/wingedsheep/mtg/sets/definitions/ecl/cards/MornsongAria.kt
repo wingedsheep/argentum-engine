@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventDraw
 import com.wingedsheep.sdk.scripting.PreventLifeGain
@@ -40,12 +40,12 @@ val MornsongAria = card("Mornsong Aria") {
     oracleText = "Players can't draw cards or gain life.\n" +
         "At the beginning of each player's draw step, that player loses 3 life, searches their library for a card, puts it into their hand, then shuffles."
 
-    replacementEffect(PreventDraw(appliesTo = GameEvent.DrawEvent(player = Player.Each)))
-    replacementEffect(PreventLifeGain(appliesTo = GameEvent.LifeGainEvent(player = Player.Each)))
+    replacementEffect(PreventDraw(appliesTo = EventPattern.DrawEvent(player = Player.Each)))
+    replacementEffect(PreventLifeGain(appliesTo = EventPattern.LifeGainEvent(player = Player.Each)))
 
     triggeredAbility {
         trigger = TriggerSpec(
-            event = GameEvent.StepEvent(Step.DRAW, Player.Each),
+            event = EventPattern.StepEvent(Step.DRAW, Player.Each),
             binding = TriggerBinding.ANY
         )
         effect = Effects.LoseLife(3, target = EffectTarget.PlayerRef(Player.TriggeringPlayer))

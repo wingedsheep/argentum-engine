@@ -17,6 +17,4 @@ data class LevelUpClassEffect(
     val targetLevel: Int
 ) : Effect {
     override val description: String = "Level up to level $targetLevel"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

@@ -38,8 +38,6 @@ data class AnimateLandEffect(
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
         append(". It's still a land.")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -83,8 +81,6 @@ data class BecomeCreatureEffect(
         if (keywords.isNotEmpty()) append(" with ${keywords.joinToString(", ") { it.name.lowercase() }}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -104,8 +100,6 @@ data class BecomeSaddledEffect(
     val target: EffectTarget = EffectTarget.Self
 ) : Effect {
     override val description: String = "${target.description} becomes saddled until end of turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -119,8 +113,6 @@ data class TurnFaceDownEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Turn ${target.description} face down"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -134,8 +126,6 @@ data class TurnFaceUpEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Turn ${target.description} face up"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -151,7 +141,6 @@ data class AttachEquipmentEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Attach this equipment to ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -171,7 +160,6 @@ data class AttachTargetEquipmentToCreatureEffect(
     val creatureTarget: EffectTarget = EffectTarget.ContextTarget(1)
 ) : Effect {
     override val description: String = "Attach ${equipmentTarget.description} to ${creatureTarget.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -187,8 +175,6 @@ data class GrantExileOnLeaveEffect(
 ) : Effect {
     override val description: String =
         "If ${target.description} would leave the battlefield, exile it instead of putting it anywhere else"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -204,7 +190,6 @@ data class GrantExileOnLeaveEffect(
 @Serializable
 data object IncrementAbilityResolutionCountEffect : Effect {
     override val description: String = "Track ability resolution"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -229,6 +214,5 @@ data class ExploreEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "${target.description} explores"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 

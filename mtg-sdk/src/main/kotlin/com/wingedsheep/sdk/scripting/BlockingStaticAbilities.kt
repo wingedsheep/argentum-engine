@@ -15,7 +15,6 @@ data class CantBeBlocked(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "This creature can't be blocked."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -29,7 +28,7 @@ data class CantBeBlocked(
  * - Can't be blocked by black/red creatures: `CantBeBlockedBy(GameObjectFilter.Creature.withAnyColor(BLACK, RED))`
  *
  * @property blockerFilter Filter describing which creatures cannot block this creature
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantBeBlockedBy")
 @Serializable
@@ -38,7 +37,6 @@ data class CantBeBlockedBy(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked by ${blockerFilter.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -49,7 +47,7 @@ data class CantBeBlockedBy(
  * - Can't be blocked except by flyers: `CantBeBlockedExceptBy(GameObjectFilter.Creature.withKeyword(FLYING))`
  *
  * @property blockerFilter Filter describing which creatures CAN block this creature
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantBeBlockedExceptBy")
 @Serializable
@@ -58,7 +56,6 @@ data class CantBeBlockedExceptBy(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked except by ${blockerFilter.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -82,7 +79,6 @@ data class CanOnlyBlockCreaturesWith(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can block only ${blockerFilter.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 
@@ -92,7 +88,7 @@ data class CanOnlyBlockCreaturesWith(
  *
  * The comparison uses projected power (accounts for buffs/debuffs).
  *
- * @property target What this ability applies to (typically SourceCreature)
+ * @property filter What this ability applies to (typically SourceCreature)
  */
 @SerialName("CantBlockCreaturesWithGreaterPower")
 @Serializable
@@ -100,7 +96,6 @@ data class CantBlockCreaturesWithGreaterPower(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't block creatures with power greater than this creature's power"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -119,7 +114,6 @@ data class CantBeBlockedByCreaturesWithLessPower(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked by creatures with power less than this creature's power"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -127,7 +121,7 @@ data class CantBeBlockedByCreaturesWithLessPower(
  * Used for Charging Rhino: "can't be blocked by more than one creature."
  *
  * @property maxBlockers The maximum number of creatures that can block this creature
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantBeBlockedByMoreThan")
 @Serializable
@@ -138,7 +132,6 @@ data class CantBeBlockedByMoreThan(
     override val description: String = "can't be blocked by more than ${
         if (maxBlockers == 1) "one creature" else "$maxBlockers creatures"
     }"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -159,7 +152,6 @@ data class GrantCantBeBlockedToSmallCreatures(
 ) : StaticAbility {
     override val description: String =
         "Creatures you control with power or toughness $maxValue or less can't be blocked"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -172,7 +164,7 @@ data class GrantCantBeBlockedToSmallCreatures(
  * against those records.
  *
  * @property spellFilter The filter that cast spells must match to grant unblockability
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantBeBlockedIfCastSpellType")
 @Serializable
@@ -181,14 +173,13 @@ data class CantBeBlockedIfCastSpellType(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked if you've cast a ${spellFilter.description} spell this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
  * This creature can block any number of creatures.
  * Used for Ironfist Crusher and similar cards.
  *
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CanBlockAnyNumber")
 @Serializable
@@ -196,7 +187,6 @@ data class CanBlockAnyNumber(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can block any number of creatures"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -214,7 +204,6 @@ data class CanBlockAdditionalForCreatureGroup(
     val filter: GroupFilter
 ) : StaticAbility {
     override val description: String = "${filter.description} can block an additional $count creature${if (count > 1) "s" else ""} each combat"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -224,7 +213,7 @@ data class CanBlockAdditionalForCreatureGroup(
  * three or more creatures that share a creature type."
  *
  * @property minSharedCount The minimum number of creatures sharing a type required to allow blocking
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantBeBlockedUnlessDefenderSharesCreatureType")
 @Serializable
@@ -233,5 +222,4 @@ data class CantBeBlockedUnlessDefenderSharesCreatureType(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked unless defending player controls $minSharedCount or more creatures that share a creature type"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }

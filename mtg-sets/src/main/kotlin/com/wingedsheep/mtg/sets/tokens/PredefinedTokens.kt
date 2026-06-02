@@ -17,6 +17,8 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -133,8 +135,7 @@ object PredefinedTokens {
         typeLine = "Artifact — Equipment"
 
         staticAbility {
-            effect = Effects.ModifyStats(+1, +1)
-            filter = Filters.EquippedCreature
+            ability = ModifyStats(+1, +1, Filters.EquippedCreature)
         }
 
         equipAbility("{2}")
@@ -153,23 +154,19 @@ object PredefinedTokens {
         typeLine = "Legendary Artifact — Equipment"
 
         staticAbility {
-            effect = Effects.ModifyStats(+1, +1)
-            filter = Filters.EquippedCreature
+            ability = ModifyStats(+1, +1, Filters.EquippedCreature)
         }
 
         staticAbility {
-            effect = Effects.GrantKeyword(Keyword.VIGILANCE)
-            filter = Filters.EquippedCreature
+            ability = GrantKeyword(Keyword.VIGILANCE, Filters.EquippedCreature)
         }
 
         staticAbility {
-            effect = Effects.GrantKeyword(Keyword.TRAMPLE)
-            filter = Filters.EquippedCreature
+            ability = GrantKeyword(Keyword.TRAMPLE, Filters.EquippedCreature)
         }
 
         staticAbility {
-            effect = Effects.GrantKeyword(Keyword.HASTE)
-            filter = Filters.EquippedCreature
+            ability = GrantKeyword(Keyword.HASTE, Filters.EquippedCreature)
         }
 
         equipAbility("{2}")
@@ -222,8 +219,7 @@ object PredefinedTokens {
         auraTarget = Targets.Creature
 
         staticAbility {
-            effect = Effects.ModifyStats(+1, +1)
-            filter = Filters.EnchantedCreature
+            ability = ModifyStats(+1, +1, Filters.EnchantedCreature)
         }
 
         triggeredAbility {

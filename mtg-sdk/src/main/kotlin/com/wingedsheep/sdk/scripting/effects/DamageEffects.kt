@@ -79,8 +79,6 @@ data class DividedDamageEffect(
     val maxTargets: Int = 3
 ) : Effect {
     override val description: String = "Deal $totalDamage damage divided as you choose among $minTargets to $maxTargets target creatures"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -97,8 +95,6 @@ data class FightEffect(
     val target2: EffectTarget
 ) : Effect {
     override val description: String = "${target1.description} fights ${target2.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -128,6 +124,4 @@ data class DealDamagePerEntityInZoneEffect(
 ) : Effect {
     override val description: String =
         "Deal $damagePerEntity damage to ${target.description} for each card still in ${zone.name.lowercase()}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent.SpellCastEvent
+import com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate

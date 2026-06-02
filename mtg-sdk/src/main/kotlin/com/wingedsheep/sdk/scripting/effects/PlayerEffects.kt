@@ -26,8 +26,6 @@ data class SkipCombatPhasesEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} skips all combat phases of their next turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -48,8 +46,6 @@ data class SkipUntapEffect(
         ).joinToString(" and ")
         append("$affectedTypes ${target.description} controls don't untap during their next untap step")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -70,8 +66,6 @@ data class SkipNextDrawStepEffect(
         EffectTarget.Controller -> "You skip your next draw step"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next draw step"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -86,8 +80,6 @@ data class PlayAdditionalLandsEffect(
     val count: Int
 ) : Effect {
     override val description: String = "You may play up to $count additional land${if (count != 1) "s" else ""} this turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -100,8 +92,6 @@ data class PlayAdditionalLandsEffect(
 data object AddCombatPhaseEffect : Effect {
     override val description: String =
         "After this main phase, there is an additional combat phase followed by an additional main phase"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -123,8 +113,6 @@ data class TakeExtraTurnEffect(
             append(". At the beginning of that turn's end step, you lose the game")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -143,8 +131,6 @@ data class PreventLandPlaysThisTurnEffect(
         is EffectTarget.ContextTarget -> "Target player can't play lands this turn"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} can't play lands this turn"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -194,8 +180,6 @@ data class SkipNextTurnEffect(
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} skips their next turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -212,8 +196,6 @@ data class HijackNextTurnEffect(
 ) : Effect {
     override val description: String =
         "Controller controls ${target.description} during their next turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -230,8 +212,6 @@ data class CantCastSpellsEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} can't cast spells ${duration.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -250,8 +230,6 @@ data class CantActivateLoyaltyAbilitiesEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} can't activate planeswalkers' loyalty abilities ${duration.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -268,8 +246,6 @@ data class LoseGameEffect(
     val message: String? = null
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} loses the game"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -289,8 +265,6 @@ data class WinGameEffect(
     val message: String? = null
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} wins the game"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -312,8 +286,6 @@ data class GrantShroudEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains shroud ${duration.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -335,8 +307,6 @@ data class GrantHexproofEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains hexproof ${duration.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -353,8 +323,6 @@ data class GrantCastCreaturesFromGraveyardWithForageEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "Until end of turn, you may cast creature spells from your graveyard by foraging in addition to paying their other costs. If you cast a spell this way, that creature enters with a finality counter on it"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -382,8 +350,6 @@ data class GrantDamageBonusEffect(
         append("If ${sourceFilter.description} ${target.description} controls would deal damage to a permanent or player")
         append(", it deals that much damage plus $bonusAmount instead")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -399,8 +365,6 @@ data class GrantDamageBonusEffect(
 @Serializable
 data object GiftGivenEffect : Effect {
     override val description: String = "Give a gift"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -418,8 +382,6 @@ data class GrantSpellKeywordEffect(
 ) : Effect {
     override val description: String =
         "${spellFilter.description} spells you cast have ${keyword.displayName.lowercase()}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -477,8 +439,6 @@ data class CreatePermanentEmblemEffect(
     val emblemDescription: String
 ) : Effect {
     override val description: String = "You get an emblem with \"$emblemDescription\""
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -500,8 +460,6 @@ data class GainCitysBlessingEffect(
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gets the city's blessing"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -517,8 +475,6 @@ data class TheRingTemptsYouEffect(
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = "the Ring tempts ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**

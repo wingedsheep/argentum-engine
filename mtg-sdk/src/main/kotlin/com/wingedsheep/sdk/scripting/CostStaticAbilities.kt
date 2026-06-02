@@ -109,13 +109,13 @@ data class ModifySpellCost(
  */
 @Serializable
 sealed interface SpellCostTarget {
-    fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget
+    /** Identity by default; cases holding a filter override to recurse. */
+    fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget = this
 
     /** Self-reduction on the spell card itself — applies when this card is cast. */
     @SerialName("SelfCast")
     @Serializable
     data object SelfCast : SpellCostTarget {
-        override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget = this
     }
 
     /** Spells the source's controller casts that match the filter. */
@@ -165,14 +165,12 @@ sealed interface SpellCostTarget {
     @SerialName("FaceDownYouCast")
     @Serializable
     data object FaceDownYouCast : SpellCostTarget {
-        override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget = this
     }
 
     /** The morph (turn face-up) activated cost, applied globally. */
     @SerialName("MorphActivation")
     @Serializable
     data object MorphActivation : SpellCostTarget {
-        override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget = this
     }
 }
 

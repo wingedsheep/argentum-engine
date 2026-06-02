@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
@@ -38,8 +39,7 @@ val TheDominionBracelet = card("The Dominion Bracelet") {
         "Equip {1}"
 
     staticAbility {
-        effect = Effects.ModifyStats(+1, +1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +1, Filters.EquippedCreature)
     }
 
     staticAbility {

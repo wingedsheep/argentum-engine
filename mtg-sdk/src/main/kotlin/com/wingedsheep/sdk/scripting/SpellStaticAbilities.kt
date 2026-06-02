@@ -80,7 +80,6 @@ data class GrantAlternativeCastingCost(
     val cost: String
 ) : StaticAbility {
     override val description: String = "You may pay $cost rather than pay the mana cost for spells you cast"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -239,7 +238,6 @@ data class RestrictSpellsCastPerTurn(
 ) : StaticAbility {
     override val description: String =
         "You can't cast more than $maxPerTurn spell${if (maxPerTurn == 1) "" else "s"} each turn"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -258,7 +256,6 @@ data class RestrictSpellsCastPerTurn(
 data object CantCastSpellsSharingColorWithLastCast : StaticAbility {
     override val description: String =
         "Players can't cast a spell that shares a color with the spell most recently cast this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**

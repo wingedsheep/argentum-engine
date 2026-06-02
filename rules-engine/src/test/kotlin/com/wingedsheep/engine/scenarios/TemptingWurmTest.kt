@@ -38,7 +38,7 @@ class TemptingWurmTest : FunSpec({
         creatureStats = CreatureStats(5, 5),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = EffectPatterns.eachOpponentMayPutFromHand(
                     filter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment or GameObjectFilter.Land

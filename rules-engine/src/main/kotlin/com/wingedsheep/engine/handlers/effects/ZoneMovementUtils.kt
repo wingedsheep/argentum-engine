@@ -439,7 +439,7 @@ object ZoneMovementUtils {
                 when (effect) {
                     is RedirectZoneChange -> {
                         val event = effect.appliesTo
-                        if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) continue
+                        if (event !is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent) continue
 
                         // Check destination zone matches
                         if (event.to != null && event.to != toZone) continue
@@ -458,7 +458,7 @@ object ZoneMovementUtils {
                         if (effect.selfOnly && permanentId != entityId) continue
 
                         val event = effect.appliesTo
-                        if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) continue
+                        if (event !is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent) continue
 
                         if (event.to != null && event.to != toZone) continue
                         if (event.from != null && event.from != fromZone) continue

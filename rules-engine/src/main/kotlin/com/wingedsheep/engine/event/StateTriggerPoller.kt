@@ -7,7 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.StateTriggerLatchesComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.StateTriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
  *  - Otherwise, leave the latch alone (no event).
  *
  * State-triggered abilities go on the stack as ordinary triggered abilities. The synthetic
- * [GameEvent.StateConditionMetEvent] is used only to satisfy [TriggeredAbility]'s
+ * [EventPattern.StateConditionMetEvent] is used only to satisfy [TriggeredAbility]'s
  * `trigger` slot; it is never matched against real events ([TriggerMatcher] returns
  * `false` for it).
  */
@@ -105,7 +105,7 @@ class StateTriggerPoller(
     private fun StateTriggeredAbility.asTriggeredAbility(): TriggeredAbility =
         TriggeredAbility(
             id = id,
-            trigger = GameEvent.StateConditionMetEvent,
+            trigger = EventPattern.StateConditionMetEvent,
             binding = TriggerBinding.SELF,
             effect = effect,
             activeZone = activeZone,

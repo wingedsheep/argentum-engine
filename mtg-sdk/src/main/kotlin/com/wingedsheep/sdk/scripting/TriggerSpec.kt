@@ -3,7 +3,7 @@ package com.wingedsheep.sdk.scripting
 import kotlinx.serialization.Serializable
 
 /**
- * Bundles a [GameEvent] filter with a [TriggerBinding] to fully specify
+ * Bundles a [EventPattern] filter with a [TriggerBinding] to fully specify
  * when a triggered ability fires.
  *
  * Used by the [Triggers] facade and [TriggeredAbilityBuilder] so that
@@ -12,15 +12,15 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class TriggerSpec(
-    val event: GameEvent,
+    val event: EventPattern,
     val binding: TriggerBinding = TriggerBinding.SELF
 ) {
     /**
      * Returns a copy with the "you control" controller filter added.
-     * Only applies to [GameEvent.ZoneChangeEvent]-based triggers.
+     * Only applies to [EventPattern.ZoneChangeEvent]-based triggers.
      */
     fun youControl(): TriggerSpec {
-        val zce = event as? GameEvent.ZoneChangeEvent
+        val zce = event as? EventPattern.ZoneChangeEvent
             ?: error("youControl() only applies to ZoneChangeEvent triggers")
         return copy(event = zce.copy(filter = zce.filter.youControl()))
     }

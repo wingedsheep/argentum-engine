@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantHexproofFromMonocoloredToGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Dragonfire Blade
@@ -28,8 +29,7 @@ val DragonfireBlade = card("Dragonfire Blade") {
         "Equip {4}. This ability costs {1} less to activate for each color of the creature it targets."
 
     staticAbility {
-        effect = Effects.ModifyStats(+2, +2)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+2, +2, Filters.EquippedCreature)
     }
 
     staticAbility {

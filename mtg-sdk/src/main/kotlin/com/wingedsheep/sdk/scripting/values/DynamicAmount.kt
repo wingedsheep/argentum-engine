@@ -178,7 +178,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data object YourLifeTotal : DynamicAmount {
         override val description: String = "your life total"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -195,7 +194,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class LifeTotal(val player: Player) : DynamicAmount {
         override val description: String = "${player.possessive} life total"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -206,7 +204,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class StartingLifeTotal(val player: Player) : DynamicAmount {
         override val description: String = "${player.possessive} starting life total"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -216,7 +213,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class Fixed(val amount: Int) : DynamicAmount {
         override val description: String = "$amount"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -239,7 +235,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class ContextProperty(val key: ContextPropertyKey) : DynamicAmount {
         override val description: String = key.description
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     // =========================================================================
@@ -254,7 +249,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data object XValue : DynamicAmount {
         override val description: String = "X"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -272,7 +266,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data object TotalManaSpent : DynamicAmount {
         override val description: String = "the total mana spent to cast this spell"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -290,7 +283,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class ManaSpentOnX(val color: Color) : DynamicAmount {
         override val description: String = "the amount of {${color.symbol}} spent on X"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -302,7 +294,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class VariableReference(val variableName: String) : DynamicAmount {
         override val description: String = "the stored $variableName"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -314,7 +305,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class StoredCardManaValue(val collectionName: String) : DynamicAmount {
         override val description: String = "the mana value of the $collectionName card"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     // =========================================================================
@@ -710,7 +700,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         val numericProperty: EntityNumericProperty
     ) : DynamicAmount {
         override val description: String = "${entity.description}'s ${numericProperty.description}"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     // =========================================================================
@@ -751,7 +740,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class TurnTracking(val player: Player, val tracker: TurnTracker) : DynamicAmount {
         override val description: String = tracker.descriptionFor(player)
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
     /**
@@ -824,7 +812,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data object CraftedMaterialsTotalPower : DynamicAmount {
         override val description: String = "the total power of the exiled cards used to craft it"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
 }

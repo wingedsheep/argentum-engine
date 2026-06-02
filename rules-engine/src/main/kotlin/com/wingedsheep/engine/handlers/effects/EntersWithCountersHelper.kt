@@ -198,12 +198,12 @@ object EntersWithCountersHelper {
     }
 
     private fun matchesEnterFilter(
-        event: com.wingedsheep.sdk.scripting.GameEvent,
+        event: com.wingedsheep.sdk.scripting.EventPattern,
         enteringEntityId: EntityId,
         sourceControllerId: EntityId,
         state: GameState,
     ): Boolean {
-        if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) return false
+        if (event !is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent) return false
         if (event.to != Zone.BATTLEFIELD) return false
         val filter = event.filter
 

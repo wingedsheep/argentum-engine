@@ -25,7 +25,7 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DoubleTokenCreation
-import com.wingedsheep.sdk.scripting.GameEvent as SdkGameEvent
+import com.wingedsheep.sdk.scripting.EventPattern as SdkGameEvent
 import com.wingedsheep.sdk.scripting.ModifyTokenCount
 import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithEquippedCopy
 import com.wingedsheep.sdk.scripting.effects.Effect

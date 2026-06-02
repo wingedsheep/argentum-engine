@@ -37,7 +37,6 @@ data class APlayerControlsMostOfSubtype(val subtype: Subtype) : Condition {
 @Serializable
 data class YouControlMostOfChosenType(val chosenValueKey: String = "chosenCreatureType") : Condition {
     override val description: String = "if you control more creatures of the chosen type than each other player"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -64,7 +63,6 @@ data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
 @Serializable
 data object EnchantedCreatureIsLegendary : Condition {
     override val description: String = "if enchanted creature is legendary"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -95,7 +93,6 @@ data class EnchantedPermanentMatches(val filter: GameObjectFilter) : Condition {
 @Serializable
 data object TriggeringEntityWasHistoric : Condition {
     override val description: String = "if it was historic"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -108,7 +105,6 @@ data object TriggeringEntityWasHistoric : Condition {
 @Serializable
 data object TriggeringEntityEnteredOrWasCastFromGraveyard : Condition {
     override val description: String = "if it entered or was cast from a graveyard"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -122,7 +118,6 @@ data object TriggeringEntityEnteredOrWasCastFromGraveyard : Condition {
 @Serializable
 data object TriggeringEntityWasNotPutByThisSource : Condition {
     override val description: String = "if it wasn't put onto the battlefield with this ability"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -135,7 +130,6 @@ data object TriggeringEntityWasNotPutByThisSource : Condition {
 @Serializable
 data object TriggeringEntityHadMinusOneMinusOneCounter : Condition {
     override val description: String = "if it had a -1/-1 counter on it"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -148,7 +142,6 @@ data object TriggeringEntityHadMinusOneMinusOneCounter : Condition {
 @Serializable
 data object TriggeringSpellHasSingleTarget : Condition {
     override val description: String = "with a single target"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -186,7 +179,6 @@ data class TargetMatchesFilter(
     val targetIndex: Int = 0
 ) : Condition {
     override val description: String = "if target matches $filter"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -205,7 +197,6 @@ data class TargetIsPlayer(
     val targetIndex: Int = 0
 ) : Condition {
     override val description: String = "if a player is dealt damage this way"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -239,7 +230,6 @@ data class TargetMarkedDamageExceedsToughness(
     val targetIndex: Int = 0
 ) : Condition {
     override val description: String = "if excess damage was dealt this way"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -259,7 +249,6 @@ data class AnotherPermanentWithSameNameAsTarget(
     val targetIndex: Int = 0
 ) : Condition {
     override val description: String = "if another permanent with the same name is on the battlefield"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -281,7 +270,6 @@ data class TargetSharesMostCommonColor(
 ) : Condition {
     override val description: String =
         "if it shares a color with the most common color among all permanents or a color tied for most common"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -303,5 +291,4 @@ data class TargetSharesMostCommonColor(
 data class ColorIsMostCommon(val color: Color) : Condition {
     override val description: String =
         "as long as ${color.displayName.lowercase()} is the most common color among all permanents, or is tied for most common"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }

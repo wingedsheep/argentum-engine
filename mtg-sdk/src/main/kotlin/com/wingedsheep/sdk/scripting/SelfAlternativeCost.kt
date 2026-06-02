@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.ManaCost
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,12 +15,13 @@ import kotlinx.serialization.Serializable
  * Example: Zahid, Djinn of the Lamp — "You may pay {3}{U} and tap an untapped
  * artifact you control rather than pay this spell's mana cost."
  *
- * @property manaCost The alternative mana cost (e.g., "{3}{U}")
+ * @property manaCost The alternative mana cost (e.g., `ManaCost.parse("{3}{U}")`).
+ *           Typed like every other cost; serializes as its string form.
  * @property additionalCosts Non-mana costs that must be paid alongside the alternative
  *           mana cost (e.g., tapping an artifact)
  */
 @Serializable
 data class SelfAlternativeCost(
-    val manaCost: String,
+    val manaCost: ManaCost,
     val additionalCosts: List<AdditionalCost> = emptyList()
 )

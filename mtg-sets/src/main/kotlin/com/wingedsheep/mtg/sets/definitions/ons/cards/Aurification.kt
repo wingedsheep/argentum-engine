@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.dsl.Triggers
-import com.wingedsheep.sdk.scripting.GameEvent.DealsDamageEvent
+import com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect

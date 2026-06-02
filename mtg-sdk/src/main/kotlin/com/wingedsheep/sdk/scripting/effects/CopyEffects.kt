@@ -82,6 +82,4 @@ data class CopyCardIntoCollectionEffect(
     val storeAs: String,
 ) : Effect {
     override val description: String = "Copy ${source.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

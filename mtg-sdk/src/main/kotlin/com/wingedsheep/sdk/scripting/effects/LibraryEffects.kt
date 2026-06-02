@@ -25,8 +25,6 @@ data class ShuffleLibraryEffect(
         EffectTarget.Controller -> "Shuffle your library"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} shuffles their library"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -52,8 +50,6 @@ data class EmitScriedEventEffect(
 ) : Effect {
     // Intentionally blank: this is an internal pipeline tail with no player-facing text.
     override val description: String = ""
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 
@@ -103,8 +99,6 @@ data class ExileFromTopRepeatingEffect(
             append("Deal $damagePerCard damage to you for each card put into your hand this way.")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -137,8 +131,6 @@ data class ExileLibraryUntilManaValueEffect(
         append(if (players == Player.You) "you have" else "they have")
         append(" exiled cards with total mana value ${threshold.description} or greater this way")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -186,8 +178,6 @@ data class CastFromCollectionWithoutPayingCostEffect(
 ) : Effect {
     override val description: String =
         "Cast the $from card without paying its mana cost"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -219,8 +209,6 @@ data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
 ) : Effect {
     override val description: String =
         "Cast any number of the $from cards without paying their mana costs"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 @SerialName("Cascade")
@@ -230,7 +218,5 @@ data object CascadeEffect : Effect {
         "Exile cards from the top of your library until you exile a nonland card " +
             "with mana value less than this spell's. You may cast it without paying its " +
             "mana cost. Put the exiled cards on the bottom in a random order."
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 

@@ -29,8 +29,6 @@ data class GainControlEffect(
             append(" ${duration.description}")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -47,8 +45,6 @@ data class GainControlByActivePlayerEffect(
     val target: EffectTarget = EffectTarget.Self
 ) : Effect {
     override val description: String = "that player gains control of ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -123,8 +119,6 @@ data class GiveControlToTargetPlayerEffect(
     val duration: Duration = Duration.Permanent
 ) : Effect {
     override val description: String = "target opponent gains control of ${permanent.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -146,6 +140,4 @@ data class ExchangeControlEffect(
 ) : Effect {
     override val description: String =
         "Exchange control of ${target1.description} and ${target2.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

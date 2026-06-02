@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
@@ -48,7 +48,7 @@ val GaeasBlessing = card("Gaea's Blessing") {
     // shuffle your graveyard into your library.
     triggeredAbility {
         trigger = TriggerSpec(
-            event = GameEvent.ZoneChangeEvent(from = Zone.LIBRARY, to = Zone.GRAVEYARD),
+            event = EventPattern.ZoneChangeEvent(from = Zone.LIBRARY, to = Zone.GRAVEYARD),
             binding = TriggerBinding.SELF
         )
         triggerZone = Zone.GRAVEYARD

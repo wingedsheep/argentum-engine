@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -68,8 +69,7 @@ val StarforgedSword = card("Starforged Sword") {
 
     // Equipped creature gets +3/+3
     staticAbility {
-        effect = Effects.ModifyStats(+3, +3)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+3, +3, Filters.EquippedCreature)
     }
 
     // Equipped creature loses flying

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GameEvent.*
+import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 /**
  * Facade object providing convenient access to trigger specifications.
  *
- * Each constant returns a [TriggerSpec] that bundles a [GameEvent] with a [TriggerBinding].
+ * Each constant returns a [TriggerSpec] that bundles a [EventPattern] with a [TriggerBinding].
  *
  * Usage:
  * ```kotlin

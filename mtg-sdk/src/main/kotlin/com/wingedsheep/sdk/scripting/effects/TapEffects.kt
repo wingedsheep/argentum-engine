@@ -20,7 +20,6 @@ data class TapUntapEffect(
     val tap: Boolean = true
 ) : Effect {
     override val description: String = "${if (tap) "Tap" else "Untap"} ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -35,7 +34,6 @@ data class TapUntapCollectionEffect(
     val tap: Boolean = true
 ) : Effect {
     override val description: String = "${if (tap) "Tap" else "Untap"} each permanent in $collectionName"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -56,5 +54,4 @@ data class PhaseOutEffect(
     val target: EffectTarget = EffectTarget.Self
 ) : Effect {
     override val description: String = "${target.description} phases out"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

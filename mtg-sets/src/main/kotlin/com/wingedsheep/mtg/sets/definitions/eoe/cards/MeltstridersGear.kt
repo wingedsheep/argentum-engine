@@ -7,6 +7,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Meltstrider's Gear
@@ -31,13 +33,11 @@ val MeltstridersGear = card("Meltstrider's Gear") {
 
     // Static ability: Equipped creature gets +2/+1 and has reach
     staticAbility {
-        effect = Effects.Composite(
-            listOf(
-                Effects.ModifyStats(+2, +1),
-                Effects.GrantKeyword(Keyword.REACH)
-            )
-        )
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+2, +1, Filters.EquippedCreature)
+    }
+
+    staticAbility {
+        ability = GrantKeyword(Keyword.REACH, Filters.EquippedCreature)
     }
 
     // Equip {5}

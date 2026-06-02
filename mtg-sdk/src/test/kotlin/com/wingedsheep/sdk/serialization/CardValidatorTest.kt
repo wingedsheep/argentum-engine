@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
@@ -172,7 +172,7 @@ class CardValidatorTest : DescribeSpec({
                 script = CardScript(
                     triggeredAbilities = listOf(
                         TriggeredAbility.create(
-                            trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                            trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                             effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(2)),
                             targetRequirement = AnyTarget(),
                         ),
@@ -196,7 +196,7 @@ class CardValidatorTest : DescribeSpec({
                 script = CardScript(
                     triggeredAbilities = listOf(
                         TriggeredAbility.create(
-                            trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                            trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                             effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
                         ),
                     ),

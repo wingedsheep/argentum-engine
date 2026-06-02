@@ -43,7 +43,7 @@ val AnafenzaTheForemost = card("Anafenza, the Foremost") {
     replacementEffect(
         RedirectZoneChange(
             newDestination = Zone.EXILE,
-            appliesTo = com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent(
+            appliesTo = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter(
                     cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.IsNontoken),
                     controllerPredicate = com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.OwnedByOpponent

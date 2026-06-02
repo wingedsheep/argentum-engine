@@ -29,14 +29,19 @@ interface TextReplacer {
  * Marker interface for SDK types that can have their text replaced
  * by Layer 3 text-changing effects (e.g., Artificial Evolution).
  *
- * Every concrete implementation of a sealed interface that extends this
- * MUST implement [applyTextReplacement]. The Kotlin compiler enforces this,
- * guaranteeing that new types cannot silently skip text replacement.
+ * Every implementer binds `T` to itself (`Foo : TextReplaceable<Foo>`), so the default
+ * [applyTextReplacement] returns `this` unchanged — the correct behavior for the many leaf
+ * types that hold no replaceable text (subtype/color words). Types that *do* carry
+ * replaceable children (filters, nested effects, …) override it to recurse. The override is
+ * not compiler-enforced, so when adding a type that holds a creature type, color word, or a
+ * nested [TextReplaceable], remember to override and propagate the replacement.
  */
 interface TextReplaceable<T> {
     /**
-     * Returns a copy of this object with creature type text replaced,
-     * or `this` if no replacements apply.
+     * Returns a copy of this object with creature type / color text replaced, or `this`
+     * if no replacements apply. The default is identity; override to recurse into
+     * replaceable children. Safe cast: every implementer binds `T` to its own type.
      */
-    fun applyTextReplacement(replacer: TextReplacer): T
+    @Suppress("UNCHECKED_CAST")
+    fun applyTextReplacement(replacer: TextReplacer): T = this as T
 }

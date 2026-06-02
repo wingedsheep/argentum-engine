@@ -159,7 +159,7 @@ class DrawReplacementDispatcher(
                 if (effect !is PreventDraw) continue
 
                 val drawEvent = effect.appliesTo
-                if (drawEvent !is com.wingedsheep.sdk.scripting.GameEvent.DrawEvent) continue
+                if (drawEvent !is com.wingedsheep.sdk.scripting.EventPattern.DrawEvent) continue
 
                 val sourceControllerId = container.get<ControllerComponent>()?.playerId
                 when (drawEvent.player) {
@@ -382,7 +382,7 @@ class DrawReplacementDispatcher(
 
             for (effect in replacementSource.replacementEffects) {
                 if (effect !is ModifyDrawAmount) continue
-                val drawEvent = effect.appliesTo as? com.wingedsheep.sdk.scripting.GameEvent.DrawEvent ?: continue
+                val drawEvent = effect.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.DrawEvent ?: continue
 
                 val matchesPlayer = when (drawEvent.player) {
                     Player.Each -> true

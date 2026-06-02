@@ -63,7 +63,7 @@ enum class Keyword(val displayName: String) {
     /**
      * Flurry (Tarkir: Dragonstorm, Jeskai). "Flurry — Whenever you cast your second spell
      * each turn, [effect]." A display-only keyword tag; the behavior lives in a triggered
-     * ability on the [com.wingedsheep.sdk.scripting.GameEvent.NthSpellCastEvent] (n=2, you)
+     * ability on the [com.wingedsheep.sdk.scripting.EventPattern.NthSpellCastEvent] (n=2, you)
      * event, wired by the `flurry { }` DSL helper on
      * [com.wingedsheep.sdk.dsl.CardBuilder].
      */

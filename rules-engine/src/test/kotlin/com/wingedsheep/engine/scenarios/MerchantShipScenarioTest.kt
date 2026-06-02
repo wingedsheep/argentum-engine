@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Scenario tests for Merchant Ship — covers the new
- * [com.wingedsheep.sdk.scripting.GameEvent.BecomesUnblockedEvent] trigger detection
+ * [com.wingedsheep.sdk.scripting.EventPattern.BecomesUnblockedEvent] trigger detection
  * (CR 509.3g), mapped behind [com.wingedsheep.sdk.dsl.Triggers.AttacksAndIsntBlocked].
  *
  * Oracle:

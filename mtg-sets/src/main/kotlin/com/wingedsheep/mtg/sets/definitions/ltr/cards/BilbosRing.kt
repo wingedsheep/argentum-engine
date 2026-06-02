@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
@@ -38,8 +39,7 @@ val BilbosRing = card("Bilbo's Ring") {
 
     // During your turn, equipped creature has hexproof...
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.HEXPROOF)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.HEXPROOF, Filters.EquippedCreature)
         condition = Conditions.IsYourTurn
     }
 

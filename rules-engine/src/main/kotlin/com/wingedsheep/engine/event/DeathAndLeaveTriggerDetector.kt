@@ -10,7 +10,7 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
@@ -200,7 +200,7 @@ class DeathAndLeaveTriggerDetector(
         for (ability in abilities) {
             if (ability.binding != TriggerBinding.ATTACHED) continue
             val trigger = ability.trigger
-            if (trigger !is GameEvent.ZoneChangeEvent) continue
+            if (trigger !is EventPattern.ZoneChangeEvent) continue
             if (trigger.from != null && trigger.from != Zone.BATTLEFIELD) continue
             if (trigger.to != null) {
                 // "Dies" trigger: verify creature is actually in graveyard (not exiled or bounced)
@@ -241,7 +241,7 @@ class DeathAndLeaveTriggerDetector(
             if (dyingEntityId !in damageTracking.creatureIds) continue
 
             for (ability in entry.abilities) {
-                if (ability.trigger !is GameEvent.CreatureDealtDamageBySourceDiesEvent) continue
+                if (ability.trigger !is EventPattern.CreatureDealtDamageBySourceDiesEvent) continue
                 if (ability.activeZone != Zone.BATTLEFIELD) continue
 
                 triggers.add(
@@ -283,7 +283,7 @@ class DeathAndLeaveTriggerDetector(
         val info = resolveDyingEntity(state, event) ?: return
 
         val persistAbility = TriggeredAbility.create(
-            trigger = GameEvent.ZoneChangeEvent(
+            trigger = EventPattern.ZoneChangeEvent(
                 from = Zone.BATTLEFIELD,
                 to = Zone.GRAVEYARD
             ),

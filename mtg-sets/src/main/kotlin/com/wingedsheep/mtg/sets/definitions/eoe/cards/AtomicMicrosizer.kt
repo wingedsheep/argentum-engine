@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.SetBasePowerToughnessEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -27,8 +28,7 @@ val AtomicMicrosizer = card("Atomic Microsizer") {
 
     // Static ability: Equipped creature gets +1/+0
     staticAbility {
-        effect = Effects.ModifyStats(+1, 0)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, 0, Filters.EquippedCreature)
     }
 
     // Triggered ability: Whenever equipped creature attacks...

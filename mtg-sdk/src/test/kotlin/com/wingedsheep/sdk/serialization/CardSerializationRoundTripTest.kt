@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -152,7 +152,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
 
                 triggeredAbility {
                     trigger = TriggerSpec(
-                        GameEvent.ZoneChangeEvent(filter = GameObjectFilter.Creature, to = Zone.BATTLEFIELD),
+                        EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature, to = Zone.BATTLEFIELD),
                         TriggerBinding.OTHER
                     )
                     effect = LoseLifeEffect(
@@ -165,7 +165,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
             val serialized = CardLoader.toJson(card)
             val deserialized = CardLoader.fromJson(serialized)
             deserialized.name shouldBe "Wretched Anurid"
-            deserialized.script.triggeredAbilities[0].trigger.shouldBeInstanceOf<GameEvent.ZoneChangeEvent>()
+            deserialized.script.triggeredAbilities[0].trigger.shouldBeInstanceOf<EventPattern.ZoneChangeEvent>()
         }
     }
 

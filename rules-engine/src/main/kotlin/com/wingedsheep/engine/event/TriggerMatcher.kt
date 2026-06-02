@@ -39,7 +39,7 @@ import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -60,7 +60,7 @@ class TriggerMatcher(
 ) {
 
     fun matchesTrigger(
-        trigger: GameEvent,
+        trigger: EventPattern,
         binding: TriggerBinding,
         event: EngineGameEvent,
         sourceId: EntityId,
@@ -71,11 +71,11 @@ class TriggerMatcher(
         if (binding == TriggerBinding.ATTACHED) return false
 
         return when (trigger) {
-            is GameEvent.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
-            is GameEvent.DrawEvent -> {
+            is EventPattern.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
+            is EventPattern.DrawEvent -> {
                 event is CardsDrawnEvent && matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.CardRevealedFromDrawEvent -> {
+            is EventPattern.CardRevealedFromDrawEvent -> {
                 if (event !is CardRevealedFromDrawEvent) return false
                 if (event.playerId != controllerId) return false
                 val filter = trigger.cardFilter
@@ -87,12 +87,12 @@ class TriggerMatcher(
                 }
                 true
             }
-            is GameEvent.AttackEvent -> {
+            is EventPattern.AttackEvent -> {
                 event is AttackersDeclaredEvent &&
                     checkBinding(binding, sourceId, event.attackers) &&
                     trigger.requires.all { matchesAttackPredicate(it, event) }
             }
-            is GameEvent.YouAttackEvent -> {
+            is EventPattern.YouAttackEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
                 if (state.activePlayerId != controllerId) return false
                 val filter = trigger.attackerFilter
@@ -112,7 +112,7 @@ class TriggerMatcher(
                     event.attackers.size >= trigger.minAttackers
                 }
             }
-            is GameEvent.CreaturesAttackYouEvent -> {
+            is EventPattern.CreaturesAttackYouEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
                 // Only count attackers declared against the player themself, not against
                 // a planeswalker they control (per CR 509.1b / Orim's Prayer ruling).
@@ -123,15 +123,15 @@ class TriggerMatcher(
                 }
                 attackingThisPlayer >= trigger.minAttackers
             }
-            is GameEvent.BlockEvent -> {
+            is EventPattern.BlockEvent -> {
                 event is BlockersDeclaredEvent &&
                     (binding != TriggerBinding.SELF || event.blockers.keys.contains(sourceId))
             }
-            is GameEvent.BecomesBlockedEvent -> {
+            is EventPattern.BecomesBlockedEvent -> {
                 event is BlockersDeclaredEvent &&
                     (binding != TriggerBinding.SELF || event.blockers.values.any { it.contains(sourceId) })
             }
-            is GameEvent.BecomesUnblockedEvent -> {
+            is EventPattern.BecomesUnblockedEvent -> {
                 // CR 509.3g: fires for an attacker with no creatures declared as blockers.
                 // We piggyback on BlockersDeclaredEvent (emitted once at end of
                 // declare-blockers): SELF matches when sourceId is an attacker this combat
@@ -142,12 +142,12 @@ class TriggerMatcher(
                     ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>() != null
                 isAttacking && event.blockers.values.none { it.contains(sourceId) }
             }
-            is GameEvent.StateConditionMetEvent -> {
+            is EventPattern.StateConditionMetEvent -> {
                 // Synthetic — never matched against real events. State triggers fire via
                 // StateTriggerPoller which produces PendingTriggers directly.
                 false
             }
-            is GameEvent.BlocksOrBecomesBlockedByEvent -> {
+            is EventPattern.BlocksOrBecomesBlockedByEvent -> {
                 // Basic match: it's a BlockersDeclaredEvent and the source is involved in combat
                 // Per-partner trigger creation happens in detectTriggersForEvent
                 if (event !is BlockersDeclaredEvent) return false
@@ -156,25 +156,25 @@ class TriggerMatcher(
                 event.blockers.keys.contains(sourceId) ||
                     event.blockers.values.any { it.contains(sourceId) }
             }
-            is GameEvent.DealsDamageEvent -> {
+            is EventPattern.DealsDamageEvent -> {
                 // SELF-bound DealsDamageEvent handled separately in detectDamageSourceTriggers
                 // Non-self (observer triggers like "whenever a creature deals damage to you") handled in
                 // detectDamageToControllerTriggers and detectSubtypeDamageToPlayerTriggers
                 false
             }
-            is GameEvent.DamageReceivedEvent -> {
+            is EventPattern.DamageReceivedEvent -> {
                 // Generic (source=Any) DamageReceivedEvent can match in the main loop
                 // Specific source-filtered ones are handled in detectDamagedBySourceTriggers
                 if (trigger.source != SourceFilter.Any) return false
                 event is DamageDealtEvent && (binding != TriggerBinding.SELF || event.targetId == sourceId)
             }
-            is GameEvent.SpellCastEvent -> {
+            is EventPattern.SpellCastEvent -> {
                 event is SpellCastEvent &&
                     matchesPlayer(trigger.player, event.casterId, controllerId) &&
                     matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
                     trigger.requires.all { matchesSpellCastPredicate(it, event, state) }
             }
-            is GameEvent.NthSpellCastEvent -> {
+            is EventPattern.NthSpellCastEvent -> {
                 // Fires on SpellCastEvent when the casting player's per-turn spell count
                 // reaches exactly the specified threshold (e.g., 2 for "second spell").
                 if (event !is SpellCastEvent) return false
@@ -182,14 +182,14 @@ class TriggerMatcher(
                 val currentCount = state.playerSpellsCastThisTurn[event.casterId] ?: 0
                 currentCount == trigger.nthSpell
             }
-            is GameEvent.CastThisSpellEvent -> {
+            is EventPattern.CastThisSpellEvent -> {
                 // "When you cast this spell" — fires on the spell's own cast while on the stack.
                 // detectSelfCastTriggers only invokes the matcher for the spell being cast, so
                 // this just confirms the event is that very spell's cast (intervening-if, if any,
                 // is enforced separately by filterByTriggerCondition per CR 603.4).
                 event is SpellCastEvent && event.spellEntityId == sourceId
             }
-            is GameEvent.ExpendEvent -> {
+            is EventPattern.ExpendEvent -> {
                 // Expend triggers when cumulative mana spent on spells this turn
                 // crosses the threshold. Fires on SpellCastEvent only.
                 // Detects the "crossing": previous total < threshold <= new total.
@@ -205,7 +205,7 @@ class TriggerMatcher(
                 // Trigger if we just crossed the threshold with this cast
                 previousTotal < trigger.threshold && currentTotal >= trigger.threshold
             }
-            is GameEvent.SpellOrAbilityOnStackEvent -> {
+            is EventPattern.SpellOrAbilityOnStackEvent -> {
                 // Intervening-if: only trigger if the spell/ability has a single target
                 val stackEntityId = when (event) {
                     is SpellCastEvent -> event.spellEntityId
@@ -218,42 +218,42 @@ class TriggerMatcher(
                     ?.get<TargetsComponent>()?.targets
                 targets != null && targets.size == 1
             }
-            is GameEvent.AbilityActivatedEvent -> {
+            is EventPattern.AbilityActivatedEvent -> {
                 // The engine only emits AbilityActivatedEvent for non-mana activated abilities
                 // (mana abilities resolve without the stack), so this naturally matches
                 // "activates an ability that isn't a mana ability". Loyalty abilities qualify.
                 event is AbilityActivatedEvent &&
                     matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
-            is GameEvent.CycleEvent -> {
+            is EventPattern.CycleEvent -> {
                 event is CardCycledEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId) &&
                     (binding != TriggerBinding.SELF || event.cardId == sourceId)
             }
-            is GameEvent.GiftGivenEvent -> {
+            is EventPattern.GiftGivenEvent -> {
                 event is GiftGivenEvent &&
                     matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
-            is GameEvent.CommitCrimeEvent -> {
+            is EventPattern.CommitCrimeEvent -> {
                 event is CommitCrimeEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.TargetsChosenEvent -> {
+            is EventPattern.TargetsChosenEvent -> {
                 event is com.wingedsheep.engine.core.TargetsChosenEvent &&
                     matchesPlayer(trigger.player, event.chooserId, controllerId)
             }
-            is GameEvent.RoomFullyUnlockedEvent -> {
+            is EventPattern.RoomFullyUnlockedEvent -> {
                 event is RoomFullyUnlockedEvent &&
                     matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
-            is GameEvent.DoorUnlockedEvent -> {
+            is EventPattern.DoorUnlockedEvent -> {
                 // Face-scoped "When you unlock this door" triggers (CR 709.5h) are handled
                 // by TriggerDetector.detectDoorUnlockedTriggers, which knows the source face
                 // of each face-script ability. Returning false here keeps the regular index
                 // loop from firing them on the wrong face.
                 false
             }
-            is GameEvent.TapEvent -> {
+            is EventPattern.TapEvent -> {
                 if (event !is TappedEvent) return false
                 if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
                 val filter = trigger.filter
@@ -268,10 +268,10 @@ class TriggerMatcher(
                     )
                 } else true
             }
-            is GameEvent.UntapEvent -> {
+            is EventPattern.UntapEvent -> {
                 event is UntappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
             }
-            is GameEvent.LandTappedForMana -> {
+            is EventPattern.LandTappedForMana -> {
                 if (event !is LandTappedForManaEvent) return false
                 if (binding == TriggerBinding.SELF && event.landId != sourceId) return false
                 if (!matchesPlayer(trigger.player, event.tapperId, controllerId)) return false
@@ -287,30 +287,30 @@ class TriggerMatcher(
                     )
                 } else true
             }
-            is GameEvent.LifeGainEvent -> {
+            is EventPattern.LifeGainEvent -> {
                 event is LifeChangedEvent &&
                     event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.RingTemptedEvent -> {
+            is EventPattern.RingTemptedEvent -> {
                 event is com.wingedsheep.engine.core.RingTemptedEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.ScriedEvent -> {
+            is EventPattern.ScriedEvent -> {
                 event is com.wingedsheep.engine.core.ScriedEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.BecomesTargetEvent -> {
+            is EventPattern.BecomesTargetEvent -> {
                 event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
             }
-            is GameEvent.TurnFaceUpEvent -> {
+            is EventPattern.TurnFaceUpEvent -> {
                 event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
             }
-            is GameEvent.CreatureTurnedFaceUpEvent -> {
+            is EventPattern.CreatureTurnedFaceUpEvent -> {
                 if (event !is TurnFaceUpEvent) return false
                 matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
-            is GameEvent.TransformEvent -> {
+            is EventPattern.TransformEvent -> {
                 if (event !is TransformedEvent) return false
                 // SELF binding must match the transforming permanent
                 if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
@@ -320,51 +320,51 @@ class TriggerMatcher(
                 directionMatches
             }
             // These are handled separately in their own detect* methods
-            is GameEvent.ControlChangeEvent -> false
+            is EventPattern.ControlChangeEvent -> false
             // Phase/step triggers are handled separately
-            is GameEvent.StepEvent -> false
+            is EventPattern.StepEvent -> false
             // Creature-dealt-damage-by-source-dies triggers are handled separately
-            is GameEvent.CreatureDealtDamageBySourceDiesEvent -> false
+            is EventPattern.CreatureDealtDamageBySourceDiesEvent -> false
             // "When damage is prevented this way" fires only via its linked delayed trigger
             // (detectEventBasedDelayedTriggers), never as a battlefield trigger.
-            is GameEvent.DamagePreventedEvent -> false
+            is EventPattern.DamagePreventedEvent -> false
             // Replacement-effect-only events never match as triggers
-            is GameEvent.DamageEvent -> false
-            is GameEvent.CounterPlacementEvent -> false
-            is GameEvent.TokenCreationEvent -> false
-            is GameEvent.LifeLossEvent -> {
+            is EventPattern.DamageEvent -> false
+            is EventPattern.CounterPlacementEvent -> false
+            is EventPattern.TokenCreationEvent -> false
+            is EventPattern.LifeLossEvent -> {
                 event is LifeChangedEvent &&
                     event.reason != com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
                     event.oldLife > event.newLife &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.LifeGainOrLossEvent -> {
+            is EventPattern.LifeGainOrLossEvent -> {
                 event is LifeChangedEvent &&
                     event.oldLife != event.newLife &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
-            is GameEvent.DiscardEvent -> {
+            is EventPattern.DiscardEvent -> {
                 event is CardsDiscardedEvent &&
                     matchingDiscardCount(trigger, event, sourceId, controllerId, state) > 0
             }
-            is GameEvent.SearchLibraryEvent -> false
+            is EventPattern.SearchLibraryEvent -> false
             // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
-            is GameEvent.ExtraTurnEvent -> false
+            is EventPattern.ExtraTurnEvent -> false
             // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
-            is GameEvent.CardsPutIntoGraveyardFromLibraryEvent -> false
+            is EventPattern.CardsPutIntoGraveyardFromLibraryEvent -> false
             // Batching trigger handled separately by detectAnyToGraveyardBatchTriggers
-            is GameEvent.CardsPutIntoYourGraveyardEvent -> false
+            is EventPattern.CardsPutIntoYourGraveyardEvent -> false
             // Leave-graveyard batch triggers are handled by detectCardsLeftGraveyardBatchTriggers
-            is GameEvent.CardsLeftYourGraveyardEvent -> false
+            is EventPattern.CardsLeftYourGraveyardEvent -> false
             // Sacrifice batch triggers are handled by detectSacrificeBatchTriggers
-            is GameEvent.PermanentsSacrificedEvent -> false
+            is EventPattern.PermanentsSacrificedEvent -> false
             // Combat damage batch triggers are handled by detectCombatDamageBatchTriggers
-            is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent -> false
+            is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent -> false
             // Leave battlefield without dying batch triggers are handled by detectLeaveBattlefieldWithoutDyingBatchTriggers
-            is GameEvent.LeaveBattlefieldWithoutDyingEvent -> false
+            is EventPattern.LeaveBattlefieldWithoutDyingEvent -> false
             // Enter battlefield batch triggers are handled by detectPermanentsEnteredBatchTriggers
-            is GameEvent.PermanentsEnteredEvent -> false
-            is GameEvent.CountersPlacedEvent -> {
+            is EventPattern.PermanentsEnteredEvent -> false
+            is EventPattern.CountersPlacedEvent -> {
                 if (event !is CountersAddedEvent) return false
                 // Counters.ANY is the wildcard "counters of any type" sentinel.
                 if (trigger.counterType != com.wingedsheep.sdk.core.Counters.ANY &&
@@ -391,7 +391,7 @@ class TriggerMatcher(
     /**
      * How many of the discarded cards satisfy this discard trigger — i.e. how many times the
      * ability fires. Discarding N cards in one resolution fires "whenever ... discards a card"
-     * N times (one per card); a [GameEvent.DiscardEvent.cardFilter] narrows that to the matching
+     * N times (one per card); a [EventPattern.DiscardEvent.cardFilter] narrows that to the matching
      * cards only. Returns 0 when the discarding player doesn't match the trigger's selector, so
      * the boolean "does it trigger?" question is just `matchingDiscardCount(...) > 0`.
      *
@@ -400,7 +400,7 @@ class TriggerMatcher(
      * state would read the wrong zone.
      */
     fun matchingDiscardCount(
-        trigger: GameEvent.DiscardEvent,
+        trigger: EventPattern.DiscardEvent,
         event: CardsDiscardedEvent,
         sourceId: EntityId,
         controllerId: EntityId,
@@ -419,7 +419,7 @@ class TriggerMatcher(
     }
 
     fun matchesZoneChangeTrigger(
-        trigger: GameEvent.ZoneChangeEvent,
+        trigger: EventPattern.ZoneChangeEvent,
         binding: TriggerBinding,
         event: EngineGameEvent,
         sourceId: EntityId,
@@ -723,8 +723,8 @@ class TriggerMatcher(
     /**
      * Check if a trigger event matches a death trigger pattern (ZoneChangeEvent from battlefield to graveyard).
      */
-    fun isDeathTrigger(trigger: GameEvent): Boolean {
-        return trigger is GameEvent.ZoneChangeEvent &&
+    fun isDeathTrigger(trigger: EventPattern): Boolean {
+        return trigger is EventPattern.ZoneChangeEvent &&
             trigger.from == Zone.BATTLEFIELD &&
             trigger.to == Zone.GRAVEYARD
     }
@@ -732,8 +732,8 @@ class TriggerMatcher(
     /**
      * Check if a trigger event matches a leaves-battlefield pattern (ZoneChangeEvent from battlefield, to=null).
      */
-    fun isLeavesBattlefieldTrigger(trigger: GameEvent): Boolean {
-        return trigger is GameEvent.ZoneChangeEvent &&
+    fun isLeavesBattlefieldTrigger(trigger: EventPattern): Boolean {
+        return trigger is EventPattern.ZoneChangeEvent &&
             trigger.from == Zone.BATTLEFIELD &&
             trigger.to == null
     }
@@ -747,9 +747,9 @@ class TriggerMatcher(
      * would double-fire. Generic "leaves the battlefield" triggers (to = null)
      * are matched by [isLeavesBattlefieldTrigger] instead.
      */
-    fun isLeavesBattlefieldToZoneTrigger(trigger: GameEvent, eventToZone: Zone): Boolean {
+    fun isLeavesBattlefieldToZoneTrigger(trigger: EventPattern, eventToZone: Zone): Boolean {
         if (eventToZone == Zone.GRAVEYARD) return false
-        return trigger is GameEvent.ZoneChangeEvent &&
+        return trigger is EventPattern.ZoneChangeEvent &&
             trigger.from == Zone.BATTLEFIELD &&
             trigger.to == eventToZone
     }
@@ -796,7 +796,7 @@ class TriggerMatcher(
      * checks the targetFilter against the targeted entity.
      */
     fun matchesBecomesTargetTrigger(
-        trigger: GameEvent.BecomesTargetEvent,
+        trigger: EventPattern.BecomesTargetEvent,
         binding: TriggerBinding,
         event: BecomesTargetEvent,
         sourceId: EntityId,
@@ -850,7 +850,7 @@ class TriggerMatcher(
     }
 
     fun matchesDealsDamageTrigger(
-        trigger: GameEvent.DealsDamageEvent,
+        trigger: EventPattern.DealsDamageEvent,
         event: DamageDealtEvent,
         state: GameState,
         controllerId: EntityId? = null
@@ -921,12 +921,12 @@ class TriggerMatcher(
             event.targetWasCreature
 
     fun matchesStepTrigger(
-        trigger: GameEvent,
+        trigger: EventPattern,
         step: Step,
         controllerId: EntityId,
         activePlayerId: EntityId
     ): Boolean {
-        if (trigger !is GameEvent.StepEvent) return false
+        if (trigger !is EventPattern.StepEvent) return false
         if (step != trigger.step) return false
         return matchesPlayerForStep(trigger.player, controllerId, activePlayerId)
     }

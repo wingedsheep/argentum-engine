@@ -128,7 +128,7 @@ class TriggerDetector(
 
                     // Index damage observer triggers
                     val trigger = ability.trigger
-                    if (trigger is GameEvent.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
+                    if (trigger is EventPattern.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
                         if (trigger.recipient == RecipientFilter.You && trigger.sourceFilter == null) {
                             damageToYou.add(entry)
                         } else if (trigger.damageType == DamageType.Combat &&
@@ -147,7 +147,7 @@ class TriggerDetector(
                     }
 
                     // Index creature-dealt-damage-dies triggers
-                    if (trigger is GameEvent.CreatureDealtDamageBySourceDiesEvent) {
+                    if (trigger is EventPattern.CreatureDealtDamageBySourceDiesEvent) {
                         deathTrackers.add(entry)
                     }
                 }
@@ -301,7 +301,7 @@ class TriggerDetector(
         val triggers = matching.map { delayed ->
             PendingTrigger(
                 ability = TriggeredAbility.create(
-                    trigger = GameEvent.StepEvent(Step.END, Player.Each),
+                    trigger = EventPattern.StepEvent(Step.END, Player.Each),
                     binding = TriggerBinding.ANY,
                     effect = delayed.effect
                 ),
@@ -354,7 +354,7 @@ class TriggerDetector(
                 for (ability in entry.abilities) {
                     if (ability.binding != TriggerBinding.ATTACHED) continue
                     if (ability.activeZone != Zone.BATTLEFIELD) continue
-                    val trigger = ability.trigger as? GameEvent.StepEvent ?: continue
+                    val trigger = ability.trigger as? EventPattern.StepEvent ?: continue
                     if (step != trigger.step) continue
                     if (matcher.matchesPlayerForStep(trigger.player, enchantedController, activePlayerId)) {
                         triggers.add(
@@ -488,7 +488,7 @@ class TriggerDetector(
 
             // Create a sacrifice-self trigger
             val sacrificeAbility = TriggeredAbility.create(
-                trigger = com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                trigger = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = com.wingedsheep.sdk.dsl.Effects.SacrificeTarget(
                     com.wingedsheep.sdk.scripting.targets.EffectTarget.Self
@@ -532,7 +532,7 @@ class TriggerDetector(
                 ?.playerId ?: continue
 
             val sacrificeAtEndOfCombat = TriggeredAbility.create(
-                trigger = com.wingedsheep.sdk.scripting.GameEvent.AttackEvent(),
+                trigger = com.wingedsheep.sdk.scripting.EventPattern.AttackEvent(),
                 binding = TriggerBinding.SELF,
                 effect = com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect(
                     step = Step.END_COMBAT,
@@ -622,20 +622,20 @@ class TriggerDetector(
             // reuse the canonical matcher rather than the watched-entity narrowing above.
             // Powers "when you next attack this turn, …" (YouAttackEvent) and the general
             // "when a [filtered] creature next attacks" (AttackEvent).
-            is com.wingedsheep.sdk.scripting.GameEvent.YouAttackEvent,
-            is com.wingedsheep.sdk.scripting.GameEvent.AttackEvent ->
+            is com.wingedsheep.sdk.scripting.EventPattern.YouAttackEvent,
+            is com.wingedsheep.sdk.scripting.EventPattern.AttackEvent ->
                 matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
-            is com.wingedsheep.sdk.scripting.GameEvent.DealsDamageEvent -> {
+            is com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent -> {
                 if (event !is com.wingedsheep.engine.core.DamageDealtEvent) return false
                 if (watchedEntityId != null && event.sourceId != watchedEntityId) return false
                 matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId)
             }
             // "When damage is prevented this way": fires only for this delayed trigger's own
             // shield, matched by the linkId echoed back on the DamagePreventedEvent.
-            is com.wingedsheep.sdk.scripting.GameEvent.DamagePreventedEvent -> {
+            is com.wingedsheep.sdk.scripting.EventPattern.DamagePreventedEvent -> {
                 event is com.wingedsheep.engine.core.DamagePreventedEvent && event.linkId == delayedId
             }
-            is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent -> {
+            is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent -> {
                 if (event !is ZoneChangeEvent) return false
                 if (watchedEntityId != null) {
                     // Entity-scoped: "when *that* creature dies/leaves this turn". The watched
@@ -678,9 +678,9 @@ class TriggerDetector(
                 if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                     // For "whenever a creature attacks" (AttackEvent with ANY binding),
                     // create one trigger per attacking creature (Rule 603.2c)
-                    if (ability.trigger is GameEvent.AttackEvent && ability.binding == TriggerBinding.ANY &&
+                    if (ability.trigger is EventPattern.AttackEvent && ability.binding == TriggerBinding.ANY &&
                         event is AttackersDeclaredEvent) {
-                        val attackFilter = (ability.trigger as GameEvent.AttackEvent).filter
+                        val attackFilter = (ability.trigger as EventPattern.AttackEvent).filter
                         for (attackerId in event.attackers) {
                             if (attackFilter != null) {
                                 // Filtered trigger: match creature against filter (includes controller predicate)
@@ -716,9 +716,9 @@ class TriggerDetector(
                     // create one trigger per blocked creature controlled by the ability's controller.
                     // If a filter is set (e.g., "whenever a Beast becomes blocked"), match any blocked
                     // creature matching the filter regardless of controller.
-                    else if (ability.trigger is GameEvent.BecomesBlockedEvent && ability.binding == TriggerBinding.ANY &&
+                    else if (ability.trigger is EventPattern.BecomesBlockedEvent && ability.binding == TriggerBinding.ANY &&
                         event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
-                        val trigger = ability.trigger as GameEvent.BecomesBlockedEvent
+                        val trigger = ability.trigger as EventPattern.BecomesBlockedEvent
                         val creatureFilter = trigger.filter
                         val blockedAttackers = event.blockers.values.flatten().distinct()
                         for (attackerId in blockedAttackers) {
@@ -754,9 +754,9 @@ class TriggerDetector(
                     }
                     // For "whenever a creature [you control] blocks" (BlockEvent with ANY binding),
                     // create one trigger per matching blocker.
-                    else if (ability.trigger is GameEvent.BlockEvent && ability.binding == TriggerBinding.ANY &&
+                    else if (ability.trigger is EventPattern.BlockEvent && ability.binding == TriggerBinding.ANY &&
                         event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
-                        val blockFilter = (ability.trigger as GameEvent.BlockEvent).filter
+                        val blockFilter = (ability.trigger as EventPattern.BlockEvent).filter
                         for (blockerId in event.blockers.keys) {
                             if (blockFilter != null) {
                                 if (predicateEvaluator.matches(
@@ -789,10 +789,10 @@ class TriggerDetector(
                     // For "whenever this creature blocks a [filter]" (BlockEvent with SELF binding +
                     // attackerFilter), create one trigger per blocked attacker matching the filter.
                     // triggeringEntityId = the blocked attacker. Skystinger pattern.
-                    else if (ability.trigger is GameEvent.BlockEvent && ability.binding == TriggerBinding.SELF &&
-                        (ability.trigger as GameEvent.BlockEvent).attackerFilter != null &&
+                    else if (ability.trigger is EventPattern.BlockEvent && ability.binding == TriggerBinding.SELF &&
+                        (ability.trigger as EventPattern.BlockEvent).attackerFilter != null &&
                         event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
-                        val attackerFilter = (ability.trigger as GameEvent.BlockEvent).attackerFilter!!
+                        val attackerFilter = (ability.trigger as EventPattern.BlockEvent).attackerFilter!!
                         val blockedAttackerIds = event.blockers[entityId] ?: emptyList()
                         for (attackerId in blockedAttackerIds) {
                             if (predicateEvaluator.matches(
@@ -821,9 +821,9 @@ class TriggerDetector(
                     //   - Filtered ("becomes blocked by a creature matching [filter]"): fire once per
                     //     matching blocker, with triggeringEntityId = the blocker, so effects targeting
                     //     the triggering entity resolve to that blocker (Flanking gives each -1/-1).
-                    else if (ability.trigger is GameEvent.BecomesBlockedEvent && ability.binding == TriggerBinding.SELF &&
+                    else if (ability.trigger is EventPattern.BecomesBlockedEvent && ability.binding == TriggerBinding.SELF &&
                         event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
-                        val blockerFilter = (ability.trigger as GameEvent.BecomesBlockedEvent).filter
+                        val blockerFilter = (ability.trigger as EventPattern.BecomesBlockedEvent).filter
                         if (blockerFilter == null) {
                             val isBlocked = event.blockers.values.any { it.contains(entityId) }
                             if (isBlocked) {
@@ -859,9 +859,9 @@ class TriggerDetector(
                     }
                     // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent with SELF binding),
                     // check both blocking and being-blocked relationships and create one trigger per matching partner.
-                    else if (ability.trigger is GameEvent.BlocksOrBecomesBlockedByEvent &&
+                    else if (ability.trigger is EventPattern.BlocksOrBecomesBlockedByEvent &&
                         ability.binding == TriggerBinding.SELF && event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
-                        val trigger = ability.trigger as GameEvent.BlocksOrBecomesBlockedByEvent
+                        val trigger = ability.trigger as EventPattern.BlocksOrBecomesBlockedByEvent
                         val partners = mutableListOf<EntityId>()
 
                         // Case 1: Source creature is a blocker — its combat partners are the attackers it blocks
@@ -904,7 +904,7 @@ class TriggerDetector(
                     // effect creates N separate trigger firings — one per card drawn (CR 121.2 +
                     // 603.2). The engine emits a single aggregate CardsDrawnEvent, so expand it
                     // to `event.count` triggers here.
-                    else if (ability.trigger is GameEvent.DrawEvent && event is CardsDrawnEvent) {
+                    else if (ability.trigger is EventPattern.DrawEvent && event is CardsDrawnEvent) {
                         repeat(event.count) {
                             triggers.add(
                                 PendingTrigger(
@@ -920,10 +920,10 @@ class TriggerDetector(
                     // Same shape for "whenever an opponent discards a card" — discarding N cards
                     // through one effect creates N separate trigger firings. A card filter narrows
                     // that to the matching cards, so defer to the matcher for the count.
-                    else if (ability.trigger is GameEvent.DiscardEvent &&
+                    else if (ability.trigger is EventPattern.DiscardEvent &&
                         event is CardsDiscardedEvent) {
                         val firings = matcher.matchingDiscardCount(
-                            ability.trigger as GameEvent.DiscardEvent,
+                            ability.trigger as EventPattern.DiscardEvent,
                             event,
                             entityId,
                             controllerId,
@@ -1090,9 +1090,9 @@ class TriggerDetector(
      * the spell's own casting and travels with it onto the stack.
      *
      * Two kinds qualify:
-     *  - [GameEvent.NthSpellCastEvent] — when a card like Hearthborn Battler is itself the Nth
+     *  - [EventPattern.NthSpellCastEvent] — when a card like Hearthborn Battler is itself the Nth
      *    spell cast this turn ("whenever a player casts their second spell each turn").
-     *  - [GameEvent.CastThisSpellEvent] — a "when you cast this spell" cast trigger (Sage of the
+     *  - [EventPattern.CastThisSpellEvent] — a "when you cast this spell" cast trigger (Sage of the
      *    Skies). These are never indexed against battlefield permanents, so this is the only path
      *    that fires them.
      *
@@ -1113,8 +1113,8 @@ class TriggerDetector(
         val controllerId = event.casterId
 
         for (ability in abilities) {
-            if (ability.trigger !is GameEvent.NthSpellCastEvent &&
-                ability.trigger !is GameEvent.CastThisSpellEvent
+            if (ability.trigger !is EventPattern.NthSpellCastEvent &&
+                ability.trigger !is EventPattern.CastThisSpellEvent
             ) continue
             if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                 triggers.add(
@@ -1176,7 +1176,7 @@ class TriggerDetector(
         val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
         for (ability in abilities) {
-            if (ability.trigger is GameEvent.CycleEvent) {
+            if (ability.trigger is EventPattern.CycleEvent) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,
@@ -1214,7 +1214,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.LIBRARY_TO_GRAVEYARD)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.CardsPutIntoGraveyardFromLibraryEvent) continue
+                if (trigger !is EventPattern.CardsPutIntoGraveyardFromLibraryEvent) continue
 
                 // This trigger watches the controller's own graveyard
                 val controllerId = entry.controllerId
@@ -1277,7 +1277,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.ANY_TO_GRAVEYARD)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.CardsPutIntoYourGraveyardEvent) continue
+                if (trigger !is EventPattern.CardsPutIntoYourGraveyardEvent) continue
 
                 val controllerId = entry.controllerId
                 val ownerEvents = toGravByOwner[controllerId] ?: continue
@@ -1330,7 +1330,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.CARDS_LEFT_GRAVEYARD)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.CardsLeftYourGraveyardEvent) continue
+                if (trigger !is EventPattern.CardsLeftYourGraveyardEvent) continue
 
                 val controllerId = entry.controllerId
                 val ownerEvents = fromGravByOwner[controllerId] ?: continue
@@ -1423,7 +1423,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.SACRIFICE)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.PermanentsSacrificedEvent) continue
+                if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
                 if (ability.binding != TriggerBinding.ANY) continue
 
                 // This trigger watches the controller's own sacrifices
@@ -1466,7 +1466,7 @@ class TriggerDetector(
                     for (ability in abilities) {
                         if (ability.binding != TriggerBinding.SELF) continue
                         val trigger = ability.trigger
-                        if (trigger !is GameEvent.PermanentsSacrificedEvent) continue
+                        if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
                         if (ability.activeZone != Zone.BATTLEFIELD) continue
                         if (!sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)) continue
 
@@ -1535,7 +1535,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.COMBAT_DAMAGE_BATCH)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent) continue
+                if (trigger !is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent) continue
 
                 val controllerId = entry.controllerId
                 val damageEvents = combatDamageByController[controllerId] ?: continue
@@ -1608,7 +1608,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.LEAVE_WITHOUT_DYING)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.LeaveBattlefieldWithoutDyingEvent) continue
+                if (trigger !is EventPattern.LeaveBattlefieldWithoutDyingEvent) continue
 
                 val controllerId = entry.controllerId
                 val controllerLeaves = leavesByController[controllerId] ?: continue
@@ -1680,7 +1680,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.PERMANENTS_ENTERED_BATCH)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is GameEvent.PermanentsEnteredEvent) continue
+                if (trigger !is EventPattern.PermanentsEnteredEvent) continue
 
                 val controllerId = entry.controllerId
                 val controllerEnters = entersByController[controllerId] ?: continue
@@ -1744,7 +1744,7 @@ class TriggerDetector(
             for (ability in levelAbility.triggeredAbilities) {
                 val trigger = ability.trigger
                 // "When this Class becomes level N" is modeled as an ETB trigger
-                if (trigger is GameEvent.ZoneChangeEvent &&
+                if (trigger is EventPattern.ZoneChangeEvent &&
                     trigger.to == Zone.BATTLEFIELD &&
                     ability.binding == TriggerBinding.SELF
                 ) {
@@ -1806,7 +1806,7 @@ class TriggerDetector(
                 if (loreCount >= chapter.chapter && previousLoreCount < chapter.chapter) {
                     // Create a triggered ability for this chapter
                     val chapterAbility = TriggeredAbility.create(
-                        trigger = GameEvent.StepEvent(Step.PRECOMBAT_MAIN, Player.You),
+                        trigger = EventPattern.StepEvent(Step.PRECOMBAT_MAIN, Player.You),
                         binding = TriggerBinding.SELF,
                         effect = chapter.effect,
                         targetRequirement = chapter.targetRequirement,
@@ -1911,7 +1911,7 @@ class TriggerDetector(
 
                     // Only duplicate triggers that are ETB-related (ZoneChangeEvent triggers)
                     val triggerEvent = trigger.ability.trigger
-                    if (triggerEvent !is GameEvent.ZoneChangeEvent) continue
+                    if (triggerEvent !is EventPattern.ZoneChangeEvent) continue
                     if (triggerEvent.to != Zone.BATTLEFIELD) continue
 
                     duplicates.add(trigger)
@@ -2002,8 +2002,8 @@ class TriggerDetector(
 
                     // Only attack-caused triggers: "whenever a creature attacks" / "whenever you attack".
                     val triggerEvent = trigger.ability.trigger
-                    val isAttackTrigger = triggerEvent is GameEvent.AttackEvent ||
-                        triggerEvent is GameEvent.YouAttackEvent
+                    val isAttackTrigger = triggerEvent is EventPattern.AttackEvent ||
+                        triggerEvent is EventPattern.YouAttackEvent
                     if (!isAttackTrigger) continue
 
                     // If the trigger names a specific attacker (per-attacker AttackEvent), that
@@ -2120,7 +2120,7 @@ class TriggerDetector(
             if (event.faceId !in roomComp.unlocked) continue
 
             for (ability in face.script.effectiveTriggeredAbilities(null)) {
-                if (ability.trigger !is GameEvent.DoorUnlockedEvent) continue
+                if (ability.trigger !is EventPattern.DoorUnlockedEvent) continue
                 if (ability.binding != TriggerBinding.SELF) continue
                 triggers.add(
                     PendingTrigger(
@@ -2158,7 +2158,7 @@ class TriggerDetector(
         val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
         for (ability in abilities) {
-            if (ability.trigger is GameEvent.ControlChangeEvent && ability.binding == TriggerBinding.SELF) {
+            if (ability.trigger is EventPattern.ControlChangeEvent && ability.binding == TriggerBinding.SELF) {
                 // The new controller controls this triggered ability
                 triggers.add(
                     PendingTrigger(

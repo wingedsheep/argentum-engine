@@ -40,7 +40,7 @@ val FestivalOfEmbers = card("Festival of Embers") {
     replacementEffect(
         RedirectZoneChange(
             newDestination = Zone.EXILE,
-            appliesTo = com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent(
+            appliesTo = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter(
                     controllerPredicate = ControllerPredicate.OwnedByYou
                 ),

@@ -20,8 +20,6 @@ data class TransformEffect(
     val target: EffectTarget = EffectTarget.Self
 ) : Effect {
     override val description: String = "Transform ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -43,6 +41,4 @@ data class TransformEffect(
 data object ReturnSelfFromExileTransformedEffect : Effect {
     override val description: String =
         "Return this card to the battlefield transformed under its owner's control"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

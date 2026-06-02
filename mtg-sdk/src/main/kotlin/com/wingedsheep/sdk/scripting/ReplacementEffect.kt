@@ -23,19 +23,19 @@ import kotlinx.serialization.Serializable
  * effects do not use the stack.
  *
  * The system is compositional - replacement effects are specified by combining
- * a GameEvent filter with a modification/replacement behavior.
+ * a EventPattern filter with a modification/replacement behavior.
  *
  * Examples:
  * ```kotlin
  * // Doubling Season (tokens)
  * DoubleTokenCreation(
- *     appliesTo = GameEvent.TokenCreationEvent(controller = ControllerFilter.You)
+ *     appliesTo = EventPattern.TokenCreationEvent(controller = ControllerFilter.You)
  * )
  *
  * // Hardened Scales
  * ModifyCounterPlacement(
  *     modifier = 1,
- *     appliesTo = GameEvent.CounterPlacementEvent(
+ *     appliesTo = EventPattern.CounterPlacementEvent(
  *         counterType = CounterTypeFilter.PlusOnePlusOne,
  *         recipient = RecipientFilter.CreatureYouControl
  *     )
@@ -44,12 +44,12 @@ import kotlinx.serialization.Serializable
  * // Rest in Peace
  * RedirectZoneChange(
  *     newDestination = Zone.Exile,
- *     appliesTo = GameEvent.ZoneChangeEvent(to = Zone.Graveyard)
+ *     appliesTo = EventPattern.ZoneChangeEvent(to = Zone.Graveyard)
  * )
  *
  * // Prevention shield (combat damage from red sources)
  * PreventDamage(
- *     appliesTo = GameEvent.DamageEvent(
+ *     appliesTo = EventPattern.DamageEvent(
  *         recipient = RecipientFilter.You,
  *         source = SourceFilter.HasColor(Color.RED),
  *         damageType = DamageType.Combat
@@ -63,7 +63,7 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
     val description: String
 
     /** What type of event this replacement intercepts (compositional) */
-    val appliesTo: GameEvent
+    val appliesTo: EventPattern
 }
 
 // =============================================================================
@@ -77,7 +77,7 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
 @SerialName("DoubleTokenCreation")
 @Serializable
 data class DoubleTokenCreation(
-    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, create twice that many of those tokens instead"
@@ -95,7 +95,7 @@ data class DoubleTokenCreation(
 @Serializable
 data class ModifyTokenCount(
     val modifier: Int,
-    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ${appliesTo.description}, create ")
@@ -129,7 +129,7 @@ data class ModifyTokenCount(
 @Serializable
 data class DoubleCounterPlacement(
     val placedByYou: Boolean = false,
-    override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
+    override val appliesTo: EventPattern = EventPattern.CounterPlacementEvent(
         counterType = CounterTypeFilter.PlusOnePlusOne,
         recipient = RecipientFilter.CreatureYouControl
     )
@@ -151,7 +151,7 @@ data class DoubleCounterPlacement(
 @Serializable
 data class ModifyCounterPlacement(
     val modifier: Int = 1,
-    override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
+    override val appliesTo: EventPattern = EventPattern.CounterPlacementEvent(
         counterType = CounterTypeFilter.PlusOnePlusOne,
         recipient = RecipientFilter.CreatureYouControl
     )
@@ -187,7 +187,7 @@ data class ModifyCounterPlacement(
 @Serializable
 data class RedirectZoneChange(
     val newDestination: Zone,
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, put it into ${newDestination.displayName} instead"
@@ -230,7 +230,7 @@ data class RedirectZoneChange(
 @Serializable
 data class OnEnterRunEffect(
     val effect: com.wingedsheep.sdk.scripting.effects.Effect,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
@@ -251,7 +251,7 @@ data class OnEnterRunEffect(
 data class EntersTapped(
     val unlessCondition: Condition? = null,
     val payLifeCost: Int? = null,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
@@ -284,7 +284,7 @@ data class EntersWithCounters(
     val count: Int,
     val selfOnly: Boolean = false,
     val condition: Condition? = null,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
         to = Zone.BATTLEFIELD
     )
@@ -317,7 +317,7 @@ data class EntersWithDynamicCounters(
     val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
     val count: DynamicAmount,
     val otherOnly: Boolean = false,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
         to = Zone.BATTLEFIELD
     )
@@ -338,7 +338,7 @@ data class EntersWithDynamicCounters(
 @SerialName("Undying")
 @Serializable
 data class UndyingEffect(
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
         from = Zone.BATTLEFIELD,
         to = Zone.GRAVEYARD
@@ -359,7 +359,7 @@ data class UndyingEffect(
 @SerialName("Persist")
 @Serializable
 data class PersistEffect(
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
         from = Zone.BATTLEFIELD,
         to = Zone.GRAVEYARD
@@ -395,7 +395,7 @@ data class PersistEffect(
 data class PreventDamage(
     val amount: Int? = null,  // null = prevent all
     val restrictions: List<Condition> = emptyList(),
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
@@ -431,7 +431,7 @@ data class PreventDamage(
 @Serializable
 data class RedirectDamage(
     val redirectTo: EffectTarget,
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, that damage is dealt to ${redirectTo.description} instead"
@@ -449,7 +449,7 @@ data class RedirectDamage(
 @SerialName("DoubleDamage")
 @Serializable
 data class DoubleDamage(
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, it deals double that damage instead"
@@ -469,7 +469,7 @@ data class DoubleDamage(
 @Serializable
 data class ModifyDamageAmount(
     val modifier: Int,
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ${appliesTo.description}, it deals that much damage plus $modifier instead")
@@ -495,7 +495,7 @@ data class ModifyDamageAmount(
 @Serializable
 data class CapDamage(
     val maxAmount: Int,
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, it deals $maxAmount damage instead"
@@ -544,7 +544,7 @@ data class CapDamage(
 data class ModifyDrawAmount(
     val modifier: Int,
     val restrictions: List<Condition> = emptyList(),
-    override val appliesTo: GameEvent = GameEvent.DrawEvent()
+    override val appliesTo: EventPattern = EventPattern.DrawEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
@@ -576,7 +576,7 @@ data class ModifyDrawAmount(
 data class ReplaceDrawWithEffect(
     val replacementEffect: Effect,
     val optional: Boolean = false,
-    override val appliesTo: GameEvent = GameEvent.DrawEvent()
+    override val appliesTo: EventPattern = EventPattern.DrawEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ${appliesTo.description}, ")
@@ -600,7 +600,7 @@ data class ReplaceDrawWithEffect(
 @SerialName("PreventDraw")
 @Serializable
 data class PreventDraw(
-    override val appliesTo: GameEvent = GameEvent.DrawEvent()
+    override val appliesTo: EventPattern = EventPattern.DrawEvent()
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, that draw doesn't happen"
@@ -622,7 +622,7 @@ data class PreventDraw(
 @SerialName("PreventLifeGain")
 @Serializable
 data class PreventLifeGain(
-    override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
+    override val appliesTo: EventPattern = EventPattern.LifeGainEvent()
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, that player gains no life instead"
@@ -644,7 +644,7 @@ data class PreventLifeGain(
 @SerialName("DamageCantBePrevented")
 @Serializable
 data class DamageCantBePrevented(
-    override val appliesTo: GameEvent = GameEvent.DamageEvent()
+    override val appliesTo: EventPattern = EventPattern.DamageEvent()
 ) : ReplacementEffect {
     override val description: String = "Damage can't be prevented"
 
@@ -662,7 +662,7 @@ data class DamageCantBePrevented(
 @Serializable
 data class ReplaceLifeGain(
     val replacementEffect: Effect,
-    override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
+    override val appliesTo: EventPattern = EventPattern.LifeGainEvent()
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, instead ${replacementEffect.description}"
@@ -694,7 +694,7 @@ data class ReplaceLifeGain(
 data class ModifyLifeGain(
     val multiplier: Int = 2,
     val modifier: Int = 0,
-    override val appliesTo: GameEvent = GameEvent.LifeGainEvent()
+    override val appliesTo: EventPattern = EventPattern.LifeGainEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ")
@@ -759,7 +759,7 @@ data class ModifyLifeLoss(
     val multiplier: Int = 1,
     val modifier: Int = 0,
     val restrictions: List<com.wingedsheep.sdk.scripting.conditions.Condition> = emptyList(),
-    override val appliesTo: GameEvent = GameEvent.LifeLossEvent()
+    override val appliesTo: EventPattern = EventPattern.LifeLossEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
@@ -844,7 +844,7 @@ data class EntersAsCopy(
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
@@ -968,7 +968,7 @@ data class EntersWithChoice(
      * options the player picks between. Required for MODE; ignored otherwise.
      */
     val modeOptions: List<ModeOption> = emptyList(),
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
@@ -1035,7 +1035,7 @@ data class EntersWithRevealCounters(
     val revealSource: Zone = Zone.HAND,
     val counterType: String = "+1/+1",
     val countersPerReveal: Int,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
         to = Zone.BATTLEFIELD
     )
@@ -1089,7 +1089,7 @@ data class EntersWithDevour(
     val counterType: com.wingedsheep.sdk.scripting.events.CounterTypeFilter =
         com.wingedsheep.sdk.scripting.events.CounterTypeFilter.PlusOnePlusOne,
     val variant: String = "",
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
@@ -1138,7 +1138,7 @@ data class EntersWithDevour(
 data class ReplaceDamageWithCounters(
     val counterType: String,
     val sacrificeThreshold: Int? = null,
-    override val appliesTo: GameEvent = GameEvent.DamageEvent(
+    override val appliesTo: EventPattern = EventPattern.DamageEvent(
         recipient = RecipientFilter.You
     )
 ) : ReplacementEffect {
@@ -1169,7 +1169,7 @@ data class ReplaceDamageWithCounters(
 @SerialName("PreventExtraTurns")
 @Serializable
 data class PreventExtraTurns(
-    override val appliesTo: GameEvent = GameEvent.ExtraTurnEvent()
+    override val appliesTo: EventPattern = EventPattern.ExtraTurnEvent()
 ) : ReplacementEffect {
     override val description: String =
         "If a player would begin an extra turn, that player skips that turn instead"
@@ -1198,7 +1198,7 @@ data class RedirectZoneChangeWithEffect(
     val newDestination: Zone,
     val additionalEffect: Effect,
     val selfOnly: Boolean = false,
-    override val appliesTo: GameEvent
+    override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, instead put it into ${newDestination.displayName} and ${additionalEffect.description}"
@@ -1230,7 +1230,7 @@ data class RedirectZoneChangeWithEffect(
 data class ReplaceTokenCreationWithEquippedCopy(
     val optional: Boolean = true,
     val oncePerTurn: Boolean = true,
-    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("As long as this Equipment is attached to a creature, ")
@@ -1261,7 +1261,7 @@ data class ReplaceTokenCreationWithEquippedCopy(
 @Serializable
 data class GenericReplacementEffect(
     val replacement: Effect?,  // null = prevent entirely
-    override val appliesTo: GameEvent,
+    override val appliesTo: EventPattern,
     override val description: String
 ) : ReplacementEffect {
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {

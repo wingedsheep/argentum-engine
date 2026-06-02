@@ -46,7 +46,7 @@ val VrenTheRelentless = card("Vren, the Relentless") {
     replacementEffect(
         RedirectZoneChange(
             newDestination = Zone.EXILE,
-            appliesTo = com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent(
+            appliesTo = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Creature.opponentControls(),
                 to = Zone.GRAVEYARD
             )

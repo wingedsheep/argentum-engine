@@ -8,6 +8,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 
 /**
@@ -27,18 +29,15 @@ val ForebearsBlade = card("Forebear's Blade") {
         "Equip {3}"
 
     staticAbility {
-        effect = Effects.ModifyStats(+3, +0)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+3, +0, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.VIGILANCE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.VIGILANCE, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.TRAMPLE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.TRAMPLE, Filters.EquippedCreature)
     }
 
     triggeredAbility {

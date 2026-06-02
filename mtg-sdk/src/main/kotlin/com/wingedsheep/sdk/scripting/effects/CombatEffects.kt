@@ -176,8 +176,6 @@ data class ProvokeEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Target creature defending player controls untaps and blocks ${target.description} if able"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -198,8 +196,6 @@ data class MustBeBlockedEffect(
     } else {
         "${target.description} must be blocked this turn if able"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -213,8 +209,6 @@ data class TauntEffect(
 ) : Effect {
     override val description: String =
         "During ${target.description}'s next turn, creatures they control attack you if able"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -234,8 +228,6 @@ data class ReflectCombatDamageEffect(
     override val description: String =
         "This turn, whenever an attacking creature deals combat damage to you, " +
                 "it deals that much damage to its controller"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 
@@ -282,8 +274,6 @@ data class GrantCantBeBlockedByChosenColorEffect(
         append("${target.description} can't be blocked by creatures of the chosen color")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -299,8 +289,6 @@ data class ForceBlockEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Target creature blocks ${target.description} this combat if able"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -366,8 +354,6 @@ data class CantBlockEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description} can't block this turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -383,8 +369,6 @@ data class CantAttackEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description} can't attack this turn"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -399,8 +383,6 @@ data class RemoveFromCombatEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "Remove ${target.description} from combat"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -417,8 +399,6 @@ data class MarkMustAttackThisTurnEffect(
     val target: EffectTarget = EffectTarget.Self
 ) : Effect {
     override val description: String = "${target.description} attacks this turn if able"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -439,8 +419,6 @@ data class CanAttackDespiteDefenderThisTurnEffect(
 ) : Effect {
     override val description: String =
         "${target.description} can attack this turn as though it didn't have defender"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -466,8 +444,6 @@ data class RedirectNextDamageEffect(
         append("damage that would be dealt to ${protectedTargets.joinToString(" and/or ") { it.description }} this turn")
         append(" is dealt to ${redirectTo.description} instead")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 
@@ -529,8 +505,6 @@ data class GrantKeywordToAttackersBlockedByEffect(
 ) : Effect {
     override val description: String =
         "Creatures that were blocked by ${target.description} gain ${keyword.lowercase().replace('_', ' ')} ${duration.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 @SerialName("RedirectCombatDamageToController")
@@ -540,8 +514,6 @@ data class RedirectCombatDamageToControllerEffect(
 ) : Effect {
     override val description: String =
         "The next time ${target.description} would deal combat damage this turn, it deals that damage to you instead"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -565,8 +537,6 @@ data class SetSuspectedEffect(
     val duration: Duration = Duration.Permanent
 ) : Effect {
     override val description: String = "${target.description} becomes suspected"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 

@@ -25,8 +25,6 @@ data class LoseAllCreatureTypesEffect(
         append("${target.description} loses all creature types")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -48,8 +46,6 @@ data class BecomeCreatureTypeEffect(
         if (excludedTypes.isNotEmpty()) append(" other than ${excludedTypes.joinToString(", ")}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -181,8 +177,6 @@ data class AddSubtypeEffect(
         }
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -218,8 +212,6 @@ data class SetLandTypeEffect(
         }
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -242,8 +234,6 @@ data class AddCardTypeEffect(
 ) : Effect {
     override val description: String =
         "${target.description} becomes a${if (cardType.startsWith("A", ignoreCase = true)) "n" else ""} ${cardType.lowercase()} in addition to its other types"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -300,8 +290,6 @@ data class ChangeColorEffect(
         else append(colors.joinToString(", ") { it.lowercase() })
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -317,8 +305,6 @@ data class ChooseColorForTargetEffect(
     val prompt: String = "Choose a color"
 ) : Effect {
     override val description: String = prompt
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -343,8 +329,6 @@ data class ChangeColorToChosenEffect(
         append("${target.description} becomes the color of your choice")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -369,8 +353,6 @@ data class BecomeChosenManaColorEffect(
         append("${target.description} becomes that color")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -399,8 +381,6 @@ data class ChangeCreatureTypeTextEffect(
             append(" The new creature type can't be ${excludedTypes.joinToString(" or ")}.")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -430,6 +410,4 @@ data class ChangeWordInTextEffect(
         if (duration is Duration.EndOfTurn) append(" until end of turn")
         append(".")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

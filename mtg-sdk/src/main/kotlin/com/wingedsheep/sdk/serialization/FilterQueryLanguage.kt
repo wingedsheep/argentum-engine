@@ -109,14 +109,18 @@ object FilterQueryLanguage {
     fun formatFilter(obj: JsonObject): String? {
         val terms = mutableListOf<String>()
 
+        // A recursive union (the `or` infix) can mix per-branch state/controller predicates,
+        // which the flat query string cannot express — bail to the structured form.
+        if (obj["anyOf"] != null) return null
+
         val cardPredicates = obj["cardPredicates"]?.jsonArray ?: JsonArray(emptyList())
         val statePredicates = obj["statePredicates"]?.jsonArray ?: JsonArray(emptyList())
         val controllerPredicate = obj["controllerPredicate"]
-        val matchAll = obj["matchAll"]?.jsonPrimitive?.booleanOrNull ?: true
 
-        // Format card predicates
+        // Format card predicates. OR is carried entirely by `CardPredicate.Or` (formatted as
+        // pipe-separated terms), so a top-level list is always a conjunction.
         for (pred in cardPredicates) {
-            val term = formatCardPredicate(pred, matchAll) ?: return null
+            val term = formatCardPredicate(pred) ?: return null
             terms.add(term)
         }
 
@@ -132,13 +136,10 @@ object FilterQueryLanguage {
             terms.add(term)
         }
 
-        // If matchAll=false with multiple card predicates (not wrapped in Or), we can't represent this
-        if (!matchAll && cardPredicates.size > 1) return null
-
         return terms.joinToString(" ").ifEmpty { null }
     }
 
-    private fun formatCardPredicate(element: JsonElement, matchAll: Boolean): String? {
+    private fun formatCardPredicate(element: JsonElement): String? {
         // Compact singleton string (already compacted by CompactJsonTransformer)
         if (element is JsonPrimitive && element.isString) {
             val name = element.content
@@ -191,7 +192,7 @@ object FilterQueryLanguage {
             // Or — format as pipe-separated terms
             "Or" -> {
                 val predicates = element["predicates"]?.jsonArray ?: return null
-                val subTerms = predicates.mapNotNull { formatCardPredicate(it, true) }
+                val subTerms = predicates.mapNotNull { formatCardPredicate(it) }
                 if (subTerms.size != predicates.size) return null
                 subTerms.joinToString("|")
             }
@@ -233,18 +234,16 @@ object FilterQueryLanguage {
         val cardPredicates = mutableListOf<JsonElement>()
         val statePredicates = mutableListOf<JsonElement>()
         var controllerPredicate: JsonElement? = null
-        var matchAll = true
 
         for (term in terms) {
             when {
-                // OR expression
+                // OR expression — represented purely as a single CardPredicate.Or.
                 term.contains("|") -> {
                     val orPredicates = term.split("|").map { parseSingleCardPredicate(it) }
                     cardPredicates.add(buildJsonObject {
                         put("type", "Or")
                         put("predicates", JsonArray(orPredicates))
                     })
-                    matchAll = false
                 }
 
                 // Controller/Owner predicate
@@ -310,7 +309,6 @@ object FilterQueryLanguage {
             if (cardPredicates.isNotEmpty()) put("cardPredicates", JsonArray(cardPredicates))
             if (statePredicates.isNotEmpty()) put("statePredicates", JsonArray(statePredicates))
             if (controllerPredicate != null) put("controllerPredicate", controllerPredicate)
-            if (!matchAll) put("matchAll", false)
         }
     }
 
@@ -373,12 +371,12 @@ object FilterQueryLanguage {
 
     /**
      * Check if a JSON object looks like a GameObjectFilter
-     * (has cardPredicates, statePredicates, controllerPredicate, or matchAll keys).
+     * (has cardPredicates, statePredicates, controllerPredicate, or anyOf keys).
      */
     fun isGameObjectFilter(obj: JsonObject): Boolean {
         return obj.containsKey("cardPredicates")
             || obj.containsKey("statePredicates")
             || obj.containsKey("controllerPredicate")
-            || obj.containsKey("matchAll")
+            || obj.containsKey("anyOf")
     }
 }

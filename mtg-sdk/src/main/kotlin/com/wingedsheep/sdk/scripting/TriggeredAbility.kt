@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TriggeredAbility(
     val id: AbilityId,
-    val trigger: GameEvent,
+    val trigger: EventPattern,
     val binding: TriggerBinding = TriggerBinding.SELF,
     val effect: Effect,
     val optional: Boolean = false,
@@ -93,7 +93,7 @@ data class TriggeredAbility(
 
     companion object {
         fun create(
-            trigger: GameEvent,
+            trigger: EventPattern,
             binding: TriggerBinding = TriggerBinding.SELF,
             effect: Effect,
             optional: Boolean = false,

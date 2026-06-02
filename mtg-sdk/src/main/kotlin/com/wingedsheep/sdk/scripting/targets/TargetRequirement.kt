@@ -68,7 +68,6 @@ data class TargetPlayer(
             count == 1 -> "target player"
             else -> "target $count players"
         }
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 /**
@@ -82,7 +81,6 @@ data class TargetOpponent(
     override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target opponent" else "target $count opponents"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 // =============================================================================
@@ -155,7 +153,6 @@ data class AnyTarget(
 ) : TargetRequirement {
     override val description: String = descriptionOverride
         ?: if (count == 1) "any target" else "$count targets"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 /**
@@ -169,7 +166,6 @@ data class TargetCreatureOrPlayer(
     override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target creature or player" else "$count targets (creatures or players)"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 /**
@@ -183,7 +179,6 @@ data class TargetOpponentOrPlaneswalker(
     override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target opponent or planeswalker" else "$count targets (opponents or planeswalkers)"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 /**
@@ -197,7 +192,6 @@ data class TargetPlayerOrPlaneswalker(
     override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target player or planeswalker" else "$count targets (players or planeswalkers)"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 /**
@@ -211,7 +205,6 @@ data class TargetCreatureOrPlaneswalker(
     override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target creature or planeswalker" else "$count targets (creatures or planeswalkers)"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
 // =============================================================================

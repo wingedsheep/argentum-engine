@@ -36,9 +36,11 @@ val PinnacleStarcage = card("Pinnacle Starcage") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        // GameObjectFilter's `or` infix sets matchAll = false, which would make a chained
-        // .manaValueAtMost(2) match any low-MV entity (including lands). Construct manually
-        // so matchAll stays true and the (artifact|creature) and MV<=2 predicates AND.
+        // (artifact|creature) with mana value 2 or less. Built from an explicit
+        // CardPredicate.Or plus an AND-ed ManaValueAtMost -- equivalent to
+        // `GameObjectFilter.Artifact or GameObjectFilter.Creature` then `.manaValueAtMost(2)`,
+        // since the `or` infix produces a single CardPredicate.Or that a trailing card
+        // predicate AND-conjoins.
         effect = Effects.ExileGroupAndLink(
             GroupFilter(
                 GameObjectFilter(

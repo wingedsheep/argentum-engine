@@ -453,8 +453,6 @@ data class GatherCardsEffect(
         if (revealed) append("Reveal ") else append("Look at ")
         append(source.description)
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -484,7 +482,6 @@ data class CaptureControllersEffect(
     val storeAs: String
 ) : Effect {
     override val description: String = "Capture the controllers of the $from cards"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -564,7 +561,6 @@ data class GatherSubtypesEffect(
     val storeAs: String
 ) : Effect {
     override val description: String = "gather subtypes of the $from entities"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -628,7 +624,6 @@ data class RevealCollectionEffect(
     val toZone: com.wingedsheep.sdk.core.Zone? = null
 ) : Effect {
     override val description: String = "Reveal the $from cards"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -739,8 +734,6 @@ data class ChoosePileEffect(
 ) : Effect {
     override val description: String =
         "Choose one pile: $pileALabel or $pileBLabel"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -812,8 +805,6 @@ data class MoveCollectionEffect(
         append(" the $from cards ")
         append(destination.description)
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -834,8 +825,6 @@ data class MoveCollectionEffect(
 @Serializable
 data object ChooseCreatureTypeEffect : Effect {
     override val description: String = "Choose a creature type"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -887,8 +876,6 @@ data class ChooseOptionEffect(
             OptionType.CARD_NAME -> "a card name"
         })
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -906,8 +893,6 @@ data class EachPlayerChoosesCreatureTypeEffect(
     val storeAs: String
 ) : Effect {
     override val description: String = "Each player chooses a creature type"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -980,8 +965,6 @@ data class GrantMayPlayFromExileEffect(
         }
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -1054,8 +1037,6 @@ data class GrantPlayWithoutPayingCostEffect(
 ) : Effect {
     override val description: String =
         "Until end of turn, you may play the $from cards without paying their mana costs"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -1078,8 +1059,6 @@ data class GrantPlayWithAdditionalCostEffect(
 ) : Effect {
     override val description: String =
         "Until end of turn, casting the $from cards requires: ${additionalCost.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -1106,8 +1085,6 @@ data class GrantFreeCastTargetFromExileEffect(
         append("You may cast ${target.description} without paying its mana cost")
         if (exileAfterResolve) append(". If that spell would be put into a graveyard, exile it instead")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -1266,7 +1243,6 @@ data class FilterCollectionEffect(
     val storeNonMatching: String? = null
 ) : Effect {
     override val description: String = "Filter $from collection"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -1313,5 +1289,4 @@ data class StoreCardNameEffect(
     val storeAs: String = "chosenCardName"
 ) : Effect {
     override val description: String = "Note the name of the $from card"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

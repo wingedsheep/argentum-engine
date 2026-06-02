@@ -56,7 +56,7 @@ object Suspend {
      */
     val countdownAbility: TriggeredAbility = TriggeredAbility(
         id = AbilityId("suspend_countdown"),
-        trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
+        trigger = EventPattern.StepEvent(Step.UPKEEP, Player.You),
         binding = TriggerBinding.SELF,
         activeZone = Zone.EXILE,
         // Only count down while counters remain; this also makes a leftover marker inert.

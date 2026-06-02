@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -31,8 +32,7 @@ val GhostfireBlade = card("Ghostfire Blade") {
     oracleText = "Equipped creature gets +2/+2.\nEquip {3}\nGhostfire Blade's equip ability costs {2} less to activate if it targets a colorless creature."
 
     staticAbility {
-        effect = Effects.ModifyStats(+2, +2)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+2, +2, Filters.EquippedCreature)
     }
 
     // Equip {1}: Attach to target colorless creature you control.

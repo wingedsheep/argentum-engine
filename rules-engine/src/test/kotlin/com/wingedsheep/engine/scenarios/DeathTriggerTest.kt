@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -64,7 +64,7 @@ class DeathTriggerTest : FunSpec({
         oracleText = "Whenever a creature you control with toughness 4 or greater dies, you gain 4 life.",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = GameEvent.ZoneChangeEvent(
+                trigger = EventPattern.ZoneChangeEvent(
                     filter = GameObjectFilter.Creature.youControl().toughnessAtLeast(4),
                     from = Zone.BATTLEFIELD,
                     to = Zone.GRAVEYARD
@@ -200,7 +200,7 @@ class DeathTriggerTest : FunSpec({
             oracleText = "Whenever a Saproling you control dies, you gain 1 life.",
             script = CardScript.creature(
                 TriggeredAbility.create(
-                    trigger = GameEvent.ZoneChangeEvent(
+                    trigger = EventPattern.ZoneChangeEvent(
                         filter = GameObjectFilter.Creature.youControl().withSubtype("Saproling"),
                         from = Zone.BATTLEFIELD,
                         to = Zone.GRAVEYARD

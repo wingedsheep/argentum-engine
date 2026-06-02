@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.arn.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -37,7 +37,7 @@ val DesertNomads = card("Desert Nomads") {
 
     replacementEffect(
         PreventDamage(
-            appliesTo = GameEvent.DamageEvent(
+            appliesTo = EventPattern.DamageEvent(
                 recipient = RecipientFilter.Self,
                 source = SourceFilter.Matching(GameObjectFilter.Land.withSubtype("Desert"))
             )

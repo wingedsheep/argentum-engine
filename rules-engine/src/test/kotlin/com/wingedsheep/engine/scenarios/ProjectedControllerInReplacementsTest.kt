@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.DoubleDamage
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyDamageAmount
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -48,7 +48,7 @@ class ProjectedControllerInReplacementsTest : FunSpec({
         oracleText = "If a source would deal damage to a creature you control, it deals double that damage instead."
         replacementEffect(
             DoubleDamage(
-                appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.CreatureYouControl)
+                appliesTo = EventPattern.DamageEvent(recipient = RecipientFilter.CreatureYouControl)
             )
         )
     }
@@ -61,7 +61,7 @@ class ProjectedControllerInReplacementsTest : FunSpec({
         replacementEffect(
             PreventDamage(
                 amount = 2,
-                appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.CreatureYouControl)
+                appliesTo = EventPattern.DamageEvent(recipient = RecipientFilter.CreatureYouControl)
             )
         )
     }
@@ -74,7 +74,7 @@ class ProjectedControllerInReplacementsTest : FunSpec({
         replacementEffect(
             ModifyDamageAmount(
                 modifier = 1,
-                appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.CreatureYouControl)
+                appliesTo = EventPattern.DamageEvent(recipient = RecipientFilter.CreatureYouControl)
             )
         )
     }

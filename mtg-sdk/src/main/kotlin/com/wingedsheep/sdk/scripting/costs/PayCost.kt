@@ -28,7 +28,6 @@ sealed interface PayCost : TextReplaceable<PayCost> {
     @Serializable
     data class Mana(val cost: ManaCost) : PayCost {
         override val description: String = cost.toString()
-        override fun applyTextReplacement(replacer: TextReplacer): PayCost = this
     }
 
     /**
@@ -44,7 +43,6 @@ sealed interface PayCost : TextReplaceable<PayCost> {
     @Serializable
     data object OwnManaCost : PayCost {
         override val description: String = "its mana cost"
-        override fun applyTextReplacement(replacer: TextReplacer): PayCost = this
     }
 
     /**
@@ -130,7 +128,6 @@ sealed interface PayCost : TextReplaceable<PayCost> {
         val amount: Int
     ) : PayCost {
         override val description: String = "pay $amount life"
-        override fun applyTextReplacement(replacer: TextReplacer): PayCost = this
     }
 
     /**

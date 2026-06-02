@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.effects.WardCost
@@ -62,7 +62,7 @@ val InnkeepersTalent = card("Innkeeper's Talent") {
         replacementEffect(
             DoubleCounterPlacement(
                 placedByYou = true,
-                appliesTo = GameEvent.CounterPlacementEvent(
+                appliesTo = EventPattern.CounterPlacementEvent(
                     counterType = CounterTypeFilter.Any,
                     recipient = RecipientFilter.Any
                 )

@@ -7,7 +7,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -54,7 +54,7 @@ class DamageTriggerDetector(
             // Source-filtered triggers (DamagedByCreature, DamagedBySpell) are handled
             // exclusively by detectDamagedBySourceTriggers to avoid firing with a wrong
             // triggeringEntityId (fromEvent uses targetId, not sourceId).
-            if (trigger is GameEvent.DamageReceivedEvent &&
+            if (trigger is EventPattern.DamageReceivedEvent &&
                 ability.binding == TriggerBinding.SELF &&
                 trigger.source == SourceFilter.Any
             ) {
@@ -93,7 +93,7 @@ class DamageTriggerDetector(
 
         for (ability in abilities) {
             val trigger = ability.trigger
-            if (trigger is GameEvent.DealsDamageEvent && ability.binding == TriggerBinding.SELF) {
+            if (trigger is EventPattern.DealsDamageEvent && ability.binding == TriggerBinding.SELF) {
                 if (matcher.matchesDealsDamageTrigger(trigger, event, state)) {
                     triggers.add(
                         PendingTrigger(
@@ -150,9 +150,9 @@ class DamageTriggerDetector(
         for (ability in abilities) {
             val trigger = ability.trigger
             val matches = when {
-                trigger is GameEvent.DamageReceivedEvent && ability.binding == TriggerBinding.SELF &&
+                trigger is EventPattern.DamageReceivedEvent && ability.binding == TriggerBinding.SELF &&
                     trigger.source == SourceFilter.Creature && isCreatureSource -> true
-                trigger is GameEvent.DamageReceivedEvent && ability.binding == TriggerBinding.SELF &&
+                trigger is EventPattern.DamageReceivedEvent && ability.binding == TriggerBinding.SELF &&
                     trigger.source == SourceFilter.Spell && isSpellSource -> true
                 else -> false
             }
@@ -200,7 +200,7 @@ class DamageTriggerDetector(
 
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger is GameEvent.DealsDamageEvent &&
+                if (trigger is EventPattern.DealsDamageEvent &&
                     trigger.recipient == RecipientFilter.You &&
                     trigger.sourceFilter == null &&
                     ability.binding == TriggerBinding.ANY) {
@@ -236,7 +236,7 @@ class DamageTriggerDetector(
         for (entry in index.damageObservers) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger is GameEvent.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
+                if (trigger is EventPattern.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
                     if (matcher.matchesDealsDamageTrigger(trigger, event, state, entry.controllerId)) {
                         // When the trigger has a sourceFilter (e.g., "creature you control deals
                         // combat damage"), the triggering entity is the damage SOURCE (the creature),
@@ -288,7 +288,7 @@ class DamageTriggerDetector(
         for (entry in index.subtypeDamageObservers) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger is GameEvent.DealsDamageEvent &&
+                if (trigger is EventPattern.DealsDamageEvent &&
                     trigger.damageType == DamageType.Combat &&
                     trigger.recipient == RecipientFilter.AnyPlayer &&
                     trigger.sourceFilter != null) {

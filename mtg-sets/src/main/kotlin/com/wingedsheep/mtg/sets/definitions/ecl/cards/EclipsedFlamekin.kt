@@ -49,11 +49,12 @@ val EclipsedFlamekin = card("Eclipsed Flamekin") {
                     selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
                     filter = GameObjectFilter(
                         cardPredicates = listOf(
+                            CardPredicate.Or(listOf(
                             CardPredicate.HasSubtype(Subtype.ELEMENTAL),
                             CardPredicate.HasSubtype(Subtype.ISLAND),
                             CardPredicate.HasSubtype(Subtype.MOUNTAIN),
-                        ),
-                        matchAll = false // OR: Elemental OR Island OR Mountain
+                            ))
+                        )
                     ),
                     storeSelected = "kept",
                     storeRemainder = "rest",

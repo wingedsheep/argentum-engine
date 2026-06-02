@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent.DealsDamageEvent
+import com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.events.DamageType

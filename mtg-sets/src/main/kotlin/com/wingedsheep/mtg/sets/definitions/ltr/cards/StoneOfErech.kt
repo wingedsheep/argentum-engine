@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -34,7 +34,7 @@ val StoneOfErech = card("Stone of Erech") {
     replacementEffect(
         RedirectZoneChange(
             newDestination = Zone.EXILE,
-            appliesTo = GameEvent.ZoneChangeEvent(
+            appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Creature.opponentControls(),
                 from = Zone.BATTLEFIELD,
                 to = Zone.GRAVEYARD

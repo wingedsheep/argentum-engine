@@ -2301,7 +2301,7 @@ object Effects {
      */
     fun Earthbend(amount: Int, target: EffectTarget): Effect {
         val returnTapped = TriggeredAbility.create(
-            trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = null),
+            trigger = EventPattern.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = null),
             binding = TriggerBinding.SELF,
             effect = CompositeEffect(listOf(
                 MoveToZoneEffect(

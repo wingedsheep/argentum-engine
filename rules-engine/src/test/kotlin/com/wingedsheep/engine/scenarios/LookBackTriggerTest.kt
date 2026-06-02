@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -44,7 +44,7 @@ class LookBackTriggerTest : FunSpec({
             triggeredAbilities = listOf(
                 TriggeredAbility(
                     id = AbilityId("soul-shrine-trigger"),
-                    trigger = GameEvent.ZoneChangeEvent(
+                    trigger = EventPattern.ZoneChangeEvent(
                         filter = GameObjectFilter.Creature,
                         from = Zone.BATTLEFIELD,
                         to = Zone.GRAVEYARD

@@ -4,7 +4,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -51,7 +51,7 @@ object LifeGainModifiers {
             for (effect in replacementComponent.replacementEffects) {
                 if (effect !is ModifyLifeGain) continue
 
-                val lifeGainEvent = effect.appliesTo as? GameEvent.LifeGainEvent ?: continue
+                val lifeGainEvent = effect.appliesTo as? EventPattern.LifeGainEvent ?: continue
 
                 // Honor the recipient filter on the LifeGainEvent. Default is Player.Each.
                 val recipientMatches = when (lifeGainEvent.player) {

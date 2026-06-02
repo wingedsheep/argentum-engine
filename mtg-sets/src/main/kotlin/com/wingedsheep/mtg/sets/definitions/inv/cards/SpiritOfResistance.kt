@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.inv.cards
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -38,7 +38,7 @@ val SpiritOfResistance = card("Spirit of Resistance") {
                     DynamicAmount.Fixed(5)
                 )
             ),
-            appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.You)
+            appliesTo = EventPattern.DamageEvent(recipient = RecipientFilter.You)
         )
     )
 

@@ -49,11 +49,12 @@ val EclipsedMerrow = card("Eclipsed Merrow") {
                     selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
                     filter = GameObjectFilter(
                         cardPredicates = listOf(
+                            CardPredicate.Or(listOf(
                             CardPredicate.HasSubtype(Subtype.MERFOLK),
                             CardPredicate.HasSubtype(Subtype.PLAINS),
                             CardPredicate.HasSubtype(Subtype.ISLAND),
-                        ),
-                        matchAll = false // OR: Merfolk OR Plains OR Island
+                            ))
+                        )
                     ),
                     storeSelected = "kept",
                     storeRemainder = "rest",

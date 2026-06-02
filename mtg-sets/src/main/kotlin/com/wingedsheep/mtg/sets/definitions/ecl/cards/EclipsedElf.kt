@@ -49,11 +49,12 @@ val EclipsedElf = card("Eclipsed Elf") {
                     selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
                     filter = GameObjectFilter(
                         cardPredicates = listOf(
+                            CardPredicate.Or(listOf(
                             CardPredicate.HasSubtype(Subtype.ELF),
                             CardPredicate.HasSubtype(Subtype.SWAMP),
                             CardPredicate.HasSubtype(Subtype.FOREST),
-                        ),
-                        matchAll = false
+                            ))
+                        )
                     ),
                     storeSelected = "kept",
                     storeRemainder = "rest",

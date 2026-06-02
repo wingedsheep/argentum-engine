@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventExtraTurns
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect
@@ -34,7 +34,7 @@ val UginsNexus = card("Ugin's Nexus") {
             newDestination = Zone.EXILE,
             additionalEffect = TakeExtraTurnEffect(),
             selfOnly = true,
-            appliesTo = GameEvent.ZoneChangeEvent(
+            appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Any,
                 from = Zone.BATTLEFIELD,
                 to = Zone.GRAVEYARD

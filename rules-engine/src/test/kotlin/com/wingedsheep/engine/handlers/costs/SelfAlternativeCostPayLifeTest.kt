@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -29,7 +30,7 @@ class SelfAlternativeCostPayLifeTest : FunSpec({
         power = 4
         toughness = 4
         selfAlternativeCost = SelfAlternativeCost(
-            manaCost = "{0}",
+            manaCost = ManaCost.parse("{0}"),
             additionalCosts = listOf(AdditionalCost.PayLife(5))
         )
     }

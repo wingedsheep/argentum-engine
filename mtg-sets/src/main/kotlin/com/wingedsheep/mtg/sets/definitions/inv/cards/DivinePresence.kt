@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.inv.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CapDamage
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 
 /**
@@ -26,7 +26,7 @@ val DivinePresence = card("Divine Presence") {
     replacementEffect(
         CapDamage(
             maxAmount = 3,
-            appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.Any)
+            appliesTo = EventPattern.DamageEvent(recipient = RecipientFilter.Any)
         )
     )
 

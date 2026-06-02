@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -31,7 +31,7 @@ val LoadingZone = card("Loading Zone") {
     replacementEffect(
         DoubleCounterPlacement(
             placedByYou = false,
-            appliesTo = GameEvent.CounterPlacementEvent(
+            appliesTo = EventPattern.CounterPlacementEvent(
                 counterType = CounterTypeFilter.Any,
                 recipient = RecipientFilter.Matching(
                     GameObjectFilter.Creature.youControl()

@@ -97,7 +97,7 @@ object TestCards {
         oracleText = "When this creature dies, you gain 3 life.",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+                trigger = EventPattern.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
                 binding = TriggerBinding.SELF,
                 effect = GainLifeEffect(3)
             )
@@ -478,7 +478,7 @@ object TestCards {
             triggeredAbilities = listOf(
                 TriggeredAbility(
                     id = AbilityId("morph-trigger-draw"),
-                    trigger = GameEvent.TurnFaceUpEvent,
+                    trigger = EventPattern.TurnFaceUpEvent,
                     binding = TriggerBinding.SELF,
                     effect = DrawCardsEffect(1)
                 )

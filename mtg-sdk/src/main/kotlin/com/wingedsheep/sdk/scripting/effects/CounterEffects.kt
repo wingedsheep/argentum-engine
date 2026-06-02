@@ -24,8 +24,6 @@ data class AddCountersEffect(
 ) : Effect {
     override val description: String =
         "Put $count $counterType counter${if (count != 1) "s" else ""} on ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -41,8 +39,6 @@ data class AddDynamicCountersEffect(
 ) : Effect {
     override val description: String =
         "Put ${amount.description} $counterType counters on ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -60,8 +56,6 @@ data class MoveAllLastKnownCountersEffect(
 ) : Effect {
     override val description: String =
         "Put its counters on ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -86,8 +80,6 @@ data class DoubleCountersEffect(
 ) : Effect {
     override val description: String =
         "Double the number of $counterType counters on ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -103,8 +95,6 @@ data class RemoveCountersEffect(
 ) : Effect {
     override val description: String =
         "Remove $count $counterType counter${if (count != 1) "s" else ""} from ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -123,8 +113,6 @@ data class RemoveAnyNumberOfCountersEffect(
 ) : Effect {
     override val description: String =
         "Remove any number of counters from ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -142,8 +130,6 @@ data class RemoveAllCountersEffect(
 ) : Effect {
     override val description: String =
         "Remove all counters from ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -161,8 +147,6 @@ data class AddMinusCountersEffect(
 ) : Effect {
     override val description: String =
         "Put $count -1/-1 counter${if (count != 1) "s" else ""} on ${target.description}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -179,8 +163,6 @@ data class AddCountersToCollectionEffect(
 ) : Effect {
     override val description: String =
         "Put $count $counterType counter${if (count != 1) "s" else ""} on each permanent in $collectionName"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -206,8 +188,6 @@ data class DistributeCountersFromSelfEffect(
 ) : Effect {
     override val description: String =
         "Move any number of $counterType counters from this creature onto other creatures"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -225,8 +205,6 @@ data class DistributeCountersFromSelfEffect(
 data object ProliferateEffect : Effect {
     override val description: String =
         "Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -250,6 +228,4 @@ data class DistributeCountersAmongTargetsEffect(
 ) : Effect {
     override val description: String =
         "Distribute $totalCounters $counterType counter${if (totalCounters != 1) "s" else ""} among targets"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

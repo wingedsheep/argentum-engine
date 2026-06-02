@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -32,7 +32,7 @@ val ForceBubble = card("Force Bubble") {
         ReplaceDamageWithCounters(
             counterType = Counters.DEPLETION,
             sacrificeThreshold = 4,
-            appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.You)
+            appliesTo = EventPattern.DamageEvent(recipient = RecipientFilter.You)
         )
     )
 

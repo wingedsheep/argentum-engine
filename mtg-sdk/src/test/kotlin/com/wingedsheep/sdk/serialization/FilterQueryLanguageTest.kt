@@ -31,7 +31,7 @@ class FilterQueryLanguageTest : DescribeSpec({
             predicates[0].jsonObject["type"]!!.jsonPrimitive.content shouldBe "IsCreature"
         }
 
-        it("parses combined terms as AND (default matchAll)") {
+        it("parses combined terms as a conjunction") {
             val obj = FilterQueryLanguage.parseFilter("creature tapped ctrl:you")
             val card = obj["cardPredicates"]!!.jsonArray
             val state = obj["statePredicates"]!!.jsonArray
@@ -42,13 +42,10 @@ class FilterQueryLanguageTest : DescribeSpec({
             state.size shouldBe 1
             state[0].jsonObject["type"]!!.jsonPrimitive.content shouldBe "IsTapped"
             ctrl["type"]!!.jsonPrimitive.content shouldBe "ControlledByYou"
-            // matchAll omitted when true
-            obj.containsKey("matchAll") shouldBe false
         }
 
-        it("parses OR expressions and sets matchAll=false") {
+        it("parses OR expressions into a single CardPredicate.Or") {
             val obj = FilterQueryLanguage.parseFilter("artifact|enchantment")
-            obj["matchAll"]!!.jsonPrimitive.boolean.shouldBeFalse()
 
             val or = obj["cardPredicates"]!!.jsonArray[0].jsonObject
             or["type"]!!.jsonPrimitive.content shouldBe "Or"
@@ -245,7 +242,6 @@ class FilterQueryLanguageTest : DescribeSpec({
 
         it("formats an Or expression") {
             val obj = buildJsonObject {
-                put("matchAll", false)
                 put("cardPredicates", buildJsonArray {
                     addJsonObject {
                         put("type", "Or")
@@ -352,17 +348,6 @@ class FilterQueryLanguageTest : DescribeSpec({
             FilterQueryLanguage.formatFilter(buildJsonObject { }).shouldBeNull()
         }
 
-        it("returns null when matchAll=false has multiple card predicates (not wrapped in Or)") {
-            val obj = buildJsonObject {
-                put("matchAll", false)
-                put("cardPredicates", buildJsonArray {
-                    addJsonObject { put("type", "IsCreature") }
-                    addJsonObject { put("type", "IsArtifact") }
-                })
-            }
-            FilterQueryLanguage.formatFilter(obj).shouldBeNull()
-        }
-
         it("returns null for card predicates the language cannot express") {
             val obj = buildJsonObject {
                 put("cardPredicates", buildJsonArray {
@@ -381,7 +366,6 @@ class FilterQueryLanguageTest : DescribeSpec({
 
         it("returns null when Or contains an unformattable sub-predicate") {
             val obj = buildJsonObject {
-                put("matchAll", false)
                 put("cardPredicates", buildJsonArray {
                     addJsonObject {
                         put("type", "Or")
@@ -441,9 +425,6 @@ class FilterQueryLanguageTest : DescribeSpec({
             ).shouldBeTrue()
             FilterQueryLanguage.isGameObjectFilter(
                 buildJsonObject { put("controllerPredicate", buildJsonObject { }) }
-            ).shouldBeTrue()
-            FilterQueryLanguage.isGameObjectFilter(
-                buildJsonObject { put("matchAll", true) }
             ).shouldBeTrue()
         }
 

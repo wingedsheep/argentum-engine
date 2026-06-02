@@ -247,8 +247,6 @@ data class CounterAllOnStackEffect(
         append(parts.joinToString(" and "))
         if (opponentsOnly) append(" your opponents control")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -275,8 +273,6 @@ data class CounterAllOnStackEffect(
 data object DestroySourceOfTargetedAbilityEffect : Effect {
     override val description: String =
         "If a permanent's ability is countered this way, destroy that permanent"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -344,8 +340,6 @@ data class WardCounterEffect(
         is WardCost.Discard -> "Counter it unless its controller discards ${cost.description}"
         is WardCost.Sacrifice -> "Counter it unless its controller sacrifices ${cost.description}"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -370,8 +364,6 @@ data class ChangeSpellTargetEffect(
     } else {
         "Change target spell's target to another creature"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -389,8 +381,6 @@ data class ChangeSpellTargetEffect(
 @Serializable
 data object ChangeTargetEffect : Effect {
     override val description: String = "Change the target of target spell or ability with a single target"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -405,8 +395,6 @@ data object ChangeTargetEffect : Effect {
 @Serializable
 data object ReselectTargetRandomlyEffect : Effect {
     override val description: String = "Reselect its target at random"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -433,7 +421,7 @@ sealed interface RetargetChooser {
 /**
  * The player named by [chooser] may change the target or targets of the triggering spell or
  * ability (`context.triggeringEntityId`). Resolve from a trigger that fires on the spell/ability
- * (e.g. [com.wingedsheep.sdk.scripting.GameEvent.TargetsChosenEvent]). The chooser may change all,
+ * (e.g. [com.wingedsheep.sdk.scripting.EventPattern.TargetsChosenEvent]). The chooser may change all,
  * some, or none of the targets; new targets must be legal for the original spell/ability judged
  * from *its* controller's perspective (CR: same number, no illegal target, no target chosen twice).
  *
@@ -451,8 +439,6 @@ data class ChangeTriggeringObjectTargetsEffect(
             is RetargetChooser.OwnerOfStored -> "The chosen player"
         }
     } may change the target or targets of the triggering spell or ability"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -519,8 +505,6 @@ data class GrantKeywordToSpellEffect(
         this(keyword.name, target)
 
     override val description: String = "${target.description} gains ${keyword.lowercase().replace('_', ' ')}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 @SerialName("CopyTargetSpell")
@@ -542,8 +526,6 @@ data class CopyTargetSpellEffect(
     val removeLegendary: Boolean = false
 ) : Effect {
     override val description: String = "Copy target spell"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -562,8 +544,6 @@ data class CopyTargetTriggeredAbilityEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Copy target triggered ability"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -680,8 +660,6 @@ data class MarkSpellExileWithCountersEffect(
         if (count == 1) append("a $counterType counter") else append("$count $counterType counters")
         append(" on it instead of putting it into your graveyard as it resolves")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 // =============================================================================
@@ -705,6 +683,4 @@ data class MarkSpellExileWithCountersEffect(
 @Serializable
 data object ReturnSpellToOwnersHandEffect : Effect {
     override val description: String = "Return target spell to its owner's hand"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

@@ -187,8 +187,6 @@ data class CreatePredefinedTokenEffect(
         append(tokenType)
         append(if (count == 1) " token" else " tokens")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -208,7 +206,6 @@ data class CreateRoleTokenEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String = "Create a $roleName token attached to ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -263,8 +260,6 @@ data class CreateTokenCopyOfSourceEffect(
             append(". Exile ${if (count == 1) "it" else "them"} at the beginning of the next ${exileAtStep.displayName}")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -289,8 +284,6 @@ data class CreateTokenCopyOfEquippedCreatureEffect(
         if (removeLegendary) append(", except the token isn't legendary")
         if (grantHaste) append(". That token gains haste")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -418,6 +411,4 @@ data class CreateTokenCopyOfTargetEffect(
             append(" with ${addedKeywords.joinToString(", ") { it.displayName.lowercase() }}")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

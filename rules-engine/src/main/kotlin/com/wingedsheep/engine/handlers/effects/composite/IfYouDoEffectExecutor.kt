@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -15,8 +16,10 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -80,10 +83,18 @@ class IfYouDoEffectExecutor(
     /**
      * Capture the data the [SuccessCriterion] needs to evaluate the post-action delta.
      *
-     * For [SuccessCriterion.Auto], walk the action's effect tree for a terminal
-     * `MoveCollectionEffect` and record its destination zone's pre-execution size.
-     * For other criteria (or actions that don't fit), the snapshot is empty and the
-     * resumer falls through to the criterion's intrinsic evaluation.
+     * For [SuccessCriterion.Auto], the probe recognizes two zone-move shapes and records
+     * the destination zone's pre-execution size:
+     * - a terminal pipeline [MoveCollectionEffect] (multi-object moves), and
+     * - a terminal single-target [MoveToZoneEffect] whose target is [EffectTarget.Self]
+     *   (e.g. "exile this card from your graveyard. If you do, …" — Council's Deliberation).
+     *
+     * The collection move is checked first so a pipeline that ends in one keeps its existing
+     * semantics. Single-target moves with a non-Self target aren't resolvable here without
+     * full target resolution, so they (and genuinely non-move actions such as deal-damage /
+     * gain-life) yield an empty snapshot and fall through to the criterion's intrinsic
+     * evaluation — for [SuccessCriterion.Auto] that means [evaluateAuto]'s fail-open default,
+     * which is correct for actions whose "did it happen" isn't a zone delta.
      */
     private fun captureSnapshot(
         state: GameState,
@@ -92,16 +103,31 @@ class IfYouDoEffectExecutor(
     ): IfYouDoSnapshot {
         if (effect.successCriterion !is SuccessCriterion.Auto) return IfYouDoSnapshot()
 
-        val terminalMove = findTerminalMove(effect.action) ?: return IfYouDoSnapshot()
-        val destination = terminalMove.destination as? CardDestination.ToZone ?: return IfYouDoSnapshot()
-        val ownerId = resolvePlayer(destination.player, context) ?: return IfYouDoSnapshot()
+        findTerminalMove(effect.action)?.let { move ->
+            val destination = move.destination as? CardDestination.ToZone ?: return IfYouDoSnapshot()
+            val ownerId = resolvePlayer(destination.player, context) ?: return IfYouDoSnapshot()
+            return zoneSnapshot(state, ownerId, destination.zone)
+        }
 
-        return IfYouDoSnapshot(
-            destinationZoneOwner = ownerId,
-            destinationZoneType = destination.zone,
-            destinationZonePreSize = state.zones[ZoneKey(ownerId, destination.zone)]?.size ?: 0
-        )
+        findTerminalSingleMove(effect.action)?.let { move ->
+            // Only the Self target resolves to a concrete moved entity here; the destination
+            // zone is owned by that entity's owner (e.g. self-exile from a graveyard lands in
+            // that card's owner's exile). Other targets fall through to fail-open as before.
+            if (move.target !is EffectTarget.Self) return IfYouDoSnapshot()
+            val movedId = context.sourceId ?: return IfYouDoSnapshot()
+            val ownerId = state.getEntity(movedId)?.get<OwnerComponent>()?.playerId ?: return IfYouDoSnapshot()
+            return zoneSnapshot(state, ownerId, move.destination)
+        }
+
+        return IfYouDoSnapshot()
     }
+
+    private fun zoneSnapshot(state: GameState, ownerId: EntityId, zone: Zone): IfYouDoSnapshot =
+        IfYouDoSnapshot(
+            destinationZoneOwner = ownerId,
+            destinationZoneType = zone,
+            destinationZonePreSize = state.zones[ZoneKey(ownerId, zone)]?.size ?: 0
+        )
 
     /**
      * Walk the effect tree for the last [MoveCollectionEffect] in execution order.
@@ -110,6 +136,16 @@ class IfYouDoEffectExecutor(
     private fun findTerminalMove(effect: Effect): MoveCollectionEffect? = when (effect) {
         is MoveCollectionEffect -> effect
         is CompositeEffect -> effect.effects.asReversed().firstNotNullOfOrNull { findTerminalMove(it) }
+        else -> null
+    }
+
+    /**
+     * Walk the effect tree for the last single-target [MoveToZoneEffect] in execution order.
+     * Returns null for shapes the auto-probe doesn't recognize.
+     */
+    private fun findTerminalSingleMove(effect: Effect): MoveToZoneEffect? = when (effect) {
+        is MoveToZoneEffect -> effect
+        is CompositeEffect -> effect.effects.asReversed().firstNotNullOfOrNull { findTerminalSingleMove(it) }
         else -> null
     }
 
@@ -169,8 +205,11 @@ class IfYouDoEffectExecutor(
             val owner = snapshot.destinationZoneOwner
             val zone = snapshot.destinationZoneType
             if (owner == null || zone == null) {
-                // No probe was capturable — fail open (preserves prior behavior
-                // for action shapes not yet supported by Auto inference).
+                // No zone-move probe was capturable. This is reached only for non-zone-move
+                // actions (deal damage, gain/lose life, draw, …) whose "did it happen" isn't a
+                // zone-size delta — for those, treating the action as performed (fail open) is
+                // the correct default. Zone-move shapes (collection moves and self-target single
+                // moves) are probed in captureSnapshot and never land here.
                 return true
             }
             val postSize = state.zones[ZoneKey(owner, zone)]?.size ?: 0

@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.dsk.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.conditions.Compare
@@ -35,7 +35,7 @@ val LeylineOfHope = card("Leyline of Hope") {
         ModifyLifeGain(
             multiplier = 1,
             modifier = 1,
-            appliesTo = GameEvent.LifeGainEvent(player = Player.You)
+            appliesTo = EventPattern.LifeGainEvent(player = Player.You)
         )
     )
 

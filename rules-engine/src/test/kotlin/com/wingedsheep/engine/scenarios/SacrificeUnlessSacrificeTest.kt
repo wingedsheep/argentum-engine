@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
@@ -40,7 +40,7 @@ class SacrificeUnlessSacrificeTest : FunSpec({
         creatureStats = CreatureStats(3, 4),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = PayOrSufferEffect(
                     cost = PayCost.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest")),
@@ -59,7 +59,7 @@ class SacrificeUnlessSacrificeTest : FunSpec({
         creatureStats = CreatureStats(8, 8),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = PayOrSufferEffect(
                     cost = PayCost.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest"), count = 3),

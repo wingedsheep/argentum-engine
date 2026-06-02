@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -36,7 +36,7 @@ val DragonstormGlobe = card("Dragonstorm Globe") {
             // EntersWithCountersHelper, so the artifact grants counters to *other*
             // permanents (Dragons you control) as they enter, not to itself.
             otherOnly = true,
-            appliesTo = GameEvent.ZoneChangeEvent(
+            appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Creature.youControl().withSubtype(Subtype.DRAGON),
                 to = Zone.BATTLEFIELD,
             ),

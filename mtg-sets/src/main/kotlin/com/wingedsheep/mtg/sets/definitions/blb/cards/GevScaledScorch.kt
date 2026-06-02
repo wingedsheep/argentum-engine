@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.references.Player
@@ -46,7 +46,7 @@ val GevScaledScorch = card("Gev, Scaled Scorch") {
         EntersWithDynamicCounters(
             count = DynamicAmount.TurnTracking(Player.You, TurnTracker.OPPONENTS_WHO_LOST_LIFE),
             otherOnly = true,
-            appliesTo = GameEvent.ZoneChangeEvent(
+            appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Creature.youControl(),
                 to = Zone.BATTLEFIELD
             )

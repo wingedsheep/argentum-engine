@@ -7,7 +7,7 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 
@@ -43,7 +43,7 @@ class AttachmentTriggerDetector(private val matcher: TriggerMatcher) {
                     // skip auras — they go to graveyard with the creature and are handled by
                     // DeathAndLeaveTriggerDetector.detectDeadAuraAttachmentTriggers via the
                     // aura's own ZoneChangeEvent. Only equipment stays on the battlefield.
-                    if (isZoneChange && ability.trigger is GameEvent.ZoneChangeEvent &&
+                    if (isZoneChange && ability.trigger is EventPattern.ZoneChangeEvent &&
                         !entry.cardComponent.typeLine.isEquipment) continue
                     if (matchesAttachedTrigger(ability.trigger, event, entityId, state)) {
                         triggers.add(
@@ -90,30 +90,30 @@ class AttachmentTriggerDetector(private val matcher: TriggerMatcher) {
      * for a specific attached entity.
      */
     private fun matchesAttachedTrigger(
-        trigger: GameEvent,
+        trigger: EventPattern,
         event: EngineGameEvent,
         attachedEntityId: com.wingedsheep.sdk.model.EntityId,
         state: GameState
     ): Boolean {
         return when (trigger) {
-            is GameEvent.DamageReceivedEvent -> {
+            is EventPattern.DamageReceivedEvent -> {
                 event is DamageDealtEvent && event.targetId == attachedEntityId
             }
-            is GameEvent.DealsDamageEvent -> {
+            is EventPattern.DealsDamageEvent -> {
                 event is DamageDealtEvent &&
                     event.sourceId == attachedEntityId &&
                     matcher.matchesDealsDamageTrigger(trigger, event, state)
             }
-            is GameEvent.AttackEvent -> {
+            is EventPattern.AttackEvent -> {
                 event is AttackersDeclaredEvent && attachedEntityId in event.attackers
             }
-            is GameEvent.TapEvent -> {
+            is EventPattern.TapEvent -> {
                 event is TappedEvent && event.entityId == attachedEntityId
             }
-            is GameEvent.TurnFaceUpEvent -> {
+            is EventPattern.TurnFaceUpEvent -> {
                 event is TurnFaceUpEvent && event.entityId == attachedEntityId
             }
-            is GameEvent.ZoneChangeEvent -> {
+            is EventPattern.ZoneChangeEvent -> {
                 if (event !is ZoneChangeEvent) return false
                 if (event.entityId != attachedEntityId) return false
                 if (trigger.from != null && event.fromZone != trigger.from) return false

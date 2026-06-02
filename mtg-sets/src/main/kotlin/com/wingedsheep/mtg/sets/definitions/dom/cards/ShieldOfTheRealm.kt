@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 
@@ -22,7 +22,7 @@ val ShieldOfTheRealm = card("Shield of the Realm") {
     replacementEffect(
         PreventDamage(
             amount = 2,
-            appliesTo = GameEvent.DamageEvent(
+            appliesTo = EventPattern.DamageEvent(
                 recipient = RecipientFilter.EquippedCreature
             )
         )

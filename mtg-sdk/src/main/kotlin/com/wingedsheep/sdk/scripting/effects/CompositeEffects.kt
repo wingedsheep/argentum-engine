@@ -350,10 +350,12 @@ data class IfYouDoEffect(
 sealed interface SuccessCriterion {
     /**
      * Infer success from the action's shape. The executor walks [IfYouDoEffect.action]
-     * looking for a terminal [MoveCollectionEffect]; if found, the destination zone is
-     * snapshot pre-execution and counted as "succeeded" iff it grew by at least one
-     * entry. Anything else falls through to [Always] (fail-open) — add explicit
-     * criteria for atomic actions whose outcome doesn't reduce to a zone-size delta.
+     * for a terminal zone move — either a pipeline [MoveCollectionEffect] or a
+     * single-target `MoveToZoneEffect` whose target is the source itself; if found, the
+     * destination zone is snapshot pre-execution and counted as "succeeded" iff it grew
+     * by at least one entry. Actions whose outcome isn't a zone-size delta (deal damage,
+     * gain/lose life, …) fall through to [Always] (fail-open), which is the correct
+     * default for them. Use an explicit criterion when that inference is wrong.
      */
     @SerialName("SuccessCriterion.Auto")
     @Serializable

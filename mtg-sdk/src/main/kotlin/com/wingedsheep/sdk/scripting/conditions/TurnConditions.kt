@@ -20,7 +20,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object IsYourTurn : Condition {
     override val description: String = "if it's your turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -30,7 +29,6 @@ data object IsYourTurn : Condition {
 @Serializable
 data object IsNotYourTurn : Condition {
     override val description: String = "if it's not your turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -51,7 +49,6 @@ data class IsInPhase(
         append(phases.joinToString(" or ") { it.displayName.removeSuffix(" Phase").lowercase() })
         if (phases.any { !it.isMainPhase } || phases.size > 1) append(" phase")
     }
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 // =============================================================================
@@ -67,7 +64,6 @@ data class IsInPhase(
 @Serializable
 data object YouWereAttackedThisStep : Condition {
     override val description: String = "if you've been attacked this step"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -140,7 +136,6 @@ data class PlayerCastSpellsThisTurn(
 data object IsFirstSpellPaidWithTreasureManaCastThisTurn : Condition {
     override val description: String =
         "if it's the first spell you've cast this turn that mana from a Treasure was spent to cast"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -161,7 +156,6 @@ data class PermanentTypeEnteredBattlefieldThisTurn(
 ) : Condition {
     override val description: String =
         "if ${anA(cardType.displayName)} entered the battlefield under ${player.possessive} control this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 
     private fun anA(word: String): String =
         if (word.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an $word" else "a $word"
@@ -180,7 +174,6 @@ data class PermanentTypeEnteredBattlefieldThisTurn(
 @Serializable
 data class SourceAbilityResolvedNTimesThisTurn(val count: Int) : Condition {
     override val description: String = "if this is the ${ordinal(count)} time this ability has resolved this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 
     private fun ordinal(n: Int): String = when (n) {
         1 -> "first"
@@ -217,7 +210,6 @@ data class SourceAbilityResolvedNTimesThisTurn(val count: Int) : Condition {
 data object VoidCondition : Condition {
     override val description: String =
         "if a nonland permanent left the battlefield this turn or a spell was warped this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 // =============================================================================
@@ -233,7 +225,6 @@ data object VoidCondition : Condition {
 @Serializable
 data object OpponentSpellOnStack : Condition {
     override val description: String = "if an opponent has cast a spell"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 // =============================================================================
@@ -249,7 +240,6 @@ data object OpponentSpellOnStack : Condition {
 @Serializable
 data object CreatureDiedThisTurnCondition : Condition {
     override val description: String = "if a creature died this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -262,7 +252,6 @@ data object CreatureDiedThisTurnCondition : Condition {
 @Serializable
 data object ControlledCreatureDiedThisTurnCondition : Condition {
     override val description: String = "if a creature died under your control this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 // =============================================================================
@@ -281,7 +270,6 @@ data object ControlledCreatureDiedThisTurnCondition : Condition {
 @Serializable
 data object SourcePlottedOnPriorTurn : Condition {
     override val description: String = "if this card was plotted on a prior turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 // =============================================================================
@@ -305,6 +293,5 @@ data object SourcePlottedOnPriorTurn : Condition {
 @Serializable
 data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
     override val description: String = "if ${player.description} has the city's blessing"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 

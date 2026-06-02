@@ -77,7 +77,7 @@ class GainLifeExecutor(
                 if (effect !is PreventLifeGain) continue
 
                 val lifeGainEvent = effect.appliesTo
-                if (lifeGainEvent !is com.wingedsheep.sdk.scripting.GameEvent.LifeGainEvent) continue
+                if (lifeGainEvent !is com.wingedsheep.sdk.scripting.EventPattern.LifeGainEvent) continue
 
                 when (lifeGainEvent.player) {
                     Player.Each -> return true

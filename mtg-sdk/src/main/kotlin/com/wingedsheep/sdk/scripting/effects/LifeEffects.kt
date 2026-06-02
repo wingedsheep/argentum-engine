@@ -70,8 +70,6 @@ data class PayLifeEffect(
     val amount: Int
 ) : Effect {
     override val description: String = "pay $amount life"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -85,8 +83,6 @@ data class OwnerGainsLifeEffect(
     val amount: Int
 ) : Effect {
     override val description: String = "Its owner gains $amount life"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -136,6 +132,4 @@ data class ExchangeLifeAndPowerEffect(
     val target: EffectTarget = EffectTarget.Self
 ) : Effect {
     override val description: String = "Exchange your life total with ${target.description}'s power"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

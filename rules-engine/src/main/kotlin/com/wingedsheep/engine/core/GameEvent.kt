@@ -218,7 +218,7 @@ data class CitysBlessingGainedEvent(
 /**
  * The Ring tempted a player (CR 701.52d). Emitted after the "the Ring tempts you" action
  * completes (even if some or all of it was impossible). Drives "Whenever the Ring tempts you"
- * triggers; see [com.wingedsheep.sdk.scripting.GameEvent.RingTemptedEvent].
+ * triggers; see [com.wingedsheep.sdk.scripting.EventPattern.RingTemptedEvent].
  *
  * @property playerId The tempted player.
  * @property temptCount That player's tempt count after this tempt (1..n).
@@ -237,7 +237,7 @@ data class RingTemptedEvent(
 /**
  * A player just finished a `scry N` (CR 701.18). Fires once per scry, after the
  * top/bottom moves have all resolved. Drives "Whenever you scry" triggers; see
- * [com.wingedsheep.sdk.scripting.GameEvent.ScriedEvent].
+ * [com.wingedsheep.sdk.scripting.EventPattern.ScriedEvent].
  *
  * @property playerId The player who scried.
  * @property count Number of cards actually looked at (equals scry N unless the
@@ -582,7 +582,7 @@ data class BecameSaddledEvent(
  * A player tapped a land for mana (a land's mana ability resolved).
  *
  * Drives the "Whenever a player taps a land for mana" trigger family
- * ([com.wingedsheep.sdk.scripting.GameEvent.LandTappedForMana]). Emitted only on the manual
+ * ([com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana]). Emitted only on the manual
  * mana-ability activation path; automatic cost payment adds mana via the solver without emitting
  * this event.
  */

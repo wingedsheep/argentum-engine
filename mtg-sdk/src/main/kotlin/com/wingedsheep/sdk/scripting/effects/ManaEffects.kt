@@ -21,7 +21,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PayManaCostEffect(val cost: ManaCost) : Effect {
     override val description: String = "Pay $cost"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -46,8 +45,6 @@ data class AddManaEffect(
         })
         if (restriction != null) append(". ${restriction.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -71,8 +68,6 @@ data class AddColorlessManaEffect(
         })
         if (restriction != null) append(". ${restriction.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -126,8 +121,6 @@ data class AddManaOfChoiceEffect(
         if (restriction != null && restriction.description.isNotEmpty()) append(". ${restriction.description}")
         for (rider in riders) append(". ${rider.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -206,8 +199,6 @@ data class AddAnyColorManaSpendOnChosenTypeEffect(
         }
         for (rider in riders) append(". ${rider.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -230,6 +221,4 @@ data class AddOneManaOfEachColorAmongEffect(
         append("For each color among matching permanents, add one mana of that color")
         if (restriction != null) append(". ${restriction.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

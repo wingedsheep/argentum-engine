@@ -7,6 +7,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Galadhrim Bow
@@ -36,14 +38,12 @@ val GaladhrimBow = card("Galadhrim Bow") {
 
     // Equipped creature gets +1/+2
     staticAbility {
-        effect = Effects.ModifyStats(+1, +2)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +2, Filters.EquippedCreature)
     }
 
     // Equipped creature has reach
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.REACH)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.REACH, Filters.EquippedCreature)
     }
 
     equipAbility("{2}")

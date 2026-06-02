@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Bark of Doran
@@ -26,8 +26,7 @@ val BarkOfDoran = card("Bark of Doran") {
             "Equip {1}"
 
     staticAbility {
-        effect = Effects.ModifyStats(0, +1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(0, +1, Filters.EquippedCreature)
     }
 
     staticAbility {

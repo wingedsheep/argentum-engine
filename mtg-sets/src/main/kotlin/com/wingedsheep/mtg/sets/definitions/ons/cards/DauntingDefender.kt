@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -26,7 +26,7 @@ val DauntingDefender = card("Daunting Defender") {
     replacementEffect(
         PreventDamage(
             amount = 1,
-            appliesTo = GameEvent.DamageEvent(
+            appliesTo = EventPattern.DamageEvent(
                 recipient = RecipientFilter.Matching(
                     GameObjectFilter.Creature.withSubtype(Subtype("Cleric")).youControl()
                 )

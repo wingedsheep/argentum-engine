@@ -101,7 +101,7 @@ object Counters {
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.
      * "whenever one or more counters are put on a creature you control" (Stalwart Successor).
-     * A [com.wingedsheep.sdk.scripting.GameEvent.CountersPlacedEvent] with this `counterType`
+     * A [com.wingedsheep.sdk.scripting.EventPattern.CountersPlacedEvent] with this `counterType`
      * matches every counter-placement event regardless of the counter kind.
      */
     const val ANY = "any"

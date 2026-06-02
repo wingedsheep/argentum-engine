@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DoubleDamage
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 
@@ -22,7 +22,7 @@ val GratuitousViolence = card("Gratuitous Violence") {
 
     replacementEffect(
         DoubleDamage(
-            appliesTo = GameEvent.DamageEvent(
+            appliesTo = EventPattern.DamageEvent(
                 source = SourceFilter.Matching(GameObjectFilter.Creature.youControl()),
             )
         )

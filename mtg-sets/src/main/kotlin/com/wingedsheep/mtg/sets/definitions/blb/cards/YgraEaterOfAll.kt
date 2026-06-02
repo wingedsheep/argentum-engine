@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
-import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 

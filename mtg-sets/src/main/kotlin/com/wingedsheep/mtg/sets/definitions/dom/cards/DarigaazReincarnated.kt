@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect
 import com.wingedsheep.sdk.scripting.conditions.Compare
@@ -47,7 +47,7 @@ val DarigaazReincarnated = card("Darigaaz Reincarnated") {
             newDestination = Zone.EXILE,
             additionalEffect = AddCountersEffect(Counters.EGG, 3, EffectTarget.Self),
             selfOnly = true,
-            appliesTo = GameEvent.ZoneChangeEvent(
+            appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Any,
                 from = Zone.BATTLEFIELD,
                 to = Zone.GRAVEYARD

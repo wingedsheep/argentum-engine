@@ -37,8 +37,6 @@ data class GrantKeywordEffect(
         append("${target.description} gains ${keyword.lowercase().replace('_', ' ')}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -56,8 +54,6 @@ data class GrantToxicEffect(
         append("${target.description} gains toxic $amount")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -81,8 +77,6 @@ data class RemoveKeywordEffect(
         append("${target.description} loses ${keyword.lowercase().replace('_', ' ')}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -102,8 +96,6 @@ data class RemoveAllAbilitiesEffect(
         append("${target.description} loses all abilities")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -188,8 +180,6 @@ data class GrantHarmonizeEffect(
         append(if (cost != null) " $cost" else " (its harmonize cost is equal to its mana cost)")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -267,6 +257,4 @@ data class GrantToEnchantedCreatureTypeGroupEffect(
         }
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -47,8 +48,7 @@ val MithrilCoat = card("Mithril Coat") {
 
     // Equipped creature has indestructible.
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.INDESTRUCTIBLE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.INDESTRUCTIBLE, Filters.EquippedCreature)
     }
 
     equipAbility("{3}")

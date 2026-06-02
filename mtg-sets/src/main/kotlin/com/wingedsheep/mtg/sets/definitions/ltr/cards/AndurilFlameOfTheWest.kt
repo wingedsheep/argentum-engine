@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -33,8 +34,7 @@ val AndurilFlameOfTheWest = card("Andúril, Flame of the West") {
         "Equip {2}"
 
     staticAbility {
-        effect = Effects.ModifyStats(+3, +1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+3, +1, Filters.EquippedCreature)
     }
 
     triggeredAbility {

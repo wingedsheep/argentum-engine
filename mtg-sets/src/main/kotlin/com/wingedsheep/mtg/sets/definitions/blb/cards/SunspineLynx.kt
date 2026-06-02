@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DamageCantBePrevented
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
@@ -33,7 +33,7 @@ val SunspineLynx = card("Sunspine Lynx") {
     toughness = 4
     oracleText = "Players can't gain life.\nDamage can't be prevented.\nWhen Sunspine Lynx enters, it deals damage to each player equal to the number of nonbasic lands that player controls."
 
-    replacementEffect(PreventLifeGain(appliesTo = GameEvent.LifeGainEvent(player = Player.Each)))
+    replacementEffect(PreventLifeGain(appliesTo = EventPattern.LifeGainEvent(player = Player.Each)))
     replacementEffect(DamageCantBePrevented())
 
     triggeredAbility {

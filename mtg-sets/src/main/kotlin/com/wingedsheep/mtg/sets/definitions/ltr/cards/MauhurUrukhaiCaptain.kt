@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
@@ -34,7 +34,7 @@ val MauhurUrukhaiCaptain = card("Mauhúr, Uruk-hai Captain") {
     replacementEffect(
         ModifyCounterPlacement(
             modifier = 1,
-            appliesTo = GameEvent.CounterPlacementEvent(
+            appliesTo = EventPattern.CounterPlacementEvent(
                 counterType = CounterTypeFilter.PlusOnePlusOne,
                 recipient = RecipientFilter.Matching(
                     GameObjectFilter.Permanent.withAnySubtype("Army", "Goblin", "Orc").youControl()

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -26,8 +27,7 @@ val Hylderblade = card("Hylderblade") {
     oracleText = "Equipped creature gets +3/+1.\nVoid — At the beginning of your end step, if a nonland permanent left the battlefield this turn or a spell was warped this turn, attach this Equipment to target creature you control.\nEquip {4}"
 
     staticAbility {
-        effect = Effects.ModifyStats(3, 1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(3, 1, Filters.EquippedCreature)
     }
 
     triggeredAbility {

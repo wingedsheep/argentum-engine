@@ -7,6 +7,8 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -39,14 +41,12 @@ val AuxiliaryBoosters = card("Auxiliary Boosters") {
 
     // Static ability: Equipped creature gets +1/+2
     staticAbility {
-        effect = Effects.ModifyStats(+1, +2)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +2, Filters.EquippedCreature)
     }
 
     // Static ability: Equipped creature has flying
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.FLYING, EffectTarget.EquippedCreature)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.FLYING, Filters.EquippedCreature)
     }
 
     equipAbility("{3}")

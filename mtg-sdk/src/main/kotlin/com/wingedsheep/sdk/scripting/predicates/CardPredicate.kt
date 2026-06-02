@@ -28,56 +28,48 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object IsCreature : CardPredicate {
         override val description: String = "creature"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsLand")
     @Serializable
     data object IsLand : CardPredicate {
         override val description: String = "land"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsArtifact")
     @Serializable
     data object IsArtifact : CardPredicate {
         override val description: String = "artifact"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsEnchantment")
     @Serializable
     data object IsEnchantment : CardPredicate {
         override val description: String = "enchantment"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsPlaneswalker")
     @Serializable
     data object IsPlaneswalker : CardPredicate {
         override val description: String = "planeswalker"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsInstant")
     @Serializable
     data object IsInstant : CardPredicate {
         override val description: String = "instant"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsSorcery")
     @Serializable
     data object IsSorcery : CardPredicate {
         override val description: String = "sorcery"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsBasicLand")
     @Serializable
     data object IsBasicLand : CardPredicate {
         override val description: String = "basic land"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches creature, artifact, enchantment, planeswalker, land */
@@ -85,42 +77,36 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object IsPermanent : CardPredicate {
         override val description: String = "permanent"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsNonland")
     @Serializable
     data object IsNonland : CardPredicate {
         override val description: String = "nonland"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsNoncreature")
     @Serializable
     data object IsNoncreature : CardPredicate {
         override val description: String = "noncreature"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsNonenchantment")
     @Serializable
     data object IsNonenchantment : CardPredicate {
         override val description: String = "nonenchantment"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsToken")
     @Serializable
     data object IsToken : CardPredicate {
         override val description: String = "token"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsNontoken")
     @Serializable
     data object IsNontoken : CardPredicate {
         override val description: String = "nontoken"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -131,14 +117,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object IsLegendary : CardPredicate {
         override val description: String = "legendary"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsNonlegendary")
     @Serializable
     data object IsNonlegendary : CardPredicate {
         override val description: String = "nonlegendary"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -175,28 +159,24 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object HasChosenColor : CardPredicate {
         override val description: String = "of the chosen color"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsColorless")
     @Serializable
     data object IsColorless : CardPredicate {
         override val description: String = "colorless"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsMulticolored")
     @Serializable
     data object IsMulticolored : CardPredicate {
         override val description: String = "multicolored"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("IsMonocolored")
     @Serializable
     data object IsMonocolored : CardPredicate {
         override val description: String = "monocolored"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -242,7 +222,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class HasBasicLandType(val landType: String) : CardPredicate {
         override val description: String = landType
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -253,7 +232,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class NameEquals(val name: String) : CardPredicate {
         override val description: String = "named $name"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -268,7 +246,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class NameEqualsChosen(val variableName: String) : CardPredicate {
         override val description: String = "with the chosen name"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -279,14 +256,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class HasKeyword(val keyword: Keyword) : CardPredicate {
         override val description: String = "with ${keyword.displayName.lowercase()}"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("NotKeyword")
     @Serializable
     data class NotKeyword(val keyword: Keyword) : CardPredicate {
         override val description: String = "without ${keyword.displayName.lowercase()}"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -297,14 +272,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class ManaValueEquals(val value: Int) : CardPredicate {
         override val description: String = "with mana value $value"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ManaValueAtMost")
     @Serializable
     data class ManaValueAtMost(val max: Int) : CardPredicate {
         override val description: String = "with mana value $max or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -317,7 +290,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object ManaValueEqualsX : CardPredicate {
         override val description: String = "with mana value equal to the chosen number"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -329,14 +301,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object ManaValueAtMostX : CardPredicate {
         override val description: String = "with mana value X or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ManaValueAtLeast")
     @Serializable
     data class ManaValueAtLeast(val min: Int) : CardPredicate {
         override val description: String = "with mana value $min or greater"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -351,7 +321,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class ManaValueAtMostEntity(val reference: EntityReference) : CardPredicate {
         override val description: String = "with mana value less than or equal to ${reference.description}"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -372,21 +341,18 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     data class ManaValueAtMostEntityManaSpent(val reference: EntityReference) : CardPredicate {
         override val description: String =
             "with mana value less than or equal to the mana spent to cast ${reference.description}"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ManaValueIsEven")
     @Serializable
     data object ManaValueIsEven : CardPredicate {
         override val description: String = "with even mana value"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ManaValueIsOdd")
     @Serializable
     data object ManaValueIsOdd : CardPredicate {
         override val description: String = "with odd mana value"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -397,42 +363,36 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class PowerEquals(val value: Int) : CardPredicate {
         override val description: String = "with power $value"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("PowerAtMost")
     @Serializable
     data class PowerAtMost(val max: Int) : CardPredicate {
         override val description: String = "with power $max or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("PowerAtLeast")
     @Serializable
     data class PowerAtLeast(val min: Int) : CardPredicate {
         override val description: String = "with power $min or greater"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ToughnessEquals")
     @Serializable
     data class ToughnessEquals(val value: Int) : CardPredicate {
         override val description: String = "with toughness $value"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ToughnessAtMost")
     @Serializable
     data class ToughnessAtMost(val max: Int) : CardPredicate {
         override val description: String = "with toughness $max or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ToughnessAtLeast")
     @Serializable
     data class ToughnessAtLeast(val min: Int) : CardPredicate {
         override val description: String = "with toughness $min or greater"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Power or toughness is at least the given value (OR logic) */
@@ -440,7 +400,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class PowerOrToughnessAtLeast(val min: Int) : CardPredicate {
         override val description: String = "with power or toughness $min or greater"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Total power and toughness (sum) is at most the given value */
@@ -448,7 +407,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class TotalPowerAndToughnessAtMost(val max: Int) : CardPredicate {
         override val description: String = "with total power and toughness $max or less"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Toughness is strictly greater than power */
@@ -456,7 +414,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object ToughnessGreaterThanPower : CardPredicate {
         override val description: String = "with toughness greater than its power"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -485,7 +442,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class HasSubtypeFromVariable(val variableName: String) : CardPredicate {
         override val description: String = "of the chosen type"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches cards that have a subtype matching any string in storedStringLists[listName] */
@@ -493,7 +449,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class HasSubtypeInStoredList(val listName: String) : CardPredicate {
         override val description: String = "of a type chosen this way"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -518,7 +473,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class HasSubtypeInEachStoredGroup(val groupName: String) : CardPredicate {
         override val description: String = "that shares a creature type with each of them"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -530,7 +484,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object NotOfSourceChosenType : CardPredicate {
         override val description: String = "that isn't of the chosen type"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches spells that share a creature subtype with the source permanent's projected types */
@@ -538,7 +491,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object SharesCreatureTypeWithSource : CardPredicate {
         override val description: String = "that shares a creature type with this creature"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches creatures that share a creature subtype with the triggering entity */
@@ -546,7 +498,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object SharesCreatureTypeWithTriggeringEntity : CardPredicate {
         override val description: String = "that shares a creature type with it"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches creatures that have the subtype chosen on the source permanent (ChosenCreatureTypeComponent) */
@@ -554,7 +505,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object HasChosenSubtype : CardPredicate {
         override val description: String = "of the chosen type"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -568,7 +518,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object SharesChosenColorWithSource : CardPredicate {
         override val description: String = "of the chosen color"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches creatures that share a creature subtype with the referenced entity */
@@ -580,7 +529,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
             is EntityReference.Triggering -> "that shares a creature type with it"
             else -> "that shares a creature type with ${entity.description}"
         }
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /** Matches objects that share a color with the referenced entity */
@@ -592,7 +540,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
             is EntityReference.Triggering -> "that shares a color with it"
             else -> "that shares a color with ${entity.description}"
         }
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -606,7 +553,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object SharesColorWithRecipient : CardPredicate {
         override val description: String = "that shares a color with it"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     // =============================================================================
@@ -621,7 +567,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object IsActivatedOrTriggeredAbility : CardPredicate {
         override val description: String = "activated or triggered ability"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -632,7 +577,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object IsTriggeredAbility : CardPredicate {
         override val description: String = "triggered ability"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -645,7 +589,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object IsActivatedAbility : CardPredicate {
         override val description: String = "activated ability"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**
@@ -659,7 +602,6 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object HasNonManaActivatedAbility : CardPredicate {
         override val description: String = "with an activated ability that isn't a mana ability"
-        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     /**

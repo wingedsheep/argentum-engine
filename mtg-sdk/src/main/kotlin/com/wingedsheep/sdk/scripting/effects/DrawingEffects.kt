@@ -82,8 +82,6 @@ data class LookAtTargetHandEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
 ) : Effect {
     override val description: String = "Look at ${target.description}'s hand"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -120,8 +118,6 @@ data class LookAtFaceDownEffect(
         FaceDownLookScope.ALL_CONTROLLED_BY_TARGET_PLAYER ->
             "Look at any face-down creatures ${target.description} controls"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -137,8 +133,6 @@ data class EachPlayerDiscardsOrLoseLifeEffect(
 ) : Effect {
     override val description: String =
         "Each player discards a card. Then each player who didn't discard a creature card this way loses $lifeLoss life."
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -151,8 +145,6 @@ data class EachPlayerDiscardsOrLoseLifeEffect(
 data object EachPlayerReturnsPermanentToHandEffect : Effect {
     override val description: String =
         "each player returns a permanent they control to its owner's hand"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -217,8 +209,6 @@ data class DrawUpToEffect(
             else -> append("${target.description.replaceFirstChar { it.uppercase() }} draws up to $maxCards cards")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -232,8 +222,6 @@ data class DrawUpToEffect(
 data object EachPlayerDrawsForDamageDealtToSourceEffect : Effect {
     override val description: String =
         "Each player draws cards equal to the amount of damage dealt to this creature this turn by sources they controlled"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -252,7 +240,5 @@ data class RevealHandEffect(
         EffectTarget.Controller -> "Reveal your hand"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} reveals their hand"
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 

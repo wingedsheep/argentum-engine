@@ -49,11 +49,12 @@ val EclipsedKithkin = card("Eclipsed Kithkin") {
                     selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
                     filter = GameObjectFilter(
                         cardPredicates = listOf(
+                            CardPredicate.Or(listOf(
                             CardPredicate.HasSubtype(Subtype.KITHKIN),
                             CardPredicate.HasSubtype(Subtype.FOREST),
                             CardPredicate.HasSubtype(Subtype.PLAINS),
-                        ),
-                        matchAll = false
+                            ))
+                        )
                     ),
                     storeSelected = "kept",
                     storeRemainder = "rest",

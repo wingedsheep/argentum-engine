@@ -23,7 +23,7 @@ import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent as SdkGameEvent
+import com.wingedsheep.sdk.scripting.EventPattern as SdkGameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding

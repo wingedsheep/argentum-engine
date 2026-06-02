@@ -49,11 +49,12 @@ val EclipsedBoggart = card("Eclipsed Boggart") {
                     selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
                     filter = GameObjectFilter(
                         cardPredicates = listOf(
+                            CardPredicate.Or(listOf(
                             CardPredicate.HasSubtype(Subtype.GOBLIN),
                             CardPredicate.HasSubtype(Subtype.SWAMP),
                             CardPredicate.HasSubtype(Subtype.MOUNTAIN),
-                        ),
-                        matchAll = false
+                            ))
+                        )
                     ),
                     storeSelected = "kept",
                     storeRemainder = "rest",

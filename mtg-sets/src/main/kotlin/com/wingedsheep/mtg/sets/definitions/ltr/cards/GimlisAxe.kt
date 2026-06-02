@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Gimli's Axe
@@ -28,8 +29,7 @@ val GimlisAxe = card("Gimli's Axe") {
 
     // Equipped creature gets +3/+0
     staticAbility {
-        effect = Effects.ModifyStats(+3, 0)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+3, 0, Filters.EquippedCreature)
     }
 
     // As long as equipped creature is legendary, it has menace.

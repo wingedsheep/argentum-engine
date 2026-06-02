@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Short Bow
@@ -21,18 +23,15 @@ val ShortBow = card("Short Bow") {
     oracleText = "Equipped creature gets +1/+1 and has vigilance and reach.\nEquip {1}"
 
     staticAbility {
-        effect = Effects.ModifyStats(+1, +1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +1, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.VIGILANCE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.VIGILANCE, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.REACH)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.REACH, Filters.EquippedCreature)
     }
 
     equipAbility("{1}")

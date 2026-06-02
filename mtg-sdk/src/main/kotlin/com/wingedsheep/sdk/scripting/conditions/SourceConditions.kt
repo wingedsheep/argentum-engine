@@ -52,7 +52,6 @@ data class SourceMatches(val filter: GameObjectFilter) : Condition {
 @Serializable
 data object YouControlSource : Condition {
     override val description: String = "if you control this permanent"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -76,7 +75,6 @@ data class ControllerTurnsTakenAtMost(val threshold: Int) : Condition {
         }
     }
     override val description: String = "it's your ${turnsOrdinal(threshold)} turn of the game"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 
     companion object {
         private fun turnsOrdinal(n: Int): String = when (n) {
@@ -113,7 +111,6 @@ data class ControllerTurnsTakenAtMost(val threshold: Int) : Condition {
 @Serializable
 data object SourceIsRingBearer : Condition {
     override val description: String = "if this creature is your Ring-bearer"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -128,7 +125,6 @@ data object SourceIsRingBearer : Condition {
 @Serializable
 data object SourceIsModified : Condition {
     override val description: String = "this permanent is modified"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -141,7 +137,6 @@ data object SourceIsModified : Condition {
 @Serializable
 data object WasCastFromHand : Condition {
     override val description: String = "you cast it from your hand"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -156,7 +151,6 @@ data object WasCastFromHand : Condition {
 @Serializable
 data object WasCast : Condition {
     override val description: String = "you cast it"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -168,7 +162,6 @@ data object WasCast : Condition {
 @Serializable
 data class WasCastFromZone(val zone: Zone) : Condition {
     override val description: String = "this spell was cast from a ${zone.displayName.lowercase()}"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -180,7 +173,6 @@ data class WasCastFromZone(val zone: Zone) : Condition {
 @Serializable
 data object WasKicked : Condition {
     override val description: String = "this spell was kicked"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -197,7 +189,6 @@ data object WasKicked : Condition {
 @Serializable
 data object BlightWasPaid : Condition {
     override val description: String = "this spell's additional cost was paid"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -228,7 +219,6 @@ data class ManaSpentToCastIncludes(
         append(parts.joinToString(""))
         append(" was spent to cast it")
     }
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -245,7 +235,6 @@ data class ManaSpentToCastIncludes(
 @Serializable
 data object SourceCastForImpending : Condition {
     override val description: String = "this permanent's impending cost was paid"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**
@@ -262,7 +251,6 @@ data object SourceCastForImpending : Condition {
 @Serializable
 data class SourceChosenModeIs(val modeId: String) : Condition {
     override val description: String = "if the chosen mode is \"$modeId\""
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 /**

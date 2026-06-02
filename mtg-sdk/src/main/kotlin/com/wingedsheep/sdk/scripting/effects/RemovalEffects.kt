@@ -25,7 +25,6 @@ data class RegenerateEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "Regenerate ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -41,7 +40,6 @@ data class CantBeRegeneratedEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "${target.description} can't be regenerated"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -57,7 +55,6 @@ data class MarkExileOnDeathEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "If ${target.description} would die this turn, exile it instead"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -76,7 +73,6 @@ data class MarkExileControllerGraveyardOnDeathEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "When ${target.description} dies this turn, exile its controller's graveyard"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -127,7 +123,6 @@ data class SacrificeEffect(
 @Serializable
 data object SacrificeSelfEffect : Effect {
     override val description: String = "sacrifice this permanent"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -153,7 +148,6 @@ data class SacrificeTargetEffect(
     val sacrificedByItsController: Boolean = false
 ) : Effect {
     override val description: String = "sacrifice ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -225,7 +219,6 @@ data class SeparatePermanentsIntoPilesEffect(
     override val description: String =
         "Separate all permanents ${target.description} controls into two piles. " +
                 "That player sacrifices all permanents in the pile of their choice"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -239,7 +232,6 @@ data class ExileUntilLeavesEffect(
 ) : Effect {
     override val description: String =
         "Exile ${target.description} until this permanent leaves the battlefield"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -266,7 +258,6 @@ data class DestroyAllEquipmentOnTargetEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "Destroy all Equipment attached to ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 @SerialName("MoveToZone")
@@ -322,7 +313,6 @@ data class MoveToZoneEffect(
             else -> append("Put ${target.description} into ${destination.displayName}")
         }
     }
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -347,8 +337,6 @@ data class ExileAndGrantOwnerPlayPermissionEffect(
             append(". A spell cast by an opponent this way costs {$opponentCostIncrease} more to cast")
         }
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -365,7 +353,6 @@ data class ReturnSelfToBattlefieldAttachedEffect(
 ) : Effect {
     override val description: String =
         "Return this card from your graveyard to the battlefield attached to ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -396,7 +383,6 @@ data class ReturnSelfToBattlefieldAttachedEffect(
 data object ReturnOneFromLinkedExileEffect : Effect {
     override val description: String =
         "Return one of the exiled cards you own to the battlefield"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -417,7 +403,6 @@ data class ReturnCreaturesPutInGraveyardThisTurnEffect(
 ) : Effect {
     override val description: String =
         "Return to your hand all creature cards in your graveyard that were put there from anywhere this turn"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -428,7 +413,6 @@ data class ReturnCreaturesPutInGraveyardThisTurnEffect(
 @Serializable
 data object ExileOpponentsGraveyardsEffect : Effect {
     override val description: String = "Exile all opponents' graveyards"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -451,7 +435,6 @@ data class ForceExileMultiZoneEffect(
 ) : Effect {
     override val description: String =
         "Exile ${count.description} permanents you control or cards from your hand or graveyard"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -510,7 +493,6 @@ data class PutOnLibraryPositionOfChoiceEffect(
             }
             return "${target.description}'s owner puts it on $phrase"
         }
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -527,5 +509,4 @@ data class WarpExileEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "Exile ${target.description} (warp)"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

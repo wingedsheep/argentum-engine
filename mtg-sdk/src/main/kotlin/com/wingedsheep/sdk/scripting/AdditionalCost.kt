@@ -103,7 +103,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         val amount: Int
     ) : AdditionalCost {
         override val description: String = "Pay $amount life"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     /**
@@ -121,7 +120,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         val amountPerTarget: Int
     ) : AdditionalCost {
         override val description: String = "This spell costs $amountPerTarget life more to cast for each target"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     /**
@@ -221,7 +219,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     @Serializable
     data object Forage : AdditionalCost {
         override val description: String = "Forage (Exile three cards from your graveyard or sacrifice a Food)"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     /**
@@ -254,7 +251,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     ) : AdditionalCost {
         override val description: String =
             "blight X. X can't be greater than the greatest toughness among creatures you control"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     @SerialName("BlightOrPay")
@@ -266,7 +262,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         override val description: String =
             if (alternativeManaCost.isBlank()) "you may blight $blightAmount"
             else "Blight $blightAmount or pay $alternativeManaCost"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     /**
@@ -363,7 +358,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         val linkToSource: Boolean = false
     ) : AdditionalCost {
         override val description: String = "Exile the chosen card"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     /**
@@ -405,7 +399,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     ) : AdditionalCost {
         override val description: String =
             "Remove $totalCount counters from among creatures you control"
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
     @SerialName("TapPermanents")

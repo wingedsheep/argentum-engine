@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -38,8 +39,7 @@ val BarbedBloodletter = card("Barbed Bloodletter") {
 
     // Equipped creature gets +1/+2
     staticAbility {
-        effect = Effects.ModifyStats(+1, +2)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +2, Filters.EquippedCreature)
     }
 
     equipAbility("{2}")

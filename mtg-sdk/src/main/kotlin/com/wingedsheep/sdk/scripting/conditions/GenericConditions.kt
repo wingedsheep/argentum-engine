@@ -112,7 +112,6 @@ data class Compare(
 @Serializable
 data class APlayerLifeAtMost(val threshold: Int) : Condition {
     override val description: String = "a player has $threshold or less life"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
 @SerialName("Exists")

@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -57,7 +57,7 @@ class TriggerMatcherIsNontokenTest : FunSpec({
 
         triggeredAbility {
             trigger = TriggerSpec(
-                event = GameEvent.ZoneChangeEvent(
+                event = EventPattern.ZoneChangeEvent(
                     filter = GameObjectFilter(
                         cardPredicates = listOf(
                             CardPredicate.IsCreature,
@@ -128,7 +128,7 @@ class TriggerMatcherIsNontokenTest : FunSpec({
         val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
         triggers.filter {
-            it.ability.trigger is GameEvent.ZoneChangeEvent
+            it.ability.trigger is EventPattern.ZoneChangeEvent
         } shouldHaveSize 1
     }
 
@@ -153,7 +153,7 @@ class TriggerMatcherIsNontokenTest : FunSpec({
         val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
         triggers.filter {
-            it.ability.trigger is GameEvent.ZoneChangeEvent
+            it.ability.trigger is EventPattern.ZoneChangeEvent
         }.shouldBeEmpty()
     }
 
@@ -173,7 +173,7 @@ class TriggerMatcherIsNontokenTest : FunSpec({
 
             triggeredAbility {
                 trigger = TriggerSpec(
-                    event = GameEvent.ZoneChangeEvent(
+                    event = EventPattern.ZoneChangeEvent(
                         filter = GameObjectFilter(
                             cardPredicates = listOf(
                                 CardPredicate.IsCreature,
@@ -214,7 +214,7 @@ class TriggerMatcherIsNontokenTest : FunSpec({
         val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
         triggers.filter {
-            it.ability.trigger is GameEvent.ZoneChangeEvent
+            it.ability.trigger is EventPattern.ZoneChangeEvent
         }.shouldBeEmpty()
     }
 })

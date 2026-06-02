@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Changing targets this way doesn't trigger abilities of permanents named Psychic Battle.
  *
  * Invasion engine gap #19 — reveal-and-compare target swap, composed entirely from atoms. The
- * trigger fires on the new [com.wingedsheep.sdk.scripting.GameEvent.TargetsChosenEvent] (emitted
+ * trigger fires on the new [com.wingedsheep.sdk.scripting.EventPattern.TargetsChosenEvent] (emitted
  * once per targeted spell or ability, with the spell/ability as the triggering entity). The effect
  * is a gather → compare → act pipeline:
  *  1. [GatherCardsEffect] over [CardSource.TopOfLibrary] for [Player.Each] (revealed) — each player

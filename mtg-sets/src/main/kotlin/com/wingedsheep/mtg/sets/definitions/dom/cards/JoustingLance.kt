@@ -6,6 +6,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Jousting Lance
@@ -22,13 +24,11 @@ val JoustingLance = card("Jousting Lance") {
     oracleText = "Equipped creature gets +2/+0.\nAs long as it's your turn, equipped creature has first strike.\nEquip {3}"
 
     staticAbility {
-        effect = Effects.ModifyStats(+2, +0)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+2, +0, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.FIRST_STRIKE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.FIRST_STRIKE, Filters.EquippedCreature)
         condition = Conditions.IsYourTurn
     }
 

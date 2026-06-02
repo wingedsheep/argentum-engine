@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * Used for auras like Crown of Awe: "Enchanted creature has protection from black and from red."
  *
  * @property color The color to grant protection from
- * @property target What this ability applies to (typically AttachedCreature for auras)
+ * @property filter What this ability applies to (typically AttachedCreature for auras)
  */
 @SerialName("GrantProtection")
 @Serializable
@@ -144,7 +144,6 @@ data class CantReceiveCounters(
 @Serializable
 data object GrantShroudToController : StaticAbility {
     override val description: String = "You have shroud"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -157,7 +156,6 @@ data object GrantShroudToController : StaticAbility {
 @Serializable
 data object GrantHexproofToController : StaticAbility {
     override val description: String = "You have hexproof"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -170,7 +168,6 @@ data object GrantHexproofToController : StaticAbility {
 @Serializable
 data object CantBeTargetedByOpponentAbilities : StaticAbility {
     override val description: String = "Can't be the target of abilities your opponents control"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -186,7 +183,6 @@ data object CantBeTargetedByOpponentAbilities : StaticAbility {
 @Serializable
 data object GrantCantLoseGame : StaticAbility {
     override val description: String = "You can't lose the game"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**

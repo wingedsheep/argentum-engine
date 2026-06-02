@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
-import com.wingedsheep.sdk.scripting.GameEvent.*
+import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**

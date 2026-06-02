@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Sword of Vengeance
@@ -21,28 +23,23 @@ val SwordOfVengeance = card("Sword of Vengeance") {
     oracleText = "Equipped creature gets +2/+0 and has first strike, vigilance, trample, and haste.\nEquip {3}"
 
     staticAbility {
-        effect = Effects.ModifyStats(+2, 0)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+2, 0, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.FIRST_STRIKE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.FIRST_STRIKE, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.VIGILANCE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.VIGILANCE, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.TRAMPLE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.TRAMPLE, Filters.EquippedCreature)
     }
 
     staticAbility {
-        effect = Effects.GrantKeyword(Keyword.HASTE)
-        filter = Filters.EquippedCreature
+        ability = GrantKeyword(Keyword.HASTE, Filters.EquippedCreature)
     }
 
     equipAbility("{3}")

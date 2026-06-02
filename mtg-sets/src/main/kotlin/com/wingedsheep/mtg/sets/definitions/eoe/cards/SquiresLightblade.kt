@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Squire's Lightblade
@@ -35,8 +36,7 @@ val SquiresLightblade = card("Squire's Lightblade") {
 
     // Equipped creature gets +1/+0
     staticAbility {
-        effect = Effects.ModifyStats(+1, +0)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +0, Filters.EquippedCreature)
     }
 
     equipAbility("{3}")

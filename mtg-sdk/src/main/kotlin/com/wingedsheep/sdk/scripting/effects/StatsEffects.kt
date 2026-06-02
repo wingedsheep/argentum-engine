@@ -116,8 +116,6 @@ data class SetBasePowerToughnessEffect(
         append("${target.description} has base power and toughness $power/$toughness")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**

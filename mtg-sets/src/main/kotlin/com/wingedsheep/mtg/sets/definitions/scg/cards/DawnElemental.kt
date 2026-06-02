@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.scg.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -29,7 +29,7 @@ val DawnElemental = card("Dawn Elemental") {
     replacementEffect(
         PreventDamage(
             amount = null,
-            appliesTo = GameEvent.DamageEvent(
+            appliesTo = EventPattern.DamageEvent(
                 recipient = RecipientFilter.Self,
                 damageType = DamageType.Any
             )

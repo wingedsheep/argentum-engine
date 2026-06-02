@@ -122,7 +122,6 @@ data class AssignDamageEqualToToughness(
 data object StationUsingToughness : StaticAbility {
     override val description: String =
         "Each creature you control with toughness greater than its power stations permanents using its toughness rather than its power"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -255,7 +254,6 @@ data class AttackTax(
 ) : StaticAbility {
     override val description: String =
         "Creatures can't attack you unless their controller pays {${amountPerAttacker.description}} for each creature they control that's attacking you"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -309,7 +307,6 @@ data class CantBeAttackedWithout(
         } else {
             "${attackerFilter.description} without ${requiredKeyword.displayName.lowercase()} can't attack you"
         }
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -328,7 +325,6 @@ data class AttackerCountLimit(
 ) : StaticAbility {
     override val description: String =
         "No more than $maxAttackers creature${if (maxAttackers == 1) "" else "s"} can attack each combat"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -347,5 +343,4 @@ data class BlockerCountLimit(
 ) : StaticAbility {
     override val description: String =
         "No more than $maxBlockers creature${if (maxBlockers == 1) "" else "s"} can block each combat"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }

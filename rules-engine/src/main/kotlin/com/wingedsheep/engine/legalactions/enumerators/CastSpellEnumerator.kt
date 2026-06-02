@@ -352,7 +352,7 @@ class CastSpellEnumerator : ActionEnumerator {
             // Check self-alternative cost (e.g., Zahid's {3}{U} + tap an artifact)
             val selfAltCost = cardDef.script.selfAlternativeCost
             val canAffordSelfAlternative = if (selfAltCost != null) {
-                val selfAltMana = ManaCost.parse(selfAltCost.manaCost)
+                val selfAltMana = selfAltCost.manaCost
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
                 val canPayMana = context.manaSolver.canPay(state, playerId, selfAltEffective, precomputedSources = cachedSources)
                 val canPayAdditional = selfAltCost.additionalCosts.all { cost ->
@@ -509,7 +509,7 @@ class CastSpellEnumerator : ActionEnumerator {
 
             // Compute self-alternative cost info (e.g., Zahid)
             val selfAltCostResult = if (canAffordSelfAlternative && selfAltCost != null) {
-                val selfAltMana = ManaCost.parse(selfAltCost.manaCost)
+                val selfAltMana = selfAltCost.manaCost
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
                 val selfAltPreview = if (context.skipAutoTapPreview) null else {
                     context.manaSolver.solve(state, playerId, selfAltEffective, precomputedSources = cachedSources)

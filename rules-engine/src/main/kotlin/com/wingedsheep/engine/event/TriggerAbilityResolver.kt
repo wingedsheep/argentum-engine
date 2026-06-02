@@ -18,7 +18,7 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -462,7 +462,7 @@ class TriggerAbilityResolver(
      * permanent's effective ability set. As soon as a face is unlocked (via cast-time ETB
      * or the unlock special action), that face's abilities become active.
      *
-     * Excludes "When you unlock this door" abilities ([GameEvent.DoorUnlockedEvent] triggers):
+     * Excludes "When you unlock this door" abilities ([EventPattern.DoorUnlockedEvent] triggers):
      * those are detected separately by [com.wingedsheep.engine.event.TriggerDetector.detectDoorUnlockedTriggers]
      * because the matcher is face-aware (only the unlocked face's "when you unlock this door"
      * fires, not other already-unlocked faces').
@@ -480,7 +480,7 @@ class TriggerAbilityResolver(
             val faceId = com.wingedsheep.engine.state.components.identity.RoomFaceId(face.name)
             if (faceId !in room.unlocked) continue
             for (ability in face.script.effectiveTriggeredAbilities(null)) {
-                if (ability.trigger is GameEvent.DoorUnlockedEvent) continue
+                if (ability.trigger is EventPattern.DoorUnlockedEvent) continue
                 result.add(ability)
             }
         }
@@ -490,7 +490,7 @@ class TriggerAbilityResolver(
     private fun createWardTriggeredAbility(cost: WardCost, source: String): TriggeredAbility {
         return TriggeredAbility(
             id = AbilityId("ward_$source"),
-            trigger = GameEvent.BecomesTargetEvent(byOpponent = true),
+            trigger = EventPattern.BecomesTargetEvent(byOpponent = true),
             binding = TriggerBinding.SELF,
             effect = WardCounterEffect(cost)
         )

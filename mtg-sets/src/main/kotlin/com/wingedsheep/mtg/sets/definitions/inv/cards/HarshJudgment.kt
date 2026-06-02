@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectDamage
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -37,7 +37,7 @@ val HarshJudgment = card("Harsh Judgment") {
     replacementEffect(
         RedirectDamage(
             redirectTo = EffectTarget.ControllerOfDamageSource,
-            appliesTo = GameEvent.DamageEvent(
+            appliesTo = EventPattern.DamageEvent(
                 recipient = RecipientFilter.You,
                 source = SourceFilter.Matching(
                     GameObjectFilter.InstantOrSorcery.sharingChosenColorWithSource()

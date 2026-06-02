@@ -348,7 +348,7 @@ class DamageCalculator(
                 if (effect !is PreventDamage) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 // This is called during combat, so combat damage type always matches
                 val damageTypeMatches = when (damageEvent.damageType) {

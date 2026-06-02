@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -122,7 +122,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers shouldHaveSize 1
-            triggers[0].ability.trigger.shouldBeInstanceOf<GameEvent.CardsPutIntoGraveyardFromLibraryEvent>()
+            triggers[0].ability.trigger.shouldBeInstanceOf<EventPattern.CardsPutIntoGraveyardFromLibraryEvent>()
             triggers[0].controllerId shouldBe driver.player1
         }
 
@@ -140,7 +140,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             // Sidisi has three triggered abilities; only the library-to-graveyard one
             // should fire here, and it must fire at most once per batch.
             val batchTriggers = triggers.filter {
-                it.ability.trigger is GameEvent.CardsPutIntoGraveyardFromLibraryEvent
+                it.ability.trigger is EventPattern.CardsPutIntoGraveyardFromLibraryEvent
             }
             batchTriggers shouldHaveSize 1
         }
@@ -158,7 +158,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.CardsPutIntoGraveyardFromLibraryEvent
+                it.ability.trigger is EventPattern.CardsPutIntoGraveyardFromLibraryEvent
             }.shouldBeEmpty()
         }
 
@@ -175,7 +175,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.CardsPutIntoGraveyardFromLibraryEvent
+                it.ability.trigger is EventPattern.CardsPutIntoGraveyardFromLibraryEvent
             }.shouldBeEmpty()
         }
     }
@@ -200,7 +200,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers shouldHaveSize 1
-            triggers[0].ability.trigger.shouldBeInstanceOf<GameEvent.PermanentsSacrificedEvent>()
+            triggers[0].ability.trigger.shouldBeInstanceOf<EventPattern.PermanentsSacrificedEvent>()
             triggers[0].controllerId shouldBe driver.player1
         }
 
@@ -217,7 +217,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, events)
 
             triggers.filter {
-                it.ability.trigger is GameEvent.PermanentsSacrificedEvent
+                it.ability.trigger is EventPattern.PermanentsSacrificedEvent
             } shouldHaveSize 1
         }
 
@@ -235,7 +235,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.PermanentsSacrificedEvent
+                it.ability.trigger is EventPattern.PermanentsSacrificedEvent
             }.shouldBeEmpty()
         }
 
@@ -253,7 +253,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.PermanentsSacrificedEvent
+                it.ability.trigger is EventPattern.PermanentsSacrificedEvent
             }.shouldBeEmpty()
         }
     }
@@ -280,7 +280,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers shouldHaveSize 1
-            triggers[0].ability.trigger.shouldBeInstanceOf<GameEvent.LeaveBattlefieldWithoutDyingEvent>()
+            triggers[0].ability.trigger.shouldBeInstanceOf<EventPattern.LeaveBattlefieldWithoutDyingEvent>()
         }
 
         test("excludeSelf: only Dour Port-Mage itself leaving does not trigger") {
@@ -298,7 +298,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.LeaveBattlefieldWithoutDyingEvent
+                it.ability.trigger is EventPattern.LeaveBattlefieldWithoutDyingEvent
             }.shouldBeEmpty()
         }
 
@@ -318,7 +318,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.LeaveBattlefieldWithoutDyingEvent
+                it.ability.trigger is EventPattern.LeaveBattlefieldWithoutDyingEvent
             }.shouldBeEmpty()
         }
 
@@ -338,7 +338,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.LeaveBattlefieldWithoutDyingEvent
+                it.ability.trigger is EventPattern.LeaveBattlefieldWithoutDyingEvent
             }.shouldBeEmpty()
         }
     }
@@ -364,7 +364,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
 
             triggers shouldHaveSize 1
             triggers[0].ability.trigger
-                .shouldBeInstanceOf<GameEvent.OneOrMoreDealCombatDamageToPlayerEvent>()
+                .shouldBeInstanceOf<EventPattern.OneOrMoreDealCombatDamageToPlayerEvent>()
             triggers[0].controllerId shouldBe driver.player1
         }
 
@@ -382,7 +382,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, events)
 
             triggers.filter {
-                it.ability.trigger is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
             } shouldHaveSize 1
         }
 
@@ -402,7 +402,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
             }.shouldBeEmpty()
         }
 
@@ -422,7 +422,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
             }.shouldBeEmpty()
         }
 
@@ -443,7 +443,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
             }.shouldBeEmpty()
         }
     }
@@ -472,7 +472,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             val batch = triggers.filter {
-                it.ability.trigger is GameEvent.PermanentsEnteredEvent
+                it.ability.trigger is EventPattern.PermanentsEnteredEvent
             }
             batch shouldHaveSize 1
             batch[0].controllerId shouldBe driver.player1
@@ -497,7 +497,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.PermanentsEnteredEvent
+                it.ability.trigger is EventPattern.PermanentsEnteredEvent
             }.shouldBeEmpty()
         }
 
@@ -518,7 +518,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
             triggers.filter {
-                it.ability.trigger is GameEvent.PermanentsEnteredEvent
+                it.ability.trigger is EventPattern.PermanentsEnteredEvent
             }.shouldBeEmpty()
         }
     }
@@ -541,7 +541,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
 
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
-            triggers.filter { it.ability.trigger is GameEvent.DiscardEvent } shouldHaveSize 3
+            triggers.filter { it.ability.trigger is EventPattern.DiscardEvent } shouldHaveSize 3
         }
 
         test("filtered: only the matching cards in the batch fire the trigger") {
@@ -560,7 +560,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
 
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
-            triggers.filter { it.ability.trigger is GameEvent.DiscardEvent } shouldHaveSize 1
+            triggers.filter { it.ability.trigger is EventPattern.DiscardEvent } shouldHaveSize 1
         }
 
         test("filtered: a batch with no matching card does not fire") {
@@ -577,7 +577,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
 
             val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
 
-            triggers.filter { it.ability.trigger is GameEvent.DiscardEvent }.shouldBeEmpty()
+            triggers.filter { it.ability.trigger is EventPattern.DiscardEvent }.shouldBeEmpty()
         }
     }
 

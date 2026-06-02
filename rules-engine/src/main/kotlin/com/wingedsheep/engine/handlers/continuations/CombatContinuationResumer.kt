@@ -284,7 +284,7 @@ class CombatContinuationResumer(
                     sourceName = sourceName,
                     controllerId = continuation.controllerId,
                     trigger = com.wingedsheep.sdk.scripting.TriggerSpec(
-                        event = com.wingedsheep.sdk.scripting.GameEvent.DamagePreventedEvent
+                        event = com.wingedsheep.sdk.scripting.EventPattern.DamagePreventedEvent
                     ),
                     // Scopes the fired trigger's context to the prevented source (so
                     // ControllerOfTriggeringEntity = "that source's controller").

@@ -642,26 +642,27 @@ intercept an action as it occurs and change its outcome. Doubling Season doubles
 created; Rest in Peace redirects cards going to the graveyard to exile instead.
 
 These are modeled in the SDK as a `ReplacementEffect` sealed interface. Each replacement declares an
-`appliesTo` pattern — a `GameEvent` filter that describes *which* game actions it intercepts. Note
-that `GameEvent` here is an SDK-level pattern-matching type (compositional filters over event types,
-recipients, and sources), not the engine's runtime `GameEvent` instances. The SDK defines *what* to
-match; the engine checks these patterns against actual game actions at execution time:
+`appliesTo` pattern — an `EventPattern` filter that describes *which* game actions it intercepts.
+`EventPattern` is the SDK-level pattern-matching type (compositional filters over event types,
+recipients, and sources); it is deliberately distinct from the engine's runtime `GameEvent`
+instances. The SDK defines *what* to match; the engine checks these patterns against actual game
+actions at execution time:
 
 ```kotlin
 sealed interface ReplacementEffect {
     val description: String
-    val appliesTo: GameEvent  // Pattern describing which actions to intercept
+    val appliesTo: EventPattern  // Pattern describing which actions to intercept
 }
 
 // Doubling Season: double token creation
 data class DoubleTokenCreation(
-    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
 ) : ReplacementEffect
 
 // Hardened Scales: add extra +1/+1 counters
 data class ModifyCounterPlacement(
     val modifier: Int,
-    override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
+    override val appliesTo: EventPattern = EventPattern.CounterPlacementEvent(
         counterType = CounterTypeFilter.PlusOnePlusOne,
         recipient = RecipientFilter.CreatureYouControl
     )
@@ -670,7 +671,7 @@ data class ModifyCounterPlacement(
 // Rest in Peace: redirect graveyard to exile
 data class RedirectZoneChange(
     val newDestination: Zone,
-    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(to = Zone.GRAVEYARD)
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(to = Zone.GRAVEYARD)
 ) : ReplacementEffect
 ```
 
@@ -685,7 +686,7 @@ serialize the state even when a replacement choice is pending.
 - **No stack interaction.** Replacement effects modify actions in-place — they don't use the stack and
   can't be responded to. Modeling them as patterns that the engine checks at specific interception
   points mirrors the rules naturally.
-- **Composability.** The `appliesTo` field uses the same `GameEvent` pattern system as trigger
+- **Composability.** The `appliesTo` field uses the same `EventPattern` pattern system as trigger
   conditions. A replacement effect that applies to "damage dealt to creatures you control" reuses
   the same predicate composition as a trigger that fires on the same event — `RecipientFilter`,
   `SourceFilter`, and `DamageType` are shared between both systems.

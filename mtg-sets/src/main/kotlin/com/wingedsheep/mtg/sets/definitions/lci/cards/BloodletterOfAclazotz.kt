@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.lci.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyLifeLoss
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.references.Player
@@ -36,7 +36,7 @@ val BloodletterOfAclazotz = card("Bloodletter of Aclazotz") {
         ModifyLifeLoss(
             multiplier = 2,
             restrictions = listOf(IsYourTurn),
-            appliesTo = GameEvent.LifeLossEvent(player = Player.Opponent),
+            appliesTo = EventPattern.LifeLossEvent(player = Player.Opponent),
         )
     )
 

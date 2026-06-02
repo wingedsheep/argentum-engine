@@ -455,7 +455,7 @@ object DamageUtils {
                 if (effect !is PreventLifeGain) continue
 
                 val lifeGainEvent = effect.appliesTo
-                if (lifeGainEvent !is com.wingedsheep.sdk.scripting.GameEvent.LifeGainEvent) continue
+                if (lifeGainEvent !is com.wingedsheep.sdk.scripting.EventPattern.LifeGainEvent) continue
 
                 when (lifeGainEvent.player) {
                     Player.Each -> return true
@@ -664,7 +664,7 @@ object DamageUtils {
                 if (effect !is RedirectDamage) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 val damageTypeMatches = when (damageEvent.damageType) {
                     is DamageType.Any -> true
@@ -874,7 +874,7 @@ object DamageUtils {
                 if (effect !is PreventDamage) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 // Check damage type filter (combat vs non-combat)
                 val damageTypeMatches = when (damageEvent.damageType) {
@@ -989,7 +989,7 @@ object DamageUtils {
                 if (effect !is DoubleDamage) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 // Check if the damage source matches the source filter
                 val sourceMatches = when (val sourceFilter = damageEvent.source) {
@@ -1035,7 +1035,7 @@ object DamageUtils {
                 if (effect !is ModifyDamageAmount) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 // Check if the damage source matches the source filter
                 val sourceMatches = when (val sourceFilter = damageEvent.source) {
@@ -1141,7 +1141,7 @@ object DamageUtils {
                 if (amplifiedAmount <= effect.maxAmount) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 val damageTypeMatches = when (damageEvent.damageType) {
                     is DamageType.Any -> true
@@ -1216,7 +1216,7 @@ object DamageUtils {
                 if (effect !is ModifyLifeLoss) continue
 
                 val lifeLossEvent = effect.appliesTo
-                if (lifeLossEvent !is com.wingedsheep.sdk.scripting.GameEvent.LifeLossEvent) continue
+                if (lifeLossEvent !is com.wingedsheep.sdk.scripting.EventPattern.LifeLossEvent) continue
 
                 val playerMatches = when (lifeLossEvent.player) {
                     Player.Each, Player.Any -> true
@@ -1290,7 +1290,7 @@ object DamageUtils {
                 if (effect !is ReplaceDamageWithCounters) continue
 
                 val damageEvent = effect.appliesTo
-                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
 
                 // Check recipient filter
                 val recipientMatches = when (val recipient = damageEvent.recipient) {

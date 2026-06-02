@@ -17,7 +17,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object ControlEnchantedPermanent : StaticAbility {
     override val description: String = "You control enchanted permanent"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -104,7 +103,6 @@ data class OverrideEnchantedLandManaColor(
     override val description: String =
         if (color == null) "Enchanted land produces mana of the chosen color instead of its normal output"
         else "Enchanted land produces ${color.name.lowercase()} mana instead of its normal output"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -218,7 +216,6 @@ data class ReplaceLandManaColor(
 data object PlayFromTopOfLibrary : StaticAbility {
     override val description: String =
         "Play with the top card of your library revealed. You may play lands and cast spells from the top of your library."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -251,7 +248,6 @@ data class CastSpellTypesFromTopOfLibrary(
 data object LookAtTopOfLibrary : StaticAbility {
     override val description: String =
         "You may look at the top card of your library any time."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -269,7 +265,6 @@ data object LookAtTopOfLibrary : StaticAbility {
 data object RevealTopOfLibrary : StaticAbility {
     override val description: String =
         "Play with the top card of your library revealed."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -302,7 +297,6 @@ data class PlayLandsAndCastFilteredFromTopOfLibrary(
 data object LookAtFaceDownCreatures : StaticAbility {
     override val description: String =
         "You may look at face-down creatures you don't control any time."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -321,7 +315,6 @@ data object LookAtFaceDownCreatures : StaticAbility {
 @Serializable
 data object OpponentsPlayWithHandsRevealed : StaticAbility {
     override val description: String = "Your opponents play with their hands revealed."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -339,7 +332,6 @@ data class MayCastSelfFromZones(
     override val description: String = "You may cast this card from ${
         zones.joinToString(" or ") { it.displayName }
     }."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -354,7 +346,6 @@ data class MayCastSelfFromZones(
 data object MayPlayPermanentsFromGraveyard : StaticAbility {
     override val description: String =
         "During each of your turns, you may play a land and cast a permanent spell of each permanent type from your graveyard."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -369,7 +360,6 @@ data object MayPlayPermanentsFromGraveyard : StaticAbility {
 @Serializable
 data object MayPlayLandsFromGraveyard : StaticAbility {
     override val description: String = "You may play lands from your graveyard"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -383,7 +373,6 @@ data object MayPlayLandsFromGraveyard : StaticAbility {
 @Serializable
 data object PreventCycling : StaticAbility {
     override val description: String = "Players can't cycle cards"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -426,7 +415,6 @@ data class PreventActivatedAbilities(
 @Serializable
 data object PreventManaPoolEmptying : StaticAbility {
     override val description: String = "Players don't lose unspent mana as steps and phases end"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -441,7 +429,6 @@ data object PreventManaPoolEmptying : StaticAbility {
 @Serializable
 data object NoMaximumHandSize : StaticAbility {
     override val description: String = "You have no maximum hand size"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -457,7 +444,6 @@ data object NoMaximumHandSize : StaticAbility {
 @Serializable
 data object RevealFirstDrawEachTurn : StaticAbility {
     override val description: String = "Reveal the first card you draw each turn"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -474,7 +460,6 @@ data object RevealFirstDrawEachTurn : StaticAbility {
 @Serializable
 data object DampLandManaProduction : StaticAbility {
     override val description: String = "If a land is tapped for two or more mana, it produces {C} instead of any other type and amount"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -489,7 +474,6 @@ data object DampLandManaProduction : StaticAbility {
 @Serializable
 data object UntapDuringOtherUntapSteps : StaticAbility {
     override val description: String = "Untap all permanents you control during each other player's untap step"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -506,7 +490,6 @@ data class UntapFilteredDuringOtherUntapSteps(
     val filter: GameObjectFilter
 ) : StaticAbility {
     override val description: String = "Untap each ${filter.description} you control during each other player's untap step"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -522,7 +505,6 @@ data class UntapFilteredDuringOtherUntapSteps(
 @Serializable
 data object ExtraLoyaltyActivation : StaticAbility {
     override val description: String = "You may activate loyalty abilities of planeswalkers you control twice each turn rather than only once"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -550,7 +532,6 @@ data class AdditionalETBTriggers(
     val enteringMustBeYouControl: Boolean = true,
     override val description: String = "Triggered abilities trigger an additional time"
 ) : StaticAbility {
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -636,7 +617,6 @@ data class GrantAdditionalLandDrop(
 ) : StaticAbility {
     override val description: String =
         "You may play ${if (count == 1) "an additional land" else "$count additional lands"} on each of your turns"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**
@@ -656,5 +636,4 @@ data class NoncombatDamageBonus(
 ) : StaticAbility {
     override val description: String =
         "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus $bonusAmount instead"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }

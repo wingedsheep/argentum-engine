@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.targeting
 
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
@@ -59,12 +61,32 @@ class TargetValidator {
         // StateProjector is used for P/T checks to account for continuous effects
 
         // Match targets to requirements (assuming targets are in order of requirements).
-        // For TargetObject with dynamicMaxCount = XValue, the chosen X clamps the per-req
-        // max count (the static `count` field is just a placeholder at enumeration time).
+        // For TargetObject with a dynamicMaxCount, the resolved dynamic value clamps the
+        // per-req max count (the static `count` field is just a placeholder). XValue is
+        // threaded via the chosen [xValue]; every other DynamicAmount is evaluated against
+        // board state here, mirroring TriggerProcessor.snapshotDynamicCount — so a cast-time
+        // spell with e.g. `dynamicMaxCount = Count(...)` caps correctly instead of falling
+        // back to the static placeholder.
         fun effectiveMaxCount(req: TargetRequirement): Int {
             if (req.unlimited) return Int.MAX_VALUE
-            if (req is TargetObject && req.dynamicMaxCount == DynamicAmount.XValue && xValue != null) {
-                return xValue
+            if (req is TargetObject) {
+                val dyn = req.dynamicMaxCount
+                if (dyn == DynamicAmount.XValue) {
+                    return xValue ?: req.count
+                }
+                if (dyn != null) {
+                    return try {
+                        val context = EffectContext(
+                            sourceId = sourceId,
+                            controllerId = casterId,
+                            opponentId = state.getOpponent(casterId),
+                            xValue = xValue
+                        )
+                        DynamicAmountEvaluator().evaluate(state, dyn, context).coerceAtLeast(0)
+                    } catch (_: Exception) {
+                        req.count
+                    }
+                }
             }
             return req.count
         }

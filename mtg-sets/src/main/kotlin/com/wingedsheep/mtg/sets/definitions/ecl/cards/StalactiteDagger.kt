@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.IsAllCreatureTypes
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Stalactite Dagger
@@ -38,8 +39,7 @@ val StalactiteDagger = card("Stalactite Dagger") {
     }
 
     staticAbility {
-        effect = Effects.ModifyStats(+1, +1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+1, +1, Filters.EquippedCreature)
     }
 
     staticAbility {

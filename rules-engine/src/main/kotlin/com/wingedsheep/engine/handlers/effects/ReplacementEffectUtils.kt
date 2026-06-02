@@ -75,7 +75,7 @@ object ReplacementEffectUtils {
                     is DoubleCounterPlacement -> effect.appliesTo
                     else -> continue
                 }
-                if (counterEvent !is com.wingedsheep.sdk.scripting.GameEvent.CounterPlacementEvent) continue
+                if (counterEvent !is com.wingedsheep.sdk.scripting.EventPattern.CounterPlacementEvent) continue
 
                 // Gate on "If YOU would put..." — skip when an opponent is the placer.
                 if (effect is DoubleCounterPlacement && effect.placedByYou && placerId != sourceControllerId) continue

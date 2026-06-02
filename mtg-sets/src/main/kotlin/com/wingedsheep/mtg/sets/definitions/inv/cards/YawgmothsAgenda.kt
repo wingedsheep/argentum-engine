@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.inv.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
@@ -43,7 +43,7 @@ val YawgmothsAgenda = card("Yawgmoth's Agenda") {
     replacementEffect(
         RedirectZoneChange(
             newDestination = Zone.EXILE,
-            appliesTo = GameEvent.ZoneChangeEvent(
+            appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter(
                     controllerPredicate = ControllerPredicate.OwnedByYou
                 ),

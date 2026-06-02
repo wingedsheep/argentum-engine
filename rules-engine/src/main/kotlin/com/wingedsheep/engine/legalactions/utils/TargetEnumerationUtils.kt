@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.TargetInfo
@@ -248,12 +250,44 @@ class TargetEnumerationUtils(
                 minTargets = req.effectiveMinCount,
                 // "Any number of target ..." has no fixed cap; the real maximum is the
                 // number of legal targets on the board, so the client offers all of them.
-                maxTargets = if (req.unlimited) validTargets.size else req.count,
+                // A board-state `dynamicMaxCount` (anything but XValue, which is unbound
+                // until the X is chosen and so is surfaced via [xConstrainsCount]) is
+                // resolved here so the UI caps at the right number immediately.
+                maxTargets = when {
+                    req.unlimited -> validTargets.size
+                    else -> resolveStaticDynamicMax(state, req, playerId, sourceId) ?: req.count
+                },
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
                 xConstrainsManaValue = requirementUsesManaValueAtMostX(req),
                 xConstrainsCount = requirementXConstrainsCount(req)
             )
+        }
+    }
+
+    /**
+     * Resolve a [TargetObject.dynamicMaxCount] that is knowable at enumeration time —
+     * i.e. any [DynamicAmount] except [DynamicAmount.XValue] (which depends on the X the
+     * player hasn't chosen yet and is instead clamped client-side via [requirementXConstrainsCount]).
+     * Returns null when there is no dynamic cap, so callers fall back to the static `count`.
+     */
+    private fun resolveStaticDynamicMax(
+        state: GameState,
+        req: TargetRequirement,
+        playerId: EntityId,
+        sourceId: EntityId?
+    ): Int? {
+        val dyn = (req as? TargetObject)?.dynamicMaxCount ?: return null
+        if (dyn == DynamicAmount.XValue) return null
+        return try {
+            val context = EffectContext(
+                sourceId = sourceId,
+                controllerId = playerId,
+                opponentId = state.getOpponent(playerId)
+            )
+            DynamicAmountEvaluator().evaluate(state, dyn, context).coerceAtLeast(0)
+        } catch (_: Exception) {
+            null
         }
     }
 

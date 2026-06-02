@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -40,7 +40,7 @@ val DecreeOfSilence = card("Decree of Silence") {
     // Ability 1: Whenever an opponent casts a spell, counter that spell + depletion counter + sacrifice check
     triggeredAbility {
         trigger = TriggerSpec(
-            event = GameEvent.SpellCastEvent(player = Player.Opponent),
+            event = EventPattern.SpellCastEvent(player = Player.Opponent),
             binding = TriggerBinding.ANY
         )
         effect = Effects.CounterTriggeringSpell()

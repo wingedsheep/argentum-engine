@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 
@@ -20,7 +20,7 @@ val SulfuricVortex = card("Sulfuric Vortex") {
         effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.TriggeringPlayer))
     }
 
-    replacementEffect(PreventLifeGain(appliesTo = GameEvent.LifeGainEvent(player = Player.Each)))
+    replacementEffect(PreventLifeGain(appliesTo = EventPattern.LifeGainEvent(player = Player.Each)))
 
     metadata {
         rarity = Rarity.RARE

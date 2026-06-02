@@ -361,7 +361,7 @@ class CardBuilder(private val name: String) {
      * "Flurry — Whenever you cast your second spell each turn, [effect]." The [Keyword.FLURRY]
      * tag is display-only (the engine has no dedicated Flurry handler); the behavior lives
      * entirely in the triggered ability wired here on the [Triggers.NthSpellCast] (n=2, you)
-     * event, which the [com.wingedsheep.sdk.scripting.GameEvent.NthSpellCastEvent] matcher
+     * event, which the [com.wingedsheep.sdk.scripting.EventPattern.NthSpellCastEvent] matcher
      * already fires when its controller casts their second spell of the turn.
      *
      * Author the effect/target/optional inside the block exactly like [triggeredAbility]
@@ -1535,9 +1535,6 @@ class ActivatedAbilityBuilder {
 
 @CardDsl
 class StaticAbilityBuilder {
-    var effect: Effect? = null
-    var filter: GroupFilter? = null
-
     /**
      * Condition that must be met for this static ability to apply.
      * Used for cards like Karakyk Guardian: "hexproof if it hasn't dealt damage yet"
@@ -1545,57 +1542,24 @@ class StaticAbilityBuilder {
     var condition: Condition? = null
 
     /**
-     * Direct static ability assignment (bypasses effect conversion).
-     * Takes precedence over effect if set.
+     * The static ability this block defines. This is the only path: a static ability is
+     * a continuous modification, not a one-shot effect, so it must be expressed directly
+     * as a [StaticAbility] (e.g. `ModifyStats(...)`, `GrantKeyword(...)`). For a
+     * permanent that grants several modifications, use one `staticAbility { }` block per
+     * [StaticAbility].
      */
     var ability: StaticAbility? = null
 
     fun build(): StaticAbility {
-        // Build the base ability
-        val baseAbility = ability ?: buildFromEffect()
+        val baseAbility = requireNotNull(ability) {
+            "staticAbility { } requires `ability = <StaticAbility>`"
+        }
 
         // Wrap in conditional if condition is set
         return if (condition != null) {
             ConditionalStaticAbility(baseAbility, condition!!)
         } else {
             baseAbility
-        }
-    }
-
-    private fun buildFromEffect(): StaticAbility {
-        val effectiveFilter = filter ?: GroupFilter.attachedCreature()
-        // Convert effect to appropriate StaticAbility type
-        return when (val e = effect) {
-            is ModifyStatsEffect -> ModifyStats(
-                (e.powerModifier as? DynamicAmount.Fixed)?.amount ?: 0,
-                (e.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
-                effectiveFilter
-            )
-            is GrantKeywordEffect -> GrantKeyword(
-                e.keyword,
-                effectiveFilter
-            )
-            is CompositeEffect -> {
-                // For composite, we create a ModifyStats with the first stat mod found
-                // This is a simplification - real implementation would handle this better
-                val statMod = e.effects.filterIsInstance<ModifyStatsEffect>().firstOrNull()
-                if (statMod != null) {
-                    ModifyStats(
-                        (statMod.powerModifier as? DynamicAmount.Fixed)?.amount ?: 0,
-                        (statMod.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
-                        effectiveFilter
-                    )
-                } else {
-                    // Fallback for keyword grants in composites
-                    val keyword = e.effects.filterIsInstance<GrantKeywordEffect>().firstOrNull()
-                    if (keyword != null) {
-                        GrantKeyword(keyword.keyword, effectiveFilter)
-                    } else {
-                        ModifyStats(0, 0, effectiveFilter)
-                    }
-                }
-            }
-            else -> ModifyStats(0, 0, effectiveFilter)
         }
     }
 }

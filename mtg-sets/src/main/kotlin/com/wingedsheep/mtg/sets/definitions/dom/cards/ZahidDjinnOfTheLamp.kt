@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -26,7 +27,7 @@ val ZahidDjinnOfTheLamp = card("Zahid, Djinn of the Lamp") {
     keywords(Keyword.FLYING)
 
     selfAlternativeCost = SelfAlternativeCost(
-        manaCost = "{3}{U}",
+        manaCost = ManaCost.parse("{3}{U}"),
         additionalCosts = listOf(
             AdditionalCost.TapPermanents(count = 1, filter = GameObjectFilter.Artifact)
         )

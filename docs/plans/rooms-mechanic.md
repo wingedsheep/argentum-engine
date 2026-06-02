@@ -79,7 +79,7 @@ Subtleties worth keeping on the radar (still v1-relevant, just not the happy pat
 
 What already exists:
 
-- `mtg-sdk/.../scripting/GameEvent.kt` defines `GameEvent.RoomFullyUnlockedEvent(player)` (SDK-side
+- `mtg-sdk/.../scripting/EventPattern.kt` defines `EventPattern.RoomFullyUnlockedEvent(player)` (SDK-side
   trigger event with a `Player` filter).
 - `rules-engine/.../core/GameEvent.kt` defines `RoomFullyUnlockedEvent(roomId, roomName, controllerId)`
   (engine-side concrete event).

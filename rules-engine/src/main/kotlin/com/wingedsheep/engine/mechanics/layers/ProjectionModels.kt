@@ -42,27 +42,23 @@ data class ContinuousEffectData(
 @Serializable
 sealed interface AffectsFilter {
 
-    fun applyTextReplacement(replacer: TextReplacer): AffectsFilter
+    /** Identity by default; cases holding a filter override to recurse. */
+    fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
 
     @Serializable
     data object Self : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
     @Serializable
     data object AllCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
     @Serializable
     data object AllCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
     @Serializable
     data object AllCreaturesOpponentsControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
     @Serializable
     data class SpecificEntities(val entityIds: Set<EntityId>) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
     @Serializable
     data class WithSubtype(val subtype: String) : AffectsFilter {
@@ -90,7 +86,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object OtherTappedCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -99,7 +94,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object OtherCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -107,7 +101,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object AllOtherCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -116,7 +109,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object AttachedPermanent : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -125,7 +117,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data class CreaturesWithCounter(val counterType: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -134,7 +125,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data class OwnCreaturesWithCounter(val counterType: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -143,7 +133,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data class LandsWithCounter(val counterType: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**
@@ -152,7 +141,6 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data object FaceDownCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
     }
 
     /**

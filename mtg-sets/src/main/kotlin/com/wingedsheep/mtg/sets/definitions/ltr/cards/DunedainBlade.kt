@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -30,8 +31,7 @@ val DunedainBlade = card("Dúnedain Blade") {
         "Equip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)"
 
     staticAbility {
-        effect = Effects.ModifyStats(+2, +1)
-        filter = Filters.EquippedCreature
+        ability = ModifyStats(+2, +1, Filters.EquippedCreature)
     }
 
     // Equip Human {1}: attach only to a Human creature you control, sorcery speed.

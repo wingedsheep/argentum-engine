@@ -211,7 +211,7 @@ sealed interface DamageType {
 
 /**
  * Filter on the *amount* of a quantitative game event — currently the amount of
- * damage a [GameEvent.DamageEvent] would deal. Lets a replacement effect apply only
+ * damage a [EventPattern.DamageEvent] would deal. Lets a replacement effect apply only
  * when the would-be amount crosses a threshold, without baking the threshold into the
  * replacement type itself.
  *

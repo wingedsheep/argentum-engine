@@ -49,8 +49,6 @@ data class GrantHexproofFromChosenColorEffect(
         append("${target.description} gains hexproof from the chosen color")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**
@@ -68,6 +66,4 @@ data class GrantProtectionFromChosenColorEffect(
         append("${target.description} gains protection from the chosen color")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

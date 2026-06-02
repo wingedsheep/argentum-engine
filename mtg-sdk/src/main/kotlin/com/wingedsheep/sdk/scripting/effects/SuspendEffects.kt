@@ -20,6 +20,4 @@ data class GrantSuspendEffect(
     val target: EffectTarget = EffectTarget.Self,
 ) : Effect {
     override val description: String = "${target.description} gains suspend"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
