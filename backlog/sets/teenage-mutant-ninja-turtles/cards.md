@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 69 / 190
+**Implemented:** 70 / 190
 ---
 
 - [ ] Action News Crew
@@ -103,7 +103,7 @@
 - [ ] Mondo Gecko
 - [x] Mouser Attack!
 - [x] Mouser Foundry
-- [ ] Mouser Mark III
+- [x] Mouser Mark III
 - [ ] Mutagen Man, Living Ooze
 - [ ] Mutant Chain Reaction
 - [x] Mutant Town
