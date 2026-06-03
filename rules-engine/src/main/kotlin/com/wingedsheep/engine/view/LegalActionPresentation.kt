@@ -31,13 +31,6 @@ data class LegalActionTargetInfo(
      */
     val xConstrainsManaValue: Boolean = false,
     /**
-     * True when this target requirement filters by "toughness X or less"
-     * (CardPredicate.ToughnessAtMostX). Parallel to [xConstrainsManaValue] — the
-     * client re-filters [validTargets] by comparing the chosen X against each
-     * candidate's toughness instead of its mana value.
-     */
-    val xConstrainsToughness: Boolean = false,
-    /**
      * True when this requirement's max-count is dynamically driven by the chosen X
      * (`TargetObject.dynamicMaxCount == DynamicAmount.XValue`). The client must
      * cap selectable targets at the chosen X after the cast-time `xSelection` phase.
@@ -64,13 +57,6 @@ data class LegalActionInfo(
      * must re-filter [validTargets] by the chosen X after X selection.
      */
     val xConstrainsTargetManaValue: Boolean = false,
-    /**
-     * True when the (single) target requirement filters by "toughness X or less".
-     * Parallel to [xConstrainsTargetManaValue] — the client re-filters by toughness
-     * rather than mana value. For multi-requirement spells, see the per-requirement
-     * [LegalActionTargetInfo.xConstrainsToughness] instead.
-     */
-    val xConstrainsTargetToughness: Boolean = false,
     /**
      * True when the (single) target requirement's max-count is dynamically driven by the
      * chosen X. The client must cap selectable targets at the chosen X after the cast-time

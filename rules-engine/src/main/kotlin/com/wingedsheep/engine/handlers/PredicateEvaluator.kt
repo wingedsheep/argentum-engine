@@ -319,10 +319,11 @@ class PredicateEvaluator {
                 toughness <= predicate.max
             }
             is CardPredicate.ToughnessAtMostX -> {
-                // Null xValue means X is unbound. Match permissively so legal-action
-                // enumeration can offer the cast; the chosen X is enforced at resolution.
+                // Only meaningful at resolution, where X is bound (e.g. Zero Point Ballad's
+                // non-targeted DestroyAll). A null xValue is unexpected here; match nothing
+                // rather than everything so an unbound X can't silently wipe the board.
                 val xValue = context?.xValue
-                if (xValue == null) true
+                if (xValue == null) false
                 else {
                     val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                     toughness <= xValue

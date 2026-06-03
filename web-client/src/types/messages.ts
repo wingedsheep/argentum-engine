@@ -673,11 +673,6 @@ export interface LegalActionTargetInfo {
    */
   readonly xConstrainsManaValue?: boolean
   /**
-   * True when this requirement filters by "toughness X or less" — parallel to
-   * [xConstrainsManaValue], but the client intersects with `card.toughness <= chosenX`.
-   */
-  readonly xConstrainsToughness?: boolean
-  /**
    * True when this requirement's max-count scales with the chosen X
    * (TargetObject.dynamicMaxCount == XValue server-side). The client must clamp
    * selectable targets to the X chosen at cast time.
@@ -711,13 +706,6 @@ export interface LegalActionInfo {
    * [validTargets] by the chosen X after X selection.
    */
   readonly xConstrainsTargetManaValue?: boolean
-  /**
-   * True when the (single) target requirement filters by "toughness X or less".
-   * Parallel to [xConstrainsTargetManaValue] — the client re-filters by toughness
-   * rather than mana value. For multi-requirement spells, see the per-requirement
-   * [LegalActionTargetInfo.xConstrainsToughness].
-   */
-  readonly xConstrainsTargetToughness?: boolean
   /**
    * True when the (single) target requirement's max-count scales with the chosen X
    * (e.g. Builder's Bane: "Destroy X target artifacts"). The client must clamp the

@@ -260,7 +260,6 @@ class TargetEnumerationUtils(
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
                 xConstrainsManaValue = requirementUsesManaValueAtMostX(req),
-                xConstrainsToughness = requirementUsesToughnessAtMostX(req),
                 xConstrainsCount = requirementXConstrainsCount(req)
             )
         }
@@ -293,6 +292,15 @@ class TargetEnumerationUtils(
     }
 
     /**
+     * True when [requirement] is a [TargetObject] whose filter contains
+     * [CardPredicate.ManaValueAtMostX] (anywhere in the predicate tree).
+     *
+     * Surfaced to the client so it can re-filter [TargetInfo.validTargets] by the
+     * chosen X after X selection — the enumerator's list is permissive (X is unbound
+     * at enumeration time) and would otherwise let the player click an over-MV
+     * target that the server then rejects on cast.
+     */
+    /**
      * True when [requirement] is a [TargetObject] whose `dynamicMaxCount` is the
      * [DynamicAmount.XValue] sentinel. Surfaced to the client so the targeting UI
      * caps selectable targets at the X chosen for the spell's cost.
@@ -302,43 +310,17 @@ class TargetEnumerationUtils(
         return target.dynamicMaxCount == DynamicAmount.XValue
     }
 
-    /**
-     * True when [requirement] is a [TargetObject] whose filter contains
-     * [CardPredicate.ManaValueAtMostX] (anywhere in the predicate tree).
-     *
-     * Surfaced to the client so it can re-filter [TargetInfo.validTargets] by the
-     * chosen X after X selection — the enumerator's list is permissive (X is unbound
-     * at enumeration time) and would otherwise let the player click an over-MV
-     * target that the server then rejects on cast.
-     */
-    fun requirementUsesManaValueAtMostX(requirement: TargetRequirement): Boolean =
-        requirementFilterContains(requirement) { it is CardPredicate.ManaValueAtMostX }
-
-    /**
-     * True when [requirement] is a [TargetObject] whose filter contains
-     * [CardPredicate.ToughnessAtMostX] (anywhere in the predicate tree). Same client
-     * re-filter rationale as [requirementUsesManaValueAtMostX], but the client compares
-     * the chosen X against each target's toughness rather than its mana value.
-     */
-    fun requirementUsesToughnessAtMostX(requirement: TargetRequirement): Boolean =
-        requirementFilterContains(requirement) { it is CardPredicate.ToughnessAtMostX }
-
-    private fun requirementFilterContains(
-        requirement: TargetRequirement,
-        leafMatch: (CardPredicate) -> Boolean
-    ): Boolean {
+    fun requirementUsesManaValueAtMostX(requirement: TargetRequirement): Boolean {
         val filter = (requirement as? TargetObject)?.filter ?: return false
-        return filter.baseFilter.cardPredicates.any { containsPredicate(it, leafMatch) }
+        return filter.baseFilter.cardPredicates.any { containsManaValueAtMostX(it) }
     }
 
-    private fun containsPredicate(
-        predicate: CardPredicate,
-        leafMatch: (CardPredicate) -> Boolean
-    ): Boolean = when (predicate) {
-        is CardPredicate.And -> predicate.predicates.any { containsPredicate(it, leafMatch) }
-        is CardPredicate.Or -> predicate.predicates.any { containsPredicate(it, leafMatch) }
-        is CardPredicate.Not -> containsPredicate(predicate.predicate, leafMatch)
-        else -> leafMatch(predicate)
+    private fun containsManaValueAtMostX(predicate: CardPredicate): Boolean = when (predicate) {
+        CardPredicate.ManaValueAtMostX -> true
+        is CardPredicate.And -> predicate.predicates.any { containsManaValueAtMostX(it) }
+        is CardPredicate.Or -> predicate.predicates.any { containsManaValueAtMostX(it) }
+        is CardPredicate.Not -> containsManaValueAtMostX(predicate.predicate)
+        else -> false
     }
 
     fun allRequirementsSatisfied(targetInfos: List<TargetInfo>): Boolean {

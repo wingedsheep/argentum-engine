@@ -52,7 +52,8 @@ val ZeroPointBallad = card("Zero Point Ballad") {
                                 from = "destroyed",
                                 selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
                                 chooser = Chooser.Controller,
-                                filter = GameObjectFilter.Creature,
+                                // Oracle reads "a creature card" — tokens cease to exist on death.
+                                filter = GameObjectFilter.Creature.nontoken(),
                                 storeSelected = "reanimated"
                             ),
                             MoveCollectionEffect(
