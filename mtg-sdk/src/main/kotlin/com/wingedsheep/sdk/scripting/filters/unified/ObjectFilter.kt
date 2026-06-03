@@ -289,6 +289,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.ToughnessAtMost(max)
     )
 
+    /** Toughness at most the X chosen for the source spell/ability. */
+    fun toughnessAtMostX() = copy(
+        cardPredicates = cardPredicates + CardPredicate.ToughnessAtMostX
+    )
+
     /** Toughness at least */
     fun toughnessAtLeast(min: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.ToughnessAtLeast(min)

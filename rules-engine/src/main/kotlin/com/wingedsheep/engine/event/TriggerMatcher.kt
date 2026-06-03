@@ -675,6 +675,8 @@ class TriggerMatcher(
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
                 toughness <= predicate.max
             }
+            // Resolution-time only — TriggerMatcher has no X context, so the predicate never matches here.
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMostX -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
                 val toughness = if (isFaceDown) 2
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0

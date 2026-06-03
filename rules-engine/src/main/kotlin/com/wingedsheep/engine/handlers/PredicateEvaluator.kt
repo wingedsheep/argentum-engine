@@ -318,6 +318,17 @@ class PredicateEvaluator {
                 val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                 toughness <= predicate.max
             }
+            is CardPredicate.ToughnessAtMostX -> {
+                // Only meaningful at resolution, where X is bound (e.g. Zero Point Ballad's
+                // non-targeted DestroyAll). A null xValue is unexpected here; match nothing
+                // rather than everything so an unbound X can't silently wipe the board.
+                val xValue = context?.xValue
+                if (xValue == null) false
+                else {
+                    val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                    toughness <= xValue
+                }
+            }
             is CardPredicate.ToughnessAtLeast -> {
                 val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                 toughness >= predicate.min
@@ -847,6 +858,7 @@ class PredicateEvaluator {
             // Power/toughness — not meaningful for cast records
             is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
             is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
+            CardPredicate.ToughnessAtMostX,
             is CardPredicate.PowerOrToughnessAtLeast,
             is CardPredicate.TotalPowerAndToughnessAtMost,
             is CardPredicate.PowerGreaterThanEntity,

@@ -187,6 +187,7 @@ object FilterQueryLanguage {
             // Toughness comparisons
             "ToughnessAtLeast" -> "tou>=${element["min"]?.jsonPrimitive?.int}"
             "ToughnessAtMost" -> "tou<=${element["max"]?.jsonPrimitive?.int}"
+            "ToughnessAtMostX" -> "tou<=X"
             "ToughnessEquals" -> "tou=${element["value"]?.jsonPrimitive?.int}"
 
             // Or — format as pipe-separated terms

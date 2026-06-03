@@ -901,6 +901,8 @@ class CostCalculator(
             is CardPredicate.PowerAtLeast -> (cardDef.creatureStats?.basePower ?: 0) >= predicate.min
             is CardPredicate.ToughnessEquals -> cardDef.creatureStats?.baseToughness == predicate.value
             is CardPredicate.ToughnessAtMost -> (cardDef.creatureStats?.baseToughness ?: 0) <= predicate.max
+            // CostCalculator has no X context; predicate has no static answer here.
+            CardPredicate.ToughnessAtMostX -> false
             is CardPredicate.ToughnessAtLeast -> (cardDef.creatureStats?.baseToughness ?: 0) >= predicate.min
             is CardPredicate.PowerOrToughnessAtLeast -> {
                 val power = cardDef.creatureStats?.basePower ?: 0

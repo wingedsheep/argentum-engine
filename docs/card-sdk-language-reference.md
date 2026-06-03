@@ -796,6 +796,11 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   amount of mana spent to cast this creature") — X is 5 for `{3}{W}{W}`, 3 for warp `{2}{W}`, 0 for free.
 - `.manaValueIsOdd()` / `.manaValueIsEven()` — mana-value parity (zero is even). Pair with modal
   spells whose modes ask the caster to choose a parity (e.g. *Mutinous Massacre*).
+- `.toughnessAtMost(n)` / `.toughnessAtLeast(n)` — toughness comparator.
+- `.toughnessAtMostX()` — toughness ≤ the X chosen for the source spell/ability. Resolves
+  against `PredicateContext.xValue` at evaluation time, so it works at the spell's resolution
+  filter pass (e.g. Zero Point Ballad's mass destruction). Layer projection / trigger matching
+  / cost calculation report `false` (no X context).
 - `.tapped()` / `.untapped()` — tap state.
 - `.saddled()` — permanent is saddled (CR 702.171b); backed by `StatePredicate.IsSaddled`.
 - `.nontoken()` / `.token()` — token vs printed.

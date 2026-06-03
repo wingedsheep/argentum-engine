@@ -441,6 +441,8 @@ internal class AffectsFilterResolver {
         is CardPredicate.PowerAtLeast -> (projected?.power ?: card.baseStats?.basePower ?: 0) >= predicate.min
         is CardPredicate.PowerEquals -> (projected?.power ?: card.baseStats?.basePower) == predicate.value
         is CardPredicate.ToughnessAtMost -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) <= predicate.max
+        // ToughnessAtMostX is resolution-time only; layer-projection has no X context, so it never matches here.
+        CardPredicate.ToughnessAtMostX -> false
         is CardPredicate.ToughnessAtLeast -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) >= predicate.min
         is CardPredicate.ToughnessEquals -> (projected?.toughness ?: card.baseStats?.baseToughness) == predicate.value
         is CardPredicate.PowerOrToughnessAtLeast -> {

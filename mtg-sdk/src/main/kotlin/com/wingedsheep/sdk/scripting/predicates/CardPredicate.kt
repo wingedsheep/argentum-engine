@@ -389,6 +389,18 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with toughness $max or less"
     }
 
+    /**
+     * Toughness at most the X chosen for the source spell/ability.
+     * Resolves against [PredicateContext.xValue] at evaluation time, so it works at the
+     * spell's resolution-time filter pass (e.g., Zero Point Ballad's mass destruction).
+     */
+    @SerialName("ToughnessAtMostX")
+    @Serializable
+    data object ToughnessAtMostX : CardPredicate {
+        override val description: String = "with toughness X or less"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     @SerialName("ToughnessAtLeast")
     @Serializable
     data class ToughnessAtLeast(val min: Int) : CardPredicate {
