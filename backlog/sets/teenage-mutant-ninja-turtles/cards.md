@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 82 / 190
+**Implemented:** 83 / 190
 ---
 
 - [ ] Action News Crew
@@ -107,7 +107,7 @@
 - [ ] Mutagen Man, Living Ooze
 - [ ] Mutant Chain Reaction
 - [x] Mutant Town
-- [ ] Mutant Town Musicians
+- [x] Mutant Town Musicians
 - [x] Negate
 - [ ] New Generation's Technique
 - [ ] Ninja Teen
