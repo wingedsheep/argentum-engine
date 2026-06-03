@@ -621,6 +621,23 @@ data class PermanentTypesEnteredBattlefieldThisTurnComponent(
 ) : Component
 
 /**
+ * Tracks the number of lands that have entered the battlefield under this player's control
+ * during the current turn. Counts every ETB regardless of how the land arrived — normal land
+ * drops, Lander-token search, Cultivate-style "put a land onto the battlefield" effects,
+ * gift-a-land effects, etc. — so it diverges from `LandDropsComponent` (which only counts
+ * the from-hand action).
+ *
+ * Populated by `PermanentEntryTracker.record` whenever the entering permanent's projected
+ * types include `LAND`. Cleared at end of turn by [CleanupPhaseManager].
+ *
+ * Used for `DynamicAmount.TurnTracking(player, TurnTracker.LANDS_ENTERED_UNDER_CONTROL)` —
+ * e.g. Bioengineered Future's "for each land that entered the battlefield under your
+ * control this turn".
+ */
+@Serializable
+data class LandsEnteredUnderControlThisTurnComponent(val count: Int = 0) : Component
+
+/**
  * Marker component indicating that this player has put a counter on a creature this turn.
  * Cleared at end of turn by CleanupPhaseManager.
  *

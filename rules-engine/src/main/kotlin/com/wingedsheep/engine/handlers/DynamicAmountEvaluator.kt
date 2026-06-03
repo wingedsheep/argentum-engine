@@ -314,6 +314,11 @@ class DynamicAmountEvaluator(
                             ?: return@sumOf 0
                         landDrops.maxPerTurn - landDrops.remaining
                     }
+                    TurnTracker.LANDS_ENTERED_UNDER_CONTROL -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                     TurnTracker.FOOD_SACRIFICED -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent>() == true

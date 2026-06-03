@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 252 / 261
+**Implemented:** 254 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -20,7 +20,7 @@
 - [x] Banishing Light
 - [x] Beamsaw Prospector
 - [x] Beyond the Quiet
-- [ ] Bioengineered Future
+- [x] Bioengineered Future
 - [x] Biomechan Engineer
 - [x] Biosynthic Burst
 - [x] Biotech Specialist
@@ -264,5 +264,5 @@
 - [x] Wurmwall Sweeper
 - [x] Xu-Ifit, Osteoharmonist
 - [x] Zealous Display
-- [ ] Zero Point Ballad
+- [x] Zero Point Ballad
 - [x] Zookeeper Mechan

@@ -424,6 +424,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayerShroudComponent::class)
         subclass(SacrificedFoodThisTurnComponent::class)
         subclass(PermanentTypesEnteredBattlefieldThisTurnComponent::class)
+        subclass(LandsEnteredUnderControlThisTurnComponent::class)
         subclass(SpellsCantBeCounteredComponent::class)
         subclass(PutCounterOnCreatureThisTurnComponent::class)
         subclass(SkipNextTurnComponent::class)

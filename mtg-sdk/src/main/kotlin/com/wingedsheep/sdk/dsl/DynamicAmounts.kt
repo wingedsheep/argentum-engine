@@ -255,6 +255,16 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.LIFE_GAINED)
 
     /**
+     * "The number of lands that entered the battlefield under [player]'s control this turn"
+     * (Bioengineered Future). Counts every land ETB under the player — land drops, Lander
+     * search, Cultivate-style "put a land onto the battlefield" effects — not just land
+     * drops. Reads the per-player [LandsEnteredUnderControlThisTurnComponent] populated by
+     * `PermanentEntryTracker`.
+     */
+    fun landsEnteredUnderControlThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.LANDS_ENTERED_UNDER_CONTROL)
+
+    /**
      * "The number of times [player] descended this turn" (CR 700.11) — count of
      * nontoken permanent cards put into [player]'s graveyard from any zone this turn.
      * Used by the descend N / fathomless descent ability words.

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentTypesEnteredBattlefieldThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.EntityId
@@ -18,8 +19,12 @@ import com.wingedsheep.sdk.model.EntityId
  *    spell resolution, returns from linked exile, etc. — must go through
  *    [BattlefieldEntry.place] rather than calling `state.addToZone(...)` directly.
  *
- * [record] merges into a [Set], so it is safe (idempotent) if an entry is ever recorded
- * twice; the cost of missing a call site is only a false negative, never a wrong positive.
+ * The type-set tracker ([PermanentTypesEnteredBattlefieldThisTurnComponent]) merges into a
+ * [Set], so it is safe (idempotent) if an entry is ever recorded twice. The land-count
+ * tracker ([LandsEnteredUnderControlThisTurnComponent]) is **not** idempotent — it bumps
+ * unconditionally when the entering permanent's types include `LAND`. Both sanctioned
+ * recording paths call [record] exactly once per ETB; the count would skew if a future
+ * call site introduced double-recording.
  *
  * Types are read from the **projected** state (post-layer), not the printed type line, so
  * a permanent that is an artifact by continuous effect at the moment of entry is recorded
@@ -39,11 +44,24 @@ object PermanentEntryTracker {
         val cardTypes = projectedCardTypes(state, entityId)
         if (cardTypes.isEmpty()) return state
         return state.updateEntity(controllerId) { container ->
-            val existing = container.get<PermanentTypesEnteredBattlefieldThisTurnComponent>()
-                ?: PermanentTypesEnteredBattlefieldThisTurnComponent()
-            val merged = existing.cardTypes + cardTypes
-            if (merged == existing.cardTypes) return@updateEntity container
-            container.with(PermanentTypesEnteredBattlefieldThisTurnComponent(merged))
+            val typeMerged = run {
+                val existing = container.get<PermanentTypesEnteredBattlefieldThisTurnComponent>()
+                    ?: PermanentTypesEnteredBattlefieldThisTurnComponent()
+                val merged = existing.cardTypes + cardTypes
+                if (merged == existing.cardTypes) container
+                else container.with(PermanentTypesEnteredBattlefieldThisTurnComponent(merged))
+            }
+            // Lands need a *count*, not just presence, for "for each land that entered
+            // this turn" dynamic amounts (Bioengineered Future). Two unrelated lands
+            // entering both bump the counter; the set-based type tracker above sees them
+            // as a single LAND entry.
+            if (CardType.LAND in cardTypes) {
+                val landExisting = typeMerged.get<LandsEnteredUnderControlThisTurnComponent>()
+                    ?: LandsEnteredUnderControlThisTurnComponent()
+                typeMerged.with(LandsEnteredUnderControlThisTurnComponent(landExisting.count + 1))
+            } else {
+                typeMerged
+            }
         }
     }
 

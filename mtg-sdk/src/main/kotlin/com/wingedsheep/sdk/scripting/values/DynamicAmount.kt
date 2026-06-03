@@ -46,6 +46,14 @@ enum class TurnTracker {
     COUNTERS_PUT_ON_CREATURE,
     /** Number of land cards the player played this turn (derived from `LandDropsComponent`). */
     LANDS_PLAYED,
+    /**
+     * Number of lands that entered the battlefield under the player's control this turn.
+     * Unlike [LANDS_PLAYED] this counts *any* land ETB — land drops, Lander-token search,
+     * Cultivate-style "put a land onto the battlefield" effects, opponent's
+     * gift-a-land effects, etc. — so it matches "a land entered the battlefield under your
+     * control this turn" wording (Bioengineered Future).
+     */
+    LANDS_ENTERED_UNDER_CONTROL,
     /** Indicator (0 or 1) that the player sacrificed at least one Food this turn. */
     FOOD_SACRIFICED,
     /** Total cards that left the player's graveyard this turn (Bonecache Overseer). */
@@ -69,6 +77,7 @@ enum class TurnTracker {
         DEALT_COMBAT_DAMAGE -> "whether ${player.description} were dealt combat damage this turn"
         COUNTERS_PUT_ON_CREATURE -> "whether ${player.description} put a counter on a creature this turn"
         LANDS_PLAYED -> "the number of lands ${player.description} played this turn"
+        LANDS_ENTERED_UNDER_CONTROL -> "the number of lands that entered the battlefield under ${player.possessive} control this turn"
         FOOD_SACRIFICED -> "whether ${player.description} sacrificed a Food this turn"
         CARDS_LEFT_GRAVEYARD -> "the number of cards that left ${player.possessive} graveyard this turn"
         DESCENDED -> "the number of times ${player.description} descended this turn"

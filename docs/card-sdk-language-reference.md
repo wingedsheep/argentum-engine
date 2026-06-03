@@ -2157,7 +2157,14 @@ the spell when the rider needs the stack (typically because it requires a player
 - `PLAYER_ATTACKED` — whether/how many times you attacked.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
 - `COUNTERS_PUT_ON_CREATURE` — counters placed.
-- `LANDS_PLAYED` — lands played this turn.
+- `LANDS_PLAYED` — lands the player explicitly played this turn (from-hand land drops only,
+  derived from `LandDropsComponent`).
+- `LANDS_ENTERED_UNDER_CONTROL` — lands that entered the battlefield under the player's
+  control this turn. Counts *every* land ETB regardless of how it arrived (land drops,
+  Lander-token search, Cultivate-style "put a land onto the battlefield" effects,
+  opponent-gift effects), so it differs from `LANDS_PLAYED`. Backs
+  `DynamicAmounts.landsEnteredUnderControlThisTurn(player)` — e.g. Bioengineered Future's
+  "for each land that entered the battlefield under your control this turn."
 - `FOOD_SACRIFICED` — Food tokens sacrificed.
 - `CARDS_LEFT_GRAVEYARD` — cards leaving your graveyard.
 - `DESCENDED` — number of times a player has descended this turn (CR 700.11) — i.e.

@@ -4,39 +4,11 @@ Engine features required to implement the remaining EOE cards. Each section list
 unblocks, the exact oracle clause that can't be expressed with current primitives, and a sketch of
 the engine/SDK work needed.
 
-As of the latest pass, **252 / 261** booster cards are implemented. The cards below remain
+As of the latest pass, **254 / 261** booster cards are implemented. The cards below remain
 blocked on the engine features listed here. Cards whose every clause maps to an existing primitive
 have already been implemented and are not listed. Section numbers are preserved from earlier
 revisions of this document so that [`problem-cards.md`](problem-cards.md) cross-references stay
 stable; gaps in the numbering correspond to features that have since been resolved.
-
----
-
-## 5. Continuous "your creatures enter with extra counters" + lands-entered-this-turn tracker
-
-**Cards:** Bioengineered Future.
-
-**Clause:** "Each creature you control enters with an additional +1/+1 counter on it for each land
-that entered the battlefield under your control this turn."
-
-**Plan:** (a) Add a `TurnTracker`/`DynamicAmount` for "lands that entered under your control this
-turn". (b) Add a continuous static replacement that adds ETB +1/+1 counters to *other* creatures
-you control (not just self), with a dynamic count. The "create a Lander" ETB is already
-expressible.
-
----
-
-## 10. Dynamic-toughness mass destroy + reanimate-from-batch
-
-**Cards:** Zero Point Ballad.
-
-**Clause:** "Destroy all creatures with toughness X or less. ... If X is 6 or more, return a creature
-card put into a graveyard this way to the battlefield under your control."
-
-**Plan:** (a) `GameObjectFilter.toughnessAtMost` only accepts a fixed `Int`; add a dynamic-threshold
-variant (`toughnessAtMost(DynamicAmount)`) so the destroy filter can read X. (b) Track which
-creatures were put into a graveyard by this destruction and allow selecting one to return when
-X ≥ 6. "Lose X life" is already expressible.
 
 ---
 
