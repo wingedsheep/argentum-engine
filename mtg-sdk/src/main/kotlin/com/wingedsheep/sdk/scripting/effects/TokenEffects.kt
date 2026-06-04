@@ -377,7 +377,20 @@ data class CreateTokenCopyOfTargetEffect(
      * Replaces the token copy's subtypes outright (e.g., Demon for Ardyn, the Usurper).
      * Null leaves the copied card's subtypes untouched.
      */
-    val overrideSubtypes: Set<Subtype>? = null
+    val overrideSubtypes: Set<Subtype>? = null,
+    /**
+     * If set, create delayed triggers to sacrifice each created token copy at this step
+     * (the sacrifice sibling of [CreateTokenEffect.sacrificeAtStep]). Used for "create a
+     * tapped token copy ... at the beginning of your next end step, sacrifice those tokens"
+     * (Mardu Siegebreaker).
+     */
+    val sacrificeAtStep: Step? = null,
+    /**
+     * When [sacrificeAtStep] is set, gate the delayed sacrifice trigger to fire only on the
+     * controller's turn — i.e. "at the beginning of *your* next end step" rather than the
+     * very next end step of any player.
+     */
+    val sacrificeOnlyOnControllersTurn: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Create ${count.description} token copies of target permanent")

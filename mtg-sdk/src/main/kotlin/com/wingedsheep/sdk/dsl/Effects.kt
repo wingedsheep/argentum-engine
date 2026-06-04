@@ -1292,7 +1292,9 @@ object Effects {
         addedSupertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet(),
         removedSupertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet(),
         overrideColors: Set<com.wingedsheep.sdk.core.Color>? = null,
-        overrideSubtypes: Set<com.wingedsheep.sdk.core.Subtype>? = null
+        overrideSubtypes: Set<com.wingedsheep.sdk.core.Subtype>? = null,
+        sacrificeAtStep: com.wingedsheep.sdk.core.Step? = null,
+        sacrificeOnlyOnControllersTurn: Boolean = false
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -1305,7 +1307,9 @@ object Effects {
         addedSupertypes = addedSupertypes,
         removedSupertypes = removedSupertypes,
         overrideColors = overrideColors,
-        overrideSubtypes = overrideSubtypes
+        overrideSubtypes = overrideSubtypes,
+        sacrificeAtStep = sacrificeAtStep,
+        sacrificeOnlyOnControllersTurn = sacrificeOnlyOnControllersTurn
     )
 
     /**

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
@@ -24,6 +25,9 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
@@ -69,6 +73,7 @@ class CreateTokenCopyOfTargetExecutor(
 
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
+        val createdTokens = mutableListOf<EntityId>()
 
         repeat(count) {
             val (tokenId, stateWithId) = newState.newEntity()
@@ -100,7 +105,10 @@ class CreateTokenCopyOfTargetExecutor(
             if (effect.tapped) {
                 components.add(TappedComponent)
             }
-            if (effect.attacking) {
+            // Only creatures can be attacking. A copy of a card whose printed type line isn't a
+            // creature (e.g. an animated permanent exiled and reverted to its printed type) still
+            // enters tapped but never attacking — see Mardu Siegebreaker's rulings.
+            if (effect.attacking && tokenCard.typeLine.isCreature) {
                 val defenderId = newState.getOpponent(controllerId)
                 if (defenderId != null) {
                     components.add(AttackingComponent(defenderId))
@@ -130,6 +138,7 @@ class CreateTokenCopyOfTargetExecutor(
             newState = newState.withEntity(tokenId, container)
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, controllerId, tokenId)
+            createdTokens.add(tokenId)
 
             for (ability in effect.triggeredAbilities) {
                 val grant = GrantedTriggeredAbility(
@@ -151,6 +160,27 @@ class CreateTokenCopyOfTargetExecutor(
                     ownerId = controllerId
                 )
             )
+        }
+
+        // If sacrificeAtStep is set, create a delayed trigger to sacrifice each created token
+        // copy at that step (e.g. Mardu Siegebreaker: "at the beginning of your next end step,
+        // sacrifice those tokens"). Mirrors CreateTokenExecutor's sacrificeAtStep handling.
+        val sacrificeStep = effect.sacrificeAtStep
+        if (sacrificeStep != null && createdTokens.isNotEmpty()) {
+            val sourceId = context.sourceId ?: controllerId
+            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
+            for (tokenId in createdTokens) {
+                val delayedTrigger = DelayedTriggeredAbility(
+                    id = UUID.randomUUID().toString(),
+                    effect = SacrificeTargetEffect(EffectTarget.SpecificEntity(tokenId)),
+                    fireAtStep = sacrificeStep,
+                    sourceId = sourceId,
+                    sourceName = sourceName,
+                    controllerId = controllerId,
+                    fireOnlyOnControllersTurn = effect.sacrificeOnlyOnControllersTurn
+                )
+                newState = newState.addDelayedTrigger(delayedTrigger)
+            }
         }
 
         return EffectResult.success(newState, events)

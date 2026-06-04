@@ -445,10 +445,15 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   value, via `DynamicAmounts.triggeringManaValue()`). `controller` directs who gets the token (e.g.
   `EffectTarget.PlayerRef(Player.TriggeringPlayer)` for "that player creates …"); `imageUri` sets custom token art.
 - `CreateTokenCopyOfSelf(count?, tapped?)` — token copies of source.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works). `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
   outright for "a token that's a copy … except it's a 5/5 black Demon" wording (Ardyn, the Usurper).
+  `attacking` only applies to copies whose printed type line is a creature (a copy of a non-creature card
+  still enters tapped but never attacking). `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
+  per created copy at that step (the sacrifice sibling of `CreateTokenEffect.sacrificeAtStep`);
+  `sacrificeOnlyOnControllersTurn = true` restricts it to "at the beginning of *your* next end step"
+  (Mardu Siegebreaker: a tapped+attacking copy of the linked-exiled card, sacrificed at your next end step).
 - `CreateTokenCopyOfEquippedCreature(count?, tapped?)` — equipment-specific copy.
 - `CreateTreasure(count?, tapped?)` — Treasure tokens.
 - `CreateFood(count?, controller?)` — Food tokens.
