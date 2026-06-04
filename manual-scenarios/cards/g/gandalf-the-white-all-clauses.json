@@ -1,0 +1,50 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Faramir, Field Commander",
+      "Andúril, Flame of the West",
+      "Fell"
+    ],
+    "battlefield": [
+      {"name": "Gandalf the White"},
+      {"name": "Samwise Gamgee"},
+      {"name": "Gimli, Mournful Avenger"},
+      {"name": "Shire Scarecrow"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "ENDING",
+  "step": "END",
+  "activePlayer": 2,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": ["END"],
+  "player2OpponentStopAtSteps": []
+}

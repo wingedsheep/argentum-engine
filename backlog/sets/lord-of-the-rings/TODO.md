@@ -107,12 +107,24 @@ steal no longer silently restores the designation when control reverts at end of
   needs a "Whenever you scry" trigger + "reveal top; if land, put onto battlefield tapped".
 
 ### Gap 4 — "cast [filter] spells as though they had flash" permission
-**Engine change:** a static/one-shot permission granting flash-timing to a filtered set of
-spells.
-- **Borne Upon a Wind** — "You may cast spells this turn as though they had flash."
-- **Gandalf, Friend of the Shire** — "You may cast sorcery spells as though they had flash."
-- **Gandalf the White** — "You may cast legendary spells and artifact spells as though they
-  had flash." (also needs the extra-trigger replacement below).
+**Status:** LANDED as `Effects.GrantFlashToSpells(target, spellFilter, duration)` plus
+`FlashGrantsThisTurnComponent` (PR `ltr-gap4-cast-as-flash`). The Effect is the turn-scoped,
+player-scoped sibling of the existing permanent-static `GrantFlashToSpellType`; both are
+consulted by `CastPermissionUtils.hasGrantedFlash` and `CastZoneResolver.hasGrantedFlash`.
+- **Borne Upon a Wind** — ✅ implemented.
+- **Gandalf, Friend of the Shire** — ✅ implemented.
+- **Gandalf the White** — ✅ implemented (Flash + flash-spells static + third clause via
+  the reshaped `AdditionalETBOrLTBTriggers`, see Gap 4b below).
+
+### Gap 4b — "triggers an additional time" replacement for legendary/artifact ETB/LTB
+**Status:** LANDED. The existing `AdditionalETBTriggers` primitive (Panharmonicon family) was
+reshaped into `AdditionalETBOrLTBTriggers` with a `BattlefieldDirection` set, generalising it
+to either ETB-only (default — Panharmonicon, Naban, Starfield Vocalist, Traveling Chocobo),
+LTB-only, or both. Gandalf the White's third clause uses `directions = {ENTERING, LEAVING}`
+with `mustBeYouControl = false`; the engine path was renamed to
+`TriggerDetector.duplicateETBOrLTBTriggers` and now consults `lastKnownController` for the
+leaving case (CR 603.10a last-known-information). Implements CR 603.2d.
+- **Gandalf the White** — ✅ implemented.
 
 ### Gap 5 — Goad
 **Engine change:** Goad effect + goaded combat-forcing state (CR 701.41).

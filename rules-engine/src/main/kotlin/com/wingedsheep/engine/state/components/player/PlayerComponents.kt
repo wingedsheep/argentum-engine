@@ -413,6 +413,29 @@ data class SpellsCantBeCounteredComponent(
 ) : Component
 
 /**
+ * Spells matching any of [filters] that the player owning this component casts may be cast as
+ * though they had flash (CR 702.8a), for the duration described by [removeOn].
+ *
+ * Player-scoped, duration-bounded counterpart to the permanent-static
+ * [com.wingedsheep.sdk.scripting.GrantFlashToSpellType]. Both are consulted by
+ * [com.wingedsheep.engine.legalactions.utils.CastPermissionUtils.hasGrantedFlash]; this
+ * component lets the grant survive its source (a sorcery/instant such as Borne Upon a Wind)
+ * leaving the stack, since the static-on-permanent variant would die with its source.
+ *
+ * Multiple grants stack additively — each [com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect]
+ * resolution appends to [filters]; a spell gains flash if it matches any entry. The whole
+ * component is removed in one shot when the duration elapses.
+ *
+ * @property filters Filters matched against the card being cast (read in any zone).
+ * @property removeOn When this component is removed.
+ */
+@Serializable
+data class FlashGrantsThisTurnComponent(
+    val filters: List<GameObjectFilter> = emptyList(),
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+) : Component
+
+/**
  * Component indicating that a player cannot cast spells for the rest of this turn.
  * Applied by effects like Xantid Swarm ("defending player can't cast spells this turn").
  *

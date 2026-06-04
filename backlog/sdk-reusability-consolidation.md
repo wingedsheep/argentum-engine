@@ -323,7 +323,7 @@ ZoneChange/SpellCast/Attack/DealsDamage variants:
 - **`PlayFromTopOfLibrary`** / **`CastSpellTypesFromTopOfLibrary`** /
   **`LookAtTopOfLibrary`** / **`PlayLandsAndCastFilteredFromTopOfLibrary`** →
   `LibraryTopAccess(view, play)`. 4 → 1.
-- **`AdditionalETBTriggers`** vs **`AdditionalSourceTriggers`** →
+- **`AdditionalETBOrLTBTriggers`** vs **`AdditionalSourceTriggers`** →
   `AdditionalTriggers(triggerScope, sourceFilter)`.
 
 ### Targeting (`scripting/targets/`)

@@ -385,6 +385,50 @@ data class GrantSpellKeywordEffect(
 }
 
 /**
+ * [target] may cast spells matching [spellFilter] as though they had flash, for [duration].
+ *
+ * Player-scoped, duration-bounded counterpart to the permanent-static
+ * [com.wingedsheep.sdk.scripting.GrantFlashToSpellType]: the static lives on a battlefield
+ * permanent and applies as long as the source is on the battlefield, while this Effect is a
+ * resolution-time one-shot that records a turn-scoped grant on the target player and survives
+ * the source (sorcery/instant) leaving the stack.
+ *
+ * Used for Borne Upon a Wind: "You may cast spells this turn as though they had flash."
+ * Composes for narrower-filter variants like "you may cast sorcery spells as though they had
+ * flash until end of turn" by passing `GameObjectFilter.Sorcery`.
+ *
+ * Per CR 702.8a flash means "you may play this card any time you could cast an instant." The
+ * permission is read at cast-legality time (CR 601.3) by `CastPermissionUtils.hasGrantedFlash`,
+ * so it composes with every casting path that already honors flash.
+ *
+ * @property target Whose spells gain flash (default: controller).
+ * @property spellFilter Which spells gain flash (defaults to every spell).
+ * @property duration How long the grant lasts (default: end of turn). The "as long as ~ is on
+ *   the battlefield" variant is covered by [com.wingedsheep.sdk.scripting.GrantFlashToSpellType]
+ *   instead, so this effect's typical durations are `EndOfTurn`, `UntilYourNextTurn`, etc.
+ */
+@SerialName("GrantFlashToSpells")
+@Serializable
+data class GrantFlashToSpellsEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append(target.description.replaceFirstChar { it.uppercase() })
+        append(" may cast ")
+        append(if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells")
+        if (duration != Duration.Permanent) append(" ${duration.description}")
+        append(" as though they had flash")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
  * Spells matching [spellFilter] that [target] casts can't be countered until [duration].
  *
  * Player-scoped counterpart to the permanent-static [com.wingedsheep.sdk.scripting.GrantCantBeCountered]:

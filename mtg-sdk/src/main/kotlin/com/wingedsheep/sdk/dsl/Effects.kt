@@ -77,6 +77,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlByMostEffect
 import com.wingedsheep.sdk.scripting.effects.PlayerRankMetric
 import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantSpellKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantSpellsCantBeCounteredEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
@@ -2657,4 +2658,17 @@ object Effects {
         spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Creature,
         duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
     ): Effect = GrantSpellsCantBeCounteredEffect(target, spellFilter, duration)
+
+    /**
+     * [target] may cast spells matching [spellFilter] as though they had flash for [duration].
+     * Used for Borne Upon a Wind ("You may cast spells this turn as though they had flash.").
+     * Sibling of the permanent-static [com.wingedsheep.sdk.scripting.GrantFlashToSpellType], which
+     * lives on a battlefield permanent. Both are read by the cast-legality check; this Effect
+     * survives the source spell leaving the stack and the static survives its source's static lifetime.
+     */
+    fun GrantFlashToSpells(
+        target: com.wingedsheep.sdk.scripting.targets.EffectTarget = com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller,
+        spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any,
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
+    ): Effect = GrantFlashToSpellsEffect(target, spellFilter, duration)
 }

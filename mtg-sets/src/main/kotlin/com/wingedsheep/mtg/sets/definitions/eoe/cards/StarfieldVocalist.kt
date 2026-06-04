@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalETBTriggers
+import com.wingedsheep.sdk.scripting.AdditionalETBOrLTBTriggers
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
@@ -26,9 +26,9 @@ val StarfieldVocalist = card("Starfield Vocalist") {
         "Warp {1}{U} (You may cast this card from your hand for its warp cost. Exile this creature at the beginning of the next end step, then you may cast it from exile on a later turn.)"
 
     staticAbility {
-        ability = AdditionalETBTriggers(
-            enteringFilter = GameObjectFilter.Any,
-            enteringMustBeYouControl = false,
+        ability = AdditionalETBOrLTBTriggers(
+            filter = GameObjectFilter.Any,
+            mustBeYouControl = false,
             description = "If a permanent entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
         )
     }

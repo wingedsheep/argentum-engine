@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
+import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -328,8 +329,20 @@ class CastZoneResolver(
             }
         }
 
-        // Check GrantFlashToSpellType static abilities on battlefield permanents
         val context = PredicateContext(controllerId = spellOwner)
+
+        // Turn-scoped grants on the spell owner (Borne Upon a Wind etc., via
+        // GrantFlashToSpellsEffect → FlashGrantsThisTurnComponent).
+        val turnGrants = state.getEntity(spellOwner)?.get<FlashGrantsThisTurnComponent>()
+        if (turnGrants != null) {
+            for (filter in turnGrants.filters) {
+                if (predicateEvaluator.matches(state, state.projectedState, spellCardId, filter, context)) {
+                    return true
+                }
+            }
+        }
+
+        // Check GrantFlashToSpellType static abilities on battlefield permanents
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
                 val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue

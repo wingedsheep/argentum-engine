@@ -30,6 +30,7 @@ import com.wingedsheep.engine.state.components.player.CantActivateLoyaltyAbiliti
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
@@ -361,6 +362,10 @@ class CleanupPhaseManager(
                 val spellsUncounterable = result.get<SpellsCantBeCounteredComponent>()
                 if (spellsUncounterable?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<SpellsCantBeCounteredComponent>()
+                }
+                val flashGrants = result.get<FlashGrantsThisTurnComponent>()
+                if (flashGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<FlashGrantsThisTurnComponent>()
                 }
                 val graveyardForage = result.get<MayCastCreaturesFromGraveyardWithForageComponent>()
                 if (graveyardForage?.removeOn == PlayerEffectRemoval.EndOfTurn) {

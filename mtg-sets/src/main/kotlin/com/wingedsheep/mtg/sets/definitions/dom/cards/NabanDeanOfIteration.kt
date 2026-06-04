@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalETBTriggers
+import com.wingedsheep.sdk.scripting.AdditionalETBOrLTBTriggers
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
@@ -22,8 +22,8 @@ val NabanDeanOfIteration = card("Naban, Dean of Iteration") {
     oracleText = "If a Wizard entering the battlefield under your control causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
 
     staticAbility {
-        ability = AdditionalETBTriggers(
-            enteringFilter = GameObjectFilter.Creature.withSubtype("Wizard"),
+        ability = AdditionalETBOrLTBTriggers(
+            filter = GameObjectFilter.Creature.withSubtype("Wizard"),
             description = "If a Wizard entering the battlefield under your control causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
         )
     }

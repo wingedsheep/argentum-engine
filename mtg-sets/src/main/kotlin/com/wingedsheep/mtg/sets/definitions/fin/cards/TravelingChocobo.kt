@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.fin.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AdditionalETBTriggers
+import com.wingedsheep.sdk.scripting.AdditionalETBOrLTBTriggers
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
@@ -36,8 +36,8 @@ val TravelingChocobo = card("Traveling Chocobo") {
     }
 
     staticAbility {
-        ability = AdditionalETBTriggers(
-            enteringFilter = GameObjectFilter.Land or GameObjectFilter.Creature.withSubtype("Bird"),
+        ability = AdditionalETBOrLTBTriggers(
+            filter = GameObjectFilter.Land or GameObjectFilter.Creature.withSubtype("Bird"),
             description = "If a land or Bird you control entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
         )
     }

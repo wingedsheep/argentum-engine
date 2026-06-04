@@ -473,6 +473,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `CreateGlobalTriggeredAbility(ability, duration = Duration.Permanent, descriptionOverride? = null)` — engine-wide triggered ability with no source permanent. `duration` is a plain parameter, so the one method covers every lifetime: `Duration.EndOfTurn` (False Cure, Death Frenzy), `Duration.UntilYourNextTurn` (Season of the Bold), `Duration.EndOfCombat`, `Duration.Permanent` (Dimensional Breach, planeswalker emblems), etc. `descriptionOverride` sets emblem display text.
 - `GrantSpellKeywordEffect` — grant a keyword to a spell on the stack.
 - `GrantSpellsCantBeCountered(target, filter, duration)` — target's matching spells become uncounterable (Domri shape).
+- `GrantFlashToSpells(target, spellFilter, duration)` — target may cast matching spells as though they had flash (CR 702.8a) for `duration` (default `EndOfTurn`). Resolution-time one-shot that records the grant on the player and survives the source spell leaving the stack. Used by **Borne Upon a Wind** ("You may cast spells this turn as though they had flash."); narrower filters like `GameObjectFilter.Sorcery` cover "you may cast sorcery spells as though they had flash" variants. Sibling of the permanent-static [`GrantFlashToSpellType`](#9-static-abilities) — use the static for "as long as this is on the battlefield" wording (the two Gandalfs); use this Effect for a turn-scoped or duration-bounded grant.
 
 ### Control & combat
 
@@ -1483,15 +1484,20 @@ staticAbility {
   enforced as a whole-declaration check in `AttackPhaseManager`/`BlockPhaseManager` rather than a
   per-creature rule. While any permanent with the ability is on the battlefield, declaring more
   than the smallest cap is rejected. (`BlockerCountLimit` counts distinct blocking creatures.)
-- `AdditionalETBTriggers(enteringFilter, enteringMustBeYouControl = true)` — Panharmonicon / Naban
-  "for a subtype": when a permanent matching `enteringFilter` enters, triggered abilities of
-  permanents you control that fired from that ETB trigger an additional time. `TriggerDetector.duplicateETBTriggers`.
+- `AdditionalETBOrLTBTriggers(filter, mustBeYouControl = true, directions = setOf(ENTERING))` —
+  the Panharmonicon family (CR 603.2d "triggers additional times"). When a permanent matching
+  `filter` crosses the battlefield boundary in one of `directions`, triggered abilities of
+  permanents controlled by this ability's controller that fired from that event trigger an
+  additional time per copy. Default `{ENTERING}` covers Panharmonicon / Naban / Traveling Chocobo;
+  `mustBeYouControl = false` drops the "X you control" restriction on the cause (Starfield
+  Vocalist); adding `BattlefieldDirection.LEAVING` covers Gandalf the White's "entering or leaving
+  the battlefield" wording. `TriggerDetector.duplicateETBOrLTBTriggers`; additive across copies.
 - `AdditionalSourceTriggers(sourceFilter, excludeSelf = true)` — Twinflame Travelers: all triggered
   abilities of permanents matching `sourceFilter` you control trigger an additional time (not just ETB).
   `TriggerDetector.duplicateSourceTriggers`.
 - `AdditionalAttackTriggers(attackerFilter = GameObjectFilter.Any)` — Windcrag Siege (Mardu): the
-  attack-cause analogue of `AdditionalETBTriggers`. If a creature matching `attackerFilter` being
-  declared as an attacker causes an attack-related triggered ability ("whenever a creature
+  attack-cause analogue of `AdditionalETBOrLTBTriggers`. If a creature matching `attackerFilter`
+  being declared as an attacker causes an attack-related triggered ability ("whenever a creature
   attacks" / "whenever you attack") of a permanent you control to trigger, that ability triggers an
   additional time. `TriggerDetector.duplicateAttackTriggers`; additive across copies.
 

@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivationRestriction
@@ -349,6 +350,18 @@ class CastPermissionUtils(
         }
 
         val context = PredicateContext(controllerId = spellOwner)
+
+        // Turn-scoped grants on the spell owner (Borne Upon a Wind etc., via
+        // GrantFlashToSpellsEffect → FlashGrantsThisTurnComponent).
+        val turnGrants = state.getEntity(spellOwner)?.get<FlashGrantsThisTurnComponent>()
+        if (turnGrants != null) {
+            for (filter in turnGrants.filters) {
+                if (predicateEvaluator.matches(state, state.projectedState, spellCardId, filter, context)) {
+                    return true
+                }
+            }
+        }
+
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
                 val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue

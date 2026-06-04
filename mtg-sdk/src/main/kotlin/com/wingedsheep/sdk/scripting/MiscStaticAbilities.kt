@@ -508,30 +508,61 @@ data object ExtraLoyaltyActivation : StaticAbility {
 }
 
 /**
- * When a permanent matching [enteringFilter] enters the battlefield, triggered abilities of
- * permanents you control that trigger from that entering trigger an additional time.
- *
- * This models Naban, Dean of Iteration and similar "Panharmonicon for a subtype" effects, as
- * well as Starfield Vocalist where the entering permanent can be any controller.
- *
- * [enteringFilter] restricts which entering permanents cause the doubling (e.g., Wizards, Birds,
- * or [GameObjectFilter.Any] for any permanent).
- *
- * [enteringMustBeYouControl] controls whether the entering permanent must be controlled by the
- * doubler's controller. Defaults to true to match the typical "X you control entering" wording
- * (Naban, Traveling Chocobo, Panharmonicon). Set to false for cards like Starfield Vocalist whose
- * oracle text omits the "under your control" restriction on the entering permanent — the trigger
- * still has to belong to a permanent you control, but the entering permanent does not.
- *
- * Multiple copies are additive: two copies yield three total triggers, etc.
+ * Whether [AdditionalETBOrLTBTriggers] watches the entering side, the leaving side, or both
+ * of a permanent's battlefield transit.
  */
-@SerialName("AdditionalETBTriggers")
 @Serializable
-data class AdditionalETBTriggers(
-    val enteringFilter: GameObjectFilter,
-    val enteringMustBeYouControl: Boolean = true,
+enum class BattlefieldDirection {
+    /** Permanent entered the battlefield (`ZoneChangeEvent.toZone == Zone.BATTLEFIELD`). */
+    @SerialName("Entering")
+    ENTERING,
+
+    /** Permanent left the battlefield (`ZoneChangeEvent.fromZone == Zone.BATTLEFIELD`). */
+    @SerialName("Leaving")
+    LEAVING
+}
+
+/**
+ * When a permanent matching [filter] crosses the battlefield boundary in one of [directions],
+ * triggered abilities of permanents controlled by this ability's controller that fired from
+ * that event trigger an additional time per copy. CR 603.2d ("An ability may state that a
+ * triggered ability triggers additional times").
+ *
+ * Models the Panharmonicon family (entering only) and, with `LEAVING` added, Gandalf-the-White-
+ * style "entering or leaving the battlefield" doublers. Concrete shapes:
+ *  - Panharmonicon — `filter = GameObjectFilter.Any` (creature/artifact only in oracle text;
+ *    use a composed filter), default `mustBeYouControl = true`, default `directions = {ENTERING}`.
+ *  - Naban, Dean of Iteration — `filter = Creature.withSubtype("Wizard")`, default flags.
+ *  - Traveling Chocobo — `filter = Land or Creature.withSubtype("Bird")`, default flags.
+ *  - Starfield Vocalist — `filter = GameObjectFilter.Any`, `mustBeYouControl = false`.
+ *  - Gandalf the White — `filter = Artifact or Any.legendary()`, `mustBeYouControl = false`,
+ *    `directions = setOf(ENTERING, LEAVING)`.
+ *
+ * @property filter Which permanent's entering/leaving counts as the "cause" event.
+ * @property mustBeYouControl When true (default), the cause permanent must be controlled by
+ *   this ability's controller — matches the typical "X you control entering" wording. Set to
+ *   false when the oracle text omits the "under your control" restriction on the cause
+ *   permanent (Starfield Vocalist, Gandalf the White). The triggered ability's source permanent
+ *   is always required to be controlled by this ability's controller regardless of this flag —
+ *   that part is the "of a permanent you control" half of the oracle text and isn't optional.
+ * @property directions Which transit directions are watched. Defaults to `{ENTERING}` (the
+ *   Panharmonicon shape). Add `LEAVING` to cover "entering or leaving the battlefield" wording
+ *   (Gandalf the White) or stand-alone "leaves the battlefield" doublers.
+ *
+ * Multiple copies are additive: N copies add N extra firings of each affected trigger.
+ */
+@SerialName("AdditionalETBOrLTBTriggers")
+@Serializable
+data class AdditionalETBOrLTBTriggers(
+    val filter: GameObjectFilter,
+    val mustBeYouControl: Boolean = true,
+    val directions: Set<BattlefieldDirection> = setOf(BattlefieldDirection.ENTERING),
     override val description: String = "Triggered abilities trigger an additional time"
 ) : StaticAbility {
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -569,7 +600,7 @@ data class AdditionalSourceTriggers(
  * If a creature matching [attackerFilter] attacking causes a triggered ability of a permanent
  * you control to trigger, that ability triggers an additional time.
  *
- * This is the "attack-cause" analogue of [AdditionalETBTriggers]: instead of doubling triggers
+ * This is the "attack-cause" analogue of [AdditionalETBOrLTBTriggers]: instead of doubling triggers
  * caused by a permanent entering the battlefield, it doubles triggers caused by a creature being
  * declared as an attacker (the attackers-declared event). Models Windcrag Siege's Mardu mode:
  * "If a creature attacking causes a triggered ability of a permanent you control to trigger, that

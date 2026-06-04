@@ -49,6 +49,7 @@ class PlayerExecutors(
         GainCitysBlessingExecutor(),
         GiftGivenExecutor(),
         GrantCastCreaturesFromGraveyardWithForageExecutor(),
+        GrantFlashToSpellsExecutor(),
         GrantSpellKeywordExecutor(),
         GrantSpellsCantBeCounteredExecutor(),
         GrantDamageBonusExecutor(),
