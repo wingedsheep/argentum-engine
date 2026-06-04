@@ -2214,6 +2214,12 @@ sibling effect that reads `DynamicAmount.EntityProperty(EntityReference.AmassedA
 - `ChosenNumber` — number a player chose via a Choose action.
 - `VariableReference(name)` — named variable stored earlier by `StoreResult`/`StoreCount`.
 - `ColorsAmongPermanents(player)` — count of distinct colors among player's permanents.
+- `DistinctEntitiesInCollections(collections)` — number of *distinct* entities across the named
+  pipeline collections (union, de-duplicated by entity id). Facade: `DynamicAmounts.distinctEntitiesIn(vararg)`.
+  For "you affected N *different* objects" payoffs spread over several resolution-time selections —
+  e.g. Call the Spirit Dragons puts a +1/+1 counter on a chosen Dragon of each color (one `SelectTarget`
+  per color, each stored under its own key) and wins if five *different* Dragons received counters, so a
+  multicolored Dragon chosen for two colors counts once.
 
 ### `ManaColorSet`<a id="manacolorset"></a>
 

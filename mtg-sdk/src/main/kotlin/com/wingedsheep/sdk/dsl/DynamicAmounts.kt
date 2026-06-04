@@ -169,6 +169,14 @@ object DynamicAmounts {
             DynamicAmount.Fixed(1)
         )
 
+    /**
+     * Number of distinct entities across the named pipeline collections (union, de-duplicated
+     * by entity id). For "you affected N *different* objects" payoffs spread over several
+     * resolution-time selections — see [DynamicAmount.DistinctEntitiesInCollections].
+     */
+    fun distinctEntitiesIn(vararg collections: String): DynamicAmount =
+        DynamicAmount.DistinctEntitiesInCollections(collections.toList())
+
     // =========================================================================
     // Graveyard counting
     // =========================================================================
