@@ -612,10 +612,11 @@ object ZoneTransitionService {
                 )
             }
 
-            // Creatures enter with summoning sickness
-            if (cardComponent.typeLine.isCreature) {
-                updated = updated.with(SummoningSicknessComponent)
-            }
+            // All permanents enter summoning sick (CR 302.6 / 508.1a — the control-continuity
+            // check is about the permanent, not whether it was a creature the whole turn).
+            // Downstream checks gate on isCreature/{T}-cost so this is a no-op for lands and
+            // non-creature artifacts until they become creatures (Crew, animate-land, etc.).
+            updated = updated.with(SummoningSicknessComponent)
 
             // Tapped entry
             if (options.tapped || options.tappedAndAttacking) {

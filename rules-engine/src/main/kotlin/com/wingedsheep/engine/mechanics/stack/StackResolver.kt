@@ -976,10 +976,12 @@ class StackResolver(
                     .without<RevealedToComponent>()
             }
 
-            // Creatures enter with summoning sickness (including face-down creatures)
-            if (cardComponent?.typeLine?.isCreature == true || spellComponent.castFaceDown) {
-                updated = updated.with(SummoningSicknessComponent)
-            }
+            // All permanents enter summoning sick (CR 302.6 / 508.1a — the control-continuity
+            // check is about the permanent, not whether it was a creature the whole turn). Vehicles
+            // and animated lands that become creatures mid-turn must inherit the marker too.
+            // Downstream checks gate on isCreature/{T}-cost so this is harmless for lands and
+            // non-creature artifacts until they become creatures (Crew, animate-land, etc.).
+            updated = updated.with(SummoningSicknessComponent)
 
             // Track that this permanent entered the battlefield this turn
             updated = updated.with(EnteredThisTurnComponent)
