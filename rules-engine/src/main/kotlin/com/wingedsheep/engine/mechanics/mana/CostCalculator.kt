@@ -872,6 +872,7 @@ class CostCalculator(
             // CostCalculator has no resolution-time chosen color; no static answer here.
             CardPredicate.HasChosenColor -> false
             CardPredicate.IsColorless -> cardDef.colors.isEmpty()
+            CardPredicate.IsColored -> cardDef.colors.isNotEmpty()
             CardPredicate.IsMulticolored -> cardDef.colors.size > 1
             CardPredicate.IsMonocolored -> cardDef.colors.size == 1
 

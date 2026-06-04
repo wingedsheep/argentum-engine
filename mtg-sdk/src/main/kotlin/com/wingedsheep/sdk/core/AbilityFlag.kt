@@ -23,5 +23,8 @@ enum class AbilityFlag(val displayName: String) {
     MAY_NOT_UNTAP("You may choose not to untap"),
 
     // ── Counter restriction flags ───────────────────────────────
-    CANT_RECEIVE_COUNTERS("Can't have counters put on it")
+    CANT_RECEIVE_COUNTERS("Can't have counters put on it"),
+
+    // ── Sacrifice restriction flags ─────────────────────────────
+    CANT_BE_SACRIFICED("Can't be sacrificed")
 }

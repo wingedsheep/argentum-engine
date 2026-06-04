@@ -30,7 +30,9 @@ import kotlin.reflect.KClass
  * If there are multiple targets, use the pre-supplied damageDistribution from context.
  */
 class DividedDamageExecutor(
-    private val decisionHandler: DecisionHandler
+    private val decisionHandler: DecisionHandler,
+    private val amountEvaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator =
+        com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
 ) : EffectExecutor<DividedDamageEffect> {
 
     override val effectType: KClass<DividedDamageEffect> = DividedDamageEffect::class
@@ -43,13 +45,20 @@ class DividedDamageExecutor(
         // Get the targets from context
         val targets = context.targets.map { it.toEntityId() }
 
+        // The total is fixed unless a dynamicTotal is supplied, which is evaluated at resolution
+        // (e.g. Ureni — "X is the number of lands you control").
+        val total = effect.dynamicTotal?.let { amountEvaluator.evaluate(state, it, context) }
+            ?: effect.totalDamage
+
         if (targets.isEmpty()) {
-            return EffectResult.error(state, "No targets for divided damage")
+            // "Any number of target" forms can resolve with zero targets — nothing happens.
+            return if (effect.dynamicTotal != null) EffectResult.success(state)
+            else EffectResult.error(state, "No targets for divided damage")
         }
 
         // If there's only one target, deal all damage directly
         if (targets.size == 1) {
-            return dealDamageToTarget(state, targets.first(), effect.totalDamage, context.sourceId)
+            return dealDamageToTarget(state, targets.first(), total, context.sourceId)
         }
 
         // Multiple targets - use pre-supplied distribution from context
@@ -57,7 +66,7 @@ class DividedDamageExecutor(
         if (distribution == null) {
             // Fallback: This shouldn't happen with proper flow, but handle gracefully
             // by creating a decision (legacy behavior)
-            return createDistributionDecision(state, effect, context, targets)
+            return createDistributionDecision(state, effect, context, targets, total)
         }
 
         // Deal damage to each target per the distribution
@@ -86,7 +95,8 @@ class DividedDamageExecutor(
         state: GameState,
         effect: DividedDamageEffect,
         context: EffectContext,
-        targets: List<com.wingedsheep.sdk.model.EntityId>
+        targets: List<com.wingedsheep.sdk.model.EntityId>,
+        total: Int
     ): EffectResult {
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -96,13 +106,13 @@ class DividedDamageExecutor(
         val decision = DistributeDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Divide ${effect.totalDamage} damage among ${targets.size} targets",
+            prompt = "Divide $total damage among ${targets.size} targets",
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
                 phase = DecisionPhase.RESOLUTION
             ),
-            totalAmount = effect.totalDamage,
+            totalAmount = total,
             targets = targets,
             minPerTarget = 1 // Per MTG rules, must assign at least 1 damage to each target
         )

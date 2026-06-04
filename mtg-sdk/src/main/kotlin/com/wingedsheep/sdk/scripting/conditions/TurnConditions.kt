@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.conditions
 
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -48,6 +49,29 @@ data class IsInPhase(
         if (yoursOnly) append("your ")
         append(phases.joinToString(" or ") { it.displayName.removeSuffix(" Phase").lowercase() })
         if (phases.any { !it.isMainPhase } || phases.size > 1) append(" phase")
+    }
+}
+
+/**
+ * Condition: "If the current step matches any of the listed steps."
+ * When `yoursOnly = true` (default), also requires that it's the controller's turn —
+ * i.e. "your end step" means it's both your turn AND the end step.
+ *
+ * Board-derived (reads `state.step` and the active player), so it evaluates identically at
+ * resolution and under projection — making it usable as a [ConditionalStaticAbility] gate.
+ * Used for Zurgo, Thunder's Decree ("During your end step, ...").
+ */
+@SerialName("IsInStep")
+@Serializable
+data class IsInStep(
+    val steps: List<Step>,
+    val yoursOnly: Boolean = true
+) : Condition {
+    override val description: String = buildString {
+        append("if it's ")
+        if (yoursOnly) append("your ")
+        append(steps.joinToString(" or ") { it.displayName.removeSuffix(" Step").lowercase() })
+        append(" step")
     }
 }
 

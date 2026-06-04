@@ -48,8 +48,10 @@ val GloomRipper = card("Gloom Ripper") {
             )
         )
 
+        // "Elves you control" counts every Elf permanent, not just Elf creatures — a noncreature
+        // Changeling permanent (e.g. Firdoch Core) is an Elf, so filter on Permanent, not Creature.
         val elfCount = DynamicAmount.Add(
-            DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature.withSubtype(Subtype.ELF)).count(),
+            DynamicAmounts.battlefield(Player.You, GameObjectFilter.Permanent.withSubtype(Subtype.ELF)).count(),
             DynamicAmounts.zone(Player.You, Zone.GRAVEYARD, GameObjectFilter.Any.withSubtype(Subtype.ELF)).count()
         )
 

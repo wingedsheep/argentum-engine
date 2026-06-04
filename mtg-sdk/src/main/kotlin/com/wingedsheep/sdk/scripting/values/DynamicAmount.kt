@@ -316,6 +316,22 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override val description: String = "the mana value of the $collectionName card"
     }
 
+    /**
+     * Number of *distinct* entities across several named pipeline collections.
+     *
+     * Each listed collection is unioned and de-duplicated by entity id, then the size of the
+     * union is returned. Use this for "did you affect N *different* objects" payoffs where the
+     * same object may have been selected in more than one pipeline step — e.g. Call the Spirit
+     * Dragons puts a +1/+1 counter on a Dragon you control of each color (one selection per
+     * color) and wins if five *different* Dragons received counters, even though a multicolored
+     * Dragon could have been chosen for two colors.
+     */
+    @SerialName("DistinctEntitiesInCollections")
+    @Serializable
+    data class DistinctEntitiesInCollections(val collections: List<String>) : DynamicAmount {
+        override val description: String = "the number of distinct selected permanents"
+    }
+
     // =========================================================================
     // Math Operations - Composable arithmetic on DynamicAmounts
     // =========================================================================

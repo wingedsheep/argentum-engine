@@ -85,11 +85,24 @@ class EffectAndTriggerContinuationResumer(
             return checkForMore(state, emptyList())
         }
 
-        // Check if this is a DividedDamageEffect with multiple targets — need distribution
+        // Check if this is a DividedDamageEffect with multiple targets — need distribution.
+        // A dynamicTotal (e.g. Ureni — "X = lands you control") is evaluated now, as the ability
+        // goes on the stack, so the player divides the correct amount among the chosen targets.
         val effect = continuation.effect
         if (effect is DividedDamageEffect && selectedTargets.size > 1) {
+            val total = effect.dynamicTotal?.let {
+                com.wingedsheep.engine.handlers.DynamicAmountEvaluator().evaluate(
+                    state,
+                    it,
+                    com.wingedsheep.engine.handlers.EffectContext(
+                        sourceId = continuation.sourceId,
+                        controllerId = continuation.controllerId,
+                        opponentId = state.getOpponent(continuation.controllerId)
+                    )
+                )
+            } ?: effect.totalDamage
             return createTriggerDamageDistributionDecision(
-                state, continuation, selectedTargets, effect.totalDamage, checkForMore
+                state, continuation, selectedTargets, total, checkForMore
             )
         }
 

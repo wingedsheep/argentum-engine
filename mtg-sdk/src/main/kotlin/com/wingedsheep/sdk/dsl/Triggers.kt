@@ -1173,9 +1173,21 @@ object Triggers {
     /**
      * Whenever a creature you control becomes the target of a spell or ability
      * an opponent controls.
+     *
+     * [includeSpellTargets] also fires when an opponent targets a matching *spell* you control on
+     * the stack — the "... or a creature spell you control" half of Surrak, Elusive Hunter. Leave it
+     * false (default) for the plain "a creature you control" wording (Pawpatch Recruit, Elrond),
+     * which is permanent-only.
      */
-    fun CreatureYouControlBecomesTargetByOpponent(filter: GameObjectFilter = GameObjectFilter.Creature): TriggerSpec = TriggerSpec(
-        event = BecomesTargetEvent(targetFilter = filter.youControl(), byOpponent = true),
+    fun CreatureYouControlBecomesTargetByOpponent(
+        filter: GameObjectFilter = GameObjectFilter.Creature,
+        includeSpellTargets: Boolean = false
+    ): TriggerSpec = TriggerSpec(
+        event = BecomesTargetEvent(
+            targetFilter = filter.youControl(),
+            byOpponent = true,
+            includeSpellTargets = includeSpellTargets
+        ),
         binding = TriggerBinding.ANY
     )
 

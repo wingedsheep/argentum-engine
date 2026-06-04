@@ -191,6 +191,7 @@ class PredicateEvaluator {
             is CardPredicate.NotColor -> predicate.color.name !in colors
             CardPredicate.HasChosenColor -> context?.chosenColor?.let { it.name in colors } ?: false
             CardPredicate.IsColorless -> colors.isEmpty()
+            CardPredicate.IsColored -> colors.isNotEmpty()
             CardPredicate.IsMulticolored -> colors.size > 1
             CardPredicate.IsMonocolored -> colors.size == 1
 
@@ -853,6 +854,7 @@ class PredicateEvaluator {
             is CardPredicate.HasColor -> predicate.color in record.colors
             is CardPredicate.NotColor -> predicate.color !in record.colors
             CardPredicate.IsColorless -> record.colors.isEmpty()
+            CardPredicate.IsColored -> record.colors.isNotEmpty()
             CardPredicate.IsMulticolored -> record.colors.size > 1
             CardPredicate.IsMonocolored -> record.colors.size == 1
 

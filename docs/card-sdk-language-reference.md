@@ -238,6 +238,13 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `DealDamage(amount, target)` — deal fixed/dynamic damage.
 - `DealXDamage(target)` — deal X damage (spell's X).
 - `Fight(target1, target2)` — two creatures each deal damage equal to their power to each other (CR 701.12).
+- `DividedDamageEffect(totalDamage, minTargets, maxTargets, dynamicTotal?)` — "N damage divided as you
+  choose among target ..." The targets come from the ability's target requirement; pair with
+  `TargetCreature(count, minCount)` (Forked Lightning, Skirk Volcanist) or, for "any number of target"
+  + a dynamic total, a `TargetObject(optional = true, dynamicMaxCount = ..., filter = ...)`. Set
+  `dynamicTotal` (a `DynamicAmount`) for totals computed when the ability resolves/goes on the stack —
+  Ureni, the Song Unending: `dynamicTotal = DynamicAmounts.landsYouControl()`. Works for creatures and
+  planeswalkers (`GameObjectFilter.CreatureOrPlaneswalker`); zero chosen targets ⇒ no-op.
 
 ### Life
 
@@ -774,6 +781,9 @@ Every `TargetRequirement` carries count semantics (defaults shown):
 - `Filters.NonlandPermanent` — nonland permanent.
 - `Filters.WithSubtype(subtype)` — card of a given subtype.
 - `GameObjectFilter.Multicolored` — multicolored card (two or more colors; `CardPredicate.IsMulticolored`).
+- `CardPredicate.IsColored` — one or more colors (the complement of `IsColorless`). Used for "a
+  permanent that's one or more colors" (Ugin, Eye of the Storms). Pair with `IsPermanent` for the
+  colored-permanent target filter; pair `IsColorless` with `IsNonland` for "colorless nonland card".
 
 **Chained predicates**
 
@@ -1204,8 +1214,16 @@ Triggers.youCastSpell(
 - `TurnedFaceUp` — source turns face up. Use `turnedFaceUp(binding)` for the ATTACHED-binding aura variant (Fatal Mutation).
 - `CreatureTurnedFaceUp(player?)` — when a creature you control turns face up.
 - `GainControlOfSelf` — you gain control of source.
-- `BecomesTarget(filter?)` — source becomes target of spell/ability.
-- `CreatureYouControlBecomesTargetByOpponent(filter?)` — your creature gets targeted by opponent.
+- `BecomesTarget(filter?)` — source becomes target of spell/ability. The engine emits the
+  underlying `BecomesTargetEvent` for both permanent targets and spell targets on the stack, but the
+  trigger matches **permanent targets only** by default — "a creature you control" is a battlefield
+  creature, not a creature spell. Set `includeSpellTargets = true` on the event for the "... or a
+  creature spell you control" wording (Surrak, Elusive Hunter); the `filter` is then also matched
+  against the spell's card data, so a `Creature` filter matches a creature spell on the stack. Ward
+  never sees spell targets because it is generated only from battlefield permanents.
+- `CreatureYouControlBecomesTargetByOpponent(filter?, includeSpellTargets = false)` — your creature
+  gets targeted by an opponent's spell or ability. Permanent-only unless `includeSpellTargets = true`
+  (Surrak), which also fires when an opponent targets a matching creature spell you control.
 - `Transforms` — source transforms (either direction).
 - `TransformsToFront` — to front face.
 - `TransformsToBack` — to back face.
@@ -1424,6 +1442,12 @@ staticAbility {
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect.
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`.
+- `CantReceiveCounters(filter)` — matching permanents can't have counters put on them (projects the
+  `AbilityFlag.CANT_RECEIVE_COUNTERS` flag).
+- `CantBeSacrificed(filter)` — matching permanents can't be sacrificed (projects the
+  `AbilityFlag.CANT_BE_SACRIFICED` flag, honored by the sacrifice executor — a sacrifice that can't
+  happen simply no-ops). Wrap in `ConditionalStaticAbility` for time-restricted forms, e.g. Zurgo,
+  Thunder's Decree: `ConditionalStaticAbility(CantBeSacrificed(GroupFilter(Token.youControl().withSubtype("Warrior"))), IsInStep(listOf(Step.END)))`.
 - `CantBlockCreaturesWithGreaterPower(filter = source())` — blocker-side evasion (Spitfire Handler): this
   creature can't block creatures whose projected power exceeds its own.
 - `CantBeBlockedByCreaturesWithLessPower(filter = source())` — attacker-side dual (Formation Breaker): this
@@ -1949,6 +1973,10 @@ contexts.
 - `IsYourTurn` — it's your turn.
 - `IsNotYourTurn` — it's an opponent's turn.
 - `IsInPhase(phase)` — currently in `BEGINNING | MAIN | COMBAT | …`.
+- `IsInStep(steps, yoursOnly = true)` — current step is one of `steps` (e.g. `Step.END`). Board-derived
+  (reads `state.step` + active player), so it evaluates identically at resolution and under projection,
+  making it usable as a `ConditionalStaticAbility` gate. `yoursOnly` requires it to be the controller's
+  turn ("during your end step"). Used by Zurgo, Thunder's Decree.
 - `ControllerTurnsTakenAtMost(n)` — the controller has taken at most N turns so far
   (1-indexed once they're partway through their first turn). Reads
   `PlayerTurnsTakenComponent` set by `TurnManager.startTurn`. Used by Starting Town
@@ -2192,6 +2220,12 @@ sibling effect that reads `DynamicAmount.EntityProperty(EntityReference.AmassedA
 - `ChosenNumber` — number a player chose via a Choose action.
 - `VariableReference(name)` — named variable stored earlier by `StoreResult`/`StoreCount`.
 - `ColorsAmongPermanents(player)` — count of distinct colors among player's permanents.
+- `DistinctEntitiesInCollections(collections)` — number of *distinct* entities across the named
+  pipeline collections (union, de-duplicated by entity id). Facade: `DynamicAmounts.distinctEntitiesIn(vararg)`.
+  For "you affected N *different* objects" payoffs spread over several resolution-time selections —
+  e.g. Call the Spirit Dragons puts a +1/+1 counter on a chosen Dragon of each color (one `SelectTarget`
+  per color, each stored under its own key) and wins if five *different* Dragons received counters, so a
+  multicolored Dragon chosen for two colors counts once.
 
 ### `ManaColorSet`<a id="manacolorset"></a>
 

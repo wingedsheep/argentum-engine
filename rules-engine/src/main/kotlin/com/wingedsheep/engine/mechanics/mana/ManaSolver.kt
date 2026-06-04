@@ -392,6 +392,45 @@ class ManaSolver(
             return true
         }
 
+        // Helper for a colored pip that no *printed* source can produce, but an as-yet-untapped
+        // source carries an aura tap-bonus that can (Fertile Ground's "one mana of any color", or a
+        // fixed-color bonus matching the pip). Tapping such a source yields its printed mana PLUS the
+        // bonus; both flow into the bonus pool so the printed mana stays available for later passes
+        // (or floats), and one bonus is spent on this pip. Returns false when no bonus source fits.
+        //
+        // Without this, the colored pass — which runs before any source is tapped — sees an empty
+        // bonus pool and bails on a pip like {R} when the player's only red comes from a Fertile
+        // Ground forest, even though tapping that forest would produce it.
+        fun payColoredPipFromAuraBonus(color: Color): Boolean {
+            val source = remainingSources.firstOrNull { src ->
+                src.bonusManaPerTap > 0 && (src.bonusManaIsAnyColor || src.bonusManaColor == color)
+            } ?: return false
+            usedSources.add(source)
+            remainingSources.remove(source)
+            for (c in source.producesColors) {
+                availableSourcesByColor[c] = (availableSourcesByColor[c] ?: 1) - 1
+            }
+            // Printed mana → recorded as produced (mana-spent tally) and routed into the bonus pool
+            // so the generic pass can consume it (or it floats back to the player's pool).
+            val primaryColor = source.availableColorsFor(spellContext).firstOrNull()
+            if (primaryColor != null) {
+                manaProduced[source.entityId] = ManaProduction(color = primaryColor, amount = source.manaAmount)
+                bonusManaPool.add(BonusManaEntry(primaryColor, source.manaAmount, source.restriction))
+            } else {
+                manaProduced[source.entityId] = ManaProduction(colorless = source.manaAmount)
+            }
+            // Aura bonus → bonus pool (any-color or fixed), then spend one toward this pip.
+            bonusManaPool.add(
+                BonusManaEntry(
+                    color = source.bonusManaColor ?: Color.WHITE,
+                    amount = source.bonusManaPerTap,
+                    restriction = null,
+                    anyColor = source.bonusManaIsAnyColor,
+                )
+            )
+            return spendBonusMana(color)
+        }
+
         // 1. Pay colored costs first (most constrained)
         for (symbol in cost.symbols) {
             when (symbol) {
@@ -400,7 +439,12 @@ class ManaSolver(
                     if (spendBonusMana(symbol.color)) continue
 
                     val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor, spellContext)
-                        ?: return null // Can't pay this colored cost
+                    if (source == null) {
+                        // No printed source makes this color. Fall back to an aura tap-bonus
+                        // (e.g. only a Fertile Ground forest can supply the {R}).
+                        if (payColoredPipFromAuraBonus(symbol.color)) continue
+                        return null // Can't pay this colored cost
+                    }
 
                     manaProduced[source.entityId] = ManaProduction(color = symbol.color, amount = source.manaAmount)
                     useSource(source, symbol.color)
@@ -418,7 +462,12 @@ class ManaSolver(
                     val source2 = findBestSourceForColor(remainingSources, symbol.color2, handRequirements, availableSourcesByColor, spellContext)
 
                     val source = when {
-                        source1 == null && source2 == null -> return null
+                        source1 == null && source2 == null -> {
+                            // Neither color has a printed source; try an aura tap-bonus for either.
+                            if (payColoredPipFromAuraBonus(symbol.color1)) continue
+                            if (payColoredPipFromAuraBonus(symbol.color2)) continue
+                            return null
+                        }
                         source1 == null -> source2!!
                         source2 == null -> source1
                         else -> {
@@ -441,7 +490,10 @@ class ManaSolver(
 
                     // For now, always pay with mana (not life)
                     val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor, spellContext)
-                        ?: return null
+                    if (source == null) {
+                        if (payColoredPipFromAuraBonus(symbol.color)) continue
+                        return null
+                    }
 
                     manaProduced[source.entityId] = ManaProduction(color = symbol.color, amount = source.manaAmount)
                     useSource(source, symbol.color)

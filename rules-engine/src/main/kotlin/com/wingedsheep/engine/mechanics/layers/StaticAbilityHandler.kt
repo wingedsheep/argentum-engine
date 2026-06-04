@@ -53,6 +53,7 @@ import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
+import com.wingedsheep.sdk.scripting.CantBeSacrificed
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
@@ -504,6 +505,12 @@ class StaticAbilityHandler(
             is CantReceiveCounters -> {
                 ContinuousEffectData(
                     modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS.name),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is CantBeSacrificed -> {
+                ContinuousEffectData(
+                    modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED.name),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

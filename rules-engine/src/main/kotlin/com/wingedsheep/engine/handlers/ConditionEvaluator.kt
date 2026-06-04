@@ -48,6 +48,7 @@ import com.wingedsheep.sdk.scripting.conditions.EnchantedPermanentMatches
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
+import com.wingedsheep.sdk.scripting.conditions.IsInStep
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
@@ -153,6 +154,13 @@ class ConditionEvaluator(
 
             is IsYourTurn -> ctx.controllerId?.let { state.activePlayerId == it } ?: false
             is IsNotYourTurn -> ctx.controllerId?.let { state.activePlayerId != it } ?: false
+
+            // Board-derived (current step + active player), so it works identically at resolution
+            // and under projection — used as a ConditionalStaticAbility gate (Zurgo's end step).
+            is IsInStep -> {
+                if (condition.yoursOnly && state.activePlayerId != ctx.controllerId) false
+                else state.step in condition.steps
+            }
 
             // Reads the controller's PlayerTurnsTakenComponent (incremented in
             // TurnManager.startTurn). Returns false when there's no controller

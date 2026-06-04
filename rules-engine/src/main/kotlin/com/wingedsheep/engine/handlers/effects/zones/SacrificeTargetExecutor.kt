@@ -45,6 +45,13 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
             return EffectResult.success(state)
         }
 
+        // "This can't be sacrificed" (projected AbilityFlag) — the sacrifice simply doesn't
+        // happen. Backs Zurgo, Thunder's Decree keeping its Mobilize Warrior tokens past the
+        // end step. The mobilize delayed-sacrifice trigger still fires; it just no-ops here.
+        if (state.projectedState.hasKeyword(targetId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED)) {
+            return EffectResult.success(state)
+        }
+
         val container = state.getEntity(targetId)
             ?: return EffectResult.success(state)
 

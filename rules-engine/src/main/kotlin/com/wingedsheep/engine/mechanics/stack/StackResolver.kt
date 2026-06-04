@@ -316,21 +316,53 @@ class StackResolver(
             events.add(TargetsChosenEvent(casterId, cardId, eventName))
         }
 
-        // Emit BecomesTargetEvent for each permanent target (Rule 601.2c)
+        // Emit BecomesTargetEvent for each permanent or spell target (Rule 601.2c)
         // Also track targeting for Valiant ("first time each turn")
         for (target in effectiveTargets) {
-            if (target is ChosenTarget.Permanent) {
-                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
-                val firstTime = !hasBeenTargetedByController(newState, target.entityId, casterId)
-                events.add(BecomesTargetEvent(target.entityId, targetName, cardId, casterId, firstTime))
-                newState = markTargetedByController(newState, target.entityId, casterId)
-            }
+            newState = emitBecomesTarget(newState, target, cardId, casterId, events)
         }
 
         return ExecutionResult.success(
             newState.tick(),
             events
         )
+    }
+
+    /**
+     * Emit a [BecomesTargetEvent] for a permanent or spell target. Players and other target kinds
+     * emit nothing. Returns the updated state.
+     *
+     * Only permanents participate in the "targeted by this controller this turn" tracking (Valiant's
+     * "first time each turn"): a spell's stack entity can be reused as the resolved permanent's
+     * entity, so marking it would leak a stale flag onto the permanent. Spell-target events carry
+     * `firstTime = true` and leave the tracking untouched.
+     */
+    private fun emitBecomesTarget(
+        state: GameState,
+        target: ChosenTarget,
+        sourceEntityId: EntityId,
+        controllerId: EntityId,
+        events: MutableList<GameEvent>
+    ): GameState {
+        val isSpell = target is ChosenTarget.Spell
+        val targetEntityId = when (target) {
+            is ChosenTarget.Permanent -> target.entityId
+            is ChosenTarget.Spell -> target.spellEntityId
+            else -> return state
+        }
+        val targetName = state.getEntity(targetEntityId)?.get<CardComponent>()?.name ?: "Unknown"
+        val firstTime = isSpell || !hasBeenTargetedByController(state, targetEntityId, controllerId)
+        events.add(
+            BecomesTargetEvent(
+                targetEntityId,
+                targetName,
+                sourceEntityId,
+                controllerId,
+                firstTime,
+                targetIsSpell = isSpell
+            )
+        )
+        return if (isSpell) state else markTargetedByController(state, targetEntityId, controllerId)
     }
 
     /**
@@ -372,15 +404,10 @@ class StackResolver(
             events.add(TargetsChosenEvent(ability.controllerId, abilityId, ability.sourceName))
         }
 
-        // Emit BecomesTargetEvent for each permanent target
+        // Emit BecomesTargetEvent for each permanent or spell target
         // Use abilityId (the entity on the stack) as source so ward can counter it
         for (target in targets) {
-            if (target is ChosenTarget.Permanent) {
-                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
-                val firstTime = !hasBeenTargetedByController(newState, target.entityId, ability.controllerId)
-                events.add(BecomesTargetEvent(target.entityId, targetName, abilityId, ability.controllerId, firstTime))
-                newState = markTargetedByController(newState, target.entityId, ability.controllerId)
-            }
+            newState = emitBecomesTarget(newState, target, abilityId, ability.controllerId, events)
         }
 
         return ExecutionResult.success(
@@ -486,15 +513,10 @@ class StackResolver(
             )
         )
 
-        // Emit BecomesTargetEvent for each permanent target — the copy is its own source
-        // on the stack (ward on the target can counter the copy independently).
+        // Emit BecomesTargetEvent for each permanent or spell target — the copy is its own
+        // source on the stack (ward on the target can counter the copy independently).
         for (target in effectiveTargets) {
-            if (target is ChosenTarget.Permanent) {
-                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
-                val firstTime = !hasBeenTargetedByController(newState, target.entityId, copyController)
-                events.add(BecomesTargetEvent(target.entityId, targetName, copyId, copyController, firstTime))
-                newState = markTargetedByController(newState, target.entityId, copyController)
-            }
+            newState = emitBecomesTarget(newState, target, copyId, copyController, events)
         }
 
         return ExecutionResult.success(newState.tick(), events)
@@ -537,15 +559,10 @@ class StackResolver(
             events.add(TargetsChosenEvent(ability.controllerId, abilityId, ability.sourceName))
         }
 
-        // Emit BecomesTargetEvent for each permanent target
+        // Emit BecomesTargetEvent for each permanent or spell target
         // Use abilityId (the entity on the stack) as source so ward can counter it
         for (target in targets) {
-            if (target is ChosenTarget.Permanent) {
-                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
-                val firstTime = !hasBeenTargetedByController(newState, target.entityId, ability.controllerId)
-                events.add(BecomesTargetEvent(target.entityId, targetName, abilityId, ability.controllerId, firstTime))
-                newState = markTargetedByController(newState, target.entityId, ability.controllerId)
-            }
+            newState = emitBecomesTarget(newState, target, abilityId, ability.controllerId, events)
         }
 
         return ExecutionResult.success(

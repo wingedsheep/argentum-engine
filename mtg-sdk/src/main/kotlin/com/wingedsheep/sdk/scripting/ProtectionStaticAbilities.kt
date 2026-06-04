@@ -136,6 +136,26 @@ data class CantReceiveCounters(
 }
 
 /**
+ * Permanents matching [filter] can't be sacrificed.
+ *
+ * Projected as the [com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED] flag, which the
+ * sacrifice executor honors by refusing to sacrifice such a permanent. Wrap in a
+ * [ConditionalStaticAbility] for time-restricted forms (e.g. Zurgo, Thunder's Decree:
+ * "During your end step, Warrior tokens you control have 'This token can't be sacrificed.'").
+ */
+@SerialName("CantBeSacrificed")
+@Serializable
+data class CantBeSacrificed(
+    val filter: GroupFilter = GroupFilter.attachedCreature()
+) : StaticAbility {
+    override val description: String = "${filter.description} can't be sacrificed"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * You have shroud. (You can't be the target of spells or abilities.)
  * Grants shroud to the permanent's controller (player-level shroud).
  * Used for True Believer.

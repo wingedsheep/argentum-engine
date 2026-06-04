@@ -70,15 +70,27 @@ data class DealDamageEffect(
 /**
  * Deal damage to multiple targets, dividing the total as you choose.
  * Used for cards like Forked Lightning ("4 damage divided among 1-3 targets").
+ *
+ * [totalDamage] is the fixed total. [dynamicTotal], when non-null, is evaluated at resolution and
+ * overrides [totalDamage] — used by effects whose total is computed when they resolve (Ureni, the
+ * Song Unending: "X damage divided as you choose ..., where X is the number of lands you control").
+ * The set of targets among which the total is divided comes from the ability's target requirement
+ * (e.g. `TargetObject(unlimited = true, filter = CreatureOrPlaneswalker opponent controls)`), so
+ * "any number of target" forms divide the total only among the targets actually chosen.
  */
 @SerialName("DividedDamage")
 @Serializable
 data class DividedDamageEffect(
     val totalDamage: Int,
     val minTargets: Int = 1,
-    val maxTargets: Int = 3
+    val maxTargets: Int = 3,
+    val dynamicTotal: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null
 ) : Effect {
-    override val description: String = "Deal $totalDamage damage divided as you choose among $minTargets to $maxTargets target creatures"
+    override val description: String =
+        if (dynamicTotal != null)
+            "Deal damage equal to ${dynamicTotal.description} divided as you choose among the targets"
+        else
+            "Deal $totalDamage damage divided as you choose among $minTargets to $maxTargets target creatures"
 }
 
 /**

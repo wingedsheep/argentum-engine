@@ -457,6 +457,7 @@ internal class AffectsFilterResolver {
         // No resolution-time chosen color in a static-ability projection context.
         CardPredicate.HasChosenColor -> false
         CardPredicate.IsColorless -> colors.isEmpty()
+        CardPredicate.IsColored -> colors.isNotEmpty()
         CardPredicate.IsMulticolored -> colors.size > 1
         CardPredicate.IsMonocolored -> colors.size == 1
         is CardPredicate.HasKeyword -> predicate.keyword.name in keywords

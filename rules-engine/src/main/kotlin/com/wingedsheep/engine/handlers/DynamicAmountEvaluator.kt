@@ -113,6 +113,13 @@ class DynamicAmountEvaluator(
                 state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
             }
 
+            is DynamicAmount.DistinctEntitiesInCollections -> {
+                amount.collections
+                    .flatMap { context.pipeline.storedCollections[it].orEmpty() }
+                    .distinct()
+                    .size
+            }
+
             // Math operations — propagate [projectedState] so a mid-projection caller's
             // intermediate snapshot survives nested aggregates.
             is DynamicAmount.Add ->

@@ -167,6 +167,13 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "colorless"
     }
 
+    /** One or more colors (the complement of [IsColorless]). "a permanent that's one or more colors." */
+    @SerialName("IsColored")
+    @Serializable
+    data object IsColored : CardPredicate {
+        override val description: String = "one or more colors"
+    }
+
     @SerialName("IsMulticolored")
     @Serializable
     data object IsMulticolored : CardPredicate {
