@@ -180,6 +180,36 @@ object SetArchetypes {
                     "Generate tokens with creature and spell makers, then use mass pump effects to turn a wide board into lethal damage."),
             )
         ),
+        "TDM" to SetSynergies(
+            setCode = "TDM",
+            setName = "Tarkir: Dragonstorm",
+            archetypes = listOf(
+                Archetype("Abzan", listOf(Color.WHITE, Color.BLACK, Color.GREEN),
+                    "Endure pads your board with +1/+1 counters or Spirit tokens. A resilient counters-matter midrange that grows wider and taller every turn and refuses to stay down."),
+                Archetype("Jeskai", listOf(Color.BLUE, Color.RED, Color.WHITE),
+                    "Cast your second spell each turn to trigger flurry, turning a steady stream of cheap instants and sorceries into damage, tokens, and card advantage. A snowballing tempo deck."),
+                Archetype("Sultai", listOf(Color.BLACK, Color.GREEN, Color.BLUE),
+                    "Fill your graveyard, then renew creatures from it to deal out +1/+1 counters and refill your hand. A grindy graveyard-value midrange that wins the long game."),
+                Archetype("Mardu", listOf(Color.RED, Color.WHITE, Color.BLACK),
+                    "Mobilize creates temporary Warrior tokens every time you attack. Go wide, swing hard, and back the assault with removal to push through the last points of damage.",
+                    creatureTypes = listOf("Warrior")),
+                Archetype("Temur", listOf(Color.GREEN, Color.BLUE, Color.RED),
+                    "Behold a Dragon to unlock discounts and bonuses, then ramp into the format's biggest fliers. A ferocious ramp-and-Dragons strategy.",
+                    creatureTypes = listOf("Dragon")),
+                Archetype("Warriors", listOf(Color.WHITE, Color.BLACK),
+                    "Aggressive Warriors backed by removal and lifedrain. Mobilize tokens and endure counters keep your board refilling faster than opponents can answer it.",
+                    creatureTypes = listOf("Warrior")),
+                Archetype("Token Aggro", listOf(Color.RED, Color.WHITE),
+                    "Generate tokens with mobilize and other attack triggers, then turn the swarm lethal with anthems and mass pump. A fast, go-wide aggro deck."),
+                Archetype("Flurry Spells", listOf(Color.BLUE, Color.RED),
+                    "A spell-velocity tempo deck. A high density of cheap instants and sorceries triggers flurry payoffs for burst damage and explosive turns."),
+                Archetype("Behold Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp and fix into expensive haymakers while beholding Dragons to power up your payoffs. A controlling midrange that out-values the table.",
+                    creatureTypes = listOf("Dragon")),
+                Archetype("Graveyard Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Self-mill and renew to recur threats from the graveyard, then pile on +1/+1 counters with endure. A grindy value deck that goes long."),
+            )
+        ),
     )
 
     /** Get archetypes for a specific set code, or null if not found. */

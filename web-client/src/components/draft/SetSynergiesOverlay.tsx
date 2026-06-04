@@ -320,6 +320,66 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  TDM: {
+    setCode: 'TDM',
+    setName: 'Tarkir: Dragonstorm',
+    archetypes: [
+      {
+        name: 'Abzan',
+        colors: ['W', 'B', 'G'],
+        description: 'Endure pads your board with +1/+1 counters or Spirit tokens. A resilient counters-matter midrange that grows wider and taller every turn and refuses to stay down.',
+      },
+      {
+        name: 'Jeskai',
+        colors: ['U', 'R', 'W'],
+        description: 'Cast your second spell each turn to trigger flurry, turning a steady stream of cheap instants and sorceries into damage, tokens, and card advantage. A snowballing tempo deck.',
+      },
+      {
+        name: 'Sultai',
+        colors: ['B', 'G', 'U'],
+        description: 'Fill your graveyard, then renew creatures from it to deal out +1/+1 counters and refill your hand. A grindy graveyard-value midrange that wins the long game.',
+      },
+      {
+        name: 'Mardu',
+        colors: ['R', 'W', 'B'],
+        creatureTypes: ['Warrior'],
+        description: 'Mobilize creates temporary Warrior tokens every time you attack. Go wide, swing hard, and back the assault with removal to push through the last points of damage.',
+      },
+      {
+        name: 'Temur',
+        colors: ['G', 'U', 'R'],
+        creatureTypes: ['Dragon'],
+        description: "Behold a Dragon to unlock discounts and bonuses, then ramp into the format's biggest fliers. A ferocious ramp-and-Dragons strategy.",
+      },
+      {
+        name: 'Warriors',
+        colors: ['W', 'B'],
+        creatureTypes: ['Warrior'],
+        description: 'Aggressive Warriors backed by removal and lifedrain. Mobilize tokens and endure counters keep your board refilling faster than opponents can answer it.',
+      },
+      {
+        name: 'Token Aggro',
+        colors: ['R', 'W'],
+        description: 'Generate tokens with mobilize and other attack triggers, then turn the swarm lethal with anthems and mass pump. A fast, go-wide aggro deck.',
+      },
+      {
+        name: 'Flurry Spells',
+        colors: ['U', 'R'],
+        description: 'A spell-velocity tempo deck. A high density of cheap instants and sorceries triggers flurry payoffs for burst damage and explosive turns.',
+      },
+      {
+        name: 'Behold Ramp',
+        colors: ['G', 'U'],
+        creatureTypes: ['Dragon'],
+        description: 'Ramp and fix into expensive haymakers while beholding Dragons to power up your payoffs. A controlling midrange that out-values the table.',
+      },
+      {
+        name: 'Graveyard Counters',
+        colors: ['B', 'G'],
+        description: 'Self-mill and renew to recur threats from the graveyard, then pile on +1/+1 counters with endure. A grindy value deck that goes long.',
+      },
+    ],
+  },
   BLB: {
     setCode: 'BLB',
     setName: 'Bloomburrow',
