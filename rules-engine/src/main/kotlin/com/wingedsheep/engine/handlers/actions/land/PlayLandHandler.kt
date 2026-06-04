@@ -12,7 +12,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
+import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.core.Zone
@@ -141,6 +143,23 @@ class PlayLandHandler(
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, action.playerId, action.cardId)
 
+        // A may-play permission with landEntersTapped=true forces the played land
+        // tapped regardless of the card's own ETB script — Lightstall Inquisitor's
+        // "each land played this way enters tapped" clause.
+        val permissionForcesTapped = fromZone == Zone.EXILE && permissionForcesLandTapped(
+            state, action.playerId, action.cardId
+        )
+        if (permissionForcesTapped) {
+            newState = newState.updateEntity(action.cardId) { c -> c.with(TappedComponent) }
+        }
+        // Clean up may-play permissions now that the card has left exile. Lands don't go
+        // through the stack, so StackResolver's removeMayPlayPermissionsForCard never runs
+        // for them; without this, a permanent permission would silently re-authorize the
+        // card if it later returned to exile.
+        if (fromZone == Zone.EXILE) {
+            newState = newState.removeMayPlayPermissionsForCard(action.cardId)
+        }
+
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
 
         // OnEnterRunEffect — generic "as ~ enters, run [effect]" replacement.
@@ -204,7 +223,20 @@ class PlayLandHandler(
         if (cardDef != null) {
             val entersTapped = cardDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
             if (entersTapped != null) {
-                if (entersTapped.payLifeCost != null) {
+                // Permission already forced tapped — skip the shock-land "pay life" prompt
+                // and any conditional script logic; the land is already on the battlefield tapped.
+                //
+                // Strict CR 616.1 says both replacements (Lightstall's "enters tapped" rider
+                // and the shock land's "you may pay 2 life; otherwise enters tapped") apply to
+                // the entry event and the affected permanent's controller picks which to resolve
+                // first. Neither is a self-replacement effect (CR 614.15), so the choice falls to
+                // the catch-all step CR 616.1e. Either order ends with the land tapped, so the
+                // shock-land life-payment choice is always
+                // meaningless under a permission-forced-tapped grant. We elide the prompt
+                // rather than asking the player to make a no-op decision.
+                if (permissionForcesTapped) {
+                    // Already handled: TappedComponent applied, control falls through to triggers/finish.
+                } else if (entersTapped.payLifeCost != null) {
                     // Shock land: ask the player if they want to pay life
                     // Use up a land drop first
                     newState = newState.updateEntity(action.playerId) { c ->
@@ -488,6 +520,19 @@ class PlayLandHandler(
         if (!inAnyExile) return false
         return state.hasMayPlayFor(cardId, playerId, conditionEvaluator)
     }
+
+    /**
+     * True when some active may-play permission authorizing [playerId] to play [cardId]
+     * also forces the played land tapped (Lightstall Inquisitor's "each land played this
+     * way enters tapped" clause). Read from [state] *before* the card left exile, since
+     * `removeMayPlayPermissionsForCard` runs as the card moves to the battlefield.
+     */
+    private fun permissionForcesLandTapped(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean = state.activeMayPlayFor(cardId, playerId, conditionEvaluator)
+        .any { it.landEntersTapped }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
         for (entityId in state.getBattlefield(playerId)) {

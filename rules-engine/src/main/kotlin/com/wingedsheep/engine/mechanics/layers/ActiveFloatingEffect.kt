@@ -227,6 +227,17 @@ sealed interface SerializableModification {
     data object RegenerationShield : SerializableModification
 
     /**
+     * Remove-damage destruction shield (Pyramids): the next time the target permanent
+     * would be destroyed this turn, remove all damage marked on it instead. Unlike a
+     * regeneration shield, the permanent is NOT tapped and is NOT removed from combat —
+     * the only side-effect of the replacement is clearing marked damage.
+     *
+     * Consumed once on its first triggered destruction; expires at end of turn.
+     */
+    @Serializable
+    data object RemoveDamageShield : SerializableModification
+
+    /**
      * Marks a permanent as unable to be regenerated this turn.
      * Used by Smother, Cruel Revival, Wrath of God (noRegenerate), etc.
      */
@@ -457,6 +468,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllDamageTo -> Modification.NoOp
     // RegenerationShield doesn't map to a layer modification - it's checked during destruction
     is SerializableModification.RegenerationShield -> Modification.NoOp
+    // RemoveDamageShield doesn't map to a layer modification - it's checked during destruction
+    is SerializableModification.RemoveDamageShield -> Modification.NoOp
     // CantBeRegenerated doesn't map to a layer modification - it's checked during destruction
     is SerializableModification.CantBeRegenerated -> Modification.NoOp
     // PreventAllCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly

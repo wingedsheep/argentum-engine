@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 class RegenerationExecutors : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         RegenerateExecutor(),
+        RemoveDamageShieldExecutor(),
         CantBeRegeneratedExecutor()
     )
 }

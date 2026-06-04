@@ -1,0 +1,42 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Stone Rain", "Stone Rain"],
+    "battlefield": [
+      {"name": "Pyramids"},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Fertile Ground", "attachedTo": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Forest", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Stone Rain", "Stone Rain"],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

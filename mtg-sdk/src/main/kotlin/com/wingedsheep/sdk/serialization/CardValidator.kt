@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveDamageShieldEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import com.wingedsheep.sdk.scripting.effects.StoreCountEffect
 import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
@@ -225,6 +226,7 @@ object CardValidator {
             is RemoveCountersEffect -> effect.target
             is GrantKeywordEffect -> effect.target
             is RegenerateEffect -> effect.target
+            is RemoveDamageShieldEffect -> effect.target
             is CantBeRegeneratedEffect -> effect.target
             is ExileUntilLeavesEffect -> effect.target
             is MustBeBlockedEffect -> effect.target

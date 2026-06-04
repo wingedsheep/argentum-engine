@@ -33,6 +33,7 @@ class LibraryExecutors(
         ShuffleLibraryExecutor(),
         GrantMayPlayFromExileExecutor(),
         GrantPlayWithoutPayingCostExecutor(),
+        GrantPlayWithCostIncreaseExecutor(),
         GrantPlayWithAdditionalCostExecutor(),
         GrantFreeCastTargetFromExileExecutor(),
         GatherUntilMatchExecutor(),

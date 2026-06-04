@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.predicates
 
+import com.wingedsheep.sdk.core.CardType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -208,6 +209,23 @@ sealed interface StatePredicate {
     @Serializable
     data object IsModified : Entity {
         override val description: String = "modified"
+    }
+
+    /**
+     * Attached to a permanent whose card matches the given top-level type. Reads the
+     * entity's `AttachedToComponent` and checks that the referenced permanent's card
+     * has the requested [cardType] (creature, land, artifact, …). Used for "Aura
+     * attached to a land" / "Aura attached to a creature" / "Equipment attached to a
+     * creature you control" style filters — the attachment is state, not card
+     * identity, so it lives here rather than in [CardPredicate].
+     *
+     * If the entity isn't attached to anything (no `AttachedToComponent`), the
+     * predicate is false.
+     */
+    @SerialName("IsAttachedToCardType")
+    @Serializable
+    data class AttachedToCardType(val cardType: CardType) : Entity {
+        override val description: String = "attached to a ${cardType.displayName.lowercase()}"
     }
 
     // =============================================================================

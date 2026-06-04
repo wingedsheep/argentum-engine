@@ -49,6 +49,18 @@ class LethalDamageCheck : StateBasedActionCheck {
                     continue
                 }
 
+                // Check for remove-damage destruction shields (Pyramids). Its second mode
+                // replaces "would be destroyed" with "remove all damage marked on it" — the
+                // SBA destruction here is exactly that destruction, so the shield must fire
+                // (an animated land taking lethal combat damage is the wording's intent).
+                val (damageShieldState, wasShielded) = ZoneMovementUtils.applyRemoveDamageShields(newState, entityId)
+                if (wasShielded) {
+                    val shieldResult = ZoneMovementUtils.applyRemoveDamageReplacement(damageShieldState, entityId)
+                    newState = shieldResult.newState
+                    events.addAll(shieldResult.events)
+                    continue
+                }
+
                 val result = SbaZoneMovementHelper.putCreatureInGraveyard(
                     newState, entityId, cardComponent, "lethal damage"
                 )

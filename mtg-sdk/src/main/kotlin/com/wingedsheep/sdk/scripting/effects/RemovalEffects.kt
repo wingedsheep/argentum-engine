@@ -28,6 +28,30 @@ data class RegenerateEffect(
 }
 
 /**
+ * One-shot destruction-replacement shield: the next time the target permanent
+ * would be destroyed this turn, remove all damage marked on it instead.
+ *
+ * Unlike [RegenerateEffect], this does NOT tap the permanent and does NOT remove
+ * it from combat — it only swaps "destroyed" for "damage cleared". Used by
+ * Pyramids (Arabian Nights), whose second mode protects a target land from the
+ * next destruction this turn.
+ *
+ * Lasts until end of turn; the shield is consumed by the first destruction it
+ * intercepts. Coexists with regeneration shields on the same entity — the engine
+ * resolves regeneration first, then this shield, matching the order in which
+ * existing shields are checked.
+ */
+@SerialName("RemoveDamageShield")
+@Serializable
+data class RemoveDamageShieldEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "The next time ${target.description} would be destroyed this turn, " +
+            "remove all damage marked on it instead"
+}
+
+/**
  * Mark target as unable to regenerate.
  * "It can't be regenerated."
  *

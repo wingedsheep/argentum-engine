@@ -633,20 +633,34 @@ object Effects {
     /**
      * Grant "may play from exile" permission to all cards in a named collection.
      * Does NOT waive mana cost — pair with [GrantPlayWithoutPayingCost] for free play.
+     *
+     * Set [landEntersTapped] for "each land played this way enters tapped" clauses
+     * (Lightstall Inquisitor). Pair with [GrantPlayWithCostIncrease] to also tax
+     * spells cast via the permission.
      */
     fun GrantMayPlayFromExile(
         from: String,
         expiry: com.wingedsheep.sdk.scripting.effects.MayPlayExpiry =
             com.wingedsheep.sdk.scripting.effects.MayPlayExpiry.EndOfTurn,
         withAnyManaType: Boolean = false,
-        condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null
-    ): Effect = GrantMayPlayFromExileEffect(from, expiry, withAnyManaType, condition)
+        condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
+        landEntersTapped: Boolean = false
+    ): Effect = GrantMayPlayFromExileEffect(from, expiry, withAnyManaType, condition, landEntersTapped)
 
     /**
      * Grant "play without paying mana cost" permission to all cards in a named collection.
      * Card must still be in a playable zone (hand, or exile with GrantMayPlayFromExile).
      */
     fun GrantPlayWithoutPayingCost(from: String): Effect = GrantPlayWithoutPayingCostEffect(from)
+
+    /**
+     * Tax spells cast from a named collection — each card in [from] gets a
+     * generic-mana surcharge so the controller pays [amount] more to cast it.
+     * Pair with [GrantMayPlayFromExile] for "each spell cast this way costs {N}
+     * more to cast" clauses (Lightstall Inquisitor).
+     */
+    fun GrantPlayWithCostIncrease(from: String, amount: Int): Effect =
+        com.wingedsheep.sdk.scripting.effects.GrantPlayWithCostIncreaseEffect(from, amount)
 
     /**
      * Grant a single target entity in exile permission to be cast without paying its mana cost.

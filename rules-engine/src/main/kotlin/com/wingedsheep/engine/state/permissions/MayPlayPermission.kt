@@ -28,6 +28,10 @@ import kotlinx.serialization.Serializable
  * @param condition Optional gate re-evaluated on every query. When present, the permission is
  *   only honored while the condition holds.
  * @param withAnyManaType If true, mana of any type can be spent to cast (Taster of Wares).
+ * @param landEntersTapped If true, a land card played via this permission enters the battlefield
+ *   tapped. Used by Lightstall Inquisitor-style exile-from-hand effects whose "lands played
+ *   this way enter tapped" clause must be enforced on top of the played card's intrinsic ETB
+ *   state, independent of the card's own script.
  * @param permanent If true, the permission is not auto-removed at end of turn cleanup. Permanent
  *   permissions are removed explicitly (e.g., when their card resolves). Non-permanent grants
  *   expire via [expiresAfterTurn].
@@ -44,6 +48,7 @@ data class MayPlayPermission(
     val sourceId: EntityId? = null,
     val condition: Condition? = null,
     val withAnyManaType: Boolean = false,
+    val landEntersTapped: Boolean = false,
     val permanent: Boolean = false,
     val expiresAfterTurn: Int? = null,
     val timestamp: Long

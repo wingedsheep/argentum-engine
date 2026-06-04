@@ -966,7 +966,14 @@ data class GrantMayPlayFromExileEffect(
      * if you control a Kavu" — the permission persists with the card in exile, but is
      * only honored while the condition holds. Re-evaluated on every legal-action query.
      */
-    val condition: Condition? = null
+    val condition: Condition? = null,
+    /**
+     * When true, a land card played via this permission enters the battlefield tapped.
+     * Used by Lightstall Inquisitor-style "each land played this way enters tapped"
+     * clauses, where the tapped-on-entry rule is imposed by the granting effect rather
+     * than the played card's own script.
+     */
+    val landEntersTapped: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("${expiry.description.replaceFirstChar { it.uppercase() }}, you may play the $from cards from exile")
@@ -975,6 +982,7 @@ data class GrantMayPlayFromExileEffect(
             append(condition.description)
         }
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
+        if (landEntersTapped) append(". Each land played this way enters tapped")
     }
 }
 
@@ -1070,6 +1078,30 @@ data class GrantPlayWithAdditionalCostEffect(
 ) : Effect {
     override val description: String =
         "Until end of turn, casting the $from cards requires: ${additionalCost.description}"
+}
+
+/**
+ * Add a generic-mana tax to every card in a named collection so that when the
+ * effect controller later casts one of them, the spell costs [amount] more to
+ * cast. Stamps PlayWithCostIncreaseComponent on each card in the collection,
+ * which CastSpellHandler reads at cast time.
+ *
+ * Pair with [GrantMayPlayFromExileEffect] to grant a permission *and* tax the
+ * cast — used by Lightstall Inquisitor ("Each spell cast this way costs {1}
+ * more to cast"), where each opponent exiles a card from their own hand and
+ * may play it with this tax.
+ *
+ * @property from Name of the collection containing the card(s)
+ * @property amount Generic mana added to each card's cost when the controller casts it
+ */
+@SerialName("GrantPlayWithCostIncrease")
+@Serializable
+data class GrantPlayWithCostIncreaseEffect(
+    val from: String,
+    val amount: Int
+) : Effect {
+    override val description: String =
+        "Each spell cast from $from costs {$amount} more to cast"
 }
 
 /**

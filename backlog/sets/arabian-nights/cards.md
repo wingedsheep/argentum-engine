@@ -81,7 +81,7 @@
 - [ ] Jandor's Ring
 - [x] Jandor's Saddlebags
 - [ ] Jeweled Bird
-- [ ] Pyramids
+- [x] Pyramids
 - [ ] Ring of Ma'rûf
 - [x] Sandals of Abdallah
 - [x] Bazaar of Baghdad

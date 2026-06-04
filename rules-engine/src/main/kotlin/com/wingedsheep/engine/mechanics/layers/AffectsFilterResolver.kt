@@ -51,6 +51,25 @@ internal class AffectsFilterResolver {
         return card.typeLine.isCreature || container.has<FaceDownComponent>()
     }
 
+    /**
+     * Check if an entity currently has a given top-level [CardType], preferring projected
+     * types over base types. Mirrors [isCreatureInProjection] for the generic
+     * type-check used by `AttachedToCardType` and similar predicates.
+     */
+    private fun hasTypeInProjection(
+        state: GameState,
+        entityId: EntityId,
+        cardTypeName: String,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): Boolean {
+        val projected = projectedValues[entityId]
+        if (projected != null) {
+            return cardTypeName in projected.types
+        }
+        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return false
+        return card.typeLine.cardTypes.any { it.name == cardTypeName }
+    }
+
     fun resolveAffectedEntities(
         state: GameState,
         sourceId: EntityId,
@@ -346,6 +365,11 @@ internal class AffectsFilterResolver {
             }
         }
         StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
+        is StatePredicate.AttachedToCardType -> {
+            val attached = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            attached != null &&
+                hasTypeInProjection(state, attached.targetId, predicate.cardType.name, projectedValues)
+        }
         StatePredicate.IsSaddled ->
             container.has<com.wingedsheep.engine.state.components.battlefield.SaddledComponent>()
         StatePredicate.IsWarpExiled ->

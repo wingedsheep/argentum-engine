@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
@@ -752,6 +753,16 @@ class PredicateEvaluator {
             }
 
             StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
+
+            // Attached-to-type — entity has an AttachedToComponent and the referenced
+            // permanent currently has the requested CardType (Pyramids: "Aura attached
+            // to a land"). Reads the attached-to permanent's projected types so that a
+            // permanent animated into a different type via continuous effects (e.g. a
+            // land turned into a creature) is matched correctly.
+            is StatePredicate.AttachedToCardType -> {
+                val attached = container.get<AttachedToComponent>() ?: return false
+                state.projectedState.hasType(attached.targetId, predicate.cardType.name)
+            }
 
             // Saddled marker — set by BecomeSaddledExecutor when a Saddle ability resolves
             // (CR 702.171b). Cleared at end-of-turn cleanup or when the permanent leaves play.

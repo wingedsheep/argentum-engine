@@ -1959,6 +1959,7 @@ class ClientStateTransformer(
         // Check all floating effects that affect this entity
         var preventDamageTotal = 0
         var regenerationShieldCount = 0
+        var removeDamageShieldCount = 0
 
         for (floatingEffect in state.floatingEffects) {
             if (entityId !in floatingEffect.effect.affectedEntities) continue
@@ -2010,6 +2011,9 @@ class ClientStateTransformer(
                 }
                 is SerializableModification.RegenerationShield -> {
                     regenerationShieldCount++
+                }
+                is SerializableModification.RemoveDamageShield -> {
+                    removeDamageShieldCount++
                 }
                 is SerializableModification.PreventAllDamageDealtBy -> {
                     effects.add(
@@ -2192,6 +2196,19 @@ class ClientStateTransformer(
                         "Has $regenerationShieldCount regeneration shields (prevents destruction, taps, removes damage and from combat)"
                     else
                         "Has a regeneration shield (prevents destruction, taps, removes damage and from combat)",
+                    icon = "regeneration"
+                )
+            )
+        }
+
+        if (removeDamageShieldCount > 0) {
+            val name = if (removeDamageShieldCount > 1) "Shielded x$removeDamageShieldCount" else "Shielded"
+            effects.add(
+                ClientCardEffect(
+                    effectId = "remove_damage_shield",
+                    name = name,
+                    description = "The next time this permanent would be destroyed this turn, " +
+                        "remove all damage marked on it instead",
                     icon = "regeneration"
                 )
             )

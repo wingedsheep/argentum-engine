@@ -4,12 +4,14 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.GrantPlayWithCostIncreaseEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import kotlin.reflect.KClass
@@ -47,6 +49,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     sourceId = context.sourceId,
                     condition = effect.condition,
                     withAnyManaType = effect.withAnyManaType,
+                    landEntersTapped = effect.landEntersTapped,
                     permanent = isPermanent,
                     expiresAfterTurn = expiresAfterTurn,
                     timestamp = state.timestamp,
@@ -126,6 +129,43 @@ class GrantPlayWithoutPayingCostExecutor : EffectExecutor<GrantPlayWithoutPaying
         for (cardId in collection) {
             newState = newState.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
+            }
+        }
+
+        return EffectResult.success(newState)
+    }
+}
+
+/**
+ * Executor for GrantPlayWithCostIncreaseEffect.
+ *
+ * Stamps PlayWithCostIncreaseComponent on every card in the named collection so that
+ * when [context.controllerId] later casts the card, [GrantPlayWithCostIncreaseEffect.amount]
+ * generic mana is added to the spell's cost. Mirrors [GrantPlayWithoutPayingCostExecutor]
+ * but pushes a cost upwards rather than waiving it.
+ */
+class GrantPlayWithCostIncreaseExecutor : EffectExecutor<GrantPlayWithCostIncreaseEffect> {
+
+    override val effectType: KClass<GrantPlayWithCostIncreaseEffect> = GrantPlayWithCostIncreaseEffect::class
+
+    override fun execute(
+        state: GameState,
+        effect: GrantPlayWithCostIncreaseEffect,
+        context: EffectContext
+    ): EffectResult {
+        if (effect.amount <= 0) return EffectResult.success(state)
+        val controllerId = context.controllerId
+        val collection = context.pipeline.storedCollections[effect.from] ?: emptyList()
+
+        var newState = state
+        for (cardId in collection) {
+            newState = newState.updateEntity(cardId) { container ->
+                container.with(
+                    PlayWithCostIncreaseComponent(
+                        controllerId = controllerId,
+                        amount = effect.amount
+                    )
+                )
             }
         }
 

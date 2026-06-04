@@ -348,6 +348,14 @@ object ZoneMovementUtils {
             }
         }
 
+        // Check for remove-damage destruction shields (Pyramids). Independent of
+        // `canRegenerate` — Pyramids' replacement isn't a regeneration ability and isn't
+        // shut off by "can't be regenerated this turn" effects.
+        val (damageShieldState, wasShielded) = applyRemoveDamageShields(state, entityId)
+        if (wasShielded) {
+            return applyRemoveDamageReplacement(damageShieldState, entityId)
+        }
+
         // Delegate to ZoneTransitionService
         val result = ZoneTransitionService.moveToZone(state, entityId, Zone.GRAVEYARD)
         return EffectResult.success(result.state, result.events)
@@ -670,6 +678,37 @@ object ZoneMovementUtils {
             }
         }
 
+        return EffectResult.success(newState)
+    }
+
+    /**
+     * Check for remove-damage destruction shields (Pyramids) on an entity and consume
+     * one if found. Stored as floating effects with the `RemoveDamageShield`
+     * modification.
+     *
+     * @return Pair of (updated state with consumed shield, whether a shield fired)
+     */
+    fun applyRemoveDamageShields(state: GameState, entityId: EntityId): Pair<GameState, Boolean> {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            effect.effect.modification is SerializableModification.RemoveDamageShield &&
+                entityId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return state to false
+
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+        return state.copy(floatingEffects = updatedEffects) to true
+    }
+
+    /**
+     * Apply the remove-damage destruction replacement: strip the entity's
+     * `DamageComponent`. Unlike regeneration, the permanent is NOT tapped and is
+     * NOT removed from combat — Pyramids' oracle text replaces destruction only
+     * with "remove all damage marked on it".
+     */
+    fun applyRemoveDamageReplacement(state: GameState, entityId: EntityId): EffectResult {
+        state.getEntity(entityId) ?: return EffectResult.success(state)
+        val newState = state.updateEntity(entityId) { c -> c.without<DamageComponent>() }
         return EffectResult.success(newState)
     }
 
