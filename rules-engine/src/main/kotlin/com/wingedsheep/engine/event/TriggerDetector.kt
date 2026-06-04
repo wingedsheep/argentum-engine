@@ -32,7 +32,9 @@ import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -1922,9 +1924,9 @@ class TriggerDetector(
                 }
 
                 if (doubler.filter != GameObjectFilter.Any) {
-                    if (!predicateEvaluator.matches(
-                            state, projected, causeEntityId, doubler.filter,
-                            PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.sourceId)
+                    if (!causeMatchesDoublerFilter(
+                            state, projected, event, direction,
+                            doubler.filter, doubler.controllerId, doubler.sourceId
                         )) continue
                 }
 
@@ -1947,6 +1949,61 @@ class TriggerDetector(
         }
 
         triggers.addAll(duplicates)
+    }
+
+    /**
+     * Does the entity that crossed the battlefield boundary in [event] match the doubler's [filter]?
+     *
+     * Entering: the cause is live on the battlefield, so projected state is authoritative — match
+     * directly.
+     *
+     * Leaving: the cause is no longer on the battlefield. Its base entity (now in the graveyard)
+     * carries only its printed type line — the projected types it had on the battlefield are gone —
+     * and a token cause may even have been swept by 704.5d. Per CR 603.10a leaves-the-battlefield
+     * checks look back in time, so we evaluate the filter against the entity's last-known type line
+     * (snapshotted on the [ZoneChangeEvent]), mirroring `TriggerMatcher.matchesZoneChangeTrigger`.
+     * We overlay that type line onto the cause entity (synthesizing a minimal one if it was swept)
+     * and reuse the full filter engine, so `or`/color/subtype predicates all resolve correctly.
+     * Without this, a creature that was an artifact/legendary only via a continuous effect (e.g.
+     * a creature turned into an artifact, then destroyed) would silently fail Gandalf the White's
+     * `Artifact ∨ Legendary` filter and the trigger it caused wouldn't be doubled.
+     */
+    private fun causeMatchesDoublerFilter(
+        state: GameState,
+        projected: ProjectedState,
+        event: ZoneChangeEvent,
+        direction: BattlefieldDirection,
+        filter: GameObjectFilter,
+        controllerId: EntityId,
+        sourceId: EntityId
+    ): Boolean {
+        val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+
+        if (direction == BattlefieldDirection.ENTERING) {
+            return predicateEvaluator.matches(state, projected, event.entityId, filter, context)
+        }
+
+        val lastKnownTypeLine = event.lastKnownTypeLine
+        val existing = state.getEntity(event.entityId)
+        val existingCard = existing?.get<CardComponent>()
+        val overlayCard = when {
+            existingCard != null ->
+                existingCard.copy(typeLine = lastKnownTypeLine ?: existingCard.typeLine)
+            lastKnownTypeLine != null -> CardComponent(
+                cardDefinitionId = event.lastKnownCardDefinitionId ?: event.entityName,
+                name = event.entityName,
+                manaCost = ManaCost.ZERO,
+                typeLine = lastKnownTypeLine
+            )
+            else -> return false
+        }
+        // Off-battlefield, so the original `projected` has no entry for this id and matches() falls
+        // back to the overlaid card's type line. No projection recompute needed.
+        val overlayState = state.withEntity(
+            event.entityId,
+            (existing ?: ComponentContainer.EMPTY).withComponent(overlayCard)
+        )
+        return predicateEvaluator.matches(overlayState, projected, event.entityId, filter, context)
     }
 
     /**

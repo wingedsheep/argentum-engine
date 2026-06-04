@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
@@ -108,6 +109,39 @@ class GandalfTheWhiteTest : FunSpec({
         }
     }
 
+    // A sorcery that makes a legendary 2/2 creature token. Used to prove the LTB doubler reads
+    // the cause's last-known type info (CR 603.10a): a token is swept by 704.5d as it dies, so
+    // matching its `Legendary`-ness against live state would fail — the doubler must consult the
+    // ZoneChangeEvent's last-known type line instead.
+    val summonLegendToken = card("Summon Legend") {
+        manaCost = "{1}{G}"
+        typeLine = "Sorcery"
+        oracleText = "Create a legendary 2/2 green Spirit creature token."
+        spell {
+            effect = Effects.CreateToken(
+                power = 2,
+                toughness = 2,
+                colors = setOf(Color.GREEN),
+                creatureTypes = setOf("Spirit"),
+                legendary = true
+            )
+        }
+    }
+
+    // Turns a plain creature into an artifact for as long as it's on the battlefield (Layer 4).
+    // Once it dies, its graveyard card line is the printed (non-artifact) one again — only the
+    // ZoneChangeEvent's last-known type line still records the artifact-ness. This is the case
+    // that distinguishes live-state matching from last-known matching in the LTB doubler.
+    val artifactify = card("Artifactify") {
+        manaCost = "{1}"
+        typeLine = "Sorcery"
+        oracleText = "Target creature becomes an artifact in addition to its other types."
+        spell {
+            val creature = target("target creature", Targets.Creature)
+            effect = Effects.AddCardType("ARTIFACT", creature)
+        }
+    }
+
     // Same shape for LTB. We avoid a graveyard restriction so sacrifice/destroy/return all work.
     val ltbWatcher = card("LTB Witness") {
         manaCost = "{1}{B}"
@@ -135,7 +169,9 @@ class GandalfTheWhiteTest : FunSpec({
                 testArtifactCreature,
                 etbWatcher,
                 ltbWatcher,
-                testDoubler
+                testDoubler,
+                summonLegendToken,
+                artifactify
             )
         )
         return driver
@@ -326,6 +362,70 @@ class GandalfTheWhiteTest : FunSpec({
         driver.bothPass()  // duplicated LTB Witness draw
 
         // p1 cast (-1 from hand) + 2 draws = net +1.
+        (driver.getHandSize(p1) - handBefore) shouldBe 1
+    }
+
+    test("LTB: a legendary creature TOKEN dying doubles your trigger via last-known type info (CR 603.10a)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 20, "Forest" to 20))
+        val p1 = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putPermanentOnBattlefield(p1, "Gandalf the White")
+        driver.putCreatureOnBattlefield(p1, "LTB Witness")
+
+        // Make the legendary token by resolving a real spell, so it enters legitimately.
+        val summon = driver.putCardInHand(p1, "Summon Legend")
+        driver.giveMana(p1, Color.GREEN, 2)
+        driver.castSpell(p1, summon).isSuccess shouldBe true
+        driver.bothPass()  // resolve Summon Legend → legendary 2/2 Spirit token
+
+        // The only creature that's neither Gandalf nor the witness is the token.
+        val token = driver.getCreatures(p1).first { id ->
+            driver.getCardName(id) !in setOf("Gandalf the White", "LTB Witness")
+        }
+
+        val doomBlade = driver.putCardInHand(p1, "Doom Blade")
+        driver.giveMana(p1, Color.BLACK, 2)
+
+        val handBefore = driver.getHandSize(p1)
+        driver.castSpell(p1, doomBlade, listOf(token)).isSuccess shouldBe true
+        driver.bothPass()  // resolve Doom Blade — the legendary token dies and is swept (704.5d)
+        driver.bothPass()  // first LTB Witness draw
+        driver.bothPass()  // duplicated LTB Witness draw (Gandalf, matching the token's last-known Legendary)
+
+        // Doom Blade cast (-1) + 2 draws from the doubled trigger = net +1.
+        (driver.getHandSize(p1) - handBefore) shouldBe 1
+    }
+
+    test("LTB: a creature made an artifact by a continuous effect, then dying, doubles via last-known type (CR 603.10a)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 20, "Plains" to 20))
+        val p1 = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putPermanentOnBattlefield(p1, "Gandalf the White")
+        driver.putCreatureOnBattlefield(p1, "LTB Witness")
+        // Plain (non-artifact, non-legendary) creature — its PRINTED type never matches Gandalf.
+        val bear = driver.putCreatureOnBattlefield(p1, "Test Bear")
+
+        // Make the bear an artifact for as long as it's on the battlefield.
+        val artifactify = driver.putCardInHand(p1, "Artifactify")
+        driver.giveColorlessMana(p1, 1)
+        driver.castSpell(p1, artifactify, listOf(bear)).isSuccess shouldBe true
+        driver.bothPass()  // resolve Artifactify — bear is now an artifact creature on the battlefield
+
+        val doomBlade = driver.putCardInHand(p1, "Doom Blade")
+        driver.giveMana(p1, Color.BLACK, 2)
+
+        val handBefore = driver.getHandSize(p1)
+        driver.castSpell(p1, doomBlade, listOf(bear)).isSuccess shouldBe true
+        driver.bothPass()  // resolve Doom Blade — the (now-artifact) bear dies; in the graveyard it
+                           // is a plain creature again, so only last-known info records the artifact type
+        driver.bothPass()  // first LTB Witness draw
+        driver.bothPass()  // duplicated LTB Witness draw (Gandalf matches the bear's last-known Artifact type)
+
+        // Doom Blade cast (-1) + 2 draws from the doubled trigger = net +1.
         (driver.getHandSize(p1) - handBefore) shouldBe 1
     }
 
