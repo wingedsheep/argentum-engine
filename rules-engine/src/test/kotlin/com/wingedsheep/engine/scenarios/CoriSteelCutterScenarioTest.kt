@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
@@ -87,6 +88,43 @@ class CoriSteelCutterScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Flurry created exactly one Monk token") {
                     monks.size shouldBe 1
+                }
+            }
+
+            test("Flurry: accepting the prompt attaches the Equipment to the new Monk token") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Cori-Steel Cutter")
+                    .withCardsInHand(1, "Lightning Bolt", 2)
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withLifeTotal(2, 20)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 2)
+                game.resolveStack()
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 2)
+                game.resolveStack()
+
+                // Accept "you may attach this Equipment to it".
+                game.hasPendingDecision() shouldBe true
+                game.answerYesNo(true)
+                game.resolveStack()
+
+                val cutter = game.findPermanent("Cori-Steel Cutter")!!
+                val monk = game.state.getBattlefield().first { id ->
+                    game.state.getEntity(id)?.get<CardComponent>()?.name == "Monk Token"
+                }
+                withClue("The Equipment is attached to the freshly-created Monk token") {
+                    game.state.getEntity(cutter)?.get<AttachedToComponent>()?.targetId shouldBe monk
+                }
+                val projected = game.state.projectedState
+                withClue("The equipped Monk is a 2/2 with trample and haste") {
+                    projected.getPower(monk) shouldBe 2
+                    projected.getToughness(monk) shouldBe 2
+                    projected.hasKeyword(monk, Keyword.TRAMPLE) shouldBe true
+                    projected.hasKeyword(monk, Keyword.HASTE) shouldBe true
                 }
             }
         }

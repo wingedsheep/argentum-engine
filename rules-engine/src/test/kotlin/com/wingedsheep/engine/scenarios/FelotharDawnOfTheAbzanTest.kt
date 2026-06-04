@@ -84,4 +84,30 @@ class FelotharDawnOfTheAbzanTest : FunSpec({
         plusCounters(driver, felotharCard) shouldBe 0
         plusCounters(driver, bears) shouldBe 0
     }
+
+    test("attacks trigger: sacrificing a nonland permanent puts a +1/+1 counter on each creature you control") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opp = driver.getOpponent(me)
+
+        // Felothar already in play (so its "attacks" trigger — the second triggeredAbility block —
+        // is what fires), plus a second creature to verify "each creature you control" and a
+        // sacrifice victim.
+        val felothar = driver.putCreatureOnBattlefield(me, "Felothar, Dawn of the Abzan")
+        val bears = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val fodder = driver.putCreatureOnBattlefield(me, "Hill Giant")
+        driver.removeSummoningSickness(felothar)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(me, listOf(felothar), opp)
+        driver.bothPass() // resolve the attacks trigger off the stack
+
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(me, true)
+        driver.submitCardSelection(me, listOf(fodder))
+
+        plusCounters(driver, felothar) shouldBe 1
+        plusCounters(driver, bears) shouldBe 1
+        driver.state.getGraveyard(me).contains(fodder) shouldBe true
+    }
 })

@@ -282,7 +282,7 @@ data object CantCastSpellsSharingColorWithLastCast : StaticAbility {
  *  - [spellFilter] — only spells whose card matches this filter may be cast for free
  *    (card predicates work in any zone). Default [GameObjectFilter.Any] = every spell.
  *    Dracogenesis is `MayCastWithoutPayingManaCost(controllerOnly = true,
- *    spellFilter = GameObjectFilter.withSubtype("Dragon"))`.
+ *    spellFilter = GameObjectFilter.Any.withSubtype("Dragon"))`.
  *
  * Composes for Weftwalking ({4}{U}{U}, EOE: "The first spell each player casts during each of
  * their turns may be cast without paying its mana cost.") via

@@ -60,6 +60,10 @@ val BetorKinToAll = card("Betor, Kin to All") {
                 )
             )
             // "Then if ... 40 or greater, each opponent loses half their life, rounded up."
+            // The loss amount is computed once from Player.Opponent's life, then applied to every
+            // EachOpponent target — exact in 1v1. In multiplayer each opponent would lose half of a
+            // single opponent's life rather than their own (a LoseLifeExecutor architecture limit,
+            // not this card's); revisit if/when multiplayer is supported.
             .then(
                 ConditionalEffect(
                     condition = totalToughnessAtLeast(40),
