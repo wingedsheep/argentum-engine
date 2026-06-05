@@ -327,14 +327,17 @@ export function DeckbuilderPage() {
   // stripped immediately afterwards so it doesn't linger in the address bar, reload on every
   // filter keystroke, or get re-shared by accident. Guarded by a ref so it fires once even as
   // `searchParams` churns. A malformed code is silently ignored (param still stripped).
+  // The ref guard makes this fire exactly once per real `?d=` (and survives StrictMode's
+  // mount→unmount→mount double-invoke). Deliberately *no* cancel-on-cleanup: the decode is
+  // async, and aborting the in-flight decode on StrictMode's simulated unmount would leave the
+  // ref already flipped, so the re-run no-ops and the deck never loads (empty-deck bug). The
+  // decode resolves and applies its state regardless of remounts, which is harmless.
   const sharedLoadedRef = useRef(false)
   useEffect(() => {
     const code = searchParams.get(SHARE_PARAM)
     if (!code || sharedLoadedRef.current) return
     sharedLoadedRef.current = true
-    let cancelled = false
     void decodeSharedDeck(code).then((shared) => {
-      if (cancelled) return
       setSearchParams(
         (prev) => {
           const params = new URLSearchParams(prev)
@@ -359,9 +362,6 @@ export function DeckbuilderPage() {
       if (shared.commander && shared.commanderPrinting) pins[shared.commander] = shared.commanderPrinting
       setPinnedPrintings(pins)
     })
-    return () => {
-      cancelled = true
-    }
     // setSearchParams is stable; searchParams churn is filtered by the ref guard.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
