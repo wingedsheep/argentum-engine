@@ -13,7 +13,8 @@ import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
-import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
 import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
@@ -146,9 +147,16 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             is CompositeEffect -> effect.copy(
                 effects = effect.effects.map { resolveContextTargets(it, context) }
             )
-            is MayEffect -> {
-                val inner = resolveContextTargets(effect.effect, context)
-                if (inner !== effect.effect) effect.copy(effect = inner) else effect
+            is GatedEffect -> {
+                // Former MayEffect shape: resolve ContextTargets inside the optional `then` payoff,
+                // exactly as MayEffect did. Other gate shapes (MayPay / WhenCondition) were never
+                // resolved here, so leave them untouched.
+                if (effect.gate is Gate.MayDecide && effect.otherwise == null) {
+                    val inner = resolveContextTargets(effect.then, context)
+                    if (inner !== effect.then) effect.copy(then = inner) else effect
+                } else {
+                    effect
+                }
             }
             is StoreResultEffect -> {
                 val inner = resolveContextTargets(effect.effect, context)

@@ -30,8 +30,9 @@
                     "recipient": "AnyPlayer"
                 },
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -943,21 +944,24 @@
     "oracleText": "Arrow Storm deals 4 damage to any target.\nRaid — If you attacked this turn, instead Arrow Storm deals 5 damage to that permanent or player and the damage can't be prevented.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Compare",
-                "left": {
-                    "type": "TurnTracking",
-                    "player": "You",
-                    "tracker": "PLAYER_ATTACKED"
-                },
-                "operator": "GTE",
-                "right": {
-                    "type": "Fixed",
-                    "amount": 1
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 }
             },
-            "effect": {
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -969,7 +973,7 @@
                 },
                 "cantBePrevented": true
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -1194,14 +1198,17 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CantBlockGroup",
                         "filter": {
                             "baseFilter": "creature"
@@ -1334,24 +1341,27 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Not",
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "Compare",
-                            "left": {
-                                "type": "TurnTracking",
-                                "player": "You",
-                                "tracker": "PLAYER_ATTACKED"
-                            },
-                            "operator": "GTE",
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
+                            "type": "Not",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "TurnTracking",
+                                    "player": "You",
+                                    "tracker": "PLAYER_ATTACKED"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
                             }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "LoseLife",
                         "amount": {
                             "type": "Fixed",
@@ -2441,14 +2451,17 @@
     "oracleText": "Crater's Claws deals X damage to any target.\nFerocious — Crater's Claws deals X plus 2 damage instead if you control a creature with power 4 or greater.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Exists",
-                "player": "You",
-                "zone": "Battlefield",
-                "filter": "creature pow>=4"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
             },
-            "effect": {
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Add",
@@ -2463,7 +2476,7 @@
                     "name": "target"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": "XValue",
                 "target": {
@@ -3822,21 +3835,24 @@
     "oracleText": "You gain 5 life.\nFerocious — You gain 10 life instead if you control a creature with power 4 or greater.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Exists",
-                "player": "You",
-                "zone": "Battlefield",
-                "filter": "creature pow>=4"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
             },
-            "effect": {
+            "then": {
                 "type": "GainLife",
                 "amount": {
                     "type": "Fixed",
                     "amount": 10
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "GainLife",
                 "amount": {
                     "type": "Fixed",
@@ -3990,16 +4006,20 @@
                     "destination": "Hand"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
-                        "type": "May",
-                        "effect": {
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
                             "type": "Composite",
                             "effects": [
                                 {
@@ -4498,14 +4518,17 @@
                 "id": "ability_1",
                 "trigger": "AttackEvent",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "ModifyStats",
                         "powerModifier": {
                             "type": "Fixed",
@@ -4969,21 +4992,24 @@
             "effects": [
                 "CopyNextSpellCast",
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "TurnTracking",
-                            "player": "You",
-                            "tracker": "PLAYER_ATTACKED"
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 1
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "PLAYER_ATTACKED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
                         }
                     },
-                    "effect": "CopyNextSpellCast"
+                    "then": "CopyNextSpellCast"
                 }
             ]
         }
@@ -5087,14 +5113,17 @@
                     ]
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "ForEachTarget",
                         "effects": [
                             {
@@ -5328,8 +5357,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -5618,8 +5648,9 @@
                     "recipient": "AnyPlayer"
                 },
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -8366,8 +8397,9 @@
                         "recipient": "AnyPlayer"
                     },
                     "effect": {
-                        "type": "May",
-                        "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
                             "type": "Composite",
                             "effects": [
                                 {
@@ -8814,24 +8846,27 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Target",
-                            "numericProperty": {
-                                "type": "CounterCount",
-                                "counterType": "PlusOnePlusOne"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PlusOnePlusOne"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
                             }
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 1
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreateToken",
                         "power": 1,
                         "toughness": 1,
@@ -8947,14 +8982,17 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "GrantKeyword",
                         "keyword": "INDESTRUCTIBLE",
                         "target": {
@@ -9670,14 +9708,17 @@
     "oracleText": "Target creature you control fights target creature you don't control.\nFerocious — The creature you control gets +2/+2 until end of turn before it fights if you control a creature with power 4 or greater.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Exists",
-                "player": "You",
-                "zone": "Battlefield",
-                "filter": "creature pow>=4"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
             },
-            "effect": {
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -9708,7 +9749,7 @@
                     }
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Fight",
                 "target1": {
                     "type": "BoundVariable",
@@ -10048,14 +10089,17 @@
                     "revealed": true
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -10094,7 +10138,7 @@
                             }
                         ]
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -10943,15 +10987,18 @@
     "oracleText": "Counter target noncreature spell unless its controller pays {1}.\nFerocious — If you control a creature with power 4 or greater, counter that spell instead.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Exists",
-                "player": "You",
-                "zone": "Battlefield",
-                "filter": "creature pow>=4"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
             },
-            "effect": "Counter",
-            "elseEffect": {
+            "then": "Counter",
+            "otherwise": {
                 "type": "Counter",
                 "condition": {
                     "type": "CounterCondition.UnlessPaysMana",
@@ -11853,8 +11900,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -12474,8 +12522,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {

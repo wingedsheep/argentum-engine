@@ -2577,22 +2577,25 @@
     "typeLine": "Sorcery",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Compare",
-                "left": {
-                    "type": "AggregateBattlefield",
-                    "player": "Opponent",
-                    "filter": "land"
-                },
-                "operator": "GT",
-                "right": {
-                    "type": "AggregateBattlefield",
-                    "player": "You",
-                    "filter": "land"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "Opponent",
+                        "filter": "land"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    }
                 }
             },
-            "effect": {
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -3993,8 +3996,9 @@
                     ]
                 },
                 {
-                    "type": "May",
-                    "effect": "ShuffleLibrary"
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "ShuffleLibrary"
                 },
                 {
                     "type": "DrawCards",

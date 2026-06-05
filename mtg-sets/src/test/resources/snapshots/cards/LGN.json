@@ -2694,8 +2694,9 @@
                 "id": "ability_1",
                 "trigger": "CycleEvent",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "AggregateBattlefield",
@@ -2751,8 +2752,9 @@
                 "id": "ability_1",
                 "trigger": "CycleEvent",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "LoseLife",
                         "amount": {
                             "type": "AggregateBattlefield",
@@ -3785,8 +3787,9 @@
                 "id": "ability_1",
                 "trigger": "TurnFaceUpEvent",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -4179,21 +4182,24 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "Count",
-                            "player": "Opponent",
-                            "zone": "Hand"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 2
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "Opponent",
+                                "zone": "Hand"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "Fixed",
@@ -5467,8 +5473,9 @@
                     "recipient": "AnyPlayer"
                 },
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "MoveToZone",
                         "target": {
                             "type": "BoundVariable",

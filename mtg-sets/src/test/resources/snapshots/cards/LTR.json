@@ -11,9 +11,12 @@
                 "trigger": "AttackEvent",
                 "binding": "ATTACHED",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "EnchantedCreatureIsLegendary",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "EnchantedCreatureIsLegendary"
+                    },
+                    "then": {
                         "type": "CreateToken",
                         "count": {
                             "type": "Fixed",
@@ -34,7 +37,7 @@
                         "tapped": true,
                         "attacking": true
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "CreateToken",
                         "count": {
                             "type": "Fixed",
@@ -1903,8 +1906,9 @@
                 "trigger": "ScriedEvent",
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "IfYouDo",
                         "action": {
                             "type": "MoveToZone",
@@ -1961,19 +1965,22 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "SourceMatches",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "HOPE"
-                                        }
-                                    ]
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceMatches",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "HasCounter",
+                                                "counterType": "HOPE"
+                                            }
+                                        ]
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -1993,22 +2000,25 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Not",
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "SourceMatches",
-                                    "filter": {
-                                        "statePredicates": [
-                                            {
-                                                "type": "HasCounter",
-                                                "counterType": "HOPE"
-                                            }
-                                        ]
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "SourceMatches",
+                                        "filter": {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "HasCounter",
+                                                    "counterType": "HOPE"
+                                                }
+                                            ]
+                                        }
                                     }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -2259,8 +2269,9 @@
                         },
                         "EmitScriedEvent",
                         {
-                            "type": "May",
-                            "effect": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -2297,14 +2308,17 @@
                                         }
                                     },
                                     {
-                                        "type": "Conditional",
-                                        "condition": {
-                                            "type": "Exists",
-                                            "player": "You",
-                                            "zone": "Battlefield",
-                                            "filter": "creature Dwarf"
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Battlefield",
+                                                "filter": "creature Dwarf"
+                                            }
                                         },
-                                        "effect": {
+                                        "then": {
                                             "type": "GrantKeyword",
                                             "keyword": "TRAMPLE",
                                             "target": {
@@ -2315,14 +2329,17 @@
                                         }
                                     },
                                     {
-                                        "type": "Conditional",
-                                        "condition": {
-                                            "type": "Exists",
-                                            "player": "You",
-                                            "zone": "Battlefield",
-                                            "filter": "creature Elf"
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Battlefield",
+                                                "filter": "creature Elf"
+                                            }
                                         },
-                                        "effect": {
+                                        "then": {
                                             "type": "GrantKeyword",
                                             "keyword": "HEXPROOF",
                                             "target": {
@@ -2508,21 +2525,24 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "EntityProperty",
-                                    "entity": "Target",
-                                    "numericProperty": "Power"
-                                },
-                                "operator": "LTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 2
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Target",
+                                        "numericProperty": "Power"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "DrawCards",
                                 "count": {
                                     "type": "Fixed",
@@ -2813,8 +2833,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -2942,8 +2963,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -3261,12 +3283,15 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "AddCounters",
                         "counterType": "+1/+1",
                         "count": 1,
@@ -3347,14 +3372,17 @@
                     "filter": "land"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature pow>=4"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -3390,7 +3418,7 @@
                             "ShuffleLibrary"
                         ]
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -3578,22 +3606,25 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Not",
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "Exists",
-                                    "player": "You",
-                                    "zone": "Battlefield",
-                                    "filter": {
-                                        "cardPredicates": [
-                                            "IsCreature",
-                                            "IsLegendary"
-                                        ]
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                "IsLegendary"
+                                            ]
+                                        }
                                     }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -5286,16 +5317,19 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsLegendary"
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLegendary"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "GrantKeyword",
                         "keyword": "TRAMPLE",
                         "target": {
@@ -5407,12 +5441,15 @@
                         },
                         "IncrementAbilityResolutionCount",
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "SourceAbilityResolvedNTimesThisTurn",
-                                "count": 3
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 3
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "ReflexiveTrigger",
                                 "action": {
                                     "type": "Composite",
@@ -6994,8 +7031,9 @@
                 "trigger": "ScriedEvent",
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "TapUntap",
                         "target": "Self",
                         "tap": false
@@ -10103,12 +10141,15 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": "creature Goblin|Orc"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": "creature Goblin|Orc"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "GrantKeyword",
                         "keyword": "HASTE",
                         "target": {
@@ -11683,12 +11724,15 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "TargetMatchesFilter",
-                                "filter": "creature pow>=4"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "TargetMatchesFilter",
+                                    "filter": "creature pow>=4"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "GrantKeyword",
                                 "keyword": "FIRST_STRIKE",
                                 "target": {

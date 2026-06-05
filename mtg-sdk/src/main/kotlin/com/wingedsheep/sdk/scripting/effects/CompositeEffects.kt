@@ -62,37 +62,6 @@ data class CompositeEffect(
 }
 
 /**
- * Optional effect wrapper - the player may choose to perform or skip this effect.
- * "You may draw a card" or "You may shuffle your library"
- *
- * Use this to compose optional parts of abilities rather than creating
- * specific optional variants of each effect.
- *
- * @property decisionMaker Optional override for who answers the yes/no question.
- *   Defaults to the ability's controller. Set to e.g. [EffectTarget.TargetController]
- *   for "that creature's controller may ..." (Requiem Monolith) — only the prompt
- *   is delegated; the inner effect still resolves under the original controller.
- */
-@SerialName("May")
-@Serializable
-data class MayEffect(
-    val effect: Effect,
-    val descriptionOverride: String? = null,
-    val sourceRequiredZone: Zone? = null,
-    val inlineOnTrigger: Boolean = false,
-    /** Optional hint text shown below the prompt (e.g., keyword reminder text) */
-    val hint: String? = null,
-    val decisionMaker: EffectTarget? = null
-) : Effect {
-    override val description: String = descriptionOverride ?: "You may ${effect.description.lowercase()}"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newEffect = effect.applyTextReplacement(replacer)
-        return if (newEffect !== effect) copy(effect = newEffect) else this
-    }
-}
-
-/**
  * Represents a single mode in a modal spell.
  *
  * Each mode can have its own targeting requirements, allowing cards like

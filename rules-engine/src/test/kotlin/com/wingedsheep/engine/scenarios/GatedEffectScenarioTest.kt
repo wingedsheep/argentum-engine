@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -17,6 +18,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -33,7 +35,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *    (CR 603.3d), *before* the may-pay decision is offered at resolution (CR 117.3a). This is
  *    the timing the old wrapper nesting (`MayEffect(IfYouDoEffect(...))`) had to get right by
  *    hand; the single frame makes it correct by construction.
- *  - [Gate.MayDecide] — the pure yes/no gate new cards can opt into.
+ *  - [Gate.MayDecide] — the pure yes/no gate new cards can opt into, and the `MayEffect` facade
+ *    that lowers onto it (yes/no end-to-end, plus the `sourceRequiredZone` skip the wrapper owned).
  */
 class GatedEffectScenarioTest : ScenarioTestBase() {
 
@@ -119,6 +122,50 @@ class GatedEffectScenarioTest : ScenarioTestBase() {
                 subtypes = setOf(Subtype("Golem")),
                 power = 0,
                 toughness = 3
+            )
+        )
+
+        // "When this enters, you may draw a card." authored via the MayEffect facade — proves the
+        // facade lowers to a Gate.MayDecide that resolves end-to-end through the GatedEffect frame.
+        cardRegistry.register(
+            CardDefinition.creature(
+                name = "Maybe Seer",
+                manaCost = ManaCost.parse("{0}"),
+                subtypes = setOf(Subtype("Wizard")),
+                power = 1,
+                toughness = 1,
+                script = CardScript(
+                    triggeredAbilities = listOf(
+                        TriggeredAbility(
+                            id = AbilityId.generate(),
+                            trigger = Triggers.EntersBattlefield.event,
+                            binding = Triggers.EntersBattlefield.binding,
+                            effect = MayEffect(DrawCardsEffect(1))
+                        )
+                    )
+                )
+            )
+        )
+
+        // A MayEffect whose source must be in the graveyard to act. On an ETB trigger the source is
+        // on the battlefield, so the gate is skipped silently — no prompt, no draw.
+        cardRegistry.register(
+            CardDefinition.creature(
+                name = "Graveyard-Gated Seer",
+                manaCost = ManaCost.parse("{0}"),
+                subtypes = setOf(Subtype("Wizard")),
+                power = 1,
+                toughness = 1,
+                script = CardScript(
+                    triggeredAbilities = listOf(
+                        TriggeredAbility(
+                            id = AbilityId.generate(),
+                            trigger = Triggers.EntersBattlefield.event,
+                            binding = Triggers.EntersBattlefield.binding,
+                            effect = MayEffect(DrawCardsEffect(1), sourceRequiredZone = Zone.GRAVEYARD)
+                        )
+                    )
+                )
             )
         )
 
@@ -287,6 +334,50 @@ class GatedEffectScenarioTest : ScenarioTestBase() {
 
                 val (noBefore, noAfter) = run(false)
                 withClue("no draws nothing") { noAfter shouldBe noBefore }
+            }
+        }
+
+        context("MayEffect facade (lowered to Gate.MayDecide)") {
+
+            test("the facade resolves a yes/no end-to-end through the gated frame") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Maybe Seer")
+                    .withCardInLibrary(1, "Target Dummy")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Maybe Seer").error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                val handBefore = game.handSize(1)
+                game.answerYesNo(true)
+                game.resolveStack()
+
+                withClue("yes draws a card") { game.handSize(1) shouldBe handBefore + 1 }
+            }
+
+            test("sourceRequiredZone skips the prompt when the source isn't in the required zone") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Graveyard-Gated Seer")
+                    .withCardInLibrary(1, "Target Dummy")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val handBefore = game.handSize(1)
+                game.castSpell(1, "Graveyard-Gated Seer").error shouldBe null
+                game.resolveStack()
+
+                withClue("source is on the battlefield, not the graveyard, so no may prompt") {
+                    game.hasPendingDecision() shouldBe false
+                }
+                withClue("nothing drawn (hand is one smaller from casting the creature)") {
+                    game.handSize(1) shouldBe handBefore - 1
+                }
             }
         }
     }

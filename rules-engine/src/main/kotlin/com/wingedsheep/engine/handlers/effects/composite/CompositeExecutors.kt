@@ -24,13 +24,11 @@ class CompositeExecutors(
     private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(effectExecutor) }
-    private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(effectExecutor) }
     private val createDelayedTriggerExecutor by lazy { CreateDelayedTriggerExecutor() }
     private val forEachTargetExecutor by lazy { ForEachTargetExecutor(effectExecutor) }
     private val forEachPlayerExecutor by lazy { ForEachPlayerExecutor(effectExecutor) }
     private val forEachCapturedControllerExecutor by lazy { ForEachCapturedControllerExecutor(effectExecutor) }
     private val ifYouDoEffectExecutor by lazy { IfYouDoEffectExecutor(effectExecutor) }
-    private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
     private val mayRevealCardFromHandEffectExecutor by lazy { MayRevealCardFromHandEffectExecutor(effectExecutor) }
     private val beholdEffectExecutor by lazy { BeholdEffectExecutor(effectExecutor) }
     private val mayPayXForEffectExecutor by lazy { MayPayXForEffectExecutor(cardRegistry, effectExecutor) }
@@ -62,7 +60,6 @@ class CompositeExecutors(
         budgetModalEffectExecutor,
         chooseActionEffectExecutor,
         compositeEffectExecutor,
-        conditionalEffectExecutor,
         createDelayedTriggerExecutor,
         forEachTargetExecutor,
         forEachPlayerExecutor,
@@ -71,7 +68,6 @@ class CompositeExecutors(
         forEachColorOfExecutor,
         forEachInCollectionExecutor,
         ifYouDoEffectExecutor,
-        mayEffectExecutor,
         mayRevealCardFromHandEffectExecutor,
         beholdEffectExecutor,
         mayPayXForEffectExecutor,

@@ -1,39 +1,29 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.scripting.conditions.Condition
-import com.wingedsheep.sdk.scripting.text.TextReplacer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
 // =============================================================================
 // Conditional Effect
 // =============================================================================
 
 /**
- * An effect that only happens if a condition is met.
+ * "If [condition], [effect]. Otherwise, [elseEffect]." — an effect that runs one branch or the
+ * other based on a state test evaluated at resolution time.
+ *
+ * Backwards-compatible facade preserved for the cards (and the DSL `spell { onlyIf(...) }` path)
+ * that authored against the former `ConditionalEffect` data class. It now lowers to a
+ * [GatedEffect] with a [Gate.WhenCondition] gate — one frame, one executor, one resumer — so there
+ * is no bespoke conditional executor. The condition is a synchronous state test (no decision, no
+ * pause): success runs [effect], failure runs [elseEffect]. Card source is unchanged; only the
+ * compiled/serialized representation moved to `Gated`.
  */
-@SerialName("Conditional")
-@Serializable
-data class ConditionalEffect(
-    val condition: Condition,
-    val effect: Effect,
-    val elseEffect: Effect? = null
-) : Effect {
-    override val description: String = buildString {
-        append(condition.description.replaceFirstChar { it.uppercase() })
-        append(", ")
-        append(effect.description.replaceFirstChar { it.lowercase() })
-        if (elseEffect != null) {
-            append(". Otherwise, ")
-            append(elseEffect.description.replaceFirstChar { it.lowercase() })
-        }
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newCondition = condition.applyTextReplacement(replacer)
-        val newEffect = effect.applyTextReplacement(replacer)
-        val newElseEffect = elseEffect?.applyTextReplacement(replacer)
-        return if (newCondition !== condition || newEffect !== effect || newElseEffect !== elseEffect)
-            copy(condition = newCondition, effect = newEffect, elseEffect = newElseEffect) else this
-    }
-}
+@Suppress("FunctionName")
+fun ConditionalEffect(
+    condition: Condition,
+    effect: Effect,
+    elseEffect: Effect? = null
+): GatedEffect = GatedEffect(
+    gate = Gate.WhenCondition(condition),
+    then = effect,
+    otherwise = elseEffect
+)

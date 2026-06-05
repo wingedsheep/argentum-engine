@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
@@ -25,7 +24,6 @@ import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtFaceDownEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
-import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -172,15 +170,11 @@ object CardValidator {
         when (effect) {
             is CompositeEffect -> effect.effects.forEach { collectIndicesRecursive(it, indices) }
             is ForEachTargetEffect -> effect.effects.forEach { collectIndicesRecursive(it, indices) }
-            is MayEffect -> collectIndicesRecursive(effect.effect, indices)
-            is ConditionalEffect -> {
-                collectIndicesRecursive(effect.effect, indices)
-                effect.elseEffect?.let { collectIndicesRecursive(it, indices) }
-            }
             is GatedEffect -> {
                 when (val gate = effect.gate) {
                     is Gate.MayPay -> collectIndicesRecursive(gate.cost, indices)
                     is Gate.MayDecide -> {}
+                    is Gate.WhenCondition -> {}
                 }
                 collectIndicesRecursive(effect.then, indices)
                 effect.otherwise?.let { collectIndicesRecursive(it, indices) }

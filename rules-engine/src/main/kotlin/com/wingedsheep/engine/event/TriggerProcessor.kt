@@ -14,8 +14,8 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
-import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
@@ -151,9 +151,9 @@ class TriggerProcessor(
             return processMayPayManaThenTargetTrigger(currentState, trigger, targetRequirement)
         }
 
-        // If the effect is a MayEffect AND has targets, ask may first before target selection.
-        // This gives the player a chance to decline before having to pick targets.
-        if (targetRequirement != null && ability.effect is MayEffect) {
+        // If the effect is a bare "may" (lowered MayEffect) AND has targets, ask may first before
+        // target selection. This gives the player a chance to decline before having to pick targets.
+        if (targetRequirement != null && ability.effect.asMayDecide() != null) {
             return processMayThenTargetTrigger(currentState, trigger, targetRequirement)
         }
 
@@ -205,8 +205,8 @@ class TriggerProcessor(
             )
         }
 
-        // Get the MayEffect description for the prompt
-        val mayEffect = ability.effect as MayEffect
+        // The gated "may" effect's own text is the prompt (GatedEffect.description renders
+        // "You may …" for a Gate.MayDecide).
         val sourceName = trigger.sourceName
 
         // Create yes/no decision
@@ -215,7 +215,7 @@ class TriggerProcessor(
             playerId = trigger.controllerId,
             sourceId = trigger.sourceId,
             sourceName = sourceName,
-            prompt = mayEffect.description,
+            prompt = ability.effect.description,
             phase = DecisionPhase.RESOLUTION
         )
 

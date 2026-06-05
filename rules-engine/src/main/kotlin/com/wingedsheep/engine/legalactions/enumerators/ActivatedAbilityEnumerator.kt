@@ -33,7 +33,7 @@ import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
@@ -980,19 +980,23 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
      * "real" effect is hidden inside (e.g., Figure of Fable's `ConditionalEffect(... BecomeCreature)`) is
      * also excluded.
      */
-    private fun effectStacksOnRepeat(effect: Effect): Boolean = when (effect) {
-        is BecomeCreatureEffect,
-        is BecomeCreatureTypeEffect,
-        is SetBasePowerEffect,
-        is SetBasePowerToughnessEffect,
-        is SetCreatureSubtypesEffect,
-        is AnimateLandEffect,
-        is RegenerateEffect -> false
-        is CompositeEffect -> effect.effects.all { effectStacksOnRepeat(it) }
-        is ConditionalEffect -> effectStacksOnRepeat(effect.effect) &&
-            (effect.elseEffect?.let { effectStacksOnRepeat(it) } ?: true)
-        is ModalEffect -> effect.modes.all { effectStacksOnRepeat(it.effect) }
-        else -> true
+    private fun effectStacksOnRepeat(effect: Effect): Boolean {
+        effect.asConditional()?.let { conditional ->
+            return effectStacksOnRepeat(conditional.then) &&
+                (conditional.otherwise?.let { effectStacksOnRepeat(it) } ?: true)
+        }
+        return when (effect) {
+            is BecomeCreatureEffect,
+            is BecomeCreatureTypeEffect,
+            is SetBasePowerEffect,
+            is SetBasePowerToughnessEffect,
+            is SetCreatureSubtypesEffect,
+            is AnimateLandEffect,
+            is RegenerateEffect -> false
+            is CompositeEffect -> effect.effects.all { effectStacksOnRepeat(it) }
+            is ModalEffect -> effect.modes.all { effectStacksOnRepeat(it.effect) }
+            else -> true
+        }
     }
 
     /**

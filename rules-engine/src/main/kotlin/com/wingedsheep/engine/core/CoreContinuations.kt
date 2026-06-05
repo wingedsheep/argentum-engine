@@ -262,8 +262,9 @@ data class BeholdContinuation(
 /**
  * Resume placing a triggered ability on the stack after the player answers a "may" question.
  *
- * When a triggered ability has both a MayEffect wrapper and targets (like Invigorating Boon's
- * "you may put a +1/+1 counter on target creature"), the may question is asked FIRST.
+ * When a triggered ability has both a bare "may" gate (a [Gate.MayDecide] with no `otherwise` —
+ * the lowered `MayEffect`, recognized via `Effect.asMayDecide`) and targets (like Invigorating
+ * Boon's "you may put a +1/+1 counter on target creature"), the may question is asked FIRST.
  * If the player says yes, we then proceed to target selection.
  * If the player says no, the trigger is skipped entirely.
  *

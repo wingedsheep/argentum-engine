@@ -329,8 +329,9 @@
                 "trigger": "TurnFaceUpEvent",
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -648,8 +649,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "MoveToZone",
                         "target": "Self",
                         "destination": "Battlefield"
@@ -2119,8 +2121,9 @@
                 "id": "ability_1",
                 "trigger": "CycleEvent",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "AddCounters",
                         "counterType": "+1/+1",
                         "count": 4,
@@ -2200,27 +2203,30 @@
                             "target": "Self"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "EntityProperty",
-                                    "entity": "Source",
-                                    "numericProperty": {
-                                        "type": "CounterCount",
-                                        "counterType": {
-                                            "type": "Named",
-                                            "name": "depletion"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "depletion"
+                                            }
                                         }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
                                     }
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 3
                                 }
                             },
-                            "effect": "SacrificeSelf"
+                            "then": "SacrificeSelf"
                         }
                     ]
                 }
@@ -2229,8 +2235,9 @@
                 "id": "ability_2",
                 "trigger": "CycleEvent",
                 "effect": {
-                    "type": "May",
-                    "effect": "Counter"
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Counter"
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -2340,23 +2347,26 @@
     "oracleText": "Counter target spell if its mana value is less than or equal to the greatest mana value among permanents you control.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Compare",
-                "left": {
-                    "type": "EntityProperty",
-                    "entity": "Target",
-                    "numericProperty": "ManaValue"
-                },
-                "operator": "LTE",
-                "right": {
-                    "type": "AggregateBattlefield",
-                    "player": "You",
-                    "aggregation": "MAX",
-                    "property": "MANA_VALUE"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaValue"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "aggregation": "MAX",
+                        "property": "MANA_VALUE"
+                    }
                 }
             },
-            "effect": "Counter"
+            "then": "Counter"
         },
         "targetRequirements": [
             {
@@ -2428,11 +2438,14 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": "ReturnSelfToBattlefieldAttached",
-                    "descriptionOverride": "Attach Dragon Breath to this creature?",
-                    "sourceRequiredZone": "Graveyard",
-                    "inlineOnTrigger": true
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Graveyard",
+                        "inlineOnTrigger": true
+                    },
+                    "then": "ReturnSelfToBattlefieldAttached",
+                    "descriptionOverride": "Attach Dragon Breath to this creature?"
                 },
                 "activeZone": "Graveyard"
             }
@@ -2498,11 +2511,14 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": "ReturnSelfToBattlefieldAttached",
-                    "descriptionOverride": "Attach Dragon Fangs to this creature?",
-                    "sourceRequiredZone": "Graveyard",
-                    "inlineOnTrigger": true
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Graveyard",
+                        "inlineOnTrigger": true
+                    },
+                    "then": "ReturnSelfToBattlefieldAttached",
+                    "descriptionOverride": "Attach Dragon Fangs to this creature?"
                 },
                 "activeZone": "Graveyard"
             }
@@ -2619,11 +2635,14 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": "ReturnSelfToBattlefieldAttached",
-                    "descriptionOverride": "Attach Dragon Scales to this creature?",
-                    "sourceRequiredZone": "Graveyard",
-                    "inlineOnTrigger": true
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Graveyard",
+                        "inlineOnTrigger": true
+                    },
+                    "then": "ReturnSelfToBattlefieldAttached",
+                    "descriptionOverride": "Attach Dragon Scales to this creature?"
                 },
                 "activeZone": "Graveyard"
             }
@@ -2673,11 +2692,14 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": "ReturnSelfToBattlefieldAttached",
-                    "descriptionOverride": "Attach Dragon Shadow to this creature?",
-                    "sourceRequiredZone": "Graveyard",
-                    "inlineOnTrigger": true
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Graveyard",
+                        "inlineOnTrigger": true
+                    },
+                    "then": "ReturnSelfToBattlefieldAttached",
+                    "descriptionOverride": "Attach Dragon Shadow to this creature?"
                 },
                 "activeZone": "Graveyard"
             }
@@ -2800,11 +2822,14 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": "ReturnSelfToBattlefieldAttached",
-                    "descriptionOverride": "Attach Dragon Wings to this creature?",
-                    "sourceRequiredZone": "Graveyard",
-                    "inlineOnTrigger": true
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Graveyard",
+                        "inlineOnTrigger": true
+                    },
+                    "then": "ReturnSelfToBattlefieldAttached",
+                    "descriptionOverride": "Attach Dragon Wings to this creature?"
                 },
                 "activeZone": "Graveyard"
             }
@@ -3384,8 +3409,9 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -3553,8 +3579,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "AddCounters",
                         "counterType": "+1/+1",
                         "count": 1,
@@ -3570,8 +3597,9 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "May",
-                    "effect": "DistributeCountersFromSelf"
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "DistributeCountersFromSelf"
                 }
             }
         ]
@@ -5022,8 +5050,9 @@
                 },
                 "binding": "ATTACHED",
                 "effect": {
-                    "type": "May",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {

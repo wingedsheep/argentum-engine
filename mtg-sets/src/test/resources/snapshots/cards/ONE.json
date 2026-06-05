@@ -83,17 +83,20 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": "XValue",
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 5
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreateTokenCopyOfTarget",
                         "target": {
                             "type": "BoundVariable",
