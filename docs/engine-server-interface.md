@@ -137,6 +137,7 @@ Used to play a card from Hand, Graveyard, Exile, or Command Zone.
 | `xValue`          | `Int?`                  | The declared value for `{X}` costs (e.g., Fireball).                                                                            |
 | **`chosenCosts`** | **`Map<Int, Int>`**     | **Modular Optional Costs.** Maps the index of the optional cost definition to times paid. (e.g., Kicker, Buyback, Multikicker). |
 | `payment`         | `ManaPaymentStrategy?`  | (Optional) Explicit instructions on how to pay (e.g., "Use Treasure token").                                                    |
+| `alternativeCost` | `AlternativeCostType?`  | **Which** alternative cost is being used (warp, evoke, impending, flashback, harmonize, self-alt, granted) when more than one is legal for the same card+zone — e.g. a battlefield-granted warp on a card that also has evoke. The engine stamps this on every alternative-cost legal action; the client echoes it back unchanged. `null` falls back to a fixed priority order (legacy/AI callers). Mirrors the separate "without paying its mana cost" flag — CR 118.9a allows only one alternative cost per cast. |
 
 #### B. `ActivateAbility`
 

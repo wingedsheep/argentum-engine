@@ -1612,6 +1612,17 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1, duringYourTurnOnly = true` for
   Festival of Embers. Pair with `MayPlayLandsFromGraveyard` for "play lands and cast spells from
   your graveyard". Lands are *played*, not cast, so they need the lands permission separately.
+- `GrantWarpToCardsInHand(filter, cost)` — cards in the controller's hand matching `filter` gain
+  warp (CR 702.185) with mana cost `cost`. Behaves identically to a printed warp keyword: surfaces a
+  "Cast (Warp)" legal action, marks `wasWarped` on resolution, and the post-resolution permanent is
+  exiled at the next end step and can be cast again from exile for its regular mana cost. Hand-only
+  by CR 702.185a and the granters' "in your hand" wording — the grant doesn't extend warp to other
+  zones. Routed through `WarpGrants.effectiveWarp` alongside printed warp; the granter's controller
+  is the only beneficiary. (Tannuk, Steadfast Second = `GrantWarpToCardsInHand(filter = artifact OR
+  red creature, cost = {2}{R})`.) When the granted warp lands on a card that *also* has another
+  alternative cost (e.g. a red evoke creature), both casts are offered and disambiguated by
+  `CastSpell.alternativeCostType` (see `engine-server-interface.md`) — picking "Evoke" charges the
+  evoke cost, not warp, even though warp would win a naive priority order.
 - `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any)` — a
   battlefield permission to cast a spell without paying its mana cost (CR 118.9). Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);

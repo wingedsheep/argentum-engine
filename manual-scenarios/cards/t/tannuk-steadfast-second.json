@@ -1,0 +1,51 @@
+{
+  "_description": "Tannuk, Steadfast Second — exercises both clauses. (1) Haste anthem: Frontline War-Rager on Alice's side enters with summoning sickness, but Tannuk grants 'other creatures you control have haste', so it can attack on its first turn. (2) Warp grant on hand cards: Alice's hand has Chrome Companion (artifact card — gains warp {2}{R}), Frontline War-Rager (red creature card — gains warp {2}{R}), and Blooming Stinger (green creature, not artifact — does NOT gain warp). With 5 Mountains untapped, the action menu should offer 'Cast (Warp)' on Chrome Companion and the hand-Frontline at cost {2}{R} each, but not on Blooming Stinger. Casting via warp marks the resolved permanent as warped, scheduling the next end-step exile. After the exile, the card sits in exile with WarpExiledComponent and is re-castable for its regular mana cost on a later turn.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Chrome Companion",
+      "Frontline War-Rager",
+      "Blooming Stinger"
+    ],
+    "battlefield": [
+      {"name": "Tannuk, Steadfast Second", "summoningSickness": false},
+      {"name": "Frontline War-Rager", "summoningSickness": true},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

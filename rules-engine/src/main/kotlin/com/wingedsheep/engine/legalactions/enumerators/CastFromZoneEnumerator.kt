@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.GameState
@@ -32,6 +33,7 @@ import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
+import com.wingedsheep.engine.mechanics.WarpGrants
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 
@@ -1053,7 +1055,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithFlashback",
                         description = "Cast ${cardComponent.name} (Flashback)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK),
                         affordable = false,
                         manaCostString = flashback.cost.toString(),
                         sourceZone = "GRAVEYARD"
@@ -1100,7 +1102,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithFlashback",
                         description = "Cast ${cardComponent.name} (Flashback)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK),
                         affordable = false,
                         manaCostString = costString,
                         additionalCostInfo = flashbackBeholdInfo,
@@ -1130,7 +1132,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         LegalAction(
                             actionType = "CastWithFlashback",
                             description = "Cast ${cardComponent.name} (Flashback)",
-                            action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                            action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK),
                             validTargets = firstInfo.validTargets,
                             requiresTargets = true,
                             targetCount = firstReq.count,
@@ -1149,7 +1151,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithFlashback",
                         description = "Cast ${cardComponent.name} (Flashback)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK),
                         manaCostString = costString,
                         additionalCostInfo = flashbackBeholdInfo,
                         autoTapPreview = autoTapPreview,
@@ -1190,7 +1192,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithHarmonize",
                         description = "Cast ${cardComponent.name} (Harmonize)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.HARMONIZE),
                         affordable = false,
                         manaCostString = harmonize.cost.toString(),
                         hasHarmonize = true,
@@ -1227,7 +1229,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithHarmonize",
                         description = "Cast ${cardComponent.name} (Harmonize)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.HARMONIZE),
                         affordable = false,
                         manaCostString = costString,
                         hasHarmonize = true,
@@ -1253,7 +1255,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         LegalAction(
                             actionType = "CastWithHarmonize",
                             description = "Cast ${cardComponent.name} (Harmonize)",
-                            action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                            action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.HARMONIZE),
                             validTargets = firstInfo.validTargets,
                             requiresTargets = true,
                             targetCount = firstReq.count,
@@ -1274,7 +1276,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithHarmonize",
                         description = "Cast ${cardComponent.name} (Harmonize)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.HARMONIZE),
                         manaCostString = costString,
                         hasXCost = hasXCost,
                         maxAffordableX = maxAffordableX,
@@ -1318,9 +1320,16 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
 
-            val warpAbility = cardDef.keywordAbilities
-                .filterIsInstance<KeywordAbility.Warp>()
-                .firstOrNull() ?: continue
+            // Printed warp wins; otherwise consult battlefield grants
+            // ([com.wingedsheep.sdk.scripting.GrantWarpToCardsInHand]). Granted warp is
+            // hand-only, so it never satisfies a graveyard pass.
+            val printedWarp = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Warp>().firstOrNull()
+            val warpAbility: KeywordAbility.Warp = printedWarp
+                ?: if (zone == Zone.HAND) {
+                    WarpGrants.effectiveWarp(
+                        state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator
+                    ) ?: continue
+                } else continue
 
             // Graveyard casts are only legal for warp abilities that explicitly opt in
             // (CR 702.185a — default warp is hand-only).
@@ -1335,7 +1344,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithWarp",
                         description = "Cast ${cardComponent.name} (Warp)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.WARP),
                         affordable = false,
                         manaCostString = warpAbility.cost.toString(),
                         sourceZone = sourceZoneLabel
@@ -1359,7 +1368,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithWarp",
                         description = "Cast ${cardComponent.name} (Warp)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.WARP),
                         affordable = false,
                         manaCostString = costString,
                         sourceZone = sourceZoneLabel
@@ -1401,7 +1410,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         LegalAction(
                             actionType = "CastWithWarp",
                             description = "Cast ${cardComponent.name} (Warp)",
-                            action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                            action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.WARP),
                             validTargets = firstInfo.validTargets,
                             requiresTargets = true,
                             targetCount = firstReq.count,
@@ -1421,7 +1430,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     LegalAction(
                         actionType = "CastWithWarp",
                         description = "Cast ${cardComponent.name} (Warp)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.WARP),
                         manaCostString = costString,
                         autoTapPreview = autoTapPreview,
                         hasXCost = hasXCost,

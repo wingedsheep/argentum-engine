@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 255 / 261
+**Implemented:** 257 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -125,7 +125,7 @@
 - [x] Larval Scoutlander
 - [x] Lashwhip Predator
 - [x] Lightless Evangel
-- [ ] Lightstall Inquisitor
+- [x] Lightstall Inquisitor
 - [x] Lithobraking
 - [x] Loading Zone
 - [x] Lost in Space
@@ -226,7 +226,7 @@
 - [x] Syr Vondam, the Lucent
 - [x] Systems Override
 - [x] Tannuk, Memorial Ensign
-- [ ] Tannuk, Steadfast Second
+- [x] Tannuk, Steadfast Second
 - [x] Tapestry Warden
 - [x] Temporal Intervention
 - [ ] Terminal Velocity

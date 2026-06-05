@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
@@ -183,6 +184,40 @@ data class GrantKeywordToOwnSpells(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = spellFilter.applyTextReplacement(replacer)
         return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
+ * Grants warp (CR 702.185) to cards in the granter's controller's hand that match [filter].
+ * Models oracle text like "Artifact cards and red creature cards in your hand have warp {2}{R}."
+ *
+ * Read by the cast-from-hand enumerator and the cast handler the same way printed
+ * [KeywordAbility.Warp] is read: the granted warp surfaces an alternative "Cast (Warp)" legal
+ * action whose cost is [cost], the spell is marked `wasWarped` on resolution, and the
+ * post-resolution permanent is exiled at the beginning of the next end step (CR 702.185b),
+ * after which it can be cast again from exile for its regular mana cost (CR 702.185a — the
+ * warp alternative cost is hand-only). The grant is controller-only — only the source
+ * permanent's controller benefits.
+ *
+ * Hand-only by design: CR 702.185a restricts warp to the hand, and the granter's oracle text
+ * scopes the grant to cards "in your hand". This static doesn't extend warp to other zones —
+ * warp-exiled cards are recast from exile via the standard `MayPlayPermission` (regular mana
+ * cost), independent of whether the original cast used printed or granted warp.
+ *
+ * @property filter Which cards in the controller's hand gain warp (e.g., artifact or red creature)
+ * @property cost The warp mana cost the granted ability uses
+ */
+@SerialName("GrantWarpToCardsInHand")
+@Serializable
+data class GrantWarpToCardsInHand(
+    val filter: GameObjectFilter,
+    val cost: ManaCost
+) : StaticAbility {
+    override val description: String =
+        "${filter.description.replaceFirstChar { it.uppercase() }} in your hand have warp $cost"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
 

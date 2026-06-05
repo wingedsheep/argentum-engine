@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
@@ -826,7 +827,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Cast ${cardComponent.name} (${altCostInfo.first})",
-                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.GRANTED),
                                 manaCostString = altCostInfo.first,
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
@@ -838,7 +839,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
-                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE),
                                 manaCostString = selfAltCostResult.manaCostString,
                                 additionalCostInfo = selfAltCostResult.additionalCostInfo,
                                 requiresDamageDistribution = requiresDamageDistribution,
@@ -851,7 +852,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
-                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.EVOKE),
                                 manaCostString = evokeCostResult.manaCostString,
                                 autoTapPreview = evokeCostResult.autoTapPreview
                             ))
@@ -860,7 +861,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Impending ${cardComponent.name} (${impendingCostResult.manaCostString})",
-                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.IMPENDING),
                                 manaCostString = impendingCostResult.manaCostString,
                                 autoTapPreview = impendingCostResult.autoTapPreview
                             ))
@@ -936,7 +937,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Cast ${cardComponent.name} (${altCostInfo.first})",
-                                action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.GRANTED),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReq.count,
@@ -956,7 +957,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
-                                action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReq.count,
@@ -977,7 +978,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
-                                action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.EVOKE),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReq.count,
@@ -994,7 +995,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
                                 description = "Impending ${cardComponent.name} (${impendingCostResult.manaCostString})",
-                                action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.IMPENDING),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReq.count,
@@ -1094,7 +1095,7 @@ class CastSpellEnumerator : ActionEnumerator {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
                         description = "Cast ${cardComponent.name} (${altCostInfo.first})",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.GRANTED),
                         manaCostString = altCostInfo.first,
                         autoTapPreview = altCostInfo.second
                     ))
@@ -1103,7 +1104,7 @@ class CastSpellEnumerator : ActionEnumerator {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
                         description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE),
                         manaCostString = selfAltCostResult.manaCostString,
                         additionalCostInfo = selfAltCostResult.additionalCostInfo,
                         autoTapPreview = selfAltCostResult.autoTapPreview
@@ -1113,7 +1114,7 @@ class CastSpellEnumerator : ActionEnumerator {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
                         description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.EVOKE),
                         manaCostString = evokeCostResult.manaCostString,
                         autoTapPreview = evokeCostResult.autoTapPreview
                     ))
@@ -1122,7 +1123,7 @@ class CastSpellEnumerator : ActionEnumerator {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
                         description = "Impending ${cardComponent.name} (${impendingCostResult.manaCostString})",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.IMPENDING),
                         manaCostString = impendingCostResult.manaCostString,
                         autoTapPreview = impendingCostResult.autoTapPreview
                     ))

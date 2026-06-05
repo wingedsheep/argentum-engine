@@ -96,8 +96,49 @@ data class CastSpell(
      * flashback, harmonize, warp, evoke, impending, `selfAlternativeCost`) when both are legal.
      * The enumerator emits a separate `CastWithoutPayingManaCost` action per granted permission.
      */
-    val useWithoutPayingManaCost: Boolean = false
+    val useWithoutPayingManaCost: Boolean = false,
+    /**
+     * When [useAlternativeCost] is true, identifies *which* alternative cost the player chose.
+     *
+     * A card can have more than one alternative cost available simultaneously for the same
+     * card+zone — most commonly when a battlefield static grants warp to a card that already
+     * has evoke/impending/a self-alternative cost (e.g. Tannuk, Steadfast Second granting warp
+     * to a red evoke creature in hand). Because every alternative-cost legal action sets
+     * `useAlternativeCost = true`, that flag alone can't say which one was clicked, so the
+     * handler would otherwise fall back to a fixed priority order and silently charge the wrong
+     * cost. This discriminator records the choice explicitly (CR 601.2b/601.2f — the player
+     * announces the alternative cost as part of casting).
+     *
+     * `null` means "unspecified" — the handler falls back to its legacy priority chain. The
+     * legal-action enumerators always stamp it; only hand-constructed actions (some tests,
+     * synthesized free casts) leave it null. Mirrors how [useWithoutPayingManaCost] was split
+     * out as its own flag for the same reason (CR 118.9a — only one alternative cost per cast).
+     */
+    val alternativeCostType: AlternativeCostType? = null
 ) : GameAction
+
+/**
+ * Which alternative casting cost a [CastSpell] with `useAlternativeCost = true` is using. Lets the
+ * handler honor the player's explicit choice instead of guessing by priority when several
+ * alternative costs are legal for the same card at once (CR 118.9a — only one may apply).
+ */
+@Serializable
+enum class AlternativeCostType {
+    /** Flashback ([com.wingedsheep.sdk.scripting.KeywordAbility.Flashback]) — graveyard. */
+    FLASHBACK,
+    /** Harmonize ([com.wingedsheep.sdk.scripting.KeywordAbility.Harmonize], printed or granted) — graveyard. */
+    HARMONIZE,
+    /** Warp ([com.wingedsheep.sdk.scripting.KeywordAbility.Warp], printed or granted) — hand (graveyard if opted in). */
+    WARP,
+    /** Evoke ([com.wingedsheep.sdk.scripting.KeywordAbility.Evoke]) — hand. */
+    EVOKE,
+    /** Impending ([com.wingedsheep.sdk.scripting.KeywordAbility.Impending]) — hand. */
+    IMPENDING,
+    /** A card's own `selfAlternativeCost` (e.g. Zahid's "tap an untapped artifact") — hand. */
+    SELF_ALTERNATIVE,
+    /** A battlefield-granted alternative cost (e.g. Jodah's {W}{U}{B}{R}{G}) — `GrantAlternativeCastingCost`. */
+    GRANTED
+}
 
 /**
  * Defines how a player intends to pay the mana cost of a spell or ability.

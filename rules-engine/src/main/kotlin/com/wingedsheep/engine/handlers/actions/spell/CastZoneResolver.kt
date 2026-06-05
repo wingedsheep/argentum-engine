@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.actions.spell
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
+import com.wingedsheep.engine.mechanics.WarpGrants
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -250,7 +251,9 @@ class CastZoneResolver(
      * Check if a card has an active Warp keyword ability that can be used from
      * its current zone. By default warp is hand-only (CR 702.185a); a Warp whose
      * `fromGraveyard` flag is set (e.g., Timeline Culler) also lets the card be
-     * cast for its warp cost from the caster's graveyard.
+     * cast for its warp cost from the caster's graveyard. A battlefield static
+     * ability ([com.wingedsheep.sdk.scripting.GrantWarpToCardsInHand]) can also
+     * grant warp to a card currently in the controller's hand.
      */
     fun hasWarpPermission(
         state: GameState,
@@ -260,11 +263,11 @@ class CastZoneResolver(
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
         val warp = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Warp>().firstOrNull()
-            ?: return false
-
-        if (cardId in state.getZone(ZoneKey(playerId, Zone.HAND))) return true
-        if (warp.fromGraveyard && cardId in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return true
-        return false
+        if (warp != null) {
+            if (cardId in state.getZone(ZoneKey(playerId, Zone.HAND))) return true
+            if (warp.fromGraveyard && cardId in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return true
+        }
+        return WarpGrants.hasGrantedWarpInHand(state, cardId, playerId, cardRegistry, predicateEvaluator)
     }
 
     /**
