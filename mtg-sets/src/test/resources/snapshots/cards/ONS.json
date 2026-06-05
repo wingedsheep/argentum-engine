@@ -3136,20 +3136,23 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "LifeTotal",
-                            "player": "You"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 5
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -9760,9 +9763,12 @@
                                 "target": "Controller"
                             },
                             {
-                                "type": "Conditional",
-                                "condition": "YouControlSource",
-                                "effect": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": "YouControlSource"
+                                },
+                                "then": {
                                     "type": "AddCounters",
                                     "counterType": "+1/+1",
                                     "count": 2,
@@ -10604,22 +10610,25 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "Count",
-                            "player": "You",
-                            "zone": "Graveyard",
-                            "filter": "creature"
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 4
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "MoveToZone",
                         "target": {
                             "type": "BoundVariable",
@@ -10899,9 +10908,12 @@
                     "storeAs": "chosenCreatureType"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "YouControlMostOfChosenType",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "YouControlMostOfChosenType"
+                    },
+                    "then": {
                         "type": "ForEachInGroup",
                         "filter": {
                             "baseFilter": "creature",
@@ -15295,12 +15307,15 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "APlayerControlsMostOfSubtype",
-                        "subtype": "Wizard"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "APlayerControlsMostOfSubtype",
+                            "subtype": "Wizard"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "GainControlByMost",
                         "metric": {
                             "type": "CreaturesOfSubtype",
@@ -16062,22 +16077,25 @@
     "oracleText": "Exile target attacking creature if its power is less than or equal to the number of Soldiers on the battlefield.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Compare",
-                "left": {
-                    "type": "EntityProperty",
-                    "entity": "Target",
-                    "numericProperty": "Power"
-                },
-                "operator": "LTE",
-                "right": {
-                    "type": "AggregateBattlefield",
-                    "player": "Each",
-                    "filter": "creature Soldier"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature Soldier"
+                    }
                 }
             },
-            "effect": {
+            "then": {
                 "type": "MoveToZone",
                 "target": {
                     "type": "BoundVariable",

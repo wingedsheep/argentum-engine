@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
@@ -45,18 +46,33 @@ class GatedEffectExecutor(
     override val effectType: KClass<GatedEffect> = GatedEffect::class
 
     private val manaSolver = ManaSolver(cardRegistry)
+    private val conditionEvaluator = ConditionEvaluator()
 
     override fun execute(
         state: GameState,
         effect: GatedEffect,
         context: EffectContext
     ): EffectResult {
+        val gate = effect.gate
+
+        // Gate.WhenCondition: a synchronous state test, not a decision — no prompt, no pause.
+        // Evaluate through the same ConditionEvaluationContext used everywhere else (so it reads
+        // identically at resolution and under projection) and run `then` / `otherwise` directly.
+        if (gate is Gate.WhenCondition) {
+            val otherwise = effect.otherwise
+            return when {
+                conditionEvaluator.evaluate(state, gate.condition, context) ->
+                    effectExecutor(state, effect.then, context)
+                otherwise != null -> effectExecutor(state, otherwise, context)
+                else -> EffectResult.success(state)
+            }
+        }
+
         val playerId = effect.decisionMaker
             ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
             ?: context.controllerId
 
         // Gate.MayPay: don't offer an impossible "yes" — fall straight through to `otherwise`.
-        val gate = effect.gate
         if (gate is Gate.MayPay && !canAfford(state, playerId, gate.cost)) {
             return effect.otherwise
                 ?.let { effectExecutor(state, it, context) }
@@ -77,6 +93,7 @@ class GatedEffectExecutor(
         val hint = when (gate) {
             is Gate.MayDecide -> gate.hint ?: effect.hint
             is Gate.MayPay -> effect.hint
+            is Gate.WhenCondition -> effect.hint // unreachable: handled by the synchronous branch above
         }
 
         val decisionId = UUID.randomUUID().toString()

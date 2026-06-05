@@ -341,6 +341,9 @@ class EffectAndTriggerContinuationResumer(
                 is Gate.MayDecide -> continuation.then
                 is Gate.MayPay ->
                     CompositeEffect(listOf(gate.cost, continuation.then), stopOnError = true)
+                // WhenCondition resolves synchronously in the executor and never pushes this
+                // continuation, so this branch is unreachable — present only for exhaustiveness.
+                is Gate.WhenCondition -> continuation.then
             }
         } else {
             continuation.otherwise

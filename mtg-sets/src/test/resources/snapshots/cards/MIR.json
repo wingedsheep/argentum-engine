@@ -201,20 +201,23 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsLand",
-                                {
-                                    "type": "Not",
-                                    "predicate": "IsBasicLand"
-                                }
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsBasicLand"
+                                    }
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "Fixed",

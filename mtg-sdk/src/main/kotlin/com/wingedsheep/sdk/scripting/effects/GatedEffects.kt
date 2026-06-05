@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -24,9 +25,10 @@ import kotlinx.serialization.Serializable
  *  3. On success → [then]; on failure → [otherwise].
  *
  * This is the "composition over enumeration" replacement for the wrapper-per-concern
- * cluster (MayEffect / IfYouDoEffect / OptionalCostEffect / …). It currently models the
- * decision-driven gates ([Gate.MayDecide], [Gate.MayPay]); the action-outcome gate
- * (IfYouDo) and the any-player-pays gate are folded in as their wrappers migrate.
+ * cluster (MayEffect / IfYouDoEffect / OptionalCostEffect / …). It models the decision-driven
+ * gates ([Gate.MayDecide], [Gate.MayPay]) and the synchronous state-test gate
+ * ([Gate.WhenCondition]); the action-outcome gate (IfYouDo) and the any-player-pays gate are
+ * folded in as their wrappers migrate.
  *
  * @property gate What must succeed before [then] runs.
  * @property then Effect that runs iff the gate succeeds.
@@ -60,6 +62,14 @@ data class GatedEffect(
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
+        is Gate.WhenCondition -> buildString {
+            append(g.condition.description.replaceFirstChar { it.uppercase() })
+            append(", ")
+            append(then.description.replaceFirstChar { it.lowercase() })
+            if (otherwise != null) {
+                append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
+            }
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
@@ -77,8 +87,8 @@ data class GatedEffect(
  * Each variant captures one *gate kind* from the former wrapper cluster; they all share
  * the single [GatedEffect] frame, its executor, and its resumer. New gate kinds are added
  * here as the remaining wrappers migrate in (IfYouDoEffect → a `DoAction` gate that scores
- * an action against a `SuccessCriterion`; ConditionalEffect → a `WhenCondition` gate;
- * AnyPlayerMayPayEffect → an APNAP `AnyPlayerMayPay` gate).
+ * an action against a `SuccessCriterion`; AnyPlayerMayPayEffect → an APNAP `AnyPlayerMayPay`
+ * gate).
  */
 @Serializable
 sealed interface Gate {
@@ -118,6 +128,26 @@ sealed interface Gate {
         override fun applyTextReplacement(replacer: TextReplacer): Gate {
             val newCost = cost.applyTextReplacement(replacer)
             return if (newCost !== cost) copy(cost = newCost) else this
+        }
+    }
+
+    /**
+     * Not a decision — a state test. The gate succeeds iff [condition] holds at resolution time;
+     * there is no yes/no prompt and no pause. [GatedEffect.then] runs when the condition is met,
+     * [GatedEffect.otherwise] when it is not. The condition is evaluated through the single
+     * `ConditionEvaluationContext`, so it reads identically at resolution and under projection
+     * (never a separate `*ProjectionCondition`). Replaces ConditionalEffect.
+     *
+     * @property condition The condition that must hold for [GatedEffect.then] to run.
+     */
+    @SerialName("Gate.WhenCondition")
+    @Serializable
+    data class WhenCondition(
+        val condition: Condition
+    ) : Gate {
+        override fun applyTextReplacement(replacer: TextReplacer): Gate {
+            val newCondition = condition.applyTextReplacement(replacer)
+            return if (newCondition !== condition) copy(condition = newCondition) else this
         }
     }
 }

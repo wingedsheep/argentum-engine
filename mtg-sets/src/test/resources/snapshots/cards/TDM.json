@@ -1417,9 +1417,12 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "ControlledCreatureDiedThisTurn",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "ControlledCreatureDiedThisTurn"
+                    },
+                    "then": {
                         "type": "ForceSacrifice",
                         "filter": "creature",
                         "target": {
@@ -1574,23 +1577,26 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "AggregateBattlefield",
-                                    "player": "You",
-                                    "filter": "creature",
-                                    "aggregation": "SUM",
-                                    "property": "TOUGHNESS"
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 20
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature",
+                                        "aggregation": "SUM",
+                                        "property": "TOUGHNESS"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "ForEachInGroup",
                                 "filter": {
                                     "baseFilter": "creature ctrl:you"
@@ -1603,23 +1609,26 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "AggregateBattlefield",
-                                    "player": "You",
-                                    "filter": "creature",
-                                    "aggregation": "SUM",
-                                    "property": "TOUGHNESS"
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 40
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature",
+                                        "aggregation": "SUM",
+                                        "property": "TOUGHNESS"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 40
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "LoseLife",
                                 "amount": {
                                     "type": "Divide",
@@ -2206,26 +2215,29 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "DistinctEntitiesInCollections",
-                                    "collections": [
-                                        "spiritDragonW",
-                                        "spiritDragonU",
-                                        "spiritDragonB",
-                                        "spiritDragonR",
-                                        "spiritDragonG"
-                                    ]
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 5
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "spiritDragonW",
+                                            "spiritDragonU",
+                                            "spiritDragonB",
+                                            "spiritDragonR",
+                                            "spiritDragonG"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "WinGame",
                                 "message": "Five spirit Dragons answered the call."
                             }
@@ -3771,19 +3783,22 @@
                     "from": "beheld"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "CollectionContainsMatch",
-                        "collection": "beheld"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "beheld"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Counter",
                         "condition": {
                             "type": "CounterCondition.UnlessPaysMana",
                             "cost": "{4}"
                         }
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "Counter",
                         "condition": {
                             "type": "CounterCondition.UnlessPaysMana",
@@ -4882,14 +4897,17 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature Dragon"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature Dragon"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -4926,7 +4944,7 @@
                             "ShuffleLibrary"
                         ]
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -10973,12 +10991,15 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "CollectionContainsMatch",
-                        "collection": "beheld"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "beheld"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "GainLife",
                         "amount": {
                             "type": "Fixed",
@@ -11252,12 +11273,15 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "CollectionContainsMatch",
-                        "collection": "beheld"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "beheld"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -14973,9 +14997,12 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": "TargetIsPlayer",
-                            "effect": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "TargetIsPlayer"
+                            },
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -15416,21 +15443,24 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "Count",
-                                    "player": "You",
-                                    "zone": "Library"
-                                },
-                                "operator": "EQ",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 0
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Library"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -15501,21 +15531,24 @@
                 "trigger": "AttackEvent",
                 "binding": "ATTACHED",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "You",
-                            "filter": "creature attacking"
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 3
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature attacking"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -16129,13 +16162,16 @@
                             "storeAs": "returned"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "CollectionContainsMatch",
-                                "collection": "returned",
-                                "filter": "token"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "returned",
+                                    "filter": "token"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "DrawCards",
                                 "count": {
                                     "type": "Fixed",
@@ -17266,28 +17302,31 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsCreature"
-                            ],
-                            "statePredicates": [
-                                "HasAnyCounter"
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "HasAnyCounter"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
                             "amount": 1
                         }
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "AddCounters",
                         "counterType": "+1/+1",
                         "count": 1,

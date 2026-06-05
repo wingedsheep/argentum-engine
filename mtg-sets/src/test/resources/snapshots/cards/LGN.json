@@ -4179,21 +4179,24 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "Count",
-                            "player": "Opponent",
-                            "zone": "Hand"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 2
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "Opponent",
+                                "zone": "Hand"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "Fixed",

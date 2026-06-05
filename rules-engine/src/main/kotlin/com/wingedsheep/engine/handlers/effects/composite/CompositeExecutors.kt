@@ -24,7 +24,6 @@ class CompositeExecutors(
     private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(effectExecutor) }
-    private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(effectExecutor) }
     private val createDelayedTriggerExecutor by lazy { CreateDelayedTriggerExecutor() }
     private val forEachTargetExecutor by lazy { ForEachTargetExecutor(effectExecutor) }
     private val forEachPlayerExecutor by lazy { ForEachPlayerExecutor(effectExecutor) }
@@ -62,7 +61,6 @@ class CompositeExecutors(
         budgetModalEffectExecutor,
         chooseActionEffectExecutor,
         compositeEffectExecutor,
-        conditionalEffectExecutor,
         createDelayedTriggerExecutor,
         forEachTargetExecutor,
         forEachPlayerExecutor,

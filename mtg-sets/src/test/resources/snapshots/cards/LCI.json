@@ -452,27 +452,30 @@
                             "moveType": "Discard"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "EntityProperty",
-                                    "entity": "Source",
-                                    "numericProperty": {
-                                        "type": "CounterCount",
-                                        "counterType": {
-                                            "type": "Named",
-                                            "name": "chorus"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "chorus"
+                                            }
                                         }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
                                     }
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 4
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "GrantFreeCastTargetFromExile",
                                 "target": {
                                     "type": "PipelineTarget",

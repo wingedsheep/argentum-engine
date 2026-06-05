@@ -677,22 +677,25 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "All",
-                        "conditions": [
-                            {
-                                "type": "TargetMatchesFilter",
-                                "filter": "creature ctrl:you"
-                            },
-                            {
-                                "type": "TargetMatchesFilter",
-                                "filter": "creature ctrl:opponent",
-                                "targetIndex": 1
-                            }
-                        ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "TargetMatchesFilter",
+                                    "filter": "creature ctrl:you"
+                                },
+                                {
+                                    "type": "TargetMatchesFilter",
+                                    "filter": "creature ctrl:opponent",
+                                    "targetIndex": 1
+                                }
+                            ]
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Fight",
                         "target1": {
                             "type": "BoundVariable",

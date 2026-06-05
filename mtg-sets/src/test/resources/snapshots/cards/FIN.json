@@ -139,28 +139,31 @@
                             "target": "Controller"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "LifeTotal",
-                                    "player": "You"
-                                },
-                                "operator": "LTE",
-                                "right": {
-                                    "type": "Divide",
-                                    "numerator": {
-                                        "type": "StartingLifeTotal",
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "LifeTotal",
                                         "player": "You"
                                     },
-                                    "denominator": {
-                                        "type": "Fixed",
-                                        "amount": 2
-                                    },
-                                    "roundUp": false
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Divide",
+                                        "numerator": {
+                                            "type": "StartingLifeTotal",
+                                            "player": "You"
+                                        },
+                                        "denominator": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "roundUp": false
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -503,13 +506,16 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "CollectionContainsMatch",
-                                "collection": "selected",
-                                "filter": "land Town"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected",
+                                    "filter": "land Town"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "GainLife",
                                 "amount": {
                                     "type": "Fixed",

@@ -580,8 +580,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
     (`PayManaCostEffect`, `PayLifeEffect`, `SacrificeEffect`, or a `CompositeEffect` of them). An
     unaffordable cost (mana/life recognized; other shapes assumed payable) skips the prompt straight
     to `otherwise`. On "yes", the cost is paid then `then` runs (`stopOnError`: an unpayable cost
-    aborts the payoff). New gate kinds (`DoAction` for IfYouDo, `WhenCondition` for ConditionalEffect,
-    APNAP `AnyPlayerMayPay`) fold in as those wrappers migrate.
+    aborts the payoff).
+  - `Gate.WhenCondition(condition)` — **not a decision, a state test.** Succeeds iff `condition`
+    holds at resolution; no prompt, no pause — `then`/`otherwise` run synchronously in the executor.
+    The condition evaluates through the shared `ConditionEvaluationContext` (identical at resolution
+    and projection). Replaces `ConditionalEffect` (see "Sequencing & conditional" below).
+  - New gate kinds (`DoAction` for IfYouDo, APNAP `AnyPlayerMayPay`) fold in as those wrappers migrate.
 - `OptionalCostEffect(cost, ifPaid, ifNotPaid?)` — "You may [cost]. If you do, [ifPaid]." Facade
   preserved for existing cards; it now **lowers to `GatedEffect` with a `Gate.MayPay`** gate (compiled
   form is `Gated`, not a distinct `OptionalCost` type).
@@ -613,7 +617,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Sequencing & conditional
 
 - `CompositeEffect(effects)` / `Composite(e1, e2, ...)` — run effects in order.
-- `ConditionalEffect(condition, ifTrue, ifFalse?)` / `Branch(...)` — conditional branch.
+- `ConditionalEffect(condition, ifTrue, ifFalse?)` / `Branch(...)` — conditional branch. Facade
+  preserved for existing cards; it now **lowers to `GatedEffect(Gate.WhenCondition(condition), then =
+  ifTrue, otherwise = ifFalse)`** (compiled form is `Gated`, not a distinct `Conditional` type). It is
+  a synchronous state test — no decision, no pause. Engine paths that recognize a conditional branch
+  (stack-time branch resolution for opponent views, repeat-activation analysis, limited rating) key
+  off the lowered `Gate.WhenCondition` shape via the `Effect.asConditional()` matcher.
 - `IfYouDoEffect(action, reflexive, optional)` — if optional action is taken, run reflexive effect.
 - `ReflexiveTriggerEffect(action, reflexive, optional)` — same shape but the reflexive effect goes on the stack.
 

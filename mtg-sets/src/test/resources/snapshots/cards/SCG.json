@@ -2200,27 +2200,30 @@
                             "target": "Self"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "EntityProperty",
-                                    "entity": "Source",
-                                    "numericProperty": {
-                                        "type": "CounterCount",
-                                        "counterType": {
-                                            "type": "Named",
-                                            "name": "depletion"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "depletion"
+                                            }
                                         }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
                                     }
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 3
                                 }
                             },
-                            "effect": "SacrificeSelf"
+                            "then": "SacrificeSelf"
                         }
                     ]
                 }
@@ -2340,23 +2343,26 @@
     "oracleText": "Counter target spell if its mana value is less than or equal to the greatest mana value among permanents you control.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Compare",
-                "left": {
-                    "type": "EntityProperty",
-                    "entity": "Target",
-                    "numericProperty": "ManaValue"
-                },
-                "operator": "LTE",
-                "right": {
-                    "type": "AggregateBattlefield",
-                    "player": "You",
-                    "aggregation": "MAX",
-                    "property": "MANA_VALUE"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaValue"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "aggregation": "MAX",
+                        "property": "MANA_VALUE"
+                    }
                 }
             },
-            "effect": "Counter"
+            "then": "Counter"
         },
         "targetRequirements": [
             {

@@ -2244,28 +2244,31 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "StoredCardManaValue",
-                                    "collectionName": "nonland"
-                                },
-                                "operator": "LTE",
-                                "right": {
-                                    "type": "TurnTracking",
-                                    "player": "You",
-                                    "tracker": "LIFE_GAINED"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "StoredCardManaValue",
+                                        "collectionName": "nonland"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "TurnTracking",
+                                        "player": "You",
+                                        "tracker": "LIFE_GAINED"
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "May",
                                 "effect": {
                                     "type": "CastFromCollectionWithoutPayingCost",
                                     "from": "nonland"
                                 }
                             },
-                            "elseEffect": {
+                            "otherwise": {
                                 "type": "MoveCollection",
                                 "from": "nonland",
                                 "destination": {
@@ -2905,9 +2908,12 @@
     "oracleText": "As an additional cost to cast this spell, you may blight 1. (You may put a -1/-1 counter on a creature you control.)\nExile the top two cards of your library. If this spell's additional cost was paid, exile the top three cards instead. Until the end of your next turn, you may play those cards.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "BlightWasPaid",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "BlightWasPaid"
+            },
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -2940,7 +2946,7 @@
                     }
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -3205,21 +3211,24 @@
                     "revealToSelf": false
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "CollectionContainsMatch",
-                        "collection": "found",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsCreature",
-                                {
-                                    "type": "HasSubtypeFromVariable",
-                                    "variableName": "chosenCreatureType"
-                                }
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "found",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasSubtypeFromVariable",
+                                        "variableName": "chosenCreatureType"
+                                    }
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "MoveCollection",
                         "from": "found",
                         "destination": {
@@ -3227,7 +3236,7 @@
                             "zone": "Battlefield"
                         }
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "MoveCollection",
                         "from": "found",
                         "destination": {
@@ -4081,9 +4090,12 @@
     "oracleText": "As an additional cost to cast this spell, you may blight 1. (You may put a -1/-1 counter on a creature you control.)\nCinder Strike deals 2 damage to target creature. It deals 4 damage to that creature instead if this spell's additional cost was paid.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "BlightWasPaid",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "BlightWasPaid"
+            },
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -4094,7 +4106,7 @@
                     "name": "creature"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -4786,14 +4798,17 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Exists",
-                                "player": "You",
-                                "zone": "Graveyard",
-                                "filter": "Elf"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "Elf"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -5376,18 +5391,21 @@
                     "destination": "Battlefield"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Not",
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "IsInPhase",
-                            "phases": [
-                                "PRECOMBAT_MAIN",
-                                "POSTCOMBAT_MAIN"
-                            ]
+                            "type": "Not",
+                            "condition": {
+                                "type": "IsInPhase",
+                                "phases": [
+                                    "PRECOMBAT_MAIN",
+                                    "POSTCOMBAT_MAIN"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -6863,12 +6881,15 @@
                     "cost": "{1}{G/W}{G/W}"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "SourceMatches",
-                        "filter": "Scout"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceMatches",
+                            "filter": "Scout"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "BecomeCreature",
                         "power": 4,
                         "toughness": 5,
@@ -6887,12 +6908,15 @@
                     "cost": "{3}{G/W}{G/W}{G/W}"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "SourceMatches",
-                        "filter": "Soldier"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceMatches",
+                            "filter": "Soldier"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "BecomeCreature",
                         "power": 7,
                         "toughness": 8,
@@ -8697,12 +8721,15 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": "Goat"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": "Goat"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "ModifyStats",
                         "powerModifier": {
                             "type": "Fixed",
@@ -14413,9 +14440,12 @@
                     "byDestruction": true
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "BlightWasPaid",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "BlightWasPaid"
+                    },
+                    "then": {
                         "type": "GainLife",
                         "amount": {
                             "type": "Fixed",
@@ -16336,12 +16366,15 @@
                         },
                         "IncrementAbilityResolutionCount",
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "SourceAbilityResolvedNTimesThisTurn",
-                                "count": 3
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 3
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "AddMana",
                                 "color": "RED",
                                 "amount": {
@@ -18121,40 +18154,43 @@
                     ]
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "You",
-                            "filter": {
-                                "cardPredicates": [
-                                    {
-                                        "type": "Or",
-                                        "predicates": [
-                                            "IsLand",
-                                            {
-                                                "type": "And",
-                                                "predicates": [
-                                                    "IsPermanent",
-                                                    {
-                                                        "type": "HasSubtype",
-                                                        "subtype": "Treefolk"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsLand",
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsPermanent",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Treefolk"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 7
                             }
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 7
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreateToken",
                         "power": 3,
                         "toughness": 4,
@@ -18329,22 +18365,25 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsCreature"
-                            ],
-                            "statePredicates": [
-                                "EnteredThisTurn"
-                            ],
-                            "controllerPredicate": "ControlledByYou"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -18827,14 +18866,17 @@
                             ]
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Exists",
-                                "player": "You",
-                                "zone": "Graveyard",
-                                "filter": "Elf"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "Elf"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "GainLife",
                                 "amount": {
                                     "type": "Fixed",
@@ -18879,14 +18921,17 @@
                             ]
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Exists",
-                                "player": "You",
-                                "zone": "Graveyard",
-                                "filter": "Elf"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "Elf"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "GainLife",
                                 "amount": {
                                     "type": "Fixed",
@@ -20070,14 +20115,17 @@
                     ]
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Exists",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "creature Merfolk"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature Merfolk"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreateToken",
                         "count": {
                             "type": "ContextProperty",

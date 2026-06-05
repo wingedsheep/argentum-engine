@@ -65,8 +65,9 @@ Where the frame lives:
 | `BlightEffect` | ✅ deleted | #486 | **Was dead code** — no card/facade built it, no executor, not in any snapshot. Deleted, not lowered. |
 | `TapCreatureForEffectEffect` | ✅ deleted | #486 | Same — dead code, deleted. |
 | `MayPayManaEffect` | ✅ done | #488 | Facade → `Gate.MayPay(PayManaCostEffect)`. **Read §3 — it set two precedents you will reuse.** |
+| `ConditionalEffect` | ✅ done | (this PR) | Facade → `Gate.WhenCondition(condition)` — a synchronous state-test gate (no decision/pause). Added `Effect.asConditional()` matcher (§3a); routed the 3 `is ConditionalEffect` engine sites (ClientStateTransformer stack-resolve, ActivatedAbilityEnumerator stacking, LimitedCardRater) through it. Deleted `ConditionalEffectExecutor`. 171 snapshot lowerings, pure rename. |
 
-The remaining wrappers are in §5.
+The remaining wrappers are in §5 (start with #2 `MayEffect` next).
 
 ---
 
@@ -156,7 +157,7 @@ order: the new-gate-but-synchronous one first, then the two monsters, then decid
 
 | # | Wrapper | → Gate | Shape | src files | Executor to delete |
 |---|---|---|---|---|---|
-| 1 | `ConditionalEffect` | `WhenCondition(condition)` **(new)** | B | ~168 | `ConditionalEffectExecutor` |
+| 1 | ~~`ConditionalEffect`~~ ✅ done | `WhenCondition(condition)` | B | ~168 | ~~`ConditionalEffectExecutor`~~ deleted |
 | 2 | `MayEffect` | `MayDecide` | A* | ~129 | `MayEffectExecutor` |
 | 3 | `IfYouDoEffect` | `DoAction(action, criterion)` **(new)** | B | ~16 | `IfYouDoEffectExecutor` |
 | 4 | `PayOrSufferEffect` | `MayPay(cost)` w/ `then=null, otherwise=suffer` | A/B | ~28 | (continuations in `SacrificeAndPayContinuationResumer`) |

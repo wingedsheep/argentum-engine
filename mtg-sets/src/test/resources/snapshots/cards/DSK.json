@@ -1178,14 +1178,17 @@
                                     }
                                 },
                                 {
-                                    "type": "Conditional",
-                                    "condition": {
-                                        "type": "Exists",
-                                        "player": "You",
-                                        "zone": "Battlefield",
-                                        "filter": "creature Demon"
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "Exists",
+                                            "player": "You",
+                                            "zone": "Battlefield",
+                                            "filter": "creature Demon"
+                                        }
                                     },
-                                    "effect": {
+                                    "then": {
                                         "type": "Composite",
                                         "effects": [
                                             {
@@ -1208,7 +1211,7 @@
                                             }
                                         ]
                                     },
-                                    "elseEffect": {
+                                    "otherwise": {
                                         "type": "LoseLife",
                                         "amount": {
                                             "type": "Fixed",
@@ -1307,20 +1310,23 @@
                     "to": "Graveyard"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "ContextProperty",
-                            "key": "LAST_KNOWN_TOTAL_COUNTER_COUNT"
-                        },
-                        "operator": "EQ",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 0
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ContextProperty",
+                                "key": "LAST_KNOWN_TOTAL_COUNTER_COUNT"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {

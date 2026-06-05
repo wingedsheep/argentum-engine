@@ -2862,27 +2862,30 @@
                 "trigger": "YouAttackEvent",
                 "binding": "ANY",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Source",
-                            "numericProperty": {
-                                "type": "CounterCount",
-                                "counterType": {
-                                    "type": "Named",
-                                    "name": "charge"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": {
+                                        "type": "Named",
+                                        "name": "charge"
+                                    }
                                 }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
                             }
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 10
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "Fixed",
@@ -3213,9 +3216,12 @@
     "oracleText": "You draw two cards and lose 2 life.\nVoid — If a nonland permanent left the battlefield this turn or a spell was warped this turn, instead you draw two cards and each opponent loses 2 life.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "Void",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "Void"
+            },
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -3238,7 +3244,7 @@
                     }
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -3297,21 +3303,24 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Target",
-                            "numericProperty": "Power"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 0
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "MoveToZone",
                         "target": {
                             "type": "BoundVariable",
@@ -3355,12 +3364,15 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": "permanent attacking"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": "permanent attacking"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreatePredefinedToken",
                         "tokenType": "Drone"
                     }
@@ -3870,24 +3882,27 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Target",
-                            "numericProperty": {
-                                "type": "CounterCount",
-                                "counterType": "PlusOnePlusOne"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PlusOnePlusOne"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
                             }
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 1
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -4486,13 +4501,16 @@
                     "players": "EachOpponent",
                     "effects": [
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Exists",
-                                "player": "You",
-                                "zone": "Hand"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Hand"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "Composite",
                                 "effects": [
                                     {
@@ -4527,7 +4545,7 @@
                                     }
                                 ]
                             },
-                            "elseEffect": {
+                            "otherwise": {
                                 "type": "LoseLife",
                                 "amount": {
                                     "type": "Fixed",
@@ -5135,22 +5153,25 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "TargetMatchesFilter",
-                                "filter": {
-                                    "cardPredicates": [
-                                        "IsCreature"
-                                    ],
-                                    "statePredicates": [
-                                        {
-                                            "type": "StateNot",
-                                            "predicate": "WasDealtDamageThisTurn"
-                                        }
-                                    ]
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "TargetMatchesFilter",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "StateNot",
+                                                "predicate": "WasDealtDamageThisTurn"
+                                            }
+                                        ]
+                                    }
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "DrawCards",
                                 "count": {
                                     "type": "Fixed",
@@ -5809,19 +5830,22 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsCreature"
-                            ],
-                            "statePredicates": [
-                                "WasCastForWarp"
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "WasCastForWarp"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -6151,21 +6175,24 @@
                 },
                 "binding": "OTHER",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "You",
-                            "filter": "land"
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 6
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "SetBasePowerToughness",
                         "target": {
                             "type": "BoundVariable",
@@ -6175,7 +6202,7 @@
                         "toughness": 6,
                         "duration": "EndOfTurn"
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "SetBasePowerToughness",
                         "target": {
                             "type": "BoundVariable",
@@ -7270,9 +7297,12 @@
                     "target": "Controller"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "Void",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "Void"
+                    },
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -7955,14 +7985,17 @@
     "oracleText": "Invasive Maneuvers deals 3 damage to target creature. It deals 5 damage instead if you control a Spacecraft.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Exists",
-                "player": "You",
-                "zone": "Battlefield",
-                "filter": "permanent Spacecraft"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Spacecraft"
+                }
             },
-            "effect": {
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -7973,7 +8006,7 @@
                     "index": 0
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -8281,27 +8314,30 @@
                     ]
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Source",
-                            "numericProperty": {
-                                "type": "CounterCount",
-                                "counterType": {
-                                    "type": "Named",
-                                    "name": "charge"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": {
+                                        "type": "Named",
+                                        "name": "charge"
+                                    }
                                 }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 12
                             }
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 12
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -10705,9 +10741,12 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "TargetMarkedDamageExceedsToughness",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "TargetMarkedDamageExceedsToughness"
+                    },
+                    "then": {
                         "type": "CreatePredefinedToken",
                         "tokenType": "Lander"
                     }
@@ -13469,21 +13508,24 @@
                     "byDestruction": true
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Target",
-                            "numericProperty": "ManaValue"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 2
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreatePredefinedToken",
                         "tokenType": "Lander"
                     }
@@ -15363,22 +15405,25 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "Opponent",
-                            "filter": "land"
-                        },
-                        "operator": "GT",
-                        "right": {
-                            "type": "AggregateBattlefield",
-                            "player": "You",
-                            "filter": "land"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "Opponent",
+                                "filter": "land"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreatePredefinedToken",
                         "tokenType": "Lander"
                     }
@@ -16483,12 +16528,15 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": "Spacecraft"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": "Spacecraft"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -16575,12 +16623,15 @@
                         },
                         "IncrementAbilityResolutionCount",
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "SourceAbilityResolvedNTimesThisTurn",
-                                "count": 2
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 2
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "DrawCards",
                                 "count": {
                                     "type": "Fixed",
@@ -17958,22 +18009,25 @@
     "oracleText": "Counter target spell. If the amount of mana spent to cast that spell was less than its mana value, you draw a card.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "Compare",
-                "left": {
-                    "type": "EntityProperty",
-                    "entity": "Target",
-                    "numericProperty": "ManaSpent"
-                },
-                "operator": "LT",
-                "right": {
-                    "type": "EntityProperty",
-                    "entity": "Target",
-                    "numericProperty": "ManaValue"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaSpent"
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaValue"
+                    }
                 }
             },
-            "effect": {
+            "then": {
                 "type": "Composite",
                 "effects": [
                     "Counter",
@@ -17986,7 +18040,7 @@
                     }
                 ]
             },
-            "elseEffect": "Counter"
+            "otherwise": "Counter"
         },
         "targetRequirements": [
             {
@@ -19406,9 +19460,12 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "IsNotYourTurn",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsNotYourTurn"
+                    },
+                    "then": {
                         "type": "ForEachInGroup",
                         "filter": {
                             "baseFilter": "creature ctrl:you"
@@ -19478,17 +19535,20 @@
                     "target": "Controller"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": "XValue",
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 6
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {

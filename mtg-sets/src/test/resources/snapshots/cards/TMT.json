@@ -751,15 +751,18 @@
                                 "fromZone": "Graveyard"
                             },
                             {
-                                "type": "Conditional",
-                                "condition": {
-                                    "type": "Not",
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
                                     "condition": {
-                                        "type": "TargetMatchesFilter",
-                                        "filter": "creature"
+                                        "type": "Not",
+                                        "condition": {
+                                            "type": "TargetMatchesFilter",
+                                            "filter": "creature"
+                                        }
                                     }
                                 },
-                                "effect": {
+                                "then": {
                                     "type": "BecomeCreature",
                                     "target": {
                                         "type": "ContextTarget",
@@ -5379,9 +5382,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "ModifyStats",
                 "powerModifier": {
                     "type": "Fixed",
@@ -5396,7 +5402,7 @@
                     "name": "target creature"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "ModifyStats",
                 "powerModifier": {
                     "type": "Fixed",
@@ -5559,21 +5565,24 @@
                     "byDestruction": true
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Target",
-                            "numericProperty": "ManaValue"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 4
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "CreatePredefinedToken",
                         "tokenType": "Food"
                     }

@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -1276,19 +1277,21 @@ class ClientStateTransformer(
         state: GameState,
         effect: com.wingedsheep.sdk.scripting.effects.Effect,
         context: EffectContext
-    ): com.wingedsheep.sdk.scripting.effects.Effect = when (effect) {
-        is com.wingedsheep.sdk.scripting.effects.ConditionalEffect -> {
-            val taken = if (conditionEvaluator.evaluate(state, effect.condition, context)) {
-                effect.effect
+    ): com.wingedsheep.sdk.scripting.effects.Effect {
+        effect.asConditional()?.let { conditional ->
+            val taken = if (conditionEvaluator.evaluate(state, conditional.condition, context)) {
+                conditional.then
             } else {
-                effect.elseEffect
+                conditional.otherwise
             }
-            taken?.let { resolveConditionalForStack(state, it, context) }
+            return taken?.let { resolveConditionalForStack(state, it, context) }
                 ?: com.wingedsheep.sdk.scripting.effects.CompositeEffect(emptyList())
         }
-        is com.wingedsheep.sdk.scripting.effects.CompositeEffect ->
-            effect.copy(effects = effect.effects.map { resolveConditionalForStack(state, it, context) })
-        else -> effect
+        return when (effect) {
+            is com.wingedsheep.sdk.scripting.effects.CompositeEffect ->
+                effect.copy(effects = effect.effects.map { resolveConditionalForStack(state, it, context) })
+            else -> effect
+        }
     }
 
     /**

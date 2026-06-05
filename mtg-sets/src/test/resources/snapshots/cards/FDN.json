@@ -546,24 +546,27 @@
                             "target": "EnchantedCreature"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "EntityProperty",
-                                    "entity": "Triggering",
-                                    "numericProperty": {
-                                        "type": "CounterCount",
-                                        "counterType": "PlusOnePlusOne"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Triggering",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PlusOnePlusOne"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
                                     }
-                                },
-                                "operator": "GTE",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 3
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "SacrificeTarget",
                                 "target": "Self"
                             }

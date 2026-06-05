@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -556,10 +555,11 @@ class CardDslTest : DescribeSpec({
             }
 
             gift.spellEffect shouldNotBe null
-            gift.spellEffect.shouldBeInstanceOf<ConditionalEffect>()
-            val conditional = gift.spellEffect as ConditionalEffect
-            conditional.condition shouldBe Conditions.OpponentControlsMoreLands
-            conditional.effect.shouldBeInstanceOf<CompositeEffect>()
+            gift.spellEffect.shouldBeInstanceOf<GatedEffect>()
+            val gated = gift.spellEffect as GatedEffect
+            val gate = gated.gate.shouldBeInstanceOf<Gate.WhenCondition>()
+            gate.condition shouldBe Conditions.OpponentControlsMoreLands
+            gated.then.shouldBeInstanceOf<CompositeEffect>()
         }
     }
 

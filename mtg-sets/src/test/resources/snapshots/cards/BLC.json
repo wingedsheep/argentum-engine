@@ -3710,20 +3710,23 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "You"
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 10
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
                         }
                     },
-                    "effect": "GainCitysBlessing"
+                    "then": "GainCitysBlessing"
                 }
             },
             {

@@ -173,13 +173,16 @@
                             "moveType": "Discard"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "CollectionContainsMatch",
-                                "collection": "discarded",
-                                "filter": "creature"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "discarded",
+                                    "filter": "creature"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "AnyPlayerMayPay",
                                 "cost": {
                                     "type": "PayLife",
@@ -291,9 +294,12 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "EntityProperty",
@@ -1338,9 +1344,12 @@
     "oracleText": "Return target permanent to its owner's hand if that permanent shares a color with the most common color among all permanents or a color tied for most common.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "TargetSharesMostCommonColor",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "TargetSharesMostCommonColor"
+            },
+            "then": {
                 "type": "MoveToZone",
                 "target": {
                     "type": "ContextTarget",
@@ -1998,9 +2007,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -2041,7 +2053,7 @@
                     }
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -2145,9 +2157,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -2180,7 +2195,7 @@
                     }
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -2745,41 +2760,44 @@
     "oracleText": "You win the game if you control a land of each basic land type and a creature of each color.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "All",
-                "conditions": [
-                    {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "You",
-                            "filter": "land",
-                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
                         },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 5
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "DISTINCT_COLORS"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
                         }
-                    },
-                    {
-                        "type": "Compare",
-                        "left": {
-                            "type": "AggregateBattlefield",
-                            "player": "You",
-                            "filter": "creature",
-                            "aggregation": "DISTINCT_COLORS"
-                        },
-                        "operator": "GTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 5
-                        }
-                    }
-                ]
+                    ]
+                }
             },
-            "effect": {
+            "then": {
                 "type": "WinGame",
                 "message": "Coalition Victory: controlled a land of each basic land type and a creature of each color."
             }
@@ -3860,9 +3878,12 @@
                     "byDestruction": true
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -4782,9 +4803,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "ModifyStats",
                 "powerModifier": {
                     "type": "Fixed",
@@ -4799,7 +4823,7 @@
                     "name": "target"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "ModifyStats",
                 "powerModifier": {
                     "type": "Fixed",
@@ -6047,9 +6071,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -6093,7 +6120,7 @@
                     }
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -6841,12 +6868,15 @@
     "oracleText": "Lightning Dart deals 1 damage to target creature. If that creature is white or blue, Lightning Dart deals 4 damage to it instead.",
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": {
-                "type": "TargetMatchesFilter",
-                "filter": "creature white|blue"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "TargetMatchesFilter",
+                    "filter": "creature white|blue"
+                }
             },
-            "effect": {
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -6857,7 +6887,7 @@
                     "name": "target creature"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -7083,13 +7113,16 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "CollectionContainsMatch",
-                                "collection": "milled",
-                                "filter": "land"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "milled",
+                                    "filter": "land"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "PreventDamageShield",
                                 "scope": "CombatOnly",
                                 "direction": "FromTarget",
@@ -7131,13 +7164,16 @@
                             }
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "CollectionContainsMatch",
-                                "collection": "milled",
-                                "filter": "land"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "milled",
+                                    "filter": "land"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "PreventDamageShield",
                                 "scope": "CombatOnly",
                                 "direction": "FromTarget",
@@ -8349,9 +8385,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "PreventDamageShield",
                 "target": {
                     "type": "ContextTarget",
@@ -8362,7 +8401,7 @@
                     "amount": 4
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "PreventDamageShield",
                 "target": {
                     "type": "ContextTarget",
@@ -8437,24 +8476,30 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
-                "type": "Conditional",
-                "condition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "EntityProperty",
-                        "entity": "Target",
-                        "numericProperty": "ManaValue"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 5
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "ManaValue"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
                     }
                 },
-                "effect": {
+                "then": {
                     "type": "MoveToZone",
                     "target": {
                         "type": "ContextTarget",
@@ -8464,22 +8509,25 @@
                     "byDestruction": true
                 }
             },
-            "elseEffect": {
-                "type": "Conditional",
-                "condition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "EntityProperty",
-                        "entity": "Target",
-                        "numericProperty": "ManaValue"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 2
+            "otherwise": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "ManaValue"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
-                "effect": {
+                "then": {
                     "type": "MoveToZone",
                     "target": {
                         "type": "ContextTarget",
@@ -9493,9 +9541,12 @@
                     ]
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -9575,41 +9626,50 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
-                "type": "Conditional",
-                "condition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "EntityProperty",
-                        "entity": "Target",
-                        "numericProperty": "ManaValue"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 4
-                    }
-                },
-                "effect": "Counter"
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
             },
-            "elseEffect": {
-                "type": "Conditional",
-                "condition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "EntityProperty",
-                        "entity": "Target",
-                        "numericProperty": "ManaValue"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 2
+            "then": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "ManaValue"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
                     }
                 },
-                "effect": "Counter"
+                "then": "Counter"
+            },
+            "otherwise": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "ManaValue"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "then": "Counter"
             }
         },
         "targetRequirements": [
@@ -11559,9 +11619,12 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "ForEachInGroup",
                         "filter": {
                             "baseFilter": "creature ctrl:you"
@@ -11715,9 +11778,12 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -15636,9 +15702,12 @@
                 "id": "ability_1",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "TargetSharesMostCommonColor",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "TargetSharesMostCommonColor"
+                    },
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -16268,9 +16337,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -16282,7 +16354,7 @@
                 },
                 "cantBePrevented": true
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -16587,9 +16659,12 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "GrantTriggeredAbility",
                         "ability": {
                             "id": "ability_1",
@@ -17456,9 +17531,12 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "Conditional",
-                    "condition": "AnotherPermanentWithSameNameAsTarget",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "AnotherPermanentWithSameNameAsTarget"
+                    },
+                    "then": {
                         "type": "MoveToZone",
                         "target": {
                             "type": "BoundVariable",

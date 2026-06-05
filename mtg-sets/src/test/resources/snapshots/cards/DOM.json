@@ -384,16 +384,19 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsLegendary"
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLegendary"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "AddCounters",
                         "counterType": "+1/+1",
                         "count": 1,
@@ -744,18 +747,21 @@
                     ]
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "Compare",
-                        "left": {
-                            "type": "EntityProperty",
-                            "entity": "Target",
-                            "numericProperty": "Power"
-                        },
-                        "operator": "LTE",
-                        "right": "XValue"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "LTE",
+                            "right": "XValue"
+                        }
                     },
-                    "effect": {
+                    "then": {
                         "type": "MoveToZone",
                         "target": {
                             "type": "BoundVariable",
@@ -1207,16 +1213,19 @@
                     }
                 },
                 {
-                    "type": "Conditional",
-                    "condition": {
-                        "type": "TargetMatchesFilter",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsLegendary"
-                            ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "TargetMatchesFilter",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLegendary"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "then": {
                         "type": "GrantKeyword",
                         "keyword": "LIFELINK",
                         "target": {
@@ -1273,9 +1282,12 @@
                     "destination": "Hand"
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "DrawCards",
                         "count": {
                             "type": "Fixed",
@@ -2531,27 +2543,30 @@
                             "target": "Self"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "Compare",
-                                "left": {
-                                    "type": "EntityProperty",
-                                    "entity": "Source",
-                                    "numericProperty": {
-                                        "type": "CounterCount",
-                                        "counterType": {
-                                            "type": "Named",
-                                            "name": "egg"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "egg"
+                                            }
                                         }
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
                                     }
-                                },
-                                "operator": "EQ",
-                                "right": {
-                                    "type": "Fixed",
-                                    "amount": 0
                                 }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "MoveToZone",
                                 "target": "Self",
                                 "destination": "Battlefield"
@@ -4686,9 +4701,12 @@
                     "tap": false
                 },
                 {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "ModifyStats",
                         "powerModifier": {
                             "type": "Fixed",
@@ -4703,7 +4721,7 @@
                             "name": "target"
                         }
                     },
-                    "elseEffect": {
+                    "otherwise": {
                         "type": "ModifyStats",
                         "powerModifier": {
                             "type": "Fixed",
@@ -5018,9 +5036,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -5055,7 +5076,7 @@
                     "ShuffleLibrary"
                 ]
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "Composite",
                 "effects": [
                     {
@@ -6345,9 +6366,12 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "CreateToken",
                         "count": {
                             "type": "Fixed",
@@ -9903,9 +9927,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "CreateToken",
                 "count": {
                     "type": "Fixed",
@@ -9921,7 +9948,7 @@
                 ],
                 "imageUri": "https://cards.scryfall.io/normal/front/5/3/5371de1b-db33-4db4-a518-e35c71aa72b7.jpg?1562702067"
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "CreateToken",
                 "count": {
                     "type": "Fixed",
@@ -10209,9 +10236,12 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "CreateToken",
                         "count": {
                             "type": "Fixed",
@@ -10568,9 +10598,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -10581,7 +10614,7 @@
                     "name": "target"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "DealDamage",
                 "amount": {
                     "type": "Fixed",
@@ -10964,9 +10997,12 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "Composite",
                         "effects": [
                             {
@@ -12142,12 +12178,15 @@
                             "target": "Self"
                         },
                         {
-                            "type": "Conditional",
-                            "condition": {
-                                "type": "SacrificedPermanentHadSubtype",
-                                "subtype": "Saproling"
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SacrificedPermanentHadSubtype",
+                                    "subtype": "Saproling"
+                                }
                             },
-                            "effect": {
+                            "then": {
                                 "type": "GainLife",
                                 "amount": {
                                     "type": "Fixed",
@@ -14091,9 +14130,12 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Conditional",
-                    "condition": "WasKicked",
-                    "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
                         "type": "CreateToken",
                         "power": 4,
                         "toughness": 4,
@@ -14148,9 +14190,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "ModifyStats",
                 "powerModifier": {
                     "type": "Fixed",
@@ -14165,7 +14210,7 @@
                     "name": "target"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "ModifyStats",
                 "powerModifier": {
                     "type": "Fixed",
@@ -14636,9 +14681,12 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Conditional",
-            "condition": "WasKicked",
-            "effect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
                 "type": "ForEachInGroup",
                 "filter": {
                     "baseFilter": "creature ctrl:you"
@@ -14650,7 +14698,7 @@
                     "target": "Self"
                 }
             },
-            "elseEffect": {
+            "otherwise": {
                 "type": "ForEachInGroup",
                 "filter": {
                     "baseFilter": "creature ctrl:you"
