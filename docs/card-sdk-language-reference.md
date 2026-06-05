@@ -2006,6 +2006,18 @@ keywordAbilities(KeywordAbility.Protection(Color.BLUE), KeywordAbility.Annihilat
   so it can gate an entering permanent's own replacement effect (Hundred-Battle Veteran: "enters with
   a finality counter if cast from your graveyard").
 - `WasKicked` — cast with kicker / multikicker / offspring (i.e. an `OptionalAdditionalCost` with `branchesEffect = true` whose extra cost was paid). FlashKicker payments are intentionally invisible to this condition.
+- `NoManaSpentToCast` — "it wasn't cast or no mana was spent to cast it": the standard free-cast
+  payoff clause (**Freestrider Commando**, **Satoru, the Infiltrator**). True when the *total* mana
+  spent to put the source onto the battlefield was zero — it was put onto the battlefield without
+  being cast (reanimation, token, "put onto the battlefield"), **or** it was cast for free / for
+  `{0}` (e.g. a plotted card cast from exile). False if any mana was spent, including mana paid for
+  additional costs or cost increases on an otherwise-free cast (per the Freestrider Commando ruling:
+  a plotted spell taxed by Aven Interrupter had mana spent, so it does not qualify). Reads the
+  source's cast-mana record (`CastRecordComponent`), which the engine only stamps when mana > 0 was
+  spent, so its absence (or a zero total) is exactly "no mana was spent." This single condition
+  covers the whole oracle clause; compose `All(WasCast, NoManaSpentToCast)` for the narrower
+  "cast, but for free" sense that excludes uncast permanents. Pairs naturally with the conditional
+  `EntersWithCounters(..., condition = Conditions.NoManaSpentToCast)`. Resolution-only.
 - `BlightWasPaid(amount)` — the Blight X additional cost was paid.
 
 ### Source state

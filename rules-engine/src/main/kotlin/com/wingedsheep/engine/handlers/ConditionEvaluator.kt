@@ -84,6 +84,7 @@ import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellPaidWithTreasureManaCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
 import com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes
+import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCast
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer
@@ -268,6 +269,7 @@ class ConditionEvaluator(
             is WasKicked -> ifResolution { evaluateWasKicked(state, it) }
             is BlightWasPaid -> ifResolution { it.wasBlightPaid }
             is ManaSpentToCastIncludes -> ifResolution { evaluateManaSpentToCastIncludes(state, condition, it) }
+            is NoManaSpentToCast -> ifResolution { evaluateNoManaSpentToCast(state, it) }
             is SourceChosenModeIs -> {
                 // Dual-mode: the chosen mode is a stable component on the source permanent,
                 // readable both at resolution (gating triggered abilities) and during
@@ -618,6 +620,22 @@ class ConditionEvaluator(
             Zone.GRAVEYARD -> entity.has<CastFromGraveyardComponent>()
             else -> false
         }
+    }
+
+    /**
+     * "if it wasn't cast or no mana was spent to cast it." The engine stamps a
+     * [CastRecordComponent] on a resolving permanent only when the total mana spent to
+     * cast it was greater than zero (see StackResolver.resolvePermanentSpell). So the
+     * source has no cast record — or a record summing to zero — exactly when no mana was
+     * spent: a free / {0} cast, or a permanent put onto the battlefield without being cast.
+     * Mana paid for additional costs or cost increases on an otherwise-free cast does land
+     * in the record, so such a permanent correctly fails this condition.
+     */
+    private fun evaluateNoManaSpentToCast(state: GameState, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val record = state.getEntity(sourceId)?.get<CastRecordComponent>() ?: return true
+        return record.whiteSpent + record.blueSpent + record.blackSpent +
+            record.redSpent + record.greenSpent + record.colorlessSpent == 0
     }
 
     private fun evaluateWasKicked(state: GameState, context: EffectContext): Boolean {

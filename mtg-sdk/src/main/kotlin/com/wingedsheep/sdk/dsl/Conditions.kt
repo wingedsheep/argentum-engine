@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCast as WasCastCondition
+import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCast as NoManaSpentToCastCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand as WasCastFromHandCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone as WasCastFromZoneCondition
 import com.wingedsheep.sdk.scripting.conditions.WasKicked as WasKickedCondition
@@ -442,6 +443,17 @@ object Conditions {
      */
     val WasCast: ConditionInterface =
         WasCastCondition
+
+    /**
+     * "if it wasn't cast or no mana was spent to cast it" — the free-cast payoff clause.
+     * True when no mana at all was spent to put the source onto the battlefield (it wasn't
+     * cast, or it was cast for free / for {0}); false if any mana was spent, including mana
+     * for additional costs or cost increases on an otherwise-free cast. Used for the OTJ
+     * free-cast payoffs (Freestrider Commando, Satoru, the Infiltrator). Compose
+     * `All(WasCast, NoManaSpentToCast)` for the narrower "cast, but for free" sense.
+     */
+    val NoManaSpentToCast: ConditionInterface =
+        NoManaSpentToCastCondition
 
     /**
      * If this permanent was cast from your hand.

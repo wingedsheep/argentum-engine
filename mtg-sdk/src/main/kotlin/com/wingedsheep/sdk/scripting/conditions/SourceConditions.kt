@@ -170,6 +170,32 @@ data object WasCast : Condition {
 }
 
 /**
+ * Condition: "if it wasn't cast or no mana was spent to cast it" — the standard
+ * free-cast payoff clause (Freestrider Commando, Satoru, the Infiltrator, etc.).
+ *
+ * True iff **no mana at all** was spent to put the source onto the battlefield:
+ * - it was put onto the battlefield without being cast (reanimation, token, "put onto
+ *   the battlefield"), **or**
+ * - it was cast but its total mana payment was zero (e.g. a plotted card cast for free,
+ *   or a {0}-cost spell).
+ *
+ * False if any mana was spent — including mana paid for additional costs or cost
+ * increases on an otherwise-free cast (per the Freestrider Commando ruling: a plotted
+ * spell taxed by Aven Interrupter had mana spent, so it does *not* qualify).
+ *
+ * Implementation reads the source's cast-mana record: the engine only stamps that record
+ * when the total mana spent to cast was greater than zero, so its absence (or a zero
+ * total) is exactly "no mana was spent." This single condition covers the whole oracle
+ * clause; compose `All(WasCast, NoManaSpentToCast)` for the narrower "cast for free"
+ * sense that excludes uncast permanents.
+ */
+@SerialName("NoManaSpentToCast")
+@Serializable
+data object NoManaSpentToCast : Condition {
+    override val description: String = "it wasn't cast or no mana was spent to cast it"
+}
+
+/**
  * Condition: "If this spell was cast from [zone]"
  * Used for flashback spells and other zone-dependent effects.
  * Checks whether the spell was cast from the specified zone.
