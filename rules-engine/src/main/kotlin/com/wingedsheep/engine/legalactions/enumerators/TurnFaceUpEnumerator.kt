@@ -2,9 +2,9 @@ package com.wingedsheep.engine.legalactions.enumerators
 
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.legalactions.ActionEnumerator
-import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
@@ -16,8 +16,10 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
  * Turning a creature face up is a special action that doesn't use the stack
  * and can be done any time the player has priority (CR 702.37e).
  *
- * Handles morph costs: Mana (including X), PayLife, ReturnToHand, Sacrifice,
- * Discard, RevealCard, and Exile.
+ * Mana morph costs keep their rich enumeration here (X selection + auto-tap preview). Every other
+ * morph cost is gated by a single [CostPaymentService.canAfford] check; the cost-specific selection
+ * is then driven by [CostPaymentService] as a decision pause when the action is taken, rather than
+ * pre-selected via [AdditionalCostData][com.wingedsheep.engine.legalactions.AdditionalCostData].
  */
 class TurnFaceUpEnumerator : ActionEnumerator {
 
@@ -73,115 +75,22 @@ class TurnFaceUpEnumerator : ActionEnumerator {
                         )
                     }
                 }
-                is PayCost.PayLife -> {
-                    // Life-payment morph is always available (paying life that kills you is legal)
-                    result.add(
-                        LegalAction(
-                            actionType = "ActivateAbility",
-                            description = "Turn face-up (${cost.description})",
-                            action = TurnFaceUp(playerId, entityId)
-                        )
-                    )
-                }
-                is PayCost.ReturnToHand -> {
-                    val validTargets = context.costUtils.findReturnToHandTargets(state, playerId, cost.filter, entityId)
-                    if (validTargets.size >= cost.count) {
+                // Every non-mana morph cost is paid through CostPaymentService at resolution, so the
+                // legal action only needs an affordability gate here — the cost-specific selection
+                // happens afterward as a decision pause (handled by the standard decision flow), not
+                // via AdditionalCostData pre-selection. One canAfford check replaces the former
+                // per-variant target-finding branches and unlocks the variants the morph handler used
+                // to reject (Tap / Choice / OwnManaCost).
+                else -> {
+                    if (CostPaymentService.canAfford(state, playerId, cost, entityId, context.manaSolver)) {
                         result.add(
                             LegalAction(
                                 actionType = "ActivateAbility",
                                 description = "Turn face-up (${cost.description})",
-                                action = TurnFaceUp(playerId, entityId),
-                                additionalCostInfo = AdditionalCostData(
-                                    description = cost.description,
-                                    costType = "BouncePermanent",
-                                    validSacrificeTargets = validTargets,
-                                    sacrificeCount = cost.count
-                                )
+                                action = TurnFaceUp(playerId, entityId)
                             )
                         )
                     }
-                }
-                is PayCost.Sacrifice -> {
-                    val validTargets = context.costUtils.findMorphSacrificeTargets(state, playerId, cost.filter, entityId)
-                    if (validTargets.size >= cost.count) {
-                        result.add(
-                            LegalAction(
-                                actionType = "ActivateAbility",
-                                description = "Turn face-up (${cost.description})",
-                                action = TurnFaceUp(playerId, entityId),
-                                additionalCostInfo = AdditionalCostData(
-                                    description = cost.description,
-                                    costType = "SacrificePermanent",
-                                    validSacrificeTargets = validTargets,
-                                    sacrificeCount = cost.count
-                                )
-                            )
-                        )
-                    }
-                }
-                is PayCost.Discard -> {
-                    val validTargets = context.costUtils.findMorphDiscardTargets(state, playerId, cost.filter)
-                    if (validTargets.size >= cost.count) {
-                        result.add(
-                            LegalAction(
-                                actionType = "ActivateAbility",
-                                description = "Turn face-up (${cost.description})",
-                                action = TurnFaceUp(playerId, entityId),
-                                additionalCostInfo = AdditionalCostData(
-                                    description = cost.description,
-                                    costType = "DiscardCard",
-                                    validDiscardTargets = validTargets,
-                                    discardCount = cost.count
-                                )
-                            )
-                        )
-                    }
-                }
-                is PayCost.RevealCard -> {
-                    val validTargets = context.costUtils.findMorphRevealTargets(state, playerId, cost.filter)
-                    if (validTargets.size >= cost.count) {
-                        result.add(
-                            LegalAction(
-                                actionType = "ActivateAbility",
-                                description = "Turn face-up (${cost.description})",
-                                action = TurnFaceUp(playerId, entityId),
-                                additionalCostInfo = AdditionalCostData(
-                                    description = cost.description,
-                                    costType = "RevealCard",
-                                    validDiscardTargets = validTargets,
-                                    discardCount = cost.count
-                                )
-                            )
-                        )
-                    }
-                }
-                is PayCost.Exile -> {
-                    val validTargets = context.costUtils.findMorphExileTargets(state, playerId, cost.filter, cost.zone)
-                    if (validTargets.size >= cost.count) {
-                        result.add(
-                            LegalAction(
-                                actionType = "ActivateAbility",
-                                description = "Turn face-up (${cost.description})",
-                                action = TurnFaceUp(playerId, entityId),
-                                additionalCostInfo = AdditionalCostData(
-                                    description = cost.description,
-                                    costType = "ExileFromZone",
-                                    validExileTargets = validTargets,
-                                    exileMinCount = cost.count,
-                                    exileMaxCount = cost.count
-                                )
-                            )
-                        )
-                    }
-                }
-                is PayCost.Choice -> {
-                    // Choice morph costs not supported
-                }
-                is PayCost.Tap -> {
-                    // Tap morph costs not supported
-                }
-                is PayCost.OwnManaCost -> {
-                    // Own-mana-cost morph costs not supported
                 }
             }
         }

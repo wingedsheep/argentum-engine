@@ -23,6 +23,7 @@ import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -70,24 +71,13 @@ class CostPaymentService(private val services: EngineServices) {
     /**
      * Whether [payerId] can pay [cost]. For battlefield selection costs the [sourceId] is excluded
      * from the candidate pool (you can't sacrifice/return/tap the very permanent whose cost this is).
+     *
+     * Delegates to the [companion][Companion] form so legal-action enumerators
+     * (e.g. `TurnFaceUpEnumerator`) can call affordability directly with just a [ManaSolver] —
+     * one implementation, shared between the payment service and the hot enumeration path.
      */
-    fun canAfford(state: GameState, payerId: EntityId, cost: PayCost, sourceId: EntityId): Boolean {
-        return when (val c = resolve(state, cost, sourceId)) {
-            is PayCost.Mana -> services.manaSolver.canPay(state, payerId, c.cost)
-            // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
-            is PayCost.OwnManaCost -> false
-            // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
-            // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
-            is PayCost.PayLife -> life(state, payerId) >= c.amount
-            is PayCost.Discard -> cardsInHand(state, payerId, c.filter).size >= c.count
-            is PayCost.Exile -> cardsInZone(state, payerId, c.filter, c.zone).size >= c.count
-            is PayCost.RevealCard -> cardsInHand(state, payerId, c.filter).size >= c.count
-            is PayCost.Sacrifice -> controlledMatching(state, payerId, c.filter, sourceId).size >= c.count
-            is PayCost.ReturnToHand -> controlledMatching(state, payerId, c.filter, sourceId).size >= c.count
-            is PayCost.Tap -> controlledUntapped(state, payerId, c.filter, sourceId).size >= c.count
-            is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId) }
-        }
-    }
+    fun canAfford(state: GameState, payerId: EntityId, cost: PayCost, sourceId: EntityId): Boolean =
+        canAfford(state, payerId, cost, sourceId, services.manaSolver)
 
     // ---------------------------------------------------------------------------------------------
     // Pay — build the right prompt and push a single continuation.
@@ -440,50 +430,6 @@ class CostPaymentService(private val services: EngineServices) {
     // Shared helpers
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * Lowers [PayCost.OwnManaCost] to a concrete [PayCost.Mana] against the source's printed cost so
-     * every other code path sees a uniform shape. A source with no mana cost (a land, a token) has an
-     * empty [ManaCost] — which is `{0}` and trivially payable. Returns the cost unchanged if the
-     * source/card component is missing (unresolvable → reported unaffordable).
-     */
-    private fun resolve(state: GameState, cost: PayCost, sourceId: EntityId): PayCost {
-        if (cost !is PayCost.OwnManaCost) return cost
-        val manaCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost ?: return cost
-        return PayCost.Mana(manaCost)
-    }
-
-    private fun life(state: GameState, playerId: EntityId): Int =
-        state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
-
-    private fun cardsInHand(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> {
-        val context = PredicateContext(controllerId = playerId)
-        return state.getZone(playerId, Zone.HAND).filter {
-            predicateEvaluator.matches(state, state.projectedState, it, filter, context)
-        }
-    }
-
-    private fun cardsInZone(state: GameState, playerId: EntityId, filter: GameObjectFilter, zone: Zone): List<EntityId> {
-        if (zone == Zone.BATTLEFIELD) {
-            return BattlefieldFilterUtils.findMatchingOnBattlefield(
-                state, filter.youControl(), PredicateContext(controllerId = playerId)
-            )
-        }
-        val context = PredicateContext(controllerId = playerId)
-        return state.getZone(playerId, zone).filter {
-            predicateEvaluator.matches(state, state.projectedState, it, filter, context)
-        }
-    }
-
-    private fun controlledMatching(state: GameState, playerId: EntityId, filter: GameObjectFilter, sourceId: EntityId): List<EntityId> =
-        BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
-        )
-
-    private fun controlledUntapped(state: GameState, playerId: EntityId, filter: GameObjectFilter, sourceId: EntityId): List<EntityId> =
-        BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state, filter.youControl().untapped(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
-        )
-
     /** How many entities a selection cost requires; 0 for non-selection costs. */
     fun requiredCount(cost: PayCost): Int = when (cost) {
         is PayCost.Discard -> cost.count
@@ -493,6 +439,82 @@ class CostPaymentService(private val services: EngineServices) {
         is PayCost.ReturnToHand -> cost.count
         is PayCost.Tap -> cost.count
         else -> 0
+    }
+
+    /**
+     * Affordability + the pure cost-candidate reads live here so the one implementation is shared by
+     * both the payment service (instance [pay]/[canAfford]) and legal-action enumeration, which has a
+     * [ManaSolver] but not a full [EngineServices]. Everything here is pure and allocation-light
+     * enough for the enumeration hot path — it never mutates or prompts.
+     */
+    companion object {
+        private val predicateEvaluator = PredicateEvaluator()
+
+        /**
+         * Whether [payerId] can pay [cost]; see the instance [canAfford]. Takes a bare [ManaSolver]
+         * so legal-action enumerators can gate the action without constructing the full service.
+         */
+        fun canAfford(state: GameState, payerId: EntityId, cost: PayCost, sourceId: EntityId, manaSolver: ManaSolver): Boolean {
+            return when (val c = resolve(state, cost, sourceId)) {
+                is PayCost.Mana -> manaSolver.canPay(state, payerId, c.cost)
+                // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
+                is PayCost.OwnManaCost -> false
+                // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
+                // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
+                is PayCost.PayLife -> life(state, payerId) >= c.amount
+                is PayCost.Discard -> cardsInHand(state, payerId, c.filter).size >= c.count
+                is PayCost.Exile -> cardsInZone(state, payerId, c.filter, c.zone).size >= c.count
+                is PayCost.RevealCard -> cardsInHand(state, payerId, c.filter).size >= c.count
+                is PayCost.Sacrifice -> controlledMatching(state, payerId, c.filter, sourceId).size >= c.count
+                is PayCost.ReturnToHand -> controlledMatching(state, payerId, c.filter, sourceId).size >= c.count
+                is PayCost.Tap -> controlledUntapped(state, payerId, c.filter, sourceId).size >= c.count
+                is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver) }
+            }
+        }
+
+        /**
+         * Lowers [PayCost.OwnManaCost] to a concrete [PayCost.Mana] against the source's printed cost so
+         * every other code path sees a uniform shape. A source with no mana cost (a land, a token) has an
+         * empty [ManaCost] — which is `{0}` and trivially payable. Returns the cost unchanged if the
+         * source/card component is missing (unresolvable → reported unaffordable).
+         */
+        fun resolve(state: GameState, cost: PayCost, sourceId: EntityId): PayCost {
+            if (cost !is PayCost.OwnManaCost) return cost
+            val manaCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost ?: return cost
+            return PayCost.Mana(manaCost)
+        }
+
+        private fun life(state: GameState, playerId: EntityId): Int =
+            state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+
+        fun cardsInHand(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> {
+            val context = PredicateContext(controllerId = playerId)
+            return state.getZone(playerId, Zone.HAND).filter {
+                predicateEvaluator.matches(state, state.projectedState, it, filter, context)
+            }
+        }
+
+        fun cardsInZone(state: GameState, playerId: EntityId, filter: GameObjectFilter, zone: Zone): List<EntityId> {
+            if (zone == Zone.BATTLEFIELD) {
+                return BattlefieldFilterUtils.findMatchingOnBattlefield(
+                    state, filter.youControl(), PredicateContext(controllerId = playerId)
+                )
+            }
+            val context = PredicateContext(controllerId = playerId)
+            return state.getZone(playerId, zone).filter {
+                predicateEvaluator.matches(state, state.projectedState, it, filter, context)
+            }
+        }
+
+        fun controlledMatching(state: GameState, playerId: EntityId, filter: GameObjectFilter, sourceId: EntityId): List<EntityId> =
+            BattlefieldFilterUtils.findMatchingOnBattlefield(
+                state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
+            )
+
+        fun controlledUntapped(state: GameState, playerId: EntityId, filter: GameObjectFilter, sourceId: EntityId): List<EntityId> =
+            BattlefieldFilterUtils.findMatchingOnBattlefield(
+                state, filter.youControl().untapped(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
+            )
     }
 }
 

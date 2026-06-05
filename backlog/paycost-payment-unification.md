@@ -1,6 +1,7 @@
 # Scoping: unifying `PayCost` payment (the "`PayCost → Effect`" question)
 
-**Status:** design scoping, not yet scheduled. **Owner:** TBD. **Related:**
+**Status:** Option C in progress — PR 1 (`CostPaymentService` + continuation) and **PR 2 (migrate
+Morph)** landed. **Owner:** TBD. **Related:**
 [`gated-effect-migration-handoff-remaining.md`](gated-effect-migration-handoff-remaining.md)
 (this doc closes out the open question its §5 #4 left — "should `PayOrSufferEffect` fold onto the
 gated frame via a `PayCost → Effect` adapter?").
@@ -204,7 +205,15 @@ cost/effect category error.
    yet (service unused → no behavior change to verify against).
 2. **PR 2 — migrate Morph** (`TurnFaceUpHandler` + `TurnFaceUpEnumerator`) onto the service. Biggest
    single dedup; unlocks Choice/Tap/OwnManaCost morph costs. Existing morph scenario tests are the
-   safety net; add tests for the newly-enabled variants.
+   safety net; add tests for the newly-enabled variants. — **DONE.** Non-mana morph costs delegate to
+   `CostPaymentService.pay(onPaid = TurnFaceUpEffect(Self))`; completion rides on `onPaid`, so a
+   declined/unaffordable cost simply leaves the creature face down. `canAfford` was lifted to a
+   `CostPaymentService` companion (parameterized by `ManaSolver`) so the enumerator shares the one
+   affordability impl. **Mana morph payment deliberately stays in the handler** — the service's yes/no
+   mana path doesn't model morph's explicit mana-source selection / X / auto-tap preview, so migrating
+   it would be a UX + capability regression. The per-variant payment switch, the `validate()` target
+   checks, the `find*Targets` helpers, and the enumerator's per-variant affordability all collapsed;
+   also fixed a CR 119.4 bug (pay-life morph was offered below the required life).
 3. **PR 3 — migrate `PayOrSufferExecutor`** onto the service (gains ReturnToHand/RevealCard).
 4. **PR 4 — migrate `AnyPlayerMayPayExecutor` + `ChainCopyExecutor`** onto the service (each gains all
    variants).

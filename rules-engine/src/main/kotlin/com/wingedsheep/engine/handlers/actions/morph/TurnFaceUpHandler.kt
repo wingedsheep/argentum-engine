@@ -1,11 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.morph
 
-import com.wingedsheep.engine.core.CardsDiscardedEvent
-import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
-import com.wingedsheep.engine.core.LifeChangeReason
-import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.TappedEvent
@@ -14,29 +10,28 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.CostHandler
-import com.wingedsheep.engine.handlers.PredicateContext
-import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
-import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+import com.wingedsheep.engine.mechanics.cost.CostPaymentContext
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
+import com.wingedsheep.engine.mechanics.cost.PaymentResult
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.effects.TurnFaceUpEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -56,11 +51,10 @@ class TurnFaceUpHandler(
     private val triggerProcessor: TriggerProcessor,
     private val effectExecutorRegistry: com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry,
     private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
+    private val costPaymentService: CostPaymentService,
     private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry)
 ) : ActionHandler<TurnFaceUp> {
     override val actionType: KClass<TurnFaceUp> = TurnFaceUp::class
-
-    private val predicateEvaluator = PredicateEvaluator()
 
     override fun validate(state: GameState, action: TurnFaceUp): String? {
         if (state.priorityPlayerId != action.playerId) {
@@ -86,12 +80,15 @@ class TurnFaceUpHandler(
         val morphData = container.get<MorphDataComponent>()
             ?: return "This creature cannot be turned face up (no morph cost)"
 
-        // Validate cost payment based on morph cost type
-        // Apply morph cost increases from permanents like Exiled Doomsayer
+        // Validate cost payment based on morph cost type.
+        // Apply morph cost increases from permanents like Exiled Doomsayer.
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
-        when (morphData.morphCost) {
+        when (val morphCost = morphData.morphCost) {
             is PayCost.Mana -> {
-                val manaCost = costCalculator.increaseGenericCost(morphData.morphCost.cost, morphCostIncrease)
+                // Mana morph payment stays in this handler: it carries the rich up-front UX
+                // (explicit mana-source selection, X, auto-tap preview) that the shared
+                // CostPaymentService's yes/no mana path deliberately doesn't model.
+                val manaCost = costCalculator.increaseGenericCost(morphCost.cost, morphCostIncrease)
                 val xValue = action.xValue ?: 0
                 when (action.paymentStrategy) {
                     is PaymentStrategy.AutoPay -> {
@@ -136,88 +133,15 @@ class TurnFaceUpHandler(
                     }
                 }
             }
-            is PayCost.PayLife -> {
-                val lifeTotal = state.getEntity(action.playerId)
-                    ?.get<LifeTotalComponent>()?.life ?: 0
-                if (lifeTotal < 1) {
-                    return "You don't have enough life to turn this creature face up"
-                }
-                // Note: paying life doesn't require a minimum — you can pay life
-                // even if it would reduce you to 0 or below (you lose as SBA)
-            }
-            is PayCost.ReturnToHand -> {
-                val validTargets = findReturnToHandTargets(state, action.playerId, morphData.morphCost, action.sourceId)
-                if (validTargets.size < morphData.morphCost.count) {
-                    return "Not enough permanents to return to pay morph cost"
-                }
-                if (action.costTargetIds.size != morphData.morphCost.count) {
-                    return "Must return exactly ${morphData.morphCost.count} permanent(s) to pay morph cost"
-                }
-                for (targetId in action.costTargetIds) {
-                    if (targetId !in validTargets) {
-                        return "Invalid target for return-to-hand morph cost: $targetId"
-                    }
+            // Every other morph cost (life, sacrifice, discard, reveal, exile, return, tap,
+            // own-mana-cost, choice) is paid through CostPaymentService at resolution. The only
+            // pre-check the action needs is affordability (CR 118.3) — the cost-specific selection
+            // happens afterward as a decision pause, so there are no costTargetIds to validate.
+            else -> {
+                if (!costPaymentService.canAfford(state, action.playerId, morphCost, action.sourceId)) {
+                    return "Cannot pay the morph cost to turn this creature face up"
                 }
             }
-            is PayCost.Sacrifice -> {
-                val validTargets = findSacrificeTargets(state, action.playerId, morphData.morphCost, action.sourceId)
-                if (validTargets.size < morphData.morphCost.count) {
-                    return "Not enough permanents to sacrifice to pay morph cost"
-                }
-                if (action.costTargetIds.size != morphData.morphCost.count) {
-                    return "Must sacrifice exactly ${morphData.morphCost.count} permanent(s) to pay morph cost"
-                }
-                for (targetId in action.costTargetIds) {
-                    if (targetId !in validTargets) {
-                        return "Invalid target for sacrifice morph cost: $targetId"
-                    }
-                }
-            }
-            is PayCost.Discard -> {
-                val validTargets = findDiscardTargets(state, action.playerId, morphData.morphCost)
-                if (validTargets.size < morphData.morphCost.count) {
-                    return "Not enough cards in hand matching the discard requirement"
-                }
-                if (action.costTargetIds.size != morphData.morphCost.count) {
-                    return "Must discard exactly ${morphData.morphCost.count} card(s) to pay morph cost"
-                }
-                for (targetId in action.costTargetIds) {
-                    if (targetId !in validTargets) {
-                        return "Invalid target for discard morph cost: $targetId"
-                    }
-                }
-            }
-            is PayCost.RevealCard -> {
-                val validTargets = findRevealTargets(state, action.playerId, morphData.morphCost)
-                if (validTargets.size < morphData.morphCost.count) {
-                    return "Not enough cards in hand matching the reveal requirement"
-                }
-                if (action.costTargetIds.size != morphData.morphCost.count) {
-                    return "Must reveal exactly ${morphData.morphCost.count} card(s) to pay morph cost"
-                }
-                for (targetId in action.costTargetIds) {
-                    if (targetId !in validTargets) {
-                        return "Invalid target for reveal morph cost: $targetId"
-                    }
-                }
-            }
-            is PayCost.Exile -> {
-                val validTargets = findExileTargets(state, action.playerId, morphData.morphCost)
-                if (validTargets.size < morphData.morphCost.count) {
-                    return "Not enough cards in ${morphData.morphCost.zone.name.lowercase()} matching the exile requirement"
-                }
-                if (action.costTargetIds.size != morphData.morphCost.count) {
-                    return "Must exile exactly ${morphData.morphCost.count} card(s) to pay morph cost"
-                }
-                for (targetId in action.costTargetIds) {
-                    if (targetId !in validTargets) {
-                        return "Invalid target for exile morph cost: $targetId"
-                    }
-                }
-            }
-            is PayCost.Choice -> return "Choice morph costs are not supported"
-            is PayCost.Tap -> return "Tap morph costs are not supported"
-            is PayCost.OwnManaCost -> return "Own-mana-cost morph costs are not supported"
         }
 
         return null
@@ -240,20 +164,9 @@ class TurnFaceUpHandler(
         // Pay the morph cost (including any morph cost increases)
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
         val xValue = action.xValue ?: 0
-        when (morphData.morphCost) {
-            is PayCost.PayLife -> {
-                val lifeCost = morphData.morphCost.amount
-                val currentLife = currentState.getEntity(action.playerId)
-                    ?.get<LifeTotalComponent>()?.life ?: 0
-                val newLife = currentLife - lifeCost
-                currentState = currentState.updateEntity(action.playerId) { c ->
-                    c.with(LifeTotalComponent(newLife))
-                }
-                events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
-                currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
-            }
+        when (val morphCost = morphData.morphCost) {
             is PayCost.Mana -> {
-                val manaCost = costCalculator.increaseGenericCost(morphData.morphCost.cost, morphCostIncrease)
+                val manaCost = costCalculator.increaseGenericCost(morphCost.cost, morphCostIncrease)
                 when (action.paymentStrategy) {
                     is PaymentStrategy.FromPool -> {
                         val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
@@ -413,67 +326,37 @@ class TurnFaceUpHandler(
                     }
                 }
             }
-            is PayCost.ReturnToHand -> {
-                for (targetId in action.costTargetIds) {
-                    val result = ZoneMovementUtils.movePermanentToZone(currentState, targetId, Zone.HAND)
-                    if (result.error != null) {
-                        return ExecutionResult.error(currentState, result.error)
-                    }
-                    currentState = result.newState
-                    events.addAll(result.events)
+            // Every non-mana morph cost (life, sacrifice, discard, reveal, exile, return, tap,
+            // own-mana-cost, choice) is handed to the shared CostPaymentService. It pauses for the
+            // cost-specific decision — battlefield targeting for sacrifice/return/tap, card
+            // selection for discard/reveal/exile, yes/no for life — and on payment runs `onPaid`,
+            // which flips the creature face up (plus any megamorph faceUpEffect). The resulting
+            // TurnFaceUpEvent is picked up by SubmitDecisionHandler, which fires the "when turned
+            // face up" triggers and restores priority. A decline runs nothing, leaving the creature
+            // face down — equivalent to never having taken the action.
+            else -> {
+                val flip: com.wingedsheep.sdk.scripting.effects.Effect =
+                    morphData.faceUpEffect
+                        ?.let { Effects.Composite(TurnFaceUpEffect(EffectTarget.Self), it) }
+                        ?: TurnFaceUpEffect(EffectTarget.Self)
+                return when (
+                    val result = costPaymentService.pay(
+                        currentState,
+                        action.playerId,
+                        morphCost,
+                        action.sourceId,
+                        CostPaymentContext(onPaid = flip)
+                    )
+                ) {
+                    is PaymentResult.Pending ->
+                        ExecutionResult.paused(result.state, result.pendingDecision, events + result.events)
+                    is PaymentResult.Unaffordable ->
+                        ExecutionResult.error(currentState, "Cannot pay the morph cost to turn this creature face up")
+                    // Selection / yes-no payments never settle synchronously — they always pause first.
+                    else ->
+                        ExecutionResult.error(currentState, "Unexpected synchronous morph payment result")
                 }
             }
-            is PayCost.Sacrifice -> {
-                for (targetId in action.costTargetIds) {
-                    val result = ZoneMovementUtils.movePermanentToZone(currentState, targetId, Zone.GRAVEYARD)
-                    if (result.error != null) {
-                        return ExecutionResult.error(currentState, result.error)
-                    }
-                    currentState = result.newState
-                    events.addAll(result.events)
-                }
-            }
-            is PayCost.Discard -> {
-                val discardedIds = mutableListOf<EntityId>()
-                val discardedNames = mutableListOf<String>()
-                for (targetId in action.costTargetIds) {
-                    val targetCard = currentState.getEntity(targetId)?.get<CardComponent>()
-                    discardedNames.add(targetCard?.name ?: "Unknown")
-                    discardedIds.add(targetId)
-                    val result = ZoneMovementUtils.moveCardToZone(currentState, targetId, Zone.GRAVEYARD)
-                    if (result.error != null) {
-                        return ExecutionResult.error(currentState, result.error)
-                    }
-                    currentState = result.newState
-                    events.addAll(result.events)
-                }
-                events.add(0, CardsDiscardedEvent(action.playerId, discardedIds, discardedNames))
-            }
-            is PayCost.RevealCard -> {
-                // Reveal the card(s) — they stay in hand
-                val revealedIds = mutableListOf<EntityId>()
-                val revealedNames = mutableListOf<String>()
-                for (targetId in action.costTargetIds) {
-                    val targetCard = currentState.getEntity(targetId)?.get<CardComponent>()
-                    revealedNames.add(targetCard?.name ?: "Unknown")
-                    revealedIds.add(targetId)
-                }
-                events.add(CardsRevealedEvent(action.playerId, revealedIds, revealedNames, source = "Morph cost"))
-            }
-            is PayCost.Exile -> {
-                val sourceZone = morphData.morphCost.zone
-                for (targetId in action.costTargetIds) {
-                    val result = ZoneMovementUtils.moveCardToZone(currentState, targetId, Zone.EXILE)
-                    if (result.error != null) {
-                        return ExecutionResult.error(currentState, result.error)
-                    }
-                    currentState = result.newState
-                    events.addAll(result.events)
-                }
-            }
-            is PayCost.Choice -> return ExecutionResult.error(currentState, "Choice morph costs are not supported")
-            is PayCost.Tap -> return ExecutionResult.error(currentState, "Tap morph costs are not supported")
-            is PayCost.OwnManaCost -> return ExecutionResult.error(currentState, "Own-mana-cost morph costs are not supported")
         }
 
         // Turn the creature face up and add static ability components
@@ -533,108 +416,6 @@ class TurnFaceUpHandler(
         return ExecutionResult.success(currentState.withPriority(action.playerId), events)
     }
 
-    /**
-     * Find valid permanents on the battlefield that can be returned to hand to pay a morph cost.
-     * Uses projected state to account for type-changing effects (e.g., Artificial Evolution).
-     *
-     * @param excludeEntityId The face-down creature being turned up (cannot return itself)
-     */
-    fun findReturnToHandTargets(
-        state: GameState,
-        playerId: EntityId,
-        cost: PayCost.ReturnToHand,
-        excludeEntityId: EntityId
-    ): List<EntityId> {
-        val projected = state.projectedState
-        val predicateContext = PredicateContext(controllerId = playerId)
-
-        return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
-            if (entityId == excludeEntityId) return@filter false
-            val container = state.getEntity(entityId) ?: return@filter false
-            container.get<CardComponent>() ?: return@filter false
-
-            predicateEvaluator.matches(state, projected, entityId, cost.filter, predicateContext)
-        }
-    }
-
-    /**
-     * Find valid permanents on the battlefield that can be sacrificed to pay a morph cost.
-     * Uses projected state to account for type-changing effects.
-     *
-     * @param excludeEntityId The face-down creature being turned up (cannot sacrifice itself)
-     */
-    fun findSacrificeTargets(
-        state: GameState,
-        playerId: EntityId,
-        cost: PayCost.Sacrifice,
-        excludeEntityId: EntityId
-    ): List<EntityId> {
-        val projected = state.projectedState
-        val predicateContext = PredicateContext(controllerId = playerId)
-
-        return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
-            if (entityId == excludeEntityId) return@filter false
-            val container = state.getEntity(entityId) ?: return@filter false
-            container.get<CardComponent>() ?: return@filter false
-
-            predicateEvaluator.matches(state, projected, entityId, cost.filter, predicateContext)
-        }
-    }
-
-    /**
-     * Find valid cards in hand that can be discarded to pay a morph cost.
-     * Hand cards use base state (not projected) per convention for non-battlefield zones.
-     */
-    fun findDiscardTargets(
-        state: GameState,
-        playerId: EntityId,
-        cost: PayCost.Discard
-    ): List<EntityId> {
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val hand = state.getZone(handZone)
-        val predicateContext = PredicateContext(controllerId = playerId)
-
-        return hand.filter { cardId ->
-            predicateEvaluator.matches(state, state.projectedState, cardId, cost.filter, predicateContext)
-        }
-    }
-
-    /**
-     * Find valid cards in hand that can be revealed to pay a morph cost.
-     * Hand cards use base state (not projected) per convention for non-battlefield zones.
-     */
-    fun findRevealTargets(
-        state: GameState,
-        playerId: EntityId,
-        cost: PayCost.RevealCard
-    ): List<EntityId> {
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val hand = state.getZone(handZone)
-        val predicateContext = PredicateContext(controllerId = playerId)
-
-        return hand.filter { cardId ->
-            predicateEvaluator.matches(state, state.projectedState, cardId, cost.filter, predicateContext)
-        }
-    }
-
-    /**
-     * Find valid cards in a zone that can be exiled to pay a morph cost.
-     * Non-battlefield zones use base state per convention.
-     */
-    fun findExileTargets(
-        state: GameState,
-        playerId: EntityId,
-        cost: PayCost.Exile
-    ): List<EntityId> {
-        val zoneKey = ZoneKey(playerId, cost.zone)
-        val cards = state.getZone(zoneKey)
-        val predicateContext = PredicateContext(controllerId = playerId)
-
-        return cards.filter { cardId ->
-            predicateEvaluator.matches(state, state.projectedState, cardId, cost.filter, predicateContext)
-        }
-    }
-
     companion object {
         fun create(services: EngineServices): TurnFaceUpHandler {
             return TurnFaceUpHandler(
@@ -645,7 +426,8 @@ class TurnFaceUpHandler(
                 services.triggerDetector,
                 services.triggerProcessor,
                 services.effectExecutorRegistry,
-                services.manaAbilitySideEffectExecutor
+                services.manaAbilitySideEffectExecutor,
+                CostPaymentService(services)
             )
         }
     }

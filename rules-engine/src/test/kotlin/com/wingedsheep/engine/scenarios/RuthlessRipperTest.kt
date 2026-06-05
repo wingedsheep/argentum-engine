@@ -68,17 +68,15 @@ class RuthlessRipperTest : FunSpec({
         // Put a second Ruthless Ripper in hand (it's black, so it can be revealed)
         val blackCardInHand = driver.putCardInHand(activePlayer, "Ruthless Ripper")
 
-        // Turn face up, revealing the black card
-        val result = driver.submit(
-            TurnFaceUp(
-                playerId = activePlayer,
-                sourceId = ripper,
-                costTargetIds = listOf(blackCardInHand)
-            )
-        )
-        // The result may be paused for the triggered ability's target selection
-        // isPaused is expected here — the triggered ability fires and needs a target
+        // Turn face up. The reveal morph cost is now paid through CostPaymentService, so the
+        // action pauses for a card-selection decision (which black card to reveal) before the flip.
+        val result = driver.submit(TurnFaceUp(playerId = activePlayer, sourceId = ripper))
         (result.error == null) shouldBe true
+        // Still face-down until the cost is paid.
+        driver.state.getEntity(ripper)?.get<FaceDownComponent>() shouldBe FaceDownComponent
+
+        // Pay the cost by revealing the black card.
+        driver.submitCardSelection(activePlayer, listOf(blackCardInHand))
 
         // The card should now be face up
         driver.state.getEntity(ripper)?.get<FaceDownComponent>() shouldBe null

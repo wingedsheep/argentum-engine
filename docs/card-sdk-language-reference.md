@@ -212,6 +212,12 @@ unless you Y") and by `morphCost` (non-mana face-up cost). Distinct from `Abilit
 which model an ability's activation cost; `PayCost` models a single cost the engine prompts the
 player to pay against an alternative consequence.
 
+Non-mana `morphCost` payment is routed through the shared engine `CostPaymentService`, so **every
+`PayCost` variant below works as a morph cost** (including `Tap` / `Choice` / `OwnManaCost`): turning
+the creature face up pauses for the cost-specific decision and only flips once the cost is paid.
+(Mana morph costs keep their own up-front payment — explicit mana-source selection, X, auto-tap
+preview — in the turn-face-up handler.)
+
 - `PayCost.Mana(ManaCost)` — pay mana (auto-taps lands via the solver). "...unless you pay {U}{U}"
   (Vaporous Djinn).
 - `PayCost.OwnManaCost` — pay the mana cost of the permanent the cost applies to (its *own* mana
@@ -219,8 +225,8 @@ player to pay against an alternative consequence.
   Essence Leak ("...sacrifice this permanent unless you pay its mana cost"), where the affected
   permanent — not a fixed cost — owns the mana cost. The engine resolves it into a concrete
   `PayCost.Mana` against that permanent before prompting.
-- `PayCost.PayLife(amount)` — pay N life; offered only when the player has more than N life.
-  "...unless you pay 3 life."
+- `PayCost.PayLife(amount)` — pay N life; offered only when the player's life total is at least N
+  (CR 119.4). "...unless you pay 3 life."
 - `PayCost.Discard(filter = Any, count = 1, random = false)` — discard cards matching `filter`.
   Random variant prompts a yes/no and the engine picks the discards (Pillaging Horde).
 - `PayCost.Sacrifice(filter = Any, count = 1)` — sacrifice permanents you control matching
