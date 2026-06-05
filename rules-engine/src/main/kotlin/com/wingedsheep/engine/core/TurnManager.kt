@@ -102,7 +102,8 @@ class TurnManager(
             pendingUncounterableSpells = emptyList(),
             spellWarpedThisTurn = false,
             nonlandPermanentLeftBattlefieldThisTurn = false,
-            lastCastSpellColors = null
+            lastCastSpellColors = null,
+            lastCardDrawnThisTurnByPlayer = emptyMap()
         )
 
         // Reset cards-drawn-this-turn count for ALL players (not just active player)

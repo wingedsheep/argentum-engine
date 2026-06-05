@@ -128,6 +128,14 @@ object Costs {
     val DiscardSelf: AbilityCost = AbilityCost.DiscardSelf
 
     /**
+     * Discard the specific card you drew most recently this turn (Jandor's Ring).
+     * Unpayable when you haven't drawn a card this turn, or the tracked card has
+     * since left your hand. The engine resolves the card automatically — no player
+     * selection is required at payment time.
+     */
+    val DiscardLastDrawnThisTurn: AbilityCost = AbilityCost.DiscardLastDrawnThisTurn
+
+    /**
      * Sacrifice this permanent (for abilities that sacrifice themselves as cost).
      */
     val SacrificeSelf: AbilityCost = AbilityCost.SacrificeSelf

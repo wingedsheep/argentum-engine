@@ -1,0 +1,38 @@
+{
+  "_description": "Jandor's Ring — {2}, {T}, Discard the last card you drew this turn: Draw a card. Scenario starts in Alice's UPKEEP so the natural turn flow draws her a card during the upcoming DRAW step, which populates GameState.lastCardDrawnThisTurnByPlayer with the drawn entity. After passing into PRECOMBAT_MAIN, the new 'DiscardLastDrawnThisTurn' cost is payable and the action menu should offer Jandor's Ring's tap ability. Activating it should: (1) tap Jandor's Ring and consume {2} from the two Plains; (2) move the Mountain just drawn from the library into the graveyard as the discard cost (NOT the Forest, which was in Alice's hand before the turn began); (3) draw the next library card (Island) into her hand. After that, the tracker now points at Island, so a second activation would discard Island instead — provided Alice has more mana.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Forest", "Opt", "Cruel Truths"],
+    "battlefield": [
+      {"name": "Jandor's Ring"},
+      {"name": "Swamp"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Island", "Swamp", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest", "Forest", "Forest"]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

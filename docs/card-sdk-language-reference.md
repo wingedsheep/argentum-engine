@@ -162,6 +162,14 @@ excluded.
   "Discard two cards at random").
 - `Costs.DiscardHand` — discard your entire hand.
 - `Costs.DiscardSelf` — discard this card (cycling-style).
+- `Costs.DiscardLastDrawnThisTurn` — discard the specific card you drew most recently this turn
+  (Jandor's Ring: "{2}, {T}, Discard the last card you drew this turn: Draw a card."). The engine
+  tracks the per-player most-recently-drawn entity on `GameState.lastCardDrawnThisTurnByPlayer`
+  (updated at every `CardsDrawnEvent` emit site during a turn; the last id of a multi-card draw
+  wins; cleared at every turn boundary) and discards it automatically — no player selection. The
+  cost is unpayable when the controller has not drawn a card this turn or the tracked card has
+  since left their hand (matches the Scryfall ruling: "If you do not have the card still in your
+  hand, you can't pay the cost").
 - `Costs.ExileSelf` — exile this permanent (or graveyard card, for graveyard-activated abilities).
 - `Costs.ExileFromGraveyard(count, filter)` — exile N matching cards from your graveyard.
 - `Costs.ExileXFromGraveyard(filter)` — exile X cards from your graveyard (X = the ability's

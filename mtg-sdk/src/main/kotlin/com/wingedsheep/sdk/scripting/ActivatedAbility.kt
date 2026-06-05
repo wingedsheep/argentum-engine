@@ -267,6 +267,26 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         override val description: String = "Discard this card"
     }
 
+    /**
+     * Discard the specific card the controller drew most recently this turn (CR 121
+     * "draws"). The engine tracks the per-player most-recently-drawn card on
+     * `GameState.lastCardDrawnThisTurnByPlayer`, updated whenever a `CardsDrawnEvent`
+     * fires during a turn and cleared at every turn boundary. Used by Jandor's Ring
+     * ("{2}, {T}, Discard the last card you drew this turn: Draw a card.") and any
+     * future card that scopes a discard cost to the same notion.
+     *
+     * The cost is unpayable when (a) the controller has not drawn a card this turn,
+     * or (b) the tracked card has since left their hand. Per Scryfall ruling on
+     * Jandor's Ring: "If you draw more than one card due to a spell or ability, you
+     * must discard the last one of those drawn." — the tracker takes the *last* id
+     * in a multi-card `CardsDrawnEvent`, then is overwritten by any later draw event.
+     */
+    @SerialName("CostDiscardLastDrawnThisTurn")
+    @Serializable
+    data object DiscardLastDrawnThisTurn : AbilityCost {
+        override val description: String = "Discard the last card you drew this turn"
+    }
+
     /** Sacrifice self (the permanent with this ability) */
     @SerialName("CostSacrificeSelf")
     @Serializable

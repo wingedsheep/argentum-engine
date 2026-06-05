@@ -256,6 +256,14 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                             discardTargets = targets
                         }
                     }
+                    is AbilityCost.DiscardLastDrawnThisTurn -> {
+                        // No player choice — engine picks the tracked entity at payment. Gate the
+                        // ability if the controller hasn't drawn a card this turn or the tracked
+                        // card has since left their hand (Jandor's Ring's "if you do not have the
+                        // card still in your hand, you can't pay the cost" ruling).
+                        val tracked = state.lastCardDrawnThisTurnByPlayer[playerId] ?: continue
+                        if (tracked !in state.getZone(ZoneKey(playerId, Zone.HAND))) continue
+                    }
                     is AbilityCost.RemoveCounterFromSelf -> {
                         val counters = container.get<CountersComponent>()
                         val counterType = resolveCounterType(effectiveCost.counterType)
@@ -408,6 +416,13 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     if (!subCost.atRandom) {
                                         discardCost = subCost
                                         discardTargets = targets
+                                    }
+                                }
+                                is AbilityCost.DiscardLastDrawnThisTurn -> {
+                                    val tracked = state.lastCardDrawnThisTurnByPlayer[playerId]
+                                    if (tracked == null || tracked !in state.getZone(ZoneKey(playerId, Zone.HAND))) {
+                                        costCanBePaid = false
+                                        break
                                     }
                                 }
                                 is AbilityCost.ExileXFromGraveyard -> {

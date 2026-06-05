@@ -122,12 +122,16 @@ object DrawLoop {
         perCardEvents: List<GameEvent>
     ): EffectResult {
         val events = mutableListOf<GameEvent>()
+        var newState = state
         if (drawnCards.isNotEmpty()) {
-            val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
+            newState = newState.copy(
+                lastCardDrawnThisTurnByPlayer = newState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
+            )
         }
         events.addAll(perCardEvents)
-        return EffectResult.success(state, events)
+        return EffectResult.success(newState, events)
     }
 
     /**
@@ -144,14 +148,18 @@ object DrawLoop {
         pauseResult: EffectResult
     ): EffectResult {
         val allEvents = mutableListOf<GameEvent>()
+        var pausedState = pauseResult.state
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             allEvents.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
+            pausedState = pausedState.copy(
+                lastCardDrawnThisTurnByPlayer = pausedState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
+            )
         }
         allEvents.addAll(perCardEvents)
         allEvents.addAll(pauseResult.events)
         return EffectResult.paused(
-            pauseResult.state,
+            pausedState,
             pauseResult.pendingDecision!!,
             allEvents
         )

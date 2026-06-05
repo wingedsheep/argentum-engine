@@ -15,9 +15,9 @@ Set scaffolding is done:
 
 Verify status anytime with: `scripts/card-status --set ARN` (and `--list --set ARN`).
 
-## Progress (as of 2026-06-02)
+## Progress (as of 2026-06-05)
 
-**Implemented: 56 / 78** (`scripts/card-status --set ARN`). Full per-card status lives in
+**Implemented: 59 / 78** (`scripts/card-status --set ARN`). Full per-card status lives in
 `cards.md` — that file's `Implemented:` count is the source of truth; keep it in sync as boxes
 are checked. The triage buckets below are pruned to **remaining work only**; a card is removed
 from its bucket once it lands on a branch.
@@ -30,6 +30,9 @@ from its bucket once it lands on a branch.
   this way" clause needs `SacrificeContinuation` to thread `updatedSacrificedPermanents`
   back through the resumer (the auto-sac path now captures snapshots, but the multi-land
   decision path does not).
+- `arn-jandors-ring` — `AbilityCost.DiscardLastDrawnThisTurn` + per-player
+  `GameState.lastCardDrawnThisTurnByPlayer` tracker (updated at every `CardsDrawnEvent`
+  emit site during a turn, cleared in `TurnManager.startNewTurn`) + Jandor's Ring.
 
 ## Data sources — do NOT hit the network
 
@@ -111,7 +114,6 @@ Remaining:
 - **Untap-cost lock**: Magnetic Mountain (blue creatures don't untap unless {4} each).
 - **Cumulative counters dealing damage**: Cyclone.
 - **Card-from-outside-the-game**: Ring of Ma'rûf (wish-style).
-- **Last-drawn-card tracking**: Jandor's Ring.
 - **Ante**: Jeweled Bird — needs the ante mechanic (often unsupported / house-ruled).
 - **Subgame**: Shahrazad — a full Magic subgame; the largest single feature here.
 - **Jihad** — multi-condition enchantment that references a chosen color/player. Implement

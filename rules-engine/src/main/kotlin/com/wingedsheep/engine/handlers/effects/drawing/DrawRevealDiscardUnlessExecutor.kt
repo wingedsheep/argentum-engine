@@ -69,6 +69,9 @@ class DrawRevealDiscardUnlessExecutor(
             // dispatch, so "if you would draw a card, instead ..." effects are not applied here.
             val drawnCard = currentState.getEntity(drawnCardId)?.get<CardComponent>()
             allEvents.add(CardsDrawnEvent(playerId, 1, listOf(drawnCardId), listOf(drawnCard?.name ?: "Card")))
+            currentState = currentState.copy(
+                lastCardDrawnThisTurnByPlayer = currentState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCardId)
+            )
             allEvents.addAll(drawResult.events)
 
             // "reveal it" — show the drawn card to the opponent whether it's kept or discarded.

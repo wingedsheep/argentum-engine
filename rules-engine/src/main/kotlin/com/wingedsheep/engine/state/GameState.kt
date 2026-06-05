@@ -122,6 +122,15 @@ data class GameState(
     val lastCastSpellColors: Set<Color>? = null,
 
     /**
+     * Per-player entity id of the card most recently drawn this turn (CR 121 draws), or
+     * absent if that player has not drawn a card this turn. Updated at every
+     * [com.wingedsheep.engine.core.CardsDrawnEvent] emit site during a turn (the *last*
+     * id in a multi-card batch wins, per Scryfall ruling) and cleared at every turn
+     * boundary. Read by the `DiscardLastDrawnThisTurn` ability cost (Jandor's Ring).
+     */
+    val lastCardDrawnThisTurnByPlayer: Map<EntityId, EntityId> = emptyMap(),
+
+    /**
      * Game-mode configuration the engine reads for format-dependent behaviour (commander damage
      * threshold, command-zone redirect, etc.). Defaults to [Format.Standard] so existing
      * persisted states / tests need no migration.

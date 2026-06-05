@@ -126,6 +126,13 @@ class CostHandler(
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 state.getZone(handZone).contains(sourceId)
             }
+            is AbilityCost.DiscardLastDrawnThisTurn -> {
+                // Per the Jandor's Ring rulings: "If you do not have the card still in your hand,
+                // you can't pay the cost." Track is populated by every CardsDrawnEvent emit site
+                // during a turn and cleared at the turn boundary.
+                val tracked = state.lastCardDrawnThisTurnByPlayer[controllerId] ?: return false
+                state.getZone(ZoneKey(controllerId, Zone.HAND)).contains(tracked)
+            }
             is AbilityCost.SacrificeSelf -> {
                 // Source must be on the battlefield
                 val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
@@ -416,6 +423,19 @@ class CostHandler(
 
                 val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                     .discardCard(state, ownerId, sourceId)
+                CostPaymentResult.success(result.state, manaPool, result.events)
+            }
+            is AbilityCost.DiscardLastDrawnThisTurn -> {
+                // The engine picks the card from the per-player tracker — no player choice. canPay
+                // already verifies the tracked entity is still in the controller's hand; recheck
+                // here defensively in case payment is re-entered after state change.
+                val tracked = state.lastCardDrawnThisTurnByPlayer[controllerId]
+                    ?: return CostPaymentResult.failure("You haven't drawn a card this turn")
+                if (!state.getZone(ZoneKey(controllerId, Zone.HAND)).contains(tracked)) {
+                    return CostPaymentResult.failure("The card you drew last this turn is no longer in your hand")
+                }
+                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .discardCard(state, controllerId, tracked)
                 CostPaymentResult.success(result.state, manaPool, result.events)
             }
             is AbilityCost.SacrificeSelf -> {
