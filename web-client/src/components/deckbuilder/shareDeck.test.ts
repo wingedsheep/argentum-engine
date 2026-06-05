@@ -8,16 +8,15 @@ import {
 } from './shareDeck'
 
 describe('shareDeck codec', () => {
-  it('round-trips a plain name-only deck', () => {
+  it('round-trips a plain name-only deck', async () => {
     const deck: SharedDeck = {
       name: 'Mono-Red Aggro',
       cards: { 'Lightning Bolt': 4, 'Mountain': 20, 'Goblin Guide': 4 },
     }
-    const decoded = decodeSharedDeck(encodeSharedDeck(deck))
-    expect(decoded).toEqual(deck)
+    expect(await decodeSharedDeck(await encodeSharedDeck(deck))).toEqual(deck)
   })
 
-  it('round-trips format, commander, and printing pins', () => {
+  it('round-trips format, commander, and printing pins', async () => {
     const deck: SharedDeck = {
       name: 'Atraxa Superfriends',
       cards: { 'Sol Ring': 1, 'Arcane Signet': 1, 'Forest': 10 },
@@ -26,25 +25,31 @@ describe('shareDeck codec', () => {
       commanderPrinting: { setCode: 'C16', collectorNumber: '28' },
       printings: { 'Sol Ring': { setCode: 'C21', collectorNumber: '263' } },
     }
-    const decoded = decodeSharedDeck(encodeSharedDeck(deck))
-    expect(decoded).toEqual(deck)
+    expect(await decodeSharedDeck(await encodeSharedDeck(deck))).toEqual(deck)
   })
 
-  it('preserves Unicode and split-card (DFC) names', () => {
+  it('preserves Unicode and split-card (DFC) names', async () => {
     const deck: SharedDeck = {
       name: 'Æther — déjà vu',
       cards: { 'Unholy Annex // Ritual Chamber': 2, 'Lim-Dûl’s Vault': 1 },
     }
-    const decoded = decodeSharedDeck(encodeSharedDeck(deck))
-    expect(decoded).toEqual(deck)
+    expect(await decodeSharedDeck(await encodeSharedDeck(deck))).toEqual(deck)
   })
 
-  it('produces a URL-safe code (no +, /, = or whitespace)', () => {
-    const code = encodeSharedDeck({
+  it('produces a URL-safe code (no +, /, = or whitespace)', async () => {
+    const code = await encodeSharedDeck({
       name: 'Test',
       cards: { 'Some Very Long Card Name That Compresses Poorly': 4 },
     })
     expect(code).toMatch(/^[A-Za-z0-9_-]+$/)
+  })
+
+  it('compresses large decks well under chat limits', async () => {
+    // 99 distinct singleton names — the commander-deck worst case.
+    const cards: Record<string, number> = {}
+    for (let i = 0; i < 99; i++) cards[`Wandering Verdant Sentinel of the Wilds #${i}`] = 1
+    const code = await encodeSharedDeck({ name: 'Big Pile', format: 'COMMANDER', cards })
+    expect(code.length).toBeLessThan(2000)
   })
 
   it('builds the share URL with the deckbuilder route and param', () => {
@@ -53,17 +58,22 @@ describe('shareDeck codec', () => {
     )
   })
 
-  it('returns null for malformed / non-share input', () => {
-    expect(decodeSharedDeck('')).toBeNull()
-    expect(decodeSharedDeck('not-base64-!!!')).toBeNull()
-    // Valid base64url of JSON that isn't a v1 share payload.
-    expect(decodeSharedDeck(encodeAsCode({ hello: 'world' }))).toBeNull()
-    // Right version but no usable cards.
-    expect(decodeSharedDeck(encodeAsCode({ v: 1, n: 'x', d: [] }))).toBeNull()
+  it('decodes a legacy uncompressed (plain-JSON) share code', async () => {
+    const code = await encodeAsCode({ v: 1, n: 'Legacy', d: [['Plains', 7]] })
+    expect(await decodeSharedDeck(code)).toEqual({ name: 'Legacy', cards: { Plains: 7 } })
   })
 
-  it('drops malformed rows but keeps the valid ones', () => {
-    const code = encodeAsCode({
+  it('returns null for malformed / non-share input', async () => {
+    expect(await decodeSharedDeck('')).toBeNull()
+    expect(await decodeSharedDeck('not-base64-!!!')).toBeNull()
+    // Valid base64url of JSON that isn't a v1 share payload.
+    expect(await decodeSharedDeck(await encodeAsCode({ hello: 'world' }))).toBeNull()
+    // Right version but no usable cards.
+    expect(await decodeSharedDeck(await encodeAsCode({ v: 1, n: 'x', d: [] }))).toBeNull()
+  })
+
+  it('drops malformed rows but keeps the valid ones', async () => {
+    const code = await encodeAsCode({
       v: 1,
       n: 'Mixed',
       d: [
@@ -74,11 +84,11 @@ describe('shareDeck codec', () => {
         'nonsense', // dropped: not a tuple
       ],
     })
-    expect(decodeSharedDeck(code)).toEqual({ name: 'Mixed', cards: { 'Good Card': 2 } })
+    expect(await decodeSharedDeck(code)).toEqual({ name: 'Mixed', cards: { 'Good Card': 2 } })
   })
 
-  it('sums duplicate rows for the same card name', () => {
-    const code = encodeAsCode({
+  it('sums duplicate rows for the same card name', async () => {
+    const code = await encodeAsCode({
       v: 1,
       n: 'Dupes',
       d: [
@@ -86,15 +96,15 @@ describe('shareDeck codec', () => {
         ['Island', 3],
       ],
     })
-    expect(decodeSharedDeck(code)?.cards).toEqual({ Island: 5 })
+    expect((await decodeSharedDeck(code))?.cards).toEqual({ Island: 5 })
   })
 })
 
-// Encode an arbitrary object the same way the codec does, so tests can craft
-// payloads the public encoder would never emit (wrong version, malformed rows).
-function encodeAsCode(obj: unknown): string {
-  const json = JSON.stringify(obj)
-  const bytes = new TextEncoder().encode(json)
+// Encode an arbitrary object as an *uncompressed* (legacy-format) share code: base64url of the
+// raw JSON. Lets tests craft payloads the current encoder would never emit (wrong version,
+// malformed rows) and also exercises the decoder's legacy fallback path.
+async function encodeAsCode(obj: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj))
   let binary = ''
   for (const b of bytes) binary += String.fromCharCode(b)
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')

@@ -332,30 +332,36 @@ export function DeckbuilderPage() {
     const code = searchParams.get(SHARE_PARAM)
     if (!code || sharedLoadedRef.current) return
     sharedLoadedRef.current = true
-    const shared = decodeSharedDeck(code)
-    setSearchParams(
-      (prev) => {
-        const params = new URLSearchParams(prev)
-        params.delete(SHARE_PARAM)
-        // Stamp the deck's format so the commander-format guard (which would otherwise
-        // wipe a just-loaded commander) and the legality filter both see it — same trick
-        // as the saved-deck hydration above, done in one URL write.
-        if (shared?.format) params.set('fmt', shared.format.toUpperCase())
-        // Open shared decks in the Moxfield-style deck view: the recipient is here to
-        // read the list, not browse the catalog to build from scratch.
-        if (shared) params.set('view', 'deck')
-        return params
-      },
-      { replace: true },
-    )
-    if (!shared) return
-    setDeckName(shared.name || 'Shared deck')
-    setDeckCards(mergeCommanderIntoCards(shared.cards, shared.commander ?? null))
-    setCommander(shared.commander ?? null)
-    setActiveDeckId(null)
-    const pins: Record<string, PrintingRef> = { ...(shared.printings ?? {}) }
-    if (shared.commander && shared.commanderPrinting) pins[shared.commander] = shared.commanderPrinting
-    setPinnedPrintings(pins)
+    let cancelled = false
+    void decodeSharedDeck(code).then((shared) => {
+      if (cancelled) return
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev)
+          params.delete(SHARE_PARAM)
+          // Stamp the deck's format so the commander-format guard (which would otherwise
+          // wipe a just-loaded commander) and the legality filter both see it — same trick
+          // as the saved-deck hydration above, done in one URL write.
+          if (shared?.format) params.set('fmt', shared.format.toUpperCase())
+          // Open shared decks in the Moxfield-style deck view: the recipient is here to
+          // read the list, not browse the catalog to build from scratch.
+          if (shared) params.set('view', 'deck')
+          return params
+        },
+        { replace: true },
+      )
+      if (!shared) return
+      setDeckName(shared.name || 'Shared deck')
+      setDeckCards(mergeCommanderIntoCards(shared.cards, shared.commander ?? null))
+      setCommander(shared.commander ?? null)
+      setActiveDeckId(null)
+      const pins: Record<string, PrintingRef> = { ...(shared.printings ?? {}) }
+      if (shared.commander && shared.commanderPrinting) pins[shared.commander] = shared.commanderPrinting
+      setPinnedPrintings(pins)
+    })
+    return () => {
+      cancelled = true
+    }
     // setSearchParams is stable; searchParams churn is filtered by the ref guard.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
@@ -835,7 +841,7 @@ export function DeckbuilderPage() {
       if (name in cardsForShare) printings[name] = ref
     }
     const commanderPrinting = designated ? pinnedPrintings[designated] : undefined
-    const code = encodeSharedDeck({
+    const code = await encodeSharedDeck({
       name: deckName.trim() || 'Untitled deck',
       cards: cardsForShare,
       ...(Object.keys(printings).length > 0 ? { printings } : {}),

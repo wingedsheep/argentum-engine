@@ -8,8 +8,8 @@
  *
  * ## Wire shape
  * A [SharedDeck] is serialised to a compact JSON payload with short keys (card names dominate
- * the size, so the envelope is kept tiny) and then base64url-encoded so it's safe to drop into
- * a query string without escaping:
+ * the size, so the envelope is kept tiny), DEFLATE-compressed, then base64url-encoded so it's
+ * safe to drop into a query string without escaping:
  *
  * ```
  * { v: 1, n: name, f?: format, c?: commander, cp?: [set, collector],
@@ -19,6 +19,12 @@
  * Each deck row is a tuple — `[name, count]` for the common name-only case, extended to
  * `[name, count, setCode, collectorNumber]` when the row pins a specific printing. Folding the
  * (sparse) printing pins into the same list keeps the payload flat and avoids a second map.
+ *
+ * Compression is what keeps the link shareable: card-name text is highly redundant (repeated
+ * colour words, creature types, the `,1]` of singleton rows), so DEFLATE typically shrinks the
+ * payload 4–5×. A worst-case 99-card singleton commander deck lands near ~1.2k chars — inside
+ * chat limits like Discord's 2000. We use the browser-native `CompressionStream('deflate-raw')`
+ * (also present in Node 18+), so there's no dependency. The codec is therefore **async**.
  *
  * [decodeSharedDeck] treats its input as fully untrusted (it came from a URL someone pasted):
  * it never throws, validates every field, drops malformed rows, and returns `null` rather than
@@ -83,10 +89,37 @@ function base64UrlToBytes(code: string): Uint8Array {
   return bytes
 }
 
+// --- DEFLATE via the native (Web) compression streams --------------------------------------
+
+async function pumpThroughStream(
+  bytes: Uint8Array,
+  stream: GenericTransformStream,
+): Promise<Uint8Array> {
+  const writer = stream.writable.getWriter()
+  // Swallow the writer-side promises: when the input is invalid (e.g. inflating a
+  // non-deflate legacy code), both the writable and readable ends reject. We surface the
+  // failure through the readable end below; without these `.catch` guards the writer-side
+  // rejections would float as unhandled.
+  void writer.write(bytes).catch(() => {})
+  void writer.close().catch(() => {})
+  return new Uint8Array(await new Response(stream.readable).arrayBuffer())
+}
+
+// 'deflate-raw' drops the 2-byte zlib header + checksum the plain 'deflate' format carries —
+// every byte counts when the result rides in a URL. Cast because some TS lib versions still
+// type CompressionFormat without 'deflate-raw'; it's supported by every engine that ships the
+// streams (Chrome 103+, Firefox 113+, Safari 16.4+, Node 18+).
+const RAW_DEFLATE = 'deflate-raw' as CompressionFormat
+
+const deflate = (bytes: Uint8Array): Promise<Uint8Array> =>
+  pumpThroughStream(bytes, new CompressionStream(RAW_DEFLATE))
+const inflate = (bytes: Uint8Array): Promise<Uint8Array> =>
+  pumpThroughStream(bytes, new DecompressionStream(RAW_DEFLATE))
+
 // --- encode --------------------------------------------------------------------------------
 
 /** Encode a deck into a URL-safe share code. Inverse of [decodeSharedDeck]. */
-export function encodeSharedDeck(deck: SharedDeck): string {
+export async function encodeSharedDeck(deck: SharedDeck): Promise<string> {
   const printings = deck.printings ?? {}
   const rows: ShareRow[] = []
   for (const [name, count] of Object.entries(deck.cards)) {
@@ -102,7 +135,8 @@ export function encodeSharedDeck(deck: SharedDeck): string {
     payload.cp = [deck.commanderPrinting.setCode, deck.commanderPrinting.collectorNumber]
   }
 
-  return bytesToBase64Url(new TextEncoder().encode(JSON.stringify(payload)))
+  const json = new TextEncoder().encode(JSON.stringify(payload))
+  return bytesToBase64Url(await deflate(json))
 }
 
 /** Build the full shareable deckbuilder URL for a code. */
@@ -128,10 +162,20 @@ function printingFromTuple(value: unknown): PrintingRef | undefined {
  * usable v1 payload (bad base64, wrong version, no resolvable cards). Never throws — the
  * input is untrusted URL content.
  */
-export function decodeSharedDeck(code: string): SharedDeck | null {
+export async function decodeSharedDeck(code: string): Promise<SharedDeck | null> {
   let raw: unknown
   try {
-    raw = JSON.parse(new TextDecoder().decode(base64UrlToBytes(code)))
+    const bytes = base64UrlToBytes(code)
+    // Current format is DEFLATE-compressed; older links carried the JSON uncompressed.
+    // Try to inflate, and fall back to reading the bytes as raw UTF-8 JSON so early
+    // links keep working.
+    let json: string
+    try {
+      json = new TextDecoder().decode(await inflate(bytes))
+    } catch {
+      json = new TextDecoder().decode(bytes)
+    }
+    raw = JSON.parse(json)
   } catch {
     return null
   }
