@@ -67,7 +67,7 @@ just coverage --calibrate POR           # trust check: implemented cards must cl
 
 # FIDELITY — could we AUTO-AUTHOR a card? Diffs the bridge vs each card's compiled golden snapshot.
 just coverage-fidelity --set POR        # tiers cards AUTO / SCAFFOLD / MISS (AUTO ⟺ emitter renders whole)
-just coverage-fidelity --all            # cross-set table (renders-whole AUTO: POR ~89%, unseen ~15-20%)
+just coverage-fidelity --all            # cross-set table (renders-whole AUTO: POR ~96%, unseen ~15-20%)
 just coverage-fidelity --emit "Lava Axe"  # print the generated cardDef DSL (complete metadata, no TODO)
 
 # AUTO-GEN — turn the bridge on a set's UNIMPLEMENTED cards.
@@ -75,7 +75,7 @@ just coverage-gaps --set TMP            # AUTOGEN / SCAFFOLD / BLOCKED counts + 
 just coverage-generate --set TMP        # draft .kt for the AUTOGEN cards -> spike/mtgish-coverage/generated/<set>/
 
 # VERIFY — the real gate: COMPILE the emitted cards + diff serialized caps vs golden.
-just coverage-verify --set POR          # POR: 174/184 emitted & compile-verified, 0 capability mismatch
+just coverage-verify --set POR          # POR: 184/184 emitted & compile-verified, 0 capability mismatch
 ```
 
 **When to use.** Spoiler-season/backlog triage (`coverage` leaderboard = which feature unlocks the
@@ -86,7 +86,7 @@ most cards); deciding whether a missing card is pure authoring vs. needs `add-fe
 **Hard rules.** Generated `.kt` are **DRAFTS in a staging dir** — they must compile, get a scenario
 test, and be human-reviewed before moving into a set's `cards/` package. `coverage-verify` proves
 *compile + capabilities*, NOT behaviour (a filter/count can be subtly wrong — scenario test is the
-real gate). The emitter is Portal-tuned: it renders ~89% of Portal whole but only ~15-20% of unseen
+real gate). The emitter is Portal-tuned: it renders 100% of Portal (compile-verified) but only ~15-20% of unseen
 sets, converging as you add emitter handlers / `mapping.json` entries (one helps all sets). Keep using
 the `add-card` skill for real implementation.
 

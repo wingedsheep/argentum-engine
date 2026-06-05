@@ -137,8 +137,9 @@ just coverage-fidelity --set POR    →  184 cards (vs compiled golden)
 
 > **Superseded by the renders-whole metric (see "Maturation").** These are the *original lenient*
 > tier counts kept for the narrative below. Under the current strict emitter the same command reports
-> **AUTO 171 / 92.9%, SCAFFOLD 5 / 2.7%, MISS 8 / 4.3%, recall 96.9%** — and the compile gate confirms
-> 179/184 emitted, 0 capability mismatch.
+> **AUTO 176 / 95.7%, SCAFFOLD 0 / 0.0%, MISS 8 / 4.3%, recall 96.9%** — and the compile gate confirms
+> 184/184 emitted, 0 capability mismatch (the 8 MISS are a *static-predictor* artifact of `gen_caps`,
+> not declines: the emitter renders all 184 whole and they capability-match the compiled golden).
 
 **AUTO is real — the emitter reproduces hand-authored DSL byte-for-byte.** `--emit "Hand of Death"`
 produces, line for line, the committed `HandOfDeath.kt`:
@@ -315,38 +316,54 @@ on both sides. This turns AUTO from a static-tag prediction into **"compiles + c
 
 ```
 Portal (POR):
-  coverage calibration         200/200 = 100%
-  auto-emitted & COMPILED       179/184   (every emitted card compiles — Gradle)
-  VERIFIED (caps match golden)  179        capability MISMATCH: 0
-  left to hand                    5        (the emitter DECLINES rather than emit a wrong card)
+  coverage calibration         200/200 = 100%   (every implemented Portal printing, by name)
+  auto-emitted & COMPILED       184/184          (every emitted card compiles — Gradle)
+  VERIFIED (caps match golden)  184              capability MISMATCH: 0
+  left to hand                    0
 ```
 
-The gate **passes** when every emitted card is correct (0 mismatch); coverage (179/184) is reported,
-not pass/failed — a generator declining a card it can't render faithfully is correct behaviour.
+The gate **passes** when every emitted card is correct (0 mismatch); Portal now emits the **whole set**
+(184/184), every card compiling and capability-matching the golden tree.
 
-**The 5 it declines are the genuinely engine-feature-complex residue** — exactly the tail the spike
-predicted needs hand-authoring (`add-card`): delayed/global triggers (Last Chance, Harsh Justice), a
-damage-prevention replacement (Deep Wood), a static "can't attack unless the defender controls an
-Island" (Deep-Sea Serpent), and an optional targeted ETB rider (Ebon Dragon's discard-then-may). The
-each-player loops (Flux, Winds of Change, Noxious Toad) and conditional spells (Gift of Estates,
-Balance of Power) emit via the `EffectPatterns.eachPlayer*`/`wheelEffect`/`Conditions.*` facades; the
-**"sacrifice unless you sacrifice X"** gate (Plant Elemental, Primeval Force, Thing from the Deep) now
-emits as `PayOrSufferEffect(cost = PayCost.Sacrifice(filter[, count]), suffer = SacrificeSelfEffect)`,
-and **exotic dynamic amounts** (Cruel Bargain's half-life → `DynamicAmount.Divide(LifeTotal, Fixed(2),
-roundUp)`, Final Strike's power-of-the-sacrificed → `DynamicAmounts.sacrificedPower()`) render whole —
-five cards moved out of the declined pile (174→179) by general emitter rules, not per-card fits.
+**(Calibration counts 200, the gate 184** — the 16-card gap is **5 basic lands + 11 reprints**
+(Armageddon, Grizzly Bears, Hill Giant, Raise Dead, Bog Wraith, Earthquake, Hurricane, Giant Spider,
+Flashfires, Blinding Light, Merfolk of the Pearl Trident). Calibration counts every implemented Portal
+*printing* by name; a reprint's canonical `CardDefinition` (script/types/P-T) lives in its earliest set
+— e.g. LEA — and Portal contributes only a `Printing` presentation row, so it isn't in Portal's golden
+snapshot. The gate diffs the 184 distinct `CardDefinition`s authored in the `por/` package; basics
+carry no rules text and reprints are already snapshotted under their home set. So 184 is the right
+denominator for "did the emitter reproduce Portal's authored cards.")
+
+**The last 5 were the genuinely engine-feature-complex residue, now closed by general emitter rules**
+— exactly the tail the spike predicted needs hand-authoring, reached without per-card fits:
+delayed/global triggers (Last Chance → `TakeExtraTurnEffect(loseAtEndStep = true)` when an extra turn
+is paired with a `CreateFutureTrigger{LoseTheGame}`; Harsh Justice → `ReflectCombatDamageEffect()` from
+the `CreateTriggerUntil` reflect shape), a damage-prevention replacement (Deep Wood →
+`Effects.PreventDamageFromAttackingCreatures()` from `CreateReplaceWouldDealDamageUntil`), a static
+"can't attack unless the defender controls an Island" (Deep-Sea Serpent → `CantAttackUnless(
+Conditions.OpponentControlsLandType(...))` from the `CantAttackUnlessDefendingPlayer` rule), and an
+optional targeted ETB rider (Ebon Dragon → `MayEffect(EffectPatterns.discardCards(1, t))` once
+`HavePlayerTakeAction` routes through the player-action renderer). The each-player loops (Flux, Winds of
+Change, Noxious Toad) and conditional spells (Gift of Estates, Balance of Power) emit via the
+`EffectPatterns.eachPlayer*`/`wheelEffect`/`Conditions.*` facades; the **"sacrifice unless you sacrifice
+X"** gate (Plant Elemental, Primeval Force, Thing from the Deep) emits as `PayOrSufferEffect(cost =
+PayCost.Sacrifice(filter[, count]), suffer = SacrificeSelfEffect)`, and **exotic dynamic amounts**
+(Cruel Bargain's half-life → `DynamicAmount.Divide(LifeTotal, Fixed(2), roundUp)`, Final Strike's
+power-of-the-sacrificed → `DynamicAmounts.sacrificedPower()`) render whole — the declined pile went
+174→179→**0** by general emitter rules, not per-card fits.
 
 **Honest cross-set reality — the strict metric corrects the old inflation.** Re-running `--all` with
 the renders-whole definition:
 
 ```
   SET   AUTO   (old lenient AUTO)
-  POR   92.9%  (was 75%)
+  POR   95.7%  (was 75%)
   INV   17.6%  (was 48%)   ONS 15.6% (was 38%)   KTK 19.0% (was 47%) …
 ```
 
-Portal rose (real emitter work + 100% mapping; the sacrifice-unless gate + computed-amount renderers
-took it 88.6→92.9%); **unseen sets fell** — because the old ~45% was inflated by a structure-check the
+Portal rose (real emitter work + 100% mapping; the sacrifice-unless gate, computed-amount renderers,
+and the final delayed-trigger / damage-replacement / static-attack / ETB-rider handlers took it
+88.6→92.9→95.7% AUTO, and 184/184 compile-verified); **unseen sets fell** — because the old ~45% was inflated by a structure-check the
 emitter never had to honour, and they barely moved on the latest handlers since those targeted
 Portal-specific shapes. ~15–20% is the honest "renders whole, compiles, caps-match" rate on a
 Portal-tuned emitter, and the convergence path is unchanged: each emitter handler/mapping line added

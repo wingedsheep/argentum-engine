@@ -624,6 +624,25 @@ def render_action(node, tvar, used, reasons, keywords=frozenset()) -> str | None
     if a == "TakeAnExtraTurn":
         used.add("TakeExtraTurnEffect")
         return "TakeExtraTurnEffect()"
+    if a == "HavePlayerTakeAction":  # "target player does X" — same shape as PlayerAction
+        return _render_player_action(node, tvar, used, reasons, keywords)
+    if a == "CreateReplaceWouldDealDamageUntil":
+        # "prevent all damage attacking creatures would deal to you this turn" (Deep Wood) ->
+        # the PreventDamageShield singleton facade. Recognise the attacking-creature/PreventThatDamage shape.
+        blob = json.dumps(node)
+        if "IsAttacking" in blob and "PreventThatDamage" in blob and _contains(node, "_Player", "You"):
+            used.add("Effects")
+            return "Effects.PreventDamageFromAttackingCreatures()"
+        return None
+    if a == "CreateTriggerUntil":
+        # "this turn, whenever an attacking creature deals combat damage to you, it deals that much to
+        # its controller" (Harsh Justice) -> the ReflectCombatDamage singleton.
+        blob = json.dumps(node)
+        if ("WhenACreatureDealsCombatDamageToAPlayer" in blob and "ControllerOfPermanent" in blob
+                and "Trigger_ThatMuch" in blob):
+            used.add("ReflectCombatDamageEffect")
+            return "ReflectCombatDamageEffect()"
+        return None
     if a == "SpellDealsDistributedDamage":
         amt = _find_integer(args)
         if not isinstance(amt, int):
@@ -759,6 +778,12 @@ def _static_ability_dsl(rule_name, rule_node, used, keywords) -> str | None:
     if rule_name in ("CantBeBlockedExceptByDefenders", "CantBeBlockedByDefenders"):
         used.update(["CantBeBlockedExceptBy", "GameObjectFilter", "Keyword"])
         return "CantBeBlockedExceptBy(blockerFilter = GameObjectFilter.Creature.withKeyword(Keyword.DEFENDER))"
+    if rule_name == "CantAttackUnlessDefendingPlayer":  # Deep-Sea Serpent: defender must control an Island
+        subs = _subtypes(rule_node)
+        if not subs:
+            return None
+        used.update(["CantAttackUnless", "Conditions"])
+        return f'CantAttackUnless(Conditions.OpponentControlsLandType("{subs[0]}"))'
     if rule_name in ("MustBlockAttacker",):
         used.add("MustBlock")
         return "MustBlock()"
@@ -903,6 +928,21 @@ def _balance_effect(card, used) -> list[str] | None:
     return None
 
 
+def _extra_turn_effect(card, used) -> str | None:
+    """Take an extra turn, then lose the game at that turn's end step (Last Chance / Final Fortune):
+    [TakeAnExtraTurn, CreateFutureTrigger{... LoseTheGame}] collapses to the loseAtEndStep flag."""
+    _targets, actions = extract_envelope(card.get("Rules", []))
+    if not actions:
+        return None
+    has_extra = any(a.get("_Action") == "TakeAnExtraTurn" for a in actions)
+    lose_after = any(a.get("_Action") == "CreateFutureTrigger" and _contains(a, "_Action", "LoseTheGame")
+                     for a in actions)
+    if has_extra and lose_after:
+        used.add("TakeExtraTurnEffect")
+        return "TakeExtraTurnEffect(loseAtEndStep = true)"
+    return None
+
+
 def _condition_dsl(if_node, used) -> str | None:
     """Map a mtgish If-condition to a Conditions.* facade (best-effort; only known shapes)."""
     blob = json.dumps(if_node, separators=(",", ":"))
@@ -935,7 +975,7 @@ def _conditional_spell(card, used, reasons, keywords) -> list[str] | None:
 
 
 def spell_block(card, used, reasons, keywords) -> list[str] | None:
-    for shortcut in (_eachplayer_maydraw, _flux_effect, _winds_effect):
+    for shortcut in (_eachplayer_maydraw, _flux_effect, _winds_effect, _extra_turn_effect):
         e = shortcut(card, used)
         if e is not None:
             return ["    spell {", f"        effect = {e}", "    }"]
