@@ -1,18 +1,24 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
-import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
 
 /**
  * Endless Cockroaches
  * {1}{B}{B}
  * Creature — Insect
  * 1/1
- * When Endless Cockroaches dies, return it to its owner's hand.
+ * When this creature dies, return it to its owner's hand.
  */
 val EndlessCockroaches = card("Endless Cockroaches") {
     manaCost = "{1}{B}{B}"
@@ -20,12 +26,10 @@ val EndlessCockroaches = card("Endless Cockroaches") {
     typeLine = "Creature — Insect"
     power = 1
     toughness = 1
-
     triggeredAbility {
         trigger = Triggers.Dies
         effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "92"

@@ -147,6 +147,27 @@ fun findRef(node: JsonElement?): String? {
     return found
 }
 
+/** First reference under the object marked by [markerKey], e.g. a `_DamageRecipient` node. */
+fun findRefIn(node: JsonElement?, markerKey: String): String? {
+    var found: String? = null
+    fun walk(n: JsonElement?) {
+        if (found != null) return
+        when (n) {
+            is JsonObject -> {
+                if (n.containsKey(markerKey)) {
+                    found = findRef(n[markerKey]) ?: findRef(n["args"])
+                    if (found != null) return
+                }
+                n.values.forEach { walk(it) }
+            }
+            is JsonArray -> n.forEach { walk(it) }
+            else -> {}
+        }
+    }
+    walk(node)
+    return found
+}
+
 /** `_amount_node` — first subtree object carrying a `_GameNumber` (an amount expression). */
 fun amountNode(args: JsonElement?): JsonElement? {
     var found: JsonElement? = null

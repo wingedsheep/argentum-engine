@@ -1,11 +1,17 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
 
 /**
  * Dread Reaper
@@ -13,7 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
  * Creature — Horror
  * 6/5
  * Flying
- * When Dread Reaper enters the battlefield, you lose 5 life.
+ * When this creature enters, you lose 5 life.
  */
 val DreadReaper = card("Dread Reaper") {
     manaCost = "{3}{B}{B}{B}"
@@ -22,16 +28,14 @@ val DreadReaper = card("Dread Reaper") {
     power = 6
     toughness = 5
     keywords(Keyword.FLYING)
-
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = LoseLifeEffect(5, EffectTarget.Controller)
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "89"
-        artist = "rk post"
+        artist = "Christopher Rush"
         imageUri = "https://cards.scryfall.io/normal/front/e/b/eb25d674-11f3-42d2-ba2f-e9a5d55a7852.jpg"
     }
 }

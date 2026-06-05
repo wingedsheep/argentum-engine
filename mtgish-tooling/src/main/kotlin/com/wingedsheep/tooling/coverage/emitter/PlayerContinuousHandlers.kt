@@ -52,7 +52,8 @@ internal fun EmitCtx.renderGrantToGroup(node: JsonObject, tvar: String?): String
         used.addAll(listOf("GrantCantBeBlockedExceptByColorEffect", "GroupFilter", "Color"))
         val m = Regex(""""_Color":\s*"(\w+)"""").find(blob)
         val color = if (m != null) "Color.${m.groupValues[1].uppercase()}" else "Color.BLACK"
-        return "GrantCantBeBlockedExceptByColorEffect(filter = ${groupFilterDsl(node["args"])}, canOnlyBeBlockedByColor = $color)"
+        val filter = groupFilterDsl(node["args"]) ?: return null
+        return "GrantCantBeBlockedExceptByColorEffect(filter = $filter, canOnlyBeBlockedByColor = $color)"
     }
     return null
 }

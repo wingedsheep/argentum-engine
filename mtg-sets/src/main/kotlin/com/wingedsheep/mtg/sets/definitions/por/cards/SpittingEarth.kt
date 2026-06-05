@@ -1,12 +1,19 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+
 
 /**
  * Spitting Earth
@@ -18,20 +25,14 @@ val SpittingEarth = card("Spitting Earth") {
     manaCost = "{1}{R}"
     colorIdentity = "R"
     typeLine = "Sorcery"
-
     spell {
-        target = TargetCreature()
-        effect = DealDamageEffect(
-            amount = DynamicAmounts.landsWithSubtype(Subtype.MOUNTAIN),
-            target = EffectTarget.ContextTarget(0)
-        )
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
+        effect = DealDamageEffect(DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land.withSubtype("Mountain")), t)
     }
-
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "150"
-        artist = "Adrian Smith"
-        flavorText = "The mountains themselves rise to defend their domain."
+        artist = "Hannibal King"
         imageUri = "https://cards.scryfall.io/normal/front/e/b/eb16998c-cfa4-49cc-8e37-2dfc33fa2f1e.jpg"
     }
 }

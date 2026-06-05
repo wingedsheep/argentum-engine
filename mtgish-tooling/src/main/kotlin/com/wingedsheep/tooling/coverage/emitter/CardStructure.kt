@@ -37,10 +37,10 @@ internal fun extractEnvelope(node: JsonElement?): Pair<List<JsonObject>?, List<J
 }
 
 /** (tdsl, tvar) for an envelope's targets; (null,null) if unrenderable; ("",null) if none. */
-internal fun EmitCtx.spellTarget(targets: List<JsonObject>?): Pair<String?, String?> {
+internal fun EmitCtx.spellTarget(targets: List<JsonObject>?, actions: List<JsonObject>? = null): Pair<String?, String?> {
     if (targets.isNullOrEmpty()) return "" to null
     if (targets.size > 1) { reasons.add("multi-target"); return null to null }
-    val tdsl = targetDsl(targets[0]) ?: run { reasons.add("target:${targets[0].strField("_Target")}"); return null to null }
+    val tdsl = targetDsl(targets[0], actions) ?: run { reasons.add("target:${targets[0].strField("_Target")}"); return null to null }
     return tdsl to "t"
 }
 
@@ -49,6 +49,53 @@ private fun EmitCtx.conditionDsl(ifNode: JsonElement?): String? {
     if ("ControlsMorePermanentThanPlayer" in blob && "\"Land\"" in blob) { used.add("Conditions"); return "Conditions.OpponentControlsMoreLands" }
     if ("ControlsMorePermanentThanPlayer" in blob && "\"Creature\"" in blob) { used.add("Conditions"); return "Conditions.OpponentControlsMoreCreatures" }
     return null
+}
+
+internal fun EmitCtx.castEffectHandled(rule: JsonObject): Boolean {
+    val node = rule["args"] as? JsonObject ?: return false
+    return when (node.strField("_CastEffect")) {
+        "CantBeCastUnless" -> castRestrictionLines(listOf(rule)) != null
+        "AdditionalCastingCost" -> additionalCostLine(rule) != null
+        else -> false
+    }
+}
+
+internal fun EmitCtx.cardLevelCastEffectLines(card: JsonObject): List<String>? {
+    val lines = mutableListOf<String>()
+    for (rule in (card["Rules"].asArr ?: JsonArray(emptyList())).filterIsInstance<JsonObject>()) {
+        if (rule.strField("_Rule") != "CastEffect") continue
+        val line = additionalCostLine(rule)
+        if (line != null) lines.add(line)
+        else if (!castEffectHandled(rule)) return null
+    }
+    return lines
+}
+
+private fun EmitCtx.additionalCostLine(rule: JsonObject): String? {
+    val node = rule["args"] as? JsonObject ?: return null
+    if (node.strField("_CastEffect") != "AdditionalCastingCost") return null
+    val cost = node["args"] as? JsonObject ?: return null
+    if (cost.strField("_Cost") != "SacrificeAPermanent") return null
+    val filter = gameObjectFilterDsl(cost["args"]) ?: return null
+    used.add("AdditionalCost")
+    return "    additionalCost(AdditionalCost.SacrificePermanent($filter))"
+}
+
+private fun EmitCtx.castRestrictionLines(rules: List<JsonObject>): List<String>? {
+    val lines = mutableListOf<String>()
+    for (rule in rules) {
+        val node = rule["args"] as? JsonObject ?: return null
+        if (node.strField("_CastEffect") != "CantBeCastUnless") continue
+        val blob = compact(node)
+        if ("IsDuringDeclareAttackersStep" in blob && "IsAttacked" in blob) {
+            used.addAll(listOf("Step", "YouWereAttackedThisStep"))
+            lines.add("        castOnlyDuring(Step.DECLARE_ATTACKERS)")
+            lines.add("        castOnlyIf(YouWereAttackedThisStep)")
+        } else {
+            return null
+        }
+    }
+    return lines
 }
 
 /** Top-level `If{cond}[effect]` -> spell `condition =` gate + the inner effect (Gift of Estates). */
@@ -76,11 +123,12 @@ internal fun EmitCtx.spellBlock(card: JsonObject): List<String>? {
 
     val (targets, actions) = extractEnvelope(card["Rules"])
     if (actions == null) return null
-    val (tdsl, tvar) = spellTarget(targets)
+    val (tdsl, tvar) = spellTarget(targets, actions)
     if (tdsl == null) return null
     val edsl = renderEffectList(actions, tvar) ?: return null
+    val restrictions = castRestrictionLines((card["Rules"].asArr ?: JsonArray(emptyList())).filterIsInstance<JsonObject>()) ?: return null
     val inner = if (tvar != null) listOf("        val t = target(\"target\", $tdsl)") else emptyList()
-    return listOf("    spell {") + inner + listOf("        effect = $edsl", "    }")
+    return listOf("    spell {") + restrictions + inner + listOf("        effect = $edsl", "    }")
 }
 
 private fun spellOf(effect: String) = listOf("    spell {", "        effect = $effect", "    }")
@@ -102,7 +150,7 @@ internal fun EmitCtx.triggerBlock(rule: JsonObject): List<String>? {
     used.add("Triggers")
     val (targets, actions) = extractEnvelope(rule)
     if (actions == null) { reasons.add("trigger-actions"); return null }
-    val (tdsl, tvar) = spellTarget(targets)
+    val (tdsl, tvar) = spellTarget(targets, actions)
     if (tdsl == null) return null
     val edsl = renderEffectList(actions, tvar) ?: return null
     val lines = mutableListOf("    triggeredAbility {", "        trigger = $spec")
@@ -122,11 +170,28 @@ internal fun EmitCtx.activatedBlock(rule: JsonObject): List<String>? {
     used.add("AbilityCost")
     val (targets, actions) = extractEnvelope(rule)
     if (actions == null) { reasons.add("activated-actions"); return null }
-    val (tdsl, tvar) = spellTarget(targets)
+    val (tdsl, tvar) = spellTarget(targets, actions)
     if (tdsl == null) return null
     val edsl = renderEffectList(actions, tvar) ?: return null
     val lines = mutableListOf("    activatedAbility {", "        cost = $cost")
+    activationRestrictionLines(rule)?.let { lines.addAll(it) } ?: return null
     if (tvar != null) lines.add("        val t = target(\"target\", $tdsl)")
     lines.addAll(listOf("        effect = $edsl", "    }"))
     return lines
+}
+
+private fun EmitCtx.activationRestrictionLines(rule: JsonObject): List<String>? {
+    if (rule.strField("_Rule") != "ActivatedWithModifiers") return emptyList()
+    val blob = compact(rule)
+    if ("ActivateOnlyIf" in blob && "IsTheirTurn" in blob && "IsBeforeAttackersDeclared" in blob) {
+        used.addAll(listOf("ActivationRestriction", "Step"))
+        return listOf(
+            "        restrictions = listOf(",
+            "            ActivationRestriction.OnlyDuringYourTurn,",
+            "            ActivationRestriction.BeforeStep(Step.DECLARE_ATTACKERS)",
+            "        )",
+        )
+    }
+    reasons.add("activated-modifiers")
+    return null
 }

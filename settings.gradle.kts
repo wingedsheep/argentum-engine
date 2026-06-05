@@ -28,6 +28,6 @@ include(":ai")
 include(":gym")
 include(":gym-server")
 include(":gym-trainer")
-include(":tooling")
+include(":mtgish-tooling")
 
 rootProject.name = "argentum-engine"

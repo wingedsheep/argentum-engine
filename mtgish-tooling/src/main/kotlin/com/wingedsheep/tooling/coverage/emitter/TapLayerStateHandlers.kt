@@ -26,7 +26,8 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = buildMap {
             used.add("Effects"); return@reg "Effects.${verb}EachTarget()"
         }
         used.addAll(listOf("ForEachInGroupEffect", "Effects", "EffectTarget"))  // mass: tap/untap a group
-        "ForEachInGroupEffect(${groupFilterDsl(args)}, Effects.$verb(EffectTarget.Self))"
+        val filter = groupFilterDsl(args) ?: return@reg null
+        "ForEachInGroupEffect($filter, Effects.$verb(EffectTarget.Self))"
     }
 
     reg("CreatePermanentLayerEffectUntil", "CreateEachPermanentLayerEffectUntil") { node, _, tvar ->
@@ -82,7 +83,8 @@ internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: S
     if (mass) {
         used.add("ForEachInGroupEffect")
         val gfArg = (node["args"].asArr)?.getOrNull(0) ?: JsonObject(emptyMap())
-        return "ForEachInGroupEffect(${groupFilterDsl(gfArg)}, $effect)"
+        val filter = groupFilterDsl(gfArg) ?: return null
+        return "ForEachInGroupEffect($filter, $effect)"
     }
     return effect
 }

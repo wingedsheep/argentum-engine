@@ -1,10 +1,16 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
+
 
 /**
  * Deep Wood
@@ -17,22 +23,15 @@ val DeepWood = card("Deep Wood") {
     manaCost = "{1}{G}"
     colorIdentity = "G"
     typeLine = "Instant"
-
     spell {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
         effect = Effects.PreventDamageFromAttackingCreatures()
     }
-
     metadata {
-        rarity = Rarity.RARE
+        rarity = Rarity.UNCOMMON
         collectorNumber = "162"
-        artist = "Terese Nielsen"
-        flavorText = "In the deep wood, the trees themselves offer protection."
+        artist = "Paolo Parente"
         imageUri = "https://cards.scryfall.io/normal/front/4/2/4216c5aa-9df0-4e7c-b3e9-a3f712b17ce7.jpg"
-        ruling(
-            "10/4/2004",
-            "This card was originally printed as a sorcery and has received errata to make it an instant."
-        )
     }
 }

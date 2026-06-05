@@ -1,12 +1,18 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.dsl.EffectPatterns
+
 
 /**
  * Natural Order
@@ -19,31 +25,14 @@ val NaturalOrder = card("Natural Order") {
     manaCost = "{2}{G}{G}"
     colorIdentity = "G"
     typeLine = "Sorcery"
-
-    additionalCost(AdditionalCost.SacrificePermanent(
-        filter = GameObjectFilter.Creature.withColor(Color.GREEN)
-    ))
-
+    additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Creature.withColor(Color.GREEN)))
     spell {
-        effect = EffectPatterns.searchLibrary(
-            filter = GameObjectFilter.Creature.withColor(Color.GREEN),
-            destination = SearchDestination.BATTLEFIELD
-        )
+        effect = EffectPatterns.searchLibrary(filter = GameObjectFilter.Creature.withColor(Color.GREEN), destination = SearchDestination.BATTLEFIELD)
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "175"
         artist = "Alan Rabinowitz"
-        flavorText = "Nature's cycle continues: from life, life springs forth."
         imageUri = "https://cards.scryfall.io/normal/front/c/e/cecb34f8-6961-4c27-9368-26d156714d7b.jpg"
-        ruling(
-            "6/8/2016",
-            "Sacrificing a green creature is part of Natural Order's cost. You can't sacrifice more creatures to search for more creature cards, and you can't cast Natural Order at all if you control no green creatures."
-        )
-        ruling(
-            "6/8/2016",
-            "Players can respond to this spell only after it's been cast and all its costs have been paid. No one can try to destroy the creature you sacrificed to stop you from casting this spell or to make you sacrifice a different one."
-        )
     }
 }

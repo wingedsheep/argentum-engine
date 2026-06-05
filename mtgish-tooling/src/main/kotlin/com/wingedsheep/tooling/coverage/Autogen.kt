@@ -12,6 +12,7 @@ import java.util.Locale
  *  --gaps SET     bucket a set's UNIMPLEMENTED cards into AUTOGEN / SCAFFOLD / BLOCKED + leaderboard
  *  --write SET    emit a draft `.kt` per AUTOGEN missing card into a STAGING dir for human review
  *  --emit-all SET emit every whole-renderable card (impl included) for the Kotlin compile gate
+ *  --write-all SET replace a real set's card sources with mtgish-generated files, scaffolds included
  *  --all          with --gaps: sweep every Scryfall booster set, sum the AUTOGEN total
  *
  * Drafts stay in staging: they're predictions from approximate IR; ground truth stays a
@@ -20,6 +21,17 @@ import java.util.Locale
 object Autogen {
     private fun genPackage(setCode: String) = "com.wingedsheep.mtg.sets.generated.${setCode.lowercase()}.cards"
     private fun draftPackage(setCode: String) = "com.wingedsheep.mtg.sets.definitions.${setCode.lowercase()}.cards"
+    private fun sourceFileName(name: String) = name.replace(Regex("[^A-Za-z0-9]"), "") + ".kt"
+
+    private fun isBasicLand(card: JsonObject): Boolean {
+        val typeline = card["Typeline"]
+        val supertypes = typeline.field("Supertypes").asArr?.mapNotNull { it.asStr() } ?: emptyList()
+        val cardtypes = typeline.field("Cardtypes").asArr?.mapNotNull { it.asStr() } ?: emptyList()
+        return "Basic" in supertypes && "Land" in cardtypes
+    }
+
+    private fun isBasicLandSource(file: File): Boolean =
+        file.isFile && file.extension == "kt" && Regex("\\bbasicLand\\s*\\(").containsMatchIn(file.readText())
 
     private fun render(card: JsonObject, setCode: String, effects: Set<String>, keywords: Set<String>, pkg: String): RenderResult {
         val scryfall = Cards.scryfallCard(setCode, card["Name"].asStr() ?: "")
@@ -96,10 +108,11 @@ object Autogen {
         var written = 0
         for (name in missing) {
             val card = idx[name] ?: continue
+            if (isBasicLand(card)) continue
             if (!Probe.analyze(card, effects, keywords).coverable) continue
             val res = render(card, setCode, effects, keywords, draftPackage(setCode))
             if (!res.complete) continue
-            File(out, name.replace(Regex("[^A-Za-z0-9]"), "") + ".kt").writeText(res.text)
+            File(out, sourceFileName(name)).writeText(res.text)
             written++
         }
         println("wrote $written draft card(s) to $out")
@@ -113,14 +126,42 @@ object Autogen {
         if (out.exists()) out.listFiles { f -> f.name.endsWith(".kt") }?.forEach { it.delete() }  // fresh dir
         out.mkdirs()
         var written = 0
+        var skippedBasicLands = 0
         for (name in names) {
             val card = idx[name] ?: continue
+            if (isBasicLand(card)) { skippedBasicLands++; continue }
             val res = render(card, setCode, effects, keywords, genPackage(setCode))
             if (!res.complete) continue
-            File(out, name.replace(Regex("[^A-Za-z0-9]"), "") + ".kt").writeText(res.text)
+            File(out, sourceFileName(name)).writeText(res.text)
             written++
         }
         println("emit-all: wrote $written/${names.size} whole-card drafts to $out (package ${genPackage(setCode)})")
+        if (skippedBasicLands > 0) println("  skipped basic lands: $skippedBasicLands (use curated basicLand definitions)")
+        return 0
+    }
+
+    private fun modeWriteAll(setCode: String, effects: Set<String>, keywords: Set<String>, outdir: String?): Int {
+        val (names, idx) = allWithMtgish(setCode)
+        val out = if (outdir != null) File(outdir) else File(DEFINITIONS_ROOT, "${setCode.lowercase()}/cards")
+        if (out.exists()) out.listFiles { f -> f.extension == "kt" }?.forEach { if (!isBasicLandSource(it)) it.delete() }
+        out.mkdirs()
+        var written = 0
+        var scaffold = 0
+        var unmatched = 0
+        var skippedBasicLands = 0
+        for (name in names) {
+            val card = idx[name]
+            if (card == null) { unmatched++; continue }
+            if (isBasicLand(card)) { skippedBasicLands++; continue }
+            val res = render(card, setCode, effects, keywords, draftPackage(setCode))
+            if (!res.complete) scaffold++
+            File(out, sourceFileName(name)).writeText(res.text)
+            written++
+        }
+        println("write-all: wrote $written/${names.size} card source file(s) to $out (package ${draftPackage(setCode)})")
+        if (scaffold > 0) println("  scaffolds: $scaffold (compileable source with STRUCTURE comments; behaviour incomplete)")
+        if (unmatched > 0) println("  unmatched in mtgish: $unmatched")
+        if (skippedBasicLands > 0) println("  skipped basic lands: $skippedBasicLands (preserved existing basicLand definitions)")
         return 0
     }
 
@@ -178,7 +219,7 @@ object Autogen {
     fun run(args: List<String>): Int {
         var setCode: String? = null
         var all = false
-        var gaps = false; var write = false; var emitAll = false
+        var gaps = false; var write = false; var emitAll = false; var writeAll = false
         var listCat: String? = null
         var unique = false
         var out: String? = null
@@ -190,6 +231,7 @@ object Autogen {
                 "--gaps" -> gaps = true
                 "--write" -> write = true
                 "--emit-all" -> emitAll = true
+                "--write-all" -> writeAll = true
                 "--list" -> listCat = args[++i]
                 "--unique" -> unique = true
                 "--out" -> out = args[++i]
@@ -201,11 +243,12 @@ object Autogen {
         val keywords = Registry.loadKeywords()
         if (unique && !all) { System.err.println("autogen: --unique only applies to --all"); return 2 }
         if (all) {
-            if (write || emitAll) { System.err.println("autogen: --all is only supported with --gaps"); return 2 }
+            if (write || emitAll || writeAll) { System.err.println("autogen: --all is only supported with --gaps"); return 2 }
             return modeGapsAll(effects, keywords, listCat, unique)
         }
         if (setCode == null) { System.err.println("autogen: --set CODE (or --all) is required"); return 2 }
         return when {
+            writeAll -> modeWriteAll(setCode, effects, keywords, out)
             write -> modeWrite(setCode, effects, keywords, out)
             emitAll -> modeEmitAll(setCode, effects, keywords, out)
             else -> modeGaps(setCode, effects, keywords, listCat)

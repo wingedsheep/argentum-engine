@@ -1,8 +1,14 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+
 
 /**
  * Moon Sprite
@@ -17,14 +23,12 @@ val MoonSprite = card("Moon Sprite") {
     typeLine = "Creature — Faerie"
     power = 1
     toughness = 1
-
     keywords(Keyword.FLYING)
-
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "174"
         artist = "Terese Nielsen"
-        flavorText = "Dancing in the moonlight, she weaves dreams into the night."
+        flavorText = "\"I am that merry wanderer of the night.\"\n—William Shakespeare,\nA Midsummer Night's Dream"
         imageUri = "https://cards.scryfall.io/normal/front/f/0/f0944759-ee9f-4ae0-9d1b-2533ff6791a2.jpg"
     }
 }

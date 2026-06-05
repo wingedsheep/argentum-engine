@@ -1,6 +1,12 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -16,47 +22,39 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
+
 /**
  * Cruel Fate
  * {4}{U}
  * Sorcery
- * Look at the top five cards of target opponent's library. Put one of them into that
- * player's graveyard and the rest on top of their library in any order.
+ * Look at the top five cards of target opponent's library. Put one of those cards into that player's graveyard and the rest on top of their library in any order.
  */
 val CruelFate = card("Cruel Fate") {
     manaCost = "{4}{U}"
     colorIdentity = "U"
     typeLine = "Sorcery"
-
     spell {
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = CompositeEffect(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5), Player.ContextPlayer(0)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    storeSelected = "toGraveyard",
-                    storeRemainder = "toTop",
-                    selectedLabel = "Put in graveyard",
-                    remainderLabel = "Put on top"
-                ),
-                MoveCollectionEffect(
-                    from = "toGraveyard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0))
-                ),
-                MoveCollectionEffect(
-                    from = "toTop",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
-                    order = CardOrder.ControllerChooses
-                )
+        listOf(
+            GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed(5), Player.TargetOpponent), storeAs = "looked"),
+            SelectFromCollectionEffect(
+                from = "looked",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                storeSelected = "toGraveyard",
+                storeRemainder = "toTop",
+                selectedLabel = "Put in graveyard",
+                remainderLabel = "Put on top"
+            ),
+            MoveCollectionEffect(from = "toGraveyard", destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.TargetOpponent)),
+            MoveCollectionEffect(
+                from = "toTop",
+                destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetOpponent, ZonePlacement.Top),
+                order = CardOrder.ControllerChooses
             )
         )
+    )
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "50"

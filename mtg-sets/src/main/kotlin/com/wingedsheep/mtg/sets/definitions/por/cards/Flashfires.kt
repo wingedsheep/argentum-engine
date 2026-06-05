@@ -1,22 +1,38 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
-import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
 
 /**
- * Flashfires reprint in POR.
- *
- * The canonical [com.wingedsheep.sdk.model.CardDefinition] (script, types, P/T) lives in
- * LEA's `cards/` package (the card's earliest real printing). This file contributes
- * only the POR-specific presentation row.
+ * Flashfires
+ * {3}{R}
+ * Sorcery
+ * Destroy all Plains.
  */
-val FlashfiresReprint = Printing(
-    oracleId = "c281f436-8c77-48f7-b31c-d40cd7f9ed6a",
-    name = "Flashfires",
-    setCode = "POR",
-    collectorNumber = "129",
-    artist = "Dameon Willich",
-    imageUri = "https://cards.scryfall.io/normal/front/a/9/a9e88867-6acb-43f8-806b-21480aaa1afc.jpg",
-    releaseDate = "1997-05-01",
-    rarity = Rarity.UNCOMMON,
-)
+val Flashfires = card("Flashfires") {
+    manaCost = "{3}{R}"
+    colorIdentity = "R"
+    typeLine = "Sorcery"
+    spell {
+        effect = ForEachInGroupEffect(GroupFilter(GameObjectFilter.Land.withSubtype("Plains")), MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true), noRegenerate = false)
+    }
+    metadata {
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "129"
+        artist = "Randy Gallegos"
+        flavorText = "Dry grass is tinder before the spark."
+        imageUri = "https://cards.scryfall.io/normal/front/a/9/a9e88867-6acb-43f8-806b-21480aaa1afc.jpg"
+    }
+}

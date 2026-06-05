@@ -8,7 +8,7 @@ import kotlin.system.exitProcess
  *
  *   probe     --set CODE | --card "NAME" | --calibrate CODE   [--free|--blocked|--all] [--refresh]
  *   fidelity  --set CODE [--list TIER] | --all | --emit "NAME" | --gate CODE
- *   autogen   --set CODE [--gaps|--write|--emit-all] [--list CAT] [--out DIR]
+ *   autogen   --set CODE [--gaps|--write|--emit-all|--write-all] [--list CAT] [--out DIR]
  *             --all --gaps [--list CAT] [--unique]
  *
  * Wired into the justfile `coverage*` recipes and the mtg-sets `verifyGeneratedCards` gate.

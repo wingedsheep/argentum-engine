@@ -1,3 +1,8 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Color
@@ -6,12 +11,13 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
+
 /**
  * Sacred Knight
  * {3}{W}
- * Creature - Human Knight
+ * Creature — Human Knight
  * 3/2
- * Sacred Knight can't be blocked by black and/or red creatures.
+ * This creature can't be blocked by black and/or red creatures.
  */
 val SacredKnight = card("Sacred Knight") {
     manaCost = "{3}{W}"
@@ -19,11 +25,9 @@ val SacredKnight = card("Sacred Knight") {
     typeLine = "Creature — Human Knight"
     power = 3
     toughness = 2
-
     staticAbility {
-        ability = CantBeBlockedBy(GameObjectFilter.Creature.withAnyColor(Color.BLACK, Color.RED))
+        ability = CantBeBlockedBy(blockerFilter = GameObjectFilter.Creature.withAnyColor(Color.BLACK, Color.RED))
     }
-
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "24"

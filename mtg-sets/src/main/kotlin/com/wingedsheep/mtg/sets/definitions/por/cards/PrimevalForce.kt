@@ -1,3 +1,8 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.Triggers
@@ -8,12 +13,13 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 
+
 /**
  * Primeval Force
  * {2}{G}{G}{G}
  * Creature — Elemental
  * 8/8
- * When Primeval Force enters the battlefield, sacrifice it unless you sacrifice three Forests.
+ * When this creature enters, sacrifice it unless you sacrifice three Forests.
  */
 val PrimevalForce = card("Primeval Force") {
     manaCost = "{2}{G}{G}{G}"
@@ -21,20 +27,14 @@ val PrimevalForce = card("Primeval Force") {
     typeLine = "Creature — Elemental"
     power = 8
     toughness = 8
-
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = PayOrSufferEffect(
-            cost = PayCost.Sacrifice(GameObjectFilter.Land.withSubtype("Forest"), count = 3),
-            suffer = SacrificeSelfEffect
-        )
+        effect = PayOrSufferEffect(cost = PayCost.Sacrifice(GameObjectFilter.Land.withSubtype("Forest"), count = 3), suffer = SacrificeSelfEffect)
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "182"
-        artist = "John Avon"
-        flavorText = "The raw power of nature personified, demanding tribute from the land."
+        artist = "Randy Gallegos"
         imageUri = "https://cards.scryfall.io/normal/front/1/c/1ce7fc51-0ed8-49d9-bdba-ba5a89e1e852.jpg"
     }
 }

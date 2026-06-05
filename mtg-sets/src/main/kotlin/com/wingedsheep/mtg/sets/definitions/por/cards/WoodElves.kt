@@ -1,19 +1,24 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
-import com.wingedsheep.sdk.dsl.EffectPatterns
+
 
 /**
  * Wood Elves
  * {2}{G}
  * Creature — Elf Scout
  * 1/1
- * When Wood Elves enters the battlefield, search your library for a Forest card,
- * put that card onto the battlefield, then shuffle.
+ * When this creature enters, search your library for a Forest card, put that card onto the battlefield, then shuffle.
  */
 val WoodElves = card("Wood Elves") {
     manaCost = "{2}{G}"
@@ -21,21 +26,14 @@ val WoodElves = card("Wood Elves") {
     typeLine = "Creature — Elf Scout"
     power = 1
     toughness = 1
-
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = EffectPatterns.searchLibrary(
-            filter = GameObjectFilter.Land.withSubtype("Forest"),
-            destination = SearchDestination.BATTLEFIELD,
-            entersTapped = false
-        )
+        effect = EffectPatterns.searchLibrary(filter = GameObjectFilter.Land.withSubtype("Forest"), destination = SearchDestination.BATTLEFIELD)
     }
-
     metadata {
-        rarity = Rarity.COMMON
+        rarity = Rarity.RARE
         collectorNumber = "195"
-        artist = "Quinton Hoover"
-        flavorText = "They know every path through the forest, even the ones yet unmade."
+        artist = "Rebecca Guay"
         imageUri = "https://cards.scryfall.io/normal/front/b/7/b7f1fb90-5c85-46a5-802d-248cc0250921.jpg"
     }
 }

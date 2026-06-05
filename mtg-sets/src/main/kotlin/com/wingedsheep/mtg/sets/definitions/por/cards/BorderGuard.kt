@@ -1,14 +1,19 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+
 
 /**
  * Border Guard
  * {2}{W}
  * Creature — Human Soldier
  * 1/4
- * (No abilities - vanilla creature)
  */
 val BorderGuard = card("Border Guard") {
     manaCost = "{2}{W}"
@@ -16,12 +21,11 @@ val BorderGuard = card("Border Guard") {
     typeLine = "Creature — Human Soldier"
     power = 1
     toughness = 4
-
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "9"
         artist = "Kev Walker"
-        flavorText = "\"Join the army, see foreign countries!\" they say. I wish the countries would come to me."
+        flavorText = "\"Join the army, see foreign countries!\" they'd said."
         imageUri = "https://cards.scryfall.io/normal/front/9/8/985af775-2036-459d-83c6-31ac84a0ffb1.jpg"
     }
 }

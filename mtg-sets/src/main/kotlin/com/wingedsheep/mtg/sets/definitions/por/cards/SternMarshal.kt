@@ -1,22 +1,27 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
+
 
 /**
  * Stern Marshal
  * {2}{W}
- * Creature - Human Soldier
+ * Creature — Human Soldier
  * 2/2
- * {T}: Target creature gets +2/+2 until end of turn. Activate only during your turn,
- * before attackers are declared.
+ * {T}: Target creature gets +2/+2 until end of turn. Activate only during your turn, before attackers are declared.
  */
 val SternMarshal = card("Stern Marshal") {
     manaCost = "{2}{W}"
@@ -24,22 +29,15 @@ val SternMarshal = card("Stern Marshal") {
     typeLine = "Creature — Human Soldier"
     power = 2
     toughness = 2
-
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = ModifyStatsEffect(
-            powerModifier = 2,
-            toughnessModifier = 2,
-            target = EffectTarget.ContextTarget(0),
-            duration = Duration.EndOfTurn
-        )
-        target = Targets.Creature
         restrictions = listOf(
             ActivationRestriction.OnlyDuringYourTurn,
             ActivationRestriction.BeforeStep(Step.DECLARE_ATTACKERS)
         )
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
+        effect = ModifyStatsEffect(powerModifier = 2, toughnessModifier = 2, target = t)
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "32"

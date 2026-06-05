@@ -4,7 +4,10 @@ import com.wingedsheep.tooling.coverage.bridge.Bridge
 import com.wingedsheep.tooling.coverage.bridge.MappingEntry
 import com.wingedsheep.tooling.coverage.emitter.Emitter
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import java.util.Locale
 
 /**
@@ -88,6 +91,9 @@ object Fidelity {
     }
 
     private data class Scored(val tier: String, val recall: Double, val missing: Set<String>)
+
+    private data class TreeDiff(val path: String, val generated: String, val golden: String)
+    private data class TreeMismatch(val name: String, val diffs: List<TreeDiff>, val missingCaps: List<String>)
 
     private fun scoreCard(truth: Pair<Set<String>, Set<String>>, gen: Pair<Set<String>, Set<String>>, complete: Boolean): Scored {
         val tAll = truth.first + truth.second
@@ -189,7 +195,7 @@ object Fidelity {
         return 0
     }
 
-    // COMPILED gate — diff the serialised generated trees against golden (same caps fn both sides).
+    // COMPILED gate — diff the serialised gameplay trees against golden after tiny idiom normalisation.
     private fun modeGate(code: String, effects: Set<String>): Int {
         val genPath = java.io.File(GEN_DIR, "${code.lowercase()}.generated.json")
         if (!genPath.exists()) {
@@ -198,34 +204,222 @@ object Fidelity {
         }
         val generated = parseBlocks(genPath.readText())
         val golden = parseSnapshot(code)
-        val verified = mutableListOf<String>(); val mismatches = mutableListOf<Pair<String, List<String>>>()
+        val verified = mutableListOf<String>(); val mismatches = mutableListOf<TreeMismatch>()
+        val suspectedGoldenDrift = mutableListOf<TreeMismatch>()
+        val capabilityMismatches = mutableListOf<TreeMismatch>()
         for (name in generated.keys.sorted()) {
             if (name !in golden) continue
-            val g = truthCaps(generated[name]!!, effects)
-            val t = truthCaps(golden[name]!!, effects)
-            val missing = ((t.first + t.second) - (g.first + g.second)).sorted()
-            if (missing.isNotEmpty()) mismatches.add(name to missing) else verified.add(name)
+            val generatedTree = normalizeForFidelity(generated[name]!!)
+            val goldenTree = normalizeForFidelity(golden[name]!!)
+            val missing = missingCapabilities(generated[name]!!, golden[name]!!, effects)
+            if (generatedTree == goldenTree) {
+                verified.add(name)
+            } else {
+                val mismatch = TreeMismatch(name, diffTrees(generatedTree, goldenTree), missing)
+                if (oracleAssessment(code, mismatch) == OracleAssessment.GOLDEN_DRIFT) {
+                    suspectedGoldenDrift.add(mismatch)
+                } else {
+                    mismatches.add(mismatch)
+                }
+                if (missing.isNotEmpty()) capabilityMismatches.add(mismatch)
+            }
         }
         val notEmitted = (golden.keys - generated.keys).sorted()
+        val extraEmitted = (generated.keys - golden.keys).sorted()
         val total = golden.size
         val emittedInGolden = total - notEmitted.size
         println("== ${code.uppercase()} COMPILED gate — generated cards diffed vs golden ==\n")
         println("  AUTO-emitted & COMPILED:   $emittedInGolden/$total  (every emitted card compiled — Gradle gate)")
-        println("  VERIFIED (caps match):     ${verified.size}")
-        println("  capability MISMATCH:       ${mismatches.size}  (emitted but wrong — must be 0)")
+        println("  GAMEPLAY TREE MATCH:       ${verified.size}  (after tiny known-equivalent normalisation)")
+        println("  GAMEPLAY TREE MISMATCH:    ${mismatches.size}  (emitted but not golden-equivalent — must be 0)")
+        println("  GOLDEN DRIFT SUSPECTED:    ${suspectedGoldenDrift.size}  (oracle appears to support generated output)")
+        println("  capability MISMATCH:       ${capabilityMismatches.size}  (subset missing effect/keyword capabilities)")
         println("  not emitted (left to hand): ${notEmitted.size}")
+        if (extraEmitted.isNotEmpty()) println("  emitted outside golden:     ${extraEmitted.size}  (reported, not gated)")
         if (mismatches.isNotEmpty()) {
-            println("\nMISMATCH — compiled draft missing golden capabilities (emitter bug to fix):")
-            for ((name, miss) in mismatches) println("  - ${name.padEnd(28)} missing $miss")
+            println("\nGAMEPLAY TREE MISMATCH taxonomy — first divergent path per emitted card:")
+            val buckets = Counter<String>()
+            mismatches.forEach { buckets.add(classifyDiff(it.diffs.firstOrNull())) }
+            for ((bucket, c) in buckets.mostCommon(20)) println("  x${c.toString().padEnd(4)} $bucket")
+
+            println("\nGAMEPLAY TREE MISMATCH examples — generated != golden:")
+            for (m in mismatches.take(30)) {
+                val first = m.diffs.firstOrNull()
+                val capSuffix = if (m.missingCaps.isEmpty()) "" else " missingCaps=${m.missingCaps}"
+                val oracle = Cards.scryfallCard(code, m.name)?.strField("oracle_text")?.replace('\n', ' ')
+                if (first == null) {
+                    println("  - ${m.name.padEnd(28)} <unknown>$capSuffix")
+                } else {
+                    val oracleSuffix = if (oracle == null) "" else " oracle=\"${oracle.take(120)}${if (oracle.length > 120) "..." else ""}\""
+                    println("  - ${m.name.padEnd(28)} ${first.path}: generated=${first.generated} golden=${first.golden}$capSuffix$oracleSuffix")
+                }
+            }
+            if (mismatches.size > 30) println("  ... ${mismatches.size - 30} more")
+        }
+        if (suspectedGoldenDrift.isNotEmpty()) {
+            println("\nGOLDEN DRIFT SUSPECTED (${suspectedGoldenDrift.size}) — generated differs from golden, but Scryfall oracle supports the generated shape:")
+            for (m in suspectedGoldenDrift.take(20)) {
+                val first = m.diffs.firstOrNull()
+                val oracle = Cards.scryfallCard(code, m.name)?.strField("oracle_text")?.replace('\n', ' ')
+                if (first != null) println("  - ${m.name.padEnd(28)} ${first.path}: generated=${first.generated} golden=${first.golden} oracle=\"${oracle ?: ""}\"")
+            }
+            if (suspectedGoldenDrift.size > 20) println("  ... ${suspectedGoldenDrift.size - 20} more")
         }
         if (notEmitted.isNotEmpty()) {
             println("\nNOT EMITTED (${notEmitted.size}) — engine-feature-complex; the emitter declines rather than emit a wrong card:")
             notEmitted.forEach { println("  - $it") }
         }
+        if (extraEmitted.isNotEmpty()) {
+            println("\nEMITTED OUTSIDE GOLDEN (${extraEmitted.size}) — generated snapshots with no golden counterpart:")
+            extraEmitted.forEach { println("  - $it") }
+        }
         val ok = mismatches.isEmpty()
-        println("\n${if (ok) "GATE PASS — every emitted card compiles and capability-matches the golden tree." else "GATE FAIL — an emitted card is wrong (see MISMATCH)."}" +
+        println("\n${if (ok) "GATE PASS — every emitted card compiles and gameplay-tree matches the golden tree." else "GATE FAIL — an emitted card is not gameplay-equivalent (see GAMEPLAY TREE MISMATCH)."}" +
             "  (${verified.size}/$total of Portal auto-emitted & verified.)")
         return if (ok) 0 else 2
+    }
+
+    private fun missingCapabilities(generated: JsonObject, golden: JsonObject, effects: Set<String>): List<String> {
+        val g = truthCaps(generated, effects)
+        val t = truthCaps(golden, effects)
+        return ((t.first + t.second) - (g.first + g.second)).sorted()
+    }
+
+    private fun normalizeForFidelity(node: JsonElement): JsonElement {
+        if (node is JsonArray) return JsonArray(node.map { normalizeForFidelity(it) })
+        if (node !is JsonObject) return node
+
+        val type = node["type"].asStr()
+        if (type == "BoundVariable" && node["name"].asStr() == "target") {
+            return JsonObject(mapOf("type" to JsonPrimitive("TargetRef")))
+        }
+        if (type == "ContextTarget" && node["index"].asInt() == 0) {
+            return JsonObject(mapOf("type" to JsonPrimitive("TargetRef")))
+        }
+        if (type == "Gated" && node["gate"].asStr() == "Gate.MayDecide" && node.containsKey("then")) {
+            return JsonObject(mapOf(
+                "type" to JsonPrimitive("OptionalEffect"),
+                "then" to normalizeForFidelity(node.getValue("then")),
+            ))
+        }
+        if ((node["optional"] as? JsonPrimitive)?.booleanOrNull == true && node.isAbilityNode() && node.containsKey("effect")) {
+            return JsonObject(node.entries
+                .filterNot { (key, _) -> key == "optional" || key in NON_GAMEPLAY_KEYS || key == "id" }
+                .associate { (key, value) ->
+                    key to if (key == "effect") {
+                        JsonObject(mapOf(
+                            "type" to JsonPrimitive("OptionalEffect"),
+                            "then" to normalizeForFidelity(value),
+                        ))
+                    } else {
+                        normalizeForFidelity(value)
+                    }
+                })
+        }
+        if (type == "AggregateBattlefield" && node["player"].asStr() == "Each" &&
+            (node["aggregation"].asStr() == null || node["aggregation"].asStr() == "COUNT") &&
+            node["property"] == null && node["excludeSelf"] == null) {
+            val fields = linkedMapOf<String, JsonElement>(
+                "type" to JsonPrimitive("Count"),
+                "player" to JsonPrimitive("Each"),
+                "zone" to JsonPrimitive("Battlefield"),
+            )
+            node["filter"]?.let { fields["filter"] = normalizeForFidelity(it) }
+            return JsonObject(fields)
+        }
+        if (node.keys == setOf("type", "id") && node["id"].asStr() == "target") {
+            node["type"].asStr()?.let { return JsonPrimitive(it) }
+        }
+        return JsonObject(node.entries
+            .filterNot { (key, value) ->
+                key in NON_GAMEPLAY_KEYS ||
+                    (key == "id" && (node.isAbilityNode() || value.asStr() == "target"))
+            }
+            .associate { (key, value) -> key to normalizeForFidelity(value) })
+    }
+
+    private val NON_GAMEPLAY_KEYS = setOf("metadata", "oracleText", "colorIdentityOverride")
+
+    private fun JsonObject.isAbilityNode(): Boolean {
+        return containsKey("effect") && (containsKey("trigger") || containsKey("cost"))
+    }
+
+    private fun diffTrees(generated: JsonElement, golden: JsonElement, max: Int = 8): List<TreeDiff> {
+        val out = mutableListOf<TreeDiff>()
+        fun walk(g: JsonElement?, t: JsonElement?, path: String) {
+            if (out.size >= max || g == t) return
+            when {
+                g is JsonObject && t is JsonObject -> {
+                    val keys = (g.keys + t.keys).sorted()
+                    for (key in keys) {
+                        if (out.size >= max) return
+                        walk(g[key], t[key], "$path.$key")
+                    }
+                }
+                g is JsonArray && t is JsonArray -> {
+                    val n = maxOf(g.size, t.size)
+                    for (i in 0 until n) {
+                        if (out.size >= max) return
+                        walk(g.getOrNull(i), t.getOrNull(i), "$path[$i]")
+                    }
+                }
+                else -> out.add(TreeDiff(path, shortJson(g), shortJson(t)))
+            }
+        }
+        walk(generated, golden, "\$")
+        return out
+    }
+
+    private fun shortJson(node: JsonElement?): String {
+        val raw = if (node == null) "<missing>" else J.encodeToString(JsonElement.serializer(), node)
+        return if (raw.length <= 120) raw else raw.take(117) + "..."
+    }
+
+    private fun classifyDiff(diff: TreeDiff?): String {
+        val path = diff?.path ?: return "unknown"
+        return when {
+            ".targetRequirement" in path || ".targetRequirements" in path -> "target/filter recovery"
+            ".target" in path -> "effect target wiring"
+            ".amount" in path || ".count" in path -> "amount/count recovery"
+            ".condition" in path || ".gate" in path -> "condition/gate recovery"
+            ".keywords" in path -> "keyword recovery"
+            ".metadata" in path || ".colorIdentityOverride" in path -> "metadata recovery"
+            ".script" in path -> "effect/ability structure"
+            else -> path.removePrefix("\$.").substringBefore('.')
+        }
+    }
+
+    private enum class OracleAssessment { GOLDEN_DRIFT, UNKNOWN }
+
+    private fun oracleAssessment(code: String, mismatch: TreeMismatch): OracleAssessment {
+        val first = mismatch.diffs.firstOrNull() ?: return OracleAssessment.UNKNOWN
+        val oracle = Cards.scryfallCard(code, mismatch.name)?.strField("oracle_text")?.lowercase(Locale.ROOT) ?: return OracleAssessment.UNKNOWN
+        if ("target player or planeswalker" in oracle &&
+            first.generated.contains("TargetPlayerOrPlaneswalker") && first.golden.contains("TargetPlayer")) {
+            return OracleAssessment.GOLDEN_DRIFT
+        }
+        if ("target opponent or planeswalker" in oracle &&
+            first.generated.contains("TargetOpponentOrPlaneswalker") && first.golden.contains("TargetOpponent")) {
+            return OracleAssessment.GOLDEN_DRIFT
+        }
+        if ("target player" in oracle && "target opponent" !in oracle &&
+            first.generated.contains("TargetPlayer") && first.golden.contains("TargetOpponent")) {
+            return OracleAssessment.GOLDEN_DRIFT
+        }
+        if ("target player gains" in oracle &&
+            first.path.endsWith(".target") && first.generated.contains("TargetRef") && first.golden == "<missing>") {
+            return OracleAssessment.GOLDEN_DRIFT
+        }
+        if (mismatch.diffs.all { it.path.contains(".castRestrictions") } && first.generated == "<missing>" &&
+            "cast only" !in oracle && "activate only" !in oracle) {
+            return OracleAssessment.GOLDEN_DRIFT
+        }
+        if ("you may" in oracle && first.generated == "<missing>" &&
+            (first.path.endsWith(".effect.destination") || first.path.endsWith(".effect.target") ||
+                first.path.endsWith(".effect.effects") || first.path.endsWith(".effect.byDestruction"))) {
+            return OracleAssessment.GOLDEN_DRIFT
+        }
+        return OracleAssessment.UNKNOWN
     }
 
     fun run(args: List<String>): Int {

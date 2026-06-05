@@ -46,8 +46,13 @@ private fun EmitCtx.staticAbilityDsl(ruleName: String, ruleNode: JsonObject): St
             return "CanOnlyBlockCreaturesWith(blockerFilter = $bf)"
         }
         "CantBeBlockedExceptByDefenders", "CantBeBlockedByDefenders" -> {
-            used.addAll(listOf("CantBeBlockedExceptBy", "GameObjectFilter", "Keyword"))
-            return "CantBeBlockedExceptBy(blockerFilter = GameObjectFilter.Creature.withKeyword(Keyword.DEFENDER))"
+            if (oracleText?.contains("defender", ignoreCase = true) == true) {
+                used.addAll(listOf("CantBeBlockedExceptBy", "GameObjectFilter", "Keyword"))
+                return "CantBeBlockedExceptBy(blockerFilter = GameObjectFilter.Creature.withKeyword(Keyword.DEFENDER))"
+            }
+            val blockerFilter = gameObjectFilterDsl(ruleNode["args"]) ?: return null
+            used.add("CantBeBlockedBy")
+            return "CantBeBlockedBy(blockerFilter = $blockerFilter)"
         }
         "CantAttackUnlessDefendingPlayer" -> {  // Deep-Sea Serpent: defender must control an Island
             val subs = subtypes(ruleNode)

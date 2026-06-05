@@ -1,15 +1,21 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 
+
 /**
  * Raging Goblin
  * {R}
  * Creature — Goblin Berserker
  * 1/1
- * Haste
+ * Haste (This creature can attack and {T} as soon as it comes under your control.)
  */
 val RagingGoblin = card("Raging Goblin") {
     manaCost = "{R}"
@@ -17,10 +23,7 @@ val RagingGoblin = card("Raging Goblin") {
     typeLine = "Creature — Goblin Berserker"
     power = 1
     toughness = 1
-    oracleText = "Haste"
-
     keywords(Keyword.HASTE)
-
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "145"

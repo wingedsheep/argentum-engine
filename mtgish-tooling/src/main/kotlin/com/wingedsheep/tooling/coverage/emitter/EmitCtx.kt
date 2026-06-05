@@ -5,6 +5,7 @@ import com.wingedsheep.tooling.coverage.asInt
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.findRef
+import com.wingedsheep.tooling.coverage.findRefIn
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.pascalToUpperSnake
 import com.wingedsheep.tooling.coverage.strField
@@ -34,7 +35,7 @@ data class RenderResult(val text: String, val complete: Boolean, val reasons: Se
  *  - spell/trigger/activated structure → `CardStructure.kt`, whole-card shortcuts → `SpellShortcuts.kt`
  *  - static abilities → `StaticAbilities.kt`; shells + whole-card assembly → `Shells.kt` / `CardRenderer.kt`
  */
-class EmitCtx(val keywords: Set<String>) {
+class EmitCtx(val keywords: Set<String>, val oracleText: String? = null) {
     /** SerialNames/symbols the card uses → resolved to imports by [com.wingedsheep.tooling.coverage.Registry]. */
     val used: MutableSet<String> = linkedSetOf("card", "Rarity")
     val reasons: MutableSet<String> = mutableSetOf()
@@ -117,6 +118,11 @@ internal fun EmitCtx.dynamicAmount(node: JsonElement?): String? {
             return "DynamicAmount.Divide($inner, DynamicAmount.Fixed(2), roundUp = $roundup)"
         }
     }
+    if (gn == "TheNumberOfCardsOfTypeRevealedFromHandThisWay") {
+        val filter = revealedHandFilterDsl(node["args"]) ?: return null
+        used.addAll(listOf("DynamicAmount", "Player", "Zone"))
+        return "DynamicAmount.Count(Player.TargetOpponent, Zone.HAND, $filter)"
+    }
     if (gn == "Multiply" && node["args"].asArr?.size == 2) {
         val arr = node["args"].asArr!!
         val a = arr[0]; val b = arr[1]
@@ -124,12 +130,24 @@ internal fun EmitCtx.dynamicAmount(node: JsonElement?): String? {
         val mult = if (intA is Int) intA else findInteger(b)
         val cnt = if (findInteger(a) == mult) b else a
         val inner = dynamicAmount(cnt)
-        if (inner != null && mult is Int) { used.add("DynamicAmount"); return "DynamicAmount.Multiply($inner, $mult)" }
+        if (inner != null && mult is Int) {
+            used.add("DynamicAmount")
+            return if (mult == 1) inner else "DynamicAmount.Multiply($inner, $mult)"
+        }
         return null
     }
     if ((gn != null && "NumberOf" in gn) || gn == "TheNumberOfPermanentsOnTheBattlefield") {
         used.addAll(listOf("DynamicAmount", "Player", "GameObjectFilter"))
-        val player = if (jsonContains(node, "_Player", "Opponent")) "Player.Opponent" else "Player.You"
+        val oracle = oracleText?.lowercase() ?: ""
+        if (" hand" in oracle || " in it" in oracle) return null
+        val player = when {
+            "attacking you" in oracle -> "Player.Opponent"
+            "on the battlefield" in oracle -> "Player.Each"
+            "target opponent controls" in oracle || jsonContains(node, "_Player", "Ref_TargetOpponent") -> "Player.TargetOpponent"
+            "target player controls" in oracle || jsonContains(node, "_Player", "Ref_TargetPlayer") -> "Player.TargetPlayer"
+            jsonContains(node, "_Player", "Opponent") -> "Player.Opponent"
+            else -> "Player.You"
+        }
         return "DynamicAmount.AggregateBattlefield($player, ${landSearchFilterDsl(node)})"
     }
     return null
@@ -138,6 +156,15 @@ internal fun EmitCtx.dynamicAmount(node: JsonElement?): String? {
 /** Resolve an action's subject ref to an EffectTarget DSL (the bound `tvar`, or EffectTarget.Self). */
 internal fun EmitCtx.refTarget(args: JsonElement?, tvar: String?): String? {
     val ref = findRef(args)
+    return refTargetFromRef(ref, tvar)
+}
+
+/** Resolve the ref under a marked subtree, such as `_DamageRecipient`, to an EffectTarget DSL. */
+internal fun EmitCtx.refTargetIn(args: JsonElement?, markerKey: String, tvar: String?): String? {
+    return refTargetFromRef(findRefIn(args, markerKey), tvar)
+}
+
+private fun EmitCtx.refTargetFromRef(ref: String?, tvar: String?): String? {
     if (ref in setOf("Ref_TargetPermanent", "Ref_TargetPlayer", "Ref_TargetGraveyardCard")) return tvar
     if (ref in SELF_REFS) { used.add("EffectTarget"); return "EffectTarget.Self" }
     return tvar
@@ -176,7 +203,19 @@ internal fun EmitCtx.paycostDsl(costNode: JsonElement?): String? {
         return "PayCost.Sacrifice(${args.joinToString(", ")})"
     }
     if ("DiscardACardAtRandom" in blob) return "PayCost.Discard(random = true)"
-    if ("Discard" in blob) return "PayCost.Discard()"
+    if ("Discard" in blob) {
+        val oracle = oracleText?.lowercase() ?: ""
+        val filter = when {
+            "discard a creature card" in oracle || "\"Creature\"" in blob -> {
+                used.add("GameObjectFilter"); "GameObjectFilter.Creature"
+            }
+            "discard a land card" in oracle || "\"Land\"" in blob -> {
+                used.add("GameObjectFilter"); "GameObjectFilter.Land"
+            }
+            else -> null
+        }
+        return if (filter == null) "PayCost.Discard()" else "PayCost.Discard(filter = $filter)"
+    }
     if ("Mana" in blob) return "PayCost.OwnManaCost"
     return null
 }

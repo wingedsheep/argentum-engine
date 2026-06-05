@@ -1,3 +1,8 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
@@ -5,12 +10,13 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 
+
 /**
  * Deep-Sea Serpent
  * {4}{U}{U}
- * Creature - Serpent
+ * Creature — Serpent
  * 5/5
- * Deep-Sea Serpent can't attack unless defending player controls an Island.
+ * This creature can't attack unless defending player controls an Island.
  */
 val DeepSeaSerpent = card("Deep-Sea Serpent") {
     manaCost = "{4}{U}{U}"
@@ -18,15 +24,14 @@ val DeepSeaSerpent = card("Deep-Sea Serpent") {
     typeLine = "Creature — Serpent"
     power = 5
     toughness = 5
-
     staticAbility {
         ability = CantAttackUnless(Conditions.OpponentControlsLandType("Island"))
     }
-
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "51"
         artist = "Scott M. Fischer"
+        flavorText = "Sailors fear the deep-sea serpent; others thank the gods it has no legs."
         imageUri = "https://cards.scryfall.io/normal/front/f/2/f2d7f8d8-30fb-47c7-8927-646c41f0b9bc.jpg"
     }
 }

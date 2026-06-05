@@ -1,13 +1,19 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 
+
 /**
  * Starlit Angel
  * {3}{W}{W}
- * Creature - Angel
+ * Creature — Angel
  * 3/4
  * Flying
  */
@@ -17,9 +23,7 @@ val StarlitAngel = card("Starlit Angel") {
     typeLine = "Creature — Angel"
     power = 3
     toughness = 4
-
     keywords(Keyword.FLYING)
-
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "30"

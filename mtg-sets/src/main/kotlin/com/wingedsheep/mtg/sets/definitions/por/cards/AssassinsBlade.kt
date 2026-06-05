@@ -1,14 +1,20 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+
 
 /**
  * Assassin's Blade
@@ -21,24 +27,16 @@ val AssassinsBlade = card("Assassin's Blade") {
     manaCost = "{1}{B}"
     colorIdentity = "B"
     typeLine = "Instant"
-
     spell {
-        // Cast restrictions
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
-
-        val t = target("target", TargetCreature(filter = TargetFilter.AttackingCreature.notColor(Color.BLACK)))
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK).attacking()))
         effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
     }
-
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "80"
-        artist = "Mark Poole"
+        artist = "John Matson"
         imageUri = "https://cards.scryfall.io/normal/front/b/8/b80e8fe0-eccb-4268-a6ce-1365c68e6b13.jpg"
-        ruling(
-            "10/4/2004",
-            "This card was originally printed as a sorcery and has received errata to make it an instant."
-        )
     }
 }

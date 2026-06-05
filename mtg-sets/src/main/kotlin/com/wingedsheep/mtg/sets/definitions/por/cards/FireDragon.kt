@@ -1,13 +1,21 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
-import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+
 
 /**
  * Fire Dragon
@@ -15,8 +23,7 @@ import com.wingedsheep.sdk.dsl.Triggers
  * Creature — Dragon
  * 6/6
  * Flying
- * When Fire Dragon enters the battlefield, it deals damage to target creature
- * equal to the number of Mountains you control.
+ * When this creature enters, it deals damage to target creature equal to the number of Mountains you control.
  */
 val FireDragon = card("Fire Dragon") {
     manaCost = "{6}{R}{R}{R}"
@@ -24,23 +31,16 @@ val FireDragon = card("Fire Dragon") {
     typeLine = "Creature — Dragon"
     power = 6
     toughness = 6
-
     keywords(Keyword.FLYING)
-
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        val t = target("target", TargetCreature())
-        effect = DealDamageEffect(
-            amount = DynamicAmounts.landsWithSubtype(Subtype.MOUNTAIN),
-            target = t
-        )
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
+        effect = DealDamageEffect(DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land.withSubtype("Mountain")), t)
     }
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "125"
-        artist = "Edward Beard, Jr."
-        flavorText = "Its breath carries the fury of the mountains themselves."
+        artist = "William Simpson"
         imageUri = "https://cards.scryfall.io/normal/front/b/f/bf1f26d1-4381-470a-bfbf-ef226f980597.jpg"
     }
 }

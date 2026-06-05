@@ -15,23 +15,24 @@ import kotlinx.serialization.json.JsonObject
 /**
  * mtgish -> Argentum cardDef EMITTER (port of emitter.py). The single source of truth for "what the
  * generator would emit": fidelity tiers cards on whether [renderCard] completes, autogen writes the
- * files, and the Kotlin gate compiles the output. AUTO ⟺ the emitter renders the whole card.
+ * files, and the Kotlin gate compiles the output. A whole-card render is only a draft candidate;
+ * calibrated sets must pass the gameplay-tree fidelity gate before the output is trusted.
  *
  * This facade just assembles a whole card; the per-action "mapping" rules live in the sibling files
- * (see [EmitCtx]). Guarantees the emitted card *compiles* and its *capabilities* match the golden
- * tree — NOT behavioural exactness; imports resolve from a live SDK source scan so they can't rot.
+ * (see [EmitCtx]). Imports resolve from a live SDK source scan so they can't rot.
  */
 object Emitter {
     fun renderCard(
         card: JsonObject, scryfall: JsonObject?, effects: Set<String>, keywords: Set<String>,
         pkg: String = "com.wingedsheep.mtg.sets.generated.demo.cards",
     ): RenderResult {
-        val ctx = EmitCtx(keywords)
+        val ctx = EmitCtx(keywords, scryfall?.strField("oracle_text"))
         val name = card["Name"].asStr() ?: ""
         val ident = name.replace(Regex("[^A-Za-z0-9]"), "")
         val pt = card["CardPT"].asObj
 
-        val kw = keywordLines(card, keywords)
+        val permanent = isPermanent(card)
+        val kw = if (permanent) keywordLines(card, keywords) else emptySet()
         if (kw.isNotEmpty()) ctx.used.add("Keyword")
 
         val body = mutableListOf<String>()
@@ -42,6 +43,8 @@ object Emitter {
         body.add("    typeLine = \"${renderTypeline(card["Typeline"])}\"")
         if (pt != null) { body.add("    power = ${pt["Power"].asInt()}"); body.add("    toughness = ${pt["Toughness"].asInt()}") }
         if (kw.isNotEmpty()) body.add("    keywords(${kw.sorted().joinToString(", ") { "Keyword.$it" }})")
+        val cardLevelLines = ctx.cardLevelCastEffectLines(card) ?: return incomplete(ctx, body, scryfall, pkg)
+        body.addAll(cardLevelLines)
 
         val handledRules = setOf("SpellActions", "TriggerA", "PermanentRuleEffect", "Flying", "Haste",
             "Vigilance", "Reach", "Defender", "Landwalk", "FirstStrike", "Trample", "CastEffect")
@@ -50,6 +53,10 @@ object Emitter {
             val rname = rule.strField("_Rule")
             val block: List<String>?
             when {
+                rname == "CastEffect" -> {
+                    if (!ctx.castEffectHandled(rule)) return incomplete(ctx, body, scryfall, pkg)
+                    continue
+                }
                 rname == "SpellActions" -> block = ctx.spellBlock(card)
                 rname == "TriggerA" -> block = ctx.triggerBlock(rule)
                 rname == "PermanentRuleEffect" -> block = ctx.staticBlock(rule)
@@ -62,7 +69,7 @@ object Emitter {
             body.addAll(block)
         }
 
-        if (!isPermanent(card) && !jsonContains(card["Rules"], "_Rule", "SpellActions")) {
+        if (!permanent && !jsonContains(card["Rules"], "_Rule", "SpellActions")) {
             ctx.reasons.add("no-renderable-effect"); return incomplete(ctx, body, scryfall, pkg)
         }
 

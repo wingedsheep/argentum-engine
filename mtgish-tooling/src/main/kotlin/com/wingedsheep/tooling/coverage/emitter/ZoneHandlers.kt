@@ -25,9 +25,17 @@ internal val zoneHandlers: Map<String, ActionHandler> = buildMap {
         "MoveToZoneEffect($tgt, Zone.GRAVEYARD, byDestruction = true)"
     }
     reg("DestroyEachPermanent", "DestroyEachPermanentNoRegen") { node, args, _ ->
+        if (jsonContains(args, "_Permanents", "Ref_TargetPermanents")) {
+            used.addAll(listOf("ForEachTargetEffect", "MoveToZoneEffect", "Zone", "EffectTarget"))
+            val noregen = if (node.strField("_Action") == "DestroyEachPermanentNoRegen") ", noRegenerate = true" else ""
+            return@reg "ForEachTargetEffect(listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), " +
+                "Zone.GRAVEYARD, byDestruction = true$noregen)))"
+        }
+        if (oracleText?.contains("target", ignoreCase = true) == true) return@reg null
         used.addAll(listOf("ForEachInGroupEffect", "MoveToZoneEffect", "Zone", "EffectTarget"))
         val noregen = if (node.strField("_Action") == "DestroyEachPermanentNoRegen") "true" else "false"
-        "ForEachInGroupEffect(${groupFilterDsl(args)}, MoveToZoneEffect(EffectTarget.Self, " +
+        val filter = groupFilterDsl(args) ?: return@reg null
+        "ForEachInGroupEffect($filter, MoveToZoneEffect(EffectTarget.Self, " +
             "Zone.GRAVEYARD, byDestruction = true), noRegenerate = $noregen)"
     }
 
@@ -44,7 +52,7 @@ internal val zoneHandlers: Map<String, ActionHandler> = buildMap {
     }
 
     reg("SearchLibrary") { _, args, _ -> renderSearch(args) }
-    reg("LookAtTheTopNumberCardsOfLibrary", "LookAtTheTopNumberCardsOfPlayersLibrary") { node, _, _ -> renderLook(node) }
+    reg("LookAtTheTopNumberCardsOfLibrary", "LookAtTheTopNumberCardsOfPlayersLibrary") { node, args, tvar -> renderLook(node, args, tvar) }
 
     reg("PutGraveyardCardOntoBattlefield", "PutGraveyardCardIntoHand",
         "ReturnDeadGraveyardCardToTopOfLibrary", "PutPermanentOnTopOfOwnersLibrary") { node, args, tvar ->
@@ -59,7 +67,12 @@ internal val zoneHandlers: Map<String, ActionHandler> = buildMap {
             "ReturnDeadGraveyardCardToTopOfLibrary" to "LIBRARY", "PutPermanentOnTopOfOwnersLibrary" to "LIBRARY",
         )[a]
         used.addAll(listOf("MoveToZoneEffect", "Zone"))
-        "MoveToZoneEffect($tgt, Zone.$zone)"
+        if (a == "PutPermanentOnTopOfOwnersLibrary" || a == "ReturnDeadGraveyardCardToTopOfLibrary") {
+            used.add("ZonePlacement")
+            "MoveToZoneEffect($tgt, Zone.$zone, ZonePlacement.Top)"
+        } else {
+            "MoveToZoneEffect($tgt, Zone.$zone)"
+        }
     }
 }
 
@@ -82,10 +95,38 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): String? {
     return "EffectPatterns.searchLibrary(${parts.joinToString(", ")})"
 }
 
-internal fun EmitCtx.renderLook(node: JsonObject): String? {
+internal fun EmitCtx.renderLook(node: JsonObject, args: JsonElement?, tvar: String?): String? {
     used.add("EffectPatterns")
     val look = findInteger(node) ?: return null
     val blob = compact(node)
+    if (oracleText?.contains("target", ignoreCase = true) == true) {
+        if (node.strField("_Action") != "LookAtTheTopNumberCardsOfPlayersLibrary" || tvar == null) return null
+        if ("PutAGenericCardIntoGraveyard" !in blob || "PutTheRemainingCardsOnTopOfLibraryInAnyOrder" !in blob) return null
+        used.addAll(listOf(
+            "CompositeEffect", "GatherCardsEffect", "CardSource", "DynamicAmount", "Player",
+            "SelectFromCollectionEffect", "SelectionMode", "MoveCollectionEffect", "CardDestination",
+            "Zone", "ZonePlacement", "CardOrder",
+        ))
+        return "CompositeEffect(\n" +
+            "        listOf(\n" +
+            "            GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed($look), Player.TargetOpponent), storeAs = \"looked\"),\n" +
+            "            SelectFromCollectionEffect(\n" +
+            "                from = \"looked\",\n" +
+            "                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),\n" +
+            "                storeSelected = \"toGraveyard\",\n" +
+            "                storeRemainder = \"toTop\",\n" +
+            "                selectedLabel = \"Put in graveyard\",\n" +
+            "                remainderLabel = \"Put on top\"\n" +
+            "            ),\n" +
+            "            MoveCollectionEffect(from = \"toGraveyard\", destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.TargetOpponent)),\n" +
+            "            MoveCollectionEffect(\n" +
+            "                from = \"toTop\",\n" +
+            "                destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetOpponent, ZonePlacement.Top),\n" +
+            "                order = CardOrder.ControllerChooses\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )"
+    }
     var keep: Int? = null
     for (m in Regex(""""PutNumber\w*IntoHand".*?"args":\s*(\d+)""").findAll(blob)) keep = m.groupValues[1].toInt()
     if (keep != null) return "EffectPatterns.lookAtTopAndKeep(count = $look, keepCount = $keep)"

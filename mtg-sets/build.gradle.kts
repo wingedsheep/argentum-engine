@@ -51,12 +51,12 @@ tasks.register<JavaExec>("syncColorIdentityFromDump") {
 }
 
 // === mtgish auto-generator: compile-verification gate (Hybrid design) ===========================
-// The Kotlin emitter (the :tooling module) writes draft cards into this isolated source set under a
+// The Kotlin mtgish emitter writes draft cards into this isolated source set under a
 // distinct `generated.<set>.cards` package (never colliding with the real definitions on the
 // classpath). Gradle compiles them — so a draft that doesn't compile fails the build — and the
 // verifier serialises each via the same CardExporter that produces the golden snapshots. A small
-// `fidelity --gate` step then diffs the serialised trees against the golden, turning the fidelity
-// AUTO tier from a static prediction into a real "compiles + capability-matches" check.
+// `fidelity --gate` step then gameplay-tree diffs the serialised trees against the golden, turning the
+// fidelity AUTO tier from a static prediction into a real "compiles + golden-equivalent" check.
 // Run with: just coverage-verify --set POR   (or ./gradlew :mtg-sets:verifyGeneratedCards -Pset=POR)
 val generatedCardsDir = layout.buildDirectory.dir("generated-cards/src")
 val generatorSet = (project.findProperty("set") as String? ?: "POR").toString().uppercase()
@@ -65,16 +65,16 @@ sourceSets { create("generatedCards") }
 kotlin.sourceSets.named("generatedCards") { kotlin.srcDir(generatedCardsDir) }
 dependencies { "generatedCardsImplementation"(project(":mtg-sdk")) }
 
-// Run the :tooling CLI's emit-all on its runtime classpath (build-time tool dependency only — keeps
-// :mtg-sets's main classpath free of the tooling).
-val coverageTool: Configuration by configurations.creating { isCanBeResolved = true; isCanBeConsumed = false }
-dependencies { coverageTool(project(":tooling")) }
+// Run the :mtgish-tooling CLI's emit-all on its runtime classpath (build-time tool dependency only — keeps
+// :mtg-sets's main classpath free of the mtgish tooling).
+val mtgishTool: Configuration by configurations.creating { isCanBeResolved = true; isCanBeConsumed = false }
+dependencies { mtgishTool(project(":mtgish-tooling")) }
 
 val emitGeneratedCards by tasks.registering(JavaExec::class) {
-    description = "Emit whole-renderable cards for -Pset=CODE via the mtgish bridge (Kotlin :tooling)."
+    description = "Emit whole-renderable cards for -Pset=CODE via the mtgish bridge."
     group = "verification"
     workingDir = rootProject.projectDir
-    classpath = coverageTool
+    classpath = mtgishTool
     mainClass.set("com.wingedsheep.tooling.coverage.MainKt")
     args("autogen", "--set", generatorSet, "--emit-all", "--out", generatedCardsDir.get().asFile.absolutePath)
 }

@@ -1,35 +1,39 @@
+// === GENERATED DRAFT — do NOT merge as-is. ===
+// Source: mtgish IR via the coverage bridge (predictive, approximate).
+// Before use: (1) compile, (2) write & pass a scenario test, (3) review the rules text.
+// Then move into the set's cards/ package (auto-registers via classpath scan).
+
 package com.wingedsheep.mtg.sets.definitions.por.cards
 
 import com.wingedsheep.sdk.dsl.EffectPatterns
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
+
 
 /**
  * Omen
  * {1}{U}
  * Sorcery
- * Look at the top three cards of your library, then put them back in any order.
- * You may shuffle. Draw a card.
+ * Look at the top three cards of your library, then put them back in any order. You may shuffle.
+ * Draw a card.
  */
 val Omen = card("Omen") {
     manaCost = "{1}{U}"
     colorIdentity = "U"
     typeLine = "Sorcery"
-
     spell {
         effect = CompositeEffect(
-            listOf(
-                EffectPatterns.lookAtTopAndReorder(3),
-                MayEffect(ShuffleLibraryEffect()),
-                Effects.DrawCards(1)
-            )
+        listOf(
+            EffectPatterns.lookAtTopAndReorder(count = 3),
+            MayEffect(ShuffleLibraryEffect()),
+            DrawCardsEffect(1)
         )
+    )
     }
-
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "62"
