@@ -1,3 +1,72 @@
+// Angelic Page
+{
+    "name": "Angelic Page",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Angel Spirit",
+    "oracleText": "Flying\n{T}: Target attacking or blocking creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Rebecca Guay",
+        "flavorText": "If only every message were as perfect as its bearers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f50a4378-8b14-484c-b285-09cc4c4e1b3c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Annul
 {
     "name": "Annul",
@@ -54,6 +123,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Catalog
+{
+    "name": "Catalog",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards, then discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Berry",
+        "flavorText": "\"Without order comes errors, and errors kill on Tolaria.\"\n—Barrin, master wizard",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31bdef28-0e27-4c8d-a04c-5413519dcb4e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -167,6 +302,213 @@
     ]
 }
 
+// Eastern Paladin
+{
+    "name": "Eastern Paladin",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Phyrexian Zombie Knight",
+    "oracleText": "{B}{B}, {T}: Destroy target green creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{B}{B}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature green"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Carl Critchlow",
+        "flavorText": "\"Their fragile world. Their futile lives. They obstruct the Grand Evolution. In Yawgmoth's name, we shall excise them.\"\n—Oath of the East",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f042a8c7-f07b-42bd-8251-c588d890683c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Elite Archers
+{
+    "name": "Elite Archers",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Human Soldier Archer",
+    "oracleText": "{T}: This creature deals 3 damage to target attacking or blocking creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Arrows fletched with the feathers of angels seldom miss their mark.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d7ee95c-3ce8-4b8c-a1a7-1caa5b8a3cc9.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Elvish Lyrist
+{
+    "name": "Elvish Lyrist",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf",
+    "oracleText": "{G}, {T}, Sacrifice this creature: Destroy target enchantment.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{G}"
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "enchantment"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "artist": "Rebecca Guay",
+        "flavorText": "Bring the spear of ancient briar;\nBring the torch to light the pyre.\nBring the one who trod our ground;\nBring the spade to dig his mound.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c63ea60-4ce0-4dc7-bda6-7f623b0f9e2a.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Glorious Anthem
+{
+    "name": "Glorious Anthem",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "Once heard, the battle song of an angel becomes part of the listener forever.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61f867c5-0727-4408-b479-b81518daa0ec.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Greater Good
 {
     "name": "Greater Good",
@@ -244,6 +586,54 @@
     ]
 }
 
+// Intrepid Hero
+{
+    "name": "Intrepid Hero",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{T}: Destroy target creature with power 4 or greater.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "flavorText": "\"We each have our own strengths, Radiant,\" Serra said with a sly smile. \"If all of my people were like this one, who would carry your scrolls?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f2a5c67-f76a-4021-959e-3e084a06b80f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lay Waste
 {
     "name": "Lay Waste",
@@ -283,5 +673,137 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Looming Shade
+{
+    "name": "Looming Shade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Shade",
+    "oracleText": "{B}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{B}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Vincent Evans",
+        "flavorText": "The shade tracks victims by reverberations of the pipes, as a spider senses prey tangled in its trembling web.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/525f63ae-e002-4d47-bea5-b24dc89d4d06.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Reflexes
+{
+    "name": "Reflexes",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature (Target a creature as you cast this. This card enters attached to that creature.)\nEnchanted creature has first strike. (It deals combat damage before creatures without first strike.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "artist": "Steve White",
+        "flavorText": "\"Here's how ya win. Don't let the other guy hit back first.\"\n—Jula, goblin raider",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/614782c2-a38a-4b3e-9716-7f5c09c4ad43.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Western Paladin
+{
+    "name": "Western Paladin",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Phyrexian Zombie Knight",
+    "oracleText": "{B}{B}, {T}: Destroy target white creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{B}{B}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature white"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "RARE",
+        "artist": "Carl Critchlow",
+        "flavorText": "\"Their weak laws. Their flawed systems. They inhibit the Grand Evolution. In Yawgmoth's name, we shall erase them.\"\n—Oath of the West",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4bcfe0f-2397-488b-8f02-dae1f6cd5824.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

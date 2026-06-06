@@ -1,0 +1,67 @@
+// Sage of Lat-Nam
+{
+    "name": "Sage of Lat-Nam",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "{T}, Sacrifice an artifact: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostSacrifice",
+                            "filter": "artifact"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4ff60ce-073c-46b8-807c-8b40467b960c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wall of Spears
+{
+    "name": "Wall of Spears",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nFirst strike",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER",
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "flavorText": "Even the most conservative generals revised their tactics after the Battle of Sarinth, during which a handful of peasant-pikemen held off a trio of rampaging Craw Wurms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1dda179-c49a-4995-ba5a-db93ac43dbe7.jpg"
+    },
+    "colorIdentityOverride": []
+}

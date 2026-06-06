@@ -11,6 +11,19 @@ import com.wingedsheep.mtg.sets.definitions.blc.BloomburrowCommanderSet
 import com.wingedsheep.mtg.sets.definitions.bro.BrothersWarSet
 import com.wingedsheep.mtg.sets.definitions.c15.Commander2015Set
 import com.wingedsheep.mtg.sets.definitions.c17.Commander2017Set
+import com.wingedsheep.mtg.sets.definitions.`8ed`.EighthEditionSet
+import com.wingedsheep.mtg.sets.definitions.apc.ApocalypseSet
+import com.wingedsheep.mtg.sets.definitions.atq.AntiquitiesSet
+import com.wingedsheep.mtg.sets.definitions.mmq.MercadianMasquesSet
+import com.wingedsheep.mtg.sets.definitions.nem.NemesisSet
+import com.wingedsheep.mtg.sets.definitions.pcy.ProphecySet
+import com.wingedsheep.mtg.sets.definitions.pls.PlaneshiftSet
+import com.wingedsheep.mtg.sets.definitions.ptk.PortalThreeKingdomsSet
+import com.wingedsheep.mtg.sets.definitions.s99.Starter1999Set
+import com.wingedsheep.mtg.sets.definitions.sth.StrongholdSet
+import com.wingedsheep.mtg.sets.definitions.tor.TormentSet
+import com.wingedsheep.mtg.sets.definitions.uds.UrzasDestinySet
+import com.wingedsheep.mtg.sets.definitions.ulg.UrzasLegacySet
 import com.wingedsheep.mtg.sets.definitions.cmd.Commander2011Set
 import com.wingedsheep.mtg.sets.definitions.con.ConfluxSet
 import com.wingedsheep.mtg.sets.definitions.dft.AetherdriftSet
@@ -90,6 +103,19 @@ object MtgSetCatalog {
 
     val all: List<MtgSet> = listOf(
         AlphaSet,
+        EighthEditionSet,
+        AntiquitiesSet,
+        StrongholdSet,
+        UrzasLegacySet,
+        UrzasDestinySet,
+        MercadianMasquesSet,
+        NemesisSet,
+        ProphecySet,
+        PlaneshiftSet,
+        ApocalypseSet,
+        TormentSet,
+        PortalThreeKingdomsSet,
+        Starter1999Set,
         ArabianNightsSet,
         LegendsSet,
         TheDarkSet,

@@ -1,3 +1,35 @@
+// Boil
+{
+    "name": "Boil",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy all Islands.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": "land Island"
+            },
+            "effect": {
+                "type": "MoveToZone",
+                "target": "Self",
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Alexander Behnke",
+        "flavorText": "\"The fishers will throw out their nets and draw them back filled with dust.\"\n—Oracle en-Vec",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fa1c529-44e5-41b6-9704-ae2319f31f13.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Canopy Spider
 {
     "name": "Canopy Spider",
@@ -19,6 +51,30 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Canyon Wildcat
+{
+    "name": "Canyon Wildcat",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Mountainwalk (This creature can't be blocked as long as defending player controls a Mountain.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "MOUNTAINWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Gary Leach",
+        "flavorText": "\"Relative of yours?\" Ertai teased. Mirri simply sneered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0169e52b-7909-4a8f-8ca2-62f030f9a85a.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -48,6 +104,31 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fighting Drake
+{
+    "name": "Fighting Drake",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "DiTerlizzi",
+        "flavorText": "Two things are needed to survive the harsh skies of Rath: a thick hide and a thicker skull.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be436b65-9193-45ca-93e0-c5e9718f7e72.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -234,6 +315,120 @@
     ]
 }
 
+// Lightning Blast
+{
+    "name": "Lightning Blast",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Lightning Blast deals 4 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Richard Thomas",
+        "flavorText": "\"Those who fear the darkness have never seen what the light can do.\"\n—Selenia, dark angel",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63fec3f9-d399-48e6-84b6-c8410c24c382.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Lightning Elemental
+{
+    "name": "Lightning Elemental",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "D. Alexander Gregory",
+        "flavorText": "A lightning elemental once killed an entire tribe of merfolk—simply by going for a swim.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11f6d2a4-cc97-43f3-a8b2-f96262c27371.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Master Decoy
+{
+    "name": "Master Decoy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{W}, {T}: Tap target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{W}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Phil Foglio",
+        "flavorText": "\"A skilled decoy can throw your enemies off your trail. A master decoy can survive to do it again.\"\n—Gerrard of the Weatherlight",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3e11097-1ace-4ae8-a9e8-d00b9f709e54.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Orim's Prayer
 {
     "name": "Orim's Prayer",
@@ -273,6 +468,25 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Phyrexian Hulk
+{
+    "name": "Phyrexian Hulk",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Phyrexian Golem",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "metadata": {
+        "collectorNumber": "302",
+        "rarity": "UNCOMMON",
+        "artist": "Matthew D. Wilson",
+        "flavorText": "\"They are convenient in having no souls, but less so in having no spirit.\"\n—Volrath",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/307f5d5e-3a4b-430e-8769-fb553216befa.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Reckless Spite
@@ -345,6 +559,80 @@
     ]
 }
 
+// Sea Monster
+{
+    "name": "Sea Monster",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "This creature can't attack unless defending player controls an Island.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "Opponent",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Daniel Gelon",
+        "flavorText": "Water is life. Or perhaps it is just something to wash it down with.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d3837ac-54af-44f7-b576-ad5badbee9f2.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Staunch Defenders
+{
+    "name": "Staunch Defenders",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, you gain 4 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "flavorText": "\"Hold your position! Leave doubt for the dying!\"\n—Tahngarth of the Weatherlight",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88ed7210-17a4-4750-a003-617ba75bff3e.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Stun
 {
     "name": "Stun",
@@ -389,5 +677,25 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Trained Armodon
+{
+    "name": "Trained Armodon",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Elephant",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "artist": "Gary Leach",
+        "flavorText": "These are its last days. Better to grow broad and heavy. Better that the enemy is crushed beneath its carcass.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2380ab8f-58d2-4e1c-a115-cd2615b5a871.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

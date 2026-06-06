@@ -1,0 +1,116 @@
+// Carrion Wall
+{
+    "name": "Carrion Wall",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\n{1}{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{1}{B}"
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Szczudlo",
+        "flavorText": "A wall built from the bodies of the enemy will never lack building material in times of war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61d6fa78-3422-4ace-88ab-e985c558cba7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Spineless Thug
+{
+    "name": "Spineless Thug",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Zombie Mercenary",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "Matthew D. Wilson",
+        "flavorText": "These troops are only as strong as the evincar's control.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4a9bb47-3855-425d-924c-09dbde74735b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vicious Hunger
+{
+    "name": "Vicious Hunger",
+    "manaCost": "{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Vicious Hunger deals 2 damage to target creature and you gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Massimiliano Frezzato",
+        "flavorText": "\"Blood is foul, the flesh dross. My ascendance thirsts for life itself.\"\n—Crovax",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccaff6a0-7831-45db-a50f-881c6cb7ce49.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

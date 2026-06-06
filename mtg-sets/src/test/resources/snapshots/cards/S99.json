@@ -1,0 +1,109 @@
+// Eager Cadet
+{
+    "name": "Eager Cadet",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Scott M. Fischer",
+        "flavorText": "The enthusiasm of the young, sharpened by the discipline of a soldier.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1e1ce2f-d8af-4fd0-975e-9d910d12b883.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Goblin Chariot
+{
+    "name": "Goblin Chariot",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Pete Venters",
+        "flavorText": "They have to replace the wheels, they have to replace the boar, and sometimes they have to replace the goblin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9ca11a7e-17f8-419f-9ba8-1bcaa3860f8b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sea Eagle
+{
+    "name": "Sea Eagle",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Anthony S. Waters",
+        "flavorText": "Where air meets water, fish meets talon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bddb733-2100-42f8-8ea1-a55d516c5958.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Silverback Ape
+{
+    "name": "Silverback Ape",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Ape",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spears",
+        "flavorText": "His true majesty is not in his silver, but in his size.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da253fa8-d6ab-4f02-b3ac-d2b6ad48ded8.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vizzerdrix
+{
+    "name": "Vizzerdrix",
+    "manaCost": "{6}{U}",
+    "typeLine": "Creature — Rabbit Beast",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Eric Peterson",
+        "flavorText": "Its swamp cousin may be meaner, but the vizzerdrix is much bigger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25711022-7270-4335-a48b-9f2b8275ceeb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

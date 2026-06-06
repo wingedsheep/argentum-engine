@@ -1,0 +1,79 @@
+// Honor Guard
+{
+    "name": "Honor Guard",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{W}: This creature gets +0/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{W}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Joel Biske",
+        "flavorText": "\"It is not a choice I make, to have this guard. It is the choice of my people, and my duty to them.\"\n—Oracle en-Vec",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35c44137-ddcc-42fa-baff-a0c3785b84ee.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shock
+{
+    "name": "Shock",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Shock deals 2 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Randy Gallegos",
+        "flavorText": "Lightning tethers souls to the world.\n—Kor saying",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9b2ff2a-6dfe-4635-8da2-22d525e82b94.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

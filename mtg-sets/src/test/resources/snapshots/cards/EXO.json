@@ -72,6 +72,43 @@
     ]
 }
 
+// Nausea
+{
+    "name": "Nausea",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -1/-1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": "creature"
+            },
+            "effect": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Jeff Miracola",
+        "flavorText": "Any mogg will tell you there's nothing more nauseating than the smell of cute.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a10531d8-fc99-4a2b-94b0-97a25521d725.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shackles
 {
     "name": "Shackles",
@@ -114,5 +151,65 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Standing Troops
+{
+    "name": "Standing Troops",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Daren Bader",
+        "flavorText": "The less you have, the harder you fight for it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/135e258a-71d8-45dd-9307-91111aa34bde.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Treasure Trove
+{
+    "name": "Treasure Trove",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "{2}{U}{U}: Draw a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{2}{U}{U}"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Sutfin",
+        "flavorText": "Karn and Hanna stood over the recovered Legacy artifacts like loving parents over sleeping children.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f23ce909-e744-47ca-943d-62d97e97b1ea.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

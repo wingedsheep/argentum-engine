@@ -450,6 +450,53 @@
     "colorIdentityOverride": []
 }
 
+// Daring Apprentice
+{
+    "name": "Daring Apprentice",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}, Sacrifice this creature: Counter target spell.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Stack"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "flavorText": "In front of every great wizard is a doomed apprentice.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f87b3c06-5479-4060-8d3a-d161fd5830c1.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dwarven Nomad
 {
     "name": "Dwarven Nomad",
@@ -563,6 +610,60 @@
     ]
 }
 
+// Foratog
+{
+    "name": "Foratog",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Atog",
+    "oracleText": "{G}, Sacrifice a Forest: This creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{G}"
+                        },
+                        {
+                            "type": "CostSacrifice",
+                            "filter": "land Forest"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "flavorText": "Five hundred years to grow—barely a minute to eat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2e1195d-443f-4826-a748-bc6e7e24153a.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Noble Elephant
 {
     "name": "Noble Elephant",
@@ -586,6 +687,42 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Patagia Golem
+{
+    "name": "Patagia Golem",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "{3}: This creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{3}"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "313",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Kirschner",
+        "flavorText": "It scattered falcons like a lion hunting among jackals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89920b7a-fd56-4fa8-96c9-fb66c2af6fbf.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Phyrexian Purge
@@ -736,6 +873,61 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Rampant Growth
+{
+    "name": "Rampant Growth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, put that card onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "artist": "Pat Lewis",
+        "flavorText": "\"I've never heard growth before.\"\n—Gowon, Femeref herder",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9dd8043-4099-42bb-9d54-4efc8b38fe18.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

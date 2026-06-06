@@ -1,3 +1,120 @@
+// Balduvian Barbarians
+{
+    "name": "Balduvian Barbarians",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Human Barbarian",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Mark Poole",
+        "flavorText": "\"Barbarian raids were a concern to those living in the northwest provinces, but the Skyknights never dealt with the problem in a systematic way. They thought of the Balduvians as an 'amusing model' of their forebears' culture.\"\n—Kjeldor: Ice Civilization",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efeabe8e-8107-4d19-8a43-362aa79cdd92.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dark Banishing
+{
+    "name": "Dark Banishing",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target nonblack creature. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    }
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Drew Tucker",
+        "flavorText": "\"Will not the mountains quake and hills melt at the coming of the darkness? Share this vision with your enemies, Lim-Dûl, and they shall wither.\"\n—Leshrac, Walker of Night",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7dc2716-ed62-4797-ad2b-227eca5408d0.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Fyndhorn Elder
+{
+    "name": "Fyndhorn Elder",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Add {G}{G}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Rush",
+        "flavorText": "\"Do we know what we're doing? Yes—the will of Freyalise.\"\n—Laina of the Elvish Council",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fca8aa11-f7cb-4f88-a041-30098579f1d2.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Mountain Goat
 {
     "name": "Mountain Goat",
@@ -102,6 +219,30 @@
         "artist": "Pat Lewis",
         "flavorText": "\"Leaves more room for the big ones to fight in, you know.\"\n—Jaya Ballard, Task Mage",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/88040748-ad76-4b9a-bd4e-87e5980e9816.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sabretooth Tiger
+{
+    "name": "Sabretooth Tiger",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "First strike",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "215",
+        "artist": "Melissa A. Benson",
+        "flavorText": "\"Daughter, it is now your turn to hunt the Tiger, and make a blanket of its fur.\"\n—Lovisa Coldeyes, Balduvian Chieftain",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/6914c5a8-2114-41c5-a471-ca97524d622f.jpg"
     },
     "colorIdentityOverride": [
         "RED"

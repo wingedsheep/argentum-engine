@@ -1,3 +1,86 @@
+// Boomerang
+{
+    "name": "Boomerang",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target permanent to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Brian Snõddy",
+        "flavorText": "\"O! call back yesterday, bid time return.\"\n—William Shakespeare, King Richard the Second",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8286edd-644b-4135-8dca-af97f3920de3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Fallen Angel
+{
+    "name": "Fallen Angel",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nSacrifice a creature: This creature gets +2/+1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f4174e4-0be8-49b5-8c52-22001790f6eb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Holy Day
 {
     "name": "Holy Day",
@@ -14,6 +97,80 @@
         "collectorNumber": "20",
         "artist": "Justin Hampton",
         "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6c95a2b-bf44-4ff2-9c6a-916773346edd.jpg?1591104919"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Moss Monster
+{
+    "name": "Moss Monster",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Jesper Myrfors",
+        "flavorText": "After the battle, an eerie silence gripped the forest. The losers' remains were lightly dusted with green.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9903c043-9a7a-4994-b532-136d4c46edfd.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Remove Soul
+{
+    "name": "Remove Soul",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Stack"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Brian Snõddy",
+        "flavorText": "Nethya stiffened suddenly, head cocked as if straining to hear some distant sound, then fell lifeless to the ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63de147c-2e62-41b9-8ada-93406387f08b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tundra Wolves
+{
+    "name": "Tundra Wolves",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Quinton Hoover",
+        "flavorText": "I heard their eerie howling, the wolves calling their kindred across the frozen plains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f649cb5-e19c-453f-b062-4fd452d92257.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"

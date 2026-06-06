@@ -20,3 +20,107 @@
         "BLACK"
     ]
 }
+
+// Inferno
+{
+    "name": "Inferno",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Inferno deals 6 damage to each creature and each player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        },
+                        "target": "Self"
+                    }
+                },
+                {
+                    "type": "ForEachPlayer",
+                    "players": "Each",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 6
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Randy Asplund-Faith",
+        "flavorText": "\"Any scrap of compassion that still existed in my soul was permanently snuffed out when they cast me out into the flames.\" —Mairsil, called the Pretender",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6b61512-5b24-424c-966f-36b595781e14.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Skull of Orm
+{
+    "name": "Skull of Orm",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{5}, {T}: Return target enchantment card from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{5}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "enchantment own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Tom Wänerstrand",
+        "flavorText": "Though lifeless, the Skull still possessed a strange power over the flow of magic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa1d9bb5-972a-4705-bf22-0fa1e974dd26.jpg"
+    },
+    "colorIdentityOverride": []
+}

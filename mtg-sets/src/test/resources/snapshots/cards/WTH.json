@@ -43,3 +43,64 @@
         "BLUE"
     ]
 }
+
+// Sage Owl
+{
+    "name": "Sage Owl",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, look at the top four cards of your library, then put them back in any order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "looked",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Mark Poole",
+        "flavorText": "The owl asks but never answers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ee2d6a1-8b1e-47e5-9720-5683ac458250.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

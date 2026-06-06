@@ -40,6 +40,108 @@
     ]
 }
 
+// Goblin Glider
+{
+    "name": "Goblin Glider",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Flying\nThis creature can't block.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Pete Venters",
+        "flavorText": "The goblins call the gliders \"death from above.\" Everyone else calls them \"clods in the clouds.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c29491b-dec1-429d-9950-062582f8164f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Goblin Raider
+{
+    "name": "Goblin Raider",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Matt Stawicki",
+        "flavorText": "\"I seen lots o' fights. To win ya gotta bash hard and not get bashed back.\"\n—Goblin grunt",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68fe9691-d788-42cb-8d13-005724939b62.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Norwood Ranger
+{
+    "name": "Norwood Ranger",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Scout Ranger",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Ron Spencer",
+        "flavorText": "Some trees bear deadly fruit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c557c0c2-eb0f-4a9d-9192-577a684b3426.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ogre Taskmaster
+{
+    "name": "Ogre Taskmaster",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Ogre",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "flavorText": "Three little goblins, enjoying their brew. One bumped an ogre, and then there were two.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d674a92e-b268-48f7-b082-f8ca2e63d43b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ravenous Rats
 {
     "name": "Ravenous Rats",
@@ -113,6 +215,49 @@
         "collectorNumber": "87",
         "artist": "Edward P. Beard, Jr.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/8899244b-737a-43a9-9241-15a650b47bed.jpg?1562927249"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vampiric Spirit
+{
+    "name": "Vampiric Spirit",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhen this creature enters, you lose 4 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": "Controller"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f636e46a-9d35-47b8-8df0-6dcb18105d30.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"

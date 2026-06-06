@@ -1,0 +1,377 @@
+// Collective Unconscious
+{
+    "name": "Collective Unconscious",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "Andrew Goldhawk",
+        "flavorText": "Gerrard knew little of Ramos, the sky god they worshiped. But he felt the power of the chant.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fa7d6a8-9190-403f-bbdd-ab71d9c89e4d.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Crossbow Infantry
+{
+    "name": "Crossbow Infantry",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier Archer",
+    "oracleText": "{T}: This creature deals 1 damage to target attacking or blocking creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Greg Hildebrandt & Tim Hildebrandt",
+        "flavorText": "The crossbow is the ideal weapon for the lazy Mercadians: just point and shoot.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/744c2177-3140-48a1-95a4-2f0a27ca5b2f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Deepwood Ghoul
+{
+    "name": "Deepwood Ghoul",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Pay 2 life: Regenerate this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostPayLife",
+                    "amount": 2
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Alan Pollack",
+        "flavorText": "They feed on the living to stay undead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29cd6685-37ca-47c7-8f64-1fb86e9610ca.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Horned Troll
+{
+    "name": "Horned Troll",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "{G}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{G}"
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "artist": "Heather Hudson",
+        "flavorText": "\"If I says it's a troll, it's a troll. Goblins is always right in Mercadia.\"\n—Squee",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f2a6d10-054e-4d6f-aeb7-4204f02490c7.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Primeval Shambler
+{
+    "name": "Primeval Shambler",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Horror Mercenary",
+    "oracleText": "{B}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{B}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Chippy",
+        "flavorText": "His mind, like his body, is made up of the swamp's flotsam.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d6ed1fb-2f7d-4a21-bbf3-660cad631975.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Revive
+{
+    "name": "Revive",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target green card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "UNCOMMON",
+        "artist": "Matthew D. Wilson",
+        "flavorText": "Gerrard's heart ached, recalling the living wreath Mirri laid for her dead kin. No such memorial was left for her in Rath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b19b453-8393-424d-9578-3ab568c92882.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Rushwood Dryad
+{
+    "name": "Rushwood Dryad",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dryad",
+    "oracleText": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FORESTWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "263",
+        "artist": "Todd Lockwood",
+        "flavorText": "Rushwood is a living jewel that reflects its dwellers' hearts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55367a94-b343-4a04-bfa9-47722e32cc45.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Shock Troops
+{
+    "name": "Shock Troops",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Sacrifice this creature: It deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "artist": "Jeff Miracola",
+        "flavorText": "When goblins blow themselves up, it's called stupidity. When humans do, it's called heroism.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7a918ca-3e60-46de-9f29-56bdc6430a77.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Tidal Kraken
+{
+    "name": "Tidal Kraken",
+    "manaCost": "{5}{U}{U}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "This creature can't be blocked.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "To merfolk, pirates are a nuisance. To pirates, merfolk are a threat. To the kraken, they're both appetizers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/356a9dcd-1a4b-4371-8f1d-aa7cb65e97e8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Vine Trellis
+{
+    "name": "Vine Trellis",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Plant Wall",
+    "oracleText": "Defender (This creature can't attack.)\n{T}: Add {G}.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "285",
+        "artist": "DiTerlizzi",
+        "flavorText": "\"We protect our own with our own.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e660241f-0976-4206-8149-7dac8466a2a3.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

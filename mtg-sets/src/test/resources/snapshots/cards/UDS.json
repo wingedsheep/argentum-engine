@@ -1,0 +1,255 @@
+// Bloodshot Cyclops
+{
+    "name": "Bloodshot Cyclops",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Cyclops Giant",
+    "oracleText": "{T}, Sacrifice a creature: This creature deals damage equal to the sacrificed creature's power to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostSacrifice",
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Sacrificed",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Ray Lago",
+        "flavorText": "After their first encounter, the goblins named him Chuck.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9320f3d8-0e51-43d0-aedb-bfed771101e9.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fodder Cannon
+{
+    "name": "Fodder Cannon",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}, Sacrifice a creature: This artifact deals 4 damage to target creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{4}"
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostSacrifice",
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "DiTerlizzi",
+        "flavorText": "Step 1: Find your cousin. Step 2: Get your cousin in the cannon. Step 3: Find another cousin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/229ba320-69c9-4400-a0d7-f0f79e8d9856.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Solidarity
+{
+    "name": "Solidarity",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +0/+5 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            },
+            "effect": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "John Zeleznik",
+        "flavorText": "Their commitment to Serra is as solid as any shield.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5e1589a-ec4f-47a4-b758-ada7f49ffb8f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Soul Feast
+{
+    "name": "Soul Feast",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player loses 4 life and you gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Ray Lago",
+        "flavorText": "As no one has ever accepted a second invitation to Davvol's table, the evincar often dines alone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/9417a9db-5101-4fe1-84b7-283ca1fd42e5.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Temporal Adept
+{
+    "name": "Temporal Adept",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{U}{U}{U}, {T}: Return target permanent to its owner's hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{U}{U}{U}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Heather Hudson",
+        "flavorText": "\"Of course she's at the head of her class. All her classmates have disappeared.\"\n—Gatha, Tolarian renegade",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07bb9695-a8b0-47b4-9a03-11d559412f33.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

@@ -1,0 +1,44 @@
+// Index
+{
+    "name": "Index",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library, then put them back in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "looked",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Kev Walker",
+        "flavorText": "\"Let's see . . . Mercadia, mercenary, merfolk . . . you know, I really need a better filing system.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/637ebd57-ba92-48ff-9ad4-d40dad2ff418.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

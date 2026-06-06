@@ -85,6 +85,42 @@
     ]
 }
 
+// Inspiration
+{
+    "name": "Inspiration",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target player draws two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Zina Saunders",
+        "flavorText": "\"Madness and genius are separated only by degrees of success.\"\n—Sidar Jabari",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5247d0b0-660e-4f27-8e76-62effbe12221.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Man-o'-War
 {
     "name": "Man-o'-War",
@@ -188,6 +224,79 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Nekrataal
+{
+    "name": "Nekrataal",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "First strike\nWhen this creature enters, destroy target nonartifact, nonblack creature. That creature can't be regenerated.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBeRegenerated",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonartifact",
+                                {
+                                    "type": "NotColor",
+                                    "color": "BLACK"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Adrian Smith",
+        "flavorText": "\"I have seen the horrors Kaervek has freed. My betrayal is certain—but of Kaervek or of Jamuraa, I cannot say.\"\n—Jolrael",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dba3e342-88b7-4692-a3f7-a3f56c0cf6b5.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -317,5 +426,46 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Tremor
+{
+    "name": "Tremor",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tremor deals 1 damage to each creature without flying.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            },
+            "effect": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Michael Danza",
+        "flavorText": "\"Where do you run when the earth becomes your enemy?\"\n—Naimah, Femeref philosopher",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9d64665-c1e0-40ab-a358-247f82966379.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }

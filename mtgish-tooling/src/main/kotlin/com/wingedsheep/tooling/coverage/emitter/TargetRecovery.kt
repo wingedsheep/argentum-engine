@@ -40,7 +40,7 @@ internal fun EmitCtx.creatureFilterDsl(filterNode: JsonElement?): String? {
         suffix += ".notColor(Color.${it.groupValues[1].uppercase()})"
     }
     Regex(""""IsColor".*?"_Color":\s*"(\w+)"""").find(blob)?.let {
-        suffix += ".color(Color.${it.groupValues[1].uppercase()})"
+        suffix += ".withColor(Color.${it.groupValues[1].uppercase()})"
     }
     if (jsonContains(filterNode, "_Permanents", "DoesntHaveAbility") && "\"Flying\"" in blob) {
         suffix += ".withoutKeyword(Keyword.FLYING)"

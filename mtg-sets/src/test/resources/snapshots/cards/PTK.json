@@ -1,0 +1,71 @@
+// Ambition's Cost
+{
+    "name": "Ambition's Cost",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw three cards and you lose 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Junko Taguchi",
+        "flavorText": "\"When you give offense to heaven, to whom can you pray?\"\n—Cao Cao, quoting Confucius",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e0b1613-e879-4c28-b27e-f3997b9ebccd.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Peach Garden Oath
+{
+    "name": "Peach Garden Oath",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain 2 life for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                },
+                "multiplier": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Qiao Dafu",
+        "flavorText": "\"We three, though of separate ancestry, join in brotherhood . . . . We dare not hope to be together always but hereby vow to die the selfsame day.\"\n—Peach Garden Oath",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41bfd51a-0aca-4686-a9c5-11288f409a22.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

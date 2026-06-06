@@ -1379,6 +1379,41 @@
     ]
 }
 
+// Healing Salve
+{
+    "name": "Healing Salve",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target player gains 3 life.\n• Prevent the next 3 damage that would be dealt to any target this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e28de37e-84d5-4dc7-b36c-e14da5924729.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Helm of Chatzuk
 {
     "name": "Helm of Chatzuk",
@@ -2301,6 +2336,45 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Nightmare
+{
+    "name": "Nightmare",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Nightmare Horse",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nNightmare's power and toughness are each equal to the number of Swamps you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Swamp"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Swamp"
+            }
+        }
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "flavorText": "The Nightmare arises from its lair in the swamps. As the poisoned land spreads, so does the Nightmare's rage and terrifying strength.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8cdd6a7-f772-4ccb-914f-63f52ed54d6b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

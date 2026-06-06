@@ -1,3 +1,58 @@
+// Anaba Shaman
+{
+    "name": "Anaba Shaman",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "{R}, {T}: This creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{R}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67a",
+        "artist": "Anson Maddocks",
+        "flavorText": "\"The Shamans? Ha! They are mere craven cows not capable of true magic.\"\n—Irini Sengir",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c55d086a-d848-43bc-8c1e-de96d10877e1.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dry Spell
 {
     "name": "Dry Spell",
@@ -46,5 +101,60 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Merchant Scroll
+{
+    "name": "Merchant Scroll",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a blue instant card, reveal that card, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "instant"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Liz Danforth",
+        "flavorText": "\"There's no trade without trust.\"\n—Eron the Relentless",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4133ceb-6176-411a-9eb8-51721c1bb435.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

@@ -1,0 +1,281 @@
+// Coastal Hornclaw
+{
+    "name": "Coastal Hornclaw",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Sacrifice a land: This creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "land"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "DiTerlizzi",
+        "flavorText": "Jamuraan farmers fear three things above all else: droughts, floods, and hornclaws.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5b91ddc-8630-4214-8dce-215f28ccc685.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Diving Griffin
+{
+    "name": "Diving Griffin",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying, vigilance",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "John Howe",
+        "flavorText": "To outrace the griffin\n—Kipamu expression meaning \"to do the impossible\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec9f72b2-e3d0-4b24-9a73-b95d54695fa4.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Plague Wind
+{
+    "name": "Plague Wind",
+    "manaCost": "{7}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures you don't control. They can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            },
+            "effect": {
+                "type": "MoveToZone",
+                "target": "Self",
+                "destination": "Graveyard",
+                "byDestruction": true
+            },
+            "noRegenerate": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Alan Pollack",
+        "flavorText": "\"The second wind of ascension is Reaver, slaying the unworthy.\"\n—Keld Triumphant",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0d4bd20-7422-45ed-aa76-3ef055c556e7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Ridgeline Rager
+{
+    "name": "Ridgeline Rager",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "{R}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{R}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Chippy",
+        "flavorText": "While armies battled across Jamuraa, beasts stalked the high places looking for victims.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f663a4a-592a-4a3b-bbaf-e9c5c3049021.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Searing Wind
+{
+    "name": "Searing Wind",
+    "manaCost": "{8}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Searing Wind deals 10 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 10
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "John Matson",
+        "flavorText": "\"The first wind of ascension is Forger, burning away impurity.\"\n—Keld Triumphant",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b761f97-3690-497a-b6ab-c71f61b8e841.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Spitting Spider
+{
+    "name": "Spitting Spider",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nSacrifice a land: This creature deals 1 damage to each creature with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "land"
+                },
+                "effect": {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": "creature kw:flying"
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f220fada-5cbb-4266-bca3-a44d51773d63.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sword Dancer
+{
+    "name": "Sword Dancer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Rebel",
+    "oracleText": "{W}{W}: Target attacking creature gets -1/-0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{W}{W}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Roger Raupp",
+        "flavorText": "Most soldiers think of the sword as a weapon. In the hands of Zho monks, swords are also the strongest of shields.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a06f00e8-3e58-4ba7-9542-ce6b17fd4005.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

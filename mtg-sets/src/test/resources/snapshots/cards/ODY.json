@@ -1,3 +1,312 @@
+// Aven Cloudchaser
+{
+    "name": "Aven Cloudchaser",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhen this creature enters, destroy target enchantment.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Justin Sweet",
+        "flavorText": "\"At the Reapportionment, Eagle begged to be human. The Ancestor granted half that prayer.\"\n—Nomad myth",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08afe190-368e-4259-9959-00beaccee7ba.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aven Fisher
+{
+    "name": "Aven Fisher",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhen this creature dies, you may draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Christopher Moeller",
+        "flavorText": "The same spears that catch their food today will defend their homes tomorrow.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b27130d-2296-4076-9829-15ab63081896.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aven Flock
+{
+    "name": "Aven Flock",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\n{W}: This creature gets +0/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{W}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Greg Hildebrandt & Tim Hildebrandt",
+        "flavorText": "Just as each added feather steadies the wing, so does the flock grow stronger with each new member.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29866d0b-f9be-4284-9d21-03598ef6ae4f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Concentrate
+{
+    "name": "Concentrate",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Glen Angus & Arnie Swekel",
+        "flavorText": "\"The treasure in my mind is greater than any worldly glory.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45f2878e-1c1c-4dd3-9687-7bb216d557c7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Diabolic Tutor
+{
+    "name": "Diabolic Tutor",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a card, put that card into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Rick Farrell",
+        "flavorText": "The best ideas often come from the worst minds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6cf7e1b-00ea-46f8-a20a-76c307167854.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dusk Imp
+{
+    "name": "Dusk Imp",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Imp",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Edward P. Beard, Jr.",
+        "flavorText": "It despises humans and squirrels and beasts and dwarves and cephalids . . . well, it despises just about everything.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f67943c0-304a-4d04-8e26-f45b3ab27a45.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Execute
+{
+    "name": "Execute",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target white creature. It can't be regenerated.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBeRegenerated",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature white"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Gary Ruddell",
+        "flavorText": "\"Any fool who would die for honor is better off dead.\"\n—Cabal Patriarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/333123bc-fb66-4b5a-bf55-045d2906c8c3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mossfire Valley
 {
     "name": "Mossfire Valley",
@@ -45,6 +354,68 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Nantuko Disciple
+{
+    "name": "Nantuko Disciple",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Insect Druid",
+    "oracleText": "{G}, {T}: Target creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{G}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "artist": "Justin Sweet",
+        "flavorText": "Unanswered prayers are themselves answers.\n—Nantuko teaching",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f5db5e0-bd95-4c82-a12d-7288dbbbe3ba.jpg"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }

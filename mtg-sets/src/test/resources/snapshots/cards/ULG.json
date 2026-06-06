@@ -1,0 +1,328 @@
+// Archivist
+{
+    "name": "Archivist",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "flavorText": "Some do. Some teach. The rest look it up.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9936cb4d-f4e3-4fc7-869e-8f17056e57d5.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Beast of Burden
+{
+    "name": "Beast of Burden",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Beast of Burden's power and toughness are each equal to the number of creatures on the battlefield.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "Each",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "Each",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Ron Spears",
+        "flavorText": "\"If it is meant to be nothing but a machine,\" Karn finally asked Jhoira, \"why did Urza build it to be like me?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06578d72-50e9-468d-96d2-c0cbda14961a.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Fleeting Image
+{
+    "name": "Fleeting Image",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\n{1}{U}: Return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{1}{U}"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Scott M. Fischer",
+        "flavorText": "Horas swore off drinking, but after meeting the creature a second time he decided he'd better start again.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef9a5501-f149-47d0-9d79-151a524c7c54.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Giant Cockroach
+{
+    "name": "Giant Cockroach",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Heather Hudson",
+        "flavorText": "If the sun ever hit the swamp, where would these scurry to?",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0521bf0c-9f43-402e-8065-d2fc02e20194.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Might of Oaks
+{
+    "name": "Might of Oaks",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +7/+7 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": 7
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 7
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Ron Spencer",
+        "flavorText": "Suddenly, she couldn't see the acorns for the trees.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e48b989-bb64-4c71-9921-0a230fed5b11.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Phyrexian Plaguelord
+{
+    "name": "Phyrexian Plaguelord",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Phyrexian Carrier",
+    "oracleText": "{T}, Sacrifice this creature: Target creature gets -4/-4 until end of turn.\nSacrifice a creature: Target creature gets -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"The final stage of the illness: delirium, convulsions, and death.\"\n—Phyrexian progress notes",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/307bd530-4b11-428e-864e-e24e96051e3e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Plague Beetle
+{
+    "name": "Plague Beetle",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "SWAMPWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Tom Fleming",
+        "flavorText": "It is the harbinger of disease, not the carrier.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c07f4e55-57f9-49f6-a1a2-1c94dcbe7d71.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wing Snare
+{
+    "name": "Wing Snare",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Henry Van Der Linde",
+        "flavorText": "\"Argoth's doom rained from a clear sky. Yavimaya will not share that fate.\"\n—Multani, maro-sorcerer",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19116d5d-8f2d-4e85-849d-1fbaa67e8cfd.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

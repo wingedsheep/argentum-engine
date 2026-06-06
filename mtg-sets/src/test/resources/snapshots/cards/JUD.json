@@ -64,3 +64,27 @@
         "WHITE"
     ]
 }
+
+// Suntail Hawk
+{
+    "name": "Suntail Hawk",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Heather Hudson",
+        "flavorText": "\"Our forebears once flew like this—carefree, needing nothing but a warm nest and a full belly. Our intellect may be more burden than blessing.\"\n—Commander Eesha",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fbdae0b-b4aa-40ff-9017-b4349bd6b627.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
