@@ -282,6 +282,28 @@ flow, but a human needs to confirm it actually feels right in the client. Run th
 + `just client`), set up the situation (the `generate-scenario` skill can inject a board state), and
 click through the decision yourself.
 
+### From oracle text to Argentum code — `mtgish-tooling`
+
+<img src="assets/mtgish-coverage-dashboard.png" alt="mtgish coverage dashboard" width="900px">
+
+The `:mtgish-tooling` module maps the [**mtgish**](https://github.com/i5jb/mtgish) oracle-IR corpus —
+a wonderful project by [**i5jb**](https://github.com/i5jb) that parses every card's oracle text into a
+structured intermediate representation — onto our SDK. Huge thanks to its creator: that clean IR is
+what makes this whole pipeline possible. It's a **predictive, non-authoritative** analyzer (never a
+card loader): it triages the backlog and drafts the easy cards as a head start.
+
+```bash
+just coverage-dashboard       # interactive TUI: browse sets, drill into a card's generated cardDef + missing caps
+just coverage --set TMP       # implemented / free-to-add / blocked, plus which feature unlocks the most cards
+just coverage-generate --set TMP   # draft .kt for the auto-generable cards -> mtgish-tooling/generated/<set>/
+just coverage-verify --set POR     # compile the drafts + diff their capabilities against the golden snapshot
+```
+
+Generated `.kt` are **drafts in a staging dir** — they must compile, get a passing scenario test, and
+be human-reviewed before moving into a set's `cards/` package. Use it to find which feature unlocks
+the most cards, or for a blank-page head start; keep using `add-card` for the real implementation. See
+[`mtgish-tooling/README.md`](mtgish-tooling/README.md) for the full reference.
+
 ### Implementing a whole set
 
 When bringing up an entire set, this flow has proven much faster than implementing cards one at a
