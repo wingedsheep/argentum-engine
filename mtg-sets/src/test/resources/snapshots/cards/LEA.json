@@ -1218,6 +1218,49 @@
     ]
 }
 
+// Goblin King
+{
+    "name": "Goblin King",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Other Goblins get +1/+1 and have mountainwalk.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Goblin",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MOUNTAINWALK",
+                "filter": {
+                    "baseFilter": "creature Goblin",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "flavorText": "To become king of the Goblins, one must assassinate the previous king. Thus, only the most foolish seek positions of leadership.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/5873672d-37ea-4c0f-97f3-12b74fde112d.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Granite Gargoyle
 {
     "name": "Granite Gargoyle",
@@ -1971,6 +2014,49 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Lord of Atlantis
+{
+    "name": "Lord of Atlantis",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Merfolk",
+    "oracleText": "Other Merfolk get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Merfolk",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "ISLANDWALK",
+                "filter": {
+                    "baseFilter": "creature Merfolk",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "flavorText": "A master of tactics, the Lord of Atlantis makes his people bold in battle merely by arriving to lead them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/210c4a90-fc7a-4c76-aeaa-20a005e45386.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3243,6 +3329,63 @@
     ]
 }
 
+// Terror
+{
+    "name": "Terror",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target nonartifact, nonblack creature. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNonartifact",
+                            {
+                                "type": "NotColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    }
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Ron Spencer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21004958-2c7e-4a55-bc80-411c4d780106.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Timber Wolves
 {
     "name": "Timber Wolves",
@@ -3382,6 +3525,55 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Tunnel
+{
+    "name": "Tunnel",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target Wall. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Wall"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b21ebc9f-a93e-4d18-b3e8-8459e3abbf31.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
