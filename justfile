@@ -105,10 +105,11 @@ coverage-generate *ARGS: _coverage-tool
 
 # Replace a set's real card sources with mtgish-generated files, including scaffold files for
 # structures the emitter deliberately declines to auto-author. Intended for calibrated set refreshes.
-#   just coverage-refresh-set POR
+#   just coverage-refresh-set POR                   # all cards (whole renders + scaffolds)
+#   just coverage-refresh-set POR --complete-only   # only confidently-whole renders; skip scaffolds
 [group: 'build']
-coverage-refresh-set SET: _coverage-tool
-    @mtgish-tooling/build/install/mtgish-tooling/bin/mtgish-tooling autogen --write-all --set {{SET}}
+coverage-refresh-set SET *ARGS: _coverage-tool
+    @mtgish-tooling/build/install/mtgish-tooling/bin/mtgish-tooling autogen --write-all --set {{SET}} {{ARGS}}
 
 # COMPILE-VERIFICATION GATE — the real proof that AUTO cards are emittable, not just predicted.
 # Emits every whole-renderable card of a set into an isolated Gradle source set, COMPILES them,

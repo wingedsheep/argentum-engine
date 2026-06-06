@@ -68,9 +68,16 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     }
     if (rendered.isEmpty()) return null
     if (rendered.size == 1) return rendered[0]
-    val inner = rendered.joinToString(",\n            ")
-    return "CompositeEffect(\n        listOf(\n            $inner\n        )\n    )"
+    return composite(rendered)
 }
+
+/**
+ * `Effects.Composite(...)` with one element per line, indented to sit in the `effect = ` (8-space)
+ * slot. Each element's first line is placed at 12 spaces; multi-line elements keep their own inner
+ * indentation. Callers pass ≥2 elements (a single effect is emitted directly, never wrapped).
+ */
+internal fun composite(parts: List<String>): String =
+    parts.joinToString(",\n", prefix = "Effects.Composite(\n", postfix = "\n        )") { "            $it" }
 
 // ---------------------------------------------------------------------------
 // Generic amount / reference / keyword toolkit (shared by every handler).

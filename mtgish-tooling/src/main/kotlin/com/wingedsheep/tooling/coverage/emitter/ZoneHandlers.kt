@@ -90,25 +90,23 @@ internal fun EmitCtx.renderLook(node: JsonObject, args: JsonElement?, tvar: Stri
     if (oracleText?.contains("target", ignoreCase = true) == true) {
         if (node.strField("_Action") != "LookAtTheTopNumberCardsOfPlayersLibrary" || tvar == null) return null
         if ("PutAGenericCardIntoGraveyard" !in blob || "PutTheRemainingCardsOnTopOfLibraryInAnyOrder" !in blob) return null
-        return "CompositeEffect(\n" +
-            "        listOf(\n" +
-            "            GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed($look), Player.TargetOpponent), storeAs = \"looked\"),\n" +
-            "            SelectFromCollectionEffect(\n" +
-            "                from = \"looked\",\n" +
-            "                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),\n" +
-            "                storeSelected = \"toGraveyard\",\n" +
-            "                storeRemainder = \"toTop\",\n" +
-            "                selectedLabel = \"Put in graveyard\",\n" +
-            "                remainderLabel = \"Put on top\"\n" +
-            "            ),\n" +
-            "            MoveCollectionEffect(from = \"toGraveyard\", destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.TargetOpponent)),\n" +
-            "            MoveCollectionEffect(\n" +
-            "                from = \"toTop\",\n" +
-            "                destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetOpponent, ZonePlacement.Top),\n" +
-            "                order = CardOrder.ControllerChooses\n" +
-            "            )\n" +
-            "        )\n" +
-            "    )"
+        return composite(listOf(
+            "GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed($look), Player.TargetOpponent), storeAs = \"looked\")",
+            "SelectFromCollectionEffect(\n" +
+                "                from = \"looked\",\n" +
+                "                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),\n" +
+                "                storeSelected = \"toGraveyard\",\n" +
+                "                storeRemainder = \"toTop\",\n" +
+                "                selectedLabel = \"Put in graveyard\",\n" +
+                "                remainderLabel = \"Put on top\"\n" +
+                "            )",
+            "MoveCollectionEffect(from = \"toGraveyard\", destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.TargetOpponent))",
+            "MoveCollectionEffect(\n" +
+                "                from = \"toTop\",\n" +
+                "                destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetOpponent, ZonePlacement.Top),\n" +
+                "                order = CardOrder.ControllerChooses\n" +
+                "            )",
+        ))
     }
     var keep: Int? = null
     for (m in Regex(""""PutNumber\w*IntoHand".*?"args":\s*(\d+)""").findAll(blob)) keep = m.groupValues[1].toInt()

@@ -75,7 +75,7 @@ object Emitter {
 
         body.addAll(metadataLines(scryfall))
         body.add("}")
-        return RenderResult(assemble(body, pkg), true, ctx.reasons)
+        return RenderResult(assemble(body, pkg, complete = true), true, ctx.reasons)
     }
 
     /** Landwalk-keyword recovery, exposed for the fidelity scorer's generated-capability set. */
@@ -87,6 +87,6 @@ object Emitter {
         b.add("    // STRUCTURE needs human wiring: ${ctx.reasons.sorted().joinToString(", ")}")
         b.addAll(metadataLines(scryfall))
         b.add("}")
-        return RenderResult(assemble(b, pkg), false, ctx.reasons)
+        return RenderResult(assemble(b, pkg, complete = false), false, ctx.reasons)
     }
 }

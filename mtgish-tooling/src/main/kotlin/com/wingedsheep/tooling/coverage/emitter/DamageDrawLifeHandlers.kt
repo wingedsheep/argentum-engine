@@ -16,12 +16,10 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
             val filter = groupFilterDsl(args) ?: return@on null
             val eachPermanent = "ForEachInGroupEffect($filter, DealDamageEffect($amt, EffectTarget.Self))"
             if (jsonContains(args, "_DamageRecipient", "EachPlayer")) {
-                return@on "CompositeEffect(\n" +
-                    "        listOf(\n" +
-                    "            $eachPermanent,\n" +
-                    "            ForEachPlayerEffect(Player.Each, listOf(DealDamageEffect($amt, EffectTarget.Controller)))\n" +
-                    "        )\n" +
-                    "    )"
+                return@on composite(listOf(
+                    eachPermanent,
+                    "ForEachPlayerEffect(Player.Each, listOf(DealDamageEffect($amt, EffectTarget.Controller)))",
+                ))
             }
             return@on eachPermanent
         }

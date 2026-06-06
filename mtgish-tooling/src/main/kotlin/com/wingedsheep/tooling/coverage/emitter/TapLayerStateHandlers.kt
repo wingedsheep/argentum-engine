@@ -55,7 +55,7 @@ internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: S
     val inner = mutableListOf<String>()
     val pt = findAdjustPt(node)
     if (pt is JsonArray && pt.size == 2) {
-        inner.add("ModifyStatsEffect(powerModifier = ${pt[0].asInt()}, toughnessModifier = ${pt[1].asInt()}, target = $target)")
+        inner.add("Effects.ModifyStats(${pt[0].asInt()}, ${pt[1].asInt()}, $target)")
     }
     if (jsonContains(node, "_LayerEffect", "AddAbility")) {
         var kw: String? = null
@@ -65,14 +65,11 @@ internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: S
         }
         kw = kw ?: keywordOf(node)
         if (kw != null) {
-            inner.add("GrantKeywordEffect(Keyword.$kw, $target)")
+            inner.add("Effects.GrantKeyword(Keyword.$kw, $target)")
         } else return null
     }
     if (inner.isEmpty()) return null
-    var effect: String? = if (inner.size == 1) inner[0] else null
-    if (effect == null) {
-        effect = "CompositeEffect(listOf(" + inner.joinToString(", ") + "))"
-    }
+    val effect = if (inner.size == 1) inner[0] else composite(inner)
     if (mass) {
         val gfArg = (node["args"].asArr)?.getOrNull(0) ?: JsonObject(emptyMap())
         val filter = groupFilterDsl(gfArg) ?: return null

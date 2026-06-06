@@ -10,9 +10,11 @@ import java.util.Locale
  * Auto-generation gap detector + draft generator, on top of the mtgish bridge.
  *
  *  --gaps SET     bucket a set's UNIMPLEMENTED cards into AUTOGEN / SCAFFOLD / BLOCKED + leaderboard
- *  --write SET    emit a draft `.kt` per AUTOGEN missing card into a STAGING dir for human review
+ *  --write SET    emit a `.kt` per AUTOGEN missing card into a STAGING dir (COMPLETE renders only —
+ *                 blocked + scaffold cards are skipped, so you only get confidently-whole cards)
  *  --emit-all SET emit every whole-renderable card (impl included) for the Kotlin compile gate
- *  --write-all SET replace a real set's card sources with mtgish-generated files, scaffolds included
+ *  --write-all SET replace a real set's card sources with mtgish-generated files, scaffolds included;
+ *                 add --complete-only to skip the scaffolds and write only whole-renderable cards
  *  --all          with --gaps: sweep every Scryfall booster set, sum the AUTOGEN total
  *
  * Drafts stay in staging: they're predictions from approximate IR; ground truth stays a
@@ -140,13 +142,14 @@ object Autogen {
         return 0
     }
 
-    private fun modeWriteAll(setCode: String, effects: Set<String>, keywords: Set<String>, outdir: String?): Int {
+    private fun modeWriteAll(setCode: String, effects: Set<String>, keywords: Set<String>, outdir: String?, completeOnly: Boolean): Int {
         val (names, idx) = allWithMtgish(setCode)
         val out = if (outdir != null) File(outdir) else File(DEFINITIONS_ROOT, "${setCode.lowercase()}/cards")
         if (out.exists()) out.listFiles { f -> f.extension == "kt" }?.forEach { if (!isBasicLandSource(it)) it.delete() }
         out.mkdirs()
         var written = 0
         var scaffold = 0
+        var skippedScaffold = 0
         var unmatched = 0
         var skippedBasicLands = 0
         for (name in names) {
@@ -154,12 +157,16 @@ object Autogen {
             if (card == null) { unmatched++; continue }
             if (isBasicLand(card)) { skippedBasicLands++; continue }
             val res = render(card, setCode, effects, keywords, draftPackage(setCode))
-            if (!res.complete) scaffold++
+            if (!res.complete) {
+                if (completeOnly) { skippedScaffold++; continue }  // --complete-only: emit confidently-whole cards only
+                scaffold++
+            }
             File(out, sourceFileName(name)).writeText(res.text)
             written++
         }
         println("write-all: wrote $written/${names.size} card source file(s) to $out (package ${draftPackage(setCode)})")
         if (scaffold > 0) println("  scaffolds: $scaffold (compileable source with STRUCTURE comments; behaviour incomplete)")
+        if (skippedScaffold > 0) println("  skipped (incomplete render, --complete-only): $skippedScaffold")
         if (unmatched > 0) println("  unmatched in mtgish: $unmatched")
         if (skippedBasicLands > 0) println("  skipped basic lands: $skippedBasicLands (preserved existing basicLand definitions)")
         return 0
@@ -222,6 +229,7 @@ object Autogen {
         var gaps = false; var write = false; var emitAll = false; var writeAll = false
         var listCat: String? = null
         var unique = false
+        var completeOnly = false
         var out: String? = null
         var i = 0
         while (i < args.size) {
@@ -234,6 +242,7 @@ object Autogen {
                 "--write-all" -> writeAll = true
                 "--list" -> listCat = args[++i]
                 "--unique" -> unique = true
+                "--complete-only" -> completeOnly = true
                 "--out" -> out = args[++i]
                 else -> { System.err.println("autogen: unknown argument $a"); return 2 }
             }
@@ -248,7 +257,7 @@ object Autogen {
         }
         if (setCode == null) { System.err.println("autogen: --set CODE (or --all) is required"); return 2 }
         return when {
-            writeAll -> modeWriteAll(setCode, effects, keywords, out)
+            writeAll -> modeWriteAll(setCode, effects, keywords, out, completeOnly)
             write -> modeWrite(setCode, effects, keywords, out)
             emitAll -> modeEmitAll(setCode, effects, keywords, out)
             else -> modeGaps(setCode, effects, keywords, listCat)
