@@ -12,8 +12,9 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("And", "envelope: cost/action conjunction")
     envelope("If", "conditional envelope")
 
-    // The "you may / unless / if you do" gate cluster (Lesson 1).
-    envelope("MayAction", "gate envelope: 'you may' (Lesson 1 cluster)")
+    // The "you may / unless / if you do" gate cluster (Lesson 1). A "you may [effect]" realises as a
+    // `GatedEffect(gate = MayDecide)` (SerialName "Gated") in our trees, so the gate envelope composes it.
+    envelope("MayAction", "gate envelope: 'you may' (Lesson 1 cluster)", composes = listOf("Gated"))
     envelope("MayCost", "gate envelope: 'you may pay' (Lesson 1 cluster)")
     envelope("Unless", "gate envelope: 'unless ...' (Lesson 1 cluster)", composes = listOf("PayOrSuffer"))
 

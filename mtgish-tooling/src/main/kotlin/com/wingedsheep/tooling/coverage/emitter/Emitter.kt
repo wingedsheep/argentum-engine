@@ -4,6 +4,7 @@ import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asInt
 import com.wingedsheep.tooling.coverage.asObj
 import com.wingedsheep.tooling.coverage.asStr
+import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.asciiIdentifier
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.pascalToUpperSnake
@@ -64,6 +65,9 @@ object Emitter {
                 rname == "TriggerA" -> block = ctx.triggerBlock(rule)
                 rname == "PermanentRuleEffect" -> block = ctx.staticBlock(rule)
                 rname == "Activated" || rname == "ActivatedWithModifiers" -> block = ctx.activatedBlock(rule)
+                rname == "Cycling" -> block = manaKeywordCost(rule)?.let { listOf("    keywordAbility(KeywordAbility.cycling(\"$it\"))") }
+                rname == "Morph" -> block = manaKeywordCost(rule)?.let { listOf("    morph = \"$it\"") }
+                rname == "Protection" -> block = protectionScopeDsl(rule)?.let { listOf("    keywordAbility(KeywordAbility.Protection($it))") }
                 rname != null && (rname in handledRules || Bridge[rname]?.kind == "keyword") -> continue
                 rname != null && pascalToUpperSnake(rname) in keywords -> continue  // auto-keyword rule
                 else -> { ctx.reasons.add(rname ?: "unknown-rule"); return incomplete(ctx, body, scryfall, pkg) }
@@ -79,6 +83,39 @@ object Emitter {
         body.addAll(metadataLines(scryfall))
         body.add("}")
         return RenderResult(assemble(body, pkg, complete = true), true, ctx.reasons)
+    }
+
+    /** A keyword-ability whose cost is pure mana (`Cycling {2}`, `Morph {4}{W}`). Returns the rendered
+     *  mana string, or null when the cost isn't simple mana — which downgrades the card to a scaffold
+     *  rather than emit an inexact cost. */
+    private fun manaKeywordCost(rule: JsonObject): String? {
+        val cost = rule.field("args")
+        if (cost.strField("_Cost") != "PayMana") return null
+        return renderMana(cost.field("args"))
+    }
+
+    /** `Protection from X` -> the `ProtectionScope.*` DSL, or null (scaffold) for scopes the emitter
+     *  can't render exactly yet. ONS only needs single/multi colour and creature-subtype. */
+    private fun protectionScopeDsl(rule: JsonObject): String? {
+        val inner = rule.field("args")
+        return when (inner.strField("_Protectable")) {
+            "FromColor" -> {
+                val colorsNode = inner.field("args")
+                if (colorsNode.strField("_ProtectableColor") != "Colors") return null
+                val colors = (colorsNode.field("args").asArr ?: return null).mapNotNull { it.strField("_Color")?.uppercase() }
+                when {
+                    colors.isEmpty() -> null
+                    colors.size == 1 -> "ProtectionScope.Color(Color.${colors[0]})"
+                    else -> "ProtectionScope.Colors(setOf(${colors.joinToString(", ") { "Color.$it" }}))"
+                }
+            }
+            "FromTypes" -> {
+                val typesNode = inner.field("args")
+                if (typesNode.strField("_Cards") != "IsCreatureType") return null
+                typesNode.field("args").asStr()?.let { "ProtectionScope.Subtype(\"$it\")" }
+            }
+            else -> null
+        }
     }
 
     /** Landwalk-keyword recovery, exposed for the fidelity scorer's generated-capability set. */

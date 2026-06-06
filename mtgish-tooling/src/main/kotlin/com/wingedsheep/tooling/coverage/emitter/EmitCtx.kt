@@ -147,7 +147,11 @@ internal fun EmitCtx.dynamicAmount(node: JsonElement?): String? {
             jsonContains(node, "_Player", "Opponent") -> "Player.Opponent"
             else -> "Player.You"
         }
-        return "DynamicAmount.AggregateBattlefield($player, ${landSearchFilterDsl(node)})"
+        // "for each Goblin/Bird/Elf on the battlefield": a creature subtype, which the land-oriented
+        // search filter misses; otherwise fall back to the land/type search filter.
+        val subtype = Regex(""""IsCreatureType",\s*"args":\s*"(\w+)"""").find(compact(node))?.groupValues?.get(1)
+        val filter = if (subtype != null) "GameObjectFilter.Creature.withSubtype(\"$subtype\")" else landSearchFilterDsl(node)
+        return "DynamicAmount.AggregateBattlefield($player, $filter)"
     }
     return null
 }

@@ -1,7 +1,5 @@
 package com.wingedsheep.tooling.coverage.emitter
 
-import com.wingedsheep.tooling.coverage.Counter
-import com.wingedsheep.tooling.coverage.Mtgish
 import com.wingedsheep.tooling.coverage.Registry
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asInt
@@ -127,13 +125,19 @@ internal fun findLandwalkKeywords(node: JsonElement?, keywords: Set<String>, out
 
 internal fun keywordLines(card: JsonObject, keywords: Set<String>): Set<String> {
     val out = mutableSetOf<String>()
-    findLandwalkKeywords(card["Rules"], keywords, out)
-    val tags = Counter<Pair<String, String>>()
-    Mtgish.extractTags(card["Rules"], tags)
-    for ((disc, value) in tags.keys) {
-        if (value == "Landwalk") continue
-        val entry = Bridge.entry(disc, value)
-        val auto = pascalToUpperSnake(value)
+    // Only TOP-LEVEL rules are intrinsic card keywords. A keyword nested inside an Activated/Triggered
+    // ability is GRANTED to a target ("target creature gains forestwalk"), not a card keyword — the old
+    // whole-tree scan wrongly stamped it on the card (Elvish Pathcutter, Spurred Wolverine, Krosan Groundshaker).
+    for (rule in card["Rules"].asArr ?: JsonArray(emptyList())) {
+        val r = rule as? JsonObject ?: continue
+        val rname = r.strField("_Rule") ?: continue
+        // Landwalk is a top-level rule too; scan only this rule so a granted landwalk stays off the card.
+        if (rname == "Landwalk") { findLandwalkKeywords(r, keywords, out); continue }
+        // Protection always carries a "from X" scope, so it renders as a scoped `keywordAbility(...)`
+        // (see Emitter.protectionScopeDsl), never a bare `keywords(Keyword.PROTECTION)`.
+        if (rname == "Protection") continue
+        val entry = Bridge.entry("_Rule", rname)
+        val auto = pascalToUpperSnake(rname)
         if (entry is MappingEntry.Keyword) out.add(entry.tag)
         else if (auto in keywords) out.add(auto)
     }
