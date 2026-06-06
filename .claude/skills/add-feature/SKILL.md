@@ -272,6 +272,29 @@ signature changed, run the broader module suite.
 - Update any other doc the feature contradicts (`engine-server-interface.md`, `data-contracts.md`,
   `player-input.md`, `web-client-architecture.md`, `continuous-effect-dependency-system.md`).
 
+## Step 8b: Teach the mtgish generator your new capability
+
+Ideally, a new SDK primitive doesn't just serve the card in front of you — it also becomes something
+the [`:mtgish-tooling`](../../../mtgish-tooling/README.md) generator can *predict and draft* for every
+set. This has wider benefits than the one feature: the tooling maps the mtgish IR corpus across the
+whole corpus, so one bridge/emitter entry typically unlocks coverage and auto-draft for many cards
+that share the mechanic. When your feature corresponds to an mtgish IR tag, add it in two places:
+
+- **Capability bridge** (`mtgish-tooling/.../coverage/bridge/`) — add a one-line mapping from the
+  mtgish tag to your new Argentum capability in the closest themed bridge file, so the probe scores
+  cards that use it as *coverable* instead of *blocked*.
+- **Rendering emitter** (`mtgish-tooling/.../coverage/emitter/*Handlers.kt`) — add a `simple("Tag",
+  "MyEffect()")` (argument-free) or `on("Tag") { node, args, tvar -> ... }` (needs amount/target/filter
+  recovery) entry that renders the `cardDef` DSL for your new primitive. Handlers don't track imports
+  (`Shells.importsFor` derives them); if the handler needs target/filter support, extend
+  `TargetRecovery.kt` rather than widening filters. Return `null` for shapes you can't render whole.
+
+Then prove it: `just coverage-verify --set <SET>` (a set that uses the mechanic) should now show the
+relevant cards compile-verified with no capability mismatch. This is best-effort — if the mechanic is
+genuinely too card-specific or X-carrying for the emitter to render exactly, leave the emitter
+returning `null` (the `SCAFFOLD` tier) and note why, but still add the bridge entry so coverage scoring
+is correct. See [`mtgish-tooling/README.md`](../../../mtgish-tooling/README.md) §"Adding a handler".
+
 ## Step 9: Build, verify, commit
 
 1. `just build` (no new behavior to exercise) or `just test` (new effects/engine changes). Fix only
@@ -310,6 +333,8 @@ signature changed, run the broader module suite.
 7. **Mind performance** on projection/enumeration hot paths and client re-renders.
 8. **Server-authoritative UX**; the client only renders and captures intent.
 9. **Update `card-sdk-language-reference.md`** for every SDK addition, same change.
+9b. **Teach the mtgish generator** (Step 8b) — add a bridge capability + emitter handler so the new
+    primitive unlocks coverage and auto-draft across every set, not just this feature.
 10. **Research the real MTG rules online up front** (CR + oracle rulings), design to them, **verify
     CR rule numbers, and write a paired test for every rule and edge case** you looked up.
 11. **Be elegant — no monolithic one-off shortcuts.** If you can't find the reusable shape, say so

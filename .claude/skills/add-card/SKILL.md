@@ -179,6 +179,22 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
   change**, in the appropriate section (§4 Effects, §5 Effect patterns, §7 Filters, §8 Triggers, §9 Static
   abilities, §11 Keywords, §12 Conditions, §13 Dynamic amounts, §14 Modal & choice, §15 Replacement effects, etc.).
 
+- **4.11 Teach the mtgish generator the new building block** (best-effort, wider benefit). Ideally a
+  new effect/trigger/condition/keyword also becomes something the
+  [`:mtgish-tooling`](../../../mtgish-tooling/README.md) generator can *predict and draft* across every
+  set — one entry unlocks coverage and auto-draft for many cards that share the mechanic, not just this
+  one. When the building block maps to an mtgish IR tag, add it in two places:
+  - **Capability bridge** (`mtgish-tooling/.../coverage/bridge/`) — a one-line `tag → capability`
+    mapping in the closest themed bridge file, so the probe scores cards that use it as *coverable*.
+  - **Rendering emitter** (`mtgish-tooling/.../coverage/emitter/*Handlers.kt`) — a `simple("Tag",
+    "MyEffect()")` or `on("Tag") { node, args, tvar -> ... }` entry that renders the `cardDef` DSL
+    (extend `TargetRecovery.kt` if it needs target/filter support; return `null` for shapes you can't
+    render whole).
+
+  Confirm with `just coverage-verify --set <SET>`. If the mechanic is genuinely too card-specific to
+  render exactly, leave the emitter at `null` (the `SCAFFOLD` tier) but still add the bridge entry. See
+  [`mtgish-tooling/README.md`](../../../mtgish-tooling/README.md) §"Adding a handler".
+
 For code templates, see [examples.md](examples.md).
 Refer back to [architecture-principles.md](../../../docs/architecture-principles.md) and [card-sdk-language-reference.md](../../../docs/card-sdk-language-reference.md) from Step 2 as needed.
 
@@ -521,3 +537,4 @@ If `backlog/sets/{set-name}/cards.md` exists:
 12. **Walkthrough new mechanics** — If new effects/engine changes, trace through all layers (Step 9)
 13. **Build/test before committing** — `just build` (simple) or `just test` (new effects)
 14. **Be rules-faithful, no shortcuts** — Model the card exactly as the Comprehensive Rules dictate; cover edge cases and timing rather than the happy path. If a faithful implementation isn't feasible, stop and tell the user what's missing (see "Guiding principle" above)
+15. **Teach the mtgish generator new building blocks** — When a card adds a new effect/trigger/condition/keyword, also add a bridge capability + emitter handler (Step 4.11) so the tooling can predict and draft the mechanic across every set, not just this card

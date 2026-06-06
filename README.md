@@ -326,6 +326,14 @@ time (it's how Invasion was done):
 5. **Review engine changes.** Cards will occasionally still need a small engine tweak. When a PR adds
    or changes engine/SDK code, run **`review-changes <PR_URL>`** on it — this checks for elegance and
    correctness and keeps the engine/SDK clean. (Card-only PRs with no engine changes don't need it.)
+6. **Feed the work back into the mtgish generator.** Ideally, every new feature and card you implement
+   also becomes something the [`:mtgish-tooling`](mtgish-tooling/README.md) generator can *predict and
+   draft* — a capability entry in the bridge (`coverage/bridge/`) plus a rendering handler in the
+   emitter (`coverage/emitter/*Handlers.kt`). This has wider benefits than the one card: the tooling
+   maps the mtgish IR corpus across *every* set, so one bridge/emitter entry typically unlocks coverage
+   and auto-draft for many more cards that share the mechanic. Confirm with
+   `just coverage-verify --set <SET>` that the cards you just implemented now classify as
+   coverable/AUTO. (The `add-feature` and `add-card` skills both prompt for this step.)
 
 ### Guidelines
 
