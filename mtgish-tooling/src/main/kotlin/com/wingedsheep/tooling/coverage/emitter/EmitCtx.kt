@@ -2,6 +2,7 @@ package com.wingedsheep.tooling.coverage.emitter
 
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asInt
+import com.wingedsheep.tooling.coverage.asStr
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.findRef
@@ -192,6 +193,8 @@ internal fun EmitCtx.refTargetIn(args: JsonElement?, markerKey: String, tvar: St
 private fun EmitCtx.refTargetFromRef(ref: String?, tvar: String?): String? {
     if (ref in setOf("Ref_TargetPermanent", "Ref_TargetPlayer", "Ref_TargetGraveyardCard")) return tvar
     if (ref in SELF_REFS) return "EffectTarget.Self"
+    // "that player" in a trigger ("the player ~ dealt combat damage to") -> the triggering player.
+    if (ref == "Trigger_ThatPlayer") return "EffectTarget.PlayerRef(Player.TriggeringPlayer)"
     return tvar
 }
 
@@ -244,9 +247,13 @@ internal fun EmitCtx.paycostDsl(costNode: JsonElement?): String? {
  * [ChooseACreatureType, CreatePermanentLayerEffectUntil{AddCreatureTypeVariable}] -> a single
  * `BecomeCreatureTypeEffect` ("becomes the creature type of your choice until end of turn"). Only the
  * bare type-change (no riding +P/T or keyword grant) and only end-of-turn collapse to this effect.
+ * `ChooseACreatureTypeOtherThan X` carries an excluded type (Imagecrafter / Mistform Mutant's "other
+ * than Wall") -> `excludedTypes = listOf("X")`.
  */
 internal fun EmitCtx.becomeCreatureTypeEffect(actions: List<JsonObject>, tvar: String?): String? {
-    if (actions.none { it.strField("_Action") == "ChooseACreatureType" }) return null
+    val chooser = actions.firstOrNull {
+        it.strField("_Action") in setOf("ChooseACreatureType", "ChooseACreatureTypeOtherThan")
+    } ?: return null
     val layer = actions.firstOrNull {
         it.strField("_Action") in setOf("CreatePermanentLayerEffectUntil", "CreateEachPermanentLayerEffectUntil")
     } ?: return null
@@ -254,7 +261,9 @@ internal fun EmitCtx.becomeCreatureTypeEffect(actions: List<JsonObject>, tvar: S
     if (jsonContains(layer, "_LayerEffect", "AdjustPT") || jsonContains(layer, "_LayerEffect", "AddAbility")) return null
     if (!jsonContains(layer, "_Expiration", "UntilEndOfTurn")) return null  // non-EOT -> SCAFFOLD
     val target = refTarget(layer["args"], tvar) ?: return null
-    return "BecomeCreatureTypeEffect(target = $target)"
+    val excluded = if (chooser.strField("_Action") == "ChooseACreatureTypeOtherThan") chooser["args"].asStr() else null
+    return if (excluded != null) "BecomeCreatureTypeEffect(target = $target, excludedTypes = listOf(\"${ktStr(excluded)}\"))"
+    else "BecomeCreatureTypeEffect(target = $target)"
 }
 
 /**

@@ -207,6 +207,31 @@ private fun EmitCtx.staticAbilityDsl(ruleName: String, ruleNode: JsonObject): St
         }
         "MustBlockAttacker" -> return "MustBlock()"
         "MustAttackPlayer" -> return "MustAttack()"
+        "CanBlockAnyNumberOfCreatures" -> return "CanBlockAnyNumber()"
     }
     return null
+}
+
+/**
+ * A top-level `PlayerEffect(You, [...])` rule -> one `staticAbility { ability = ... }` per recognised
+ * player-static. Only shapes with an exact controller-scoped StaticAbility render; anything else (the
+ * top-of-library / cost-reduction player statics) scaffolds rather than guess. Currently: "you have
+ * shroud" (True Believer).
+ */
+internal fun EmitCtx.playerEffectBlock(rule: JsonObject): List<String>? {
+    val args = rule["args"] as? JsonArray
+    val player = args?.getOrNull(0)
+    val effects = (args?.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
+    if (player == null || effects.isNullOrEmpty() || !jsonContains(player, "_Player", "You")) {
+        reasons.add("PlayerEffect"); return null
+    }
+    val lines = mutableListOf<String>()
+    for (e in effects) {
+        val ability = when (e.strField("_PlayerEffect")) {
+            "Shroud" -> "GrantShroudToController"
+            else -> { reasons.add("PlayerEffect"); return null }
+        }
+        lines.addAll(listOf("    staticAbility {", "        ability = $ability", "    }"))
+    }
+    return lines
 }

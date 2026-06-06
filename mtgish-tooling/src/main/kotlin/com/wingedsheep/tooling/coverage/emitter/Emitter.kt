@@ -82,6 +82,7 @@ object Emitter {
                 rname == "TriggerA" -> block = ctx.triggerBlock(rule)
                 rname == "TriggerOnceEachTurn" -> block = ctx.triggerBlock(rule, oncePerTurn = true)
                 rname == "PermanentRuleEffect" -> block = ctx.staticBlock(rule)
+                rname == "PlayerEffect" -> block = ctx.playerEffectBlock(rule)
                 rname == "EnchantPermanent" -> block = ctx.auraTargetBlock(rule)
                 rname == "PermanentLayerEffect" -> block = ctx.staticHostBlock(rule)
                 rname == "AsPermanentEnters" -> block = ctx.asEntersBlock(rule)

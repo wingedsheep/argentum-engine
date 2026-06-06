@@ -20,11 +20,18 @@ internal val playerContinuousHandlers: Map<String, ActionHandler> = actionHandle
     on("PlayerAction", "HavePlayerTakeAction") { node, _, tvar -> renderPlayerAction(node, tvar) }
 
     on("CreateReplaceWouldDealDamageUntil") { node, _, _ ->
-        // "prevent all damage attacking creatures would deal to you this turn" (Deep Wood)
         val blob = compact(node)
-        if ("IsAttacking" in blob && "PreventThatDamage" in blob && jsonContains(node, "_Player", "You")) {
-            "Effects.PreventDamageFromAttackingCreatures()"
-        } else null
+        when {
+            // "prevent all damage attacking creatures would deal to you this turn" (Deep Wood)
+            "IsAttacking" in blob && "PreventThatDamage" in blob && jsonContains(node, "_Player", "You") ->
+                "Effects.PreventDamageFromAttackingCreatures()"
+            // "prevent all combat damage that would be dealt this turn" (Leery Fogbeast): the unrestricted
+            // CombatDamageWouldBeDealt event (no source/recipient filter) + PreventThatDamage until EOT.
+            jsonContains(node, "_ReplacableEventWouldDealDamage", "CombatDamageWouldBeDealt") &&
+                "PreventThatDamage" in blob && jsonContains(node, "_Expiration", "UntilEndOfTurn") ->
+                "Effects.PreventAllCombatDamage()"
+            else -> null
+        }
     }
     on("CreateTriggerUntil") { node, _, _ ->
         // Harsh Justice: reflect attackers' combat damage back to their controller.

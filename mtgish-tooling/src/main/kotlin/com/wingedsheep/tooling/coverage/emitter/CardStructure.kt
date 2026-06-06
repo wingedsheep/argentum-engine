@@ -147,6 +147,7 @@ private val TRIGGER_SPEC = mapOf(
     "WhenACreatureOrPlaneswalkerDies" to "Triggers.Dies",
     "WhenACreatureAttacks" to "Triggers.Attacks",
     "WhenACreatureDealsCombatDamageToAPlayer" to "Triggers.DealsCombatDamageToPlayer",
+    "WhenACreatureBecomesBlocked" to "Triggers.BecomesBlocked",
 )
 
 /** A TriggerA rule (self-triggered) -> triggeredAbility { trigger; [target]; effect }.
@@ -215,6 +216,20 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     if (jsonContains(trig, "_Trigger", "WhenACreatureAttacks") && isPlainCreatureFilter(trig))
         return "Triggers.attacks(binding = TriggerBinding.ANY)"
 
+    // "Whenever you attack with N or more creatures" — WhenAPlayerAttacksWithANumberOfCreatures scoped to
+    // You + a `>= N` comparison + a plain creature filter (Overwhelming Instinct). Only the
+    // greater-than-or-equal (N-or-more) shape maps to YouAttackEvent(minAttackers); any other comparison
+    // or a typed/controlled attacker filter declines.
+    if (jsonContains(trig, "_Trigger", "WhenAPlayerAttacksWithANumberOfCreatures") &&
+        jsonContains(trig, "_Player", "You") && jsonContains(trig, "_Comparison", "GreaterThanOrEqualTo")
+    ) {
+        val blob = compact(trig)
+        val plainCreature = """"IsCardtype",\s*"args":\s*"Creature"""".toRegex().containsMatchIn(blob) &&
+            "IsCreatureType" !in blob && "ControlledByAPlayer" !in blob && "\"Other\"" !in blob && "_Color" !in blob
+        val n = findInteger(trig) as? Int
+        if (plainCreature && n != null) return "TriggerSpec(EventPattern.YouAttackEvent(minAttackers = $n), TriggerBinding.ANY)"
+    }
+
     // "Whenever a [filtered] permanent enters the battlefield" (the SELF case returned above): an
     // `Other(ThisPermanent)` clause means "another …" -> OTHER binding (Elvish Vanguard's "another
     // Elf", Wretched Anurid's "another creature"); otherwise "a …" -> ANY (Wirewood Savage's "a Beast").
@@ -222,6 +237,22 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         val binding = if (jsonContains(trig, "_Permanents", "Other")) "TriggerBinding.OTHER" else "TriggerBinding.ANY"
         val filter = gameObjectFilterDsl(trig) ?: return null
         return "Triggers.entersBattlefield(filter = $filter, binding = $binding)"
+    }
+
+    // "Whenever a [creature type] deals combat damage to a player, …" — non-self
+    // WhenACreatureDealsCombatDamageToAPlayer whose source filter is purely a creature subtype, to any
+    // player (Cabal Slaver's "a Goblin"). Anything beyond a bare subtype (controller / colour / count /
+    // "another") declines so we never widen the source filter.
+    if (jsonContains(trig, "_Trigger", "WhenACreatureDealsCombatDamageToAPlayer") && !isSelf(trig) &&
+        jsonContains(trig, "_Players", "AnyPlayer")
+    ) {
+        val subtype = creatureTypeIn(trig)
+        val blob = compact(trig)
+        val bareSubtype = subtype != null && "ControlledByAPlayer" !in blob &&
+            "_Color" !in blob && "_Comparison" !in blob && "\"Other\"" !in blob
+        if (bareSubtype) return "TriggerSpec(EventPattern.DealsDamageEvent(damageType = DamageType.Combat, " +
+            "recipient = RecipientFilter.AnyPlayer, sourceFilter = GameObjectFilter.Creature.withSubtype(\"$subtype\")), " +
+            "TriggerBinding.ANY)"
     }
 
     // "Whenever you cast a [type] spell" — WhenAPlayerCastsASpell scoped to You + a spell-type filter.
