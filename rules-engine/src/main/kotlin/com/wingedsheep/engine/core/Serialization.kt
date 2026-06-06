@@ -380,6 +380,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CastForImpendingComponent::class)
         subclass(SuspendedComponent::class)
         subclass(CastRecordComponent::class)
+        subclass(CastChoicesComponent::class)
 
         // Combat components
         subclass(AttackingComponent::class)

@@ -1,0 +1,69 @@
+// Hydroid Krasis
+{
+    "name": "Hydroid Krasis",
+    "manaCost": "{X}{G}{U}",
+    "typeLine": "Creature — Jellyfish Hydra Beast",
+    "oracleText": "When you cast this spell, you gain half X life and draw half X cards. Round down each time.\nFlying, trample\nThis creature enters with X +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Divide",
+                                "numerator": "CastX",
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Divide",
+                                "numerator": "CastX",
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When you cast this spell, you gain half X life and draw half X cards. Round down each time."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "CastX"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "MYTHIC",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/801dd9c6-b159-4e1c-af2c-214c1f573633.jpg?1584833616"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}

@@ -150,6 +150,10 @@ object ZoneTransitionService {
         var lastKnownAttachedTo = options.lastKnownAttachedTo
         var lastKnownWasToken = false
         var lastKnownDamageDealtByPlayers: Map<EntityId, Int> = emptyMap()
+        // The {X} this permanent was cast with (DynamicAmount.CastX), captured before the
+        // CastChoicesComponent is stripped so dies/leaves triggers reading CastX still see it
+        // as last-known information (CR 603.10a).
+        var lastKnownCastX: Int? = null
 
         if (leavingBattlefield) {
             val countersComponent = container.get<CountersComponent>()
@@ -183,6 +187,8 @@ object ZoneTransitionService {
             lastKnownWasToken = container.has<TokenComponent>()
             lastKnownDamageDealtByPlayers =
                 container.get<DamageDealtByPlayersThisTurnComponent>()?.perPlayer ?: emptyMap()
+            lastKnownCastX = container
+                .get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()?.x
         }
 
         // 3. Check zone change redirect (unless skipped)
@@ -386,7 +392,8 @@ object ZoneTransitionService {
                 lastKnownLostAllAbilities = lastKnownLostAllAbilities,
                 lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null,
                 lastKnownCardDefinitionId = if (leavingBattlefield) cardComponent.cardDefinitionId else null,
-                lastKnownDamageDealtByPlayers = lastKnownDamageDealtByPlayers
+                lastKnownDamageDealtByPlayers = lastKnownDamageDealtByPlayers,
+                xValue = lastKnownCastX
             )
         )
 

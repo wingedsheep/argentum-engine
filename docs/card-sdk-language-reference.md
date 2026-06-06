@@ -2278,7 +2278,17 @@ Numbers computed at resolution time.
 ### Math
 
 - `Fixed(n)` — literal constant.
-- `XValue` — the X chosen for the spell/ability.
+- `XValue` — the X chosen for the spell/ability, read from the transient resolution context. Populated
+  only while the spell/ability itself is resolving — an ETB trigger or a later activated ability can't
+  see it. Use `CastX` for the durable, object-scoped reading.
+- `CastX` — the `{X}` this object was cast with, read off the *current object* regardless of zone, so it
+  survives onto the permanent. The same X feeds a "when you cast this spell" trigger, an enters-the-
+  battlefield trigger, the enters-with-counters replacement, and a later activated ability — the analogue
+  of mtgish's `ValueX` / `Trigger_ValueXOfThatSpell`. Backed by a durable `CastChoicesComponent` that
+  rides the spell's stable entity onto the battlefield (and `SpellOnStackComponent.xValue` while still on
+  the stack); preserved as last-known information for dies/leaves triggers. A copy of a *permanent*
+  (Clone) does not inherit it (CR 707.2); a copy of a *spell* on the stack does. Hydroid Krasis reads
+  `CastX` for both its cast trigger ("draw half X") and its enters-with-X-counters replacement.
 - `TotalManaSpent` — total mana paid from the pool to cast the current spell (sum of every per-color
   bucket; for X spells the X portion is included). E.g. Memory Deluge "where X is the mana spent."
 - `ManaSpentOnX(color)` — the amount of `{color}` mana spent on the `{X}` portion specifically, broken

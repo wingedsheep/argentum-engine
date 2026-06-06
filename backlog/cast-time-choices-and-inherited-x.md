@@ -1,6 +1,8 @@
 # Scoping: cast-time choices & inherited X (the "declare directive" problem)
 
-**Status:** Not started — design proposed, ready to pick up. **Owner:** TBD. **Related:**
+**Status:** Phase 1 done — `DynamicAmount.CastX` + durable `CastChoicesComponent`; Hydroid Krasis
+implemented and tested (RNA set scaffolded). Phases 2–4 (slot generalization, `declare { }` DSL,
+emitter payoff) not started. **Owner:** TBD. **Related:**
 [`sdk-language-design.md`](sdk-language-design.md), [`forge-parity-harness.md`](forge-parity-harness.md),
 and the `:mtgish-tooling` *"Creator's note: extra costs & chosen / inherited values"* in
 [`../mtgish-tooling/README.md`](../mtgish-tooling/README.md) (this doc is the design that note asks for).
@@ -230,15 +232,19 @@ cards read like the hand-authored targets in §5.3.
 
 ## 9. Definition of done
 
-- [ ] `DynamicAmount.CastX` resolves from a durable component, working from the spell's own resolution,
+- [x] `DynamicAmount.CastX` resolves from a durable component, working from the spell's own resolution,
       a "when you cast this" trigger, an ETB trigger, and a later activated ability.
-- [ ] **Hydroid Krasis** implemented with a passing scenario test: cast for X=6 → gain 3 life, draw 3,
+      (`CastXDurableValueTest` covers all four; the evaluator reads `CastChoicesComponent` on the
+      permanent, `SpellOnStackComponent.xValue` while on the stack, then the context as LKI.)
+- [x] **Hydroid Krasis** implemented with a passing scenario test: cast for X=6 → gain 3 life, draw 3,
       enters with six +1/+1 counters (6/6); cast for X=0 → no draw, 0/0 dies as SBA.
-- [ ] X survives a dies-trigger (LKI) and is *not* inherited by a copy (CR 706).
+      (`HydroidKrasisScenarioTest`, plus an X=5 round-down case.)
+- [x] X survives a dies-trigger (LKI, via the leave `ZoneChangeEvent.xValue`) and is *not* inherited by
+      a copy (CR 707.2; `CastXNotInheritedByCopyTest` clones an X-cast creature → no counters/component).
 - [ ] (Phase 2+) `CastChoicesComponent` unifies X + chosen color/type/mode + kicked + blight; Riptide
       Replicator migrated off `CreateChosenTokenEffect`.
-- [ ] `docs/card-sdk-language-reference.md` updated for `declare { }`, `DynamicAmount.CastX`, and the
-      slot readers (required on any SDK change).
+- [x] `docs/card-sdk-language-reference.md` updated for `DynamicAmount.CastX` (the `declare { }` DSL and
+      slot readers remain Phase 2/3).
 
 > Build with the **`add-feature`** skill — this is a cross-layer SDK primitive (SDK → engine →
 > projection/triggers → continuations → server DTO if X is shown), not a single card.

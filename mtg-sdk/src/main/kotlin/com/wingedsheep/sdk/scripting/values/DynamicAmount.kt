@@ -261,6 +261,32 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The value of `{X}` this object was cast with, read off the *current object* regardless of
+     * what zone it is in.
+     *
+     * Contrast [XValue], which resolves from the transient resolution context
+     * (`EffectContext.xValue`) and is therefore only populated while the spell itself is
+     * resolving. [CastX] is the durable, object-scoped reading: it survives onto the permanent
+     * after the spell resolves, so a "when you cast this spell" trigger, an enters-the-battlefield
+     * trigger, the enters-with-counters replacement, and a later activated ability all read the
+     * *same* X — the immutable-ECS analogue of mtgish's `ValueX` / `Trigger_ValueXOfThatSpell`.
+     *
+     * It is backed by a durable component that rides the spell's stable entity onto the
+     * battlefield; a card that changes zones becomes a new object (CR 400.7) and stops carrying
+     * it, but the value is preserved as last-known information for dies/leaves triggers. A copy of
+     * a *permanent* (Clone) does not inherit it (X is not a copiable value, CR 707.2), while a copy
+     * of a *spell* on the stack does (it copies the value of X).
+     *
+     * Example — Hydroid Krasis "enters with X +1/+1 counters" and "when you cast this spell, draw
+     * half X cards" both read `DynamicAmount.CastX`.
+     */
+    @SerialName("CastX")
+    @Serializable
+    data object CastX : DynamicAmount {
+        override val description: String = "X"
+    }
+
+    /**
      * The total amount of mana paid from the pool to cast the current spell.
      *
      * Sums every per-color and colorless bucket recorded on the spell's stack object.

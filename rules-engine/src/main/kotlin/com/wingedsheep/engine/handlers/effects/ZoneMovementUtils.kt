@@ -282,6 +282,10 @@ object ZoneMovementUtils {
             .without<WasKickedComponent>()
             .without<WarpedComponent>()
             .without<EvokedComponent>()
+            // Cast-time X (DynamicAmount.CastX) is forgotten when the object changes zones
+            // (CR 400.7). It is captured as last-known info on the leave ZoneChangeEvent so
+            // dies/leaves triggers can still read it.
+            .without<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.CastForImpendingComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>()
             // Note: CastRecordComponent is NOT stripped here — it needs to persist

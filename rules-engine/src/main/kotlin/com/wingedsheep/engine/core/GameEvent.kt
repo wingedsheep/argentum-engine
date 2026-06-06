@@ -79,7 +79,12 @@ data class ZoneChangeEvent(
      * (e.g., "+1/+1", "-1/-1", "loyalty", "charge", ...).
      */
     val lastKnownCounters: Map<String, Int> = emptyMap(),
-    /** X value from the spell that put this permanent onto the battlefield (for ETB triggers using DynamicAmount.XValue) */
+    /**
+     * The `{X}` associated with this object's zone change. On entry to the battlefield it is the X
+     * of the spell that put the permanent there (for ETB triggers using `DynamicAmount.XValue`). On
+     * leaving the battlefield it is the cast-time X carried by `CastChoicesComponent`, captured as
+     * last-known information so dies/leaves triggers can still read `DynamicAmount.CastX`.
+     */
     val xValue: Int? = null,
     /**
      * Per-player damage dealt to this entity this turn (keyed by source-controller player id),

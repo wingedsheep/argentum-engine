@@ -1021,6 +1021,17 @@ class StackResolver(
                 updated = updated.with(WasKickedComponent)
             }
 
+            // Carry the cast-time X durably onto the permanent (CR 601.2b choices ride the stable
+            // entity onto the battlefield) so triggered/activated abilities can read "the X this
+            // was cast with" via DynamicAmount.CastX for its whole life on the battlefield, with no
+            // counter laundering. The component is stripped when the permanent leaves the
+            // battlefield (new object, CR 400.7) — see ZoneMovementUtils.stripBattlefieldComponents.
+            spellComponent.xValue?.let { castX ->
+                updated = updated.with(
+                    com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent(x = castX)
+                )
+            }
+
             // Track if this permanent was cast for its warp cost
             if (spellComponent.wasWarped) {
                 updated = updated.with(WarpedComponent)

@@ -56,6 +56,7 @@ import com.wingedsheep.mtg.sets.definitions.p02.PortalSecondAgeSet
 import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.definitions.pz2.TreasureChestSet
 import com.wingedsheep.mtg.sets.definitions.rix.RivalsOfIxalanSet
+import com.wingedsheep.mtg.sets.definitions.rna.RavnicaAllegianceSet
 import com.wingedsheep.mtg.sets.definitions.xln.IxalanSet
 import com.wingedsheep.mtg.sets.definitions.roe.RiseOfTheEldraziSet
 import com.wingedsheep.mtg.sets.definitions.scg.ScourgeSet
@@ -150,6 +151,7 @@ object MtgSetCatalog {
         AvatarTheLastAirbenderSet,
         TeenageMutantNinjaTurtlesSet,
         WarOfTheSparkSet,
+        RavnicaAllegianceSet,
         OdysseySet,
         JudgmentSet,
         GuildpactSet,

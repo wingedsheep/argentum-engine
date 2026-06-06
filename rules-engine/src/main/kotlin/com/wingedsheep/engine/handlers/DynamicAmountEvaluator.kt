@@ -5,6 +5,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -76,6 +77,21 @@ class DynamicAmountEvaluator(
             is DynamicAmount.Fixed -> amount.amount
 
             is DynamicAmount.XValue -> context.xValue ?: 0
+
+            // The {X} this object was cast with, read off the current object regardless of zone.
+            // Reads, in order: the durable CastChoicesComponent on the battlefield permanent (and
+            // for a later activated ability); the SpellOnStackComponent while the object is still
+            // on the stack (its own resolution and a "when you cast this spell" trigger, since the
+            // trigger source is the spell entity); then the resolution context's xValue, which
+            // carries the cast X as last-known information into dies/leaves triggers (from the
+            // leave ZoneChangeEvent).
+            is DynamicAmount.CastX -> {
+                val source = context.sourceId?.let { state.getEntity(it) }
+                source?.get<CastChoicesComponent>()?.x
+                    ?: source?.get<SpellOnStackComponent>()?.xValue
+                    ?: context.xValue
+                    ?: 0
+            }
 
             is DynamicAmount.TotalManaSpent -> context.totalManaSpent
 
