@@ -4,6 +4,7 @@ import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asInt
 import com.wingedsheep.tooling.coverage.asObj
 import com.wingedsheep.tooling.coverage.asStr
+import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.asciiIdentifier
 import com.wingedsheep.tooling.coverage.jsonContains
@@ -61,9 +62,13 @@ object Emitter {
         if (jsonContains(card["Rules"], "_Rule", "EnchantPermanent")) {
             val unfaithfulOnAuras = setOf("Activated", "ActivatedWithModifiers", "TriggerA", "AsPermanentEnters", "FromAnyZone")
             (card["Rules"].asArr ?: JsonArray(emptyList())).forEach { r ->
-                (r as? JsonObject)?.strField("_Rule")?.takeIf { it in unfaithfulOnAuras }?.let {
-                    ctx.reasons.add("aura-with-$it"); return incomplete(ctx, body, scryfall, pkg)
-                }
+                val rn = (r as? JsonObject)?.strField("_Rule")?.takeIf { it in unfaithfulOnAuras } ?: return@forEach
+                // A "sacrifice this Aura: enchanted creature and creatures sharing its type get …" activated
+                // ability (the Crowns) IS modelled exactly via GrantToEnchantedCreatureTypeGroupEffect, so it
+                // renders rather than scaffolds; every other ability on an Aura still scaffolds.
+                if ((rn == "Activated" || rn == "ActivatedWithModifiers") &&
+                    "SharesACreatureTypeWithPermanent" in compact(r)) return@forEach
+                ctx.reasons.add("aura-with-$rn"); return incomplete(ctx, body, scryfall, pkg)
             }
         }
 

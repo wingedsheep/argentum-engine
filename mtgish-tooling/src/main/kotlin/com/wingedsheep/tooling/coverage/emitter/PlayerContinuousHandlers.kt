@@ -1,5 +1,6 @@
 package com.wingedsheep.tooling.coverage.emitter
 
+import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.jsonContains
@@ -14,6 +15,15 @@ internal val playerContinuousHandlers: Map<String, ActionHandler> = actionHandle
         val inner = innerAction(node) ?: return@on null
         val rendered = renderAction(inner, tvar) ?: return@on null
         "MayEffect($rendered)"
+    }
+
+    // "you may [X and Y]" — a single optional choice gating a sequence of actions (Gustcloak cycle's
+    // "you may untap it and remove it from combat"). Renders the whole sequence as one MayEffect, so a
+    // partial render (only one arm) declines via renderEffectList rather than dropping an action.
+    on("MayActions") { node, _, tvar ->
+        val inner = node["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
+        val edsl = renderEffectList(inner, tvar) ?: return@on null
+        "MayEffect($edsl)"
     }
 
     on("EachPlayerAction") { node, _, _ -> renderEachPlayer(node) }
@@ -115,6 +125,9 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): String
 
 internal fun EmitCtx.renderEachPlayer(node: JsonObject): String? {
     val blob = compact(node)
+    // "each player returns a permanent they control to its owner's hand" (Words of Wind's replacement).
+    if (jsonContains(node, "_Players", "AnyPlayer") && "PutAPermanentIntoItsOwnersHand" in blob)
+        return "Effects.EachPlayerReturnPermanentToHand()"
     if (jsonContains(node, "_Players", "Opponent") && "Discard" in blob) return "Patterns.Hand.eachOpponentDiscards(1)"  // Noxious Toad
     if (jsonContains(node, "_Action", "DrawNumberCards") || jsonContains(node, "_GameNumber", "ValueX"))
         return "Patterns.Hand.eachPlayerDrawsX(includeController = true, includeOpponents = true)"

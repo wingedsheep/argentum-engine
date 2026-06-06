@@ -2,6 +2,7 @@ package com.wingedsheep.tooling.coverage.emitter
 
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asInt
+import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.pascalToUpperSnake
@@ -22,6 +23,10 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
     on("GoadCreature") { _, args, tvar ->  // CR 701.15: goad target creature
         val tgt = refTarget(args, tvar) ?: return@on null
         "Effects.Goad($tgt)"
+    }
+    on("RemoveCreatureFromCombat") { _, args, tvar ->  // "remove it from combat" (Gustcloak cycle)
+        val tgt = refTarget(args, tvar) ?: return@on null
+        "Effects.RemoveFromCombat($tgt)"
     }
     on("RegeneratePermanent") { _, args, _ ->
         // Self-regeneration ("{cost}: Regenerate this") renders faithfully. A chosen target's
@@ -56,6 +61,9 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
     }
 
     on("CreatePermanentLayerEffectUntil", "CreateEachPermanentLayerEffectUntil") { node, _, tvar ->
+        // "Enchanted creature and other creatures that share a creature type with it get …" (Onslaught
+        // Crowns) — a group keyed to the host permanent, which the generic ForEachInGroup can't express.
+        enchantedTypeGroupGrant(node)?.let { return@on it }
         renderLayerEffect(node, node.strField("_Action")!!, tvar)
     }
 
@@ -121,6 +129,47 @@ internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: S
         return "Effects.ForEachInGroup($filter, $effect)"
     }
     return effect
+}
+
+/**
+ * The Onslaught Crowns' activated effect: "Enchanted creature and other creatures that share a creature
+ * type with it get +P/+T / gain <keyword> / gain protection from <colors> until end of turn." mtgish
+ * shapes this as a `CreateEachPermanentLayerEffectUntil` over the group `Or[HostPermanent,
+ * And[Creature, SharesACreatureTypeWithPermanent(HostPermanent)]]` — a host-keyed group the generic
+ * ForEachInGroup can't express. Recognise exactly that shape (+ end-of-turn) and render the dedicated
+ * `GrantToEnchantedCreatureTypeGroupEffect`; anything else returns null so the generic path / scaffold runs.
+ */
+internal fun EmitCtx.enchantedTypeGroupGrant(node: JsonObject): String? {
+    val args = node["args"].asArr ?: return null
+    val blob = compact(args.getOrNull(0))
+    if ("SharesACreatureTypeWithPermanent" !in blob || "HostPermanent" !in blob) return null
+    if (firstExpiration(node) !in setOf(null, "UntilEndOfTurn")) return null  // non-EOT -> decline
+    val layerEffects = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+    if (layerEffects.isEmpty()) return null
+    val params = mutableListOf<String>()
+    for (le in layerEffects) {
+        when (le.strField("_LayerEffect")) {
+            "AdjustPT" -> {
+                val pt = le["args"].asArr ?: return null
+                if (pt.size != 2) return null
+                params.add("powerModifier = ${pt[0].asInt()}")
+                params.add("toughnessModifier = ${pt[1].asInt()}")
+            }
+            "AddAbility" -> {
+                val granted = (le["args"].asArr)?.getOrNull(0) as? JsonObject
+                if (granted != null && jsonContains(granted, "_Protectable", "FromColor")) {
+                    val colors = protectionGrantColors(granted) ?: return null
+                    params.add("protectionColors = setOf(${colors.joinToString(", ") { "Color.$it" }})")
+                } else {
+                    val kw = grantedKeyword(le) ?: return null
+                    params.add("keyword = Keyword.$kw")
+                }
+            }
+            else -> return null
+        }
+    }
+    if (params.isEmpty()) return null
+    return "GrantToEnchantedCreatureTypeGroupEffect(${params.joinToString(", ")})"
 }
 
 /** The granted [Keyword] for an `AddAbility` layer effect, or null (-> SCAFFOLD) when the grant is not

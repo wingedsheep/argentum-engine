@@ -41,14 +41,22 @@ internal fun BridgeBuilder.structuralEnvelopes() {
 
     // Continuous-effect envelopes (the capability is the nested _LayerEffect / _Rule).
     envelope("CreatePermanentLayerEffectUntil", "envelope: continuous effect (capability is the _LayerEffect)")
-    envelope("CreateEachPermanentLayerEffectUntil", "envelope: continuous effect, each")
+    // "Each matching permanent gets … until end of turn." The capability is normally the nested
+    // _LayerEffect (ModifyStats / GrantKeyword), but when the group is keyed to an Aura's host permanent
+    // ("enchanted creature and creatures that share a type with it", the Onslaught Crowns) it lowers to
+    // the dedicated GrantToEnchantedCreatureTypeGroupEffect — which the emitter renders for that shape.
+    envelope("CreateEachPermanentLayerEffectUntil", "envelope: continuous effect, each",
+        composes = listOf("GrantToEnchantedCreatureTypeGroup"))
     envelope("CreateEachPermanentRuleEffectUntil", "envelope: continuous rule, each")
     envelope("CreatePlayerEffectUntil", "envelope: player-scoped continuous effect")
     envelope("CreatePermanentLayerEffect", UNIVERSAL)
     envelope("CreatePermanentRuleEffectUntil", UNIVERSAL)
 
     // Cross-set "may" / choice / branch envelopes surfaced by calibration on later sets.
-    envelopes("PlayerMayAction", "PlayerMayCost", "MayActions", note = UNIVERSAL, composes = listOf("May"))
+    envelopes("PlayerMayAction", "PlayerMayCost", note = UNIVERSAL, composes = listOf("May"))
+    // "you may [X and Y]" — a single optional choice gating a sequence (Gustcloak cycle); like MayAction
+    // it realises as `GatedEffect(gate = MayDecide)` (SerialName "Gated").
+    envelope("MayActions", "gate envelope: 'you may [X and Y]'", composes = listOf("Gated"))
     envelope("ChooseACreatureType", UNIVERSAL)
     envelope("ChooseAColor", UNIVERSAL)
     envelope("IfElse", UNIVERSAL)

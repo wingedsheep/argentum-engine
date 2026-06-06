@@ -125,8 +125,10 @@ internal fun EmitCtx.staticHostBlock(rule: JsonObject): List<String>? {
             }
             "AddAbility" -> {
                 val granted = (le["args"] as? JsonArray)?.getOrNull(0) as? JsonObject
-                if (granted?.strField("_Rule") == "ProtectionAndDoesntRemovePermanents") {
-                    val colors = protectionGrantColors(granted) ?: run { reasons.add("PermanentLayerEffect"); return null }
+                // "Enchanted creature has protection from <color>": the Ward cycle uses a
+                // `ProtectionAndDoesntRemovePermanents` rule, the Crowns a plain `Protection` rule.
+                if (granted?.strField("_Rule") in setOf("Protection", "ProtectionAndDoesntRemovePermanents")) {
+                    val colors = protectionGrantColors(granted!!) ?: run { reasons.add("PermanentLayerEffect"); return null }
                     colors.map { "GrantProtection(Color.$it)" }
                 } else {
                     val kw = keywordOf(le) ?: run { reasons.add("PermanentLayerEffect"); return null }
@@ -146,15 +148,13 @@ internal fun EmitCtx.staticHostBlock(rule: JsonObject): List<String>? {
     return lines
 }
 
-/** The colors of a `ProtectionAndDoesntRemovePermanents` host grant ("enchanted creature has protection
- *  from <color>", the Ward cycle), uppercased for `Color.X`; null for non-color or empty protection
- *  scopes (protection from a type/quality), which scaffold. */
-private fun protectionGrantColors(granted: JsonObject): List<String>? {
-    val protectable = (granted["args"] as? JsonArray)?.getOrNull(0) as? JsonObject ?: return null
-    if (protectable.strField("_Protectable") != "FromColor") return null
-    val colorsNode = protectable["args"] as? JsonObject ?: return null
-    if (colorsNode.strField("_ProtectableColor") != "Colors") return null
-    val colors = (colorsNode["args"] as? JsonArray ?: return null).mapNotNull { it.strField("_Color")?.uppercase() }
+/** The colors of a host protection grant ("enchanted creature has protection from <color>" — the Ward
+ *  cycle's `ProtectionAndDoesntRemovePermanents` or the Crowns' plain `Protection`), uppercased for
+ *  `Color.X`; null for a non-color protection scope (from a type/quality) or none, which scaffolds.
+ *  Works regardless of whether the grant wraps its `_Protectable` in an array (Ward) or directly (Crown). */
+internal fun protectionGrantColors(granted: JsonObject): List<String>? {
+    if (!jsonContains(granted, "_Protectable", "FromColor")) return null
+    val colors = Regex(""""_Color":\s*"(\w+)"""").findAll(compact(granted)).map { it.groupValues[1].uppercase() }.toList()
     return colors.ifEmpty { null }
 }
 

@@ -7,6 +7,9 @@ internal fun BridgeBuilder.damageLifeAndCards() {
 
     effects("DrawNumberCards", "DrawACard", tag = "DrawCards")
     effect("DrawUptoNumberCards", "DrawUpTo")
+    // "The next time you would draw a card this turn, [do X] instead" (the Onslaught Words cycle); the
+    // replacement action's own capability is surfaced via the `_ReplacementActionWouldDraw` discriminator.
+    effect("CreateFutureReplaceWouldDraw", "ReplaceNextDrawWith")
     composed("GainLifeForEach", "GainLife + DynamicAmount", composes = listOf("GainLife"))
     effect("GainLife", "GainLife")
     effect("LoseLife", "LoseLife")

@@ -358,6 +358,9 @@ internal fun EmitCtx.activatedBlock(rule: JsonObject): List<String>? {
     activationRestrictionLines(rule)?.let { lines.addAll(it) } ?: return null
     if (tvar != null) lines.add("        val t = target(\"target\", $tdsl)")
     lines.add("        effect = $edsl")
+    // A ReplaceNextDraw effect ("the next time you would draw … instead") prompts on the replaced draw,
+    // not at activation — the activated-ability flag the Words cycle's golden carries.
+    if (actions.any { it.strField("_Action") == "CreateFutureReplaceWouldDraw" }) lines.add("        promptOnDraw = true")
     if (isManaAbility(tvar, actions)) {
         lines.add("        manaAbility = true")
         lines.add("        timing = TimingRule.ManaAbility")

@@ -27,6 +27,9 @@ object Mtgish {
     val CAPABILITY_DISCRIMINATORS = listOf(
         "_Rule", "_Action", "_Trigger", "_Cost", "_LayerEffect", "_StaticLayerEffect",
         "_ReplacementActionWouldEnter",
+        // The replacement actions of a "next time you would draw …" effect (the Words cycle) reuse the
+        // ordinary action vocabulary under this discriminator, so surface it to score their capability.
+        "_ReplacementActionWouldDraw",
     )
 
     fun ensureData() {
