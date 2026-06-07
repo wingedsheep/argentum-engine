@@ -2711,7 +2711,7 @@ replacementEffect {
   `TokenReplacementOfferedThisTurnComponent` after the first offer (cleared at end of turn).
   `attachmentVerb` is a display-only label ("equipped", "enchanted", "fortified") — the
   attachment-type validation already happens at cast/attach time via `equipmentTarget` /
-  `auraTarget`. Token copies are summoning-sick only when the copy is a creature (CR 302.1).
+  `auraTarget`. Token copies are summoning-sick only when the copy is a creature (CR 302.6).
   Mirrormind Crown: `attachmentVerb = "equipped"`; Moonlit Meditation: `attachmentVerb = "enchanted"`.
 - `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard)` —
   "enter as a copy of …". As the permanent resolves, the controller picks an object matching

@@ -236,7 +236,7 @@ object TokenCreationReplacementHelper {
                 ControllerComponent(controllerId),
                 EnteredThisTurnComponent
             )
-            // Summoning sickness only applies to creatures (CR 302.1). An artifact or
+            // Summoning sickness only applies to creatures (CR 302.6). An artifact or
             // enchantment token copy doesn't get it; a creature (or artifact-creature)
             // copy does.
             if (tokenCard.typeLine.isCreature) {

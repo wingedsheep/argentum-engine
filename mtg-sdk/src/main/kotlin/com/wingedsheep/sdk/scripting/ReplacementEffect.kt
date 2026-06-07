@@ -1227,8 +1227,7 @@ data class RedirectZoneChangeWithEffect(
  * - Mirrormind Crown — "As long as this Equipment is attached to a creature, the first time
  *   you would create one or more tokens each turn, you may instead create that many tokens
  *   that are copies of equipped creature."
- *     `ReplaceTokenCreationWithAttachedCopy(attachmentVerb = "equipped",
- *                                           validAttachedFilter = GameObjectFilter.Creature)`
+ *     `ReplaceTokenCreationWithAttachedCopy(attachmentVerb = "equipped")`
  * - Moonlit Meditation — "Enchant artifact or creature you control. The first time you would
  *   create one or more tokens each turn, you may instead create that many tokens that are
  *   copies of enchanted permanent."
