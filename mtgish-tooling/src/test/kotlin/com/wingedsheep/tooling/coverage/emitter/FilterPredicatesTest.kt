@@ -55,6 +55,25 @@ class FilterPredicatesTest : StringSpec({
         FilterPredicates.tapped(node("""{"_Permanents":"IsUntapped"}""")).shouldBeNull()
     }
 
+    // mtgish encodes a toughness bound identically to a power bound but under the ToughnessIs tag.
+    fun toughnessIs(comparison: String, n: Int): String =
+        """{"_Permanents":"ToughnessIs","args":{"_Comparison":"$comparison","args":{"_GameNumber":"Integer","args":$n}}}"""
+
+    "nontoken recovers from the IsNonToken marker" {
+        suffix(FilterPredicates.nontoken(node("""{"_Permanents":"IsNonToken"}"""))) shouldBe ".nontoken()"
+        FilterPredicates.nontoken(node("{}")).shouldBeNull()
+    }
+
+    "power-or-toughness recovers from the Or of equal >= bounds, declining a mismatch or a lone bound" {
+        val both = node("""{"_Permanents":"Or","args":[${powerIs("GreaterThanOrEqualTo", 4)},${toughnessIs("GreaterThanOrEqualTo", 4)}]}""")
+        suffix(FilterPredicates.powerOrToughnessAtLeast(both)) shouldBe ".powerOrToughnessAtLeast(4)"
+        // unequal bounds must NOT widen "power or toughness" to one wrong number.
+        val unequal = node("""{"_Permanents":"Or","args":[${powerIs("GreaterThanOrEqualTo", 4)},${toughnessIs("GreaterThanOrEqualTo", 2)}]}""")
+        FilterPredicates.powerOrToughnessAtLeast(unequal).shouldBeNull()
+        // a standalone power bound is not a power-or-toughness clause.
+        FilterPredicates.powerOrToughnessAtLeast(node(powerIs("GreaterThanOrEqualTo", 4))).shouldBeNull()
+    }
+
     "flying recovers as with/without keyword, distinguished by the DoesntHaveAbility marker" {
         val without = node("""{"_Permanents":"DoesntHaveAbility","args":[{"_Keyword":"Flying"}]}""")
         suffix(FilterPredicates.withoutFlying(without)) shouldBe ".withoutKeyword(Keyword.FLYING)"

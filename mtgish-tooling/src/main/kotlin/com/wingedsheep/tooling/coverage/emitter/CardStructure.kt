@@ -173,6 +173,10 @@ private val TRIGGER_SPEC = mapOf(
  *  [oncePerTurn] is set by the `TriggerOnceEachTurn` rule envelope, whose body is otherwise shaped
  *  identically to a TriggerA. */
 internal fun EmitCtx.triggerBlock(rule: JsonObject, oncePerTurn: Boolean = false): List<Stmt>? {
+    // A modal triggered ability ("When this enters, choose one — …") carries a `Modal_*` envelope; the
+    // generic action path would render only the first mode and silently drop the rest, so decline the
+    // whole ability rather than emit one arm (mirrors the spell-side modal guard).
+    if ("\"Modal_" in compact(rule)) { reasons.add("modal-trigger"); return null }
     val spec = triggerSpecFor(rule) ?: run { reasons.add("trigger-shape"); return null }
     val (targets, actions) = extractEnvelope(rule)
     if (actions == null) { reasons.add("trigger-actions"); return null }
@@ -204,6 +208,11 @@ internal fun EmitCtx.triggerBlock(rule: JsonObject, oncePerTurn: Boolean = false
  *  being mistaken for trigger scopes. */
 private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     val trig = rule["args"].asArr?.firstOrNull() as? JsonObject ?: return null
+
+    // A compound `Or` of two triggers ("Whenever this creature OR another creature you control with
+    // flying enters") can't be expressed as one filter+binding — a nested-trigger scan would match the
+    // inner enter-trigger and emit a single OTHER-binding trigger that drops the self arm. Decline.
+    if (trig.strField("_Trigger") == "Or") return null
 
     // SELF self-triggers (this permanent enters / dies / attacks / deals combat damage to a player).
     // `isSelf` distinguishes "the subject IS this permanent" from an `Other(ThisPermanent)` clause
@@ -465,6 +474,7 @@ private fun EmitCtx.costFilterDsl(node: JsonElement?): String? {
         "IsCreatureType" -> return obj["args"].asStr()?.let { "GameObjectFilter.Creature.withSubtype(\"$it\")" }
         "IsArtifactType" -> return obj["args"].asStr()?.let { "GameObjectFilter.Artifact.withSubtype(\"$it\")" }
         "AnyPermanent" -> return "GameObjectFilter.Permanent"
+        "IsToken" -> return "GameObjectFilter.Token"  // "Sacrifice a token" (Fountainport)
     }
     val base = gameObjectFilterDsl(node) ?: return null
     // "Sacrifice a Goblin creature" = And[IsCreatureType X, IsCardtype Creature]: gameObjectFilterDsl

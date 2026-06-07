@@ -235,8 +235,8 @@ object Fidelity {
         val capabilityMismatches = mutableListOf<TreeMismatch>()
         for (name in generated.keys.sorted()) {
             if (name !in golden) continue
-            val generatedTree = normalizeForFidelity(generated[name]!!)
-            val goldenTree = normalizeForFidelity(golden[name]!!)
+            val generatedTree = normalizeForFidelity(canonicalizeTargetRefs(generated[name]!!))
+            val goldenTree = normalizeForFidelity(canonicalizeTargetRefs(golden[name]!!))
             val missing = missingCapabilities(generated[name]!!, golden[name]!!, effects)
             if (generatedTree == goldenTree) {
                 verified.add(name)
@@ -309,6 +309,54 @@ object Fidelity {
         val g = truthCaps(generated, effects)
         val t = truthCaps(golden, effects)
         return ((t.first + t.second) - (g.first + g.second)).sorted()
+    }
+
+    /**
+     * Canonicalize target-reference labels before diffing. A target's bound-variable name and the matching
+     * requirement `id` are an arbitrary binding key — the engine resolves `BoundVariable` purely by
+     * name→requirement-id lookup (`namedTargets[name]`), so the string itself is never gameplay-visible.
+     * Two gameplay-equivalent cards routinely differ ONLY in that label: golden authors pick descriptive
+     * names ("target creature to destroy", "any", "creature"), while the emitter emits a generic "target".
+     *
+     * A card with a single logical target collapses its label to "target", reusing [normalizeForFidelity]'s
+     * legacy convention so it stays interchangeable with `ContextTarget(0) -> TargetRef`. A card with
+     * several distinct labels gets positional tokens instead (first-appearance order), so the binding
+     * structure — which effect references which requirement — is preserved and a genuinely reordered
+     * binding still diverges. Filters, counts, and effect shape are untouched: a real filter/structure bug
+     * (e.g. `powerAtLeast` vs `powerOrToughnessAtLeast`) still surfaces as a mismatch.
+     */
+    private fun canonicalizeTargetRefs(root: JsonElement): JsonElement {
+        val labels = LinkedHashSet<String>()
+        fun collect(node: JsonElement?) {
+            when (node) {
+                is JsonObject -> {
+                    if (node["type"].asStr() == "BoundVariable") node["name"].asStr()?.let { labels.add(it) }
+                    node.values.forEach { collect(it) }
+                }
+                is JsonArray -> node.forEach { collect(it) }
+                else -> {}
+            }
+        }
+        collect(root)
+        if (labels.isEmpty()) return root
+        val mapping: Map<String, String> =
+            if (labels.size == 1) mapOf(labels.first() to "target")
+            else labels.withIndex().associate { (i, l) -> l to "§T$i§" }
+        fun rewrite(node: JsonElement): JsonElement = when (node) {
+            is JsonArray -> JsonArray(node.map { rewrite(it) })
+            is JsonObject -> {
+                val isBound = node["type"].asStr() == "BoundVariable"
+                JsonObject(node.entries.associate { (k, v) ->
+                    when {
+                        isBound && k == "name" -> k to (mapping[v.asStr()]?.let { JsonPrimitive(it) } ?: rewrite(v))
+                        k == "id" && v.asStr() in mapping -> k to JsonPrimitive(mapping.getValue(v.asStr()!!))
+                        else -> k to rewrite(v)
+                    }
+                })
+            }
+            else -> node
+        }
+        return rewrite(root)
     }
 
     private fun normalizeForFidelity(node: JsonElement): JsonElement {

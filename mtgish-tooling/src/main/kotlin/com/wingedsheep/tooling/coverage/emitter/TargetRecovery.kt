@@ -7,8 +7,11 @@ import com.wingedsheep.tooling.coverage.Link
 import com.wingedsheep.tooling.coverage.Lit
 import com.wingedsheep.tooling.coverage.arg
 import com.wingedsheep.tooling.coverage.argWordsTagged
+import com.wingedsheep.tooling.coverage.asArr
+import com.wingedsheep.tooling.coverage.asStr
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.dot
+import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.firstArgStringTagged
 import com.wingedsheep.tooling.coverage.firstColorOf
@@ -63,6 +66,35 @@ internal object FilterPredicates {
     fun tapped(node: JsonElement?): Link? = if (node.hasTag("IsTapped")) Link("tapped") else null
     fun untapped(node: JsonElement?): Link? = if (node.hasTag("IsUntapped")) Link("untapped") else null
     fun attacking(node: JsonElement?): Link? = if (node.hasTag("IsAttacking")) Link("attacking") else null
+
+    /** `.nontoken()` for an `IsNonToken` clause ("another nontoken Bird you control"), else null. */
+    fun nontoken(node: JsonElement?): Link? = if (node.hasTag("IsNonToken")) Link("nontoken") else null
+
+    /**
+     * `.powerOrToughnessAtLeast(N)` for the `Or[PowerIs >= N, ToughnessIs >= N]` shape ("power or
+     * toughness 4 or greater"), else null. When this fires, the caller must NOT also append the
+     * standalone [powerAtLeast] — the `PowerIs` clause it would match lives inside this Or, and emitting
+     * both would narrow the filter to power alone (the Repel Calamity bug). Only the both-bounds-equal
+     * `>=` form renders; anything else declines so we never widen "power or toughness" to one stat.
+     */
+    fun powerOrToughnessAtLeast(node: JsonElement?): Link? {
+        val orNode = node.nodesTagged("Or").firstOrNull { or ->
+            val kids = or["args"].asArr ?: return@firstOrNull false
+            kids.size == 2 &&
+                kids.any { it.strField("_Permanents") == "PowerIs" } &&
+                kids.any { it.strField("_Permanents") == "ToughnessIs" }
+        } ?: return null
+        val kids = orNode["args"].asArr!!
+        val pn = atLeastBound(kids.first { it.strField("_Permanents") == "PowerIs" })
+        val tn = atLeastBound(kids.first { it.strField("_Permanents") == "ToughnessIs" })
+        if (pn == null || pn != tn) return null
+        return Link("powerOrToughnessAtLeast", listOf(arg("$pn")))
+    }
+
+    /** The integer of a `_Comparison: GreaterThanOrEqualTo` clause (PowerIs/ToughnessIs share this shape),
+     *  or null for a non-`>=` comparison or a non-integer (X) bound. */
+    private fun atLeastBound(clause: JsonElement?): Int? =
+        clause.field("args").takeIf { it.strField("_Comparison") == "GreaterThanOrEqualTo" }?.let { findInteger(it) as? Int }
 
     /** `.withoutKeyword(Keyword.FLYING)` for a `DoesntHaveAbility Flying` clause, else null. */
     fun withoutFlying(node: JsonElement?): Link? =
@@ -148,8 +180,14 @@ internal fun EmitCtx.creatureFilterExpr(filterNode: JsonElement?): Dsl? {
     (FilterPredicates.withoutFlying(filterNode) ?: FilterPredicates.withFlying(filterNode))?.let { node = node.dot(it) }
     FilterPredicates.tapped(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.attacking(filterNode)?.let { node = node.dot(it) }
-    FilterPredicates.powerAtMost(filterNode)?.let { node = node.dot(it) }
-    FilterPredicates.powerAtLeast(filterNode)?.let { node = node.dot(it) }
+    FilterPredicates.nontoken(filterNode)?.let { node = node.dot(it) }
+    // "power or toughness N or greater" takes the whole Or; suppress the standalone power bounds it
+    // would otherwise also match (the PowerIs clause inside the Or) — see [powerOrToughnessAtLeast].
+    val powerOrToughness = FilterPredicates.powerOrToughnessAtLeast(filterNode)
+    if (powerOrToughness != null) node = node.dot(powerOrToughness) else {
+        FilterPredicates.powerAtMost(filterNode)?.let { node = node.dot(it) }
+        FilterPredicates.powerAtLeast(filterNode)?.let { node = node.dot(it) }
+    }
     FilterPredicates.manaValueAtMost(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.manaValueAtLeast(filterNode)?.let { node = node.dot(it) }
     controller?.let { node = node.dot(it) }
@@ -198,7 +236,15 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             if (ttype == "UptoNumberTargetPermanents") parts.add(0, arg("optional", "true"))
             return Call("TargetPermanent", parts)
         }
-        if (types.isEmpty() && "IsCardtype" !in blob && "IsCreatureType" !in blob) {
+        // "target nonland permanent" — an IsNonCardtype "Land" with no positive cardtype restriction
+        // (Thistledown Players' "untap target nonland permanent").
+        if (types.isEmpty() && args.argWordsTagged("IsNonCardtype") == listOf("Land") && "IsCreatureType" !in blob) {
+            val parts = mutableListOf(arg("filter", "TargetFilter.NonlandPermanent"))
+            if (ttype in setOf("NumberTargetPermanents", "UptoNumberTargetPermanents") && countInt is Int) parts.add(0, arg("count", "$countInt"))
+            if (ttype == "UptoNumberTargetPermanents") parts.add(0, arg("optional", "true"))
+            return Call("TargetPermanent", parts)
+        }
+        if (types.isEmpty() && "IsCardtype" !in blob && "IsCreatureType" !in blob && "IsNonCardtype" !in blob) {
             return Call("TargetPermanent")
         }
         val multiType = mapOf(
@@ -295,8 +341,14 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
         // A creature subtype always implies creature, so render Creature.withSubtype even when there's no
         // explicit IsCardtype Creature (the "other Merfolk"/"other Goblins" lord groups) — otherwise the
         // ThisPermanent marker below would wrongly widen it to GameObjectFilter.Permanent.
-        creatureSubs.isNotEmpty() ->
+        creatureSubs.size == 1 ->
             Lit("GameObjectFilter.Creature").dot("withSubtype", arg(subtypeArg(creatureSubs[0])))
+        // Several creature subtypes -> withAnyOfSubtypes ("another Frog, Rabbit, Raccoon, or Squirrel"),
+        // but ONLY for an explicit Or; an And of subtypes ("Goblin Wizard", all-of) has different
+        // semantics, so decline rather than emit a wrong OR.
+        creatureSubs.size > 1 ->
+            (orCreatureSubtypes(filterNode) ?: return null)
+                .let { Lit("GameObjectFilter.Creature").dot("withAnyOfSubtypes", arg(subtypeListArg(it))) }
         subs.isNotEmpty() && ("Creature" in types || "\"Creature\"" in blob) ->
             Lit("GameObjectFilter.Creature").dot("withSubtype", arg(subtypeArg(subs[0])))
         types == setOf("Creature", "Land") -> Lit("GameObjectFilter.CreatureOrLand")
@@ -317,16 +369,31 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
         node = if (filterNode.hasTag("IsNonColor")) node.dot("notColor", arg("Color.${colors[0]}")) else node.dot("withColor", arg("Color.${colors[0]}"))
     }
     (FilterPredicates.withoutFlying(filterNode) ?: FilterPredicates.withFlying(filterNode))?.let { node = node.dot(it) }
-    FilterPredicates.powerAtLeast(filterNode)?.let { node = node.dot(it) }
-    FilterPredicates.powerAtMost(filterNode)?.let { node = node.dot(it) }
+    val powerOrToughness = FilterPredicates.powerOrToughnessAtLeast(filterNode)
+    if (powerOrToughness != null) node = node.dot(powerOrToughness) else {
+        FilterPredicates.powerAtLeast(filterNode)?.let { node = node.dot(it) }
+        FilterPredicates.powerAtMost(filterNode)?.let { node = node.dot(it) }
+    }
     FilterPredicates.manaValueAtMost(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.manaValueAtLeast(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.tapped(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.untapped(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.attacking(filterNode)?.let { node = node.dot(it) }
+    FilterPredicates.nontoken(filterNode)?.let { node = node.dot(it) }
     if ("\"You\"" in blob) node = node.dot("youControl")
     if ("\"Opponent\"" in blob) node = node.dot("opponentControls")
     return node
+}
+
+/** Subtypes from an `Or[IsCreatureType…]` node ("Frog, Rabbit, Raccoon, or Squirrel"), in document
+ *  order, or null when the creature subtypes aren't a flat OR (a lone subtype, or an `And` such as a
+ *  "Goblin Wizard" all-of). Distinguishes the any-of tribal group from an all-of compound type. */
+private fun orCreatureSubtypes(filterNode: JsonElement?): List<String>? {
+    val orNode = filterNode.nodesTagged("Or").firstOrNull { or ->
+        val kids = or["args"].asArr ?: return@firstOrNull false
+        kids.isNotEmpty() && kids.all { it.strField("_Permanents") == "IsCreatureType" }
+    } ?: return null
+    return (orNode["args"].asArr ?: return null).mapNotNull { it.field("args").asStr() }
 }
 
 internal fun EmitCtx.revealedHandFilterDsl(filterNode: JsonElement?): String? = revealedHandFilterExpr(filterNode)?.let(::render)

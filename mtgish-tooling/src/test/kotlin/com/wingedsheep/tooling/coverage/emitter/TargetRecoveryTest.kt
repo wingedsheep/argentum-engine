@@ -34,6 +34,43 @@ class TargetRecoveryTest : StringSpec({
             "TargetFilter(GameObjectFilter.Creature.withSubtype(\"Goblin\") or GameObjectFilter.Creature.withSubtype(\"Soldier\"))"
     }
 
+    "creatureFilterDsl renders power-or-toughness and suppresses the standalone power bound" {
+        // "creature with power or toughness 4 or greater" (Repel Calamity) — the Or owns the bound, so the
+        // standalone powerAtLeast must NOT also fire (which would narrow the filter to power alone).
+        val powerOrToughness = obj(
+            """{"_Filter":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},{"_Permanents":"Or","args":[""" +
+                """{"_Permanents":"PowerIs","args":{"_Comparison":"GreaterThanOrEqualTo","args":{"_GameNumber":"Integer","args":4}}},""" +
+                """{"_Permanents":"ToughnessIs","args":{"_Comparison":"GreaterThanOrEqualTo","args":{"_GameNumber":"Integer","args":4}}}]}]}""",
+        )
+        ctx.creatureFilterDsl(powerOrToughness) shouldBe "TargetFilter.Creature.powerOrToughnessAtLeast(4)"
+    }
+
+    "gameObjectFilterDsl renders an Or of creature subtypes as withAnyOfSubtypes" {
+        // "another Frog, Rabbit, Raccoon, or Squirrel you control" (Valley Mightcaller) — an explicit Or,
+        // distinct from an And ("Goblin Wizard") which would decline.
+        val orSubs = obj(
+            """{"_Filter":"And","args":[{"_Permanents":"Or","args":[""" +
+                """{"_Permanents":"IsCreatureType","args":"Frog"},""" +
+                """{"_Permanents":"IsCreatureType","args":"Squirrel"}]}]}""",
+        )
+        ctx.gameObjectFilterDsl(orSubs) shouldBe
+            "GameObjectFilter.Creature.withAnyOfSubtypes(listOf(Subtype.FROG, Subtype.SQUIRREL))"
+    }
+
+    "gameObjectFilterDsl appends nontoken from the IsNonToken marker" {
+        val nontokenBird = obj(
+            """{"_Filter":"And","args":[""" +
+                """{"_Permanents":"IsCreatureType","args":"Bird"},{"_Permanents":"IsNonToken"}]}""",
+        )
+        ctx.gameObjectFilterDsl(nontokenBird) shouldBe "GameObjectFilter.Creature.withSubtype(Subtype.BIRD).nontoken()"
+    }
+
+    "targetExpr renders a nonland permanent target" {
+        // "untap target nonland permanent" (Thistledown Players) — IsNonCardtype Land with no positive type.
+        ctx.targetDsl(obj("""{"_Target":"TargetPermanent","args":{"_Permanents":"IsNonCardtype","args":"Land"}}""")) shouldBe
+            "TargetPermanent(filter = TargetFilter.NonlandPermanent)"
+    }
+
     "gameObjectFilterDsl reads the base cardtype and appends the tapped suffix" {
         val tappedCreature = obj(
             """{"_Filter":"And","args":[""" +

@@ -91,7 +91,11 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     for (act in actions) {
         val r = renderAction(act, tvar)
         if (r == null) { reasons.add(act.strField("_Action") ?: act.strField("_Rule") ?: "unknown-action"); return null }
-        rendered.add(r)
+        // Splice a sub-action's own Composite into this sequence rather than nesting it — the engine's
+        // `.then()` chain (the hand-authored idiom) is flat, so an action that itself renders a Composite
+        // (e.g. a layer effect granting +P/+T and a keyword) would otherwise double-wrap into
+        // Composite([Composite([…]), …]) and diverge from golden (High Stride, Shore Up).
+        if (r is Composite) rendered.addAll(r.parts) else rendered.add(r)
     }
     if (rendered.isEmpty()) return null
     if (rendered.size == 1) return rendered[0]

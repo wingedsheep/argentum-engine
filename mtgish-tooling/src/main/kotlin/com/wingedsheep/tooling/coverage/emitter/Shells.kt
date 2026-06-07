@@ -75,6 +75,16 @@ internal fun ktStr(s: String): String =
 internal fun subtypeArg(value: String): String =
     Registry.subtypeConstant(value)?.let { "Subtype.$it" } ?: "\"${ktStr(value)}\""
 
+/**
+ * Render several subtypes as a `listOf(Subtype.X, …)` argument for `withAnyOfSubtypes` — each a typed
+ * companion constant when the SDK names it, else the `Subtype("…")` constructor (still a `Subtype`, so the
+ * list stays `List<Subtype>`). Used for the any-of tribal group ("Frog, Rabbit, Raccoon, or Squirrel").
+ */
+internal fun subtypeListArg(values: List<String>): String =
+    values.joinToString(", ", "listOf(", ")") {
+        Registry.subtypeConstant(it)?.let { c -> "Subtype.$c" } ?: "Subtype(\"${ktStr(it)}\")"
+    }
+
 internal fun colorIdentityDsl(meta: JsonObject?): String? {
     if (meta == null) return null
     val ci = meta["color_identity"].asArr ?: return null
