@@ -84,6 +84,12 @@ internal fun EmitCtx.staticLordBlock(rule: JsonObject): List<Stmt>? {
                 } else {
                     keywordOf(le) ?: return scaffoldLord()
                 }
+                // "Other creatures you control have prowess" — prowess is a triggered-ability keyword
+                // the engine derives from an explicit +1/+1 trigger, so a GrantKeyword grant would add
+                // the display tag but never the pump. Granting it faithfully needs a GrantTriggeredAbility
+                // of the prowess trigger, which this generic AddAbility path doesn't model — decline to a
+                // scaffold (per "decline→SCAFFOLD, don't widen") rather than emit a confidently-wrong lord.
+                if (kw == "PROWESS") return scaffoldLord()
                 call("GrantKeyword", arg("Keyword.$kw"), arg(group))
             }
             else -> return scaffoldLord()
@@ -169,6 +175,9 @@ internal fun EmitCtx.staticHostBlock(rule: JsonObject): List<Stmt>? {
                     colors.map { call("GrantProtection", arg("Color.$it")) }
                 } else {
                     val kw = keywordOf(le) ?: run { reasons.add("PermanentLayerEffect"); return null }
+                    // Prowess grants need the +1/+1 trigger, not just the keyword tag (see staticLordBlock) —
+                    // scaffold rather than emit a no-op GrantKeyword grant on the enchanted creature.
+                    if (kw == "PROWESS") { reasons.add("PermanentLayerEffect"); return null }
                     listOf(call("GrantKeyword", arg("Keyword.$kw")))
                 }
             }

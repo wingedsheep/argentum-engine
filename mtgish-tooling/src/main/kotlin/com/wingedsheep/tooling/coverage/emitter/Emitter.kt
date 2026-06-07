@@ -89,7 +89,12 @@ object Emitter {
         // Emit keywords in printed (rule) order, not alphabetical — `keywordLines` collects them in the
         // card's rule order, which matches the hand-authored golden's `keywords(...)` order (e.g.
         // "Trample, haste" stays TRAMPLE, HASTE rather than re-sorting to HASTE, TRAMPLE).
-        if (kw.isNotEmpty()) body.add(RawLine("    keywords(${kw.joinToString(", ") { "Keyword.$it" }})"))
+        // Prowess is a keyword ability whose +1/+1 trigger the engine derives from an explicit
+        // triggered ability, NOT the keyword tag — so it must use the prowess() DSL helper (keyword
+        // + trigger), never a bare keywords(Keyword.PROWESS), which would render the pump as a no-op.
+        val plainKw = kw.filterNot { it == "PROWESS" }
+        if (plainKw.isNotEmpty()) body.add(RawLine("    keywords(${plainKw.joinToString(", ") { "Keyword.$it" }})"))
+        if ("PROWESS" in kw) body.add(RawLine("    prowess()"))
         val cardLevelLines = ctx.cardLevelCastEffectLines(card)
         if (cardLevelLines == null) gap("CastEffect")?.let { return it }
         else body.addAll(cardLevelLines.map { RawLine(it) })
