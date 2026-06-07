@@ -142,6 +142,9 @@ data class GameObjectFilter(
                 CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsArtifact))
             )
         )
+        val ArtifactCreature = GameObjectFilter(
+            cardPredicates = listOf(CardPredicate.IsArtifact, CardPredicate.IsCreature)
+        )
         val NoncreaturePermanent = GameObjectFilter(
             cardPredicates = listOf(CardPredicate.IsNoncreature, CardPredicate.IsPermanent)
         )
