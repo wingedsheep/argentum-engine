@@ -63,6 +63,18 @@ class BoosterGenerator(
          * "partial": still selectable, but hidden behind the lobby's partial-sets toggle.
          */
         val fullyImplemented: Boolean get() = sealedSupported && !incomplete
+
+        /**
+         * Number of distinct cards the set contributes, for "X cards" displays in set pickers.
+         *
+         * Counts reprint [printings] — a Commander/precon set's reprints have their canonical
+         * [CardDefinition] in an earlier set, so they never appear in [cards] and would otherwise
+         * be undercounted. De-duplicating by name collapses any alternate-frame printing of a card
+         * already defined here, while still counting reprint-only names exactly once.
+         */
+        val distinctCardCount: Int
+            get() = (cards.asSequence().map { it.name } + printings.asSequence().map { it.name })
+                .distinct().count()
     }
 
     companion object {

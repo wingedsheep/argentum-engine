@@ -2004,57 +2004,6 @@
     ]
 }
 
-// Gruul Signet
-{
-    "name": "Gruul Signet",
-    "manaCost": "{2}",
-    "typeLine": "Artifact",
-    "oracleText": "{1}, {T}: Add {R}{G}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": {
-                    "type": "CostComposite",
-                    "costs": [
-                        {
-                            "type": "CostMana",
-                            "cost": "{1}"
-                        },
-                        "CostTap"
-                    ]
-                },
-                "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "AddMana",
-                            "color": "RED"
-                        },
-                        {
-                            "type": "AddMana",
-                            "color": "GREEN"
-                        }
-                    ]
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "273",
-        "rarity": "UNCOMMON",
-        "artist": "Efrem Palacios",
-        "flavorText": "Gruul territorial markings need not be legible. The blood, snot, and muck used to smear them are unmistakably Gruul.",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e71ad66-28ae-4cd6-ac71-d8710e9ea9cd.jpg?1721975455"
-    },
-    "colorIdentityOverride": [
-        "RED",
-        "GREEN"
-    ]
-}
-
 // Harmonize
 {
     "name": "Harmonize",

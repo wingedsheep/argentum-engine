@@ -68,14 +68,19 @@ class GameBeansConfig(
     }
 
     @Bean
-    fun boosterGenerator(): BoosterGenerator = BoosterGenerator(
+    fun boosterGenerator(cardRegistry: CardRegistry): BoosterGenerator = BoosterGenerator(
         // Every set with a non-empty card pool is selectable, not just the sealed-curated few.
         // Sets that aren't `sealedSupported` (or are flagged incomplete) ride along as "partial":
         // clients hide them behind a default-off toggle, but a host can still pick them. An empty
-        // pool can't produce a booster, so those are the only sets excluded here.
+        // pool can't produce a booster, so those are the only sets excluded here — and an
+        // all-reprint set's pool is resolved from its printings (see [boosterCardPool]) so it
+        // isn't wrongly treated as empty.
         activeSets()
-            .filter { it.cards.isNotEmpty() }
-            .associate { it.code to it.toBoosterSetConfig() }
+            .mapNotNull { set ->
+                val pool = set.boosterCardPool(cardRegistry)
+                if (pool.isEmpty()) null else set.code to set.toBoosterSetConfig(pool)
+            }
+            .toMap()
     )
 
     @Bean
@@ -119,7 +124,30 @@ private fun List<CardDefinition>.stamp(set: MtgSet): List<CardDefinition> =
 private fun List<CardDefinition>.withLegalities(): List<CardDefinition> =
     map { LegalityData.stamp(it) }
 
-private fun MtgSet.toBoosterSetConfig(): BoosterGenerator.SetConfig =
+/**
+ * The card pool a set contributes to booster / sealed / draft generation.
+ *
+ * Sets that author their own [MtgSet.cards] use those as-is. An all-reprint set (e.g. Eighth
+ * Edition) declares no own definitions — every card is a [Printing] whose canonical
+ * [CardDefinition] lives in an earlier set — so each reprint is resolved to its canonical via
+ * [registry] and overlaid with the reprint's presentation (set code, art) and its per-set
+ * [com.wingedsheep.sdk.model.Printing.rarity] (a card's rarity differs between sets, and booster
+ * generation slots by rarity). Reprints whose canonical isn't implemented anywhere are skipped.
+ *
+ * Without this, an all-reprint set has an empty `cards` list, is filtered out of
+ * [boosterGenerator], and never appears in the selectable-set list (the Eighth Edition bug).
+ */
+private fun MtgSet.boosterCardPool(registry: CardRegistry): List<CardDefinition> {
+    if (cards.isNotEmpty()) return cards
+    return printings.mapNotNull { printing ->
+        registry.getCardsByName(printing.name).firstOrNull()?.let { canonical ->
+            val withArt = canonical.withPrinting(printing)
+            withArt.copy(metadata = withArt.metadata.copy(rarity = printing.rarity))
+        }
+    }
+}
+
+private fun MtgSet.toBoosterSetConfig(cards: List<CardDefinition>): BoosterGenerator.SetConfig =
     BoosterGenerator.SetConfig(
         setCode = code,
         setName = displayName,

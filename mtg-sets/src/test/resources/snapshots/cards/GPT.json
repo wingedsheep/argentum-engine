@@ -1,80 +1,100 @@
-// Electrolyze
+// Douse in Gloom
 {
-    "name": "Electrolyze",
-    "manaCost": "{1}{U}{R}",
+    "name": "Douse in Gloom",
+    "manaCost": "{2}{B}",
     "typeLine": "Instant",
-    "oracleText": "Electrolyze deals 2 damage divided as you choose among one or two targets.\nDraw a card.",
+    "oracleText": "Douse in Gloom deals 2 damage to target creature and you gain 2 life.",
     "script": {
         "spellEffect": {
             "type": "Composite",
             "effects": [
                 {
-                    "type": "DividedDamage",
-                    "totalDamage": 2,
-                    "maxTargets": 2
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    }
                 },
                 {
-                    "type": "DrawCards",
-                    "count": {
+                    "type": "GainLife",
+                    "amount": {
                         "type": "Fixed",
-                        "amount": 1
+                        "amount": 2
                     }
                 }
             ]
         },
         "targetRequirements": [
             {
-                "type": "AnyTarget",
-                "count": 2,
-                "minCount": 1
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
             }
         ]
     },
     "metadata": {
-        "collectorNumber": "111",
-        "rarity": "UNCOMMON",
-        "artist": "Zoltan Boros & Gabor Szikszai",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef42b5b2-6504-486c-aaa0-9d5e4769ba1d.jpg?1593272648"
+        "collectorNumber": "49",
+        "artist": "Kev Walker",
+        "flavorText": "Orzhov prisoners are steeped in a blackened brew that robs their souls of strength. Patriarchs drink that brew to extend their own lives.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50a4fe4d-460d-4143-9a8e-14e16b211722.jpg?1593272187"
     },
     "colorIdentityOverride": [
-        "BLUE",
-        "RED"
+        "BLACK"
     ]
 }
 
-// Frazzle
+// Gruul Signet
 {
-    "name": "Frazzle",
-    "manaCost": "{3}{U}",
-    "typeLine": "Instant",
-    "oracleText": "Counter target nonblue spell.",
+    "name": "Gruul Signet",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Add {R}{G}.",
     "script": {
-        "spellEffect": "Counter",
-        "targetRequirements": [
+        "activatedAbilities": [
             {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": {
-                        "cardPredicates": [
-                            {
-                                "type": "NotColor",
-                                "color": "BLUE"
-                            }
-                        ]
-                    },
-                    "zone": "Stack"
-                }
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{1}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
             }
         ]
     },
     "metadata": {
-        "collectorNumber": "25",
-        "rarity": "UNCOMMON",
-        "artist": "Pete Venters",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68b7f705-4d64-4551-8d76-826d91324e9e.jpg?1593271993"
+        "collectorNumber": "150",
+        "artist": "Greg Hildebrandt",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bb30340-96a4-49d8-838b-8788900401a0.jpg?1593272924"
     },
     "colorIdentityOverride": [
-        "BLUE"
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -145,60 +165,51 @@
     ]
 }
 
-// Izzet Chronarch
+// Mortify
 {
-    "name": "Izzet Chronarch",
-    "manaCost": "{3}{U}{R}",
-    "typeLine": "Creature — Human Wizard",
-    "oracleText": "When this creature enters, return target instant or sorcery card from your graveyard to your hand.",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 2
-    },
+    "name": "Mortify",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or enchantment.",
     "script": {
-        "triggeredAbilities": [
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature or enchantment"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
             {
-                "id": "ability_1",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "to": "Battlefield"
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|enchantment"
                 },
-                "effect": {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "target"
-                    },
-                    "destination": "Hand"
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "instant|sorcery own:you",
-                        "zone": "Graveyard"
-                    },
-                    "id": "target"
-                }
+                "id": "creature or enchantment"
             }
         ]
     },
     "metadata": {
-        "collectorNumber": "119",
-        "artist": "Nick Percival",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c82dc47-38db-4ee1-9031-f8ea68d05389.jpg?1593272708"
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Glen Angus",
+        "flavorText": "The eyes let flow with tears, then blood, then the very soul—the whole wrung inside out, dripping down into the blackened puddle of the past.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2c5187-71c7-4801-8a76-339c67322d35.jpg?1593272729"
     },
     "colorIdentityOverride": [
-        "BLUE",
-        "RED"
+        "WHITE",
+        "BLACK"
     ]
 }
 
-// Izzet Signet
+// Orzhov Signet
 {
-    "name": "Izzet Signet",
+    "name": "Orzhov Signet",
     "manaCost": "{2}",
     "typeLine": "Artifact",
-    "oracleText": "{1}, {T}: Add {U}{R}.",
+    "oracleText": "{1}, {T}: Add {W}{B}.",
     "script": {
         "activatedAbilities": [
             {
@@ -218,11 +229,11 @@
                     "effects": [
                         {
                             "type": "AddMana",
-                            "color": "BLUE"
+                            "color": "WHITE"
                         },
                         {
                             "type": "AddMana",
-                            "color": "RED"
+                            "color": "BLACK"
                         }
                     ]
                 },
@@ -232,34 +243,156 @@
         ]
     },
     "metadata": {
-        "collectorNumber": "152",
+        "collectorNumber": "155",
         "artist": "Greg Hildebrandt",
-        "flavorText": "The Izzet signet is redesigned often, each time becoming closer to a vanity portrait of Niv-Mizzet.",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f823be95-bef4-4e86-a924-239be62394bf.jpg?1593272937"
+        "flavorText": "The form of the sigil is just as important as the sigil itself. If it's carried on a medallion, its bearer is a master. If it's tattooed on the body, its bearer is a slave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9298a1d-5b41-46d8-929c-b6980d1e6eb7.jpg?1753108346"
     },
     "colorIdentityOverride": [
-        "BLUE",
-        "RED"
+        "WHITE",
+        "BLACK"
     ]
 }
 
-// Repeal
+// Ostiary Thrull
 {
-    "name": "Repeal",
-    "manaCost": "{X}{U}",
+    "name": "Ostiary Thrull",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Thrull",
+    "oracleText": "{W}, {T}: Tap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{W}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "creature"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Ron Spencer",
+        "flavorText": "Orzhov churches don't pass the plate for collection. They charge for admission.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26407330-d7a1-4915-b7c6-e08e166cf638.jpg?1593272233"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Streetbreaker Wurm
+{
+    "name": "Streetbreaker Wurm",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Wurm",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Greg Hildebrandt",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5313054-91a5-401c-84d1-03a2cd265060.jpg?1593272809"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Wild Cantor
+{
+    "name": "Wild Cantor",
+    "manaCost": "{R/G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "({R/G} can be paid with either {R} or {G}.)\nSacrifice this creature: Add one mana of any color.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostSacrificeSelf",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Glenn Fabry",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/242dc29e-d8f5-4207-abbf-cf5425f08551.jpg?1593272918"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Wildsize
+{
+    "name": "Wildsize",
+    "manaCost": "{2}{G}",
     "typeLine": "Instant",
-    "oracleText": "Return target nonland permanent with mana value X to its owner's hand.\nDraw a card.",
+    "oracleText": "Target creature gets +2/+2 and gains trample until end of turn.\nDraw a card.",
     "script": {
         "spellEffect": {
             "type": "Composite",
             "effects": [
                 {
-                    "type": "MoveToZone",
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
                     "target": {
                         "type": "BoundVariable",
-                        "name": "nonland permanent"
-                    },
-                    "destination": "Hand"
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
                 },
                 {
                     "type": "DrawCards",
@@ -274,24 +407,18 @@
             {
                 "type": "TargetObject",
                 "filter": {
-                    "baseFilter": {
-                        "cardPredicates": [
-                            "IsNonland",
-                            "IsPermanent",
-                            "ManaValueEqualsX"
-                        ]
-                    }
+                    "baseFilter": "creature"
                 },
-                "id": "nonland permanent"
+                "id": "target"
             }
         ]
     },
     "metadata": {
-        "collectorNumber": "32",
-        "artist": "Dan Murayama Scott",
-        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e7dd929-4bba-46a6-86c9-b8ed853eb721.jpg?1593272056"
+        "collectorNumber": "98",
+        "artist": "Jim Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eef061ed-736c-41ba-b692-d1fbfaca242e.jpg?1593272542"
     },
     "colorIdentityOverride": [
-        "BLUE"
+        "GREEN"
     ]
 }

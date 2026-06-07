@@ -35,7 +35,7 @@ class ConnectionHandler(
             name = config.setName,
             partial = !config.fullyImplemented,
             block = config.block,
-            implementedCount = config.cards.size,
+            implementedCount = config.distinctCardCount,
             releaseDate = config.releaseDate
         )
     }

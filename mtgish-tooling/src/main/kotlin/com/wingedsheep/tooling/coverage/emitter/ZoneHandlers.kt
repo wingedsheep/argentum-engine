@@ -90,6 +90,14 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
             call("Effects.Move", arg("EffectTarget.Self"), arg("Zone.HAND")) else null
     }
 
+    on("ExileGraveyardCard") { _, args, tvar ->
+        // "Exile target card from a graveyard" (Cremate, Withered Wretch). The target graveyard card was
+        // already recovered into the bound `tvar`; exile is a plain Move to the exile zone. Self ("exile
+        // this card from your graveyard") falls back to EffectTarget.Self.
+        val tgt = refTarget(args, tvar) ?: "EffectTarget.Self"
+        call("Effects.Move", arg(Lit(tgt)), arg("Zone.EXILE"))
+    }
+
     on("PutACardFromHandOnBattlefield") { _, args, _ ->  // "you may put a [basic land] card from your hand …"
         val arr = args.asArr ?: return@on null
         val blob = compact(arr.getOrNull(0))

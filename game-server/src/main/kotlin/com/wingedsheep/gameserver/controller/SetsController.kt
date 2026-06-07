@@ -65,7 +65,7 @@ class SetsController(
                 BoosterSetDTO(
                     setCode = config.setCode,
                     setName = config.setName,
-                    implementedCount = config.cards.size,
+                    implementedCount = config.distinctCardCount,
                     incomplete = config.incomplete
                 )
             }
