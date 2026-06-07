@@ -147,6 +147,19 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): Dsl? {
             // "lose at end step" variant (Last Chance) is the `extraTurnEffect` spell shortcut.
             return if (ptv != null) call("TakeExtraTurnEffect", arg("target", Lit(ptv))) else null
         }
+        "GainControlOfPermanent" -> {
+            // "Target opponent gains control of this permanent" (Jinxed Idol's sacrifice ability).
+            // The recipient is the bound target player; the granted permanent must be the source
+            // itself (ThisPermanent). Only that exact shape renders — a non-self permanent or an
+            // untargeted/each-player actor scaffolds rather than guess who gains what.
+            if (ptv == null) return null
+            if (!jsonContains(inner["args"], "_Permanent", "ThisPermanent")) return null
+            return call(
+                "GiveControlToTargetPlayerEffect",
+                arg("permanent", "EffectTarget.Self"),
+                arg("newController", Lit(ptv)),
+            )
+        }
     }
     return null
 }

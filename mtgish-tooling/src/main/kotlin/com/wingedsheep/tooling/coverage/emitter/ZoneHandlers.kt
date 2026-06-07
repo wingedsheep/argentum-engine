@@ -87,6 +87,16 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         (findInteger(args) as? Int)?.let { call("Patterns.Library.scry", arg("$it")) }
     }
 
+    on("MillNumberCards") { _, args, tvar ->
+        // "target player mills N cards" (Altar of Dementia). The count is a fixed Integer or a recognised
+        // dynamic amount (e.g. the sacrificed creature's power); the milled player is the bound target — an
+        // untargeted/self form falls back to the controller. An unrenderable count scaffolds.
+        val amt = amountExpr(args) ?: dynamicAmountExpr(amountNode(args)) ?: return@on null
+        val tgt = refTarget(args, tvar) ?: tvar
+        if (tgt != null) call("Patterns.Library.mill", arg(amt), arg(Lit(tgt)))
+        else call("Patterns.Library.mill", arg(amt))
+    }
+
     on("ReturnGraveyardCardToHand") { _, args, _ ->
         // "Return this card from your graveyard to your hand" (Gangrenous Goliath's graveyard ability). Only
         // the self (this graveyard card) form renders; a chosen graveyard-card target scaffolds.

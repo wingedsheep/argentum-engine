@@ -1,3 +1,69 @@
+// Altar of Dementia
+{
+    "name": "Altar of Dementia",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Sacrifice a creature: Target player mills cards equal to the sacrificed creature's power.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "Sacrificed",
+                                    "numericProperty": "Power"
+                                },
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "player"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice a creature: Target player mills cards equal to the sacrificed creature's power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "rarity": "RARE",
+        "artist": "Brom",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f2da99f-3c53-4980-97d6-2158c765aac0.jpg?1562054217"
+    },
+    "colorIdentityOverride": []
+}
+
 // Boil
 {
     "name": "Boil",
@@ -468,6 +534,57 @@
     ]
 }
 
+// Fool's Tome
+{
+    "name": "Fool's Tome",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "{2}, {T}: Draw a card. Activate only if you have no cards in hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{2}"
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Hand",
+                            "negate": true
+                        }
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Draw a card. Activate only if you have no cards in hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "289",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83be257c-8945-46be-8b58-fb2881084026.jpg?1562054974"
+    },
+    "colorIdentityOverride": []
+}
+
 // Fylamarid
 {
     "name": "Fylamarid",
@@ -642,6 +759,65 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Jinxed Idol
+{
+    "name": "Jinxed Idol",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, this artifact deals 2 damage to you.\nSacrifice a creature: Target opponent gains control of this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostSacrifice",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "GiveControlToTargetPlayer",
+                    "permanent": "Self",
+                    "newController": {
+                        "type": "BoundVariable",
+                        "name": "opponent"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "opponent"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice a creature: Target opponent gains control of this artifact."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "rarity": "RARE",
+        "artist": "John Matson",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c728e38-5656-4feb-8610-0cf45fb38094.jpg?1562052774"
+    },
+    "colorIdentityOverride": []
 }
 
 // Lightning Blast
@@ -927,6 +1103,38 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Patchwork Gnomes
+{
+    "name": "Patchwork Gnomes",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Gnome",
+    "oracleText": "Discard a card: Regenerate this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostDiscard",
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Discard a card: Regenerate this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "299",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Raabe",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdaa9ac4-b742-4a24-a316-97538adfd361.jpg?1562056382"
+    },
+    "colorIdentityOverride": []
 }
 
 // Phyrexian Hulk

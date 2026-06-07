@@ -40,7 +40,7 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
             }
             return@on eachPermanent
         }
-        val tgt = refTargetIn(args, "_DamageRecipient", tvar) ?: return@on null
+        val tgt = damageRecipientTarget(args, tvar) ?: return@on null
         call("DealDamageEffect", arg(amt), arg(Lit(tgt)))
     }
 
@@ -160,6 +160,48 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
         val target = damagePreventionRecipient(event, tvar) ?: return@on null
         call("Effects.PreventNextDamage", arg("$amount"), arg(Lit(target)))
     }
+}
+
+/** Resolve a `_DamageRecipient` node to an EffectTarget DSL for a direct deal-damage action.
+ *
+ *  First tries the shared bound-ref / self resolver ([refTargetIn]) — preserving every recipient that
+ *  already renders. As a fallback it resolves the explicit, non-ref recipient shapes the ref resolver
+ *  doesn't cover: a plain "you" recipient (`Player{You}` -> the controller, e.g. Jinxed Idol's "deals 2
+ *  damage to you") and "this permanent" (`Permanent{ThisPermanent}` -> self). Returns null for anything
+ *  else (a named/opponent player recipient with no target binding, distributed, …) so the card scaffolds
+ *  rather than deal damage to the wrong recipient. */
+internal fun EmitCtx.damageRecipientTarget(args: JsonElement?, tvar: String?): String? {
+    refTargetIn(args, "_DamageRecipient", tvar)?.let { return it }
+    val recip = recipientNode(args) ?: return null
+    return when (recip.strField("_DamageRecipient")) {
+        "Player" -> when (recip["args"].strField("_Player")) {
+            "You" -> "EffectTarget.Controller"
+            else -> null
+        }
+        "Permanent" -> when (recip["args"].strField("_Permanent")) {
+            "ThisPermanent" -> "EffectTarget.Self"
+            else -> null
+        }
+        else -> null
+    }
+}
+
+/** The first object carrying a `_DamageRecipient` discriminator anywhere in a deal-damage action's args. */
+private fun recipientNode(args: JsonElement?): JsonObject? {
+    var found: JsonObject? = null
+    fun walk(n: JsonElement?) {
+        if (found != null) return
+        when (n) {
+            is JsonObject -> {
+                if (n.containsKey("_DamageRecipient")) { found = n; return }
+                n.values.forEach { walk(it) }
+            }
+            is JsonArray -> n.forEach { walk(it) }
+            else -> {}
+        }
+    }
+    walk(args)
+    return found
 }
 
 /** Resolve the damage recipient of a `NextAmountOfDamage…ToRecipient` event to an EffectTarget DSL:
