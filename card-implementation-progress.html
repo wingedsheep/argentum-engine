@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Argentum Engine — Card Implementation Progress</title>
+<style>
+  :root{
+    --bg:#0a0c12; --panel:#11141d; --panel2:#161a26;
+    --ink:#e9edf6; --muted:#8b93a7; --faint:#5a6276;
+    --line:#1e2433; --grid:#1a1f2c;
+    --accent:#7c9cff; --accent2:#56e0c2; --gold:#e0b65a;
+    --glow:rgba(124,156,255,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:
+     radial-gradient(1200px 700px at 78% -10%, rgba(124,156,255,.10), transparent 60%),
+     radial-gradient(900px 600px at 10% 110%, rgba(86,224,194,.07), transparent 55%),
+     var(--bg);
+    color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 72px}
+  header.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:36px}
+  .title h1{margin:0;font-size:30px;font-weight:680;letter-spacing:-.02em}
+  .title .sub{margin-top:6px;color:var(--muted);font-size:14px}
+  .badge{display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.02)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 10px var(--accent2)}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:30px}
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:16px;padding:18px 20px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5}
+  .card .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .card .v{font-size:30px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+  .card .v small{font-size:14px;color:var(--faint);font-weight:500}
+
+  .chartcard{background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);border-radius:20px;padding:22px 22px 12px}
+  .chartcard .bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .chartcard h2{margin:0;font-size:16px;font-weight:600}
+  .legend{display:flex;gap:18px;align-items:center;font-size:12px;color:var(--muted)}
+  .legend i{display:inline-block;width:18px;height:3px;border-radius:3px;vertical-align:middle;margin-right:7px}
+  .legend .l1 i{background:var(--accent)}
+  .legend .l2 i{background:var(--accent2);height:9px;width:9px;border-radius:2px}
+  .legend em{font-style:normal;color:var(--faint);font-size:11px}
+  .chartbox{position:relative;width:100%}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .axis text{fill:var(--faint);font-size:11px}
+  .grid line{stroke:var(--grid);stroke-width:1}
+  .areaTotal{fill:url(#gradTotal)}
+  .lineTotal{fill:none;stroke:url(#gradStroke);stroke-width:2.5;stroke-linejoin:round;
+    filter:drop-shadow(0 4px 14px var(--glow))}
+  .barAdd{fill:var(--accent2);opacity:.7}
+
+  .cross{stroke:var(--accent);stroke-width:1;stroke-dasharray:3 4;opacity:0}
+  .hoverdot{fill:#fff;stroke:var(--accent);stroke-width:3;opacity:0;filter:drop-shadow(0 0 8px var(--glow))}
+  .tip{position:absolute;pointer-events:none;opacity:0;transform:translate(-50%,-118%);
+    background:rgba(14,17,26,.96);border:1px solid var(--line);border-radius:12px;
+    padding:10px 13px;font-size:12px;white-space:nowrap;box-shadow:0 14px 40px rgba(0,0,0,.5);transition:opacity .08s}
+  .tip .d{color:var(--muted);margin-bottom:5px;font-size:11px}
+  .tip .t{font-size:17px;font-weight:700}
+  .tip .a{color:var(--accent2);margin-top:3px}
+  footer{margin-top:28px;color:var(--faint);font-size:12px;text-align:center}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.title h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <div class="title">
+      <h1>Argentum Engine — Card Implementation</h1>
+      <div class="sub">Distinct implemented Magic cards, day by day since the project began</div>
+    </div>
+    <div class="badge"><span class="dot"></span><span id="badge">loading…</span></div>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="chartcard">
+    <div class="bar">
+      <h2>Cumulative distinct cards</h2>
+      <div class="legend">
+        <span class="l1"><i></i>Total implemented <em>(left axis)</em></span>
+        <span class="l2"><i></i>Added that day <em>(right axis)</em></span>
+      </div>
+    </div>
+    <div class="chartbox" id="chartbox">
+      <svg id="chart" viewBox="0 0 1000 420" preserveAspectRatio="none" aria-label="Cumulative cards chart"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const DATES=["2026-01-18","2026-01-19","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-24","2026-01-25","2026-01-26","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-01-31","2026-02-01","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-07","2026-02-08","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-14","2026-02-15","2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-21","2026-02-22","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27","2026-02-28","2026-03-01","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-02","2026-05-03","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-09","2026-05-10","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-16","2026-05-17","2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-23","2026-05-24","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-05-30","2026-05-31","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-06","2026-06-07"];
+const TOTALS=[0,0,0,0,0,0,195,195,195,195,195,195,195,195,226,226,226,226,226,303,347,382,396,414,435,436,469,477,508,525,525,526,550,572,583,588,589,610,634,661,702,739,831,868,892,924,935,966,993,1026,1045,1054,1058,1167,1204,1227,1251,1257,1272,1302,1303,1320,1320,1328,1331,1331,1337,1349,1388,1429,1456,1490,1496,1496,1519,1564,1567,1567,1567,1567,1567,1567,1567,1568,1586,1590,1591,1600,1613,1622,1632,1657,1667,1669,1679,1682,1699,1699,1744,1761,1764,1796,1809,1838,1838,1876,1916,1960,1982,2014,2043,2071,2108,2144,2164,2173,2200,2243,2259,2283,2301,2302,2305,2310,2318,2325,2327,2332,2399,2556,2599,2663,2919,3032,3130,3211,3270,3314,3316,3553,3809];
+const ADDED=[0,0,0,0,0,0,195,0,0,0,0,0,0,0,31,0,0,0,0,77,44,35,14,18,21,1,33,8,31,17,0,1,24,22,11,5,1,21,24,27,41,37,92,37,24,32,11,31,27,33,19,9,4,109,37,23,24,6,15,30,1,17,0,8,3,0,6,12,39,41,27,34,6,0,23,45,3,0,0,0,0,0,0,1,18,4,1,9,13,9,10,25,10,2,10,3,17,0,45,17,3,32,13,29,0,38,40,44,22,32,29,28,37,36,20,9,27,43,16,24,18,1,3,5,8,7,2,5,67,157,43,64,256,113,98,81,59,44,2,237,256];
+
+const N=DATES.length, finalTotal=TOTALS[N-1];
+let busiest=0,busiestI=0,active=0;
+for(let i=0;i<N;i++){if(ADDED[i]>busiest){busiest=ADDED[i];busiestI=i;}if(ADDED[i]>0)active++;}
+const fmt=n=>n.toLocaleString('en-US');
+const niceDate=s=>{const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+const niceFull=s=>{const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});};
+
+document.getElementById('badge').textContent=niceFull(DATES[0]).replace(/^\w+, /,'')+' → '+niceFull(DATES[N-1]).replace(/^\w+, /,'');
+const stats=[
+  {k:'Distinct cards',v:fmt(finalTotal),s:'implemented'},
+  {k:'Days of work',v:fmt(N),s:active+' with new cards'},
+  {k:'Avg / active day',v:(finalTotal/active).toFixed(1),s:'cards'},
+  {k:'Busiest day',v:fmt(busiest),s:niceDate(DATES[busiestI])},
+];
+document.getElementById('stats').innerHTML=stats.map(c=>
+  `<div class="card"><div class="k">${c.k}</div><div class="v">${c.v} <small>${c.s}</small></div></div>`).join('');
+document.getElementById('foot').textContent=
+  `${fmt(finalTotal)} distinct cards across ${N} days · generated from git history of mtg-sets/definitions · ${DATES[N-1]}`;
+
+// ---- chart geometry ----
+const VW=1000, VH=420, M={l:84,r:84,t:18,b:34};
+const PW=VW-M.l-M.r, PH=VH-M.t-M.b;
+const maxY=Math.ceil(finalTotal/500)*500;
+const X=i=>M.l+(PW*i)/(N-1);
+const Y=v=>M.t+PH-(PH*v)/maxY;
+// secondary scale for the "added that day" bars (own right-hand axis)
+const BAR_FRAC=0.45;                              // bars use the bottom 45% of the plot
+const addMax=Math.ceil(busiest/50)*50;            // nice round top (e.g. 300)
+const Yr=v=>M.t+PH-(PH*BAR_FRAC)*(v/addMax);      // y for a bar value
+
+const svg=document.getElementById('chart');
+const NS='http://www.w3.org/2000/svg';
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+
+// defs
+const defs=el('defs',{});
+defs.innerHTML=`
+ <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="#7c9cff" stop-opacity=".42"/>
+   <stop offset="55%" stop-color="#7c9cff" stop-opacity=".12"/>
+   <stop offset="100%" stop-color="#7c9cff" stop-opacity="0"/>
+ </linearGradient>
+ <linearGradient id="gradStroke" x1="0" y1="0" x2="1" y2="0">
+   <stop offset="0%" stop-color="#56e0c2"/>
+   <stop offset="100%" stop-color="#7c9cff"/>
+ </linearGradient>`;
+svg.appendChild(defs);
+
+// gridlines + left y labels (cumulative total, blue)
+const grid=el('g',{class:'grid'}), axis=el('g',{class:'axis'});
+for(let v=0;v<=maxY;v+=500){
+  grid.appendChild(el('line',{x1:M.l,y1:Y(v),x2:VW-M.r,y2:Y(v)}));
+  const tx=el('text',{x:M.l-10,y:Y(v)+4,'text-anchor':'end',fill:'#9fb2ff'});tx.textContent=fmt(v);axis.appendChild(tx);
+}
+svg.appendChild(grid);
+
+// right y labels (added per day, teal — matches the bars)
+const rstep=addMax/3;
+for(let v=0;v<=addMax+0.5;v+=rstep){
+  const tx=el('text',{x:VW-M.r+10,y:Yr(v)+4,'text-anchor':'start',fill:'#56e0c2'});
+  tx.textContent=fmt(Math.round(v));axis.appendChild(tx);
+}
+
+// rotated axis titles, colored to match each axis
+const cy=M.t+PH/2, lx=18, rx=VW-18;
+const ltitle=el('text',{x:lx,y:cy,'text-anchor':'middle',fill:'#9fb2ff',
+  'font-size':'12','font-weight':'600',transform:`rotate(-90 ${lx} ${cy})`});
+ltitle.textContent='Total cards (cumulative)';
+axis.appendChild(ltitle);
+const rtitle=el('text',{x:rx,y:cy,'text-anchor':'middle',fill:'#56e0c2',
+  'font-size':'12','font-weight':'600',transform:`rotate(90 ${rx} ${cy})`});
+rtitle.textContent='Cards added per day';
+axis.appendChild(rtitle);
+
+// month x labels (first of each month)
+let lastMonth='';
+for(let i=0;i<N;i++){
+  const m=DATES[i].slice(0,7);
+  if(m!==lastMonth){lastMonth=m;
+    const d=new Date(DATES[i]+'T00:00:00');
+    const tx=el('text',{x:X(i),y:VH-10,'text-anchor':'middle'});
+    tx.textContent=d.toLocaleDateString('en-US',{month:'short'});axis.appendChild(tx);
+  }
+}
+svg.appendChild(axis);
+
+// daily-add bars (own right-hand scale via Yr)
+const barG=el('g',{});
+const bw=Math.max(1.4,PW/N*0.55);
+for(let i=0;i<N;i++){
+  if(ADDED[i]<=0)continue;
+  const top=Yr(ADDED[i]);
+  barG.appendChild(el('rect',{class:'barAdd',x:X(i)-bw/2,y:top,width:bw,height:(M.t+PH)-top,rx:1}));
+}
+svg.appendChild(barG);
+
+// area + line for totals
+let dArea=`M ${X(0)} ${Y(0)}`, dLine='';
+for(let i=0;i<N;i++){const x=X(i),y=Y(TOTALS[i]);dArea+=` L ${x} ${y}`;dLine+=(i?' L':'M')+` ${x} ${y}`;}
+dArea+=` L ${X(N-1)} ${Y(0)} Z`;
+svg.appendChild(el('path',{class:'areaTotal',d:dArea}));
+svg.appendChild(el('path',{class:'lineTotal',d:dLine}));
+
+// interaction layer
+const cross=el('line',{class:'cross',y1:M.t,y2:M.t+PH});
+const hdot=el('circle',{class:'hoverdot',r:5});
+svg.appendChild(cross);svg.appendChild(hdot);
+const hit=el('rect',{x:M.l,y:M.t,width:PW,height:PH,fill:'transparent'});
+svg.appendChild(hit);
+
+const tip=document.getElementById('tip'), box=document.getElementById('chartbox');
+function move(ev){
+  const r=svg.getBoundingClientRect();
+  const px=(ev.clientX-r.left)/r.width*VW;
+  let i=Math.round((px-M.l)/PW*(N-1));
+  i=Math.max(0,Math.min(N-1,i));
+  const x=X(i),y=Y(TOTALS[i]);
+  cross.setAttribute('x1',x);cross.setAttribute('x2',x);cross.style.opacity=1;
+  hdot.setAttribute('cx',x);hdot.setAttribute('cy',y);hdot.style.opacity=1;
+  // tooltip placement in CSS px
+  tip.style.opacity=1;
+  tip.style.left=(x/VW*r.width)+'px';
+  tip.style.top=(y/VH*r.height)+'px';
+  tip.innerHTML=`<div class="d">${niceFull(DATES[i])}</div>`+
+    `<div class="t">${fmt(TOTALS[i])} cards</div>`+
+    (ADDED[i]>0?`<div class="a">+${fmt(ADDED[i])} that day</div>`:`<div class="a" style="color:var(--faint)">no new cards</div>`);
+}
+function leave(){cross.style.opacity=0;hdot.style.opacity=0;tip.style.opacity=0;}
+hit.addEventListener('mousemove',move);
+hit.addEventListener('mouseleave',leave);
+box.addEventListener('touchmove',e=>{if(e.touches[0])move(e.touches[0]);},{passive:true});
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""
+Regenerate the data behind `card-implementation-progress.html`.
+
+Counts *distinct implemented cards over time* — one cumulative point per
+calendar day from the project's first commit to its most recent — and refreshes
+the data arrays embedded in the HTML graph at the repo root.
+
+How it works:
+  - A single `git log --reverse -p` pass over `mtg-sets/.../definitions/`
+    records the first commit date each `val X = card("Name") { }` definition
+    was introduced. Keying on the card *name* means reprints (`Printing(...)`
+    rows) never double-count, and a card counts from the day its canonical
+    `card(...)` first landed.
+  - Names are restricted to those still present in the current tree, so removed
+    / renamed stubs don't inflate the total and the final cumulative matches
+    the live distinct-card count. Token/template stubs outside `definitions/`
+    (e.g. `Foo`, `Card Name`, predefined tokens) are excluded by construction.
+  - The per-day cumulative series is filled across every calendar day from the
+    project's first commit through the latest, then the three `const DATES /
+    TOTALS / ADDED` arrays in `card-implementation-progress.html` are rewritten
+    in place (the page's stats and chart derive everything else from them).
+
+Usage:
+  scripts/card-progress-graph            # refresh the HTML in place
+  scripts/card-progress-graph --print    # print summary, don't write the HTML
+"""
+from __future__ import annotations
+
+import datetime
+import json
+import re
+import subprocess
+import sys
+from collections import Counter
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+DEFS = "mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
+HTML = REPO / "card-implementation-progress.html"
+
+# `val Foo = card("Some Name") {` — the canonical definition opener.
+ADDED_RE = re.compile(r'^\+.*=\s*card\("((?:[^"\\]|\\.)*)"')
+TREE_RE = re.compile(r'=\s*card\("((?:[^"\\]|\\.)*)"')
+
+
+def git(*args: str) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout
+
+
+def first_introduction_dates() -> dict[str, str]:
+    """Map each card name -> the YYYY-MM-DD it was first added to definitions/."""
+    out = git("log", "--reverse", "--date-order", "--format=@C@%aI", "-p", "--", DEFS)
+    first: dict[str, str] = {}
+    cur: str | None = None
+    for line in out.splitlines():
+        if line.startswith("@C@"):
+            cur = line[3:].strip()[:10]
+            continue
+        m = ADDED_RE.match(line)
+        if m and cur and m.group(1) not in first:
+            first[m.group(1)] = cur
+    return first
+
+
+def current_card_names() -> set[str]:
+    """Distinct card names with a canonical `card(...)` in the current tree."""
+    names: set[str] = set()
+    for path in (REPO / DEFS).rglob("*.kt"):
+        for m in TREE_RE.finditer(path.read_text(encoding="utf-8", errors="replace")):
+            names.add(m.group(1))
+    return names
+
+
+def build_series() -> list[dict]:
+    first = first_introduction_dates()
+    current = current_card_names()
+
+    dates = [first[n] for n in current if n in first]
+    missing = sorted(n for n in current if n not in first)
+    if missing:
+        print(f"warning: {len(missing)} current cards lack a git intro date "
+              f"(counted from first commit): {missing[:10]}", file=sys.stderr)
+        for n in missing:
+            dates.append(START)
+
+    by_day = Counter(dates)
+    start = datetime.date.fromisoformat(START)
+    end = datetime.date.fromisoformat(END)
+    series, cum, d = [], 0, start
+    while d <= end:
+        k = d.isoformat()
+        cum += by_day.get(k, 0)
+        series.append({"date": k, "added": by_day.get(k, 0), "total": cum})
+        d += datetime.timedelta(days=1)
+    return series
+
+
+def rewrite_html(series: list[dict]) -> None:
+    dates = json.dumps([s["date"] for s in series], separators=(",", ":"))
+    totals = json.dumps([s["total"] for s in series], separators=(",", ":"))
+    added = json.dumps([s["added"] for s in series], separators=(",", ":"))
+    html = HTML.read_text(encoding="utf-8")
+    for name, payload in (("DATES", dates), ("TOTALS", totals), ("ADDED", added)):
+        html, n = re.subn(
+            rf"const {name}=\[.*?\];", f"const {name}={payload};", html, count=1
+        )
+        if n != 1:
+            sys.exit(f"error: could not find `const {name}=[...]` in {HTML.name}")
+    HTML.write_text(html, encoding="utf-8")
+
+
+# Project bounds straight from git history.
+START = git("log", "--reverse", "--format=%aI").splitlines()[0][:10]
+END = git("log", "-1", "--format=%aI")[:10]
+
+
+def main() -> None:
+    series = build_series()
+    final = series[-1]["total"]
+    busiest = max(series, key=lambda s: s["added"])
+    active = sum(1 for s in series if s["added"] > 0)
+    print(f"distinct cards : {final}")
+    print(f"span           : {START} -> {END}  ({len(series)} days)")
+    print(f"active days    : {active}")
+    print(f"busiest day    : {busiest['date']}  (+{busiest['added']})")
+    if "--print" in sys.argv:
+        return
+    rewrite_html(series)
+    print(f"wrote          : {HTML.relative_to(REPO)}")
+
+
+if __name__ == "__main__":
+    main()
