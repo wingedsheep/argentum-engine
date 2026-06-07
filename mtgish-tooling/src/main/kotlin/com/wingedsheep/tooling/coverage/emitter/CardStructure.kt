@@ -237,8 +237,14 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         if (jsonContains(trig, "_Players", "AnyPlayer")) return "Triggers.EachUpkeep"
         if (jsonContains(trig, "_Players", "Opponent")) return "Triggers.EachOpponentUpkeep"
     }
-    if (jsonContains(trig, "_Trigger", "AtTheBeginningOfAPlayersEndStep") && jsonContains(trig, "_Players", "AnyPlayer"))
-        return "Triggers.EachEndStep"
+    // "your end step" is scoped to You (a SinglePlayer(You) subject); "each end step" to any player.
+    // The opponent / host-relative end-step scopes have no matching Triggers.* constant yet, so they
+    // decline -> SCAFFOLD, mirroring the upkeep block above (which has an EachOpponentUpkeep but no
+    // end-step counterpart exists).
+    if (jsonContains(trig, "_Trigger", "AtTheBeginningOfAPlayersEndStep")) {
+        if (jsonContains(trig, "_Player", "You")) return "Triggers.YourEndStep"
+        if (jsonContains(trig, "_Players", "AnyPlayer")) return "Triggers.EachEndStep"
+    }
 
     // "Whenever a player cycles a card" (any player) — Fleeting Aven, Invigorating Boon.
     if (jsonContains(trig, "_Trigger", "WhenAPlayerCyclesACard") && jsonContains(trig, "_Players", "AnyPlayer"))

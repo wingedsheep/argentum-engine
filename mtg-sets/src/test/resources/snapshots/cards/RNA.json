@@ -251,3 +251,44 @@
         "BLUE"
     ]
 }
+
+// Wilderness Reclamation
+{
+    "name": "Wilderness Reclamation",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, untap all lands you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": "Self",
+                        "tap": false
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Walpole",
+        "flavorText": "\"Walls crack. Buildings fall. Always the wilds return.\"\n—Domri Rade",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54af08f7-9c6c-464e-b2f7-2b5803f36481.jpg?1584831336"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
