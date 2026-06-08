@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  * Scenario test for the EOE bug:
  *     "Diplomatic Relations gives +1/+0 to TO creature if FROM creature is dead."
  *
- * Card reference — Diplomatic Relations ({2}{G}, Instant, EOE #177†):
+ * Card reference — Diplomatic Relations ({2}{G}, Instant, EOE #177):
  *   "Target creature you control gets +1/+0 and gains vigilance until end of turn. It deals
  *    damage equal to its power to target creature an opponent controls."
  *

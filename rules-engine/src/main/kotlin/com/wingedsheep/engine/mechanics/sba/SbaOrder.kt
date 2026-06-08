@@ -14,7 +14,7 @@ object SbaOrder {
     const val LETHAL_DAMAGE = 400           // 704.5g/h
     const val PLANESWALKER_LOYALTY = 500    // 704.5i
     const val LEGEND_RULE = 600             // 704.5j
-    const val COUNTER_ANNIHILATION = 700    // 704.5m
+    const val COUNTER_ANNIHILATION = 700    // 704.5q
     const val UNATTACHED_AURAS = 800        // 704.5m/n/p
     const val SAGA_SACRIFICE = 900          // 714.4
     const val COMMANDER_ZONE_CHOICE = 950   // 903.9a (Commander format)

@@ -1146,7 +1146,10 @@ class CostHandler(
         }.keys.toList()
     }
 
-    private fun findUntappedMatchingPermanentsUnified(
+    // `internal` (not private) so the TapXPermanents cost-choice pause in ActivateAbilityHandler
+    // can offer the same untapped-permanent candidate set used to enumerate the tap cost. Keeps
+    // the pause and the rest of the cost machinery reading one definition of "tappable here".
+    internal fun findUntappedMatchingPermanentsUnified(
         state: GameState,
         controllerId: EntityId,
         filter: GameObjectFilter
@@ -1160,7 +1163,11 @@ class CostHandler(
         }.keys.toList()
     }
 
-    private fun findMatchingCardsUnified(
+    // `internal` (not private) so the activated-ability cost-choice pause in
+    // ActivateAbilityHandler can offer exactly the candidate set this matcher accepts at payment
+    // time — see exileCardsFromGraveyard above. Keeps the pause and payment in lockstep instead
+    // of re-deriving the filter match in two places.
+    internal fun findMatchingCardsUnified(
         state: GameState,
         cardIds: List<EntityId>,
         filter: GameObjectFilter,

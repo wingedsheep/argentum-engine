@@ -391,7 +391,7 @@ class ActivateAbilityHandler(
         val tapXCost = extractTapXPermanentsCost(effectiveCost)
         val alreadyTapping = (action.costPayment?.tappedPermanents?.isNotEmpty() == true)
         if (tapXCost != null && action.xValue == null && !alreadyTapping) {
-            val tapTargets = findUntappedTapXCandidates(state, action.playerId, tapXCost.filter)
+            val tapTargets = costHandler.findUntappedMatchingPermanentsUnified(state, action.playerId, tapXCost.filter)
             val maxX = tapTargets.size
             val decisionId = java.util.UUID.randomUUID().toString()
             val decision = com.wingedsheep.engine.core.ChooseNumberDecision(
@@ -441,8 +441,11 @@ class ActivateAbilityHandler(
         val exileFromGraveyardCost = extractExileFromGraveyardCost(effectiveCost)
         val alreadyExiling = (action.costPayment?.exiledCards?.isNotEmpty() == true)
         if (exileFromGraveyardCost != null && !alreadyExiling) {
-            val exileCandidates = findGraveyardExileCandidates(
-                state, action.playerId, exileFromGraveyardCost.filter
+            val exileCandidates = costHandler.findMatchingCardsUnified(
+                state,
+                state.getZone(com.wingedsheep.engine.state.ZoneKey(action.playerId, Zone.GRAVEYARD)),
+                exileFromGraveyardCost.filter,
+                action.playerId
             )
             if (exileCandidates.size > exileFromGraveyardCost.count) {
                 val decisionId = java.util.UUID.randomUUID().toString()
@@ -1895,46 +1898,5 @@ class ActivateAbilityHandler(
         is AbilityCost.ExileFromGraveyard -> cost
         is AbilityCost.Composite -> cost.costs.filterIsInstance<AbilityCost.ExileFromGraveyard>().firstOrNull()
         else -> null
-    }
-
-    /**
-     * Filter the controller's graveyard down to cards matching [filter]. Mirrors
-     * [com.wingedsheep.engine.handlers.CostHandler.findMatchingCardsUnified] so the activation
-     * fast-path sees the same candidate set as cost-payment will see when it eventually runs.
-     */
-    private fun findGraveyardExileCandidates(
-        state: GameState,
-        playerId: EntityId,
-        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
-    ): List<EntityId> {
-        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(playerId, Zone.GRAVEYARD)
-        val cardIds = state.getZone(graveyardZone)
-        val context = PredicateContext(controllerId = playerId)
-        val projected = state.projectedState
-        val evaluator = PredicateEvaluator()
-        return cardIds.filter { cardId ->
-            evaluator.matches(state, projected, cardId, filter, context)
-        }
-    }
-
-    /**
-     * Inline mirror of [com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils.findAbilityTapTargets]
-     * (controlled, untapped, filter-matching). Duplicated locally so the handler can compute the
-     * candidate list without taking a wider dependency on the legal-actions utility graph.
-     */
-    private fun findUntappedTapXCandidates(
-        state: GameState,
-        playerId: EntityId,
-        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
-    ): List<EntityId> {
-        val projected = state.projectedState
-        val predicateContext = PredicateContext(controllerId = playerId)
-        val predicateEvaluator = PredicateEvaluator()
-        return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
-            val container = state.getEntity(entityId) ?: return@filter false
-            container.get<CardComponent>() ?: return@filter false
-            if (container.has<TappedComponent>()) return@filter false
-            predicateEvaluator.matches(state, projected, entityId, filter, predicateContext)
-        }
     }
 }
