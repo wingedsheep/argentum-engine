@@ -544,13 +544,25 @@ export function enterPhase(
           maxTargets = validTargets.length
           flags.isSacrificeSelection = true
           break
-        case 'TapPermanents':
+        case 'TapPermanents': {
           validTargets = [...(costInfo.validTapTargets ?? [])]
-          minTargets = costInfo.tapCount ?? 1
-          maxTargets = costInfo.tapCount ?? 1
+          // `tapCount = 0` from the server is the TapXPermanents sentinel for "variable,
+          // equals the chosen X". The xSelection pipeline phase already ran and put the
+          // chosen value on action.xValue; use it as the required tap count so the prompt
+          // reads "Select 3/3" instead of "Select 0/0".
+          const xTapCount =
+            actionInfo.hasXCost &&
+            (action.type === 'ActivateAbility' || action.type === 'CastSpell') &&
+            typeof action.xValue === 'number'
+              ? action.xValue
+              : null
+          const requiredTaps = xTapCount ?? costInfo.tapCount ?? 1
+          minTargets = requiredTaps
+          maxTargets = requiredTaps
           flags.isSacrificeSelection = true
           flags.isTapPermanentSelection = true
           break
+        }
         case 'Conspire':
           validTargets = [...(costInfo.validTapTargets ?? [])]
           minTargets = costInfo.tapCount ?? 2

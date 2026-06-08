@@ -372,6 +372,57 @@ class ActivateAbilityHandler(
         // "{X} less, where X is this creature's power"). Locked in before payment.
         val effectiveCost = applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets)
 
+        // -------------------------------------------------------------------
+        // TapXPermanents two-step UI flow (legal-actions submission path).
+        //
+        // When the legal-actions list surfaces an X-variable tap cost (Secluded
+        // Starforge: "Tap X untapped artifacts you control"), the frontend
+        // submits the bare `ActivateAbility` (xValue/costPayment empty) and
+        // expects the engine to pause for two follow-up decisions: pick X,
+        // then pick the X permanents to tap. Without this branch the engine
+        // silently treats X=0, pays no cost, and resolves a no-op activation
+        // — see SecludedStarforgeTest's "UI flow: choosing X=3 …" case.
+        //
+        // The engine-direct path (pre-filling xValue and tappedPermanents on
+        // the action — used by the prior passing test and most server-side
+        // composite flows) is untouched: both `xValue != null` and a non-empty
+        // `tappedPermanents` skip past this fast-path.
+        // -------------------------------------------------------------------
+        val tapXCost = extractTapXPermanentsCost(effectiveCost)
+        val alreadyTapping = (action.costPayment?.tappedPermanents?.isNotEmpty() == true)
+        if (tapXCost != null && action.xValue == null && !alreadyTapping) {
+            val tapTargets = findUntappedTapXCandidates(state, action.playerId, tapXCost.filter)
+            val maxX = tapTargets.size
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = com.wingedsheep.engine.core.ChooseNumberDecision(
+                id = decisionId,
+                playerId = action.playerId,
+                prompt = "Choose X for ${cardComponent.name} (0-$maxX)",
+                context = com.wingedsheep.engine.core.DecisionContext(
+                    sourceId = action.sourceId,
+                    sourceName = cardComponent.name,
+                    phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                ),
+                minValue = 0,
+                maxValue = maxX
+            )
+            val continuation = com.wingedsheep.engine.core.ActivateAbilityChooseXContinuation(
+                decisionId = decisionId,
+                action = action,
+                tapTargets = tapTargets
+            )
+            val pausedState = state
+                .withPendingDecision(decision)
+                .pushContinuation(continuation)
+            val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = action.playerId,
+                decisionType = "CHOOSE_NUMBER",
+                prompt = decision.prompt
+            )
+            return ExecutionResult.paused(pausedState, decision, listOf(event))
+        }
+
         val executeAbilityContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId)
 
         var currentState = state
@@ -1765,5 +1816,37 @@ class ActivateAbilityHandler(
             green = newPool.green - (oldPool?.green ?: 0),
             colorless = newPool.colorless - (oldPool?.colorless ?: 0),
         ).takeIf { it.white + it.blue + it.black + it.red + it.green + it.colorless > 0 }
+    }
+
+    /**
+     * Pull the [AbilityCost.TapXPermanents] sub-cost out of an ability cost (top-level or
+     * inside a [AbilityCost.Composite]), or null if none. Used by the legal-actions submission
+     * path to detect that an activation needs to pause for an X choice + tap-target selection.
+     */
+    private fun extractTapXPermanentsCost(cost: AbilityCost): AbilityCost.TapXPermanents? = when (cost) {
+        is AbilityCost.TapXPermanents -> cost
+        is AbilityCost.Composite -> cost.costs.filterIsInstance<AbilityCost.TapXPermanents>().firstOrNull()
+        else -> null
+    }
+
+    /**
+     * Inline mirror of [com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils.findAbilityTapTargets]
+     * (controlled, untapped, filter-matching). Duplicated locally so the handler can compute the
+     * candidate list without taking a wider dependency on the legal-actions utility graph.
+     */
+    private fun findUntappedTapXCandidates(
+        state: GameState,
+        playerId: EntityId,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val predicateContext = PredicateContext(controllerId = playerId)
+        val predicateEvaluator = PredicateEvaluator()
+        return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            if (container.has<TappedComponent>()) return@filter false
+            predicateEvaluator.matches(state, projected, entityId, filter, predicateContext)
+        }
     }
 }

@@ -50,6 +50,7 @@ class ContinuationHandler(
         registerModule(RingTemptContinuationResumer(services))
         registerModule(AmassContinuationResumer(services))
         registerModule(LeylineContinuationResumer(services))
+        registerModule(ActivateAbilityXCostContinuationResumer(services))
     }
 
     /**
