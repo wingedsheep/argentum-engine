@@ -15,6 +15,7 @@ import com.wingedsheep.tooling.coverage.dot
 import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.firstArgStringTagged
+import com.wingedsheep.tooling.coverage.firstArgWordTagged
 import com.wingedsheep.tooling.coverage.firstWordAtKey
 import com.wingedsheep.tooling.coverage.hasStringValue
 import com.wingedsheep.tooling.coverage.hasTag
@@ -278,6 +279,30 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
     if (ttype in setOf("TargetPermanent", "NumberTargetPermanents", "UptoNumberTargetPermanents", "OneOrTwoTargetPermanents")) {
         val types = targetTypes(args)
         val blob = compact(args)
+        // "the permanent with the lowest/highest mana value" (Culling Scales) is a global superlative the
+        // SDK has no target filter for. Dropping it would let the spell hit ANY matching permanent, so
+        // decline -> SCAFFOLD rather than emit an unrestricted target.
+        if ("WithTheLowestManaValue" in blob || "WithTheHighestManaValue" in blob) return null
+        // "target Equipment" / "target Vehicle" — an artifact-subtype restriction (IsArtifactType) that
+        // carries no IsCardtype. Render the artifact filter narrowed by the subtype so it isn't silently
+        // dropped to "any permanent". Only the bare subtype (optionally a controller clause) is modeled;
+        // anything else declines (Rustspore Ram, Turn to Dust).
+        val artifactSubtype = args.firstArgWordTagged("IsArtifactType")
+        if (artifactSubtype != null) {
+            if (types.isNotEmpty() || "IsNonCardtype" in blob || "IsCreatureType" in blob) return null
+            val controller: Link? = when {
+                "ControlledByAPlayer" !in blob -> null
+                "\"You\"" in blob -> Link("youControl")
+                "\"Opponent\"" in blob -> Link("opponentControls")
+                else -> return null
+            }
+            var base: Dsl = Lit("GameObjectFilter.Artifact").dot("withSubtype", arg(subtypeArg(artifactSubtype)))
+            controller?.let { base = base.dot(it) }
+            val parts = mutableListOf(arg("filter", Call("TargetFilter", listOf(arg(base)))))
+            if (ttype in setOf("NumberTargetPermanents", "UptoNumberTargetPermanents") && countInt is Int) parts.add(0, arg("count", "$countInt"))
+            if (ttype == "UptoNumberTargetPermanents") parts.add(0, arg("optional", "true"))
+            return Call("TargetPermanent", parts)
+        }
         // A creature-subtype restriction ("target Wall") implies a creature target even with no explicit
         // IsCardtype Creature; route it through the creature filter so the subtype isn't dropped (Tunnel).
         val creatureTarget = types == setOf("Creature") || (types.isEmpty() && "IsCreatureType" in blob)
@@ -291,6 +316,10 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         }
         val singleType = mapOf("Land" to "TargetFilter.Land", "Artifact" to "TargetFilter.Artifact", "Enchantment" to "TargetFilter.Enchantment")
         if (types.size == 1 && types.first() in singleType) {
+            // "noncreature artifact" (Blinkmoth Well): an IsNonCardtype restriction on top of the single
+            // cardtype that no land/artifact/enchantment target filter expresses (there is no .noncreature()).
+            // Decline rather than widen to "any artifact".
+            if ("IsNonCardtype" in blob) return null
             // "target land you control" / "...an opponent controls" — the controller restriction is a
             // ControlledByAPlayer clause. Preserve it as a `.youControl()` / `.opponentControls()` suffix
             // (mirrors the creature path); a controller clause we can't render exactly declines (-> SCAFFOLD)
@@ -323,7 +352,8 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             if (ttype == "UptoNumberTargetPermanents") parts.add(0, arg("optional", "true"))
             return Call("TargetPermanent", parts)
         }
-        if (types.isEmpty() && "IsCardtype" !in blob && "IsCreatureType" !in blob && "IsNonCardtype" !in blob) {
+        if (types.isEmpty() && "IsCardtype" !in blob && "IsCreatureType" !in blob && "IsNonCardtype" !in blob &&
+            "IsArtifactType" !in blob && "IsLandType" !in blob && "IsEnchantmentType" !in blob) {
             return Call("TargetPermanent")
         }
         val multiType = mapOf(
@@ -528,6 +558,12 @@ internal fun EmitCtx.landSearchFilterExpr(filterNode: JsonElement?): Dsl {
         "basic land" in oracle || "IsBasicLand" in blob -> Lit("GameObjectFilter.BasicLand")
         "sorcery card" in oracle || "\"Sorcery\"" in blob -> Lit("GameObjectFilter.Sorcery")
         "instant card" in oracle || "\"Instant\"" in blob -> Lit("GameObjectFilter.Instant")
+        // "an artifact card" (Fabricate) / "an enchantment card": a single positive cardtype with no
+        // creature clause. Render the matching filter — checked after the more specific types above and
+        // before the plain Land/Creature fallthrough; "Creature" present means an artifact-creature
+        // compound the Creature arm handles, so guard against it.
+        ("\"Artifact\"" in blob) && "\"Creature\"" !in blob -> Lit("GameObjectFilter.Artifact")
+        ("\"Enchantment\"" in blob) && "\"Creature\"" !in blob -> Lit("GameObjectFilter.Enchantment")
         "\"Land\"" in blob -> Lit("GameObjectFilter.Land")
         "\"Creature\"" in blob || "creature" in oracle -> {
             var out: Dsl = Lit("GameObjectFilter.Creature")

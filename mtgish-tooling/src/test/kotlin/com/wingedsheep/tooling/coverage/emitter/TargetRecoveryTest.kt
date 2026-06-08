@@ -125,4 +125,30 @@ class TargetRecoveryTest : StringSpec({
         // target, so it must not collapse to CreatureSpellOnStack ("a creature spell"). Decline -> SCAFFOLD.
         ctx.targetDsl(obj("""{"_Target":"TargetSpell","args":{"_Spells":"TargetsAPermanent","args":{"_Permanents":"IsCardtype","args":"Creature"}}}""")).shouldBeNull()
     }
+
+    "targetExpr renders an artifact-subtype target via withSubtype (Turn to Dust, Rustspore Ram)" {
+        // "destroy target Equipment" — IsArtifactType carries no IsCardtype, so it must narrow the artifact
+        // filter by subtype rather than silently widening to "any permanent".
+        ctx.targetDsl(obj("""{"_Target":"TargetPermanent","args":{"_Permanents":"IsArtifactType","args":"Equipment"}}""")) shouldBe
+            "TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT)))"
+    }
+
+    "targetExpr declines a lowest-mana-value permanent target (Culling Scales)" {
+        // "destroy target nonland permanent with the lowest mana value" — a global superlative no target
+        // filter expresses; dropping it would let it hit any nonland permanent. Decline -> SCAFFOLD.
+        ctx.targetDsl(obj("""{"_Target":"TargetPermanent","args":{"_Permanents":"APermanentWithTheLowestManaValue","args":{"_Permanents":"IsNonCardtype","args":"Land"}}}""")).shouldBeNull()
+    }
+
+    "targetExpr declines a noncreature-artifact target (Blinkmoth Well)" {
+        // "tap target noncreature artifact" — the IsNonCardtype Creature restriction has no filter form
+        // (there is no .noncreature()), so it must decline rather than widen to "any artifact".
+        ctx.targetDsl(obj("""{"_Target":"TargetPermanent","args":{"_Permanents":"And","args":[{"_Permanents":"IsNonCardtype","args":"Creature"},{"_Permanents":"IsCardtype","args":"Artifact"}]}}""")).shouldBeNull()
+    }
+
+    "landSearchFilterDsl recovers an artifact-card search filter (Fabricate)" {
+        // "search your library for an artifact card" — a single positive cardtype with no creature clause;
+        // must render GameObjectFilter.Artifact, not the bare GameObjectFilter.Any fallthrough.
+        ctx.landSearchFilterDsl(obj("""{"_SearchLibraryAction":"FindACardOfType","args":{"_CardsInLibrary":"IsCardtype","args":"Artifact"}}""")) shouldBe
+            "GameObjectFilter.Artifact"
+    }
 })
