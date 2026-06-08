@@ -11,6 +11,7 @@ import com.wingedsheep.tooling.coverage.asInt
 import com.wingedsheep.tooling.coverage.asStr
 import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
+import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.dot
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.findRef
@@ -177,6 +178,17 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
             val player = if (jsonContains(node, "_Player", "Opponent")) "Player.Opponent" else "Player.You"
             return call("DynamicAmount.LifeTotal", arg(player))
         }
+        // "the number of [type] spells <player> has cast this turn" (Magebane Lizard). args = a spell
+        // filter + a player ref. Both must map to an EXACT category/scope we can render — decline
+        // (-> SCAFFOLD) on any other spell filter or player scope rather than under-counting.
+        "NumSpellsCastByPlayerThisTurn" -> {
+            val argv = node["args"].asArr ?: return null
+            val spellsNode = argv.firstOrNull { (it as? JsonObject)?.containsKey("_Spells") == true } as? JsonObject
+            val playerNode = argv.firstOrNull { (it as? JsonObject)?.containsKey("_Player") == true } as? JsonObject
+            val filter = spellsCastThisTurnFilter(spellsNode) ?: return null
+            val player = spellsCastThisTurnPlayer(playerNode) ?: return null
+            return call("DynamicAmount.SpellsCastThisTurn", arg(player), arg(filter))
+        }
         "HalfRoundedUp", "HalfRoundedDown" -> {
             val inner = dynamicAmountExpr(node["args"]) ?: return null
             val roundup = if (gn == "HalfRoundedUp") "true" else "false"
@@ -252,6 +264,25 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         return call("DynamicAmount.AggregateBattlefield", arg(player), arg(filter))
     }
     return null
+}
+
+/** The `GameObjectFilter.*` for a [NumSpellsCastByPlayerThisTurn] spell filter, or null for any filter
+ *  we can't render exactly (so the count scaffolds rather than under-/over-count). Mirrors the strict
+ *  category mapping used for the WhenAPlayerCastsASpell trigger filter. */
+private fun spellsCastThisTurnFilter(spells: JsonObject?): String? = when (spells?.strField("_Spells")) {
+    null, "AnySpell" -> "GameObjectFilter.Any"
+    "IsCardtype" -> if (spells.field("args").asStr() == "Creature") "GameObjectFilter.Creature" else null
+    "IsNonCardtype" -> if (spells.field("args").asStr() == "Creature") "GameObjectFilter.Noncreature" else null
+    else -> null
+}
+
+/** The `Player.*` scope for a [NumSpellsCastByPlayerThisTurn] player ref, or null for a scope we don't
+ *  render. "that player" in a cast trigger is the triggering caster; an explicit You/Opponent map too. */
+private fun spellsCastThisTurnPlayer(player: JsonObject?): String? = when (player?.strField("_Player")) {
+    "Trigger_ThatPlayer" -> "Player.TriggeringPlayer"
+    "You" -> "Player.You"
+    "Opponent" -> "Player.Opponent"
+    else -> null
 }
 
 /** Resolve an action's subject ref to an EffectTarget DSL (the bound `tvar`, or EffectTarget.Self). */
