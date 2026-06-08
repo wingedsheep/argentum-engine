@@ -127,7 +127,9 @@ class TournamentMatchHandler(
 
             val lobby = ctx.lobbyRepository.findLobbyById(lobbyId)
             if (lobby != null) {
-                autoReadyAiPlayers(lobby, tournament)
+                // Ready the AI, but not the human: they must click "Ready for Next Round" after
+                // dismissing the game-over overlay, so the next game can't start underneath it.
+                autoReadyAiPlayers(lobby, tournament, autoReadyHumansVsAi = false)
                 ctx.lobbyRepository.saveLobby(lobby)
             }
 
@@ -307,7 +309,9 @@ class TournamentMatchHandler(
         }
 
         if (!tournament.isComplete) {
-            autoReadyAiPlayers(lobby, tournament)
+            // Ready the AI for the next round, but not the human: they must click "Ready for Next
+            // Round" after dismissing the game-over overlay, so the next game can't start underneath it.
+            autoReadyAiPlayers(lobby, tournament, autoReadyHumansVsAi = false)
         }
 
         ctx.lobbyRepository.saveLobby(lobby)
@@ -748,14 +752,20 @@ class TournamentMatchHandler(
         }
     }
 
-    fun autoReadyAiPlayers(lobby: TournamentLobby, tournament: TournamentManager) {
+    /**
+     * @param autoReadyHumansVsAi when true, a human whose next opponent is AI is auto-readied (and the
+     *   match started) so a solo-vs-AI tournament doesn't require a manual ready click to begin. This is
+     *   intentionally `false` after a game/round finishes: the human must first dismiss the game-over
+     *   overlay and click "Ready for Next Round" in the lobby, so the next game can't start underneath it.
+     */
+    fun autoReadyAiPlayers(lobby: TournamentLobby, tournament: TournamentManager, autoReadyHumansVsAi: Boolean = true) {
         val lock = ctx.roundLocks.computeIfAbsent(lobby.lobbyId) { Any() }
         synchronized(lock) {
-            autoReadyAiPlayersLocked(lobby, tournament)
+            autoReadyAiPlayersLocked(lobby, tournament, autoReadyHumansVsAi)
         }
     }
 
-    private fun autoReadyAiPlayersLocked(lobby: TournamentLobby, tournament: TournamentManager) {
+    private fun autoReadyAiPlayersLocked(lobby: TournamentLobby, tournament: TournamentManager, autoReadyHumansVsAi: Boolean) {
         // Check if there are any AI players with submitted decks to ready up
         val hasAiPlayersToReady = lobby.players.any { (playerId, ps) ->
             aiGameManager.isAiPlayer(playerId) && ps.hasSubmittedDeck && playerId !in lobby.getReadyPlayerIds()
@@ -795,7 +805,10 @@ class TournamentMatchHandler(
             }
         }
 
-        // Auto-ready human players whose next opponent is AI (no reason to wait)
+        // Auto-ready human players whose next opponent is AI (no reason to wait).
+        // Skipped after a game/round ends: the human must dismiss the game-over overlay and click
+        // "Ready for Next Round" first, otherwise the next game would start under the overlay.
+        if (!autoReadyHumansVsAi) return
         for ((playerId, playerState) in lobby.players) {
             if (aiGameManager.isAiPlayer(playerId)) continue
             if (!playerState.hasSubmittedDeck) continue
