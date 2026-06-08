@@ -704,7 +704,11 @@ class DynamicAmountEvaluator(
                 emptyList()
             }
             is Player.TriggeringPlayer -> {
-                listOfNotNull(context.triggeringEntityId)
+                // The player associated with the trigger event (e.g. the caster for a
+                // SpellCastEvent, whose triggeringEntityId is the spell, not the player).
+                // Fall back to the triggering entity for legacy events that only stamp it
+                // when the entity itself is the player — mirrors TargetResolutionUtils.
+                listOfNotNull(context.triggeringPlayerId ?: context.triggeringEntityId)
             }
             is Player.ActivePlayerFirst -> {
                 val activePlayer = state.activePlayerId ?: return state.turnOrder

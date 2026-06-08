@@ -912,6 +912,94 @@
     "colorIdentityOverride": []
 }
 
+// Cunning Coyote
+{
+    "name": "Cunning Coyote",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Coyote",
+    "oracleText": "Haste\nWhen this creature enters, another target creature you control gets +1/+1 and gains haste until end of turn.\nPlot {1}{R} (You may pay {1}{R} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "PLOT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Plot",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b4ac6ea-c67b-4f90-be4f-aa25882f5794.jpg?1712355730",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "Plot abilities are written \"Plot [cost],\" which means \"Any time you have priority during your main phase while the stack is empty, you may pay [cost] and exile this card from your hand. It becomes plotted.\""
+            },
+            {
+                "date": "2024-04-12",
+                "text": "Cunning Coyote's triggered ability targets another creature you control, not Cunning Coyote itself. If you control no other creatures, the ability is removed from the stack and has no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Drover Grizzly
 {
     "name": "Drover Grizzly",
@@ -1609,6 +1697,122 @@
     ]
 }
 
+// Magebane Lizard
+{
+    "name": "Magebane Lizard",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Whenever a player casts a noncreature spell, this creature deals damage to that player equal to the number of noncreature spells they've cast this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "SpellsCastThisTurn",
+                        "player": "TriggeringPlayer",
+                        "filter": "noncreature"
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Camille Alquier",
+        "flavorText": "\"I didn't miss. Blasted thing snatched my bolt out of the air and ate it!\"\n—Lilah, Slickshot boss",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62e12566-375f-4f31-aa91-1b13a96d9ece.jpg?1712355797",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "Magebane Lizard's ability counts the noncreature spell that's currently being cast, as that spell is already on the stack when the ability triggers and resolves."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "The number of noncreature spells is counted as Magebane Lizard's ability resolves, so a noncreature spell cast in response will be counted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Reckless Lackey
+{
+    "name": "Reckless Lackey",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Pirate",
+    "oracleText": "First strike, haste\n{2}{R}, Sacrifice this creature: Draw a card and create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostMana",
+                            "cost": "{2}{R}"
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Edgar Sánchez Hidalgo",
+        "flavorText": "\"First to the fray, first to the pay!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/912fcd14-5e81-418c-997b-771f2f38f63d.jpg?1712355825"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Riku of Many Paths
 {
     "name": "Riku of Many Paths",
@@ -1744,6 +1948,46 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE",
+        "RED"
+    ]
+}
+
+// Scorching Shot
+{
+    "name": "Scorching Shot",
+    "manaCost": "{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Scorching Shot deals 5 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Caio Monteiro",
+        "flavorText": "Most outlaws prefer to strike when there are no witnesses. Slickshots prefer as many as possible.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f93d8357-83bd-4157-a389-68e4aa4985c8.jpg?1712355845"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
