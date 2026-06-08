@@ -176,6 +176,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 var discardTargets: List<EntityId>? = null
                 var craftCost: AbilityCost.Craft? = null
                 var craftMaterials: List<EntityId> = emptyList()
+                var exileCost: AbilityCost.ExileFromGraveyard? = null
+                var exileTargets: List<EntityId>? = null
                 var costAffordable = true
 
                 when (effectiveCost) {
@@ -255,6 +257,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                             discardCost = effectiveCost
                             discardTargets = targets
                         }
+                    }
+                    is AbilityCost.ExileFromGraveyard -> {
+                        val targets = context.costUtils.findExileTargets(
+                            state, playerId, effectiveCost.filter,
+                            com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD
+                        )
+                        if (targets.size < effectiveCost.count) continue
+                        exileCost = effectiveCost
+                        exileTargets = targets
                     }
                     is AbilityCost.DiscardLastDrawnThisTurn -> {
                         // No player choice — engine picks the tracked entity at payment. Gate the
@@ -372,12 +383,22 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     }
                                 }
                                 is AbilityCost.ExileFromGraveyard -> {
-                                    val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-                                    val graveyardCards = state.getZone(graveyardZone)
-                                    if (graveyardCards.size < subCost.count) {
+                                    // Filter the graveyard by the cost's GameObjectFilter so the
+                                    // payability check matches what CostHandler will see, and so
+                                    // we can surface the matching cards to the UI via
+                                    // AdditionalCostData.validExileTargets (the picker prompt
+                                    // for Rust Harvester's "Exile an artifact card from your
+                                    // graveyard" cost).
+                                    val targets = context.costUtils.findExileTargets(
+                                        state, playerId, subCost.filter,
+                                        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD
+                                    )
+                                    if (targets.size < subCost.count) {
                                         costCanBePaid = false
                                         break
                                     }
+                                    exileCost = subCost
+                                    exileTargets = targets
                                 }
                                 is AbilityCost.Forage -> {
                                     // Forage: can exile 3 from graveyard OR sacrifice a Food
@@ -548,7 +569,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     hasForageCost, forageGraveyardCards, forageFoodTargets,
                     blightCost, blightCreatures,
                     discardCost, discardTargets,
-                    craftCost, craftMaterials
+                    craftCost, craftMaterials,
+                    exileCost, exileTargets
                 )
 
                 // Calculate X cost info for activated abilities with X in their mana cost
@@ -843,7 +865,9 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         discardCost: AbilityCost.Discard? = null,
         discardTargets: List<EntityId>? = null,
         craftCost: AbilityCost.Craft? = null,
-        craftMaterials: List<EntityId> = emptyList()
+        craftMaterials: List<EntityId> = emptyList(),
+        exileCost: AbilityCost.ExileFromGraveyard? = null,
+        exileTargets: List<EntityId>? = null
     ): AdditionalCostData? {
         if (craftCost != null) {
             // Craft (CR 702.167) is handled exclusively: when a Composite cost contains a
@@ -938,6 +962,20 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             return AdditionalCostData(
                 description = "Remove +1/+1 counters from creatures you control",
                 costType = "RemoveCounters",
+                counterRemovalCreatures = counterRemovalCreatures
+            )
+        }
+        if (exileCost != null && exileTargets != null) {
+            // ExileFromGraveyard cost (e.g. Rust Harvester's "Exile an artifact card from your
+            // graveyard"). Surface the filtered candidate list and exact count so the client
+            // renders a card-picker; ActivateAbilityHandler's matching fast-path pauses for a
+            // SelectCardsDecision when candidate count > required count.
+            return AdditionalCostData(
+                description = exileCost.description,
+                costType = "ExileFromGraveyard",
+                validExileTargets = exileTargets,
+                exileMinCount = exileCost.count,
+                exileMaxCount = exileCost.count,
                 counterRemovalCreatures = counterRemovalCreatures
             )
         }

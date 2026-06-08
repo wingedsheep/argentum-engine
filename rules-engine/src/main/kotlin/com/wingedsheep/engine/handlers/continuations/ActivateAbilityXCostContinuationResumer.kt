@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.ActivateAbilityChooseXContinuation
+import com.wingedsheep.engine.core.ActivateAbilityExileFromGraveyardContinuation
 import com.wingedsheep.engine.core.ActivateAbilityTapXTargetsContinuation
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ChooseNumberDecision
@@ -43,7 +44,8 @@ class ActivateAbilityXCostContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ActivateAbilityChooseXContinuation::class, ::resumeChooseX),
-        resumer(ActivateAbilityTapXTargetsContinuation::class, ::resumeTapXTargets)
+        resumer(ActivateAbilityTapXTargetsContinuation::class, ::resumeTapXTargets),
+        resumer(ActivateAbilityExileFromGraveyardContinuation::class, ::resumeExileFromGraveyard)
     )
 
     private fun resumeChooseX(
@@ -106,6 +108,39 @@ class ActivateAbilityXCostContinuationResumer(
             prompt = prompt
         )
         return ExecutionResult.paused(pausedState, decision, listOf(event))
+    }
+
+    /**
+     * Resume after the player picks which graveyard cards to exile for an
+     * `ExileFromGraveyard` activated-ability cost (Rust Harvester etc.). Re-enters the handler
+     * with the chosen cards filled into `costPayment.exiledCards`; CostHandler then exiles
+     * exactly those cards instead of auto-picking the first N.
+     */
+    private fun resumeExileFromGraveyard(
+        state: GameState,
+        continuation: ActivateAbilityExileFromGraveyardContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card-selection response for ActivateAbility ExileFromGraveyard")
+        }
+        if (response.selectedCards.size != continuation.exileCount) {
+            return ExecutionResult.error(
+                state,
+                "Expected ${continuation.exileCount} cards to exile, got ${response.selectedCards.size}"
+            )
+        }
+        if (response.selectedCards.any { it !in continuation.exileCandidates }) {
+            return ExecutionResult.error(state, "Selected card is not in the list of valid exile candidates")
+        }
+
+        val action = continuation.action
+        val replay = action.copy(
+            costPayment = (action.costPayment ?: AdditionalCostPayment())
+                .copy(exiledCards = response.selectedCards)
+        )
+        return handler.execute(state, replay)
     }
 
     private fun resumeTapXTargets(

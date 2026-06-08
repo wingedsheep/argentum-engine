@@ -412,3 +412,30 @@ data class ActivateAbilityTapXTargetsContinuation(
     val chosenX: Int,
     val tapTargets: List<EntityId>
 ) : ContinuationFrame
+
+/**
+ * Resume after a player picks which graveyard cards to exile to satisfy an
+ * [com.wingedsheep.sdk.scripting.AbilityCost.ExileFromGraveyard] cost on an activated ability.
+ *
+ * Surfaces the cost-choice the original engine path silently auto-paid: when an activation's
+ * `ExileFromGraveyard(count, filter)` cost has more matching graveyard cards than `count`, the
+ * handler raises a [SelectCardsDecision] and pushes this frame so the resumer can re-enter the
+ * handler with the player's chosen cards filled into `costPayment.exiledCards`.
+ *
+ * Skipped (no pause) when `exiledCards` is already pre-filled (engine-direct path / resumed
+ * replay) or when candidate count ≤ required count (no real choice). Rust Harvester
+ * ({2}, {T}, Exile an artifact card from your graveyard: …) is the canonical trigger case.
+ *
+ * @property action The original [ActivateAbility] (`costPayment.exiledCards` still empty), so the
+ *   resumer can re-enter the handler with the chosen exile victims filled in.
+ * @property exileCandidates The matching graveyard cards offered to the player as options; used
+ *   to validate the response is a subset of the originally legal candidates.
+ * @property exileCount Exact number of cards the player must pick (`count` from the cost).
+ */
+@Serializable
+data class ActivateAbilityExileFromGraveyardContinuation(
+    override val decisionId: String,
+    val action: ActivateAbility,
+    val exileCandidates: List<EntityId>,
+    val exileCount: Int
+) : ContinuationFrame

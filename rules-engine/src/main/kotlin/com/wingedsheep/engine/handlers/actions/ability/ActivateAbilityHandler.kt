@@ -423,6 +423,62 @@ class ActivateAbilityHandler(
             return ExecutionResult.paused(pausedState, decision, listOf(event))
         }
 
+        // -------------------------------------------------------------------
+        // ExileFromGraveyard cost-choice pause (legal-actions submission path).
+        //
+        // When the cost is `ExileFromGraveyard(count, filter)` (Rust Harvester:
+        // "{2}, {T}, Exile an artifact card from your graveyard: ...") and the
+        // player has more matching graveyard cards than the count, this is a
+        // real choice — the engine must pause and ask which card(s) to exile,
+        // not silently take the first N (CostHandler.exileCardsFromGraveyard
+        // used to auto-pick when `exileChoices` was empty, dropping the
+        // player's choice on the floor).
+        //
+        // Skipped when `exiledCards` is already pre-filled (engine-direct path
+        // and resumed-replay case) or when candidates <= count (no real
+        // choice).
+        // -------------------------------------------------------------------
+        val exileFromGraveyardCost = extractExileFromGraveyardCost(effectiveCost)
+        val alreadyExiling = (action.costPayment?.exiledCards?.isNotEmpty() == true)
+        if (exileFromGraveyardCost != null && !alreadyExiling) {
+            val exileCandidates = findGraveyardExileCandidates(
+                state, action.playerId, exileFromGraveyardCost.filter
+            )
+            if (exileCandidates.size > exileFromGraveyardCost.count) {
+                val decisionId = java.util.UUID.randomUUID().toString()
+                val prompt = "Select ${exileFromGraveyardCost.count} card${if (exileFromGraveyardCost.count > 1) "s" else ""} to exile from graveyard for ${cardComponent.name}"
+                val decision = com.wingedsheep.engine.core.SelectCardsDecision(
+                    id = decisionId,
+                    playerId = action.playerId,
+                    prompt = prompt,
+                    context = com.wingedsheep.engine.core.DecisionContext(
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                    ),
+                    options = exileCandidates,
+                    minSelections = exileFromGraveyardCost.count,
+                    maxSelections = exileFromGraveyardCost.count
+                )
+                val continuation = com.wingedsheep.engine.core.ActivateAbilityExileFromGraveyardContinuation(
+                    decisionId = decisionId,
+                    action = action,
+                    exileCandidates = exileCandidates,
+                    exileCount = exileFromGraveyardCost.count
+                )
+                val pausedState = state
+                    .withPendingDecision(decision)
+                    .pushContinuation(continuation)
+                val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = action.playerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = prompt
+                )
+                return ExecutionResult.paused(pausedState, decision, listOf(event))
+            }
+        }
+
         val executeAbilityContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId)
 
         var currentState = state
@@ -1827,6 +1883,38 @@ class ActivateAbilityHandler(
         is AbilityCost.TapXPermanents -> cost
         is AbilityCost.Composite -> cost.costs.filterIsInstance<AbilityCost.TapXPermanents>().firstOrNull()
         else -> null
+    }
+
+    /**
+     * Pull the [AbilityCost.ExileFromGraveyard] sub-cost out of an ability cost (top-level or
+     * inside a [AbilityCost.Composite]), or null if none. Used by the legal-actions submission
+     * path to detect that an activation needs to pause for a card-selection decision when the
+     * player has more matching graveyard cards than the cost requires.
+     */
+    private fun extractExileFromGraveyardCost(cost: AbilityCost): AbilityCost.ExileFromGraveyard? = when (cost) {
+        is AbilityCost.ExileFromGraveyard -> cost
+        is AbilityCost.Composite -> cost.costs.filterIsInstance<AbilityCost.ExileFromGraveyard>().firstOrNull()
+        else -> null
+    }
+
+    /**
+     * Filter the controller's graveyard down to cards matching [filter]. Mirrors
+     * [com.wingedsheep.engine.handlers.CostHandler.findMatchingCardsUnified] so the activation
+     * fast-path sees the same candidate set as cost-payment will see when it eventually runs.
+     */
+    private fun findGraveyardExileCandidates(
+        state: GameState,
+        playerId: EntityId,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    ): List<EntityId> {
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(playerId, Zone.GRAVEYARD)
+        val cardIds = state.getZone(graveyardZone)
+        val context = PredicateContext(controllerId = playerId)
+        val projected = state.projectedState
+        val evaluator = PredicateEvaluator()
+        return cardIds.filter { cardId ->
+            evaluator.matches(state, projected, cardId, filter, context)
+        }
     }
 
     /**
