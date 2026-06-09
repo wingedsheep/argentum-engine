@@ -8,10 +8,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
@@ -57,37 +55,31 @@ val GoliathDaydreamer = card("Goliath Daydreamer") {
         )
     }
 
-    // Attack trigger — may cast a card you own in exile with a dream counter for free.
-    // Granting MayPlayFromExile + PlayWithoutPayingCost on the chosen card is the standard
-    // free-cast permission pattern. Per ruling, the cast should occur during this ability's
-    // resolution; the EndOfTurn permission is the closest practical match the engine provides.
+    // Attack trigger — may cast a card you own in exile with a dream counter for free,
+    // during this ability's resolution (Sunbird's Invocation pattern). Per ruling you can't
+    // wait to cast it later in the turn, so the cast must happen mid-resolution via
+    // CastFromCollectionWithoutPayingCostEffect — never a lingering until-end-of-turn grant.
+    // Casting mid-resolution also ignores card-type timing (a sorcery is cast in combat).
     triggeredAbility {
         trigger = Triggers.Attacks
-        optional = true
         effect = Effects.Composite(
             listOf(
                 GatherCardsEffect(
                     source = CardSource.FromZone(
                         zone = Zone.EXILE,
                         player = Player.You,
-                        filter = GameObjectFilter.Any.withCounter(Counters.DREAM)
+                        filter = GameObjectFilter.Nonland.withCounter(Counters.DREAM)
                     ),
                     storeAs = "dreamPool"
                 ),
-                ConditionalOnCollectionEffect(
-                    collection = "dreamPool",
-                    ifNotEmpty = Effects.Composite(
-                        listOf(
-                            SelectFromCollectionEffect(
-                                from = "dreamPool",
-                                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                                storeSelected = "toCast"
-                            ),
-                            GrantMayPlayFromExileEffect(from = "toCast"),
-                            GrantPlayWithoutPayingCostEffect(from = "toCast")
-                        )
-                    )
-                )
+                SelectFromCollectionEffect(
+                    from = "dreamPool",
+                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+                    storeSelected = "toCast",
+                    prompt = "You may cast a spell with a dream counter on it without paying its mana cost.",
+                    selectedLabel = "Cast for free",
+                ),
+                CastFromCollectionWithoutPayingCostEffect(from = "toCast")
             )
         )
     }

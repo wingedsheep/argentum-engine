@@ -8889,6 +8889,9 @@
                                 "type": "FromZone",
                                 "zone": "Exile",
                                 "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland"
+                                    ],
                                     "statePredicates": [
                                         {
                                             "type": "HasCounter",
@@ -8900,37 +8903,25 @@
                             "storeAs": "dreamPool"
                         },
                         {
-                            "type": "ConditionalOnCollection",
-                            "collection": "dreamPool",
-                            "ifNotEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "dreamPool",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "toCast"
-                                    },
-                                    {
-                                        "type": "GrantMayPlayFromExile",
-                                        "from": "toCast"
-                                    },
-                                    {
-                                        "type": "GrantPlayWithoutPayingCost",
-                                        "from": "toCast"
-                                    }
-                                ]
-                            }
+                            "type": "SelectFromCollection",
+                            "from": "dreamPool",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "toCast",
+                            "prompt": "You may cast a spell with a dream counter on it without paying its mana cost.",
+                            "selectedLabel": "Cast for free"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "toCast"
                         }
                     ]
-                },
-                "optional": true
+                }
             }
         ]
     },
