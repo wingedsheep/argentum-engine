@@ -843,6 +843,8 @@ Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` sh
   abilities worded "enchanted/equipped creature deals damage … to **any other target**" (e.g. Pain for All),
   where the dealer is the attached creature, not the ability's source permanent.
 - `Targets.Creature` — any creature.
+- `Targets.CreatureYouControl` / `CreatureOpponentControls` — controller-restricted.
+- `Targets.OtherCreatureYouControl` — "another target creature you control"; excludes the source.
 - `Targets.Player` — any player.
 - `Targets.Planeswalker` — any planeswalker.
 - `Targets.Permanent` — any permanent.

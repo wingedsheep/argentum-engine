@@ -6927,7 +6927,8 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature ctrl:you"
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
                     },
                     "id": "another target creature you control"
                 }

@@ -66,6 +66,12 @@ object Targets {
     val CreatureYouControl: TargetRequirement = TargetCreature(filter = TargetFilter.CreatureYouControl)
 
     /**
+     * Another target creature you control (excludes the source).
+     */
+    val OtherCreatureYouControl: TargetRequirement =
+        TargetCreature(filter = TargetFilter.OtherCreatureYouControl)
+
+    /**
      * Target creature an opponent controls.
      */
     val CreatureOpponentControls: TargetRequirement = TargetCreature(filter = TargetFilter.CreatureOpponentControls)
