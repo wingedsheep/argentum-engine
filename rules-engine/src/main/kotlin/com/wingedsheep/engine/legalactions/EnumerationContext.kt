@@ -101,13 +101,14 @@ class EnumerationContext(
     }
 
     /**
-     * Whether this player can't cast the specific card [cardId] right now — the blanket lock OR a
-     * per-spell static restriction (Mana Maze's color sharing, a filtered [PlayersCantCastSpells]).
-     * Every cast-enumeration site that has a candidate card in hand consults this, so filtered
-     * prohibitions are honoured across every casting zone.
+     * Whether this player can't cast the specific card [cardId] right now — the blanket lock, the
+     * CR 205.4e legendary-instant/sorcery restriction, OR a per-spell static restriction (Mana
+     * Maze's color sharing, a filtered [PlayersCantCastSpells]). Every cast-enumeration site that
+     * has a candidate card consults this, so the prohibitions are honoured across every casting zone.
      */
     fun cantCastSpell(cardId: EntityId): Boolean =
         cantCastSpells ||
+            castPermissionUtils.lacksLegendaryControlForLegendarySpell(state, playerId, cardId) ||
             (perSpellCastRestrictionPresent &&
                 castPermissionUtils.spellSpecificallyRestricted(state, playerId, cardId))
 

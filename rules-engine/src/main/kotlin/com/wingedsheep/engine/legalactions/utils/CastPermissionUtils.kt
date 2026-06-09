@@ -195,7 +195,42 @@ class CastPermissionUtils(
         if (blockedByPlayersCantCastSpells(state, playerId, spellCardId)) {
             return "An effect prevents you from casting that spell right now"
         }
+        if (lacksLegendaryControlForLegendarySpell(state, playerId, spellCardId)) {
+            return "You can cast a legendary instant or sorcery only if you control a legendary creature or planeswalker"
+        }
         return null
+    }
+
+    /**
+     * CR 205.4e: an instant or sorcery spell with the "legendary" supertype can be cast only if its
+     * controller controls a legendary creature or a legendary planeswalker. Returns true when
+     * [spellCardId] is such a spell and [playerId] controls neither — i.e. the cast must be blocked.
+     *
+     * Cheap in the common case: the supertype/card-type gate short-circuits before the battlefield
+     * scan, so only a legendary instant/sorcery ever pays for [controlsLegendaryCreatureOrPlaneswalker].
+     * The spell's type line is read from base state (it's being cast from a non-battlefield zone).
+     */
+    fun lacksLegendaryControlForLegendarySpell(
+        state: GameState,
+        playerId: EntityId,
+        spellCardId: EntityId
+    ): Boolean {
+        val typeLine = state.getEntity(spellCardId)?.get<CardComponent>()?.typeLine ?: return false
+        if (!typeLine.isLegendary) return false
+        if (!typeLine.isInstant && !typeLine.isSorcery) return false
+        return !controlsLegendaryCreatureOrPlaneswalker(state, playerId)
+    }
+
+    /**
+     * Whether [playerId] controls at least one legendary creature or legendary planeswalker, read
+     * from projected state (CR 205.4e). Type, supertype, and control can all be altered by
+     * continuous effects, so this must go through the projection rather than base components.
+     */
+    fun controlsLegendaryCreatureOrPlaneswalker(state: GameState, playerId: EntityId): Boolean {
+        val projected = state.projectedState
+        return projected.getBattlefieldControlledBy(playerId).any { id ->
+            projected.isLegendary(id) && (projected.isCreature(id) || projected.isPlaneswalker(id))
+        }
     }
 
     /**

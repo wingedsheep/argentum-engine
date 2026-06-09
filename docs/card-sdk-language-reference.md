@@ -30,7 +30,10 @@ section; do not let SDK additions land without a corresponding doc update.
   Phyrexian (`{W/P}` — colour or 2 life), and monocolored hybrid / "twobrid" (`{2/B}` — two
   generic **or** one mana of the colour; mana value counts the generic side per CR 202.3f).
   Gurmag Nightwatch's `{2/B}{2/G}{2/U}` is the canonical twobrid example.
-- `typeLine: String` — full type line including supertypes and subtypes.
+- `typeLine: String` — full type line including supertypes and subtypes. A `Legendary Instant` /
+  `Legendary Sorcery` automatically gets the CR 205.4e casting restriction (can be cast only while
+  its controller controls a legendary creature or legendary planeswalker) — the engine enforces this
+  from the type line in both legal-action enumeration and the cast handler; no per-card opt-in needed.
 - `oracleText: String` — rules text; auto-generated from abilities if omitted.
 - `power: Int?`, `toughness: Int?` — base P/T for creatures.
 - `dynamicPower`, `dynamicToughness` — characteristic-defining P/T (e.g. `*/*` Tarmogoyf).
