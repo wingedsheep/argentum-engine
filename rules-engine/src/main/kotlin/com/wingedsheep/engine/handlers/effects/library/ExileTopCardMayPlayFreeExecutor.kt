@@ -78,6 +78,16 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
      * Resolve which turn's cleanup will mark "the controller's next [step]" given the
      * current step and active player. The cleanup-driven removal is coarse — it runs once
      * per turn at cleanup — so we map any step in the turn to that turn's cleanup.
+     *
+     * The returned value is a *round* number, because [GameState.turnNumber] is round-based —
+     * it increments only when the starting player begins a new turn, so every player's turn
+     * within a round shares the same number. The cleanup expiry check disambiguates which
+     * player's turn it is by also requiring `activePlayerId == controllerId`; this function
+     * therefore only has to name the round in which the controller's next matching turn falls.
+     * Counting *player-turns* until the controller's turn (and adding them to a round-based
+     * number) over-counts whenever the grant happens on an opponent's turn — the bug that let
+     * "until your next end step" leak an extra full turn when a creature died on the opponent's
+     * turn (Shadow Urchin).
      */
     private fun resolveStepTurn(
         state: GameState,
@@ -87,22 +97,21 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         val turnOrder = state.turnOrder
         val playerIndex = turnOrder.indexOf(controllerId)
         val activeIndex = turnOrder.indexOf(state.activePlayerId)
-        val playerCount = turnOrder.size
 
         val onControllerTurn = playerIndex == activeIndex
         val targetStep = expiry.step
         val targetReachedThisTurn = state.step.ordinal >= targetStep.ordinal
         val thisTurnStillCounts = onControllerTurn && expiry.includeCurrentTurn && !targetReachedThisTurn
 
-        return if (thisTurnStillCounts) {
-            state.turnNumber
-        } else {
-            val turnsUntilNext = if (onControllerTurn) {
-                1
-            } else {
-                (playerIndex - activeIndex + playerCount) % playerCount
-            }
-            state.turnNumber + turnsUntilNext
+        return when {
+            // This turn's matching step still counts — expire at this turn's cleanup.
+            thisTurnStillCounts -> state.turnNumber
+            // Controller's own turn, but this turn no longer counts — their next turn is next round.
+            onControllerTurn -> state.turnNumber + 1
+            // Opponent's turn: the controller still takes a turn *this* round if they come later in
+            // turn order; otherwise they already went and their next turn is in the next round.
+            playerIndex > activeIndex -> state.turnNumber
+            else -> state.turnNumber + 1
         }
     }
 }
