@@ -328,6 +328,11 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
     if (!draft || draft.currentPack.length === 0) return
 
     trackEvent('draft_suggest_pick', { advisor: advisorId ?? 'default' })
+    // Remember which pack this request is for; if the pack advances (pick timer fires, or the
+    // player picks) while the request is in flight, a late response must not write the previous
+    // pack's scores onto the new pack.
+    const requestedPack = draft.packNumber
+    const requestedPick = draft.pickNumber
     set({ aiAssistBusy: true, aiAssistError: null })
     try {
       const advice = await apiSuggestPick({
@@ -340,6 +345,12 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
         picksRequired: draft.picksPerRound,
         setCodes: lobbyState?.settings.setCodes ?? [],
       })
+      const current = get().lobbyState?.draftState
+      if (!current || current.packNumber !== requestedPack || current.pickNumber !== requestedPick) {
+        // The pack moved on while we were waiting — drop this stale result, but clear the spinner.
+        set({ aiAssistBusy: false })
+        return
+      }
       const scores: Record<string, PickScore> = {}
       for (const s of advice.scores) scores[s.cardName] = { score: s.score, reason: s.reason }
       set({ pickScores: scores, recommendedPick: advice.recommended, aiAssistBusy: false })

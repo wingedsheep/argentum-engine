@@ -100,6 +100,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
         // A new pack invalidates any "Suggest Pick" scores from the previous pack.
         pickScores: null,
         recommendedPick: [],
+        aiAssistError: null,
         lobbyState: state.lobbyState
           ? {
               ...state.lobbyState,
@@ -143,6 +144,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
         return {
           pickScores: null,
           recommendedPick: [],
+          aiAssistError: null,
           lobbyState: {
             ...state.lobbyState,
             draftState: {

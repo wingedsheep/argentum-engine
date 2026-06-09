@@ -51,6 +51,9 @@ private class CardDefinitionScorerCard(private val def: CardDefinition) : Scorer
     override val manaCost: String = if (def.manaCost.symbols.isEmpty()) "" else def.manaCost.toString()
     override val typeLine: String = def.typeLine.toString()
     override val cmc: Double = def.cmc.toDouble()
+    // The Draftsim ladder only recognizes mythic/rare/uncommon/common; any other enum name (special,
+    // bonus, …) lowercases to a key the ladder lacks and falls to the common floor. Acceptable —
+    // those rarities don't appear in normal limited packs — but rate via the name table, not this.
     override val rarity: String = def.metadata.rarity.name.lowercase()
     override val priceUsd: Double? = null
     override val colors: List<String> = def.colors.map { it.symbol.toString() }

@@ -1,6 +1,5 @@
 package com.wingedsheep.ai.draftsim
 
-import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 

@@ -4,6 +4,7 @@ import com.wingedsheep.ai.llm.CardSummary
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.comparables.shouldBeGreaterThan
+import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 
 /**
@@ -81,11 +82,13 @@ class DraftsimMainScorerTest : FunSpec({
             .filter { tmt.archetypes.containsKey(DraftsimData.nameKey(it.name)) && !it.typeLine.isLand }
             .take(8)
             .map { it.toScorerCard() }
-        if (tagged.size >= 5) {
-            val archColors = s.archColorMap(tagged)
-            val score = s.score(tagged.first(), tagged, archColors)
-            // With archetype data present, the deck context names an archetype (not just colors).
-            (score.deckContext.primary != null) shouldBe true
-        }
+        // Assert up front so a data regression that drops TMT's archetype tags fails here loudly
+        // rather than silently skipping the real assertion below (vacuous green).
+        tagged.size shouldBeGreaterThanOrEqual 5
+
+        val archColors = s.archColorMap(tagged)
+        val score = s.score(tagged.first(), tagged, archColors)
+        // With archetype data present, the deck context names an archetype (not just colors).
+        (score.deckContext.primary != null) shouldBe true
     }
 })

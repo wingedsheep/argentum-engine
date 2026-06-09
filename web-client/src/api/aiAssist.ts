@@ -34,11 +34,25 @@ export interface DeckBuildResult {
   readonly archetype: string | null
 }
 
+// The engine list is fixed for the server's lifetime, but both the draft and deckbuild controls
+// fetch it on every mount (which happens on each deck edit). Cache the in-flight/resolved promise so
+// repeated calls reuse one request instead of re-hitting /api/ai-advisors. A failed load is not
+// cached, so a transient error can be retried on the next mount.
+let advisorsCache: Promise<AdvisorsResponse> | null = null
+
 /** List the AI engines available for the dropdowns. */
-export async function fetchAdvisors(): Promise<AdvisorsResponse> {
-  const res = await fetch('/api/ai-advisors')
-  if (!res.ok) throw new Error(`Failed to load AI engines (${res.status})`)
-  return res.json() as Promise<AdvisorsResponse>
+export function fetchAdvisors(): Promise<AdvisorsResponse> {
+  if (advisorsCache) return advisorsCache
+  const request = (async () => {
+    const res = await fetch('/api/ai-advisors')
+    if (!res.ok) throw new Error(`Failed to load AI engines (${res.status})`)
+    return res.json() as Promise<AdvisorsResponse>
+  })()
+  advisorsCache = request
+  request.catch(() => {
+    if (advisorsCache === request) advisorsCache = null
+  })
+  return request
 }
 
 export interface SuggestPickParams {

@@ -4,8 +4,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import org.slf4j.LoggerFactory
 import java.text.Normalizer
 import java.util.concurrent.ConcurrentHashMap
+
+private val logger = LoggerFactory.getLogger(DraftsimData::class.java)
 
 /** One archetype tag on a card: `{archetype, role}` where role ∈ enabler|payoff|member. */
 @Serializable
@@ -84,11 +87,19 @@ object DraftsimData {
     }
 
     private fun loadSet(code: String): DraftsimSetTables = perSet.getOrPut(code) {
-        DraftsimSetTables(
+        val tables = DraftsimSetTables(
             ratings = loadRatings(code),
             removal = loadRemoval(code),
             archetypes = loadArchetypes(code),
         )
+        // A set with no ratings file means we never shipped a table for this code (typically a
+        // misspelled/unsupported set). The scorer still works via the rarity-ladder fallback, but
+        // every card is then rated off rarity alone with no removal/archetype awareness — warn so a
+        // typo'd set code isn't mistaken for "this set legitimately has no data".
+        if (tables.ratings.isEmpty()) {
+            logger.warn("Draftsim: no ratings table for set '{}' — scoring falls back to the rarity ladder", code)
+        }
+        tables
     }
 
     private fun loadRatings(code: String): Map<String, Double> {

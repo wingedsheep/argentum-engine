@@ -2,7 +2,6 @@ package com.wingedsheep.ai.draftsim
 
 import kotlin.math.floor
 import kotlin.math.max
-import kotlin.math.min
 
 /** A physical pool card: [card] + a stable [instanceId] (the identity used in all dedup sets). */
 data class DraftsimPoolCard(val card: ScorerCard, val instanceId: String)
@@ -74,9 +73,9 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
         val ranked = deckScorer.rankArchetypes(pool.map { it.card }, archColors)
             .filterNot { it.name.lowercase().contains("good stuff") }
         val n = if (mode == "draft") 2 else 3
-        val builds = ranked.take(n).map { a -> refine(greedyBuild(pool, a.name, a.colors, archColors), pool, archColors) }
+        val builds = ranked.take(n).map { a -> refine(greedyBuild(pool, a.name, a.colors), pool) }
             .toMutableList()
-        if (mode == "sealed") goodStuffBuild(pool, archColors)?.let { builds += refine(it, pool, archColors) }
+        if (mode == "sealed") goodStuffBuild(pool)?.let { builds += refine(it, pool) }
         return builds.sortedByDescending { it.score }
     }
 
@@ -121,7 +120,7 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
     }
 
     private fun greedyBuild(
-        pool: List<DraftsimPoolCard>, archName: String, archColors: List<String>, archColorMap: Map<String, List<String>>,
+        pool: List<DraftsimPoolCard>, archName: String, archColors: List<String>,
     ): DraftsimBuild {
         val nonlandPC = pool.filter { !ops.isLand(it.card) }
         val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
@@ -323,7 +322,7 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
     // ek — post-build refinement (hill climbing)
     // =========================================================================
 
-    private fun refine(build: DraftsimBuild, pool: List<DraftsimPoolCard>, archColorMap: Map<String, List<String>>, iterations: Int = 3): DraftsimBuild {
+    private fun refine(build: DraftsimBuild, pool: List<DraftsimPoolCard>, iterations: Int = 3): DraftsimBuild {
         val chosen = build.deckInstanceIds.toHashSet()
         val deckNonland = pool.filter { it.instanceId in chosen && !ops.isLand(it.card) }.toMutableList()
         var best = deckScorer.scoreNonlandSet(deckNonland.map { it.card })
@@ -365,7 +364,7 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
     // SX — sealed "good stuff" splash build
     // =========================================================================
 
-    private fun goodStuffBuild(pool: List<DraftsimPoolCard>, archColorMap: Map<String, List<String>>): DraftsimBuild? {
+    private fun goodStuffBuild(pool: List<DraftsimPoolCard>): DraftsimBuild? {
         val nonlandPC = pool.filter { !ops.isLand(it.card) }
         val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
 
