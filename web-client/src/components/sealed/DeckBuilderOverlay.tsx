@@ -121,7 +121,7 @@ function WaitingForOpponent({ setName }: { setName: string }) {
 function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const responsive = useResponsive()
   const addCardToDeck = useGameStore((s) => s.addCardToDeck)
-  const deckCardScores = useGameStore((s) => s.deckCardScores)
+  const storedDeckCardScores = useGameStore((s) => s.deckCardScores)
   const removeCardFromDeck = useGameStore((s) => s.removeCardFromDeck)
   const clearDeck = useGameStore((s) => s.clearDeck)
   const setLandCount = useGameStore((s) => s.setLandCount)
@@ -140,6 +140,10 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const lobbyFormat = lobbyState?.settings.format
   const isCommanderShape = lobbyFormat === 'COMMANDER_DRAFT' || lobbyFormat === 'COMMANDER_SEALED'
   const commanderMinDeckSize = lobbyState?.settings.deckSizeMin ?? 60
+  // AI assistance is host-gated in lobbies; practice mode (no lobby) always allows it. When off,
+  // hide the controls AND any card score badges that were fetched before the host switched it off.
+  const aiAssistEnabled = lobbyState ? lobbyState.settings.aiAssistEnabled : true
+  const deckCardScores = aiAssistEnabled ? storedDeckCardScores : null
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
@@ -595,7 +599,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             </div>
           )}
 
-          {!isSubmitted && (lobbyState ? lobbyState.settings.aiAssistEnabled : true) && (
+          {!isSubmitted && aiAssistEnabled && (
             <AutoBuildControl hasCards={totalCount > 0} responsive={responsive} />
           )}
 

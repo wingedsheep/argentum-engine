@@ -145,8 +145,8 @@ sealed interface ClientMessage {
         val maxPlayers: Int = 8,
         val pickTimeSeconds: Int = 45,     // Draft only
         val isPublic: Boolean = false,
-        /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Defaults on. */
-        val aiAssistEnabled: Boolean = true
+        /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Defaults off. */
+        val aiAssistEnabled: Boolean = false
     ) : ClientMessage
 
     /**

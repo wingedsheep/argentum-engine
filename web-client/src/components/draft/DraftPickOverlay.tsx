@@ -33,8 +33,11 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
   const isHost = lobbyState?.isHost ?? false
 
   // AI "Suggest Pick" state — score badges + recommended-card highlight for the current pack.
-  const pickScores = useGameStore((s) => s.pickScores)
-  const recommendedPick = useGameStore((s) => s.recommendedPick)
+  // Hidden entirely (even if scores were already fetched) when the lobby has AI assistance off.
+  const storedPickScores = useGameStore((s) => s.pickScores)
+  const storedRecommendedPick = useGameStore((s) => s.recommendedPick)
+  const pickScores = settings.aiAssistEnabled ? storedPickScores : null
+  const recommendedPick = settings.aiAssistEnabled ? storedRecommendedPick : []
 
   // Build ordered player list in pack-passing order with pack counts
   const playerOrder = useMemo(() => {

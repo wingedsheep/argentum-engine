@@ -35,6 +35,15 @@ class AiAssistControllerTest : FunSpec({
         aiAssistEnabled = assistEnabled,
     )
 
+    test("AI assistance defaults off for new tournament lobbies") {
+        val lobby = TournamentLobby(
+            setCodes = listOf("POR"),
+            setNames = listOf("Portal"),
+            boosterGenerator = BoosterGenerator(emptyMap()),
+        )
+        lobby.aiAssistEnabled shouldBe false
+    }
+
     test("suggest-pick returns scores when assistance is enabled") {
         val repo = InMemoryLobbyRepository()
         val lobby = lobby(assistEnabled = true)
