@@ -13209,6 +13209,128 @@
     ]
 }
 
+// There and Back Again
+{
+    "name": "There and Back Again",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Up to one target creature can't block for as long as you control this Saga. The Ring tempts you.\nII — Search your library for a Mountain card, put it onto the battlefield, then shuffle.\nIII — Create Smaug, a legendary 6/6 red Dragon creature token with flying, haste, and \"When Smaug dies, create fourteen Treasure tokens.\"",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target creature"
+                            },
+                            "duration": {
+                                "type": "WhileYouControlSource",
+                                "sourceDescription": "There and Back Again"
+                            }
+                        },
+                        "TheRingTemptsYou"
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "up to one target creature"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "Mountain"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 6,
+                    "toughness": 6,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "HASTE"
+                    ],
+                    "name": "Smaug",
+                    "legendary": true,
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "count": 14
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/939b0bd0-24ea-45de-a2d3-37bbf6a3e6f9.jpg?1689938360"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Théoden, King of Rohan
 {
     "name": "Théoden, King of Rohan",
