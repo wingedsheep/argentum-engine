@@ -93,7 +93,7 @@ class AiAssistControllerTest : FunSpec({
         advice.scores.size shouldBeGreaterThan 0
 
         val deck = controller.autoBuild(AiAssistController.AutoBuildBody(lobbyId = null, pool = pack))
-        deck.deckList.values.sum() shouldBeGreaterThan 0
+        deck.builds.first().deckList.values.sum() shouldBeGreaterThan 0
     }
 
     test("an unknown lobbyId is treated as practice (allowed), not rejected") {
@@ -136,7 +136,7 @@ class AiAssistControllerTest : FunSpec({
         // never crashing on the empty input.
         val basics = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
         val deck = controller.autoBuild(AiAssistController.AutoBuildBody(pool = emptyList()))
-        deck.deckList.keys.all { it in basics } shouldBe true
+        deck.builds.first().deckList.keys.all { it in basics } shouldBe true
     }
 
     test("advisor catalog lists the heuristic engines for the dropdowns") {

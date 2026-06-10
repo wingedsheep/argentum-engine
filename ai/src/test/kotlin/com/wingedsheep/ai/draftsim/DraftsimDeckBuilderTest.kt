@@ -1,7 +1,9 @@
 package com.wingedsheep.ai.draftsim
 
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.doubles.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 
@@ -87,5 +89,71 @@ class DraftsimDeckBuilderTest : FunSpec({
         val chosenNames = best.deckInstanceIds.mapNotNull { byId[it]?.card?.name }
         // An RG build should not be reaching for {2}{U} filler.
         chosenNames.count { it.startsWith("BlueFiller") } shouldBe 0
+    }
+
+    test("completion keeping locked removal still builds a full 23/17 deck (no double-add)") {
+        val (pool, tables) = buildPool()
+        val byId = pool.associateBy { it.instanceId }
+        val builder = DraftsimDeckBuilder(tables)
+
+        // Lock three removal spells — these are seeded before the removal phase, which must not re-add them.
+        val forced = pool.filter { it.card.name in setOf("Zap1", "Zap2", "Zap3") }.map { it.instanceId }.toSet()
+        val build = builder.buildDecks(pool, mode = "sealed", forced = forced).single()
+
+        val nonland = build.deckInstanceIds.mapNotNull { byId[it]?.card }
+            .filter { !it.typeLine.lowercase().contains("land") }
+        nonland.size shouldBe 23
+        (build.deckInstanceIds.size + build.basicsNeeded.values.sum()) shouldBe 40
+        // Every locked removal spell is present exactly once.
+        listOf("Zap1", "Zap2", "Zap3").forEach { name -> nonland.count { it.name == name } shouldBe 1 }
+    }
+
+    test("completion does not add off-color basics for a flexible hybrid card") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        // A pure GU pool — plus a {2/B} monocolor-hybrid card that is castable with generic mana
+        // (no black ever needed). Locking it must NOT pull black into the build / manabase.
+        for (i in 1..14) add(BCard("GreenCreature$i", "{1}{G}", "Creature — Beast", listOf("G")), 2.6)
+        for (i in 1..14) add(BCard("BlueCreature$i", "{1}{U}", "Creature — Wizard", listOf("U")), 2.6)
+        add(BCard("Flexible", "{2/B}", "Creature — Horror", listOf("B")), 3.0)
+        val tables = DraftsimSetTables(ratings, emptySet(), emptyMap())
+        val builder = DraftsimDeckBuilder(tables)
+
+        val forced = cards.filter { it.card.name in setOf("GreenCreature1", "BlueCreature1", "Flexible") }
+            .map { it.instanceId }.toSet()
+        val build = builder.buildDecks(cards, mode = "sealed", forced = forced).single()
+
+        build.colors.toSet() shouldBe setOf("G", "U")
+        (build.basicsNeeded["B"] ?: 0) shouldBe 0
+    }
+
+    test("completion fixes mana for every locked color, even a third") {
+        val ratings = HashMap<String, Double>()
+        val cards = mutableListOf<DraftsimPoolCard>()
+        var n = 0
+        fun add(card: ScorerCard, rating: Double) {
+            ratings[DraftsimData.nameKey(card.name)] = rating
+            cards += DraftsimPoolCard(card, "id-${n++}")
+        }
+        // A WU-heavy pool with a small black slice to lock as the off-axis third color.
+        for (i in 1..14) add(BCard("WhiteCreature$i", "{1}{W}", "Creature — Soldier", listOf("W")), 2.6)
+        for (i in 1..14) add(BCard("BlueCreature$i", "{1}{U}", "Creature — Wizard", listOf("U")), 2.6)
+        for (i in 1..3) add(BCard("BlackBomb$i", "{1}{B}", "Creature — Demon", listOf("B")), 3.5)
+        val tables = DraftsimSetTables(ratings, emptySet(), emptyMap())
+        val builder = DraftsimDeckBuilder(tables)
+
+        // Lock one card of each colour, including the third (black).
+        val forced = cards.filter { it.card.name in setOf("WhiteCreature1", "BlueCreature1", "BlackBomb1") }
+            .map { it.instanceId }.toSet()
+        val build = builder.buildDecks(cards, mode = "sealed", forced = forced).single()
+
+        // All three locked colours are build colours and the manabase carries basics for each.
+        build.colors shouldContainAll listOf("W", "U", "B")
+        listOf("W", "U", "B").forEach { c -> (build.basicsNeeded[c] ?: 0) shouldBeGreaterThan 0 }
     }
 })

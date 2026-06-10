@@ -62,9 +62,33 @@ class DraftsimAdvisorTest : FunSpec({
         )
 
         result.advisorId shouldBe "draftsim"
-        result.deckList.values.sum() shouldBeGreaterThan 30
+        // A fresh Auto-build surfaces several alternative decks (up to 3), ordered best-first.
+        (result.builds.size in 2..3) shouldBe true
+        result.recommended shouldBe 0
+        result.builds.zipWithNext().all { (a, b) -> (a.score ?: 0.0) >= (b.score ?: 0.0) } shouldBe true
+        val best = result.builds.first()
+        best.deckList.values.sum() shouldBeGreaterThan 30
         // A real archetype/colour label is attached.
-        (result.archetype != null) shouldBe true
-        (result.score != null) shouldBe true
+        (best.archetype != null) shouldBe true
+        (best.score != null) shouldBe true
+        best.colors.isNotEmpty() shouldBe true
+    }
+
+    test("deckbuild advisor completes a partial deck without dropping the locked cards") {
+        val pool = ltr.cards.filter { it.metadata.let { m -> m.rarity != null } && !it.typeLine.isBasicLand }
+        // Lock a handful of real nonland spells from the pool; "Complete Deck" must keep every one.
+        val locked = pool.filterNot { it.typeLine.isLand }.take(6).associate { it.name to 1 }
+
+        val result = DraftsimDeckBuildAdvisor.buildDeck(
+            DeckBuildRequest(pool = pool, locked = locked, targetSize = 40, setCodes = listOf("LTR")),
+        )
+
+        result.advisorId shouldBe "draftsim"
+        // Completion mode yields exactly one deck (no archetype alternatives to choose from).
+        val build = result.builds.single()
+        for ((name, count) in locked) {
+            (build.deckList[name] ?: 0) shouldBe count
+        }
+        build.deckList.values.sum() shouldBeGreaterThan 30
     }
 })

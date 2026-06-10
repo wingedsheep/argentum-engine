@@ -145,8 +145,9 @@ class AiAssistAdvisorTest : FunSpec({
         )
 
         result.advisorId shouldBe "heuristic"
-        result.deckList.values.sum() shouldBe 40
-        (result.score ?: 0.0) shouldBeGreaterThan 0.0
+        val build = result.builds.single()
+        build.deckList.values.sum() shouldBe 40
+        (build.score ?: 0.0) shouldBeGreaterThan 0.0
     }
 
     test("completion mode keeps locked cards and fills to the target size") {
@@ -157,9 +158,10 @@ class AiAssistAdvisorTest : FunSpec({
         )
 
         // Every locked card is preserved at (at least) its locked count.
-        result.deckList["Green 1"]!! shouldBeGreaterThan 2
-        result.deckList["Green 2"]!! shouldBeGreaterThan 1
-        result.deckList.values.sum() shouldBe 40
+        val deckList = result.builds.single().deckList
+        deckList["Green 1"]!! shouldBeGreaterThan 2
+        deckList["Green 2"]!! shouldBeGreaterThan 1
+        deckList.values.sum() shouldBe 40
     }
 
     test("completion respects pool copy limits — never exceeds available copies") {

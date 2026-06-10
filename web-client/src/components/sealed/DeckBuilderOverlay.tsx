@@ -10,6 +10,7 @@ import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay'
 import { DeckbuilderChatPanel } from './DeckbuilderChatPanel'
 import { fetchAdvisors, type AdvisorInfo } from '@/api/aiAssist'
+import type { AutoBuildResult } from '@/store/slices/types'
 import {
   detectProducedColors,
   suggestBasicLands,
@@ -1399,6 +1400,7 @@ function AutoBuildControl({
   responsive: ReturnType<typeof useResponsive>
 }) {
   const autoBuildDeck = useGameStore((s) => s.autoBuildDeck)
+  const applyAutoBuildOption = useGameStore((s) => s.applyAutoBuildOption)
   const aiAssistBusy = useGameStore((s) => s.aiAssistBusy)
   const aiAssistError = useGameStore((s) => s.aiAssistError)
   const autoBuildResult = useGameStore((s) => s.autoBuildResult)
@@ -1511,29 +1513,73 @@ function AutoBuildControl({
           Hide scores
         </button>
       )}
-      {!aiAssistBusy && autoBuildResult && autoBuildResult.score != null && (
-        <span
-          title="Score of the most recent Auto-build"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '4px 10px',
-            fontSize: 13,
-            fontWeight: 600,
-            color: '#e8d9ff',
-            backgroundColor: 'rgba(126, 87, 194, 0.25)',
-            border: '1px solid #7e57c2',
-            borderRadius: 6,
-          }}
-        >
-          {`Deck score: ${formatBuildScore(autoBuildResult.advisorId, autoBuildResult.score)}`}
-          {autoBuildResult.archetype && (
-            <span style={{ color: '#b9a6e0', fontWeight: 500 }}>· {autoBuildResult.archetype}</span>
-          )}
-        </span>
+      {!aiAssistBusy && autoBuildResult && (
+        <BuildOptionPicker result={autoBuildResult} onPick={applyAutoBuildOption} />
       )}
       {aiAssistError && <span style={{ color: '#ff6b6b', fontSize: 12 }}>{aiAssistError}</span>}
+    </div>
+  )
+}
+
+/**
+ * The Auto-build outcome: the candidate decks as selectable chips. The recommended deck is applied
+ * immediately (highlighted here); clicking another chip swaps the deck to that candidate. With a
+ * single candidate (heuristic / completion) it renders one non-interactive score badge.
+ */
+function BuildOptionPicker({
+  result,
+  onPick,
+}: {
+  result: AutoBuildResult
+  onPick: (index: number) => void
+}) {
+  const multiple = result.options.length > 1
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      {multiple && <span style={{ color: '#b9a6e0', fontSize: 12, fontWeight: 600 }}>Builds:</span>}
+      {result.options.map((option, i) => {
+        const isApplied = i === result.appliedIndex
+        const scoreText = option.score != null ? formatBuildScore(result.advisorId, option.score) : null
+        return (
+          <button
+            key={i}
+            onClick={() => onPick(i)}
+            disabled={!multiple}
+            title={
+              multiple
+                ? isApplied
+                  ? 'This build is applied to your deck'
+                  : 'Switch your deck to this build'
+                : 'Score of the most recent Auto-build'
+            }
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '4px 10px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: isApplied ? '#e8d9ff' : '#b9a6e0',
+              backgroundColor: isApplied ? 'rgba(126, 87, 194, 0.35)' : 'rgba(126, 87, 194, 0.12)',
+              border: `1px solid ${isApplied ? '#9b7fd4' : 'rgba(126, 87, 194, 0.5)'}`,
+              borderRadius: 6,
+              cursor: multiple ? 'pointer' : 'default',
+            }}
+          >
+            {option.colors.length > 0 && (
+              <span style={{ display: 'inline-flex', gap: 2 }}>
+                {option.colors.map((c) => (
+                  <ManaSymbol key={c} symbol={c} size={14} />
+                ))}
+              </span>
+            )}
+            {option.archetype && <span>{option.archetype}</span>}
+            {scoreText && (
+              <span style={{ color: isApplied ? '#fff' : '#cdbbef', fontWeight: 700 }}>{scoreText}</span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

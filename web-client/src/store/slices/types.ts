@@ -409,14 +409,26 @@ export interface PickScore {
   readonly reason: string
 }
 
-/** Summary of the most recent Auto-build, surfaced in the deck builder. */
-export interface AutoBuildSummary {
-  /** Engine that produced the build (e.g. "draftsim", "heuristic"). */
-  readonly advisorId: string
+/** One candidate deck from an Auto-build, shown as a choice in the deck builder. */
+export interface AutoBuildOption {
   /** Deck score (Draftsim: 0–10; heuristic: sum of card ratings), or null if unscored. */
   readonly score: number | null
   /** Targeted archetype / colour label, if the engine identifies one. */
   readonly archetype: string | null
+  /** Build colors as WUBRG single-letter codes, for the option's color pips. */
+  readonly colors: readonly string[]
+  /** Full decklist (spells + basics) for this option, re-applied when the player switches to it. */
+  readonly deckList: Readonly<Record<string, number>>
+}
+
+/** The most recent Auto-build: its candidate decks plus which one is currently applied. */
+export interface AutoBuildResult {
+  /** Engine that produced the builds (e.g. "draftsim", "heuristic"). */
+  readonly advisorId: string
+  /** Candidate decks, ordered best-first. */
+  readonly options: readonly AutoBuildOption[]
+  /** Index of the option currently applied to the deck. */
+  readonly appliedIndex: number
 }
 
 export interface DeckBuildingState {
@@ -845,8 +857,8 @@ export type GameStore = {
   recommendedPick: readonly string[]
   aiAssistBusy: boolean
   aiAssistError: string | null
-  /** Score/archetype from the most recent Auto-build, or null. */
-  autoBuildResult: AutoBuildSummary | null
+  /** Candidate decks + applied index from the most recent Auto-build, or null. */
+  autoBuildResult: AutoBuildResult | null
   /** Selected engine for the draft / deckbuild dropdowns; persists across edits and remounts. */
   draftAdvisorId: string | null
   deckbuildAdvisorId: string | null
@@ -859,6 +871,8 @@ export type GameStore = {
   suggestPick: (advisorId?: string) => Promise<void>
   clearPickSuggestion: () => void
   autoBuildDeck: (advisorId?: string) => Promise<void>
+  /** Switch the deck to a different Auto-build candidate (by index into `autoBuildResult.options`). */
+  applyAutoBuildOption: (index: number) => void
 
   // Pipeline slice
   pipelineState: ActionPipelineState | null

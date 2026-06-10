@@ -1,7 +1,7 @@
 /**
  * Draft slice - handles sealed deck building and drafting logic.
  */
-import type { SliceCreator, DeckBuildingState, PickScore, AutoBuildSummary } from './types'
+import type { SliceCreator, DeckBuildingState, PickScore, AutoBuildResult } from './types'
 import {
   createCreateSealedGameMessage,
   createJoinSealedGameMessage,
@@ -21,6 +21,27 @@ import { getWebSocket, saveDeckState } from './shared'
 
 export type { PickScore }
 
+/**
+ * Split a built decklist (name → count, spells + basics mixed) into the flat non-land card list and
+ * basic-land counts that {@link DraftSliceActions.setDeck} expects. `basicNames` are the pool's basic
+ * land names; everything else is treated as a deck card with one entry per copy.
+ */
+function splitDeckList(
+  deckList: Readonly<Record<string, number>>,
+  basicNames: ReadonlySet<string>,
+): { deck: string[]; landCounts: Record<string, number> } {
+  const deck: string[] = []
+  const landCounts: Record<string, number> = {}
+  for (const [name, count] of Object.entries(deckList)) {
+    if (basicNames.has(name)) {
+      landCounts[name] = count
+    } else {
+      for (let i = 0; i < count; i++) deck.push(name)
+    }
+  }
+  return { deck, landCounts }
+}
+
 export interface DraftSliceState {
   deckBuildingState: DeckBuildingState | null
   /**
@@ -34,8 +55,8 @@ export interface DraftSliceState {
   aiAssistBusy: boolean
   /** Last AI-assist error message (e.g. assistance disabled), or null. */
   aiAssistError: string | null
-  /** Score/archetype from the most recent Auto-build, or null until one runs. */
-  autoBuildResult: AutoBuildSummary | null
+  /** Candidate decks + applied index from the most recent Auto-build, or null until one runs. */
+  autoBuildResult: AutoBuildResult | null
   /** Engine the player selected in the draft "Suggest Pick" dropdown; persists across edits. */
   draftAdvisorId: string | null
   /** Engine the player selected in the deckbuild "Auto-build" dropdown; persists across edits. */
@@ -70,6 +91,8 @@ export interface DraftSliceActions {
   clearPickSuggestion: () => void
   /** Build (empty deck) or complete (partial deck) the deck from the pool with the chosen engine. */
   autoBuildDeck: (advisorId?: string) => Promise<void>
+  /** Switch the deck to a different Auto-build candidate (by index into `autoBuildResult.options`). */
+  applyAutoBuildOption: (index: number) => void
   /** Remember the selected draft "Suggest Pick" engine. */
   setDraftAdvisorId: (advisorId: string | null) => void
   /** Remember the selected deckbuild "Auto-build" engine. */
@@ -395,25 +418,27 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
         setCodes: lobbyState?.settings.setCodes ?? [],
       })
 
-      // Split the built decklist into non-land cards (deck) and basic-land counts (landCounts),
-      // then apply via setDeck (which re-caps to pool availability and the 4-of rule).
-      const basicNames = new Set(deckBuildingState.basicLands.map((c) => c.name))
-      const newDeck: string[] = []
-      const newLandCounts: Record<string, number> = {}
-      for (const [name, count] of Object.entries(result.deckList)) {
-        if (basicNames.has(name)) {
-          newLandCounts[name] = count
-        } else {
-          for (let i = 0; i < count; i++) newDeck.push(name)
-        }
+      if (result.builds.length === 0) {
+        set({ aiAssistBusy: false, aiAssistError: 'Auto-build produced no deck', autoBuildResult: null })
+        return
       }
-      get().setDeck(newDeck, newLandCounts)
+
+      // Apply the recommended build immediately; keep every candidate so the player can switch.
+      const applied = Math.min(Math.max(result.recommended, 0), result.builds.length - 1)
+      const basicNames = new Set(deckBuildingState.basicLands.map((c) => c.name))
+      const { deck, landCounts } = splitDeckList(result.builds[applied]!.deckList, basicNames)
+      get().setDeck(deck, landCounts)
       set({
         aiAssistBusy: false,
         autoBuildResult: {
           advisorId: result.advisorId,
-          score: result.score,
-          archetype: result.archetype,
+          options: result.builds.map((b) => ({
+            score: b.score,
+            archetype: b.archetype,
+            colors: b.colors,
+            deckList: b.deckList,
+          })),
+          appliedIndex: applied,
         },
       })
     } catch (e) {
@@ -423,6 +448,18 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
         autoBuildResult: null,
       })
     }
+  },
+
+  applyAutoBuildOption: (index) => {
+    const { deckBuildingState, autoBuildResult } = get()
+    if (!deckBuildingState || !autoBuildResult) return
+    const option = autoBuildResult.options[index]
+    if (!option || index === autoBuildResult.appliedIndex) return
+
+    const basicNames = new Set(deckBuildingState.basicLands.map((c) => c.name))
+    const { deck, landCounts } = splitDeckList(option.deckList, basicNames)
+    get().setDeck(deck, landCounts)
+    set({ autoBuildResult: { ...autoBuildResult, appliedIndex: index } })
   },
 
   setDraftAdvisorId: (advisorId) => set({ draftAdvisorId: advisorId }),

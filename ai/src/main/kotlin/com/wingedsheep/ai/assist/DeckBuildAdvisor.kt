@@ -41,12 +41,28 @@ data class DeckBuildRequest(
     val setCodes: List<String> = emptyList(),
 )
 
+/**
+ * The result of a deckbuild: one or more candidate decks the player can choose between. Engines that
+ * only produce a single deck (the heuristic, a completion) return a one-element [builds] list;
+ * engines that explore several archetypes (Draftsim's "Auto-build") return the best few so the
+ * client can show them side by side. [builds] is ordered best-first and never empty on success.
+ */
 data class DeckBuildResult(
     val advisorId: String,
+    /** Candidate decks, ordered best-first. Empty only when the pool yields nothing to build. */
+    val builds: List<DeckBuildOption>,
+    /** Index into [builds] of the deck to apply by default (the recommended one). */
+    val recommended: Int = 0,
+)
+
+/** One candidate deck within a [DeckBuildResult]. */
+data class DeckBuildOption(
     /** Full decklist (spells + lands, including basics) as name → count. */
     val deckList: Map<String, Int>,
     /** Intrinsic quality estimate (sum of card ratings), or null if the engine doesn't score. */
     val score: Double? = null,
     /** Detected/targeted archetype label, if the engine identifies one. */
     val archetype: String? = null,
+    /** The deck's build colors (WUBRG single-letter codes), for the picker's color pips. */
+    val colors: List<String> = emptyList(),
 )

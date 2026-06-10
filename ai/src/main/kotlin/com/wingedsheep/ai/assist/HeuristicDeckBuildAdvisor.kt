@@ -31,6 +31,7 @@ object HeuristicDeckBuildAdvisor : DeckBuildAdvisor {
             if (def == null || def.typeLine.isLand) 0.0 else LimitedCardRater.rate(def) * count
         }
 
-        return DeckBuildResult(advisorId = id, deckList = deckList, score = score)
+        // The heuristic explores no archetype alternatives, so it returns a single candidate build.
+        return DeckBuildResult(advisorId = id, builds = listOf(DeckBuildOption(deckList = deckList, score = score)))
     }
 }

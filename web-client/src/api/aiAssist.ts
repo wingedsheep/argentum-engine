@@ -27,11 +27,21 @@ export interface DraftPickAdvice {
   readonly recommended: readonly string[]
 }
 
-export interface DeckBuildResult {
-  readonly advisorId: string
+/** One candidate deck within a {@link DeckBuildResult}. */
+export interface DeckBuildOption {
   readonly deckList: Readonly<Record<string, number>>
   readonly score: number | null
   readonly archetype: string | null
+  /** Build colors as WUBRG single-letter codes (for color pips); empty if the engine doesn't report them. */
+  readonly colors: readonly string[]
+}
+
+export interface DeckBuildResult {
+  readonly advisorId: string
+  /** Candidate decks, ordered best-first. A single-deck engine returns one entry. */
+  readonly builds: readonly DeckBuildOption[]
+  /** Index into `builds` of the deck to apply by default. */
+  readonly recommended: number
 }
 
 // The engine list is fixed for the server's lifetime, but both the draft and deckbuild controls
