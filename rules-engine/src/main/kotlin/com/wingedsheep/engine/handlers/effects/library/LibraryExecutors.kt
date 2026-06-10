@@ -58,7 +58,7 @@ class LibraryExecutors(
         GatherCardsExecutor(),
         CopyCardIntoCollectionExecutor(),
         GrantSuspendExecutor(),
-        SelectFromCollectionExecutor(),
+        SelectFromCollectionExecutor(cardRegistry = cardRegistry),
         ChoosePileExecutor(),
         SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),
         MoveCollectionExecutor(cardRegistry = cardRegistry, targetFinder = targetFinder),

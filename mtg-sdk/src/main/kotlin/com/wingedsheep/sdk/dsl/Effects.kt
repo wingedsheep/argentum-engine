@@ -1102,6 +1102,18 @@ object Effects {
         AddColorlessManaEffect(amount, restriction)
 
     /**
+     * Pay a dynamically-computed amount of generic mana at resolution, optionally from a player
+     * other than the controller. The dynamic twin of a flat [PayManaCostEffect]; the building block
+     * for "pay {N} for each X" templating (e.g. `PayDynamicMana(DynamicAmount.Multiply(
+     * DynamicAmount.VariableReference("chosen_count"), 4), Player.TriggeringPlayer)`).
+     */
+    fun PayDynamicMana(
+        amount: DynamicAmount,
+        payer: Player = Player.You
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect(amount, payer)
+
+    /**
      * Add mana of a color the player chooses from a [ManaColorSet] resolved at resolution
      * time. The unified "choose-from-set" primitive — see [AddManaOfChoiceEffect].
      *

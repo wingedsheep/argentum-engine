@@ -428,6 +428,12 @@ class LibraryAndZoneContinuationResumer(
                             // A typeless land can't be kept; a typed land needs all its types free.
                             types.isNotEmpty() && types.none { it in claimedLandTypes }
                         }
+                        is SelectionRestriction.MaxAffordablePayment ->
+                            // A pure count cap, already folded into the decision's maxSelections
+                            // at decision-build time and enforced by response validation; game
+                            // state can't change while the decision is pending, so there is
+                            // nothing to re-check per card here.
+                            true
                     }
                 }
                 if (acceptsAllRestrictions) {
@@ -458,6 +464,9 @@ class LibraryAndZoneContinuationResumer(
                             }
                             is SelectionRestriction.OnePerBasicLandType -> {
                                 claimedLandTypes += basicLandTypesOf(cardId)
+                            }
+                            is SelectionRestriction.MaxAffordablePayment -> {
+                                // Count cap — no per-card bookkeeping (see the accept check above).
                             }
                         }
                     }

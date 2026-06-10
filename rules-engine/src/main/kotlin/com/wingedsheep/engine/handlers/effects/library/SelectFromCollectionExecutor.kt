@@ -7,6 +7,8 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -18,6 +20,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -32,12 +35,15 @@ import kotlin.reflect.KClass
  * and returns paused. The continuation handler splits the collections when
  * the player responds.
  */
-class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> {
+class SelectFromCollectionExecutor(
+    private val cardRegistry: CardRegistry
+) : EffectExecutor<SelectFromCollectionEffect> {
 
     override val effectType: KClass<SelectFromCollectionEffect> = SelectFromCollectionEffect::class
 
     private val amountEvaluator = DynamicAmountEvaluator()
     private val predicateEvaluator = PredicateEvaluator()
+    private val manaSolver by lazy { ManaSolver(cardRegistry) }
 
     override fun execute(
         state: GameState,
@@ -134,7 +140,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         // Restrictions can tighten the maximum number of selectable cards (e.g.,
         // OnePerCardType caps the max at the number of distinct card types present).
         // They are also propagated into the continuation for response-time normalization.
-        val restrictionCeiling = restrictionCeiling(effect.restrictions, state, eligibleCards, controllerPermanentColors)
+        val restrictionCeiling = restrictionCeiling(effect.restrictions, state, context, eligibleCards, controllerPermanentColors)
 
         return when (val selection = effect.selection) {
             is SelectionMode.All -> {
@@ -213,6 +219,13 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     return EffectResult.success(state).copy(updatedCollections = collections)
                 }
                 val maxSelectable = minOf(eligibleCards.size, restrictionCeiling)
+                if (maxSelectable <= 0 && !effect.showAllCards) {
+                    // A restriction ceiling of zero (e.g. MaxAffordablePayment with no mana
+                    // available) makes the choice vacuous — skip the prompt, select nothing.
+                    val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
+                    if (remainderName != null) collections[remainderName] = cards
+                    return EffectResult.success(state).copy(updatedCollections = collections)
+                }
                 val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
                 createDecision(state, context, effect, eligibleCards, 0, maxSelectable, decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable, controllerPermanentColors = controllerPermanentColors)
             }
@@ -240,6 +253,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
     private fun restrictionCeiling(
         restrictions: List<SelectionRestriction>,
         state: GameState,
+        context: EffectContext,
         eligibleCards: List<EntityId>,
         controllerPermanentColors: Set<com.wingedsheep.sdk.core.Color>? = null
     ): Int {
@@ -301,6 +315,17 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                             ?.filter { it.value in com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES }
                             ?: emptySet()
                     }.toSet().size
+                }
+                is SelectionRestriction.MaxAffordablePayment -> {
+                    // Cap at what the payer could actually pay for: floor(available / per-card).
+                    // Available mana counts floating mana plus untapped sources, matching the
+                    // affordability pre-pass of the downstream Gate.MayPay.
+                    val payerId = TargetResolutionUtils
+                        .resolvePlayerTarget(EffectTarget.PlayerRef(restriction.payer), context, state)
+                        ?: context.controllerId
+                    val available = manaSolver.getAvailableManaCount(state, payerId)
+                    if (restriction.manaPerSelected <= 0) Int.MAX_VALUE
+                    else available / restriction.manaPerSelected
                 }
             }
             if (limit < ceiling) ceiling = limit

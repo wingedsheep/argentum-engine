@@ -2012,6 +2012,111 @@
     "colorIdentityOverride": []
 }
 
+// Magnetic Mountain
+{
+    "name": "Magnetic Mountain",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Blue creatures don't untap during their controllers' untap steps.\nAt the beginning of each player's upkeep, that player may choose any number of tapped blue creatures they control and pay {4} for each creature chosen this way. If the player does, untap those creatures.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "player": "TriggeringPlayer",
+                                "filter": "creature blue tapped"
+                            },
+                            "storeAs": "eligible"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "eligible",
+                            "selection": "ChooseAnyNumber",
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "chosen",
+                            "prompt": "Choose any number of tapped blue creatures to untap (pay {4} for each)",
+                            "useTargetingUI": true,
+                            "restrictions": [
+                                {
+                                    "type": "MaxAffordablePayment",
+                                    "manaPerSelected": 4,
+                                    "payer": "TriggeringPlayer"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "chosen",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayPay",
+                                    "cost": {
+                                        "type": "PayDynamicManaCost",
+                                        "amount": {
+                                            "type": "Multiply",
+                                            "amount": {
+                                                "type": "VariableReference",
+                                                "variableName": "chosen_count"
+                                            },
+                                            "multiplier": 4
+                                        },
+                                        "payer": "TriggeringPlayer"
+                                    }
+                                },
+                                "then": {
+                                    "type": "ForEachInCollection",
+                                    "collection": "chosen",
+                                    "effect": {
+                                        "type": "TapUntap",
+                                        "target": "Self",
+                                        "tap": false
+                                    }
+                                },
+                                "decisionMaker": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                },
+                                "descriptionOverride": "Pay {4} for each chosen creature? If you do, untap them."
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP",
+                "filter": {
+                    "baseFilter": "creature blue"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95fde48b-e40a-4183-b324-1ec276dde015.jpg?1562922858"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Merchant Ship
 {
     "name": "Merchant Ship",

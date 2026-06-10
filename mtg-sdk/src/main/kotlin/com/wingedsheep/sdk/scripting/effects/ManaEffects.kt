@@ -24,6 +24,41 @@ data class PayManaCostEffect(val cost: ManaCost) : Effect {
 }
 
 /**
+ * Non-optional payment of a *dynamically computed* amount of generic mana during resolution —
+ * the dynamic, payer-parametric twin of [PayManaCostEffect].
+ *
+ * [amount] is evaluated at resolution and turned into that many generic mana, which is auto-tapped
+ * and deducted from [payer]'s pool. This is the building block for "pay {N} for each X" templating:
+ * compose it with a pipeline selection and read the selection size, e.g.
+ * `PayDynamicManaCostEffect(DynamicAmount.Multiply(DynamicAmount.VariableReference("chosen_count"), 4),
+ * Player.TriggeringPlayer)` for "pay {4} for each creature chosen this way", paid by the player whose
+ * upkeep it is. An evaluated amount of 0 pays nothing and succeeds.
+ *
+ * Unlike [PayManaCostEffect] (which always pays from the resolving ability's controller), [payer] lets
+ * a *different* player foot the bill — the common shape for each-player triggers ("that player may
+ * pay ..."). When wrapped in a [Gate.MayPay], pair it with a matching `decisionMaker` so the same
+ * player is prompted and charged.
+ *
+ * @property amount Generic mana to pay, computed at resolution.
+ * @property payer Who pays. Defaults to the controller ([Player.You]); use [Player.TriggeringPlayer]
+ *   etc. for cross-player payments.
+ */
+@SerialName("PayDynamicManaCost")
+@Serializable
+data class PayDynamicManaCostEffect(
+    val amount: DynamicAmount,
+    val payer: com.wingedsheep.sdk.scripting.references.Player =
+        com.wingedsheep.sdk.scripting.references.Player.You
+) : Effect {
+    override val description: String = "Pay {${amount.description}}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
  * Add mana effect.
  * "Add {G}" or "Add {R}{R}" or "Add {R} for each Goblin on the battlefield."
  *

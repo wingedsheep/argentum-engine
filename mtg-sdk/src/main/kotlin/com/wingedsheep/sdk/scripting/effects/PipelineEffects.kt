@@ -391,6 +391,31 @@ sealed interface SelectionRestriction {
     data object OnePerBasicLandType : SelectionRestriction {
         override val description: String = "at most one land of each basic land type"
     }
+
+    /**
+     * The selection is capped at the number of cards [payer] can afford to pay
+     * [manaPerSelected] generic mana for: `floor(availableMana / manaPerSelected)`,
+     * where available mana counts floating mana plus untapped sources. Pair it with
+     * a downstream payment at the same rate (a `Gate.MayPay` over
+     * [PayDynamicManaCostEffect]) so the player can never select a set whose total
+     * cost is unpayable — without the cap, an over-selection would skip the whole
+     * payment and silently forfeit the payoff ("pay {4} for each creature chosen
+     * this way" — Magnetic Mountain).
+     *
+     * A cap of zero suppresses the selection prompt entirely (nothing is selected).
+     * Unlike the per-card restrictions above, this one needs no response-order
+     * trimming: the cap is folded into the decision's `maxSelections` at
+     * decision-build time and enforced by response validation, and game state can't
+     * change while the decision is pending.
+     */
+    @SerialName("MaxAffordablePayment")
+    @Serializable
+    data class MaxAffordablePayment(
+        val manaPerSelected: Int,
+        val payer: Player = Player.You
+    ) : SelectionRestriction {
+        override val description: String = "at most as many as can be paid {$manaPerSelected} for"
+    }
 }
 
 /**
