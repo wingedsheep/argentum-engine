@@ -109,7 +109,7 @@
 - [x] Mutant Town
 - [x] Mutant Town Musicians
 - [x] Negate
-- [ ] New Generation's Technique
+- [x] New Generation's Technique
 - [ ] Ninja Teen
 - [x] Nobody
 - [ ] North Wind Avatar
