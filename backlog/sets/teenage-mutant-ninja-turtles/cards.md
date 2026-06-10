@@ -153,7 +153,7 @@
 - [ ] Shark Shredder, Killer Clone
 - [x] Shredder's Armor
 - [x] Shredder's Revenge
-- [ ] Shredder's Technique
+- [x] Shredder's Technique
 - [x] Shredder, Unrelenting
 - [x] Skateboard
 - [x] Slash, Reptile Rampager
