@@ -155,7 +155,7 @@ class TriggerAbilityResolver(
                     when (leaf) {
                         is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
                         is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                        else -> true
+                        else -> null // leaf kinds this fast path can't evaluate don't constrain
                     }
                 } ?: true
                 if (controllerMatch) {
@@ -280,7 +280,7 @@ class TriggerAbilityResolver(
                     when (leaf) {
                         is ControllerPredicate.ControlledByYou -> targetControllerId == entry.sourceControllerId
                         is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != entry.sourceControllerId
-                        else -> true
+                        else -> null // leaf kinds this fast path can't evaluate don't constrain
                     }
                 } ?: true
                 if (controllerMatch) add(entry.grant.ability)
@@ -416,7 +416,7 @@ class TriggerAbilityResolver(
                     when (leaf) {
                         is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
                         is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                        else -> true
+                        else -> null // leaf kinds this fast path can't evaluate don't constrain
                     }
                 } ?: true
                 if (!controllerMatch) continue

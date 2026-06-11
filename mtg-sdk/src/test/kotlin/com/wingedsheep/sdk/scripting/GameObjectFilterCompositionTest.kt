@@ -77,6 +77,29 @@ class GameObjectFilterCompositionTest : DescribeSpec({
             ).evaluateWith(leaf) shouldBe true
         }
 
+        it("unsupported leaves (null) don't constrain — even under Not") {
+            // Leaf semantics of a site that only understands ControlledByYou (= true here).
+            val partial: (ControllerPredicate) -> Boolean? =
+                { if (it == ControllerPredicate.ControlledByYou) true else null }
+
+            // A bare unsupported leaf matches (don't constrain) …
+            ControllerPredicate.OwnedByYou.evaluateWith(partial) shouldBe true
+            // … and so does its negation: unknown propagates through Not instead of flipping
+            // "ignore this predicate" into "reject everything".
+            ControllerPredicate.Not(ControllerPredicate.OwnedByYou).evaluateWith(partial) shouldBe true
+
+            // Supported branches still constrain alongside unknowns.
+            ControllerPredicate.And(
+                listOf(ControllerPredicate.ControlledByYou, ControllerPredicate.OwnedByYou)
+            ).evaluateWith(partial) shouldBe true
+            ControllerPredicate.And(
+                listOf(ControllerPredicate.Not(ControllerPredicate.ControlledByYou), ControllerPredicate.OwnedByYou)
+            ).evaluateWith(partial) shouldBe false
+            ControllerPredicate.Or(
+                listOf(ControllerPredicate.Not(ControllerPredicate.ControlledByYou), ControllerPredicate.OwnedByYou)
+            ).evaluateWith(partial) shouldBe true
+        }
+
         it("survives a JSON round-trip inside a filter") {
             val filter = GameObjectFilter.Permanent.withControllerPredicate(
                 ControllerPredicate.And(

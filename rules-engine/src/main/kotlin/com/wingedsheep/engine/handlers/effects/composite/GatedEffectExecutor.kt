@@ -393,15 +393,23 @@ class GatedEffectExecutor(
         }
 
         // Action ran synchronously (success or recoverable error). Pop our pre-pushed
-        // continuation and evaluate the outcome inline.
+        // continuation and evaluate the outcome inline. Collections the action produced
+        // are merged into the context so a CollectionNonEmpty criterion (and the chosen
+        // branch) can read them — the paused path gets the same data via
+        // exposeCollectionsToNextFrame updating the pre-pushed frame.
         val (_, stateWithoutCont) = result.state.popContinuation()
+        val contextWithCollections = if (result.updatedCollections.isEmpty()) context else context.copy(
+            pipeline = context.pipeline.copy(
+                storedCollections = context.pipeline.storedCollections + result.updatedCollections
+            )
+        )
         return evaluateAndDispatch(
             state = stateWithoutCont,
             then = effect.then,
             otherwise = effect.otherwise,
             criterion = gate.successCriterion,
             snapshot = snapshot,
-            effectContext = context,
+            effectContext = contextWithCollections,
             priorEvents = result.events,
             effectExecutor = effectExecutor
         )
@@ -482,7 +490,7 @@ class GatedEffectExecutor(
             priorEvents: List<GameEvent>,
             effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
         ): EffectResult {
-            val happened = evaluate(state, criterion, snapshot)
+            val happened = evaluate(state, criterion, snapshot, effectContext)
             val branch = if (happened) then else otherwise
                 ?: return EffectResult.success(state, priorEvents)
             val branchResult = effectExecutor(state, branch, effectContext)
@@ -491,19 +499,22 @@ class GatedEffectExecutor(
 
         /**
          * Did the action accomplish its work, given the snapshot taken before it ran?
+         *
+         * [effectContext] carries the action's pipeline collections: the synchronous path
+         * merges the action result's `updatedCollections` in before dispatch, and the paused
+         * path receives them via `exposeCollectionsToNextFrame` updating the pre-pushed
+         * [GatedActionContinuation] when the action's last collection-producing step resolves.
          */
         private fun evaluate(
             state: GameState,
             criterion: SuccessCriterion,
-            snapshot: GatedActionSnapshot
+            snapshot: GatedActionSnapshot,
+            effectContext: EffectContext
         ): Boolean = when (criterion) {
             is SuccessCriterion.Always -> true
             is SuccessCriterion.Auto -> evaluateAuto(state, snapshot)
             is SuccessCriterion.CollectionNonEmpty ->
-                // Pipeline storage doesn't propagate up to this level after resume — until that
-                // plumbing exists, fall back to Auto's zone-delta probe (set by captureSnapshot
-                // when the action's terminal move is recognized).
-                evaluateAuto(state, snapshot)
+                (effectContext.pipeline.storedCollections[criterion.name]?.size ?: 0) >= criterion.min
         }
 
         private fun evaluateAuto(state: GameState, snapshot: GatedActionSnapshot): Boolean {

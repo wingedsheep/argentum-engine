@@ -545,7 +545,7 @@ object ZoneMovementUtils {
                     val controllerId = container.get<ControllerComponent>()?.playerId
                     controllerId != null && controllerId != sourceControllerId
                 }
-                else -> true
+                else -> null // leaf kinds this site can't evaluate don't constrain
             }
         }
     }

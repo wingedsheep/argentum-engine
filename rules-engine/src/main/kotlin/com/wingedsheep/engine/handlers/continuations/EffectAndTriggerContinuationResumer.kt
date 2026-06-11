@@ -47,7 +47,15 @@ class EffectAndTriggerContinuationResumer(
     ): ExecutionResult {
         val effectResult = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
         if (effectResult.isPaused) return effectResult.toExecutionResult()
-        return checkForMore(effectResult.state, effectResult.events.toList())
+        // A drained composite hands its pipeline collections to the frame beneath —
+        // e.g. a DoAction gate scoring SuccessCriterion.CollectionNonEmpty. The full
+        // frame map (not just this drain's accumulation) is what propagates: keys
+        // injected into this frame by an earlier select-resume are part of it.
+        val stateWithCollections = exposeCollectionsToNextFrame(
+            effectResult.state,
+            continuation.effectContext.pipeline.storedCollections + effectResult.updatedCollections
+        )
+        return checkForMore(stateWithCollections, effectResult.events.toList())
     }
 
     private fun resumeTriggeredAbility(

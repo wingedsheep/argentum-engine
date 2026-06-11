@@ -677,7 +677,7 @@ class TriggerMatcher(
                         is ControllerPredicate.ControlledByOpponent -> effectiveController != controllerId
                         is ControllerPredicate.OwnedByYou -> event.ownerId == controllerId
                         is ControllerPredicate.OwnedByOpponent -> event.ownerId != controllerId
-                        else -> true
+                        else -> null // leaf kinds this LKI site can't evaluate don't constrain
                     }
                 }
                 if (!controllerMatches) return false
@@ -955,7 +955,7 @@ class TriggerMatcher(
                     when (leaf) {
                         is ControllerPredicate.ControlledByYou -> targetController == controllerId
                         is ControllerPredicate.ControlledByOpponent -> targetController != controllerId
-                        else -> true
+                        else -> null // leaf kinds this site can't evaluate don't constrain
                     }
                 }
                 if (!controllerMatches) return false

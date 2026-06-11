@@ -280,7 +280,7 @@ internal class AffectsFilterResolver {
                         ControllerPredicate.ControlledByYou -> entityController == controller
                         ControllerPredicate.ControlledByOpponent -> entityController != controller
                         ControllerPredicate.ControlledByAny -> true
-                        else -> true // other predicates not applicable in static ability context
+                        else -> null // other predicates not applicable in static ability context
                     }
                 }
                 if (!controllerMatches) return@filter false

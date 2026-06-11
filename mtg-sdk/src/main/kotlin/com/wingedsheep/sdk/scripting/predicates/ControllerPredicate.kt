@@ -131,10 +131,25 @@ sealed interface ControllerPredicate {
  * notions (live projected state, zone-change last-known-controller snapshots, grant-provider
  * fast paths). Each site supplies only its own leaf semantics and shares the combinator
  * logic through this fold, so a composed predicate behaves consistently everywhere.
+ *
+ * **Unsupported leaves.** A site that can't evaluate a leaf kind returns `null` ("unknown"),
+ * NOT `true` — unknowns propagate through the combinators with three-valued (Kleene) logic
+ * and only resolve to "don't constrain" (match) at the root. This keeps "the site ignores
+ * predicates it can't see" consistent under negation: with a boolean leaf fallback,
+ * `Not(unsupported)` would flip the fail-open into rejecting everything.
  */
-fun ControllerPredicate.evaluateWith(leaf: (ControllerPredicate) -> Boolean): Boolean = when (this) {
-    is ControllerPredicate.And -> predicates.all { it.evaluateWith(leaf) }
-    is ControllerPredicate.Or -> predicates.any { it.evaluateWith(leaf) }
-    is ControllerPredicate.Not -> !predicate.evaluateWith(leaf)
+fun ControllerPredicate.evaluateWith(leaf: (ControllerPredicate) -> Boolean?): Boolean =
+    evaluateOrUnknown(leaf) ?: true
+
+private fun ControllerPredicate.evaluateOrUnknown(leaf: (ControllerPredicate) -> Boolean?): Boolean? = when (this) {
+    is ControllerPredicate.And -> {
+        val branches = predicates.map { it.evaluateOrUnknown(leaf) }
+        if (false in branches) false else if (null in branches) null else true
+    }
+    is ControllerPredicate.Or -> {
+        val branches = predicates.map { it.evaluateOrUnknown(leaf) }
+        if (true in branches) true else if (null in branches) null else false
+    }
+    is ControllerPredicate.Not -> predicate.evaluateOrUnknown(leaf)?.let { !it }
     else -> leaf(this)
 }

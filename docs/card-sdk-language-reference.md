@@ -692,9 +692,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
     enforced corpus-wide by `SuccessCriterionValidationTest`) rejects an Auto criterion on any other
     action — non-zone-move actions (deal damage, gain life, …) must state `SuccessCriterion.Always`
     or `CollectionNonEmpty(name, min)` explicitly instead of silently inheriting a fail-open
-    "it happened". The executor pre-pushes a `GatedActionContinuation` so a paused action
-    auto-resumes and evaluates after its own continuations drain. Replaces `IfYouDoEffect` (see
-    "Sequencing & conditional" below).
+    "it happened". `CollectionNonEmpty` gates on the action's actual pipeline collection
+    (`storedCollections[name].size >= min` after the action runs) — the collections propagate onto
+    the gate frame via `exposeCollectionsToNextFrame`, in both the synchronous and the
+    paused/continuation-drain paths. The executor pre-pushes a `GatedActionContinuation` so a paused
+    action auto-resumes and evaluates after its own continuations drain. Replaces `IfYouDoEffect`
+    (see "Sequencing & conditional" below).
   - `Gate.MayPayX` — **not a yes/no, a number chooser.** "You may pay {X}. If you do, [then]." The
     decision-maker is prompted for a number 0..(most generic mana they can produce); paying X > 0
     succeeds → `then` runs with the chosen X bound into the context (read via `DynamicAmount.XValue`),

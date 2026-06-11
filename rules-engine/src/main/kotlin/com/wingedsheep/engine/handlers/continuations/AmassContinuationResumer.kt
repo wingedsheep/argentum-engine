@@ -51,42 +51,10 @@ class AmassContinuationResumer(
         // The synchronous Amass paths thread `updatedCollections` (the AmassedArmy pipeline
         // slot) back through the composite executor. The multi-Army resume path runs after
         // the parent has already pushed its continuation, so we inject the slot into that
-        // pending frame directly — same pattern as LibraryAndZoneContinuationResumer.
-        // Both EffectContinuation (composite siblings, e.g. AmassedArmyReferenceScenarioTest)
-        // and ReflexiveTriggerTargetContinuation (`When you do, …` reflexive triggers like
-        // Foray of Orcs) carry an effectContext whose pipeline.storedCollections is read
-        // by the next effect's evaluator.
-        val stateWithArmyExposed = if (result.updatedCollections.isNotEmpty()) {
-            when (val nextFrame = result.state.peekContinuation()) {
-                is EffectContinuation -> {
-                    val (_, stateAfterPop) = result.state.popContinuation()
-                    stateAfterPop.pushContinuation(
-                        nextFrame.copy(
-                            effectContext = nextFrame.effectContext.copy(
-                                pipeline = nextFrame.effectContext.pipeline.copy(
-                                    storedCollections = nextFrame.effectContext.pipeline.storedCollections + result.updatedCollections
-                                )
-                            )
-                        )
-                    )
-                }
-                is ReflexiveTriggerTargetContinuation -> {
-                    val (_, stateAfterPop) = result.state.popContinuation()
-                    stateAfterPop.pushContinuation(
-                        nextFrame.copy(
-                            effectContext = nextFrame.effectContext.copy(
-                                pipeline = nextFrame.effectContext.pipeline.copy(
-                                    storedCollections = nextFrame.effectContext.pipeline.storedCollections + result.updatedCollections
-                                )
-                            )
-                        )
-                    )
-                }
-                else -> result.state
-            }
-        } else {
-            result.state
-        }
+        // pending frame directly via the shared propagation seam (composite siblings,
+        // `When you do, …` reflexive triggers like Foray of Orcs, and DoAction gates all
+        // read pipeline.storedCollections off their frame's effectContext).
+        val stateWithArmyExposed = exposeCollectionsToNextFrame(result.state, result.updatedCollections)
 
         return checkForMore(stateWithArmyExposed, result.events)
     }

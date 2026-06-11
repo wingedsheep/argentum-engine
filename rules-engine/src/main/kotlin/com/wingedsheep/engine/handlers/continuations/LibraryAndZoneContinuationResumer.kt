@@ -485,16 +485,8 @@ class LibraryAndZoneContinuationResumer(
             updatedCollections[continuation.storeRemainder] = remainder
         }
 
-        // Inject updated collections into the next EffectContinuation on the stack (if present)
-        val nextFrame = state.peekContinuation()
-        val newState = if (nextFrame is EffectContinuation) {
-            val (_, stateAfterPop) = state.popContinuation()
-            stateAfterPop.pushContinuation(
-                nextFrame.copy(effectContext = nextFrame.effectContext.copy(pipeline = nextFrame.effectContext.pipeline.copy(storedCollections = updatedCollections)))
-            )
-        } else {
-            state
-        }
+        // Inject updated collections into the consumer frame beneath (if any)
+        val newState = exposeCollectionsToNextFrame(state, updatedCollections)
 
         return checkForMore(newState, emptyList())
     }
@@ -527,15 +519,7 @@ class LibraryAndZoneContinuationResumer(
         updatedCollections[continuation.storeChosenAs] = chosen
         updatedCollections[continuation.storeOtherAs] = other
 
-        val nextFrame = state.peekContinuation()
-        val newState = if (nextFrame is EffectContinuation) {
-            val (_, stateAfterPop) = state.popContinuation()
-            stateAfterPop.pushContinuation(
-                nextFrame.copy(effectContext = nextFrame.effectContext.copy(pipeline = nextFrame.effectContext.pipeline.copy(storedCollections = updatedCollections)))
-            )
-        } else {
-            state
-        }
+        val newState = exposeCollectionsToNextFrame(state, updatedCollections)
 
         return checkForMore(newState, emptyList())
     }
@@ -563,16 +547,8 @@ class LibraryAndZoneContinuationResumer(
         val updatedCollections = continuation.storedCollections.toMutableMap()
         updatedCollections[continuation.storeAs] = selectedTargetIds
 
-        // Inject updated collections into the next EffectContinuation on the stack (if present)
-        val nextFrame = state.peekContinuation()
-        val newState = if (nextFrame is EffectContinuation) {
-            val (_, stateAfterPop) = state.popContinuation()
-            stateAfterPop.pushContinuation(
-                nextFrame.copy(effectContext = nextFrame.effectContext.copy(pipeline = nextFrame.effectContext.pipeline.copy(storedCollections = updatedCollections)))
-            )
-        } else {
-            state
-        }
+        // Inject updated collections into the consumer frame beneath (if any)
+        val newState = exposeCollectionsToNextFrame(state, updatedCollections)
 
         return checkForMore(newState, emptyList())
     }
