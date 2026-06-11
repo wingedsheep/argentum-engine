@@ -1,0 +1,37 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Frodo, Determined Hero"],
+    "battlefield": [
+      {"name": "Loxodon Warhammer"},
+      {"name": "Bonesplitter"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Lightning Bolt"],
+    "battlefield": [
+      {"name": "Oliphaunt", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
+}

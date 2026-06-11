@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Forge Anew"],
+    "battlefield": [
+      {"name": "Oliphaunt", "summoningSickness": false},
+      {"name": "Loxodon Warhammer"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": ["Bonesplitter"],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["PRECOMBAT_MAIN", "BEGIN_COMBAT", "DECLARE_ATTACKERS", "POSTCOMBAT_MAIN", "END"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
+}
