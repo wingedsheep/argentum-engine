@@ -5,11 +5,18 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -400,5 +407,57 @@ class AIPlayerTest : FunSpec({
         val autoPayable = mayPayDecision.copy(id = "d3", autoPaySuggestion = listOf(treasureId))
         val autoPayResponse = responder.respond(state, autoPayable, playerId) as ManaSourcesSelectedResponse
         autoPayResponse.autoPay shouldBe true
+    }
+
+    // Regression: a targeted *activated* ability (e.g. "{T}: deal 2 damage to target creature")
+    // must come back from the AI with its target filled. Previously the strategist only filled
+    // targets for CastSpell, so a chosen ActivateAbility was submitted with no target, rejected by
+    // the engine ("requires a target"), and re-picked forever — an infinite loop.
+    test("AI fills the target for a targeted activated ability instead of looping") {
+        val pinger = card("Test Pinger") {
+            manaCost = "{2}"
+            typeLine = "Creature — Wizard"
+            power = 1
+            toughness = 1
+            activatedAbility {
+                cost = Costs.Tap
+                val t = target("target creature", Targets.Creature)
+                effect = Effects.DealDamage(2, t)
+            }
+        }
+        val bear = card("Test Bear") {
+            manaCost = "{1}{G}"
+            typeLine = "Creature — Bear"
+            power = 2
+            toughness = 2
+        }
+
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(pinger, bear))
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+        val aiId = driver.activePlayer!!
+        val opp = driver.getOpponent(aiId)
+
+        val myPinger = driver.putCreatureOnBattlefield(aiId, "Test Pinger")
+        driver.removeSummoningSickness(myPinger)
+        driver.putCreatureOnBattlefield(opp, "Test Bear")
+        driver.passPriorityUntil(Phase.PRECOMBAT_MAIN)
+
+        val ai = AIPlayer.create(driver.cardRegistry, aiId)
+        val simulator = GameSimulator(driver.cardRegistry)
+        val legalActions = simulator.getLegalActions(driver.state, aiId)
+        val activate = legalActions.find { it.actionType == "ActivateAbility" && it.requiresTargets }
+        activate.shouldNotBeNull()
+        val pass = legalActions.find { it.actionType == "PassPriority" }
+        pass.shouldNotBeNull()
+
+        // Killing the opponent's 2/2 for a single tap clearly beats passing, so the AI picks the
+        // ability — and with the fix it carries a valid creature target.
+        val chosen = ai.chooseFrom(driver.state, listOf(activate, pass)).action
+        (chosen is ActivateAbility).shouldBeTrue()
+        (chosen as ActivateAbility).targets.shouldNotBeEmpty()
+
+        // The decisive anti-loop guarantee: the AI's chosen action is actually legal.
+        driver.submit(chosen).isSuccess shouldBe true
     }
 })

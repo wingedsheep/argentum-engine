@@ -592,16 +592,51 @@ data class GameObjectFilter(
     /** Must be owned by an opponent (for cards in graveyards/exile that don't have controllers) */
     fun ownedByOpponent() = copy(controllerPredicate = ControllerPredicate.OwnedByOpponent)
 
+    /**
+     * Must match [predicate] on the controller/owner axis. The entry point for *composed*
+     * predicates ([ControllerPredicate.And] / [ControllerPredicate.Or] / [ControllerPredicate.Not])
+     * — e.g. "permanents you own but don't control":
+     * `withControllerPredicate(ControllerPredicate.And(listOf(OwnedByYou, ControlledByOpponent)))`.
+     * For the plain single predicates, prefer the named builders ([youControl],
+     * [opponentControls], [ownedByYou], …).
+     */
+    fun withControllerPredicate(predicate: ControllerPredicate) = copy(controllerPredicate = predicate)
+
     // =============================================================================
     // Composition
     // =============================================================================
 
-    /** Combine with another filter using AND logic */
-    infix fun and(other: GameObjectFilter) = copy(
-        cardPredicates = cardPredicates + other.cardPredicates,
-        statePredicates = statePredicates + other.statePredicates,
-        controllerPredicate = other.controllerPredicate ?: controllerPredicate
-    )
+    /**
+     * Combine with another filter using AND logic.
+     *
+     * Both sides may carry the *same* controller predicate (or only one side any), but two
+     * *different* controller predicates are rejected: silently keeping one of them was the
+     * old fail-open behavior, and there is no single right merge (AND-ing `youControl` with
+     * `opponentControls` is unsatisfiable, while "owned by you AND controlled by an
+     * opponent" is a real MTG concept). State the intent explicitly with a composed
+     * [ControllerPredicate.And] via [withControllerPredicate] instead.
+     */
+    infix fun and(other: GameObjectFilter): GameObjectFilter {
+        require(
+            controllerPredicate == null ||
+                other.controllerPredicate == null ||
+                controllerPredicate == other.controllerPredicate
+        ) {
+            "Cannot AND two filters with different controller predicates " +
+                "('${controllerPredicate?.description}' vs '${other.controllerPredicate?.description}'). " +
+                "Compose them explicitly with withControllerPredicate(ControllerPredicate.And(...))."
+        }
+        require(other.anyOf.isEmpty()) {
+            "Cannot AND a filter whose right-hand side carries an anyOf union " +
+                "('${other.description}') — the union branches would be silently dropped. " +
+                "Restructure so the union is the left-hand side, or distribute the AND over the branches."
+        }
+        return copy(
+            cardPredicates = cardPredicates + other.cardPredicates,
+            statePredicates = statePredicates + other.statePredicates,
+            controllerPredicate = controllerPredicate ?: other.controllerPredicate
+        )
+    }
 
     /**
      * Combine with another filter using OR logic.

@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.effects.WardCounterEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 
 /**
  * Resolves triggered abilities for entities by checking the AbilityRegistry,
@@ -150,12 +151,13 @@ class TriggerAbilityResolver(
                 if (!matchesAll) continue
 
                 // Check controller predicate relative to the source permanent's controller
-                val controllerMatch = when (filter.controllerPredicate) {
-                    is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
-                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                    null -> true
-                    else -> true
-                }
+                val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
+                    when (leaf) {
+                        is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
+                        is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
+                        else -> true
+                    }
+                } ?: true
                 if (controllerMatch) {
                     result.add(ability.ability)
                 }
@@ -274,12 +276,13 @@ class TriggerAbilityResolver(
                 if (!matchesAll) continue
 
                 // Check controller predicate relative to the source permanent's controller
-                val controllerMatch = when (filter.controllerPredicate) {
-                    is ControllerPredicate.ControlledByYou -> targetControllerId == entry.sourceControllerId
-                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != entry.sourceControllerId
-                    null -> true
-                    else -> true
-                }
+                val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
+                    when (leaf) {
+                        is ControllerPredicate.ControlledByYou -> targetControllerId == entry.sourceControllerId
+                        is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != entry.sourceControllerId
+                        else -> true
+                    }
+                } ?: true
                 if (controllerMatch) add(entry.grant.ability)
             }
         }
@@ -409,12 +412,13 @@ class TriggerAbilityResolver(
                 if (!matchesState) continue
 
                 // Check controller predicate
-                val controllerMatch = when (filter.controllerPredicate) {
-                    is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
-                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                    null -> true
-                    else -> true
-                }
+                val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
+                    when (leaf) {
+                        is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
+                        is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
+                        else -> true
+                    }
+                } ?: true
                 if (!controllerMatch) continue
 
                 // Check excludeSelf

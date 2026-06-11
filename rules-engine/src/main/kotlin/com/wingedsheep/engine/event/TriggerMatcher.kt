@@ -50,6 +50,8 @@ import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -667,23 +669,18 @@ class TriggerMatcher(
             // YOUR graveyard from the battlefield" cares about ownership, since a permanent
             // always goes to its owner's graveyard regardless of who last controlled it
             // (CR 400.3, e.g. Soulcatchers' Aerie).
-            if (trigger.filter.controllerPredicate != null) {
+            trigger.filter.controllerPredicate?.let { pred ->
                 val effectiveController = event.lastKnownController ?: event.ownerId
-                when (trigger.filter.controllerPredicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
-                        if (effectiveController != controllerId) return false
+                val controllerMatches = pred.evaluateWith { leaf ->
+                    when (leaf) {
+                        is ControllerPredicate.ControlledByYou -> effectiveController == controllerId
+                        is ControllerPredicate.ControlledByOpponent -> effectiveController != controllerId
+                        is ControllerPredicate.OwnedByYou -> event.ownerId == controllerId
+                        is ControllerPredicate.OwnedByOpponent -> event.ownerId != controllerId
+                        else -> true
                     }
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
-                        if (effectiveController == controllerId) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.OwnedByYou -> {
-                        if (event.ownerId != controllerId) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.OwnedByOpponent -> {
-                        if (event.ownerId == controllerId) return false
-                    }
-                    else -> {}
                 }
+                if (!controllerMatches) return false
             }
         }
 
@@ -950,19 +947,18 @@ class TriggerMatcher(
             // Check controller predicate. Spells on the stack aren't in projected state
             // (only battlefield permanents are), so fall back to the spell's own controller
             // component for spell-target events (Surrak, Elusive Hunter).
-            if (trigger.targetFilter.controllerPredicate != null) {
+            trigger.targetFilter.controllerPredicate?.let { pred ->
                 val targetController = projected.getController(event.targetEntityId)
                     ?: targetContainer.get<SpellOnStackComponent>()?.casterId
                     ?: return false
-                when (trigger.targetFilter.controllerPredicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
-                        if (targetController != controllerId) return false
+                val controllerMatches = pred.evaluateWith { leaf ->
+                    when (leaf) {
+                        is ControllerPredicate.ControlledByYou -> targetController == controllerId
+                        is ControllerPredicate.ControlledByOpponent -> targetController != controllerId
+                        else -> true
                     }
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
-                        if (targetController == controllerId) return false
-                    }
-                    else -> {}
                 }
+                if (!controllerMatches) return false
             }
         }
 

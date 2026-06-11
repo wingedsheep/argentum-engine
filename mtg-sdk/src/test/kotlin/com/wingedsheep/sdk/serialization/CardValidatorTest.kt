@@ -11,15 +11,19 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -338,6 +342,105 @@ class CardValidatorTest : DescribeSpec({
             val errors = CardValidator.validate(card)
             errors shouldHaveSize 1
             errors[0].shouldBeInstanceOf<CardValidationError.InvalidTargetIndex>().index shouldBe 9
+        }
+    }
+
+    describe("UninferableSuccessCriterion") {
+
+        it("flags a Gate.DoAction whose Auto criterion can't infer from the action shape") {
+            val card = CardDefinition(
+                name = "Punisher",
+                manaCost = ManaCost.parse("{R}"),
+                typeLine = TypeLine.instant(),
+                script = CardScript(
+                    spellEffect = IfYouDoEffect(
+                        // Deal-damage has no zone-move shape — Auto used to fail open here.
+                        action = DealDamageEffect(DynamicAmount.Fixed(2), EffectTarget.Controller),
+                        ifYouDo = DrawCardsEffect(1),
+                    ),
+                ),
+            )
+            val errors = CardValidator.validate(card)
+            errors shouldHaveSize 1
+            errors[0].shouldBeInstanceOf<CardValidationError.UninferableSuccessCriterion>()
+                .message shouldContain "explicit criterion"
+        }
+
+        it("finds the gate in nested containers (mode inside a triggered ability)") {
+            val card = CardDefinition(
+                name = "Nested Punisher",
+                manaCost = ManaCost.parse("{1}{R}"),
+                typeLine = TypeLine.creature(setOf(Subtype("Goblin"))),
+                creatureStats = CreatureStats(1, 1),
+                script = CardScript(
+                    triggeredAbilities = listOf(
+                        TriggeredAbility.create(
+                            trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                            effect = ModalEffect.chooseOne(
+                                Mode.noTarget(
+                                    IfYouDoEffect(
+                                        action = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.Controller),
+                                        ifYouDo = DrawCardsEffect(1),
+                                    )
+                                ),
+                                Mode.noTarget(DrawCardsEffect(1)),
+                            ),
+                        )
+                    ),
+                ),
+            )
+            val errors = CardValidator.validate(card)
+            errors shouldHaveSize 1
+            errors[0].shouldBeInstanceOf<CardValidationError.UninferableSuccessCriterion>()
+        }
+
+        it("accepts Auto on a terminal collection move to a zone") {
+            val card = CardDefinition(
+                name = "Discard Payoff",
+                manaCost = ManaCost.parse("{B}"),
+                typeLine = TypeLine.instant(),
+                script = CardScript(
+                    spellEffect = IfYouDoEffect(
+                        action = MoveCollectionEffect(
+                            from = "discarded",
+                            destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                        ),
+                        ifYouDo = DrawCardsEffect(1),
+                    ),
+                ),
+            )
+            CardValidator.validate(card).shouldBeEmpty()
+        }
+
+        it("accepts Auto on a terminal single move of Self") {
+            val card = CardDefinition(
+                name = "Self Exiler",
+                manaCost = ManaCost.parse("{U}"),
+                typeLine = TypeLine.instant(),
+                script = CardScript(
+                    spellEffect = IfYouDoEffect(
+                        action = MoveToZoneEffect(EffectTarget.Self, Zone.EXILE),
+                        ifYouDo = DrawCardsEffect(1),
+                    ),
+                ),
+            )
+            CardValidator.validate(card).shouldBeEmpty()
+        }
+
+        it("accepts an uninferable action shape when the criterion is explicit") {
+            val card = CardDefinition(
+                name = "Explicit Punisher",
+                manaCost = ManaCost.parse("{R}"),
+                typeLine = TypeLine.instant(),
+                script = CardScript(
+                    spellEffect = IfYouDoEffect(
+                        action = DealDamageEffect(DynamicAmount.Fixed(2), EffectTarget.Controller),
+                        ifYouDo = DrawCardsEffect(1),
+                        successCriterion = SuccessCriterion.Always,
+                    ),
+                ),
+            )
+            CardValidator.validate(card).shouldBeEmpty()
         }
     }
 

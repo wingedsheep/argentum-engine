@@ -50,29 +50,6 @@ data class DrawCardsEffect(
 
 
 /**
- * Draw a card, reveal it, and discard it unless it matches [filter].
- *
- * Models "Draw a card and reveal it. If it isn't a [type], discard it." (Sindbad).
- * The drawn card is revealed to all players (kept or not); a non-matching card is
- * discarded, not merely moved, so discard triggers fire.
- */
-@SerialName("DrawRevealDiscardUnless")
-@Serializable
-data class DrawRevealDiscardUnlessEffect(
-    val filter: GameObjectFilter,
-    val target: EffectTarget = EffectTarget.Controller
-) : Effect {
-    override val description: String =
-        "Draw a card and reveal it. If it isn't ${filter.description}, discard it"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-
-/**
  * Look at target player's hand.
  * Used for Ingenious Thief and similar "peek" effects.
  */

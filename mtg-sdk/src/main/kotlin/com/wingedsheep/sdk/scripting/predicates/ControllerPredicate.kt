@@ -95,4 +95,46 @@ sealed interface ControllerPredicate {
     data object OwnedByOpponent : ControllerPredicate {
         override val description: String = "an opponent owns"
     }
+
+    // =============================================================================
+    // Composite / Logical Combinators
+    // =============================================================================
+    // Mirror StatePredicate's And/Or/Not. These let one filter express heterogeneous
+    // controller/owner relationships ("you own but don't control", "you or the targeted
+    // player controls") without falling back to the recursive anyOf union.
+
+    @SerialName("ControllerAnd")
+    @Serializable
+    data class And(val predicates: List<ControllerPredicate>) : ControllerPredicate {
+        override val description: String = predicates.joinToString(" and ") { it.description }
+    }
+
+    @SerialName("ControllerOr")
+    @Serializable
+    data class Or(val predicates: List<ControllerPredicate>) : ControllerPredicate {
+        override val description: String = predicates.joinToString(" or ") { it.description }
+    }
+
+    @SerialName("ControllerNot")
+    @Serializable
+    data class Not(val predicate: ControllerPredicate) : ControllerPredicate {
+        override val description: String = "not ${predicate.description}"
+    }
+}
+
+/**
+ * Structural fold for evaluating a [ControllerPredicate] tree against site-specific leaf
+ * semantics. The combinators ([ControllerPredicate.And] / [ControllerPredicate.Or] /
+ * [ControllerPredicate.Not]) recurse here; every leaf predicate is delegated to [leaf].
+ *
+ * The engine evaluates controller predicates in several contexts with different controller
+ * notions (live projected state, zone-change last-known-controller snapshots, grant-provider
+ * fast paths). Each site supplies only its own leaf semantics and shares the combinator
+ * logic through this fold, so a composed predicate behaves consistently everywhere.
+ */
+fun ControllerPredicate.evaluateWith(leaf: (ControllerPredicate) -> Boolean): Boolean = when (this) {
+    is ControllerPredicate.And -> predicates.all { it.evaluateWith(leaf) }
+    is ControllerPredicate.Or -> predicates.any { it.evaluateWith(leaf) }
+    is ControllerPredicate.Not -> !predicate.evaluateWith(leaf)
+    else -> leaf(this)
 }

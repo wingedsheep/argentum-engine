@@ -2785,6 +2785,89 @@
     ]
 }
 
+// Serendib Djinn
+{
+    "name": "Serendib Djinn",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Djinn",
+    "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice a land. If you sacrifice an Island this way, this creature deals 3 damage to you.\nWhen you control no lands, sacrifice this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "land",
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SacrificedPermanentHadSubtype",
+                                    "subtype": "Island"
+                                }
+                            },
+                            "then": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Controller",
+                                "damageSource": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, sacrifice a land. If you sacrifice an Island this way, this creature deals 3 damage to you."
+            }
+        ],
+        "stateTriggeredAbilities": [
+            {
+                "id": "ability_2",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land",
+                    "negate": true
+                },
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "descriptionOverride": "When you control no lands, sacrifice this creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0458b733-d689-4cb5-8970-3b675c67fc4d.jpg?1562895874"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Serendib Efreet
 {
     "name": "Serendib Efreet",
@@ -2845,8 +2928,60 @@
                 "id": "ability_1",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "DrawRevealDiscardUnless",
-                    "filter": "land"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "toDraw"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "toDraw",
+                            "filter": {
+                                "type": "InZone",
+                                "zone": "Hand"
+                            },
+                            "storeMatching": "drawn"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "drawn",
+                            "revealToSelf": false
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "drawn",
+                            "filter": {
+                                "type": "MatchesFilter",
+                                "filter": "land"
+                            },
+                            "storeMatching": "keptLand",
+                            "storeNonMatching": "notLand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "notLand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
                 }
             }
         ]

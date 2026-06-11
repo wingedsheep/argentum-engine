@@ -58,6 +58,7 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 
 /**
  * Result of a zone change redirect check.
@@ -527,23 +528,25 @@ object ZoneMovementUtils {
 
         // Check controller/owner predicate
         val controllerPredicate = filter.controllerPredicate ?: return true
-        return when (controllerPredicate) {
-            ControllerPredicate.OwnedByOpponent -> {
-                val ownerId = cardComponent.ownerId
-                ownerId != null && ownerId != sourceControllerId
+        return controllerPredicate.evaluateWith { leaf ->
+            when (leaf) {
+                ControllerPredicate.OwnedByOpponent -> {
+                    val ownerId = cardComponent.ownerId
+                    ownerId != null && ownerId != sourceControllerId
+                }
+                ControllerPredicate.OwnedByYou -> {
+                    cardComponent.ownerId == sourceControllerId
+                }
+                ControllerPredicate.ControlledByYou -> {
+                    val controllerId = container.get<ControllerComponent>()?.playerId
+                    controllerId == sourceControllerId
+                }
+                ControllerPredicate.ControlledByOpponent -> {
+                    val controllerId = container.get<ControllerComponent>()?.playerId
+                    controllerId != null && controllerId != sourceControllerId
+                }
+                else -> true
             }
-            ControllerPredicate.OwnedByYou -> {
-                cardComponent.ownerId == sourceControllerId
-            }
-            ControllerPredicate.ControlledByYou -> {
-                val controllerId = container.get<ControllerComponent>()?.playerId
-                controllerId == sourceControllerId
-            }
-            ControllerPredicate.ControlledByOpponent -> {
-                val controllerId = container.get<ControllerComponent>()?.playerId
-                controllerId != null && controllerId != sourceControllerId
-            }
-            else -> true
         }
     }
 

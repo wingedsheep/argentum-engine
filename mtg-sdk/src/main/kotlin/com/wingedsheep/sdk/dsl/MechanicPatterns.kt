@@ -16,8 +16,12 @@ import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
+import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
@@ -30,7 +34,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
- * Named MTG keyword-mechanic recipes (Blight, Bolster, Forage, Gift, Incubate).
+ * Named MTG keyword-mechanic recipes (Blight, Bolster, Explore, Forage, Gift, Incubate).
  *
  * Reached through the [Patterns] index — `Patterns.Mechanic.blight(...)`. Each composes existing
  * atomic effects into the printed keyword behaviour; they live here (rather than a zone-based
@@ -112,6 +116,74 @@ object MechanicPatterns {
                 useTargetingUI = true
             ),
             AddCountersToCollectionEffect("bolstered", Counters.PLUS_ONE_PLUS_ONE, amount)
+        )
+    )
+
+    /**
+     * Explore (CR 701.44) — the [explorer] permanent's controller reveals the top card of
+     * their library. A land card goes to their hand; otherwise the explorer gets a +1/+1
+     * counter and the controller may put the revealed card into their graveyard.
+     *
+     * Pure pipeline composition — Gather (revealed) → partition by land →
+     * move the land to hand → gate the "otherwise" branch on *no land revealed*:
+     *
+     * - The gate is `Not(CollectionContainsMatch("explored", Land))`, not "a nonland was
+     *   revealed": CR 701.44a's "otherwise" also covers an empty library, where nothing is
+     *   revealed but the explorer still gets its counter (and the may-discard is simply
+     *   moot — selecting from the empty collection is a no-op).
+     * - The revealed nonland card never leaves the library top unless the controller puts
+     *   it into the graveyard, so "leave it on top" needs no move step.
+     * - Counter first, then the graveyard choice, matching the rule's stated order.
+     *
+     * @param explorer The permanent doing the exploring. Defaults to [EffectTarget.Self]
+     *   ("this creature explores" on its own trigger); pass a different target for
+     *   "target creature you control explores" (Map tokens).
+     */
+    fun explore(explorer: EffectTarget = EffectTarget.Self): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
+                storeAs = "explored",
+                revealed = true
+            ),
+            FilterCollectionEffect(
+                from = "explored",
+                filter = CollectionFilter.MatchesFilter(GameObjectFilter.Land),
+                storeMatching = "exploredLand",
+                storeNonMatching = "exploredNonland"
+            ),
+            MoveCollectionEffect(
+                from = "exploredLand",
+                destination = CardDestination.ToZone(Zone.HAND)
+            ),
+            GatedEffect(
+                gate = Gate.WhenCondition(
+                    NotCondition(CollectionContainsMatch("explored", GameObjectFilter.Land))
+                ),
+                then = CompositeEffect(
+                    listOf(
+                        AddCountersEffect(
+                            counterType = Counters.PLUS_ONE_PLUS_ONE,
+                            count = 1,
+                            target = explorer
+                        ),
+                        SelectFromCollectionEffect(
+                            from = "exploredNonland",
+                            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+                            storeSelected = "exploredToGraveyard",
+                            prompt = "Explore — you may put the revealed card into your graveyard",
+                            selectedLabel = "Put into graveyard",
+                            remainderLabel = "Leave on top"
+                        ),
+                        MoveCollectionEffect(
+                            from = "exploredToGraveyard",
+                            destination = CardDestination.ToZone(Zone.GRAVEYARD)
+                        )
+                    )
+                ),
+                descriptionOverride = "Otherwise, put a +1/+1 counter on ${explorer.description}, " +
+                    "then you may put the revealed card into your graveyard"
+            )
         )
     )
 

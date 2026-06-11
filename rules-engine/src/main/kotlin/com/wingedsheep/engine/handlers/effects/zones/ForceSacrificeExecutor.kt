@@ -123,9 +123,18 @@ class ForceSacrificeExecutor(
         count: Int,
         priorEvents: List<GameEvent>
     ): EffectResult {
+        // Describe the actual filter ("a land", "a creature", "an artifact"...) rather than
+        // hardcoding "creature" — Serendib Djinn / Goblin Firebug sacrifice lands, edicts
+        // sacrifice creatures, etc.
+        val noun = filter.description
         val prompt = buildString {
             append("Choose ")
-            if (minSelections == 1) append("a creature") else append("$minSelections creatures")
+            if (minSelections == 1) {
+                append(if (noun.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an " else "a ")
+                append(noun)
+            } else {
+                append("$minSelections ${noun}s")
+            }
             append(" to sacrifice")
         }
 

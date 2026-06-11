@@ -307,13 +307,54 @@ sealed interface SuccessCriterion {
      * for a terminal zone move — either a pipeline [MoveCollectionEffect] or a
      * single-target `MoveToZoneEffect` whose target is the source itself; if found, the
      * destination zone is snapshot pre-execution and counted as "succeeded" iff it grew
-     * by at least one entry. Actions whose outcome isn't a zone-size delta (deal damage,
-     * gain/lose life, …) fall through to [Always] (fail-open), which is the correct
-     * default for them. Use an explicit criterion when that inference is wrong.
+     * by at least one entry.
+     *
+     * Auto is only legal on actions whose shape it can actually infer ([canInfer]) —
+     * card-load validation ([com.wingedsheep.sdk.serialization.CardValidator]) rejects
+     * everything else. An action whose outcome isn't a zone-size delta (deal damage,
+     * gain/lose life, …) must state its criterion explicitly ([Always] when performing
+     * the action can't fail, [CollectionNonEmpty] to gate on a pipeline result) instead
+     * of silently inheriting a fail-open "it happened".
      */
     @SerialName("SuccessCriterion.Auto")
     @Serializable
-    data object Auto : SuccessCriterion
+    data object Auto : SuccessCriterion {
+
+        /**
+         * Whether [Auto] can infer "did it happen" for [action]. This is the single
+         * source of truth for the shape probe — the engine's gated-action executor
+         * snapshots exactly the shapes accepted here, and card-load validation rejects
+         * an [Auto] criterion on any action this returns false for.
+         */
+        fun canInfer(action: Effect): Boolean {
+            terminalCollectionMove(action)?.let { return it.destination is CardDestination.ToZone }
+            terminalSingleMove(action)?.let { return it.target is EffectTarget.Self }
+            return false
+        }
+
+        /**
+         * The last [MoveCollectionEffect] in execution order, or null when the shape
+         * isn't recognized. Checked before [terminalSingleMove] so a pipeline ending in
+         * a collection move keeps its semantics.
+         */
+        fun terminalCollectionMove(action: Effect): MoveCollectionEffect? = when (action) {
+            is MoveCollectionEffect -> action
+            is CompositeEffect -> action.effects.asReversed().firstNotNullOfOrNull { terminalCollectionMove(it) }
+            else -> null
+        }
+
+        /**
+         * The last single-target [MoveToZoneEffect] in execution order, or null when the
+         * shape isn't recognized. Only a [EffectTarget.Self] target is inferable — other
+         * targets can't be resolved to a destination zone owner without full target
+         * resolution.
+         */
+        fun terminalSingleMove(action: Effect): MoveToZoneEffect? = when (action) {
+            is MoveToZoneEffect -> action
+            is CompositeEffect -> action.effects.asReversed().firstNotNullOfOrNull { terminalSingleMove(it) }
+            else -> null
+        }
+    }
 
     /**
      * Action succeeded iff `pipeline.storedCollections[name].size >= min` after the

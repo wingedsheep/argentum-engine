@@ -182,8 +182,17 @@ class Strategist(
         playerId: EntityId
     ): com.wingedsheep.engine.core.GameAction {
         if (!action.requiresTargets) return action.action
-        val castSpell = action.action as? CastSpell ?: return action.action
-        if (castSpell.targets.isNotEmpty()) return action.action
+        // Only CastSpell and ActivateAbility carry a `targets` list the AI fills in. A targeted
+        // activated ability (e.g. "{4}{R}, Sacrifice: deal 3 damage to target") that isn't handled
+        // here is submitted with no target, rejected by the engine ("requires a target"), and the
+        // AI re-picks it forever — an infinite loop.
+        val baseAction = action.action
+        val existingTargets = when (baseAction) {
+            is CastSpell -> baseAction.targets
+            is ActivateAbility -> baseAction.targets
+            else -> return action.action
+        }
+        if (existingTargets.isNotEmpty()) return action.action
 
         val projected = state.projectedState
 
@@ -243,7 +252,11 @@ class Strategist(
             }
         }
 
-        return castSpell.copy(targets = chosenTargets)
+        return when (baseAction) {
+            is CastSpell -> baseAction.copy(targets = chosenTargets)
+            is ActivateAbility -> baseAction.copy(targets = chosenTargets)
+            else -> action.action
+        }
     }
 
     /**

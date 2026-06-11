@@ -410,18 +410,17 @@ class GatedEffectExecutor(
     /**
      * Capture the data the [SuccessCriterion] needs to evaluate the post-action delta.
      *
-     * For [SuccessCriterion.Auto], the probe recognizes two zone-move shapes and records the
-     * destination zone's pre-execution size:
+     * For [SuccessCriterion.Auto], the shape probe is [SuccessCriterion.Auto.canInfer]'s
+     * walkers — the SDK owns them so card-load validation and this snapshot recognize
+     * exactly the same shapes — and the destination zone's pre-execution size is recorded:
      * - a terminal pipeline [MoveCollectionEffect] (multi-object moves), and
      * - a terminal single-target [MoveToZoneEffect] whose target is [EffectTarget.Self]
      *   (e.g. "exile this card from your graveyard. If you do, …" — Council's Deliberation).
      *
      * The collection move is checked first so a pipeline that ends in one keeps its existing
-     * semantics. Single-target moves with a non-Self target aren't resolvable here without full
-     * target resolution, so they (and genuinely non-move actions such as deal-damage / gain-life)
-     * yield an empty snapshot and fall through to the criterion's intrinsic evaluation — for
-     * [SuccessCriterion.Auto] that means [evaluateAuto]'s fail-open default, which is correct for
-     * actions whose "did it happen" isn't a zone delta.
+     * semantics. Shapes the probe rejects are a card-load validation error, so an empty
+     * snapshot here only happens for runtime-unresolvable pieces (a destination player that
+     * doesn't resolve), where [evaluateAuto] treats the action as performed.
      */
     private fun captureSnapshot(
         state: GameState,
@@ -431,16 +430,16 @@ class GatedEffectExecutor(
     ): GatedActionSnapshot {
         if (criterion !is SuccessCriterion.Auto) return GatedActionSnapshot()
 
-        findTerminalMove(action)?.let { move ->
+        SuccessCriterion.Auto.terminalCollectionMove(action)?.let { move ->
             val destination = move.destination as? CardDestination.ToZone ?: return GatedActionSnapshot()
             val ownerId = resolvePlayer(destination.player, context) ?: return GatedActionSnapshot()
             return zoneSnapshot(state, ownerId, destination.zone)
         }
 
-        findTerminalSingleMove(action)?.let { move ->
+        SuccessCriterion.Auto.terminalSingleMove(action)?.let { move ->
             // Only the Self target resolves to a concrete moved entity here; the destination
             // zone is owned by that entity's owner (e.g. self-exile from a graveyard lands in
-            // that card's owner's exile). Other targets fall through to fail-open as before.
+            // that card's owner's exile).
             if (move.target !is EffectTarget.Self) return GatedActionSnapshot()
             val movedId = context.sourceId ?: return GatedActionSnapshot()
             val ownerId = state.getEntity(movedId)?.get<OwnerComponent>()?.playerId ?: return GatedActionSnapshot()
@@ -456,26 +455,6 @@ class GatedEffectExecutor(
             destinationZoneType = zone,
             destinationZonePreSize = state.zones[ZoneKey(ownerId, zone)]?.size ?: 0
         )
-
-    /**
-     * Walk the effect tree for the last [MoveCollectionEffect] in execution order.
-     * Returns null for shapes the auto-probe doesn't recognize.
-     */
-    private fun findTerminalMove(effect: Effect): MoveCollectionEffect? = when (effect) {
-        is MoveCollectionEffect -> effect
-        is CompositeEffect -> effect.effects.asReversed().firstNotNullOfOrNull { findTerminalMove(it) }
-        else -> null
-    }
-
-    /**
-     * Walk the effect tree for the last single-target [MoveToZoneEffect] in execution order.
-     * Returns null for shapes the auto-probe doesn't recognize.
-     */
-    private fun findTerminalSingleMove(effect: Effect): MoveToZoneEffect? = when (effect) {
-        is MoveToZoneEffect -> effect
-        is CompositeEffect -> effect.effects.asReversed().firstNotNullOfOrNull { findTerminalSingleMove(it) }
-        else -> null
-    }
 
     private fun resolvePlayer(player: Player, context: EffectContext): EntityId? = when (player) {
         is Player.You -> context.controllerId
@@ -531,11 +510,10 @@ class GatedEffectExecutor(
             val owner = snapshot.destinationZoneOwner
             val zone = snapshot.destinationZoneType
             if (owner == null || zone == null) {
-                // No zone-move probe was capturable. This is reached only for non-zone-move actions
-                // (deal damage, gain/lose life, draw, …) whose "did it happen" isn't a zone-size
-                // delta — for those, treating the action as performed (fail open) is the correct
-                // default. Zone-move shapes (collection moves and self-target single moves) are
-                // probed in captureSnapshot and never land here.
+                // No zone-move probe was capturable. Card-load validation rejects Auto on action
+                // shapes the probe doesn't recognize, so this is reached only when a recognized
+                // shape couldn't be resolved at runtime (destination player didn't resolve, source
+                // already gone) — treat the action as performed rather than failing mid-resolution.
                 return true
             }
             val postSize = state.zones[ZoneKey(owner, zone)]?.size ?: 0

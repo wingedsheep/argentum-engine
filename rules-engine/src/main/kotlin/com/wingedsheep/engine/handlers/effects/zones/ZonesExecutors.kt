@@ -17,7 +17,6 @@ class ZonesExecutors(
         ExileAndGrantOwnerPlayPermissionExecutor(),
         WarpExileExecutor(),
         ForceExileMultiZoneExecutor(),
-        ForceReturnOwnPermanentExecutor(),
         ForceSacrificeExecutor(),
         SacrificeExecutor(),
         SacrificeSelfExecutor(),

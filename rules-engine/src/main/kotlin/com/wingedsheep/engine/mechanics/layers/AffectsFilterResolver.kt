@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 
 /**
@@ -272,14 +273,17 @@ internal class AffectsFilterResolver {
             val projected = projectedValues[entityId]
 
             // Check controller predicate
-            if (baseFilter.controllerPredicate != null) {
+            baseFilter.controllerPredicate?.let { pred ->
                 val entityController = projectedController(state, entityId, projectedValues)
-                when (baseFilter.controllerPredicate) {
-                    ControllerPredicate.ControlledByYou -> if (entityController != controller) return@filter false
-                    ControllerPredicate.ControlledByOpponent -> if (entityController == controller) return@filter false
-                    ControllerPredicate.ControlledByAny -> { /* matches all */ }
-                    else -> { /* other predicates not applicable in static ability context */ }
+                val controllerMatches = pred.evaluateWith { leaf ->
+                    when (leaf) {
+                        ControllerPredicate.ControlledByYou -> entityController == controller
+                        ControllerPredicate.ControlledByOpponent -> entityController != controller
+                        ControllerPredicate.ControlledByAny -> true
+                        else -> true // other predicates not applicable in static ability context
+                    }
                 }
+                if (!controllerMatches) return@filter false
             }
 
             // Check card predicates using projected values when available

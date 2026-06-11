@@ -12196,8 +12196,36 @@
                         "type": "Composite",
                         "effects": [
                             {
-                                "type": "ForceReturnOwnPermanent",
-                                "excludeSource": true
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature",
+                                    "player": "You",
+                                    "excludeSelf": true
+                                },
+                                "storeAs": "bounceCandidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "bounceCandidates",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "bounced",
+                                "prompt": "Return another creature you control to its owner's hand",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "bounced",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
                             },
                             {
                                 "type": "AddCounters",

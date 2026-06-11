@@ -34,7 +34,7 @@ internal fun BridgeBuilder.zoneMovement() {
     composed("PutTopOfLibraryInHand", "look-top pipeline -> MoveCollection (library->hand)", composes = listOf("MoveCollection", "MoveToZone"))
     composed("PutTopOfLibraryInGraveyard", "look-top pipeline -> MoveCollection (library->graveyard)", composes = listOf("MoveCollection", "MoveToZone"))
 
-    composed("PutPermanentIntoItsOwnersHand", "bounce: MoveToZone/ForceReturnOwnPermanent", composes = listOf("MoveToZone"))
+    composed("PutPermanentIntoItsOwnersHand", "bounce: MoveToZone / Gather-Select-MoveCollection pipeline", composes = listOf("MoveToZone"))
     composed("PutEachPermanentIntoItsOwnersHand", "EachPlayerReturnsPermanentToHand", composes = listOf("MoveCollection", "MoveToZone"))
     composed("PutPermanentOnTopOfOwnersLibrary", "PutOnLibraryPositionOfChoice", composes = listOf("MoveToZone"))
 

@@ -48,6 +48,5 @@ class DrawingExecutors(
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
         ReplaceNextDrawWithExecutor(),
         EachPlayerDrawsForDamageDealtToSourceExecutor(drawCardsExecutor),
-        DrawRevealDiscardUnlessExecutor(cardRegistry),
     )
 }

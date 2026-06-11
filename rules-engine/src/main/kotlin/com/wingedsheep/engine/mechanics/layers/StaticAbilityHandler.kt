@@ -910,12 +910,16 @@ class StaticAbilityHandler(
             return AffectsFilter.WithSubtype(subtypePredicate.subtype.value)
         }
 
-        // Handle controller-only filters (no subtype or other complex predicates)
+        // Handle controller-only filters (no subtype or other complex predicates).
+        // Only predicates this fast path understands map to the simple filters; anything
+        // else (composed And/Or/Not, referenced-player, …) must keep full predicate
+        // evaluation via Generic rather than silently widening to AllCreatures.
         if (subtypePredicate == null && !hasAnyOfSubtypes && baseFilter.statePredicates.isEmpty()) {
             return when (controllerPredicate) {
                 ControllerPredicate.ControlledByYou -> AffectsFilter.AllCreaturesYouControl
                 ControllerPredicate.ControlledByOpponent -> AffectsFilter.AllCreaturesOpponentsControl
-                else -> AffectsFilter.AllCreatures
+                null, ControllerPredicate.ControlledByAny -> AffectsFilter.AllCreatures
+                else -> AffectsFilter.Generic(filter)
             }
         }
 

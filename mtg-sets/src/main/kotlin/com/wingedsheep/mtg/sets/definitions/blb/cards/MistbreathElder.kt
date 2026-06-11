@@ -8,10 +8,17 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Mistbreath Elder {G}
@@ -34,9 +41,30 @@ val MistbreathElder = card("Mistbreath Elder") {
         trigger = Triggers.YourUpkeep
         effect = ConditionalEffect(
             condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.youControl(), excludeSelf = true),
-            // If you control another creature: bounce it, then add +1/+1 counter to self
-            effect = Effects.ForceReturnOwnPermanent(GameObjectFilter.Creature, excludeSource = true)
-                .then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)),
+            // If you control another creature: bounce one of them (Gather → Select → Move;
+            // the battlefield→hand move routes to the owner's hand), then counter self.
+            effect = Effects.Composite(
+                GatherCardsEffect(
+                    source = CardSource.BattlefieldMatching(
+                        filter = GameObjectFilter.Creature,
+                        player = Player.You,
+                        excludeSelf = true
+                    ),
+                    storeAs = "bounceCandidates"
+                ),
+                SelectFromCollectionEffect(
+                    from = "bounceCandidates",
+                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                    storeSelected = "bounced",
+                    prompt = "Return another creature you control to its owner's hand",
+                    useTargetingUI = true
+                ),
+                MoveCollectionEffect(
+                    from = "bounced",
+                    destination = CardDestination.ToZone(Zone.HAND)
+                ),
+                Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
+            ),
             // Otherwise: you may return this creature to hand
             elseEffect = MayEffect(Effects.ReturnToHand(EffectTarget.Self))
         )

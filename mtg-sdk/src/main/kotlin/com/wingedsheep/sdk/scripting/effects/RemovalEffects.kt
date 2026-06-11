@@ -203,33 +203,6 @@ data class ForceSacrificeEffect(
 }
 
 /**
- * Force return own permanent to hand: the controller selects a permanent they control
- * matching the filter and returns it to its owner's hand.
- *
- * Used for abilities like "Return another creature you control to its owner's hand."
- * When [excludeSource] is true, the source permanent is excluded from selection.
- *
- * If no valid permanents match the filter, the effect does nothing.
- */
-@SerialName("ForceReturnOwnPermanent")
-@Serializable
-data class ForceReturnOwnPermanentEffect(
-    val filter: GameObjectFilter = GameObjectFilter.Creature,
-    val excludeSource: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Return ")
-        if (excludeSource) append("another ")
-        append(filter.description)
-        append(" you control to its owner's hand")
-    }
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-/**
  * Exile a permanent until this permanent leaves the battlefield.
  * Used for O-Ring style effects like Liminal Hold.
  */

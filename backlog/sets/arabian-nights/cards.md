@@ -2,7 +2,7 @@
 
 **Set Size:** 78 cards
 **Release Date:** December 17, 1993
-**Implemented:** 63 / 78
+**Implemented:** 64 / 78
 | Color | Count |
 |-------|-------|
 | White | 11 |
@@ -33,7 +33,7 @@
 - [x] Island Fish Jasconius
 - [x] Merchant Ship
 - [x] Old Man of the Sea
-- [ ] Serendib Djinn
+- [x] Serendib Djinn
 - [x] Serendib Efreet
 - [x] Sindbad
 - [x] Unstable Mutation

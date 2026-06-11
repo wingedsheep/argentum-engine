@@ -179,7 +179,6 @@ val engineSerializersModule = SerializersModule {
         subclass(CombatResolutionContinuation::class)
         subclass(ResolveSpellContinuation::class)
         subclass(SacrificeContinuation::class)
-        subclass(ReturnToHandContinuation::class)
         subclass(ExileMultiZoneContinuation::class)
         subclass(MayAbilityContinuation::class)
         subclass(GatedEffectContinuation::class)

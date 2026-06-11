@@ -541,6 +541,14 @@ class PredicateEvaluator {
         // These predicates are used for cards in graveyards/exile which don't have ControllerComponent —
         // so handle them before the controller lookup below.
         return when (predicate) {
+            is ControllerPredicate.And -> predicate.predicates.all {
+                matchesControllerPredicate(state, projected, entityId, it, context)
+            }
+            is ControllerPredicate.Or -> predicate.predicates.any {
+                matchesControllerPredicate(state, projected, entityId, it, context)
+            }
+            is ControllerPredicate.Not ->
+                !matchesControllerPredicate(state, projected, entityId, predicate.predicate, context)
             ControllerPredicate.OwnedByYou -> {
                 val card = container.get<CardComponent>()
                 card?.ownerId == context.controllerId
@@ -576,7 +584,8 @@ class PredicateEvaluator {
                         referenced?.let { controllerId == it } ?: false
                     }
                     // Already handled above
-                    ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent -> true
+                    ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
+                    is ControllerPredicate.And, is ControllerPredicate.Or, is ControllerPredicate.Not -> true
                 }
             }
         }
