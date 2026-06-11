@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -56,10 +57,10 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val forest = bfCardByName(game.state, game.player1Id, "Forest")
 
-            service.canAfford(game.state, game.player1Id, PayCost.Mana(ManaCost.parse("{G}")), source).shouldBeTrue()
-            service.canAfford(game.state, game.player1Id, PayCost.Mana(ManaCost.parse("{U}")), source).shouldBeFalse()
+            service.canAfford(game.state, game.player1Id, Costs.pay.Mana(ManaCost.parse("{G}")), source).shouldBeTrue()
+            service.canAfford(game.state, game.player1Id, Costs.pay.Mana(ManaCost.parse("{U}")), source).shouldBeFalse()
 
-            val pending = service.pay(game.state, game.player1Id, PayCost.Mana(ManaCost.parse("{G}")), source)
+            val pending = service.pay(game.state, game.player1Id, Costs.pay.Mana(ManaCost.parse("{G}")), source)
             pending.shouldBeInstanceOf<PaymentResult.Pending>()
             game.state = pending.state
             game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
@@ -78,7 +79,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val forest = bfCardByName(game.state, game.player1Id, "Forest")
 
             val pending = service.pay(
-                game.state, game.player1Id, PayCost.Mana(ManaCost.parse("{G}")), source,
+                game.state, game.player1Id, Costs.pay.Mana(ManaCost.parse("{G}")), source,
                 CostPaymentContext(onDeclined = Effects.DrawCards(1))
             ) as PaymentResult.Pending
             game.state = pending.state
@@ -133,10 +134,10 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
 
-            service.canAfford(game.state, game.player1Id, PayCost.PayLife(5), source).shouldBeTrue() // exactly enough
-            service.canAfford(game.state, game.player1Id, PayCost.PayLife(6), source).shouldBeFalse()
+            service.canAfford(game.state, game.player1Id, Costs.pay.PayLife(5), source).shouldBeTrue() // exactly enough
+            service.canAfford(game.state, game.player1Id, Costs.pay.PayLife(6), source).shouldBeFalse()
 
-            val pending = service.pay(game.state, game.player1Id, PayCost.PayLife(3), source) as PaymentResult.Pending
+            val pending = service.pay(game.state, game.player1Id, Costs.pay.PayLife(3), source) as PaymentResult.Pending
             game.state = pending.state
             game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
 
@@ -150,7 +151,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
 
-            val pending = service.pay(game.state, game.player1Id, PayCost.PayLife(3), source) as PaymentResult.Pending
+            val pending = service.pay(game.state, game.player1Id, Costs.pay.PayLife(3), source) as PaymentResult.Pending
             game.state = pending.state
             game.submitDecision(YesNoResponse(pending.pendingDecision.id, false))
 
@@ -169,7 +170,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val card = game.state.getHand(game.player1Id).first()
-            val cost = PayCost.Discard(GameObjectFilter.Any, 1)
+            val cost = Costs.pay.Discard(GameObjectFilter.Any, 1)
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
 
@@ -190,7 +191,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val card = game.state.getHand(game.player1Id).first()
 
-            val pending = service.pay(game.state, game.player1Id, PayCost.Discard(GameObjectFilter.Any, 1), source) as PaymentResult.Pending
+            val pending = service.pay(game.state, game.player1Id, Costs.pay.Discard(GameObjectFilter.Any, 1), source) as PaymentResult.Pending
             game.state = pending.state
             game.submitDecision(CardsSelectedResponse(pending.pendingDecision.id, emptyList()))
             game.state.getHand(game.player1Id) shouldContain card
@@ -200,8 +201,8 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val game = scenario().withPlayers().withCardOnBattlefield(1, "Goblin Guide").build()
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
-            service.canAfford(game.state, game.player1Id, PayCost.Discard(GameObjectFilter.Any, 1), source).shouldBeFalse()
-            service.pay(game.state, game.player1Id, PayCost.Discard(GameObjectFilter.Any, 1), source)
+            service.canAfford(game.state, game.player1Id, Costs.pay.Discard(GameObjectFilter.Any, 1), source).shouldBeFalse()
+            service.pay(game.state, game.player1Id, Costs.pay.Discard(GameObjectFilter.Any, 1), source)
                 .shouldBeInstanceOf<PaymentResult.Unaffordable>()
         }
 
@@ -214,7 +215,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val card = game.state.getHand(game.player1Id).first()
 
-            val pending = service.pay(game.state, game.player1Id, PayCost.Discard(GameObjectFilter.Any, 1, random = true), source) as PaymentResult.Pending
+            val pending = service.pay(game.state, game.player1Id, Costs.pay.Discard(GameObjectFilter.Any, 1, random = true), source) as PaymentResult.Pending
             game.state = pending.state
             game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
             game.state.getZone(ZoneKey(game.player1Id, Zone.GRAVEYARD)) shouldContain card
@@ -232,7 +233,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val card = game.state.getZone(ZoneKey(game.player1Id, Zone.GRAVEYARD)).first()
-            val cost = PayCost.Exile(GameObjectFilter.Any, Zone.GRAVEYARD, 1)
+            val cost = Costs.pay.Exile(GameObjectFilter.Any, Zone.GRAVEYARD, 1)
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
             val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
@@ -253,7 +254,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val card = game.state.getHand(game.player1Id).first()
-            val cost = PayCost.RevealCard(GameObjectFilter.Any, 1)
+            val cost = Costs.pay.RevealCard(GameObjectFilter.Any, 1)
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
             val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
@@ -276,7 +277,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val fodder = bfCardByName(game.state, game.player1Id, "Savannah Lions")
-            val cost = PayCost.Sacrifice(GameObjectFilter.Any, 1)
+            val cost = Costs.pay.Sacrifice(GameObjectFilter.Any, 1)
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
             val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
@@ -291,7 +292,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val game = scenario().withPlayers().withCardOnBattlefield(1, "Goblin Guide").build()
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
-            service.canAfford(game.state, game.player1Id, PayCost.Sacrifice(GameObjectFilter.Any, 1), source).shouldBeFalse()
+            service.canAfford(game.state, game.player1Id, Costs.pay.Sacrifice(GameObjectFilter.Any, 1), source).shouldBeFalse()
         }
 
         // -----------------------------------------------------------------------------------------
@@ -306,7 +307,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val fodder = bfCardByName(game.state, game.player1Id, "Savannah Lions")
-            val cost = PayCost.ReturnToHand(GameObjectFilter.Any, 1)
+            val cost = Costs.pay.ReturnToHand(GameObjectFilter.Any, 1)
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
             val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
@@ -329,7 +330,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val fodder = bfCardByName(game.state, game.player1Id, "Savannah Lions")
-            val cost = PayCost.Tap(GameObjectFilter.Any, 1)
+            val cost = Costs.pay.Tap(GameObjectFilter.Any, 1)
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
             val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
@@ -346,7 +347,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
                 .build()
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
-            service.canAfford(game.state, game.player1Id, PayCost.Tap(GameObjectFilter.Any, 1), source).shouldBeFalse()
+            service.canAfford(game.state, game.player1Id, Costs.pay.Tap(GameObjectFilter.Any, 1), source).shouldBeFalse()
         }
 
         // -----------------------------------------------------------------------------------------
@@ -361,7 +362,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             val card = game.state.getHand(game.player1Id).first()
-            val cost = PayCost.Choice(listOf(PayCost.PayLife(3), PayCost.Discard(GameObjectFilter.Any, 1)))
+            val cost = Costs.pay.Choice(listOf(Costs.pay.PayLife(3), Costs.pay.Discard(GameObjectFilter.Any, 1)))
 
             service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
 
@@ -385,7 +386,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
                 .build()
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
-            val cost = PayCost.Choice(listOf(PayCost.PayLife(3), PayCost.Discard(GameObjectFilter.Any, 1)))
+            val cost = Costs.pay.Choice(listOf(Costs.pay.PayLife(3), Costs.pay.Discard(GameObjectFilter.Any, 1)))
 
             val pending = service.pay(
                 game.state, game.player1Id, cost, source,
@@ -414,7 +415,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val fodder = bfCardByName(game.state, game.player1Id, "Savannah Lions")
 
             val pending = service.pay(
-                game.state, game.player1Id, PayCost.Sacrifice(GameObjectFilter.Any, 1), source,
+                game.state, game.player1Id, Costs.pay.Sacrifice(GameObjectFilter.Any, 1), source,
                 CostPaymentContext(onPaid = Effects.DrawCards(1))
             ) as PaymentResult.Pending
             game.state = pending.state
@@ -439,7 +440,7 @@ class CostPaymentServiceTest : ScenarioTestBase() {
                     payerId = EntityId.of("player-1"),
                     sourceId = EntityId.of("src"),
                     sourceName = "Goblin Guide",
-                    cost = PayCost.Choice(listOf(PayCost.PayLife(3), PayCost.Discard(GameObjectFilter.Any, 1))),
+                    cost = Costs.pay.Choice(listOf(Costs.pay.PayLife(3), Costs.pay.Discard(GameObjectFilter.Any, 1))),
                     onPaid = Effects.DrawCards(1),
                     onDeclined = Effects.GainLife(2)
                 )

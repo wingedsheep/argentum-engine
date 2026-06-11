@@ -279,7 +279,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     is AbilityCost.ExileFromGraveyard -> {
                         val targets = context.costUtils.findExileTargets(
                             state, playerId, effectiveCost.filter,
-                            com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD
+                            com.wingedsheep.sdk.core.Zone.GRAVEYARD
                         )
                         if (targets.size < effectiveCost.count) continue
                         exileCost = effectiveCost
@@ -415,7 +415,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     // graveyard" cost).
                                     val targets = context.costUtils.findExileTargets(
                                         state, playerId, subCost.filter,
-                                        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD
+                                        com.wingedsheep.sdk.core.Zone.GRAVEYARD
                                     )
                                     if (targets.size < subCost.count) {
                                         costCanBePaid = false

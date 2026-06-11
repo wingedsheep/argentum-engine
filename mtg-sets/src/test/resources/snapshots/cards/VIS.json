@@ -210,8 +210,11 @@
         },
         "additionalCosts": [
             {
-                "type": "SacrificePermanent",
-                "filter": "creature green"
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature green"
+                }
             }
         ]
     },

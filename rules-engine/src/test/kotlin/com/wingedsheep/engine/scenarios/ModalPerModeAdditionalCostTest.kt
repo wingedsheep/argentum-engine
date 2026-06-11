@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -86,7 +87,7 @@ class ModalPerModeAdditionalCostTest : FunSpec({
                         effect = GainLifeEffect(DynamicAmount.Fixed(3), EffectTarget.Controller),
                         description = "Sacrifice a creature; Gain 3 life",
                         additionalCosts = listOf(
-                            AdditionalCost.SacrificePermanent(
+                            Costs.additional.SacrificePermanent(
                                 filter = GameObjectFilter.Creature,
                                 count = 1
                             )

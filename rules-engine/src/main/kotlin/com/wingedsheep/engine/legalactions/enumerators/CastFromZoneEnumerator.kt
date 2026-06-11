@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
@@ -1774,17 +1775,17 @@ class CastFromZoneEnumerator : ActionEnumerator {
             var kickerCostInfo: AdditionalCostData? = null
             var canPayKickerAdditionalCost = true
             if (additionalCostKicker?.additionalCost != null) {
-                when (val cost = additionalCostKicker.additionalCost) {
-                    is AdditionalCost.SacrificePermanent -> {
-                        val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, cost)
-                        if (validSacTargets.size < cost.count) {
+                when (val atom = (additionalCostKicker.additionalCost as? AdditionalCost.Atom)?.atom) {
+                    is CostAtom.Sacrifice -> {
+                        val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, atom)
+                        if (validSacTargets.size < atom.count) {
                             canPayKickerAdditionalCost = false
                         } else {
                             kickerCostInfo = AdditionalCostData(
-                                description = cost.description,
+                                description = atom.description.replaceFirstChar { it.uppercase() },
                                 costType = "SacrificePermanent",
                                 validSacrificeTargets = validSacTargets,
-                                sacrificeCount = cost.count
+                                sacrificeCount = atom.count
                             )
                         }
                     }
@@ -1891,17 +1892,17 @@ class CastFromZoneEnumerator : ActionEnumerator {
         component: PlayWithAdditionalCostComponent
     ): AdditionalCostData? {
         val cost = component.additionalCosts.firstOrNull() ?: return null
-        return when (cost) {
-            is com.wingedsheep.sdk.scripting.AdditionalCost.DiscardCards -> {
-                val handCards = state.getZone(ZoneKey(playerId, Zone.HAND))
-                AdditionalCostData(
-                    description = cost.description,
-                    costType = "DiscardCard",
-                    validDiscardTargets = handCards.toList(),
-                    discardCount = cost.count
-                )
-            }
-            else -> AdditionalCostData(
+        val discardAtom = (cost as? AdditionalCost.Atom)?.atom as? CostAtom.Discard
+        return if (discardAtom != null) {
+            val handCards = state.getZone(ZoneKey(playerId, Zone.HAND))
+            AdditionalCostData(
+                description = discardAtom.description.replaceFirstChar { it.uppercase() },
+                costType = "DiscardCard",
+                validDiscardTargets = handCards.toList(),
+                discardCount = discardAtom.count
+            )
+        } else {
+            AdditionalCostData(
                 description = cost.description,
                 costType = "Other"
             )
@@ -1914,10 +1915,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
         component: PlayWithAdditionalCostComponent
     ): Boolean {
         for (cost in component.additionalCosts) {
-            when (cost) {
-                is com.wingedsheep.sdk.scripting.AdditionalCost.DiscardCards -> {
+            when (val atom = (cost as? AdditionalCost.Atom)?.atom) {
+                is CostAtom.Discard -> {
                     val handSize = state.getZone(ZoneKey(playerId, Zone.HAND)).size
-                    if (handSize < cost.count) return false
+                    if (handSize < atom.count) return false
                 }
                 else -> {} // Other cost types can be added as needed
             }

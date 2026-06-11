@@ -1235,8 +1235,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "PayMana",
-                        "cost": "{2}"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}"
+                        }
                     },
                     "suffer": {
                         "type": "DealDamage",
@@ -1699,8 +1702,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "PayMana",
-                        "cost": "{B}{B}"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{B}{B}"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -2206,8 +2212,11 @@
         },
         "additionalCosts": [
             {
-                "type": "SacrificePermanent",
-                "filter": "creature"
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
             }
         ]
     },
@@ -2324,8 +2333,11 @@
                     "effect": {
                         "type": "PayOrSuffer",
                         "cost": {
-                            "type": "PayMana",
-                            "cost": "{1}"
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
                         },
                         "suffer": {
                             "type": "LoseLife",

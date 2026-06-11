@@ -68,6 +68,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.EventPattern as SdkGameEvent
@@ -972,31 +973,110 @@ class CastSpellHandler(
         }
         for (additionalCost in flattenedCosts) {
             when (additionalCost) {
-                is AdditionalCost.SacrificePermanent -> {
-                    val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
-                    val filterDesc = additionalCost.filter.description
-                    if (sacrificed.size < additionalCost.count) {
-                        return "You must sacrifice ${additionalCost.count} $filterDesc to cast this spell"
+                is AdditionalCost.Atom -> when (val atom = additionalCost.atom) {
+                    is CostAtom.Sacrifice -> {
+                        val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
+                        val filterDesc = atom.filter.description
+                        if (sacrificed.size < atom.count) {
+                            return "You must sacrifice ${atom.count} $filterDesc to cast this spell"
+                        }
+                        for (permId in sacrificed) {
+                            val permContainer = state.getEntity(permId)
+                                ?: return "Sacrificed permanent not found: $permId"
+                            val permCard = permContainer.get<CardComponent>()
+                                ?: return "Sacrificed entity is not a card: $permId"
+                            val permController = projected.getController(permId)
+                            if (permController != action.playerId) {
+                                return "You can only sacrifice permanents you control"
+                            }
+                            if (permId !in state.getBattlefield()) {
+                                return "Sacrificed permanent is not on the battlefield: $permId"
+                            }
+                            // Use unified filter with projected state
+                            val context = PredicateContext(controllerId = action.playerId)
+                            val matches = predicateEvaluator.matches(state, projected, permId, atom.filter, context)
+                            if (!matches) {
+                                return "${permCard.name} doesn't match the required filter: $filterDesc"
+                            }
+                        }
                     }
-                    for (permId in sacrificed) {
-                        val permContainer = state.getEntity(permId)
-                            ?: return "Sacrificed permanent not found: $permId"
-                        val permCard = permContainer.get<CardComponent>()
-                            ?: return "Sacrificed entity is not a card: $permId"
-                        val permController = projected.getController(permId)
-                        if (permController != action.playerId) {
-                            return "You can only sacrifice permanents you control"
+                    is CostAtom.ExileFrom -> {
+                        val exiled = action.additionalCostPayment?.exiledCards ?: emptyList()
+                        val zoneDesc = atom.zone.name.lowercase()
+                        if (exiled.size < atom.count) {
+                            return "You must exile ${atom.count} ${atom.filter.description}(s) from your $zoneDesc"
                         }
-                        if (permId !in state.getBattlefield()) {
-                            return "Sacrificed permanent is not on the battlefield: $permId"
-                        }
-                        // Use unified filter with projected state
+                        val zoneCards = state.getZone(ZoneKey(action.playerId, atom.zone))
                         val context = PredicateContext(controllerId = action.playerId)
-                        val matches = predicateEvaluator.matches(state, projected, permId, additionalCost.filter, context)
-                        if (!matches) {
-                            return "${permCard.name} doesn't match the required filter: $filterDesc"
+                        for (cardId in exiled) {
+                            if (cardId !in zoneCards) {
+                                return "Card to exile is not in your $zoneDesc"
+                            }
+                            if (!predicateEvaluator.matches(state, projected, cardId, atom.filter, context)) {
+                                val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                return "$cardName doesn't match the required filter: ${atom.filter.description}"
+                            }
                         }
                     }
+                    is CostAtom.Discard -> {
+                        val discarded = action.additionalCostPayment?.discardedCards ?: emptyList()
+                        if (discarded.size < atom.count) {
+                            return "You must discard ${atom.count} card(s) to cast this spell"
+                        }
+                        val handCards = state.getZone(ZoneKey(action.playerId, Zone.HAND))
+                        val context = PredicateContext(controllerId = action.playerId)
+                        for (cardId in discarded) {
+                            if (cardId !in handCards) {
+                                return "Card to discard is not in your hand"
+                            }
+                            if (cardId == action.cardId) {
+                                return "Cannot discard the spell being cast"
+                            }
+                            if (atom.filter != com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+                                if (!predicateEvaluator.matches(state, state.projectedState, cardId, atom.filter, context)) {
+                                    val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                    return "$cardName doesn't match the required filter: ${atom.filter.description}"
+                                }
+                            }
+                        }
+                    }
+                    is CostAtom.TapPermanents -> {
+                        val tapped = action.additionalCostPayment?.tappedPermanents ?: emptyList()
+                        if (tapped.size < atom.count) {
+                            return "You must tap ${atom.count} ${atom.filter.description}(s) to cast this spell"
+                        }
+                        val context = PredicateContext(controllerId = action.playerId)
+                        for (permId in tapped) {
+                            val permContainer = state.getEntity(permId)
+                                ?: return "Tapped permanent not found: $permId"
+                            val permCard = permContainer.get<CardComponent>()
+                                ?: return "Tapped entity is not a card: $permId"
+                            val permController = projected.getController(permId)
+                            if (permController != action.playerId) {
+                                return "You can only tap permanents you control"
+                            }
+                            if (permContainer.has<TappedComponent>()) {
+                                return "${permCard.name} is already tapped"
+                            }
+                            if (permId !in state.getBattlefield()) {
+                                return "Tapped permanent is not on the battlefield: $permId"
+                            }
+                            val matches = predicateEvaluator.matches(state, projected, permId, atom.filter, context)
+                            if (!matches) {
+                                return "${permCard.name} doesn't match the required filter: ${atom.filter.description}"
+                            }
+                        }
+                    }
+                    is CostAtom.PayLife -> {
+                        val currentLife = state.getEntity(action.playerId)
+                            ?.get<LifeTotalComponent>()?.life ?: 0
+                        // CR 119.4 — you can't pay life unless you have at least that much
+                        if (currentLife < atom.amount) {
+                            return "Not enough life to pay ${atom.amount} life"
+                        }
+                    }
+                    // Mana / return / reveal are not produced as spell additional costs today.
+                    is CostAtom.Mana, is CostAtom.ReturnToHand, is CostAtom.RevealFromHand -> {}
                 }
                 is AdditionalCost.ExileVariableCards -> {
                     val exiled = action.additionalCostPayment?.exiledCards ?: emptyList()
@@ -1019,80 +1099,6 @@ class CastSpellHandler(
                         if (!predicateEvaluator.matches(state, projected, cardId, additionalCost.filter, context)) {
                             val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
                             return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
-                        }
-                    }
-                }
-                is AdditionalCost.ExileCards -> {
-                    val exiled = action.additionalCostPayment?.exiledCards ?: emptyList()
-                    if (exiled.size < additionalCost.count) {
-                        return "You must exile ${additionalCost.count} ${additionalCost.filter.description}(s) from your ${additionalCost.fromZone.description}"
-                    }
-                    val zone = when (additionalCost.fromZone) {
-                        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
-                        com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
-                        com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
-                        com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
-                    }
-                    val zoneKey = ZoneKey(action.playerId, zone)
-                    val zoneCards = state.getZone(zoneKey)
-                    val context = PredicateContext(controllerId = action.playerId)
-                    for (cardId in exiled) {
-                        if (cardId !in zoneCards) {
-                            return "Card to exile is not in your ${additionalCost.fromZone.description}"
-                        }
-                        if (!predicateEvaluator.matches(state, projected, cardId, additionalCost.filter, context)) {
-                            val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
-                            return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
-                        }
-                    }
-                }
-                is AdditionalCost.DiscardCards -> {
-                    val discarded = action.additionalCostPayment?.discardedCards ?: emptyList()
-                    if (discarded.size < additionalCost.count) {
-                        return "You must discard ${additionalCost.count} card(s) to cast this spell"
-                    }
-                    val handZone = ZoneKey(action.playerId, Zone.HAND)
-                    val handCards = state.getZone(handZone)
-                    val context = PredicateContext(controllerId = action.playerId)
-                    for (cardId in discarded) {
-                        if (cardId !in handCards) {
-                            return "Card to discard is not in your hand"
-                        }
-                        if (cardId == action.cardId) {
-                            return "Cannot discard the spell being cast"
-                        }
-                        if (additionalCost.filter != com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
-                            if (!predicateEvaluator.matches(state, state.projectedState, cardId, additionalCost.filter, context)) {
-                                val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
-                                return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
-                            }
-                        }
-                    }
-                }
-                is AdditionalCost.TapPermanents -> {
-                    val tapped = action.additionalCostPayment?.tappedPermanents ?: emptyList()
-                    if (tapped.size < additionalCost.count) {
-                        return "You must tap ${additionalCost.count} ${additionalCost.filter.description}(s) to cast this spell"
-                    }
-                    val context = PredicateContext(controllerId = action.playerId)
-                    for (permId in tapped) {
-                        val permContainer = state.getEntity(permId)
-                            ?: return "Tapped permanent not found: $permId"
-                        val permCard = permContainer.get<CardComponent>()
-                            ?: return "Tapped entity is not a card: $permId"
-                        val permController = projected.getController(permId)
-                        if (permController != action.playerId) {
-                            return "You can only tap permanents you control"
-                        }
-                        if (permContainer.has<TappedComponent>()) {
-                            return "${permCard.name} is already tapped"
-                        }
-                        if (permId !in state.getBattlefield()) {
-                            return "Tapped permanent is not on the battlefield: $permId"
-                        }
-                        val matches = predicateEvaluator.matches(state, projected, permId, additionalCost.filter, context)
-                        if (!matches) {
-                            return "${permCard.name} doesn't match the required filter: ${additionalCost.filter.description}"
                         }
                     }
                 }
@@ -1292,14 +1298,6 @@ class CastSpellHandler(
                         if (actual < demandedCount) {
                             return "Creature does not have $demandedCount $counterType counters to remove"
                         }
-                    }
-                }
-                is AdditionalCost.PayLife -> {
-                    val currentLife = state.getEntity(action.playerId)
-                        ?.get<LifeTotalComponent>()?.life ?: 0
-                    // CR 119.4 — you can't pay life unless you have at least that much
-                    if (currentLife < additionalCost.amount) {
-                        return "Not enough life to pay ${additionalCost.amount} life"
                     }
                 }
                 is AdditionalCost.PayLifePerTarget -> {
@@ -1588,9 +1586,10 @@ class CastSpellHandler(
         // payment is applied regardless of whether the client included an
         // AdditionalCostPayment object.
         for (additionalCost in flattenedAllCosts) {
-            val lifeToPay = when (additionalCost) {
-                is AdditionalCost.PayLife -> additionalCost.amount
-                is AdditionalCost.PayLifePerTarget -> additionalCost.amountPerTarget * action.targets.size
+            val atom = (additionalCost as? AdditionalCost.Atom)?.atom
+            val lifeToPay = when {
+                atom is CostAtom.PayLife -> atom.amount
+                additionalCost is AdditionalCost.PayLifePerTarget -> additionalCost.amountPerTarget * action.targets.size
                 else -> continue
             }
             if (lifeToPay == 0) continue
@@ -1606,68 +1605,98 @@ class CastSpellHandler(
         if (flattenedAllCosts.isNotEmpty() && action.additionalCostPayment != null) {
             for (additionalCost in flattenedAllCosts) {
                 when (additionalCost) {
-                    is AdditionalCost.SacrificePermanent -> {
-                        // Snapshot projected subtypes and P/T before zone change
-                        // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
-                        val projectedBeforeSacrifice = currentState.projectedState
-                        sacrificedSnapshots.addAll(
-                            capturePermanentSnapshots(action.additionalCostPayment.sacrificedPermanents, projectedBeforeSacrifice)
-                        )
-                        for (permId in action.additionalCostPayment.sacrificedPermanents) {
-                            val permContainer = currentState.getEntity(permId) ?: continue
-                            val permCard = permContainer.get<CardComponent>() ?: continue
-                            val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
-                            val ownerId = permCard.ownerId ?: action.playerId
-                            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-                            val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+                    is AdditionalCost.Atom -> when (val atom = additionalCost.atom) {
+                        is CostAtom.Sacrifice -> {
+                            // Snapshot projected subtypes and P/T before zone change
+                            // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
+                            val projectedBeforeSacrifice = currentState.projectedState
+                            sacrificedSnapshots.addAll(
+                                capturePermanentSnapshots(action.additionalCostPayment.sacrificedPermanents, projectedBeforeSacrifice)
+                            )
+                            for (permId in action.additionalCostPayment.sacrificedPermanents) {
+                                val permContainer = currentState.getEntity(permId) ?: continue
+                                val permCard = permContainer.get<CardComponent>() ?: continue
+                                val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
+                                val ownerId = permCard.ownerId ?: action.playerId
+                                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
-                            currentState = currentState.removeFromZone(battlefieldZone, permId)
-                            currentState = currentState.addToZone(graveyardZone, permId)
+                                currentState = currentState.removeFromZone(battlefieldZone, permId)
+                                currentState = currentState.addToZone(graveyardZone, permId)
 
-                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
-                            events.add(ZoneChangeEvent(
-                                entityId = permId,
-                                entityName = permCard.name,
-                                fromZone = Zone.BATTLEFIELD,
-                                toZone = Zone.GRAVEYARD,
-                                ownerId = ownerId
-                            ))
+                                events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
+                                events.add(ZoneChangeEvent(
+                                    entityId = permId,
+                                    entityName = permCard.name,
+                                    fromZone = Zone.BATTLEFIELD,
+                                    toZone = Zone.GRAVEYARD,
+                                    ownerId = ownerId
+                                ))
+                            }
                         }
-                    }
-                    is AdditionalCost.DiscardCards -> {
-                        val discardedCards = action.additionalCostPayment.discardedCards
-                        for (cardId in discardedCards) {
-                            val cardContainer = currentState.getEntity(cardId) ?: continue
-                            val card = cardContainer.get<CardComponent>() ?: continue
-                            val handZone = ZoneKey(action.playerId, Zone.HAND)
-                            val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
+                        is CostAtom.Discard -> {
+                            val discardedCards = action.additionalCostPayment.discardedCards
+                            for (cardId in discardedCards) {
+                                val cardContainer = currentState.getEntity(cardId) ?: continue
+                                val card = cardContainer.get<CardComponent>() ?: continue
+                                val handZone = ZoneKey(action.playerId, Zone.HAND)
+                                val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
 
-                            currentState = currentState.removeFromZone(handZone, cardId)
-                            currentState = currentState.addToZone(graveyardZone, cardId)
+                                currentState = currentState.removeFromZone(handZone, cardId)
+                                currentState = currentState.addToZone(graveyardZone, cardId)
 
-                            events.add(ZoneChangeEvent(
-                                entityId = cardId,
-                                entityName = card.name,
-                                fromZone = Zone.HAND,
-                                toZone = Zone.GRAVEYARD,
-                                ownerId = action.playerId
-                            ))
+                                events.add(ZoneChangeEvent(
+                                    entityId = cardId,
+                                    entityName = card.name,
+                                    fromZone = Zone.HAND,
+                                    toZone = Zone.GRAVEYARD,
+                                    ownerId = action.playerId
+                                ))
+                            }
+                            val discardNames = discardedCards.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                            events.add(CardsDiscardedEvent(action.playerId, discardedCards, discardNames))
                         }
-                        val discardNames = discardedCards.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-                        events.add(CardsDiscardedEvent(action.playerId, discardedCards, discardNames))
+                        is CostAtom.ExileFrom -> {
+                            val exiledCards = action.additionalCostPayment.exiledCards
+                            for (cardId in exiledCards) {
+                                val cardContainer = currentState.getEntity(cardId) ?: continue
+                                val card = cardContainer.get<CardComponent>() ?: continue
+                                val sourceZone = ZoneKey(action.playerId, atom.zone)
+                                val exileZone = ZoneKey(action.playerId, Zone.EXILE)
+
+                                currentState = currentState.removeFromZone(sourceZone, cardId)
+                                currentState = currentState.addToZone(exileZone, cardId)
+
+                                events.add(ZoneChangeEvent(
+                                    entityId = cardId,
+                                    entityName = card.name,
+                                    fromZone = atom.zone,
+                                    toZone = Zone.EXILE,
+                                    ownerId = action.playerId
+                                ))
+                            }
+                            exiledCardCount = exiledCards.size
+                        }
+                        is CostAtom.TapPermanents -> {
+                            // Tap permanents as additional cost (e.g., Zahid's tap an artifact)
+                            val tappedPerms = action.additionalCostPayment.tappedPermanents
+                            for (permId in tappedPerms) {
+                                val permContainer = currentState.getEntity(permId) ?: continue
+                                if (!permContainer.has<TappedComponent>()) {
+                                    currentState = currentState.updateEntity(permId) { c ->
+                                        c.with(TappedComponent)
+                                    }
+                                    val permCard = permContainer.get<CardComponent>()
+                                    events.add(TappedEvent(permId, permCard?.name ?: "Permanent"))
+                                }
+                            }
+                        }
+                        // PayLife is auto-paid in the loop above; mana / return / reveal aren't spell additional costs.
+                        is CostAtom.PayLife, is CostAtom.Mana, is CostAtom.ReturnToHand, is CostAtom.RevealFromHand -> {}
                     }
-                    is AdditionalCost.ExileVariableCards, is AdditionalCost.ExileCards -> {
+                    is AdditionalCost.ExileVariableCards -> {
                         val exiledCards = action.additionalCostPayment.exiledCards
-                        val fromZone = when (additionalCost) {
-                            is AdditionalCost.ExileVariableCards -> additionalCost.fromZone
-                            is AdditionalCost.ExileCards -> additionalCost.fromZone
-                        }
-                        val zone = when (fromZone) {
-                            com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
-                            com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
-                            com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
-                            com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
-                        }
+                        val zone = additionalCost.fromZone.toZone()
                         for (cardId in exiledCards) {
                             val cardContainer = currentState.getEntity(cardId) ?: continue
                             val card = cardContainer.get<CardComponent>() ?: continue
@@ -1686,20 +1715,6 @@ class CastSpellHandler(
                             ))
                         }
                         exiledCardCount = exiledCards.size
-                    }
-                    is AdditionalCost.TapPermanents -> {
-                        // Tap permanents as additional cost (e.g., Zahid's tap an artifact)
-                        val tappedPerms = action.additionalCostPayment.tappedPermanents
-                        for (permId in tappedPerms) {
-                            val permContainer = currentState.getEntity(permId) ?: continue
-                            if (!permContainer.has<TappedComponent>()) {
-                                currentState = currentState.updateEntity(permId) { c ->
-                                    c.with(TappedComponent)
-                                }
-                                val permCard = permContainer.get<CardComponent>()
-                                events.add(TappedEvent(permId, permCard?.name ?: "Permanent"))
-                            }
-                        }
                     }
                     is AdditionalCost.SacrificeCreaturesForCostReduction -> {
                         // Process sacrifices for cost reduction (e.g., Torgaar)
@@ -1901,9 +1916,6 @@ class CastSpellHandler(
                                 entityName = entityName
                             ))
                         }
-                    }
-                    is AdditionalCost.PayLife -> {
-                        // Handled in the auto-pay pre-pass above (PayLife requires no player choice).
                     }
                     is AdditionalCost.PayLifePerTarget -> {
                         // Handled in the auto-pay pre-pass above (life total scales with target count).

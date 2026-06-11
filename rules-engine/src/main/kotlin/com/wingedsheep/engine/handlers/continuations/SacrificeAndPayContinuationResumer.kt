@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 
@@ -598,8 +599,8 @@ class SacrificeAndPayContinuationResumer(
     ): ExecutionResult {
         val playerId = continuation.currentPlayerId
 
-        when (continuation.cost) {
-            is PayCost.Sacrifice -> {
+        when ((continuation.cost as? PayCost.Atom)?.atom) {
+            is CostAtom.Sacrifice -> {
                 if (response !is CardsSelectedResponse) {
                     return ExecutionResult.error(state, "Expected card selection response for any player may pay")
                 }
@@ -619,7 +620,7 @@ class SacrificeAndPayContinuationResumer(
                 return runAnyPlayerMayPayConsequence(newState, continuation, continuation.consequence, events, checkForMore)
             }
 
-            is PayCost.PayLife -> {
+            is CostAtom.PayLife -> {
                 if (response !is YesNoResponse) {
                     return ExecutionResult.error(state, "Expected yes/no response for any player may pay life")
                 }
@@ -694,15 +695,15 @@ class SacrificeAndPayContinuationResumer(
 
         for ((index, nextPlayerId) in continuation.remainingPlayers.withIndex()) {
             val remainingAfter = continuation.remainingPlayers.drop(index + 1)
-            when (cost) {
-                is PayCost.Sacrifice -> {
+            when (val atom = (cost as? PayCost.Atom)?.atom) {
+                is CostAtom.Sacrifice -> {
                     val battlefield = state.getZone(ZoneKey(nextPlayerId, Zone.BATTLEFIELD))
                     val context = PredicateContext(controllerId = nextPlayerId)
                     val validPermanents = battlefield.filter { permanentId ->
-                        predicateEvaluator.matches(state, projected, permanentId, cost.filter, context)
+                        predicateEvaluator.matches(state, projected, permanentId, atom.filter, context)
                     }
-                    if (validPermanents.size >= cost.count) {
-                        val prompt = "You may sacrifice ${cost.count} ${cost.filter.description}s to cause ${continuation.sourceName} to be sacrificed, or skip"
+                    if (validPermanents.size >= atom.count) {
+                        val prompt = "You may sacrifice ${atom.count} ${atom.filter.description}s to cause ${continuation.sourceName} to be sacrificed, or skip"
                         val decisionResult = decisionHandler.createCardSelectionDecision(
                             state = state,
                             playerId = nextPlayerId,
@@ -711,7 +712,7 @@ class SacrificeAndPayContinuationResumer(
                             prompt = prompt,
                             options = validPermanents,
                             minSelections = 0,
-                            maxSelections = cost.count,
+                            maxSelections = atom.count,
                             ordered = false,
                             phase = DecisionPhase.RESOLUTION,
                             useTargetingUI = true
@@ -730,12 +731,12 @@ class SacrificeAndPayContinuationResumer(
                     }
                 }
 
-                is PayCost.PayLife -> {
+                is CostAtom.PayLife -> {
                     val life = state.getEntity(nextPlayerId)
                         ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
-                    if (life >= cost.amount) {
+                    if (life >= atom.amount) {
                         val decisionId = java.util.UUID.randomUUID().toString()
-                        val prompt = "Pay ${cost.amount} life to prevent ${continuation.sourceName}'s effect?"
+                        val prompt = "Pay ${atom.amount} life to prevent ${continuation.sourceName}'s effect?"
                         val decision = YesNoDecision(
                             id = decisionId,
                             playerId = nextPlayerId,
@@ -745,7 +746,7 @@ class SacrificeAndPayContinuationResumer(
                                 sourceName = continuation.sourceName,
                                 phase = DecisionPhase.RESOLUTION
                             ),
-                            yesText = "Pay ${cost.amount} life",
+                            yesText = "Pay ${atom.amount} life",
                             noText = "Don't pay"
                         )
                         val newContinuation = continuation.copy(

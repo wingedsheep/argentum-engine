@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
@@ -47,7 +48,7 @@ class CostEnumerationUtils(
     fun findSacrificeTargets(
         state: GameState,
         playerId: EntityId,
-        cost: AdditionalCost.SacrificePermanent
+        cost: CostAtom.Sacrifice
     ): List<EntityId> {
         val predicateContext = PredicateContext(controllerId = playerId)
         val projected = state.projectedState
@@ -127,14 +128,8 @@ class CostEnumerationUtils(
         state: GameState,
         playerId: EntityId,
         filter: GameObjectFilter,
-        fromZone: CostZone
+        zone: Zone
     ): List<EntityId> {
-        val zone = when (fromZone) {
-            CostZone.GRAVEYARD -> Zone.GRAVEYARD
-            CostZone.HAND -> Zone.HAND
-            CostZone.LIBRARY -> Zone.LIBRARY
-            CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
-        }
         val zoneKey = ZoneKey(playerId, zone)
         val predicateContext = PredicateContext(controllerId = playerId)
         return state.getZone(zoneKey).filter { entityId ->

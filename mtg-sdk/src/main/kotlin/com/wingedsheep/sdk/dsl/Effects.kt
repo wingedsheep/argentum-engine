@@ -2704,8 +2704,10 @@ object Effects {
         target = target,
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
-        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Sacrifice(
-            filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land
+        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Atom(
+            com.wingedsheep.sdk.scripting.costs.CostAtom.Sacrifice(
+                filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land
+            )
         ),
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
@@ -2723,7 +2725,9 @@ object Effects {
         action = DealDamage(amount, target),
         target = target,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.AFFECTED_PLAYER,
-        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Discard(),
+        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Atom(
+            com.wingedsheep.sdk.scripting.costs.CostAtom.Discard()
+        ),
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.AnyTarget(),
         spellName = spellName
     )
@@ -2757,8 +2761,10 @@ object Effects {
         target = target,
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
-        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Sacrifice(
-            filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land
+        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Atom(
+            com.wingedsheep.sdk.scripting.costs.CostAtom.Sacrifice(
+                filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land
+            )
         ),
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName

@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
@@ -65,20 +66,22 @@ class PayOrSufferExecutor(
             ?: return EffectResult.error(state, "Source has no card component")
 
         return when (val cost = effect.cost) {
-            is PayCost.Discard -> handleDiscardCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.Sacrifice -> handleSacrificeCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.PayLife -> handlePayLifeCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.Mana -> handleManaCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
+            is PayCost.Choice -> handleChoiceCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             // "...pay its mana cost": pay the affected permanent's own mana cost. A permanent
             // with no mana cost (a land, a token) has an empty ManaCost, which resolves to {0}
             // and is trivially payable, so such a permanent is always kept.
             is PayCost.OwnManaCost ->
-                handleManaCost(state, effect, context, PayCost.Mana(sourceCard.manaCost), sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.Exile -> handleExileCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.Choice -> handleChoiceCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.Tap -> handleTapCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.ReturnToHand -> EffectResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
-            is PayCost.RevealCard -> EffectResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
+                handleManaCost(state, effect, context, CostAtom.Mana(sourceCard.manaCost), sourceId, sourceCard.name, payingPlayerId)
+            is PayCost.Atom -> when (val atom = cost.atom) {
+                is CostAtom.Discard -> handleDiscardCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.Sacrifice -> handleSacrificeCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.PayLife -> handlePayLifeCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.Mana -> handleManaCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.ExileFrom -> handleExileCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.TapPermanents -> handleTapCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
+                is CostAtom.ReturnToHand -> EffectResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
+                is CostAtom.RevealFromHand -> EffectResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
+            }
         }
     }
 
@@ -89,7 +92,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.Discard,
+        cost: CostAtom.Discard,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -157,7 +160,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.Discard,
+        cost: CostAtom.Discard,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -226,7 +229,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.Sacrifice,
+        cost: CostAtom.Sacrifice,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -294,7 +297,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.Tap,
+        cost: CostAtom.TapPermanents,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -357,7 +360,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.PayLife,
+        cost: CostAtom.PayLife,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -428,7 +431,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.Exile,
+        cost: CostAtom.ExileFrom,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -487,7 +490,7 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext,
-        cost: PayCost.Mana,
+        cost: CostAtom.Mana,
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
@@ -635,24 +638,26 @@ class PayOrSufferExecutor(
         sourceId: EntityId
     ): Boolean {
         return when (cost) {
-            is PayCost.Discard -> findValidCardsInHand(state, playerId, cost.filter).size >= cost.count
-            is PayCost.Sacrifice -> findValidPermanentsOnBattlefield(state, playerId, cost.filter, sourceId).size >= cost.count
-            is PayCost.PayLife -> {
-                val life = state.getEntity(playerId)?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
-                life > cost.amount
-            }
-            is PayCost.Mana -> ManaSolver(cardRegistry).canPay(state, playerId, cost.cost)
             is PayCost.OwnManaCost -> {
                 // Null only when the source entity/CardComponent is missing; an empty mana cost
                 // (lands, tokens) is {0} and always payable — see the execute branch above.
                 val ownCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost
                 ownCost != null && ManaSolver(cardRegistry).canPay(state, playerId, ownCost)
             }
-            is PayCost.Exile -> findValidCardsInZone(state, playerId, cost.filter, cost.zone).size >= cost.count
             is PayCost.Choice -> cost.options.any { canPayCost(state, playerId, it, sourceId) }
-            is PayCost.Tap -> findValidUntappedPermanentsOnBattlefield(state, playerId, cost.filter, sourceId).size >= cost.count
-            is PayCost.ReturnToHand -> false
-            is PayCost.RevealCard -> false
+            is PayCost.Atom -> when (val atom = cost.atom) {
+                is CostAtom.Discard -> findValidCardsInHand(state, playerId, atom.filter).size >= atom.count
+                is CostAtom.Sacrifice -> findValidPermanentsOnBattlefield(state, playerId, atom.filter, sourceId).size >= atom.count
+                is CostAtom.PayLife -> {
+                    val life = state.getEntity(playerId)?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+                    life > atom.amount
+                }
+                is CostAtom.Mana -> ManaSolver(cardRegistry).canPay(state, playerId, atom.cost)
+                is CostAtom.ExileFrom -> findValidCardsInZone(state, playerId, atom.filter, atom.zone).size >= atom.count
+                is CostAtom.TapPermanents -> findValidUntappedPermanentsOnBattlefield(state, playerId, atom.filter, sourceId).size >= atom.count
+                is CostAtom.ReturnToHand -> false
+                is CostAtom.RevealFromHand -> false
+            }
         }
     }
 
@@ -801,7 +806,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for discard cost.
      */
-    private fun buildDiscardPrompt(cost: PayCost.Discard, sourceName: String, sufferEffect: Effect): String {
+    private fun buildDiscardPrompt(cost: CostAtom.Discard, sourceName: String, sufferEffect: Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             val article = if (desc == "card") "a" else if (desc.first().lowercaseChar() in "aeiou") "an" else "a"
@@ -816,7 +821,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for sacrifice cost.
      */
-    private fun buildSacrificePrompt(cost: PayCost.Sacrifice, sourceName: String, sufferEffect: Effect): String {
+    private fun buildSacrificePrompt(cost: CostAtom.Sacrifice, sourceName: String, sufferEffect: Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
@@ -830,7 +835,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for tap cost.
      */
-    private fun buildTapPrompt(cost: PayCost.Tap, sourceName: String, sufferEffect: Effect): String {
+    private fun buildTapPrompt(cost: CostAtom.TapPermanents, sourceName: String, sufferEffect: Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             // The article always precedes "untapped", so it is always "an".
@@ -845,7 +850,7 @@ class PayOrSufferExecutor(
     /**
      * Build prompt for exile cost.
      */
-    private fun buildExilePrompt(cost: PayCost.Exile, sourceName: String, sufferEffect: Effect): String {
+    private fun buildExilePrompt(cost: CostAtom.ExileFrom, sourceName: String, sufferEffect: Effect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
             "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"

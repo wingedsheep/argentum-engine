@@ -145,6 +145,18 @@ excluded.
 
 ## 3. Costs (`Costs.*`)
 
+> **One cost vocabulary (`CostAtom`).** The payable things shared across cost *contexts* — mana, life,
+> sacrifice, discard, exile-from-zone, tap, return-to-hand, reveal — are defined **once** in the
+> `CostAtom` sealed hierarchy (`scripting/costs/CostAtom.kt`). The context wrappers carry them: a
+> `PayCost.Atom(atom)` and an `AdditionalCost.Atom(atom)` each hold one `CostAtom`, leaving only their
+> genuinely context-specific members on the wrapper (`PayCost.OwnManaCost` / `PayCost.Choice`;
+> `AdditionalCost`'s Behold / Blight / Forage / ChooseEntity / per-target life / variable exile). The
+> `Costs.*` facades below are unchanged — they construct the right `…Atom(CostAtom.X(…))` for you, so
+> card authoring is identical. A *new* payable thing is one `CostAtom` variant + one engine payment
+> branch, available in every context. (`AbilityCost` — the activated-ability cost hierarchy — is the
+> next wrapper slated to fold onto `CostAtom`; until then its `Costs.*` top-level members are still its
+> own subtypes.)
+
 - `Costs.Free` — costs nothing (`{0}`).
 - `Costs.Tap` — `{T}`; tap this permanent.
 - `Costs.Untap` — `{Q}`; untap this permanent.

@@ -6807,8 +6807,11 @@
         ],
         "additionalCosts": [
             {
-                "type": "SacrificePermanent",
-                "filter": "artifact|creature"
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
             }
         ]
     },
@@ -7275,8 +7278,11 @@
                     "description": "Sacrifice a creature — destroy target creature",
                     "additionalCosts": [
                         {
-                            "type": "SacrificePermanent",
-                            "filter": "creature"
+                            "type": "AdditionalAtom",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
                         }
                     ]
                 },
@@ -9189,8 +9195,11 @@
                     "effect": {
                         "type": "PayOrSuffer",
                         "cost": {
-                            "type": "PayLife",
-                            "amount": 2
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 2
+                            }
                         },
                         "suffer": {
                             "type": "MoveToZone",
@@ -9365,8 +9374,11 @@
         },
         "additionalCosts": [
             {
-                "type": "SacrificePermanent",
-                "filter": "creature"
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
             }
         ]
     },
@@ -10341,7 +10353,10 @@
             ]
         },
         "additionalCosts": [
-            "DiscardCards"
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            }
         ]
     },
     "metadata": {

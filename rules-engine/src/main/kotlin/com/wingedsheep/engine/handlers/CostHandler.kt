@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
@@ -733,33 +734,31 @@ class CostHandler(
         controllerId: EntityId
     ): Boolean {
         return when (cost) {
-            is AdditionalCost.SacrificePermanent -> {
-                findMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
-            }
-            is AdditionalCost.DiscardCards -> {
-                val handZone = ZoneKey(controllerId, Zone.HAND)
-                findMatchingCardsUnified(state, state.getZone(handZone), cost.filter, controllerId).size >= cost.count
-            }
-            is AdditionalCost.PayLife -> {
-                val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
-                // CR 119.4 — a player may pay life only if their life total is >= the payment.
-                life >= cost.amount
+            is AdditionalCost.Atom -> when (val atom = cost.atom) {
+                is CostAtom.Sacrifice ->
+                    findMatchingPermanentsUnified(state, controllerId, atom.filter).size >= atom.count
+                is CostAtom.Discard ->
+                    findMatchingCardsUnified(state, state.getZone(ZoneKey(controllerId, Zone.HAND)), atom.filter, controllerId).size >= atom.count
+                is CostAtom.PayLife -> {
+                    val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
+                    // CR 119.4 — a player may pay life only if their life total is >= the payment.
+                    life >= atom.amount
+                }
+                is CostAtom.ExileFrom ->
+                    findMatchingCardsUnified(state, state.getZone(ZoneKey(controllerId, atom.zone)), atom.filter, controllerId).size >= atom.count
+                is CostAtom.TapPermanents ->
+                    findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter).size >= atom.count
+                // Mana / return-to-hand / reveal are not produced as spell additional costs today.
+                is CostAtom.Mana, is CostAtom.ReturnToHand, is CostAtom.RevealFromHand -> false
             }
             is AdditionalCost.PayLifePerTarget -> {
                 // Always payable: choosing zero targets pays zero life. Per-target life
                 // is validated against the chosen target count at CastSpellHandler time.
                 true
             }
-            is AdditionalCost.ExileCards -> {
-                val zone = ZoneKey(controllerId, cost.fromZone.toZone())
-                findMatchingCardsUnified(state, state.getZone(zone), cost.filter, controllerId).size >= cost.count
-            }
             is AdditionalCost.ExileVariableCards -> {
                 val zone = ZoneKey(controllerId, cost.fromZone.toZone())
                 findMatchingCardsUnified(state, state.getZone(zone), cost.filter, controllerId).size >= cost.minCount
-            }
-            is AdditionalCost.TapPermanents -> {
-                findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }
             is AdditionalCost.SacrificeCreaturesForCostReduction -> {
                 // Always payable - sacrificing 0 creatures is valid

@@ -185,8 +185,11 @@
                             "then": {
                                 "type": "AnyPlayerMayPay",
                                 "cost": {
-                                    "type": "PayLife",
-                                    "amount": 5
+                                    "type": "PayAtom",
+                                    "atom": {
+                                        "type": "AtomPayLife",
+                                        "amount": 5
+                                    }
                                 },
                                 "consequenceIfNonePaid": {
                                     "type": "MoveCollection",
@@ -16738,8 +16741,11 @@
                     "effect": {
                         "type": "PayOrSuffer",
                         "cost": {
-                            "type": "PayLife",
-                            "amount": 1
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 1
+                            }
                         },
                         "suffer": {
                             "type": "SacrificeTarget",

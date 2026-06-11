@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -40,7 +41,7 @@ class MorphCostPaymentTest : FunSpec({
         typeLine = "Creature — Wizard"
         power = 2
         toughness = 2
-        morphCost = PayCost.Tap(GameObjectFilter.Land, count = 1)
+        morphCost = Costs.pay.Tap(GameObjectFilter.Land, count = 1)
     }
 
     // A plain Bird for Raven Guild Initiate's "return a Bird" cost to target.

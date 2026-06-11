@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
@@ -43,7 +44,7 @@ class ExileUnlessExileTest : FunSpec({
                 trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = PayOrSufferEffect(
-                    cost = PayCost.Exile(
+                    cost = Costs.pay.Exile(
                         filter = GameObjectFilter.Any,
                         zone = Zone.GRAVEYARD,
                         count = 1
@@ -66,7 +67,7 @@ class ExileUnlessExileTest : FunSpec({
                 trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = PayOrSufferEffect(
-                    cost = PayCost.Exile(
+                    cost = Costs.pay.Exile(
                         filter = GameObjectFilter.Any.withColor(Color.BLUE),
                         zone = Zone.HAND,
                         count = 1

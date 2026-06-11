@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.cost.CostPaymentContext
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.cost.PaymentResult
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -43,19 +44,21 @@ class CostPaymentContinuationResumer(
         checkForMore: CheckForMore
     ): ExecutionResult = when (val cost = continuation.cost) {
         is PayCost.Choice -> resumeChoice(state, continuation, cost, response, checkForMore)
-        // Yes/no costs: mana, life, and random discard.
-        is PayCost.Mana, is PayCost.PayLife ->
-            resumeYesNo(state, continuation, cost, response, checkForMore)
-        is PayCost.Discard ->
-            if (cost.random) resumeYesNo(state, continuation, cost, response, checkForMore)
-            else resumeSelection(state, continuation, cost, response, checkForMore)
-        // Selection costs.
-        is PayCost.Exile, is PayCost.RevealCard, is PayCost.Sacrifice,
-        is PayCost.ReturnToHand, is PayCost.Tap ->
-            resumeSelection(state, continuation, cost, response, checkForMore)
         // Resolved away before the frame is built; should never reach the resumer.
         is PayCost.OwnManaCost ->
             ExecutionResult.error(state, "OwnManaCost should have been resolved before payment")
+        is PayCost.Atom -> when (val atom = cost.atom) {
+            // Yes/no costs: mana, life, and random discard.
+            is CostAtom.Mana, is CostAtom.PayLife ->
+                resumeYesNo(state, continuation, cost, response, checkForMore)
+            is CostAtom.Discard ->
+                if (atom.random) resumeYesNo(state, continuation, cost, response, checkForMore)
+                else resumeSelection(state, continuation, cost, response, checkForMore)
+            // Selection costs.
+            is CostAtom.ExileFrom, is CostAtom.RevealFromHand, is CostAtom.Sacrifice,
+            is CostAtom.ReturnToHand, is CostAtom.TapPermanents ->
+                resumeSelection(state, continuation, cost, response, checkForMore)
+        }
     }
 
     private fun resumeYesNo(

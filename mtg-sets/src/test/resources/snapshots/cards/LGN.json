@@ -90,8 +90,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{3}{B}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{B}"
+                }
             }
         }
     ],
@@ -255,8 +258,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{X}{B}{B}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{X}{B}{B}"
+                }
             }
         }
     ],
@@ -485,8 +491,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{6}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{6}{R}"
+                }
             }
         }
     ],
@@ -543,8 +552,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{G}"
+                }
             }
         }
     ],
@@ -923,8 +935,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{4}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{U}"
+                }
             }
         }
     ],
@@ -1519,8 +1534,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{W}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{W}"
+                }
             }
         }
     ],
@@ -1571,8 +1589,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{1}{W}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{W}"
+                }
             }
         }
     ],
@@ -1780,8 +1801,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{W}{W}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{W}{W}"
+                }
             }
         }
     ],
@@ -1916,8 +1940,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{U}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{U}{U}"
+                }
             }
         }
     ],
@@ -2224,8 +2251,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{U}"
+                }
             }
         }
     ],
@@ -3777,8 +3807,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{6}{R}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{6}{R}{R}"
+                }
             }
         }
     ],
@@ -3865,8 +3898,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{3}{B}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{B}"
+                }
             }
         }
     ],
@@ -4081,8 +4117,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{7}{G}{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{7}{G}{G}"
+                }
             }
         }
     ],
@@ -4098,8 +4137,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "PayMana",
-                        "cost": "{G}{G}"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{G}{G}"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -4263,8 +4305,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{1}{W}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{W}"
+                }
             }
         }
     ],
@@ -4438,8 +4483,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{U}"
+                }
             }
         }
     ],
@@ -4540,8 +4588,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{1}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{U}"
+                }
             }
         }
     ],
@@ -4724,8 +4775,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{1}{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{G}"
+                }
             }
         }
     ],
@@ -4868,8 +4922,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{G}"
+                }
             }
         }
     ],
@@ -5152,8 +5209,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{3}{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{G}"
+                }
             }
         }
     ],
@@ -5398,8 +5458,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{4}{R}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{R}{R}"
+                }
             }
         }
     ],
@@ -5555,8 +5618,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{4}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{R}"
+                }
             }
         }
     ],
@@ -5649,8 +5715,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{3}{B}{B}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{B}{B}"
+                }
             }
         }
     ],
@@ -5933,8 +6002,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{R}"
+                }
             }
         }
     ],
@@ -6104,8 +6176,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{3}{B}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{B}"
+                }
             }
         }
     ],
@@ -6634,8 +6709,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{1}{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{G}"
+                }
             }
         }
     ],
@@ -6711,8 +6789,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{3}{R}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{R}{R}"
+                }
             }
         }
     ],
@@ -6868,8 +6949,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{U}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{U}{U}"
+                }
             }
         }
     ],
@@ -6922,8 +7006,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{U}"
+                }
             }
         }
     ],
@@ -7012,8 +7099,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{X}{X}{R}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{X}{X}{R}"
+                }
             }
         }
     ],
@@ -7150,8 +7240,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{4}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{U}"
+                }
             }
         }
     ],
@@ -7301,8 +7394,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{1}{U}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{U}"
+                }
             }
         }
     ],
@@ -7400,8 +7496,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{2}{W}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{W}"
+                }
             }
         }
     ],

@@ -23,7 +23,10 @@
                     ],
                     "description": "Discard a card — destroy target creature or planeswalker",
                     "additionalCosts": [
-                        "DiscardCards"
+                        {
+                            "type": "AdditionalAtom",
+                            "atom": "AtomDiscard"
+                        }
                     ]
                 },
                 {
@@ -42,8 +45,11 @@
                     "description": "Pay 3 life — destroy target creature or planeswalker",
                     "additionalCosts": [
                         {
-                            "type": "PayLife",
-                            "amount": 3
+                            "type": "AdditionalAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 3
+                            }
                         }
                     ]
                 }

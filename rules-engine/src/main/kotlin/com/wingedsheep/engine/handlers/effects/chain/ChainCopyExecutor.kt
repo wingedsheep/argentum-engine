@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.ChainCopyEffect
 import com.wingedsheep.sdk.scripting.effects.CopyRecipient
@@ -194,14 +195,14 @@ class ChainCopyExecutor(
          */
         fun canPayCopyCost(state: GameState, playerId: EntityId, cost: PayCost?): Boolean {
             if (cost == null) return true
-            return when (cost) {
-                is PayCost.Sacrifice -> {
-                    findMatchingPermanents(state, playerId, cost.filter).size >= cost.count
+            return when (val atom = (cost as? PayCost.Atom)?.atom) {
+                is CostAtom.Sacrifice -> {
+                    findMatchingPermanents(state, playerId, atom.filter).size >= atom.count
                 }
-                is PayCost.Discard -> {
+                is CostAtom.Discard -> {
                     val handZone = ZoneKey(playerId, Zone.HAND)
                     val hand = state.getZone(handZone)
-                    hand.size >= cost.count
+                    hand.size >= atom.count
                 }
                 else -> true
             }

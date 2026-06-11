@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 
 /**
@@ -313,14 +314,14 @@ object Costs {
 
         /** Sacrifice [count] permanents matching [filter] (Natural Order). */
         fun SacrificePermanent(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): AdditionalCost =
-            AdditionalCost.SacrificePermanent(filter, count)
+            AdditionalCost.Atom(CostAtom.Sacrifice(filter, count))
 
         /** Discard [count] cards matching [filter] (Force of Will). */
         fun DiscardCards(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Any): AdditionalCost =
-            AdditionalCost.DiscardCards(count, filter)
+            AdditionalCost.Atom(CostAtom.Discard(count, filter))
 
         /** Pay [amount] life. */
-        fun PayLife(amount: Int): AdditionalCost = AdditionalCost.PayLife(amount)
+        fun PayLife(amount: Int): AdditionalCost = AdditionalCost.Atom(CostAtom.PayLife(amount))
 
         /** Pay [amountPerTarget] life for each target chosen by this spell (Phyrexian Purge). */
         fun PayLifePerTarget(amountPerTarget: Int): AdditionalCost =
@@ -331,7 +332,7 @@ object Costs {
             count: Int = 1,
             filter: GameObjectFilter = GameObjectFilter.Any,
             fromZone: CostZone = CostZone.GRAVEYARD
-        ): AdditionalCost = AdditionalCost.ExileCards(count, filter, fromZone)
+        ): AdditionalCost = AdditionalCost.Atom(CostAtom.ExileFrom(fromZone.toZone(), filter, count))
 
         /** Exile a variable number (at least [minCount]) of cards matching [filter] from [fromZone] (Chill Haunting). */
         fun ExileVariableCards(
@@ -390,7 +391,7 @@ object Costs {
 
         /** Tap [count] untapped permanents matching [filter] you control. */
         fun TapPermanents(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Creature): AdditionalCost =
-            AdditionalCost.TapPermanents(count, filter)
+            AdditionalCost.Atom(CostAtom.TapPermanents(count, filter))
 
         /** Choose one entity across [zoneFilters] without moving it, recording it under [storeAs] (Close Encounter). */
         fun ChooseEntity(
@@ -412,10 +413,10 @@ object Costs {
     object pay {
 
         /** Pay a mana cost. */
-        fun Mana(cost: ManaCost): PayCost = PayCost.Mana(cost)
+        fun Mana(cost: ManaCost): PayCost = PayCost.Atom(CostAtom.Mana(cost))
 
         /** Pay a mana cost parsed from a string (e.g. "{2}{U}"). */
-        fun Mana(cost: String): PayCost = PayCost.Mana(ManaCost.parse(cost))
+        fun Mana(cost: String): PayCost = PayCost.Atom(CostAtom.Mana(ManaCost.parse(cost)))
 
         /** Pay the source permanent's own mana cost (Essence Leak). */
         val OwnManaCost: PayCost = PayCost.OwnManaCost
@@ -425,35 +426,35 @@ object Costs {
             filter: GameObjectFilter = GameObjectFilter.Any,
             count: Int = 1,
             random: Boolean = false
-        ): PayCost = PayCost.Discard(filter, count, random)
+        ): PayCost = PayCost.Atom(CostAtom.Discard(count, filter, random))
 
         /** Sacrifice [count] permanents matching [filter]. */
         fun Sacrifice(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
-            PayCost.Sacrifice(filter, count)
+            PayCost.Atom(CostAtom.Sacrifice(filter, count))
 
         /** Pay [amount] life. */
-        fun PayLife(amount: Int): PayCost = PayCost.PayLife(amount)
+        fun PayLife(amount: Int): PayCost = PayCost.Atom(CostAtom.PayLife(amount))
 
         /** Exile [count] cards matching [filter] from [zone]. */
         fun Exile(
             filter: GameObjectFilter = GameObjectFilter.Any,
             zone: Zone = Zone.HAND,
             count: Int = 1
-        ): PayCost = PayCost.Exile(filter, zone, count)
+        ): PayCost = PayCost.Atom(CostAtom.ExileFrom(zone, filter, count))
 
         /** Reveal [count] cards matching [filter] from hand. */
         fun RevealCard(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
-            PayCost.RevealCard(filter, count)
+            PayCost.Atom(CostAtom.RevealFromHand(filter, count))
 
         /** Choose one of [options] to pay. */
         fun Choice(options: List<PayCost>): PayCost = PayCost.Choice(options)
 
         /** Return [count] permanents matching [filter] you control to their owner's hand. */
         fun ReturnToHand(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
-            PayCost.ReturnToHand(filter, count)
+            PayCost.Atom(CostAtom.ReturnToHand(filter, count))
 
         /** Tap [count] untapped permanents matching [filter] you control. */
         fun Tap(filter: GameObjectFilter = GameObjectFilter.Any, count: Int = 1): PayCost =
-            PayCost.Tap(filter, count)
+            PayCost.Atom(CostAtom.TapPermanents(count, filter))
     }
 }

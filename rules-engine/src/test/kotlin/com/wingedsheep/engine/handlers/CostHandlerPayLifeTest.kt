@@ -6,6 +6,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -72,7 +73,7 @@ class CostHandlerPayLifeTest : FunSpec({
             val (driver, player) = createDriver(initialLife = 3)
             CostHandler().canPayAdditionalCost(
                 state = driver.state,
-                cost = AdditionalCost.PayLife(3),
+                cost = Costs.additional.PayLife(3),
                 controllerId = player
             ) shouldBe true
         }
@@ -81,7 +82,7 @@ class CostHandlerPayLifeTest : FunSpec({
             val (driver, player) = createDriver(initialLife = 20)
             CostHandler().canPayAdditionalCost(
                 state = driver.state,
-                cost = AdditionalCost.PayLife(3),
+                cost = Costs.additional.PayLife(3),
                 controllerId = player
             ) shouldBe true
         }
@@ -90,7 +91,7 @@ class CostHandlerPayLifeTest : FunSpec({
             val (driver, player) = createDriver(initialLife = 2)
             CostHandler().canPayAdditionalCost(
                 state = driver.state,
-                cost = AdditionalCost.PayLife(3),
+                cost = Costs.additional.PayLife(3),
                 controllerId = player
             ) shouldBe false
         }

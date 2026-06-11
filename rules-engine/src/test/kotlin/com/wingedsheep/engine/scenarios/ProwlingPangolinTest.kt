@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -41,7 +42,7 @@ class ProwlingPangolinTest : FunSpec({
                 trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = AnyPlayerMayPayEffect(
-                    cost = PayCost.Sacrifice(GameObjectFilter.Creature, count = 2),
+                    cost = Costs.pay.Sacrifice(GameObjectFilter.Creature, count = 2),
                     consequence = SacrificeSelfEffect
                 )
             )

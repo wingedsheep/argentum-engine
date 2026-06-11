@@ -8,6 +8,7 @@ import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 
 /**
@@ -40,9 +41,11 @@ class TurnFaceUpEnumerator : ActionEnumerator {
 
             // Check if player can afford the morph cost (including any morph cost increases)
             val morphCostIncrease = context.costCalculator.calculateMorphCostIncrease(state)
-            when (val cost = morphData.morphCost) {
-                is PayCost.Mana -> {
-                    val effectiveCost = context.costCalculator.increaseGenericCost(cost.cost, morphCostIncrease)
+            val cost = morphData.morphCost
+            val manaMorph = (cost as? PayCost.Atom)?.atom as? CostAtom.Mana
+            when {
+                manaMorph != null -> {
+                    val effectiveCost = context.costCalculator.increaseGenericCost(manaMorph.cost, morphCostIncrease)
                     if (effectiveCost.hasX) {
                         // X morph cost (e.g., {X}{X}{R}) — always show as available with X selection
                         val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)

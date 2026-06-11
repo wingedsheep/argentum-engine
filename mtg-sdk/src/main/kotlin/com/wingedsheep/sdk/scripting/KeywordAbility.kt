@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import kotlinx.serialization.SerialName
@@ -331,7 +332,7 @@ sealed interface KeywordAbility {
         val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null
     ) : KeywordAbility {
         /** Convenience constructor for mana-based morph costs. */
-        constructor(cost: ManaCost) : this(PayCost.Mana(cost))
+        constructor(cost: ManaCost) : this(PayCost.Atom(CostAtom.Mana(cost)))
 
         override val description: String = "Morph ${morphCost.description}"
     }
@@ -691,7 +692,7 @@ sealed interface KeywordAbility {
         /**
          * Create Morph with life payment cost.
          */
-        fun morphPayLife(amount: Int): KeywordAbility = Morph(PayCost.PayLife(amount))
+        fun morphPayLife(amount: Int): KeywordAbility = Morph(PayCost.Atom(CostAtom.PayLife(amount)))
 
         /**
          * Create Flashback with mana cost from string.

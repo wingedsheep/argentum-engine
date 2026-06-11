@@ -1925,8 +1925,11 @@
         ],
         "additionalCosts": [
             {
-                "type": "SacrificePermanent",
-                "filter": "creature"
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
             }
         ]
     },
@@ -3013,8 +3016,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Discard",
-                        "filter": "creature"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomDiscard",
+                            "filter": "creature"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -3825,8 +3831,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Discard",
-                        "random": true
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomDiscard",
+                            "random": true
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -3865,8 +3874,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Sacrifice",
-                        "filter": "land Forest"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "land Forest"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -3905,9 +3917,12 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Sacrifice",
-                        "filter": "land Forest",
-                        "count": 3
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "land Forest",
+                            "count": 3
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -5108,8 +5123,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Sacrifice",
-                        "filter": "land Island"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "land Island"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -5149,8 +5167,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Discard",
-                        "filter": "land"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomDiscard",
+                            "filter": "land"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }

@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
  * [onDeclined]. Either way it then calls `checkForMore`, so a caller-pushed frame beneath this one
  * resumes for non-effect follow-ups.
  *
- * [PayCost.OwnManaCost] is resolved to a concrete [PayCost.Mana] (against the source's printed cost)
+ * [PayCost.OwnManaCost] is resolved to a concrete [PayCost.Atom] (CostAtom.Mana) (against the source's printed cost)
  * before the frame is created, so it never appears here. A [PayCost.Choice] is stored already reduced
  * to the *affordable* options, so the chosen option index maps positionally onto [PayCost.Choice.options]
  * and an index past the end means "decline".

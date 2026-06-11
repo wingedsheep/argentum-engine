@@ -673,7 +673,10 @@
             ]
         },
         "additionalCosts": [
-            "DiscardCards"
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            }
         ]
     },
     "metadata": {

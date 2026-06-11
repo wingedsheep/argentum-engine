@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.SelfAlternativeCost
 import io.kotest.core.spec.style.FunSpec
@@ -31,7 +32,7 @@ class SelfAlternativeCostPayLifeTest : FunSpec({
         toughness = 4
         selfAlternativeCost = SelfAlternativeCost(
             manaCost = ManaCost.parse("{0}"),
-            additionalCosts = listOf(AdditionalCost.PayLife(5))
+            additionalCosts = listOf(Costs.additional.PayLife(5))
         )
     }
 

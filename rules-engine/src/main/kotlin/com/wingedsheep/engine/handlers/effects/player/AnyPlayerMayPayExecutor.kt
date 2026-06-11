@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -96,16 +97,16 @@ class AnyPlayerMayPayExecutor(
         }
 
         val playerId = playerOrder[index]
-        return when (val cost = effect.cost) {
-            is PayCost.Sacrifice -> askPlayerToSacrifice(
-                state, effect, context, cost, sourceId, sourceName,
+        return when (val atom = (effect.cost as? PayCost.Atom)?.atom) {
+            is CostAtom.Sacrifice -> askPlayerToSacrifice(
+                state, effect, context, atom, sourceId, sourceName,
                 playerId, playerOrder, index
             )
-            is PayCost.PayLife -> askPlayerToPayLife(
-                state, effect, context, cost, sourceId, sourceName,
+            is CostAtom.PayLife -> askPlayerToPayLife(
+                state, effect, context, atom, sourceId, sourceName,
                 playerId, playerOrder, index
             )
-            else -> EffectResult.error(state, "Unsupported cost type for AnyPlayerMayPay: ${cost::class.simpleName}")
+            else -> EffectResult.error(state, "Unsupported cost type for AnyPlayerMayPay: ${effect.cost::class.simpleName}")
         }
     }
 
@@ -115,15 +116,15 @@ class AnyPlayerMayPayExecutor(
         cost: PayCost,
         sourceId: EntityId
     ): Boolean {
-        return when (cost) {
-            is PayCost.Sacrifice -> {
-                val validPermanents = findValidPermanentsOnBattlefield(state, playerId, cost.filter, sourceId)
-                validPermanents.size >= cost.count
+        return when (val atom = (cost as? PayCost.Atom)?.atom) {
+            is CostAtom.Sacrifice -> {
+                val validPermanents = findValidPermanentsOnBattlefield(state, playerId, atom.filter, sourceId)
+                validPermanents.size >= atom.count
             }
             // CR 119.4: a player may pay life only if their life total is at least the amount.
-            is PayCost.PayLife -> {
+            is CostAtom.PayLife -> {
                 val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
-                life >= cost.amount
+                life >= atom.amount
             }
             else -> false
         }
@@ -133,7 +134,7 @@ class AnyPlayerMayPayExecutor(
         state: GameState,
         effect: AnyPlayerMayPayEffect,
         context: EffectContext,
-        cost: PayCost.Sacrifice,
+        cost: CostAtom.Sacrifice,
         sourceId: EntityId,
         sourceName: String,
         playerId: EntityId,
@@ -182,7 +183,7 @@ class AnyPlayerMayPayExecutor(
         state: GameState,
         effect: AnyPlayerMayPayEffect,
         context: EffectContext,
-        cost: PayCost.PayLife,
+        cost: CostAtom.PayLife,
         sourceId: EntityId,
         sourceName: String,
         playerId: EntityId,

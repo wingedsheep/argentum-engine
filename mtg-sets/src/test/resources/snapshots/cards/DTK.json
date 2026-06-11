@@ -15,8 +15,11 @@
         {
             "type": "Morph",
             "morphCost": {
-                "type": "PayMana",
-                "cost": "{5}{G}"
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{G}"
+                }
             },
             "faceUpEffect": {
                 "type": "AddCounters",

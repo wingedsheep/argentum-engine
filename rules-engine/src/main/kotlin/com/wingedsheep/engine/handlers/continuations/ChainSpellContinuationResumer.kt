@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
@@ -68,13 +69,13 @@ class ChainSpellContinuationResumer(
         }
 
         // Present cost payment based on PayCost type
-        return when (copyCost) {
-            is PayCost.Sacrifice -> {
-                val candidates = ChainCopyExecutor.findMatchingPermanents(state, controllerId, copyCost.filter)
-                if (candidates.size < copyCost.count) {
+        return when (val atom = (copyCost as? PayCost.Atom)?.atom) {
+            is CostAtom.Sacrifice -> {
+                val candidates = ChainCopyExecutor.findMatchingPermanents(state, controllerId, atom.filter)
+                if (candidates.size < atom.count) {
                     return checkForMore(state, emptyList())
                 }
-                if (candidates.size == copyCost.count) {
+                if (candidates.size == atom.count) {
                     // Auto-pay when exactly enough resources
                     return payCostAndPresentTargets(
                         state, controllerId, copyCost, candidates,
@@ -83,14 +84,14 @@ class ChainSpellContinuationResumer(
                 }
                 presentCostSelection(
                     state, controllerId, effect, continuation.sourceId, candidates,
-                    "Choose a ${copyCost.filter.description} to sacrifice for the copy of ${effect.spellName}",
+                    "Choose a ${atom.filter.description} to sacrifice for the copy of ${effect.spellName}",
                     useTargetingUI = true
                 )
             }
-            is PayCost.Discard -> {
+            is CostAtom.Discard -> {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 val hand = state.getZone(handZone)
-                if (hand.size < copyCost.count) {
+                if (hand.size < atom.count) {
                     return checkForMore(state, emptyList())
                 }
                 presentCostSelection(
@@ -419,8 +420,8 @@ class ChainSpellContinuationResumer(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        when (cost) {
-            is PayCost.Sacrifice -> {
+        when ((cost as? PayCost.Atom)?.atom) {
+            is CostAtom.Sacrifice -> {
                 for (cardId in selectedCards) {
                     val container = newState.getEntity(cardId) ?: continue
                     val cardComponent = container.get<CardComponent>() ?: continue
@@ -444,7 +445,7 @@ class ChainSpellContinuationResumer(
                     ))
                 }
             }
-            is PayCost.Discard -> {
+            is CostAtom.Discard -> {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
 

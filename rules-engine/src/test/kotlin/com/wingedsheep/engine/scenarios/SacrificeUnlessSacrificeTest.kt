@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
@@ -43,7 +44,7 @@ class SacrificeUnlessSacrificeTest : FunSpec({
                 trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = PayOrSufferEffect(
-                    cost = PayCost.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest")),
+                    cost = Costs.pay.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest")),
                     suffer = SacrificeSelfEffect
                 )
             )
@@ -62,7 +63,7 @@ class SacrificeUnlessSacrificeTest : FunSpec({
                 trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
                 binding = TriggerBinding.SELF,
                 effect = PayOrSufferEffect(
-                    cost = PayCost.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest"), count = 3),
+                    cost = Costs.pay.Sacrifice(filter = GameObjectFilter.Any.withSubtype("Forest"), count = 3),
                     suffer = SacrificeSelfEffect
                 )
             )

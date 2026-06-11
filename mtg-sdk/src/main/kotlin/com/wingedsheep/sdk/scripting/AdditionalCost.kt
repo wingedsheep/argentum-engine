@@ -1,7 +1,8 @@
 package com.wingedsheep.sdk.scripting
 
-import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -15,6 +16,12 @@ import kotlinx.serialization.Serializable
  * - Pay life (Phyrexian mana)
  *
  * Additional costs are declared in the CardScript and validated/paid during casting.
+ *
+ * The payable things shared with the other cost contexts (sacrifice, discard, pay life, exile from a
+ * zone, tap permanents) live in the [CostAtom] vocabulary and are carried here by [Atom]. The remaining
+ * subtypes are genuinely casting-context-specific: alternative "X or pay mana" shapes (Blight/Behold),
+ * pipeline-storage flow (Behold/ExileFromStorage/Composite), per-target life, variable exile, and the
+ * cross-zone [ChooseEntity] pick.
  */
 @Serializable
 sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
@@ -34,75 +41,20 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
-     * Sacrifice a permanent matching the given filter.
-     * Example: "Sacrifice a green creature" for Natural Order
-     *
-     * @property filter Which permanents can be sacrificed
-     * @property count Number of permanents to sacrifice
+     * A single shared payable thing — see [CostAtom]. Covers the additional costs that mean the same
+     * here as in any other context: sacrifice a permanent (Natural Order), discard cards (Force of
+     * Will), pay life (Phyrexian mana), exile cards from a zone, tap permanents. Additional-cost text
+     * leads a clause, so the description is the atom's phrase with its first letter capitalized.
      */
-    @SerialName("SacrificePermanent")
+    @SerialName("AdditionalAtom")
     @Serializable
-    data class SacrificePermanent(
-        val filter: GameObjectFilter = GameObjectFilter.Any,
-        val count: Int = 1
-    ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Sacrifice ")
-            if (count == 1) {
-                append("a ")
-            } else {
-                append("$count ")
-            }
-            append(filter.description)
-            if (count != 1) append("s")
-        }
+    data class Atom(val atom: CostAtom) : AdditionalCost {
+        override val description: String get() = atom.description.replaceFirstChar { it.uppercase() }
 
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
+            val newAtom = atom.applyTextReplacement(replacer)
+            return if (newAtom !== atom) copy(atom = newAtom) else this
         }
-    }
-
-    /**
-     * Discard cards from hand.
-     * Example: "Discard a card" or "Discard 2 cards"
-     *
-     * @property count Number of cards to discard
-     * @property filter Which cards can be discarded
-     */
-    @SerialName("DiscardCards")
-    @Serializable
-    data class DiscardCards(
-        val count: Int = 1,
-        val filter: GameObjectFilter = GameObjectFilter.Any
-    ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Discard ")
-            if (count == 1) {
-                append("a ")
-            } else {
-                append("$count ")
-            }
-            append(filter.description)
-            if (count != 1) append("s")
-        }
-
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
-        }
-    }
-
-    /**
-     * Pay life as an additional cost.
-     * Example: "Pay 1 life" for Phyrexian mana
-     */
-    @SerialName("PayLife")
-    @Serializable
-    data class PayLife(
-        val amount: Int
-    ) : AdditionalCost {
-        override val description: String = "Pay $amount life"
     }
 
     /**
@@ -120,39 +72,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         val amountPerTarget: Int
     ) : AdditionalCost {
         override val description: String = "This spell costs $amountPerTarget life more to cast for each target"
-    }
-
-    /**
-     * Exile cards from a zone (usually graveyard or hand).
-     * Example: "Exile a creature card from your graveyard"
-     *
-     * @property count Number of cards to exile
-     * @property filter Which cards can be exiled
-     * @property fromZone Zone to exile from
-     */
-    @SerialName("ExileCards")
-    @Serializable
-    data class ExileCards(
-        val count: Int = 1,
-        val filter: GameObjectFilter = GameObjectFilter.Any,
-        val fromZone: CostZone = CostZone.GRAVEYARD
-    ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Exile ")
-            if (count == 1) {
-                append("a ")
-            } else {
-                append("$count ")
-            }
-            append(filter.description)
-            if (count != 1) append("s")
-            append(" from your ${fromZone.description}")
-        }
-
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
-        }
     }
 
     /**
@@ -183,13 +102,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         }
     }
 
-    /**
-     * Tap permanents you control.
-     * Example: "Tap an untapped creature you control"
-     *
-     * @property count Number of permanents to tap
-     * @property filter Which permanents can be tapped
-     */
     /**
      * Sacrifice any number of permanents matching the given filter as an additional cost.
      * Each sacrifice reduces the spell's generic mana cost by [costReductionPerCreature].
@@ -222,17 +134,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
-     * Blight N or pay additional mana: the caster must either put N -1/-1 counters on a creature
-     * they control, or pay extra mana on top of the spell's base mana cost.
-     * Used by Lorwyn Eclipsed cards (e.g., Wild Unraveling).
-     *
-     * The enumerator produces two legal actions: one for the blight path (base cost + creature selection)
-     * and one for the pay path (base cost + [alternativeManaCost]).
-     *
-     * @property blightAmount Number of -1/-1 counters to place
-     * @property alternativeManaCost Extra mana to pay instead of blighting (e.g., "{1}")
-     */
-    /**
      * Blight X (variable): the caster declares X at cast time, puts X -1/-1
      * counters on a creature they control, and X is exposed to the spell's
      * effects via `DynamicAmount.CastChoice(ChoiceSlot.BLIGHT_AMOUNT)`.
@@ -253,6 +154,17 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
             "blight X. X can't be greater than the greatest toughness among creatures you control"
     }
 
+    /**
+     * Blight N or pay additional mana: the caster must either put N -1/-1 counters on a creature
+     * they control, or pay extra mana on top of the spell's base mana cost.
+     * Used by Lorwyn Eclipsed cards (e.g., Wild Unraveling).
+     *
+     * The enumerator produces two legal actions: one for the blight path (base cost + creature selection)
+     * and one for the pay path (base cost + [alternativeManaCost]).
+     *
+     * @property blightAmount Number of -1/-1 counters to place
+     * @property alternativeManaCost Extra mana to pay instead of blighting (e.g., "{1}")
+     */
     @SerialName("BlightOrPay")
     @Serializable
     data class BlightOrPay(
@@ -401,30 +313,6 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
             "Remove $totalCount counters from among creatures you control"
     }
 
-    @SerialName("TapPermanents")
-    @Serializable
-    data class TapPermanents(
-        val count: Int = 1,
-        val filter: GameObjectFilter = GameObjectFilter.Creature
-    ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Tap ")
-            if (count == 1) {
-                append("an untapped ")
-            } else {
-                append("$count untapped ")
-            }
-            append(filter.description)
-            if (count != 1) append("s")
-            append(" you control")
-        }
-
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
-        }
-    }
-
     /**
      * Choose one entity from any of the zones declared in [zoneFilters], applying
      * the matching filter for that zone, without moving it. The chosen entity ID
@@ -460,8 +348,8 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     @SerialName("ChooseEntity")
     @Serializable
     data class ChooseEntity(
-        val zoneFilters: Map<com.wingedsheep.sdk.core.Zone, GameObjectFilter> =
-            mapOf(com.wingedsheep.sdk.core.Zone.BATTLEFIELD to GameObjectFilter.Any),
+        val zoneFilters: Map<Zone, GameObjectFilter> =
+            mapOf(Zone.BATTLEFIELD to GameObjectFilter.Any),
         val storeAs: String = "chosen",
         val captureSnapshot: Boolean = false,
         /**
@@ -503,7 +391,15 @@ enum class CostZone(val description: String) {
     HAND("hand"),
     GRAVEYARD("graveyard"),
     LIBRARY("library"),
-    BATTLEFIELD("battlefield")
+    BATTLEFIELD("battlefield");
+
+    /** The engine [Zone] this cost-zone maps to. */
+    fun toZone(): Zone = when (this) {
+        HAND -> Zone.HAND
+        GRAVEYARD -> Zone.GRAVEYARD
+        LIBRARY -> Zone.LIBRARY
+        BATTLEFIELD -> Zone.BATTLEFIELD
+    }
 }
 
 /**

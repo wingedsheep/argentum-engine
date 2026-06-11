@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
@@ -143,12 +144,40 @@ class CastSpellEnumerator : ActionEnumerator {
             }
             for (cost in flattenedCosts) {
                 when (cost) {
-                    is AdditionalCost.SacrificePermanent -> {
-                        val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, cost)
-                        if (validSacTargets.size < cost.count) {
-                            canPayAdditionalCosts = false
+                    is AdditionalCost.Atom -> when (val atom = cost.atom) {
+                        is CostAtom.Sacrifice -> {
+                            val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, atom)
+                            if (validSacTargets.size < atom.count) {
+                                canPayAdditionalCosts = false
+                            }
+                            sacrificeTargets.addAll(validSacTargets)
                         }
-                        sacrificeTargets.addAll(validSacTargets)
+                        is CostAtom.ExileFrom -> {
+                            val validExileTargets = context.costUtils.findExileTargets(state, playerId, atom.filter, atom.zone)
+                            if (validExileTargets.size < atom.count) {
+                                canPayAdditionalCosts = false
+                            }
+                            exileTargets = validExileTargets
+                            exileMinCount = atom.count
+                        }
+                        is CostAtom.Discard -> {
+                            val handZone = ZoneKey(playerId, Zone.HAND)
+                            val handCards = state.getZone(handZone)
+                                .filter { it != cardId } // Exclude the card being cast
+                            val predicateContext = PredicateContext(controllerId = playerId)
+                            val validDiscards = if (atom.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+                                handCards
+                            } else {
+                                handCards.filter { context.predicateEvaluator.matches(state, state.projectedState, it, atom.filter, predicateContext) }
+                            }
+                            if (validDiscards.size < atom.count) {
+                                canPayAdditionalCosts = false
+                            }
+                            discardTargets = validDiscards
+                            discardCount = atom.count
+                        }
+                        // Mana / tap / return / reveal aren't produced as spell additional costs today.
+                        else -> {}
                     }
                     is AdditionalCost.SacrificeCreaturesForCostReduction -> {
                         // Always payable (0 sacrifices is valid)
@@ -157,20 +186,12 @@ class CastSpellEnumerator : ActionEnumerator {
                         variableSacrificeReduction = cost.costReductionPerCreature
                     }
                     is AdditionalCost.ExileVariableCards -> {
-                        val validExileTargets = context.costUtils.findExileTargets(state, playerId, cost.filter, cost.fromZone)
+                        val validExileTargets = context.costUtils.findExileTargets(state, playerId, cost.filter, cost.fromZone.toZone())
                         if (validExileTargets.size < cost.minCount) {
                             canPayAdditionalCosts = false
                         }
                         exileTargets = validExileTargets
                         exileMinCount = cost.minCount
-                    }
-                    is AdditionalCost.ExileCards -> {
-                        val validExileTargets = context.costUtils.findExileTargets(state, playerId, cost.filter, cost.fromZone)
-                        if (validExileTargets.size < cost.count) {
-                            canPayAdditionalCosts = false
-                        }
-                        exileTargets = validExileTargets
-                        exileMinCount = cost.count
                     }
                     is AdditionalCost.Behold -> {
                         // Find matching permanents on battlefield (projected) + matching cards in hand
@@ -192,22 +213,6 @@ class CastSpellEnumerator : ActionEnumerator {
                     }
                     is AdditionalCost.ExileFromStorage -> {
                         // Payability determined by the preceding Behold cost
-                    }
-                    is AdditionalCost.DiscardCards -> {
-                        val handZone = ZoneKey(playerId, Zone.HAND)
-                        val handCards = state.getZone(handZone)
-                            .filter { it != cardId } // Exclude the card being cast
-                        val predicateContext = PredicateContext(controllerId = playerId)
-                        val validDiscards = if (cost.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
-                            handCards
-                        } else {
-                            handCards.filter { context.predicateEvaluator.matches(state, state.projectedState, it, cost.filter, predicateContext) }
-                        }
-                        if (validDiscards.size < cost.count) {
-                            canPayAdditionalCosts = false
-                        }
-                        discardTargets = validDiscards
-                        discardCount = cost.count
                     }
                     is AdditionalCost.BlightOrPay -> {
                         // Always payable: player can always choose the "pay mana" path
@@ -357,9 +362,9 @@ class CastSpellEnumerator : ActionEnumerator {
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
                 val canPayMana = context.manaSolver.canPay(state, playerId, selfAltEffective, precomputedSources = cachedSources)
                 val canPayAdditional = selfAltCost.additionalCosts.all { cost ->
-                    when (cost) {
-                        is AdditionalCost.TapPermanents -> {
-                            context.costUtils.findAbilityTapTargets(state, playerId, cost.filter).size >= cost.count
+                    when (val atom = (cost as? AdditionalCost.Atom)?.atom) {
+                        is CostAtom.TapPermanents -> {
+                            context.costUtils.findAbilityTapTargets(state, playerId, atom.filter).size >= atom.count
                         }
                         else -> true
                     }
@@ -520,7 +525,7 @@ class CastSpellEnumerator : ActionEnumerator {
                     context.manaSolver.solve(state, playerId, selfAltEffective, precomputedSources = cachedSources)
                         ?.sources?.map { it.entityId }
                 }
-                val tapCost = selfAltCost.additionalCosts.filterIsInstance<AdditionalCost.TapPermanents>().firstOrNull()
+                val tapCost = selfAltCost.additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.TapPermanents }
                 val tapTargets = if (tapCost != null) context.costUtils.findAbilityTapTargets(state, playerId, tapCost.filter) else null
                 val addlCostInfo = if (tapTargets != null && tapCost != null) {
                     AdditionalCostData(
@@ -1358,18 +1363,21 @@ class CastSpellEnumerator : ActionEnumerator {
             var canPayKickerAdditionalCost = true
             if (additionalCostKicker?.additionalCost != null) {
                 when (val cost = additionalCostKicker.additionalCost) {
-                    is AdditionalCost.SacrificePermanent -> {
-                        val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, cost)
-                        if (validSacTargets.size < cost.count) {
-                            canPayKickerAdditionalCost = false
-                        } else {
-                            kickerCostInfo = AdditionalCostData(
-                                description = cost.description,
-                                costType = "SacrificePermanent",
-                                validSacrificeTargets = validSacTargets,
-                                sacrificeCount = cost.count
-                            )
+                    is AdditionalCost.Atom -> when (val atom = cost.atom) {
+                        is CostAtom.Sacrifice -> {
+                            val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, atom)
+                            if (validSacTargets.size < atom.count) {
+                                canPayKickerAdditionalCost = false
+                            } else {
+                                kickerCostInfo = AdditionalCostData(
+                                    description = atom.description.replaceFirstChar { it.uppercase() },
+                                    costType = "SacrificePermanent",
+                                    validSacrificeTargets = validSacTargets,
+                                    sacrificeCount = atom.count
+                                )
+                            }
                         }
+                        else -> {}
                     }
                     is AdditionalCost.Behold -> {
                         // Behold a matching permanent you control or reveal a matching
@@ -1535,9 +1543,9 @@ class CastSpellEnumerator : ActionEnumerator {
                 sacrificeCount = 0 // min 0 — sacrifice is optional
             )
         } else if (sacrificeTargets.isNotEmpty()) {
-            val sacCost = additionalCosts.filterIsInstance<AdditionalCost.SacrificePermanent>().firstOrNull()
+            val sacCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Sacrifice }
             AdditionalCostData(
-                description = sacCost?.description ?: "Sacrifice a creature",
+                description = sacCost?.description?.replaceFirstChar { it.uppercase() } ?: "Sacrifice a creature",
                 costType = "SacrificePermanent",
                 validSacrificeTargets = sacrificeTargets,
                 sacrificeCount = sacCost?.count ?: 1
@@ -1547,8 +1555,8 @@ class CastSpellEnumerator : ActionEnumerator {
                 .filterIsInstance<AdditionalCost.ExileVariableCards>()
                 .firstOrNull()?.description
                 ?: additionalCosts
-                    .filterIsInstance<AdditionalCost.ExileCards>()
-                    .firstOrNull()?.description
+                    .firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.ExileFrom }
+                    ?.description?.replaceFirstChar { it.uppercase() }
                 ?: "Exile cards from your graveyard"
             AdditionalCostData(
                 description = exileCostDesc,
@@ -1558,9 +1566,9 @@ class CastSpellEnumerator : ActionEnumerator {
                 exileMaxCount = exileTargets.size
             )
         } else if (discardTargets.isNotEmpty()) {
-            val discardCost = additionalCosts.filterIsInstance<AdditionalCost.DiscardCards>().firstOrNull()
+            val discardCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Discard }
             AdditionalCostData(
-                description = discardCost?.description ?: "Discard a card",
+                description = discardCost?.description?.replaceFirstChar { it.uppercase() } ?: "Discard a card",
                 costType = "DiscardCard",
                 validDiscardTargets = discardTargets,
                 discardCount = discardCount
@@ -1677,29 +1685,40 @@ class CastSpellEnumerator : ActionEnumerator {
         if (modeAdditionalCosts != null) {
             for (cost in modeAdditionalCosts) {
                 when (cost) {
-                    is AdditionalCost.SacrificePermanent -> {
-                        val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, cost)
-                        if (validSacTargets.size < cost.count) canPayAdditionalCosts = false
-                        modeSacrificeTargets.addAll(validSacTargets)
-                    }
-                    is AdditionalCost.ExileCards -> {
-                        val validExileTargets = context.costUtils.findExileTargets(state, playerId, cost.filter, cost.fromZone)
-                        if (validExileTargets.size < cost.count) canPayAdditionalCosts = false
-                        modeExileTargets = validExileTargets
-                        modeExileMinCount = cost.count
-                    }
-                    is AdditionalCost.DiscardCards -> {
-                        val handZone = ZoneKey(playerId, Zone.HAND)
-                        val handCards = state.getZone(handZone).filter { it != cardId }
-                        val predicateContext = PredicateContext(controllerId = playerId)
-                        val validDiscards = if (cost.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
-                            handCards
-                        } else {
-                            handCards.filter { context.predicateEvaluator.matches(state, state.projectedState, it, cost.filter, predicateContext) }
+                    is AdditionalCost.Atom -> when (val atom = cost.atom) {
+                        is CostAtom.Sacrifice -> {
+                            val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, atom)
+                            if (validSacTargets.size < atom.count) canPayAdditionalCosts = false
+                            modeSacrificeTargets.addAll(validSacTargets)
                         }
-                        if (validDiscards.size < cost.count) canPayAdditionalCosts = false
-                        modeDiscardTargets = validDiscards
-                        modeDiscardCount = cost.count
+                        is CostAtom.ExileFrom -> {
+                            val validExileTargets = context.costUtils.findExileTargets(state, playerId, atom.filter, atom.zone)
+                            if (validExileTargets.size < atom.count) canPayAdditionalCosts = false
+                            modeExileTargets = validExileTargets
+                            modeExileMinCount = atom.count
+                        }
+                        is CostAtom.Discard -> {
+                            val handZone = ZoneKey(playerId, Zone.HAND)
+                            val handCards = state.getZone(handZone).filter { it != cardId }
+                            val predicateContext = PredicateContext(controllerId = playerId)
+                            val validDiscards = if (atom.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+                                handCards
+                            } else {
+                                handCards.filter { context.predicateEvaluator.matches(state, state.projectedState, it, atom.filter, predicateContext) }
+                            }
+                            if (validDiscards.size < atom.count) canPayAdditionalCosts = false
+                            modeDiscardTargets = validDiscards
+                            modeDiscardCount = atom.count
+                        }
+                        is CostAtom.PayLife -> {
+                            // Per CR 119.4 you can't pay life unless you have that much. Mode-level
+                            // affordability gate so "discard a card or pay 3 life" modes don't
+                            // surface a Pay-3-Life action when the caster has fewer than 3 life
+                            // (Bitter Triumph). Validation in CastSpellHandler still backstops.
+                            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+                            if (life < atom.amount) canPayAdditionalCosts = false
+                        }
+                        else -> {}
                     }
                     is AdditionalCost.Forage -> {
                         val graveyardSize = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).size
@@ -1710,14 +1729,6 @@ class CastSpellEnumerator : ActionEnumerator {
                                 projected.hasSubtype(permId, com.wingedsheep.sdk.core.Subtype.FOOD.value)
                         }
                         if (graveyardSize < 3 && !hasFood) canPayAdditionalCosts = false
-                    }
-                    is AdditionalCost.PayLife -> {
-                        // Per CR 119.4 you can't pay life unless you have that much. Mode-level
-                        // affordability gate so "discard a card or pay 3 life" modes don't
-                        // surface a Pay-3-Life action when the caster has fewer than 3 life
-                        // (Bitter Triumph). Validation in CastSpellHandler still backstops.
-                        val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
-                        if (life < cost.amount) canPayAdditionalCosts = false
                     }
                     else -> {}
                 }

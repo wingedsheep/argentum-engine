@@ -4803,26 +4803,29 @@
         {
             "type": "Kicker",
             "additionalCost": {
-                "type": "SacrificePermanent",
-                "filter": {
-                    "cardPredicates": [
-                        {
-                            "type": "Or",
-                            "predicates": [
-                                "IsArtifact",
-                                {
-                                    "type": "And",
-                                    "predicates": [
-                                        "IsCreature",
-                                        {
-                                            "type": "HasSubtype",
-                                            "subtype": "Goblin"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Goblin"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
             }
         }
@@ -9604,8 +9607,11 @@
                             "effect": {
                                 "type": "PayOrSuffer",
                                 "cost": {
-                                    "type": "Sacrifice",
-                                    "filter": "creature"
+                                    "type": "PayAtom",
+                                    "atom": {
+                                        "type": "AtomSacrifice",
+                                        "filter": "creature"
+                                    }
                                 },
                                 "suffer": {
                                     "type": "DealDamage",
@@ -13926,23 +13932,26 @@
                         {
                             "type": "PayOrSuffer",
                             "cost": {
-                                "type": "ExileFromZone",
-                                "filter": {
-                                    "cardPredicates": [
-                                        {
-                                            "type": "Or",
-                                            "predicates": [
-                                                "IsArtifact",
-                                                "IsLegendary",
-                                                {
-                                                    "type": "HasSubtype",
-                                                    "subtype": "Saga"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                "zone": "Graveyard"
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomExileFrom",
+                                    "zone": "Graveyard",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsArtifact",
+                                                    "IsLegendary",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Saga"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
                             },
                             "suffer": {
                                 "type": "Composite",
@@ -14193,8 +14202,11 @@
         {
             "type": "Kicker",
             "additionalCost": {
-                "type": "SacrificePermanent",
-                "filter": "creature"
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
             }
         }
     ],
@@ -15134,8 +15146,11 @@
             "manaCost": "{3}{U}",
             "additionalCosts": [
                 {
-                    "type": "TapPermanents",
-                    "filter": "artifact"
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "artifact"
+                    }
                 }
             ]
         }

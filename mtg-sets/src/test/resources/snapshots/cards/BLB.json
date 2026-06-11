@@ -623,8 +623,11 @@
                         {
                             "type": "PayOrSuffer",
                             "cost": {
-                                "type": "Discard",
-                                "filter": "nonland"
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomDiscard",
+                                    "filter": "nonland"
+                                }
                             },
                             "suffer": {
                                 "type": "Composite",
@@ -15927,7 +15930,10 @@
             "countsAsModalSpell": false
         },
         "additionalCosts": [
-            "DiscardCards"
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            }
         ]
     },
     "metadata": {
@@ -18366,10 +18372,16 @@
                         "type": "Choice",
                         "options": [
                             {
-                                "type": "Sacrifice",
-                                "filter": "nonland"
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": "nonland"
+                                }
                             },
-                            "Discard"
+                            {
+                                "type": "PayAtom",
+                                "atom": "AtomDiscard"
+                            }
                         ]
                     },
                     "suffer": {
@@ -19554,7 +19566,10 @@
                         {
                             "type": "GrantPlayWithAdditionalCost",
                             "from": "nonland",
-                            "additionalCost": "DiscardCards"
+                            "additionalCost": {
+                                "type": "AdditionalAtom",
+                                "atom": "AtomDiscard"
+                            }
                         }
                     ]
                 }

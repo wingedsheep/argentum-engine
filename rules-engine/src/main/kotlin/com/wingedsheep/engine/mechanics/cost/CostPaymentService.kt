@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import java.util.UUID
 
@@ -103,30 +104,32 @@ class CostPaymentService(private val services: EngineServices) {
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "the source"
 
         return when (resolved) {
-            is PayCost.Mana ->
-                yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${resolved.cost}?", "Pay ${resolved.cost}")
-            is PayCost.PayLife ->
-                yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${resolved.amount} life?", "Pay ${resolved.amount} life")
-            is PayCost.Discard ->
-                if (resolved.random) {
-                    val word = if (resolved.count == 1) "a card" else "${resolved.count} cards"
-                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Discard $word at random?", "Discard")
-                } else {
-                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, cardsInHand(state, payerId, resolved.filter), resolved.count, useTargetingUI = false)
-                }
-            is PayCost.Exile ->
-                selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, cardsInZone(state, payerId, resolved.filter, resolved.zone), resolved.count, useTargetingUI = resolved.zone == Zone.BATTLEFIELD)
-            is PayCost.RevealCard ->
-                selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, cardsInHand(state, payerId, resolved.filter), resolved.count, useTargetingUI = false)
-            is PayCost.Sacrifice ->
-                selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledMatching(state, payerId, resolved.filter, sourceId), resolved.count, useTargetingUI = true)
-            is PayCost.ReturnToHand ->
-                selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledMatching(state, payerId, resolved.filter, sourceId), resolved.count, useTargetingUI = true)
-            is PayCost.Tap ->
-                selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledUntapped(state, payerId, resolved.filter, sourceId), resolved.count, useTargetingUI = true)
             is PayCost.Choice -> choicePrompt(state, payerId, resolved, sourceId, sourceName, ctx)
             // resolve() only yields OwnManaCost when unresolvable, and canAfford already rejected it.
             is PayCost.OwnManaCost -> PaymentResult.Unaffordable(state)
+            is PayCost.Atom -> when (val atom = resolved.atom) {
+                is CostAtom.Mana ->
+                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${atom.cost}?", "Pay ${atom.cost}")
+                is CostAtom.PayLife ->
+                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${atom.amount} life?", "Pay ${atom.amount} life")
+                is CostAtom.Discard ->
+                    if (atom.random) {
+                        val word = if (atom.count == 1) "a card" else "${atom.count} cards"
+                        yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Discard $word at random?", "Discard")
+                    } else {
+                        selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, cardsInHand(state, payerId, atom.filter), atom.count, useTargetingUI = false)
+                    }
+                is CostAtom.ExileFrom ->
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, cardsInZone(state, payerId, atom.filter, atom.zone), atom.count, useTargetingUI = atom.zone == Zone.BATTLEFIELD)
+                is CostAtom.RevealFromHand ->
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, cardsInHand(state, payerId, atom.filter), atom.count, useTargetingUI = false)
+                is CostAtom.Sacrifice ->
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledMatching(state, payerId, atom.filter, sourceId), atom.count, useTargetingUI = true)
+                is CostAtom.ReturnToHand ->
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledMatching(state, payerId, atom.filter, sourceId), atom.count, useTargetingUI = true)
+                is CostAtom.TapPermanents ->
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledUntapped(state, payerId, atom.filter, sourceId), atom.count, useTargetingUI = true)
+            }
         }
     }
 
@@ -244,7 +247,7 @@ class CostPaymentService(private val services: EngineServices) {
      * selection cost (empty for yes/no costs and random discard). Returns the new state, the emitted
      * events, and whether the payment actually completed (mana solving can still fail defensively).
      *
-     * [cost] must already be resolved ([PayCost.OwnManaCost] mapped to [PayCost.Mana]) and, for
+     * [cost] must already be resolved ([PayCost.OwnManaCost] mapped to a [PayCost.Atom] CostAtom.Mana) and, for
      * [PayCost.Choice], a single chosen sub-cost — the resumer never calls this with a Choice.
      */
     fun performPayment(
@@ -254,18 +257,20 @@ class CostPaymentService(private val services: EngineServices) {
         sourceId: EntityId,
         selected: List<EntityId>
     ): CostPaymentExecution = when (cost) {
-        is PayCost.Mana -> payMana(state, payerId, cost.cost, sourceId)
-        is PayCost.PayLife -> payLife(state, payerId, cost.amount)
-        is PayCost.Discard ->
-            if (cost.random) discardRandom(state, payerId, cost.filter, cost.count)
-            else discardSelected(state, payerId, selected)
-        is PayCost.Exile -> exileSelected(state, payerId, selected, cost.zone)
-        is PayCost.RevealCard -> revealSelected(state, payerId, selected)
-        is PayCost.Sacrifice -> sacrificeSelected(state, payerId, selected)
-        is PayCost.ReturnToHand -> returnSelected(state, selected)
-        is PayCost.Tap -> tapSelected(state, selected)
         is PayCost.OwnManaCost -> CostPaymentExecution(state, emptyList(), success = false)
         is PayCost.Choice -> CostPaymentExecution(state, emptyList(), success = false)
+        is PayCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.Mana -> payMana(state, payerId, atom.cost, sourceId)
+            is CostAtom.PayLife -> payLife(state, payerId, atom.amount)
+            is CostAtom.Discard ->
+                if (atom.random) discardRandom(state, payerId, atom.filter, atom.count)
+                else discardSelected(state, payerId, selected)
+            is CostAtom.ExileFrom -> exileSelected(state, payerId, selected, atom.zone)
+            is CostAtom.RevealFromHand -> revealSelected(state, payerId, selected)
+            is CostAtom.Sacrifice -> sacrificeSelected(state, payerId, selected)
+            is CostAtom.ReturnToHand -> returnSelected(state, selected)
+            is CostAtom.TapPermanents -> tapSelected(state, selected)
+        }
     }
 
     private fun payMana(state: GameState, payerId: EntityId, manaCost: ManaCost, sourceId: EntityId): CostPaymentExecution {
@@ -428,13 +433,8 @@ class CostPaymentService(private val services: EngineServices) {
 
     /** How many entities a selection cost requires; 0 for non-selection costs. */
     fun requiredCount(cost: PayCost): Int = when (cost) {
-        is PayCost.Discard -> cost.count
-        is PayCost.Exile -> cost.count
-        is PayCost.RevealCard -> cost.count
-        is PayCost.Sacrifice -> cost.count
-        is PayCost.ReturnToHand -> cost.count
-        is PayCost.Tap -> cost.count
-        else -> 0
+        is PayCost.Atom -> cost.atom.selectionCount
+        is PayCost.OwnManaCost, is PayCost.Choice -> 0
     }
 
     /**
@@ -452,24 +452,26 @@ class CostPaymentService(private val services: EngineServices) {
          */
         fun canAfford(state: GameState, payerId: EntityId, cost: PayCost, sourceId: EntityId, manaSolver: ManaSolver): Boolean {
             return when (val c = resolve(state, cost, sourceId)) {
-                is PayCost.Mana -> manaSolver.canPay(state, payerId, c.cost)
                 // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
                 is PayCost.OwnManaCost -> false
-                // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
-                // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
-                is PayCost.PayLife -> life(state, payerId) >= c.amount
-                is PayCost.Discard -> cardsInHand(state, payerId, c.filter).size >= c.count
-                is PayCost.Exile -> cardsInZone(state, payerId, c.filter, c.zone).size >= c.count
-                is PayCost.RevealCard -> cardsInHand(state, payerId, c.filter).size >= c.count
-                is PayCost.Sacrifice -> controlledMatching(state, payerId, c.filter, sourceId).size >= c.count
-                is PayCost.ReturnToHand -> controlledMatching(state, payerId, c.filter, sourceId).size >= c.count
-                is PayCost.Tap -> controlledUntapped(state, payerId, c.filter, sourceId).size >= c.count
                 is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver) }
+                is PayCost.Atom -> when (val atom = c.atom) {
+                    is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
+                    // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
+                    // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
+                    is CostAtom.PayLife -> life(state, payerId) >= atom.amount
+                    is CostAtom.Discard -> cardsInHand(state, payerId, atom.filter).size >= atom.count
+                    is CostAtom.ExileFrom -> cardsInZone(state, payerId, atom.filter, atom.zone).size >= atom.count
+                    is CostAtom.RevealFromHand -> cardsInHand(state, payerId, atom.filter).size >= atom.count
+                    is CostAtom.Sacrifice -> controlledMatching(state, payerId, atom.filter, sourceId).size >= atom.count
+                    is CostAtom.ReturnToHand -> controlledMatching(state, payerId, atom.filter, sourceId).size >= atom.count
+                    is CostAtom.TapPermanents -> controlledUntapped(state, payerId, atom.filter, sourceId).size >= atom.count
+                }
             }
         }
 
         /**
-         * Lowers [PayCost.OwnManaCost] to a concrete [PayCost.Mana] against the source's printed cost so
+         * Lowers [PayCost.OwnManaCost] to a concrete [PayCost.Atom] (CostAtom.Mana) against the source's printed cost so
          * every other code path sees a uniform shape. A source with no mana cost (a land, a token) has an
          * empty [ManaCost] — which is `{0}` and trivially payable. Returns the cost unchanged if the
          * source/card component is missing (unresolvable → reported unaffordable).
@@ -477,7 +479,7 @@ class CostPaymentService(private val services: EngineServices) {
         fun resolve(state: GameState, cost: PayCost, sourceId: EntityId): PayCost {
             if (cost !is PayCost.OwnManaCost) return cost
             val manaCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost ?: return cost
-            return PayCost.Mana(manaCost)
+            return PayCost.Atom(CostAtom.Mana(manaCost))
         }
 
         private fun life(state: GameState, playerId: EntityId): Int =

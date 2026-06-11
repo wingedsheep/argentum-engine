@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.core.spec.style.FunSpec
@@ -131,7 +132,7 @@ class CostEnumerationUtilsTest : FunSpec({
             )
 
             val targets = utils(driver).findExileTargets(
-                driver.game.state, driver.player1, GameObjectFilter.Creature, CostZone.GRAVEYARD
+                driver.game.state, driver.player1, GameObjectFilter.Creature, Zone.GRAVEYARD
             )
 
             targets shouldHaveSize 2  // two Grizzly Bears, Forest excluded
@@ -143,7 +144,7 @@ class CostEnumerationUtilsTest : FunSpec({
             )
 
             val targets = utils(driver).findExileTargets(
-                driver.game.state, driver.player1, GameObjectFilter.Creature, CostZone.HAND
+                driver.game.state, driver.player1, GameObjectFilter.Creature, Zone.HAND
             )
 
             targets shouldHaveSize 1

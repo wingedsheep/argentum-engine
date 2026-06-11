@@ -3378,8 +3378,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "Sacrifice",
-                        "filter": "creature"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature"
+                        }
                     },
                     "suffer": "SacrificeSelf"
                 }
@@ -4554,8 +4557,11 @@
                 "effect": {
                     "type": "PayOrSuffer",
                     "cost": {
-                        "type": "PayMana",
-                        "cost": "{U}{U}"
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{U}{U}"
+                        }
                     },
                     "suffer": "PhaseOut"
                 }

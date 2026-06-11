@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.SourceCastForImpending
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -1200,7 +1201,7 @@ class CardBuilder(private val name: String) {
         val finalKeywordAbilities = buildList {
             addAll(keywordAbilityList)
             when {
-                morph != null -> add(KeywordAbility.Morph(PayCost.Mana(ManaCost.parse(morph!!)), morphFaceUpEffect))
+                morph != null -> add(KeywordAbility.Morph(PayCost.Atom(CostAtom.Mana(ManaCost.parse(morph!!))), morphFaceUpEffect))
                 morphCost != null -> add(KeywordAbility.Morph(morphCost!!, morphFaceUpEffect))
             }
             if (warp != null) add(KeywordAbility.Warp(ManaCost.parse(warp!!)))

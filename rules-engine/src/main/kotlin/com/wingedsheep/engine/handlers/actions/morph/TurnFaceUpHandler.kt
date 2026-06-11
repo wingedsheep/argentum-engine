@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.TurnFaceUpEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -83,12 +84,14 @@ class TurnFaceUpHandler(
         // Validate cost payment based on morph cost type.
         // Apply morph cost increases from permanents like Exiled Doomsayer.
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
-        when (val morphCost = morphData.morphCost) {
-            is PayCost.Mana -> {
+        val morphCost = morphData.morphCost
+        val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
+        when {
+            manaMorph != null -> {
                 // Mana morph payment stays in this handler: it carries the rich up-front UX
                 // (explicit mana-source selection, X, auto-tap preview) that the shared
                 // CostPaymentService's yes/no mana path deliberately doesn't model.
-                val manaCost = costCalculator.increaseGenericCost(morphCost.cost, morphCostIncrease)
+                val manaCost = costCalculator.increaseGenericCost(manaMorph.cost, morphCostIncrease)
                 val xValue = action.xValue ?: 0
                 when (action.paymentStrategy) {
                     is PaymentStrategy.AutoPay -> {
@@ -164,9 +167,11 @@ class TurnFaceUpHandler(
         // Pay the morph cost (including any morph cost increases)
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
         val xValue = action.xValue ?: 0
-        when (val morphCost = morphData.morphCost) {
-            is PayCost.Mana -> {
-                val manaCost = costCalculator.increaseGenericCost(morphCost.cost, morphCostIncrease)
+        val morphCost = morphData.morphCost
+        val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
+        when {
+            manaMorph != null -> {
+                val manaCost = costCalculator.increaseGenericCost(manaMorph.cost, morphCostIncrease)
                 when (action.paymentStrategy) {
                     is PaymentStrategy.FromPool -> {
                         val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
