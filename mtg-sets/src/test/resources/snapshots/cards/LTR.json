@@ -11675,6 +11675,69 @@
     ]
 }
 
+// Shagrat, Loot Bearer
+{
+    "name": "Shagrat, Loot Bearer",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Orc Soldier",
+    "oracleText": "Whenever Shagrat attacks, attach up to one target Equipment to it. Then amass Orcs X, where X is the number of Equipment attached to Shagrat. (Control of the Equipment doesn't change. To amass Orcs X, put X +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AttachTargetEquipmentToCreature",
+                            "equipmentTarget": {
+                                "type": "BoundVariable",
+                                "name": "Equipment"
+                            },
+                            "creatureTarget": "Self"
+                        },
+                        {
+                            "type": "Amass",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": {
+                                    "type": "AttachmentCount",
+                                    "kind": "EQUIPMENT"
+                                }
+                            },
+                            "subtype": "Orc"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "artifact Equipment"
+                    },
+                    "id": "Equipment"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Tatiana Veryayskaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/0731f64a-15da-4814-82e9-3a42e1657f36.jpg?1686970039"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Shelob's Ambush
 {
     "name": "Shelob's Ambush",

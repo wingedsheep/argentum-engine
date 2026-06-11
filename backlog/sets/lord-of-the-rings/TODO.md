@@ -23,16 +23,16 @@ gap rather than approximating.
 > remaining tail is blocked on the specific gaps below; see `missing-effects.md` for the
 > per-card family map and the "what unblocks the most cards" ranking.
 
-Two cards have residual blockers that don't share a clean reusable gap with anything else;
-they're listed here so they don't get lost:
+One card has a residual blocker that doesn't share a clean reusable gap with anything else;
+it's listed here so it doesn't get lost:
 
 - **Grishnákh, Brash Instigator** — needs pipeline state threaded into target-predicate
   filters (its "with power ≤ the amassed Army's power" filter resolves the reference to
   `null` during targeting today).
-- **Shagrat, Loot Bearer** — `AttachTargetEquipmentToCreatureEffect` exists and
-  `DynamicAmounts.attachmentsOnSelf()` reads the attachment count, but the count is
-  *all attachments* (Equipment + Auras + Fortifications) — Shagrat's "X = the number of
-  Equipment attached" needs an Equipment-filtered AttachmentCount to be rules-faithful.
+
+- **Shagrat, Loot Bearer** — ✅ implemented. Landed `DynamicAmounts.equipmentAttachedToSelf()`
+  (Equipment-only attachment count, `EntityNumericProperty.AttachmentCount(AttachmentKind.EQUIPMENT)`)
+  so the amass X counts only Equipment attached to Shagrat.
 
 ## Data sources — do NOT hit the network
 
