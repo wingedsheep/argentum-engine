@@ -132,6 +132,13 @@ enum class AlternativeCostType {
     WARP,
     /** Evoke ([com.wingedsheep.sdk.scripting.KeywordAbility.Evoke]) — hand. */
     EVOKE,
+    /**
+     * Sneak ([com.wingedsheep.sdk.scripting.KeywordAbility.Sneak], CR 702.190) — hand,
+     * legal only during the active player's declare blockers step. Pays the sneak mana
+     * plus returns an unblocked attacker you control to hand
+     * ([CastSpell.additionalCostPayment] `bouncedPermanents`).
+     */
+    SNEAK,
     /** Impending ([com.wingedsheep.sdk.scripting.KeywordAbility.Impending]) — hand. */
     IMPENDING,
     /** A card's own `selfAlternativeCost` (e.g. Zahid's "tap an untapped artifact") — hand. */

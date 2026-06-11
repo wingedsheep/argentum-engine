@@ -218,6 +218,22 @@ data object WasKicked : Condition {
 }
 
 /**
+ * Condition: "If this spell's sneak cost was paid" (CR 702.190).
+ *
+ * True when the source spell/permanent was cast for its [Sneak][com.wingedsheep.sdk.scripting.KeywordAbility.Sneak]
+ * cost (mana + returning an unblocked attacker). Pairs with the durable
+ * [com.wingedsheep.sdk.scripting.ChoiceSlot.SNEAK] flag the engine stamps on a resolved
+ * permanent and the `wasSneaked` flag carried in the resolution context for a non-permanent
+ * spell. Used by riders such as Leonardo, Leader in Blue and The Last Ronin's Technique that
+ * change behavior when the sneak cost was paid.
+ */
+@SerialName("SneakCostWasPaid")
+@Serializable
+data object SneakCostWasPaid : Condition {
+    override val description: String = "its sneak cost was paid"
+}
+
+/**
  * Condition: "If this spell's blight additional cost was paid"
  * Used for Lorwyn Eclipsed cards (e.g., Cinder Strike) where the effect changes
  * based on whether the optional Blight additional cost was actually paid.

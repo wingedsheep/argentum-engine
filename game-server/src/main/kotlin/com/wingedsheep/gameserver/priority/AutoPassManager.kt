@@ -53,7 +53,47 @@ class AutoPassManager {
             Step.FIRST_STRIKE_COMBAT_DAMAGE,
             Step.COMBAT_DAMAGE
         )
+
+        /**
+         * Every action type that represents casting a spell, across *all* cost paths. The
+         * enumerators emit a distinct `actionType` per cost variant (a plain cast, each modal
+         * shape, and every alternative cost — flashback, harmonize, warp, evoke/impending/granted
+         * via [CastWithAlternativeCost], kicker, conspire, a free cast, morph). The auto-pass
+         * logic must treat them all as "a spell you can cast"; missing one (e.g. Sneak, which is
+         * only ever a `CastWithAlternativeCost`) makes the client speed past the window where it's
+         * legal. The server only sends legal actions, so any of these present means the player can
+         * actually cast it now.
+         */
+        val SPELL_CAST_ACTION_TYPES = setOf(
+            "CastSpell",
+            "CastSpellMode",
+            "CastSpellModal",
+            "CastWithAlternativeCost",
+            "CastWithFlashback",
+            "CastWithHarmonize",
+            "CastWithWarp",
+            "CastWithKicker",
+            "CastWithConspire",
+            "CastWithoutPayingManaCost",
+            "CastFaceDown",
+        )
+
+        /** Spell casts plus the activated / special abilities that count as instant-speed responses. */
+        val INSTANT_RESPONSE_ACTION_TYPES = SPELL_CAST_ACTION_TYPES + setOf(
+            "ActivateAbility",
+            "CycleCard",
+            "TypecycleCard",
+            "PlotCard",
+        )
     }
+
+    /**
+     * True if this action is an instant-speed response — a spell the player can cast or an
+     * ability they can activate right now — with a legal target if it needs one.
+     */
+    private fun LegalActionInfo.isInstantSpeedResponse(): Boolean =
+        actionType in INSTANT_RESPONSE_ACTION_TYPES &&
+            (!requiresTargets || !validTargets.isNullOrEmpty())
 
     /**
      * Determines if the player with priority should automatically pass.
@@ -121,9 +161,7 @@ class AutoPassManager {
                     // Non-aura permanent spells (creatures, artifacts, non-aura enchantments, planeswalkers):
                     // Auto-pass if we have no meaningful instant-speed responses.
                     // Auras are excluded because they target, and the opponent should see what's being targeted.
-                    val hasResponses = meaningfulActions.any {
-                        it.actionType == "CastSpell" || it.actionType == "CastSpellMode" || it.actionType == "CastSpellModal" || it.actionType == "ActivateAbility" || it.actionType == "CycleCard" || it.actionType == "TypecycleCard" || it.actionType == "PlotCard"
-                    }
+                    val hasResponses = meaningfulActions.any { it.actionType in INSTANT_RESPONSE_ACTION_TYPES }
                     if (!hasResponses) {
                         logger.debug("AUTO-PASS: Opponent's permanent spell on stack, no responses")
                         return true
@@ -174,10 +212,7 @@ class AutoPassManager {
         // (like Giant Growth) before damage. On opponent's turn, this is handled
         // by shouldAutoPassOnOpponentTurn which only stops if you have blockers.
         if (state.step == Step.DECLARE_BLOCKERS && isMyTurn) {
-            val hasInstantSpeedResponses = meaningfulActions.any { action ->
-                (action.actionType == "CastSpell" || action.actionType == "CastSpellMode" || action.actionType == "CastSpellModal" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard" || action.actionType == "PlotCard") &&
-                (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
-            }
+            val hasInstantSpeedResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
 
             if (hasInstantSpeedResponses) {
                 logger.debug("STOP: Declare blockers step (have instant-speed responses)")
@@ -257,15 +292,10 @@ class AutoPassManager {
                 return@filter true
             }
 
-            // CastSpell is meaningful only if the player can afford it
-            // (Regular spells are only added when affordable, but companion actions
-            // for cycling/morph cards can be added with isAffordable=false)
-            if (action.actionType == "CastSpell" || action.actionType == "CastSpellMode" || action.actionType == "CastSpellModal") {
-                return@filter action.isAffordable
-            }
-
-            // CastFaceDown (morph) is meaningful only if the player can afford it
-            if (action.actionType == "CastFaceDown") {
+            // A spell cast (any cost path) is meaningful only if the player can afford it.
+            // (Regular spells are only added when affordable, but companion actions for
+            // cycling/morph cards can be added with isAffordable=false.)
+            if (action.actionType in SPELL_CAST_ACTION_TYPES) {
                 return@filter action.isAffordable
             }
 
@@ -330,10 +360,7 @@ class AutoPassManager {
             }
 
             Step.DECLARE_BLOCKERS -> {
-                val hasResponses = meaningfulActions.any { action ->
-                    (action.actionType == "CastSpell" || action.actionType == "CastSpellMode" || action.actionType == "CastSpellModal" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard" || action.actionType == "PlotCard") &&
-                    (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
-                }
+                val hasResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
                 if (hasResponses) {
                     logger.debug("STOP: My declare blockers step (have instant-speed responses)")
                     false
@@ -344,10 +371,7 @@ class AutoPassManager {
             }
 
             Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
-                val hasResponses = meaningfulActions.any { action ->
-                    (action.actionType == "CastSpell" || action.actionType == "CastSpellMode" || action.actionType == "CastSpellModal" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard" || action.actionType == "PlotCard") &&
-                    (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
-                }
+                val hasResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
                 if (hasResponses) {
                     logger.debug("STOP: My first strike damage step (have instant-speed responses)")
                     false
@@ -397,10 +421,7 @@ class AutoPassManager {
         val hasBlockers = meaningfulActions.any { it.actionType == "DeclareBlockers" && !it.validBlockers.isNullOrEmpty() }
 
         // Check if we have instant-speed responses (spells/abilities, not blockers)
-        val hasInstantSpeedResponses = meaningfulActions.any { action ->
-            (action.actionType == "CastSpell" || action.actionType == "CastSpellMode" || action.actionType == "CastSpellModal" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard" || action.actionType == "PlotCard") &&
-            (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
-        }
+        val hasInstantSpeedResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
 
         return when (step) {
             // Beginning Phase - auto-pass
@@ -497,14 +518,10 @@ class AutoPassManager {
      */
     fun hasInstantSpeedResponses(legalActions: List<LegalActionInfo>): Boolean {
         return legalActions.any { action ->
-            // Exclude PassPriority
-            action.actionType != "PassPriority" &&
             // Exclude mana abilities (unless they have a sacrifice cost)
             (!action.isManaAbility || action.additionalCostInfo?.costType == "SacrificePermanent") &&
-            // Must be a spell or ability (not land play or combat action)
-            (action.actionType == "CastSpell" || action.actionType == "CastSpellMode" || action.actionType == "CastSpellModal" || action.actionType == "ActivateAbility") &&
-            // Must have valid targets if required
-            (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
+            // Must be a spell cast or activatable ability (not land play or combat action)
+            action.isInstantSpeedResponse()
         }
     }
 

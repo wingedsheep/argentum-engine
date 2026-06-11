@@ -71,6 +71,8 @@ data class EffectContext(
     val wasKicked: Boolean = false,
     /** True if the spell's optional Blight additional cost was paid (BlightOrPay path chosen). */
     val wasBlightPaid: Boolean = false,
+    /** True if the spell was cast for its sneak cost (CR 702.190). Read by `SneakCostWasPaid`. */
+    val wasSneaked: Boolean = false,
     // --- Cast-time state ---
     /**
      * Projected snapshots of permanents sacrificed as part of the cost (Rule 112.7a /

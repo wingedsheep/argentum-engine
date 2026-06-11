@@ -465,6 +465,7 @@ export function TargetingOverlay() {
   const hasEnoughTargets = selectedCount >= minTargets
   const hasMaxTargets = selectedCount >= maxTargets
   const isSacrifice = targetingState.isSacrificeSelection
+  const isBounce = targetingState.isBounceSelection
   const isTapPermanent = targetingState.isTapPermanentSelection
   const isDiscard = targetingState.isDiscardSelection
   const isReveal = targetingState.isRevealSelection
@@ -525,7 +526,9 @@ export function TargetingOverlay() {
     ? `Step ${(targetingState.currentRequirementIndex ?? 0) + 1}/${targetingState.totalRequirements}`
     : null
 
-  // Build the prompt text based on selection type
+  // Build the prompt text based on selection type. isBounce is checked before isSacrifice
+  // because a bounce cost (Sneak, CR 702.190) sets both flags but is a "return to hand", not
+  // a sacrifice.
   const promptText = isBehold
     ? `${targetingState.targetDescription ?? 'Behold a card'} (${targetDisplay})`
     : isDiscard
@@ -534,17 +537,19 @@ export function TargetingOverlay() {
         ? `Select card to reveal (${targetDisplay})`
         : isTapPermanent
           ? `Select permanents to tap (${targetDisplay})`
-          : isSacrifice
-            ? `Select creature to sacrifice (${targetDisplay})`
-            : targetingState.targetDescription
-              ? `Select ${targetingState.targetDescription} (${targetDisplay})`
-              : `Select targets (${targetDisplay})`
+          : isBounce
+            ? `Select ${targetingState.targetDescription ?? 'a creature to return to its owner’s hand'} (${targetDisplay})`
+            : isSacrifice
+              ? `Select creature to sacrifice (${targetDisplay})`
+              : targetingState.targetDescription
+                ? `Select ${targetingState.targetDescription} (${targetDisplay})`
+                : `Select targets (${targetDisplay})`
 
   const hintText = hasMaxTargets
-    ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+    ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isBounce ? 'Creature selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
+      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click an attacking creature you control' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
 
   return (
     <div style={{

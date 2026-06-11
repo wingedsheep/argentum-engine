@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.battlefield.WarpedComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -114,6 +115,8 @@ class StackResolver(
         wasWarped: Boolean = false,
         wasEvoked: Boolean = false,
         wasImpending: Boolean = false,
+        wasSneaked: Boolean = false,
+        sneakAttackDefenderId: EntityId? = null,
         chosenModes: List<Int> = emptyList(),
         modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
         modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
@@ -182,6 +185,8 @@ class StackResolver(
                 wasWarped = wasWarped,
                 wasEvoked = wasEvoked,
                 wasImpending = wasImpending,
+                wasSneaked = wasSneaked,
+                sneakAttackDefenderId = sneakAttackDefenderId,
                 beheldCards = beheldCards,
                 chosenEntitySnapshots = chosenEntitySnapshots,
                 manaSpentWhite = manaSpentWhite,
@@ -1063,6 +1068,14 @@ class StackResolver(
                         com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
                     )
                 }
+                // Sneak (CR 702.190): durably mark the permanent so Conditions.SneakCostWasPaid
+                // reads "its sneak cost was paid" for its whole life on the battlefield.
+                if (spellComponent.wasSneaked) {
+                    bag = bag.withChoice(
+                        com.wingedsheep.sdk.scripting.ChoiceSlot.SNEAK,
+                        com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+                    )
+                }
                 if (spellComponent.additionalCostBlightAmount > 0) {
                     bag = bag.withChoice(
                         com.wingedsheep.sdk.scripting.ChoiceSlot.BLIGHT_AMOUNT,
@@ -1255,6 +1268,29 @@ class StackResolver(
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, controllerId, spellId)
 
+        // Sneak (CR 702.190b / 506.3a): a permanent spell whose sneak cost was paid enters
+        // tapped and attacking the same player or planeswalker the returned unblocked creature
+        // was attacking. A non-creature permanent can't attack, so it just enters tapped (506.3a).
+        if (spellComponent.wasSneaked) {
+            newState = newState.updateEntity(spellId) { c -> c.with(TappedComponent) }
+            val projected = newState.projectedState
+            // CR 506.3c: the creature only enters attacking if the carried defender is still a
+            // legal attack target — an opponent still in the game, or an opponent's planeswalker
+            // still on the battlefield (mirrors the defender check in AttackPhaseManager). If it's
+            // no longer valid, the creature enters but is never attacking — no redirect.
+            val legalDefender = spellComponent.sneakAttackDefenderId?.takeIf { d ->
+                (d in newState.turnOrder && d != controllerId) ||
+                    (projected.isPlaneswalker(d) &&
+                        d in newState.getBattlefield() &&
+                        projected.getController(d) != controllerId)
+            }
+            if (legalDefender != null && projected.isCreature(spellId)) {
+                newState = newState.updateEntity(spellId) { c ->
+                    c.with(AttackingComponent(legalDefender))
+                }
+            }
+        }
+
         // For Rooms cast a half (CR 709.5d/h): the cast face's door becomes unlocked
         // on ETB. Emit a DoorUnlockedEvent so face-scoped "When you unlock this door"
         // triggers fire from the cast-time unlock too.
@@ -1357,6 +1393,7 @@ class StackResolver(
                 manaSpentOnXByColor = spellComponent.manaSpentOnXByColor,
                 wasKicked = spellComponent.wasKicked,
                 wasBlightPaid = spellComponent.wasBlightPaid,
+                wasSneaked = spellComponent.wasSneaked,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
                 chosenEntitySnapshots = spellComponent.chosenEntitySnapshots,
                 damageDistribution = spellComponent.damageDistribution,

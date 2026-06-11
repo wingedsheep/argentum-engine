@@ -487,6 +487,37 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Sneak
+    // =========================================================================
+
+    /**
+     * Sneak [cost] (CR 702.190, Teenage Mutant Ninja Turtles).
+     * "Any time you could cast an instant during your declare blockers step, you may cast
+     * this spell by paying [cost] and returning an unblocked creature you control to its
+     * owner's hand rather than paying this spell's mana cost." (CR 702.190a)
+     *
+     * Sneak is an alternative cost (like [Evoke]) with two extra characteristics:
+     *  - a **timing permission**: it is legal only during the active player's declare
+     *    blockers step, and only while they control an unblocked attacker to return; and
+     *  - an **additional cost**: returning one unblocked creature you control to its
+     *    owner's hand, paid alongside the [cost] mana.
+     *
+     * A permanent spell whose sneak cost was paid enters the battlefield tapped and
+     * attacking the same player/planeswalker the returned creature was attacking
+     * (CR 702.190b / 506.3a). The "sneak cost was paid" fact rides the resulting permanent
+     * durably and is readable via [com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid].
+     *
+     * Attach via the `sneak("{cost}")` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    @SerialName("Sneak")
+    @Serializable
+    data class Sneak(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.SNEAK
+        override val description: String = "Sneak $cost"
+    }
+
+    // =========================================================================
     // Impending
     // =========================================================================
 
@@ -746,6 +777,12 @@ sealed interface KeywordAbility {
          * Create Evoke with mana cost from string.
          */
         fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
+
+        /**
+         * Create Sneak with mana cost from string. Prefer the `sneak(cost)` DSL helper on
+         * [com.wingedsheep.sdk.dsl.CardBuilder].
+         */
+        fun sneak(cost: String): KeywordAbility = Sneak(ManaCost.parse(cost))
 
         /**
          * Create Impending with a time-counter count and an impending mana cost.

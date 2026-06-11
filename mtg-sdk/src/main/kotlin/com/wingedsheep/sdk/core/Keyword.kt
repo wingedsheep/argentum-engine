@@ -122,6 +122,19 @@ enum class Keyword(val displayName: String) {
     EVOKE("Evoke"),
 
     /**
+     * Sneak [cost] (CR 702.190, Teenage Mutant Ninja Turtles).
+     * "Any time you could cast an instant during your declare blockers step, you may cast
+     * this spell by paying [cost] and returning an unblocked creature you control to its
+     * owner's hand rather than paying this spell's mana cost." A permanent spell whose
+     * sneak cost was paid enters tapped and attacking (CR 702.190b).
+     *
+     * Modelled as an alternative cost ([KeywordAbility.Sneak]) with a declare-blockers
+     * timing permission and a return-an-unblocked-attacker additional cost. Wired by the
+     * `sneak(cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    SNEAK("Sneak"),
+
+    /**
      * Impending N—[cost] (CR 702.175, Duskmourn: House of Horror).
      * "If you cast this spell for its impending cost, it enters with N time counters
      * and isn't a creature until the last is removed. At the beginning of your end step,

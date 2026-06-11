@@ -17,6 +17,7 @@ import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
+import com.wingedsheep.engine.mechanics.SneakWindow
 import com.wingedsheep.engine.mechanics.WarpGrants
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -212,6 +213,11 @@ class CastSpellHandler(
         val effectiveTypeLine = action.faceIndex
             ?.let { cardDef?.cardFaces?.getOrNull(it)?.typeLine }
             ?: cardComponent.typeLine
+        // Sneak (CR 702.190a) grants an instant-speed casting permission during the active
+        // player's declare blockers step — bypassing the normal sorcery-speed timing.
+        val castingForSneak = action.useAlternativeCost &&
+            action.altAllows(AlternativeCostType.SNEAK) &&
+            cardDef?.keywordAbilities?.any { it is KeywordAbility.Sneak } == true
         if (!effectiveTypeLine.isInstant) {
             val hasFlash = cardDef?.keywords?.contains(Keyword.FLASH) == true
             val grantedFlash = hasFlash || zoneResolver.hasGrantedFlash(state, action.cardId)
@@ -220,8 +226,26 @@ class CastSpellHandler(
             val flashTimingKicker = action.wasKicked && cardDef?.keywordAbilities
                 ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
                 ?.any { it.grantsFlashTiming } == true
-            if (!grantedFlash && !flashTimingKicker && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+            if (!grantedFlash && !flashTimingKicker && !castingForSneak &&
+                !turnManager.canPlaySorcerySpeed(state, action.playerId)
+            ) {
                 return "You can only cast sorcery-speed spells during your main phase with an empty stack"
+            }
+        }
+
+        // Sneak (CR 702.190a): legal only during the active player's declare blockers step,
+        // and the player must return exactly one unblocked attacker they control to its
+        // owner's hand as the non-mana portion of the cost.
+        if (castingForSneak) {
+            if (!SneakWindow.isWindowOpen(state, action.playerId)) {
+                return "You can only cast this for its sneak cost during your declare blockers step while you control an unblocked attacker"
+            }
+            val bounced = action.additionalCostPayment?.bouncedPermanents ?: emptyList()
+            if (bounced.size != 1) {
+                return "Sneak requires returning exactly one unblocked attacker you control to its owner's hand"
+            }
+            if (bounced.first() !in SneakWindow.unblockedAttackers(state, action.playerId)) {
+                return "The chosen creature is not an unblocked attacker you control"
             }
         }
 
@@ -379,9 +403,13 @@ class CastSpellHandler(
                 if (action.altAllows(AlternativeCostType.WARP) && warpAbility != null && zoneResolver.hasWarpPermission(state, action.playerId, action.cardId)) {
                     costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, warpAbility.cost, action.playerId)
                 } else {
+                    // Check sneak cost (CR 702.190 — mana portion; the bounce is paid separately)
+                    val sneakAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Sneak>().firstOrNull()
                     // Check evoke cost
                     val evokeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()
-                    if (action.altAllows(AlternativeCostType.EVOKE) && evokeAbility != null) {
+                    if (action.altAllows(AlternativeCostType.SNEAK) && sneakAbility != null) {
+                        costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, sneakAbility.cost, action.playerId)
+                    } else if (action.altAllows(AlternativeCostType.EVOKE) && evokeAbility != null) {
                         costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, evokeAbility.cost, action.playerId)
                     } else {
                         // Check impending cost
@@ -1377,9 +1405,13 @@ class CastSpellHandler(
                 if (action.altAllows(AlternativeCostType.WARP) && warpAbility != null && zoneResolver.hasWarpPermission(currentState, action.playerId, action.cardId)) {
                     costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, warpAbility.cost, action.playerId)
                 } else {
+                    // Check sneak cost (CR 702.190 — mana portion; the bounce is paid separately)
+                    val sneakAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Sneak>().firstOrNull()
                     // Check evoke cost
                     val evokeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()
-                    if (action.altAllows(AlternativeCostType.EVOKE) && evokeAbility != null) {
+                    if (action.altAllows(AlternativeCostType.SNEAK) && sneakAbility != null) {
+                        costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, sneakAbility.cost, action.playerId)
+                    } else if (action.altAllows(AlternativeCostType.EVOKE) && evokeAbility != null) {
                         costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, evokeAbility.cost, action.playerId)
                     } else {
                         // Check impending cost
@@ -2099,6 +2131,28 @@ class CastSpellHandler(
             if (pauseResult != null) return pauseResult
         }
 
+        // Sneak (CR 702.190a): pay the "return an unblocked creature you control to its owner's
+        // hand" portion of the cost. The {cost} mana was paid by the standard payment pipeline
+        // above. Capture the defender the returned creature was attacking first, so a resolving
+        // permanent spell can enter attacking the same player/planeswalker (CR 702.190b).
+        val wasSneaked = action.useAlternativeCost && cardDef != null &&
+            action.altAllows(AlternativeCostType.SNEAK) &&
+            cardDef.keywordAbilities.any { it is KeywordAbility.Sneak }
+        var sneakAttackDefenderId: EntityId? = null
+        if (wasSneaked) {
+            val bounceId = action.additionalCostPayment?.bouncedPermanents?.firstOrNull()
+            if (bounceId != null) {
+                sneakAttackDefenderId = currentState.getEntity(bounceId)
+                    ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+                    ?.defenderId
+                val bounceResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+                    currentState, bounceId, Zone.HAND
+                )
+                currentState = bounceResult.state
+                events.addAll(bounceResult.events)
+            }
+        }
+
         // Determine if this spell is being cast using warp. Gated by the chosen alternative-cost
         // type so that when warp collides with another alternative cost (e.g. a granted warp on a
         // card being evoked) only the chosen one drives its post-resolution behavior. With no
@@ -2221,6 +2275,8 @@ class CastSpellHandler(
             wasWarped = wasWarped,
             wasEvoked = wasEvoked,
             wasImpending = wasImpending,
+            wasSneaked = wasSneaked,
+            sneakAttackDefenderId = sneakAttackDefenderId,
             chosenModes = action.chosenModes,
             modeTargetsOrdered = effectiveModeTargetsOrdered,
             modeTargetRequirements = perModeTargetRequirements,

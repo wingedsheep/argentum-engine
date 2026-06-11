@@ -2046,7 +2046,7 @@ activatedAbility {
 Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Plainswalk … Forestwalk), Desertwalk
 (nonbasic landwalk variant — `Keyword.DESERTWALK`, keyed off `Subtype.DESERT`), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
-Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Impending, Conspire, Hideaway, Cascade, Plot,
+Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Sneak, Impending, Conspire, Hideaway, Cascade, Plot,
 Offspring, Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
 composite abilities).
 
@@ -2137,6 +2137,16 @@ composite abilities).
   triggered ability (gated by the same intervening-if) that removes a time counter. The engine places the N TIME counters
   when a spell cast for its impending cost resolves; casting for the normal mana cost adds no counters, so neither wiring
   fires (mirrors `prowess()` / `rampage()`).
+- `Sneak(cost)` — `card { sneak("{cost}") }` builder helper (CR 702.190, Teenage Mutant Ninja Turtles). An
+  alternative cost with a built-in **timing permission**: *"Any time you could cast an instant during your declare
+  blockers step, you may cast this spell by paying [cost] and returning an unblocked creature you control to its owner's
+  hand rather than paying this spell's mana cost."* A permanent spell whose sneak cost was paid enters **tapped and
+  attacking** the same defender the returned creature was attacking (CR 702.190b). The helper just attaches the
+  `KeywordAbility.Sneak` display marker; all behavior is in the engine: the dedicated `SneakCastEnumerator` surfaces a
+  `CastWithAlternativeCost` (`AlternativeCostType.SNEAK`) only during the active player's declare blockers step while they
+  control an unblocked attacker, with a `BouncePermanent` additional cost listing the returnable attackers; `CastSpellHandler`
+  charges the sneak mana, returns the chosen attacker to hand, and stamps the sneak-was-paid flag; `StackResolver` enters a
+  resolving permanent tapped and attacking. Read "its sneak cost was paid" via `Conditions.SneakCostWasPaid`.
 - `Suspend` (CR 702.62) — an **exile-zone** mechanic, unlike Impending/Vanishing which live on the battlefield.
   A suspended card sits in exile with **time counters**; at the beginning of its **owner's** upkeep one is removed,
   and when the last is gone its owner **may play it for free**, with **haste** if it's a creature. The lifecycle is
@@ -2314,6 +2324,7 @@ keywordAbilities(KeywordAbility.Protection(Color.BLUE), KeywordAbility.Annihilat
   so it can gate an entering permanent's own replacement effect (Hundred-Battle Veteran: "enters with
   a finality counter if cast from your graveyard").
 - `WasKicked` — cast with kicker / multikicker / offspring (i.e. an `OptionalAdditionalCost` with `branchesEffect = true` whose extra cost was paid). FlashKicker payments are intentionally invisible to this condition.
+- `SneakCostWasPaid` — the source was cast for its `Sneak` cost (CR 702.190 — mana + returning an unblocked attacker). Reads the durable `ChoiceSlot.SNEAK` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. Backs riders like Leonardo, Leader in Blue and The Last Ronin's Technique.
 - `NoManaSpentToCast` — "it wasn't cast or no mana was spent to cast it": the standard free-cast
   payoff clause (**Freestrider Commando**, **Satoru, the Infiltrator**). True when the *total* mana
   spent to put the source onto the battlefield was zero — it was put onto the battlefield without
@@ -3201,6 +3212,7 @@ Card authors rarely reference these directly; they are created/updated by the ma
 - **Morph** — `morph = "{2}{U}"` (top-level) + `morphFaceUpEffect` for "as it turns face up".
 - **Warp** — `warp = "{1}{R}"`; alt-cost that exiles end of turn.
 - **Evoke** — `evoke = "{U}"`; pay alt cost, sacrifice on ETB.
+- **Sneak** — `sneak("{1}{U}")`; declare-blockers-step alt cost (pay mana + return an unblocked attacker you control to hand); a resolving permanent enters tapped and attacking the same defender. `Conditions.SneakCostWasPaid` reads the rider flag.
 - **Earthbend** — `Effects.Earthbend` composes AnimateLand + GrantKeyword + AddCounters + granted self-triggers (no fake
   keyword).
 - **Endure N** — `Effects.Endure(amount, target = EffectTarget.Self)` composes a `ModalEffect.chooseOne` of

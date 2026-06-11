@@ -224,6 +224,18 @@ class AutoPassManagerTest : FunSpec({
         action = PlayLand(playerId, EntityId.generate())
     )
 
+    /**
+     * A cast for an alternative cost (Sneak, evoke, flashback, …). The enumerators emit
+     * `CastWithAlternativeCost` (and siblings) rather than `CastSpell`; the auto-pass logic must
+     * still treat it as a castable spell so it stops in the window where it's legal.
+     */
+    fun alternativeCostCastAction(playerId: EntityId, actionType: String = "CastWithAlternativeCost") = LegalActionInfo(
+        actionType = actionType,
+        description = "Sneak Leonardo, Leader in Blue",
+        action = CastSpell(playerId, EntityId.generate(), useAlternativeCost = true),
+        requiresTargets = false
+    )
+
     context("Rule 1: Meaningful Action Filter") {
         test("PassPriority is not a meaningful action") {
             // Use a non-main-phase step to test meaningful action filtering
@@ -251,6 +263,28 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("Alternative-cost casts (Sneak) stop on my declare blockers step") {
+            // Sneak (CR 702.190) is only ever a CastWithAlternativeCost during the declare
+            // blockers step. The auto-pass logic must hold priority for it, not speed past.
+            val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS, hasAttackers = true)
+            val actions = listOf(
+                passPriorityAction(player1),
+                alternativeCostCastAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("Alternative-cost casts count as instant-speed responses on opponent's turn") {
+            val state = createMockState(player2, player1, Step.END)
+            val actions = listOf(
+                passPriorityAction(player2),
+                alternativeCostCastAction(player2, actionType = "CastWithFlashback")
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
         }
 
         test("Spells with no valid targets are not meaningful") {

@@ -34,6 +34,15 @@ data class SpellOnStackComponent(
     val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step
     val wasEvoked: Boolean = false,  // For evoke - permanent is sacrificed on ETB
     val wasImpending: Boolean = false,  // For impending - permanent enters with time counters and isn't a creature until they're gone
+    /** For sneak (CR 702.190) - permanent spell enters tapped and attacking; the flag is readable via SneakCostWasPaid. */
+    val wasSneaked: Boolean = false,
+    /**
+     * For sneak (CR 702.190b): the player/planeswalker the returned unblocked attacker was
+     * attacking. A permanent spell whose sneak cost was paid enters attacking this same
+     * defender. Null when not cast for sneak. If the defender is no longer legal at
+     * resolution, the resolver enters the creature not attacking (CR 506.3c) — no redirect.
+     */
+    val sneakAttackDefenderId: EntityId? = null,
     val beheldCards: List<EntityId> = emptyList(),  // Cards chosen via Behold (stored in pipeline as named collection)
     /**
      * Last-known-info snapshots (Rule 112.7a) for entities chosen at cost-pay time

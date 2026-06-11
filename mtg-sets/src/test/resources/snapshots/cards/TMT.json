@@ -1288,6 +1288,98 @@
     ]
 }
 
+// Donatello's Technique
+{
+    "name": "Donatello's Technique",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sneak {U} (You may cast this spell for {U} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nDraw two cards.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "\"I'll need my bag of tricks.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e570082f-8129-44d2-b471-ec7f46a98dbd.jpg?1771586794"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Donatello, Gadget Master
+{
+    "name": "Donatello, Gadget Master",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Sneak {1}{U} (You may cast this spell for {1}{U} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nWhenever Donatello deals combat damage to a player, create a token that's a copy of target artifact you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target artifact you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact ctrl:you"
+                    },
+                    "id": "target artifact you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b5dd830-dab8-4628-845f-3d17973f9ffa.jpg?1769005622"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Donatello, Turtle Techie
 {
     "name": "Donatello, Turtle Techie",
@@ -1741,6 +1833,54 @@
         "artist": "Hokyoung Kim",
         "flavorText": "\"Getting inside will be easy. Getting to Shredder might even be doable. Getting back out? That's going to be hard.\"\n—April O'Neil",
         "imageUri": "https://cards.scryfall.io/normal/front/4/5/45e68113-3f05-4547-947d-4cb9ebfa73c7.jpg?1771587092"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Foot Ninjas
+{
+    "name": "Foot Ninjas",
+    "manaCost": "{4}{W/B}{W/B}",
+    "typeLine": "Creature — Human Ninja",
+    "oracleText": "Sneak {3}{W/B} (You may cast this spell for {3}{W/B} if you also return an unblocked attacker you control to hand during the declare blockers step. It enters tapped and attacking.)\nWhen this creature enters, you gain 3 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{3}{W/B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Miklós Ligeti",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abb1ab9c-b067-4b75-8e5b-a893b7948df1.jpg?1771503783"
     },
     "colorIdentityOverride": [
         "WHITE",
@@ -2381,6 +2521,49 @@
     ]
 }
 
+// Jennika's Technique
+{
+    "name": "Jennika's Technique",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Sneak {R} (You may cast this spell for {R} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nJennika's Technique deals 2 damage to each creature.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEachInGroup",
+            "filter": {
+                "baseFilter": "creature"
+            },
+            "effect": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "\"Being a mutant isn't easy. Lucky for me, I've been preparing for this my entire life!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df559199-c8b9-455b-aa07-0a042348de96.jpg?1771502629"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jennika, Bad Apple Big Sister
 {
     "name": "Jennika, Bad Apple Big Sister",
@@ -2437,6 +2620,96 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Karai's Technique
+{
+    "name": "Karai's Technique",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sneak {W}{B} (You may cast this spell for {W}{B} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nChoose one or both —\n• Target creature gets +3/+3 until end of turn.\n• Target creature gets -3/-3 until end of turn.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{W}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target creature"
+                        }
+                    ],
+                    "description": "Target creature gets +3/+3 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target creature"
+                        }
+                    ],
+                    "description": "Target creature gets -3/-3 until end of turn"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/037fe188-3355-4724-b2eb-e2448fc55607.jpg?1771587021"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -2593,6 +2866,177 @@
         "flavorText": "The Molecular Amplification technology of Krang's exo-suit allows him to expand and adapt not only his tactics, but his physical form.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/88d36c32-d6f9-46e4-9cc8-08e6c0ff05d2.jpg?1769006413"
     }
+}
+
+// Leonardo, Big Brother
+{
+    "name": "Leonardo, Big Brother",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Sneak {W} (You may cast this spell for {W} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nLeonardo gets +1/+0 for each other creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "InHyuk Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e802838f-cc8c-4313-8c3b-32a6a7248e64.jpg?1771502512"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Leonardo, Cutting Edge
+{
+    "name": "Leonardo, Cutting Edge",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Sneak {W} (You may cast this spell for {W} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nLifelink\nWhenever you gain life, put a +1/+1 counter on Leonardo.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK",
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c11ee3-19d1-4ad5-a727-1d74c565d6a5.jpg?1769005535"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Leonardo, Leader in Blue
+{
+    "name": "Leonardo, Leader in Blue",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Sneak {3}{W}{W} (You may cast this spell for {3}{W}{W} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nWhen Leonardo enters, if his sneak cost was paid, creatures you control get +2/+0 until end of turn.\n{1}{W}: Leonardo gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{3}{W}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
+                },
+                "triggerCondition": "SneakCostWasPaid"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{1}{W}"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{W}: Leonardo gains first strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6eaae35-d513-43d8-be2d-b97c15e25937.jpg?1771502519"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Lessons from Life
@@ -3408,6 +3852,71 @@
     ]
 }
 
+// New Generation's Technique
+{
+    "name": "New Generation's Technique",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sneak {2}{G} (You may cast this spell for {2}{G} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nSearch your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Dominik Mayer",
+        "flavorText": "\"Uno, Moja, Odyn, and Yi carry on the brothers' legacy. New York will be free once more.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1616a07-e4a1-4574-b341-d6b31d76b3c5.jpg?1771586961"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nobody
 {
     "name": "Nobody",
@@ -3765,6 +4274,67 @@
         "flavorText": "\"And just a sprig of parsley for color . . .\"\n—Michelangelo",
         "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2c8397c-2014-4a43-9ed7-41795880011f.jpg?1771587071"
     }
+}
+
+// Oroku Saki, Shredder Rising
+{
+    "name": "Oroku Saki, Shredder Rising",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Human Ninja",
+    "oracleText": "Sneak {1}{B} (You may cast this spell for {1}{B} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nWhenever Oroku Saki deals combat damage to a player, you draw a card and lose 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e65ff1f4-a061-4c31-a78e-92af6e7bc56f.jpg?1771586878"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Pain 101
@@ -4237,6 +4807,48 @@
         "artist": "Nathaniel Himawan",
         "flavorText": "\"Anger is a dangerous ally. It clouds your judgment. You need to control it, lest it control you.\"\n—Splinter",
         "imageUri": "https://cards.scryfall.io/normal/front/f/2/f24c90c8-ed04-4b4e-8b19-c7d07a90c6b8.jpg?1771342404"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Raphael, the Nightwatcher
+{
+    "name": "Raphael, the Nightwatcher",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Sneak {1}{R}{R} (You may cast this spell for {1}{R}{R} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nAttacking creatures you control have double strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{1}{R}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "\"Time to punch in.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6af50b50-3776-4383-b493-7c5dd732c965.jpg?1769006162"
     },
     "colorIdentityOverride": [
         "RED"
@@ -4903,6 +5515,162 @@
     ]
 }
 
+// Shredder's Technique
+{
+    "name": "Shredder's Technique",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sneak {B} (You may cast this spell for {B} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nDestroy target creature or enchantment. If an enchantment was destroyed this way, you lose 2 life.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "TargetMatchesFilter",
+                    "filter": "enchantment"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature or enchantment"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Controller"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "target creature or enchantment"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|enchantment"
+                },
+                "id": "target creature or enchantment"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99a24349-7d11-421b-a161-c1edbb8f53b1.jpg?1771342367"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Shredder, Unrelenting
+{
+    "name": "Shredder, Unrelenting",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Human Ninja",
+    "oracleText": "Sneak {3}{B} (You may cast this spell for {3}{B} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nDeathtouch\nWhenever Shredder enters or attacks, another target creature you control gains deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "another target creature you control"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "another target creature you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88a48867-5c65-483c-92b0-f70c53ea2a9e.jpg?1771502616"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Skateboard
 {
     "name": "Skateboard",
@@ -5185,6 +5953,113 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Splinter's Technique
+{
+    "name": "Splinter's Technique",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sneak {1}{B} (You may cast this spell for {1}{B} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nSearch your library for a card, put that card into your hand, then shuffle.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Jo Cordisco",
+        "flavorText": "\"Possess the right thinking. Only then can one receive the gifts of strength, knowledge, and peace.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd3a5465-074a-4688-b79b-68e232076581.jpg?1769006137"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Splinter, Hamato Yoshi
+{
+    "name": "Splinter, Hamato Yoshi",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Mutant Ninja Rat",
+    "oracleText": "Sneak {B} (You may cast this spell for {B} if you also return an unblocked attacker you control to hand during the declare blockers step. He enters tapped and attacking.)\nMenace (This creature can't be blocked except by two or more creatures.)\nOther Ninjas you control get +1/+1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE",
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{B}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Ninja ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "April Prime",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ea9d072-aa98-405e-a475-26f93cc37e53.jpg?1771586909"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5666,6 +6541,80 @@
     ]
 }
 
+// The Last Ronin's Technique
+{
+    "name": "The Last Ronin's Technique",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Sneak {1}{W} (You may cast this spell for {1}{W} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nCreate three 1/1 white Ninja Turtle Spirit creature tokens. If this spell's sneak cost was paid, they enter tapped and attacking.",
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{1}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "SneakCostWasPaid"
+            },
+            "then": {
+                "type": "CreateToken",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "power": 1,
+                "toughness": 1,
+                "colors": [
+                    "WHITE"
+                ],
+                "creatureTypes": [
+                    "Ninja",
+                    "Turtle",
+                    "Spirit"
+                ],
+                "imageUri": "https://cards.scryfall.io/normal/front/9/8/98c32288-8676-44d0-b480-7eddcac1a0e4.jpg?1771590416",
+                "tapped": true,
+                "attacking": true
+            },
+            "otherwise": {
+                "type": "CreateToken",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "power": 1,
+                "toughness": 1,
+                "colors": [
+                    "WHITE"
+                ],
+                "creatureTypes": [
+                    "Ninja",
+                    "Turtle",
+                    "Spirit"
+                ],
+                "imageUri": "https://cards.scryfall.io/normal/front/9/8/98c32288-8676-44d0-b480-7eddcac1a0e4.jpg?1771590416"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Volker",
+        "flavorText": "They stood beside him. Whether they were figments or true spirits no longer mattered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfb18239-d373-4795-8598-c82abae2cb62.jpg?1771342217"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Transdimensional Bovine
 {
     "name": "Transdimensional Bovine",
@@ -5826,6 +6775,103 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/0/70faf7d8-008a-454a-a21b-702aa661b8f9.jpg?1771586928"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Turncoat Kunoichi
+{
+    "name": "Turncoat Kunoichi",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Mutant Ninja Fox",
+    "oracleText": "Sneak {2}{W}{B} (You may cast this spell for {2}{W}{B} if you also return an unblocked attacker you control to hand during the declare blockers step. It enters tapped and attacking.)\nWhen this creature enters, choose target creature an opponent controls. Exile that creature until this creature leaves the battlefield. If this creature's sneak cost was paid, instead exile the chosen creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{2}{W}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "SneakCostWasPaid"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature an opponent controls"
+                        },
+                        "destination": "Exile"
+                    },
+                    "otherwise": {
+                        "type": "ExileUntilLeaves",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature an opponent controls"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "target creature an opponent controls"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3ae61336-a4ee-40cd-9a18-392d96b873a4.jpg?1769685362"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLACK"
     ]
 }

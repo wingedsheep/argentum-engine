@@ -37,6 +37,13 @@ enum class ChoiceSlot {
     /** Whether the spell was kicked when cast (e.g. Skizzik). A present value means "kicked". */
     KICKED,
 
+    /**
+     * Whether the spell's sneak cost was paid when cast (CR 702.190, e.g. Leonardo, Leader
+     * in Blue). A present value means "cast for its sneak cost". Read back through
+     * [com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid].
+     */
+    SNEAK,
+
     /** The X declared for a `blight X` additional cost when cast (e.g. Soul Immolation). */
     BLIGHT_AMOUNT,
 

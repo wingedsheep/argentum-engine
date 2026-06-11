@@ -99,6 +99,7 @@ import com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes
 import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCast
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid
+import com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer
 import com.wingedsheep.sdk.scripting.conditions.YouChoseOtherCreatureAsRingBearer
 import com.wingedsheep.sdk.scripting.conditions.YouControlSource
@@ -287,6 +288,7 @@ class ConditionEvaluator(
             is WasCastFromHand -> ifResolution { evaluateWasCastFromHand(state, it) }
             is WasCastFromZone -> ifResolution { evaluateWasCastFromZone(state, condition, it) }
             is WasKicked -> ifResolution { evaluateWasKicked(state, it) }
+            is SneakCostWasPaid -> ifResolution { evaluateSneakCostWasPaid(state, it) }
             is BlightWasPaid -> ifResolution { it.wasBlightPaid }
             is ManaSpentToCastIncludes -> ifResolution { evaluateManaSpentToCastIncludes(state, condition, it) }
             is NoManaSpentToCast -> ifResolution { evaluateNoManaSpentToCast(state, it) }
@@ -715,6 +717,19 @@ class ConditionEvaluator(
         if (state.getEntity(sourceId)?.wasKickedChoice() == true) return true
         // Fall back to context (for spell resolution, e.g. kicker additional effects)
         return context.wasKicked
+    }
+
+    private fun evaluateSneakCostWasPaid(state: GameState, context: EffectContext): Boolean {
+        // Durable bag on the resolved permanent first (ETB / ongoing triggered & activated reads).
+        val sourceId = context.sourceId ?: return context.wasSneaked
+        val flagged = state.getEntity(sourceId)
+            ?.get<CastChoicesComponent>()
+            ?.chosen
+            ?.containsKey(ChoiceSlot.SNEAK) == true
+        if (flagged) return true
+        // Fall back to the resolution context (a non-permanent spell's own resolving effect,
+        // e.g. The Last Ronin's Technique reading "if this spell's sneak cost was paid").
+        return context.wasSneaked
     }
 
     /** Compare the value locked into [slot] on [entity]'s cast-choices bag to [value] as text. */

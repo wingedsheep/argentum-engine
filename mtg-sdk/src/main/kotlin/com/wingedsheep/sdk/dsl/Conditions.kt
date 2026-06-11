@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand as WasCastFromHa
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone as WasCastFromZoneCondition
 import com.wingedsheep.sdk.scripting.conditions.WasKicked as WasKickedCondition
 import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid as BlightWasPaidCondition
+import com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid as SneakCostWasPaidCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade as CastChoiceMadeCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceIs as CastChoiceIsCondition
 import com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet as CastTimeFlagSetCondition
@@ -486,6 +487,14 @@ object Conditions {
      */
     val WasKicked: ConditionInterface =
         WasKickedCondition
+
+    /**
+     * If this spell's sneak cost was paid (CR 702.190 — [com.wingedsheep.sdk.scripting.KeywordAbility.Sneak]).
+     * Used for riders like Leonardo, Leader in Blue and The Last Ronin's Technique whose
+     * effect changes when the spell was cast for its sneak cost.
+     */
+    val SneakCostWasPaid: ConditionInterface =
+        SneakCostWasPaidCondition
 
     /**
      * If this spell's blight additional cost was paid (`AdditionalCost.BlightOrPay`).

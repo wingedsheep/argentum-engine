@@ -342,13 +342,15 @@ export function mergeResult(
         const fieldUpdate =
           costType === 'DiscardCard'
             ? { discardedCards: selectedTargets }
-            : costType === 'ExileFromGraveyard'
-              ? { exiledCards: selectedTargets }
-              : costType === 'Behold' || costType === 'ChooseEntity'
-                ? { beheldCards: selectedTargets }
-                : costType === 'Blight' || costType === 'BlightVariable'
-                  ? { blightTargets: selectedTargets }
-                  : { sacrificedPermanents: selectedTargets }
+            : costType === 'BouncePermanent'
+              ? { bouncedPermanents: selectedTargets }
+              : costType === 'ExileFromGraveyard'
+                ? { exiledCards: selectedTargets }
+                : costType === 'Behold' || costType === 'ChooseEntity'
+                  ? { beheldCards: selectedTargets }
+                  : costType === 'Blight' || costType === 'BlightVariable'
+                    ? { blightTargets: selectedTargets }
+                    : { sacrificedPermanents: selectedTargets }
         // Spread the existing additionalCostPayment so prior phases' fields
         // (e.g. `blightAmount` from a preceding BlightVariable phase) survive.
         const additionalCostPayment = {
@@ -613,8 +615,12 @@ export function enterPhase(
           validTargets = [...(costInfo.validBounceTargets ?? [])]
           minTargets = costInfo.bounceCount ?? 1
           maxTargets = costInfo.bounceCount ?? 1
+          // isSacrificeSelection drives the on-battlefield "click a permanent you control"
+          // selection behavior; isBounceSelection + targetDescription give the correct
+          // "return to hand" wording (Sneak, CR 702.190 — it's a return, not a sacrifice).
           flags.isSacrificeSelection = true
           flags.isBounceSelection = true
+          flags.targetDescription = costInfo.description
           break
         case 'DiscardCard':
           validTargets = [...(costInfo.validDiscardTargets ?? [])]

@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 96 / 190
+**Implemented:** 113 / 190
 ---
 
 - [x] Action News Crew
@@ -34,8 +34,8 @@
 - [ ] Does Machines
 - [ ] Don & Leo, Problem Solvers
 - [ ] Don & Raph, Hard Science
-- [ ] Donatello's Technique
-- [ ] Donatello, Gadget Master
+- [x] Donatello's Technique
+- [x] Donatello, Gadget Master
 - [ ] Donatello, Mutant Mechanic
 - [x] Donatello, Turtle Techie
 - [x] Donatello, Way with Machines
@@ -48,7 +48,7 @@
 - [x] Foot Elite
 - [x] Foot Headquarters
 - [ ] Foot Mystic
-- [ ] Foot Ninjas
+- [x] Foot Ninjas
 - [x] Frog Butler
 - [ ] Fugitive Droid
 - [ ] General Traag, Heart of Stone
@@ -65,9 +65,9 @@
 - [x] Illegitimate Business
 - [x] Improvised Arsenal
 - [ ] Insectoid Exterminator
-- [ ] Jennika's Technique
+- [x] Jennika's Technique
 - [x] Jennika, Bad Apple Big Sister
-- [ ] Karai's Technique
+- [x] Karai's Technique
 - [ ] Karai, Future of the Foot
 - [ ] Kitsune's Technique
 - [ ] Kitsune, Dragon's Daughter
@@ -78,9 +78,9 @@
 - [ ] Leader's Talent
 - [ ] Leatherhead, Swamp Stalker
 - [ ] Leonardo's Technique
-- [ ] Leonardo, Big Brother
-- [ ] Leonardo, Cutting Edge
-- [ ] Leonardo, Leader in Blue
+- [x] Leonardo, Big Brother
+- [x] Leonardo, Cutting Edge
+- [x] Leonardo, Leader in Blue
 - [ ] Leonardo, Sewer Samurai
 - [x] Lessons from Life
 - [ ] Lita, Little Orphan Amphibian
@@ -109,7 +109,7 @@
 - [x] Mutant Town
 - [x] Mutant Town Musicians
 - [x] Negate
-- [ ] New Generation's Technique
+- [x] New Generation's Technique
 - [ ] Ninja Teen
 - [x] Nobody
 - [ ] North Wind Avatar
@@ -119,7 +119,7 @@
 - [x] Old Hob, Alleycat Blues
 - [x] Omni-Cheese Pizza
 - [ ] Ooze Spill
-- [ ] Oroku Saki, Shredder Rising
+- [x] Oroku Saki, Shredder Rising
 - [x] Pain 101
 - [ ] Paramecia Coloniex
 - [ ] Party Dude
@@ -136,7 +136,7 @@
 - [ ] Raphael's Technique
 - [ ] Raphael, Most Attitude
 - [ ] Raphael, Ninja Destroyer
-- [ ] Raphael, the Nightwatcher
+- [x] Raphael, the Nightwatcher
 - [x] Raphael, Tough Turtle
 - [ ] Rat King, Verminister
 - [x] Ravenous Robots
@@ -153,15 +153,15 @@
 - [ ] Shark Shredder, Killer Clone
 - [x] Shredder's Armor
 - [x] Shredder's Revenge
-- [ ] Shredder's Technique
-- [ ] Shredder, Unrelenting
+- [x] Shredder's Technique
+- [x] Shredder, Unrelenting
 - [x] Skateboard
 - [x] Slash, Reptile Rampager
 - [ ] Slithering Cryptid
 - [x] South Wind Avatar
 - [x] Spicy Oatmeal Pizza
-- [ ] Splinter's Technique
-- [ ] Splinter, Hamato Yoshi
+- [x] Splinter's Technique
+- [x] Splinter, Hamato Yoshi
 - [x] Splinter, Radical Rat
 - [x] Squirrelanoids
 - [x] Stockman, Mad Fly-entist
@@ -173,14 +173,14 @@
 - [x] Tenderize
 - [ ] The Cloning of Shredder
 - [ ] The Last Ronin
-- [ ] The Last Ronin's Technique
+- [x] The Last Ronin's Technique
 - [ ] The Neutrinos
 - [ ] The Ooze
 - [ ] Tokka & Rahzar, Terrible Twos
 - [x] Transdimensional Bovine
 - [x] Triceraton Commander
 - [x] Tunnel Rats
-- [ ] Turncoat Kunoichi
+- [x] Turncoat Kunoichi
 - [x] Turtle Blimp
 - [ ] Turtle Lair
 - [x] Turtle Power!
