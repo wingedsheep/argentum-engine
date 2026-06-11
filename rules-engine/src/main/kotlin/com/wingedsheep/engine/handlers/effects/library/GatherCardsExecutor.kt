@@ -192,6 +192,15 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                     ?: return EffectResult.error(state, "No source entity for CardSource.Self")
                 if (state.getEntity(sourceId) != null) listOf(sourceId) else emptyList()
             }
+
+            is CardSource.LastKnownCombatPairedWithSource -> {
+                // CR 509 combat pairing captured when the source left the battlefield. Restrict
+                // to creatures still on the battlefield — a creature that already left can't be
+                // affected (last-known-information identifies them, it doesn't resurrect them).
+                val battlefield = state.getBattlefield().toSet()
+                (context.triggerLastKnownBlockingOrBlockedByIds ?: emptyList())
+                    .filter { it in battlefield }
+            }
         }
 
         if (cards.isEmpty()) {

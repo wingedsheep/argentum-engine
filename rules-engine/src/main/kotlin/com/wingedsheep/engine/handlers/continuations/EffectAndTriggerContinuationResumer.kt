@@ -93,6 +93,7 @@ class EffectAndTriggerContinuationResumer(
                 triggerTotalCounterCount = continuation.triggerTotalCounterCount,
                 triggerLastKnownCounters = continuation.triggerLastKnownCounters,
                 triggerLastKnownDamageDealtByPlayers = continuation.triggerLastKnownDamageDealtByPlayers,
+                triggerLastKnownBlockingOrBlockedByIds = continuation.triggerLastKnownBlockingOrBlockedByIds,
                 lastKnownPower = continuation.lastKnownPower,
                 lastKnownToughness = continuation.lastKnownToughness,
                 triggerScryCount = continuation.triggerScryCount,
@@ -137,6 +138,7 @@ class EffectAndTriggerContinuationResumer(
             triggerTotalCounterCount = continuation.triggerTotalCounterCount,
             triggerLastKnownCounters = continuation.triggerLastKnownCounters,
             triggerLastKnownDamageDealtByPlayers = continuation.triggerLastKnownDamageDealtByPlayers,
+            triggerLastKnownBlockingOrBlockedByIds = continuation.triggerLastKnownBlockingOrBlockedByIds,
             lastKnownPower = continuation.lastKnownPower,
             lastKnownToughness = continuation.lastKnownToughness,
             triggerModesChosenCount = continuation.triggerModesChosenCount,
@@ -256,6 +258,8 @@ class EffectAndTriggerContinuationResumer(
             triggerTotalCounterCount = continuation.triggerTotalCounterCount,
             triggerLastKnownCounters = continuation.triggerLastKnownCounters,
             triggerLastKnownDamageDealtByPlayers = continuation.triggerLastKnownDamageDealtByPlayers,
+            // The divided-damage continuation doesn't carry combat-pairing LKI (no card needs
+            // both at once); the on-stack component's field stays null on this path.
             lastKnownPower = continuation.lastKnownPower,
             lastKnownToughness = continuation.lastKnownToughness,
             damageDistribution = response.distribution

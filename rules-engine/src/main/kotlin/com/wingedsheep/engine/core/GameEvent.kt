@@ -54,6 +54,15 @@ data class ZoneChangeEvent(
     val copyOfOriginalName: String? = null,
     /** For auras: the entity this aura was attached to when it left the battlefield (for "enchanted creature dies" triggers) */
     val lastKnownAttachedTo: EntityId? = null,
+    /**
+     * Creatures that were blocking, or blocked by, this creature when it left the battlefield
+     * (the union of its [com.wingedsheep.engine.state.components.combat.BlockedComponent] blockers
+     * and its [com.wingedsheep.engine.state.components.combat.BlockingComponent] blocked-attackers,
+     * CR 509). Captured as last-known information because the live combat cross-references are torn
+     * down as the creature leaves — read by "destroy all creatures blocking or blocked by it" dies
+     * triggers (Abu Ja'far). Empty for non-combat / non-battlefield transitions.
+     */
+    val lastKnownBlockingOrBlockedByIds: List<EntityId> = emptyList(),
     /** Last known type line when leaving battlefield (for trigger detection when entity has been cleaned up, e.g., tokens) */
     val lastKnownTypeLine: TypeLine? = null,
     /**

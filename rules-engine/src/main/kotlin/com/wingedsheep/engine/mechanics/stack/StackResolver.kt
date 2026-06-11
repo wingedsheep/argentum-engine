@@ -1783,6 +1783,7 @@ class StackResolver(
             triggerTotalCounterCount = abilityComponent.triggerTotalCounterCount,
             triggerLastKnownCounters = abilityComponent.triggerLastKnownCounters,
             triggerLastKnownDamageDealtByPlayers = abilityComponent.triggerLastKnownDamageDealtByPlayers,
+            triggerLastKnownBlockingOrBlockedByIds = abilityComponent.triggerLastKnownBlockingOrBlockedByIds,
             triggeringEntityId = abilityComponent.triggeringEntityId,
             triggeringPlayerId = abilityComponent.triggeringPlayerId,
             targetingSourceEntityId = abilityComponent.targetingSourceEntityId,

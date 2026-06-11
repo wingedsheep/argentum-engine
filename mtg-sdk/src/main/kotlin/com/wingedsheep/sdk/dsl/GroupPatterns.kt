@@ -87,6 +87,27 @@ object GroupPatterns {
         )
     ))
 
+    /**
+     * "Destroy all creatures blocking or blocked by it" (Abu Ja'far). Gathers the source's
+     * last-known combat pairing (CR 509) — captured on the leaves-battlefield event because the
+     * live cross-references are gone by the time a dies trigger resolves — and destroys those
+     * still on the battlefield.
+     */
+    fun destroyCombatPairedWithSourcePipeline(
+        noRegenerate: Boolean = false
+    ): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.LastKnownCombatPairedWithSource,
+            storeAs = "combatPaired_gathered"
+        ),
+        MoveCollectionEffect(
+            from = "combatPaired_gathered",
+            destination = CardDestination.ToZone(Zone.GRAVEYARD),
+            moveType = MoveType.Destroy,
+            noRegenerate = noRegenerate
+        )
+    ))
+
     fun destroyAllAndAttachedPipeline(
         filter: GameObjectFilter,
         noRegenerate: Boolean = false

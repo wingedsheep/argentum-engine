@@ -154,6 +154,13 @@ data class EffectContext(
      */
     val triggerLastKnownDamageDealtByPlayers: Map<EntityId, Int>? = null,
     /**
+     * Creatures that were blocking, or blocked by, the trigger's source when it left the
+     * battlefield (CR 509 combat pairing), captured as last-known information. Resolved by
+     * `CardSource.LastKnownCombatPairedWithSource` for "destroy all creatures blocking or
+     * blocked by it" (Abu Ja'far). Null when the source never left combat.
+     */
+    val triggerLastKnownBlockingOrBlockedByIds: List<EntityId>? = null,
+    /**
      * Number of mode picks the triggering spell-cast recorded. Read by
      * `ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL` (Riku of Many Paths).
      */

@@ -150,6 +150,7 @@ object ZoneTransitionService {
         var lastKnownKeywords: Set<String> = emptySet()
         var lastKnownLostAllAbilities = false
         var lastKnownAttachedTo = options.lastKnownAttachedTo
+        var lastKnownBlockingOrBlockedByIds: List<EntityId> = emptyList()
         var lastKnownWasToken = false
         var lastKnownDamageDealtByPlayers: Map<EntityId, Int> = emptyMap()
         // The {X} this permanent was cast with (DynamicAmount.CastX), captured before the
@@ -185,6 +186,14 @@ object ZoneTransitionService {
             lastKnownLostAllAbilities = projected.hasLostAllAbilities(entityId)
             if (lastKnownAttachedTo == null) {
                 lastKnownAttachedTo = container.get<AttachedToComponent>()?.targetId
+            }
+            // CR 509 combat pairing, captured before the cross-references are torn down: the
+            // creatures blocking this one (its BlockedComponent) and the creatures it was blocking
+            // (its BlockingComponent). Read by "destroy all creatures blocking or blocked by it".
+            run {
+                val blockingThis = container.get<BlockedComponent>()?.blockerIds ?: emptyList()
+                val blockedByThis = container.get<BlockingComponent>()?.blockedAttackerIds ?: emptyList()
+                lastKnownBlockingOrBlockedByIds = (blockingThis + blockedByThis).distinct()
             }
             lastKnownWasToken = container.has<TokenComponent>()
             lastKnownDamageDealtByPlayers =
@@ -393,6 +402,7 @@ object ZoneTransitionService {
                 lastKnownKeywords = lastKnownKeywords,
                 lastKnownLostAllAbilities = lastKnownLostAllAbilities,
                 lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null,
+                lastKnownBlockingOrBlockedByIds = if (leavingBattlefield) lastKnownBlockingOrBlockedByIds else emptyList(),
                 lastKnownCardDefinitionId = if (leavingBattlefield) cardComponent.cardDefinitionId else null,
                 lastKnownDamageDealtByPlayers = lastKnownDamageDealtByPlayers,
                 xValue = lastKnownCastX

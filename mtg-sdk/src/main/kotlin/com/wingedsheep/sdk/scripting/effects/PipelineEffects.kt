@@ -199,6 +199,22 @@ sealed interface CardSource {
     data object Self : CardSource {
         override val description: String = "this card"
     }
+
+    /**
+     * The creatures that were blocking, or blocked by, the effect's source at the moment the
+     * source last left the battlefield (CR 509 combat pairing, captured as last-known
+     * information). Resolves to those creatures that are still on the battlefield.
+     *
+     * This is the gatherable backing "destroy all creatures blocking or blocked by it" on a
+     * dies trigger (Abu Ja'far): by resolution the engine has already torn the combat
+     * cross-references down, so the pairing must come from the last-known snapshot carried on
+     * the leaves-battlefield event rather than from live combat components.
+     */
+    @SerialName("LastKnownCombatPairedWithSource")
+    @Serializable
+    data object LastKnownCombatPairedWithSource : CardSource {
+        override val description: String = "creatures blocking or blocked by it"
+    }
 }
 
 /**

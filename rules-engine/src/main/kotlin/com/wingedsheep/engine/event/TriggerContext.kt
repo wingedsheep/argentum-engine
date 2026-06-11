@@ -56,6 +56,13 @@ data class TriggerContext(
      */
     val lastKnownDamageDealtByPlayers: Map<EntityId, Int>? = null,
     /**
+     * Creatures that were blocking, or blocked by, the triggering source when it left the
+     * battlefield (CR 509 combat pairing), captured as last-known information. Read by
+     * "destroy all creatures blocking or blocked by it" (Abu Ja'far). Null when the trigger's
+     * source never left combat.
+     */
+    val lastKnownBlockingOrBlockedByIds: List<EntityId>? = null,
+    /**
      * For SpellCastEvent triggers — number of mode picks the cast spell recorded. `null`
      * when the trigger was not driven by a spell cast. Read by
      * `ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL` so abilities like Riku of
@@ -99,7 +106,9 @@ data class TriggerContext(
                     lastKnownToughness = event.lastKnownToughness,
                     lastKnownCounters = event.lastKnownCounters.takeIf { it.isNotEmpty() },
                     lastKnownDamageDealtByPlayers =
-                        event.lastKnownDamageDealtByPlayers.takeIf { it.isNotEmpty() }
+                        event.lastKnownDamageDealtByPlayers.takeIf { it.isNotEmpty() },
+                    lastKnownBlockingOrBlockedByIds =
+                        event.lastKnownBlockingOrBlockedByIds.takeIf { it.isNotEmpty() }
                 )
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,

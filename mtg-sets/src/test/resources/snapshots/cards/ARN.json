@@ -1,3 +1,56 @@
+// Abu Ja'far
+{
+    "name": "Abu Ja'far",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "When this creature dies, destroy all creatures blocking or blocked by it. They can't be regenerated.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "LastKnownCombatPairedWithSource",
+                            "storeAs": "combatPaired_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "combatPaired_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "noRegenerate": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Ken Meyer, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e9ad288-d164-44a6-96ec-4185a1587f1a.jpg?1562897827"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aladdin
 {
     "name": "Aladdin",

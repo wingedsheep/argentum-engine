@@ -421,6 +421,8 @@ class TriggerProcessor(
                 triggerLastKnownCounters = trigger.triggerContext.lastKnownCounters,
                 triggerLastKnownDamageDealtByPlayers =
                     trigger.triggerContext.lastKnownDamageDealtByPlayers,
+                triggerLastKnownBlockingOrBlockedByIds =
+                    trigger.triggerContext.lastKnownBlockingOrBlockedByIds,
                 triggerLastKnownPower = trigger.triggerContext.lastKnownPower,
                 triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness,
                 triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
@@ -464,6 +466,8 @@ class TriggerProcessor(
             triggerLastKnownCounters = trigger.triggerContext.lastKnownCounters,
             triggerLastKnownDamageDealtByPlayers =
                 trigger.triggerContext.lastKnownDamageDealtByPlayers,
+            triggerLastKnownBlockingOrBlockedByIds =
+                trigger.triggerContext.lastKnownBlockingOrBlockedByIds,
             lastKnownPower = trigger.triggerContext.lastKnownPower,
             lastKnownToughness = trigger.triggerContext.lastKnownToughness,
             triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
@@ -513,6 +517,8 @@ class TriggerProcessor(
             triggerLastKnownCounters = trigger.triggerContext.lastKnownCounters,
             triggerLastKnownDamageDealtByPlayers =
                 trigger.triggerContext.lastKnownDamageDealtByPlayers,
+            triggerLastKnownBlockingOrBlockedByIds =
+                trigger.triggerContext.lastKnownBlockingOrBlockedByIds,
             targetingSourceEntityId = trigger.triggerContext.targetingSourceEntityId,
             lastKnownPower = trigger.triggerContext.lastKnownPower,
             lastKnownToughness = trigger.triggerContext.lastKnownToughness,

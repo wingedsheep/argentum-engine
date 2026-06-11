@@ -444,6 +444,16 @@ object Effects {
     ): Effect = GroupPatterns.destroyAllAndAttachedPipeline(filter, noRegenerate)
 
     /**
+     * Destroy all creatures blocking or blocked by the effect's source (CR 509), using the
+     * combat pairing last known when the source left the battlefield. Intended for a dies
+     * trigger (Abu Ja'far) — the live combat cross-references are already gone by resolution, so
+     * the pairing is read from the leaves-battlefield snapshot.
+     */
+    fun DestroyCreaturesBlockingOrBlockedBySource(
+        noRegenerate: Boolean = false
+    ): Effect = GroupPatterns.destroyCombatPairedWithSourcePipeline(noRegenerate)
+
+    /**
      * Destroy all creatures sharing a creature type with the sacrificed creature.
      * Requires a creature sacrificed as additional cost.
      */

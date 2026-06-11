@@ -325,6 +325,13 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   save the ID list for follow-up. `excludeTriggering = true` spares the triggering entity, for "destroy all
   *other* … with it" triggers (Spreading Plague).
 - `DestroyAllAndAttached(filter, noRegenerate?)` — also destroys auras/equipment on the matching permanents.
+- `DestroyCreaturesBlockingOrBlockedBySource(noRegenerate?)` — destroy the creatures blocking, or blocked by,
+  the effect's source (CR 509 combat pairing), using the pairing **last known when the source left the
+  battlefield**. For "when ~ dies, destroy all creatures blocking or blocked by it" (Abu Ja'far): the live
+  combat cross-references are already torn down by the time a dies trigger resolves, so the pairing is read
+  from the leaves-battlefield snapshot (`ZoneChangeEvent.lastKnownBlockingOrBlockedByIds` →
+  `EffectContext.triggerLastKnownBlockingOrBlockedByIds`) via `CardSource.LastKnownCombatPairedWithSource`,
+  restricted to creatures still on the battlefield.
 - `DestroyAllEquipmentOnTarget(target)` — wreck the gear attached to a creature.
 - `Exile(target)` — exile target.
 - `ExileAndGrantOwnerPlayPermission(target, until?)` — exile + owner may play it (Garth-style).

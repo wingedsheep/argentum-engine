@@ -2,7 +2,7 @@
 
 **Set Size:** 78 cards
 **Release Date:** December 17, 1993
-**Implemented:** 64 / 78
+**Implemented:** 65 / 78
 | Color | Count |
 |-------|-------|
 | White | 11 |
@@ -15,7 +15,7 @@
 
 ---
 
-- [ ] Abu Ja'far
+- [x] Abu Ja'far
 - [x] Army of Allah
 - [x] Camel
 - [ ] Eye for an Eye
