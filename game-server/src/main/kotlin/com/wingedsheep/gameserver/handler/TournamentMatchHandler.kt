@@ -479,8 +479,17 @@ class TournamentMatchHandler(
         gameSession.addPlayer(ps1, deck1, commanderCardName = commander1)
         gameSession.addPlayer(ps2, deck2, commanderCardName = commander2)
 
-        gameSession.setPlayerPersistenceInfo(ps1.playerId, ps1.playerName, player1State.identity.token)
-        gameSession.setPlayerPersistenceInfo(ps2.playerId, ps2.playerName, player2State.identity.token)
+        // Carry isAi / aiModelOverride from each identity so a server restart can rehydrate and
+        // re-wire an AI seat. Omitting these persisted the AI as isAi=false, so on recovery it was
+        // treated as a human, never re-wired, and the match froze with the AI unable to act.
+        gameSession.setPlayerPersistenceInfo(
+            ps1.playerId, ps1.playerName, player1State.identity.token,
+            isAi = player1State.identity.isAi, aiModelOverride = player1State.identity.aiModelOverride
+        )
+        gameSession.setPlayerPersistenceInfo(
+            ps2.playerId, ps2.playerName, player2State.identity.token,
+            isAi = player2State.identity.isAi, aiModelOverride = player2State.identity.aiModelOverride
+        )
 
         gameRepository.save(gameSession)
         gameRepository.linkToLobby(gameSession.sessionId, lobby.lobbyId)
