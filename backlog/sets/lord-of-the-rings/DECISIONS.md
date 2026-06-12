@@ -1,0 +1,38 @@
+# LTR "Implement all remaining cards" — Decisions Log
+
+Branch: `ltr-all-cards`. Goal: implement every unchecked card in `cards.md`, one commit per
+card, faithful to oracle text (`ltr_set.json`) and the Comprehensive Rules
+(`MagicCompRules_20260417.pdf`). Engine gaps are listed in `TODO.md`; this log records the
+concrete decisions made per card as they are implemented.
+
+Workflow note: per the user, this is a single sweeping effort on one branch (`ltr-all-cards`),
+**one commit per card** (not one-PR-per-gap as the original TODO suggested). When a card needs a
+new engine primitive, the primitive + card + tests + SDK-reference update land together in that
+card's commit (or a small group commit when several cards share one freshly built primitive).
+
+## Order of attack
+
+Roughly grouped so that cards sharing a freshly built engine gap land together. See per-card
+entries below for the actual decisions.
+
+---
+
+## Per-card decisions
+
+### Bill the Pony (White) — Gap 27, assign combat damage by toughness
+
+- **Oracle:** ETB create two Food; "Sacrifice a Food: Until end of turn, target creature you control
+  assigns combat damage equal to its toughness rather than its power."
+- **Engine gap:** the existing `AssignDamageEqualToToughness` is a *static* ability read off a card's
+  printed statics by `CombatDamageUtils`; there was no turn-scoped, granted form.
+- **Decision:** add a new `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` and grant it via the
+  existing `Effects.GrantKeyword(AbilityFlag, target, Duration.EndOfTurn)` floating-effect path
+  (Layer.ABILITY → projected keywords). `CombatDamageUtils.assignsDamageAsToughness` now short-circuits
+  to `true` when the creature carries that projected flag — **unconditional** (no `toughness > power`
+  gate), matching Bill's wording. This composes with the whole existing GrantKeyword machinery rather
+  than adding a bespoke effect/executor; mirrors the Gap-39-style "grant a combat flag" pattern.
+- **Composition:** ETB = `Effects.CreateFood(2)`; cost = `Costs.Sacrifice(GameObjectFilter.Any.withSubtype("Food"))`;
+  target = `Targets.CreatureYouControl`.
+- **Touched:** `AbilityFlag.kt` (+flag), `CombatDamageUtils.kt` (+projected-flag check), client
+  `enums.ts` (AbilityFlag mirror + display name), card + `BillThePonyScenarioTest`, SDK reference.
+

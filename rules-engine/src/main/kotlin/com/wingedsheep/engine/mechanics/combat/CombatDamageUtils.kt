@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
@@ -140,6 +141,12 @@ internal object CombatDamageUtils {
         power: Int,
         toughness: Int,
     ): Boolean {
+        // Floating / granted flag (e.g., Bill the Pony's "Until end of turn, target creature you
+        // control assigns combat damage equal to its toughness rather than its power"). Granted via
+        // Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS); unconditional, so no
+        // toughness > power gate. Stored as a projected keyword string.
+        if (projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS)) return true
+
         // The creature itself (e.g., Doran the Siege Tower, filter scope = Self)
         val selfCardId = state.getEntity(creatureId)?.get<CardComponent>()?.cardDefinitionId
         if (selfCardId != null) {

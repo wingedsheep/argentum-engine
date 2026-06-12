@@ -39,5 +39,8 @@ enum class AbilityFlag(val displayName: String) {
      * Other players can't gain control of this permanent. Enforced in the control-change executors
      * (gain / exchange / by-most). Granted by effects like Guardian Beast.
      */
-    CANT_GAIN_CONTROL("Can't be gained control of")
+    CANT_GAIN_CONTROL("Can't be gained control of"),
+
+    // ── Combat damage assignment flags ──────────────────────────
+    ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS("Assigns combat damage equal to its toughness rather than its power")
 }

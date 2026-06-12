@@ -2221,6 +2221,13 @@ staticAbility {
   matching permanents. Honored in the control-change executors (`GainControl`, `GainControlByMost`,
   `ExchangeControl` — an exchange where either side can't be gained control of fails entirely); the
   controller keeping their own permanent is an unaffected no-op. (Guardian Beast)
+- `AssignDamageEqualToToughness(filter, onlyWhenToughnessGreaterThanPower)` — static: matching creatures
+  assign combat damage equal to their toughness rather than their power (Doran the Siege Tower, Bark of
+  Doran). `CombatDamageUtils.getAssignedCombatDamage` consults it. For the **turn-scoped, granted** form
+  (Bill the Pony: "Until end of turn, target creature you control assigns combat damage equal to its
+  toughness rather than its power"), grant the `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` flag via
+  `Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS, target, duration)`; the same combat
+  util reads it from projected keywords (unconditional — no toughness > power gate).
 - `CantBlockCreaturesWithGreaterPower(filter = source())` — blocker-side evasion (Spitfire Handler): this
   creature can't block creatures whose projected power exceeds its own.
 - `CantBeBlockedByCreaturesWithLessPower(filter = source())` — attacker-side dual (Formation Breaker): this
