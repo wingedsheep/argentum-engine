@@ -36,3 +36,16 @@ entries below for the actual decisions.
 - **Touched:** `AbilityFlag.kt` (+flag), `CombatDamageUtils.kt` (+projected-flag check), client
   `enums.ts` (AbilityFlag mirror + display name), card + `BillThePonyScenarioTest`, SDK reference.
 
+### Slip On the Ring (White) — Gap 14, flicker (NO engine change)
+
+- **Oracle:** "Exile target creature you own, then return it to the battlefield under your control.
+  The Ring tempts you."
+- **Decision:** Gap 14 was already obsolete — the flicker composes from existing primitives. The
+  in-set **Meneldor, Swift Savior** does the identical "exile creature you own, return under your
+  control" via `Effects.Move(EXILE).then(Move(BATTLEFIELD))`. Because the target is restricted to a
+  creature *you own*, returning it under its owner's control = under your control. Add the
+  `Effects.TheRingTemptsYou()` rider. No new effect/executor; no dedicated scenario test (snapshot
+  net + the proven primitive cover it).
+- **Composition:** `TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.ownedByYou()))`
+  + `Effects.Composite(Move EXILE, Move BATTLEFIELD, TheRingTemptsYou)`.
+

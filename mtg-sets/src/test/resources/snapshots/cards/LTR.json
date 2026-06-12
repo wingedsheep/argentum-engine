@@ -12549,6 +12549,55 @@
     ]
 }
 
+// Slip On the Ring
+{
+    "name": "Slip On the Ring",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature you own, then return it to the battlefield under your control. The Ring tempts you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you own"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you own"
+                    },
+                    "destination": "Battlefield"
+                },
+                "TheRingTemptsYou"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you"
+                },
+                "id": "creature you own"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Iga Oliwiak",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e20c2b8-ffe3-4d14-8588-f89719358e3d.jpg?1686967929"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Smite the Deathless
 {
     "name": "Smite the Deathless",
