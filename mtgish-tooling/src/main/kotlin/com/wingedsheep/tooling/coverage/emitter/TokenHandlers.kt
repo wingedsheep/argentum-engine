@@ -35,8 +35,11 @@ private val TOKEN_COLOR = mapOf(
 )
 
 /** A `_CreatableToken` spec -> `Effects.CreateToken(...)`, or null (-> SCAFFOLD) for shapes we can't
- *  render exactly. `NumberTokens` wraps a base spec with a fixed count. */
-internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCount: Dsl? = null): Dsl? {
+ *  render exactly. `NumberTokens` wraps a base spec with a count: a fixed [count], or a [dynamicCount]
+ *  `DynamicAmount` DSL ("X" / "the number of creature cards in your graveyard"). [controller], when set,
+ *  is the EffectTarget DSL for who receives the token (e.g. `EffectTarget.TargetController` for "its
+ *  controller creates …"); null means the spell's controller (the facade default). */
+internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCount: Dsl? = null, controller: String? = null): Dsl? {
     when (spec.strField("_CreatableToken")) {
         "NumberTokens" -> {
             val a = spec["args"].asArr ?: return null
@@ -45,14 +48,16 @@ internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCou
             // (ValueX, Form a Posse) or "the number of creature cards in your graveyard" (Rise of
             // the Varmints) — renders as a `DynamicAmount` via [dynamicAmountExpr]; decline
             // (-> SCAFFOLD) on a count we can't render exactly rather than emit a wrong fixed number.
+            // [controller] threads through unchanged so a counted token can still target its recipient.
             val n = findInteger(a.getOrNull(0)) as? Int
-            if (n != null) return createTokenDsl(inner, n)
+            if (n != null) return createTokenDsl(inner, n, controller = controller)
             val dynamic = dynamicAmountExpr(a.getOrNull(0)) ?: return null
-            return createTokenDsl(inner, dynamicCount = dynamic)
+            return createTokenDsl(inner, dynamicCount = dynamic, controller = controller)
         }
         // Predefined artifact token with fixed characteristics -> its dedicated facade
-        // (serialises as CreatePredefinedToken, not the generic CreateToken).
-        "TreasureToken" -> return call("Effects.CreateTreasure", arg("$count"))
+        // (serialises as CreatePredefinedToken, not the generic CreateToken). It has no controller
+        // override, so a controller-directed Treasure declines rather than silently drop the recipient.
+        "TreasureToken" -> return if (controller != null) null else call("Effects.CreateTreasure", arg("$count"))
         "TokenWithPT" -> {
             // args: [ {_PT [p,t]}, {_TokenColorList [names]}, [supertypes], [cardtypes],
             //         {_TokenSubtypes [subs]}, [abilities] ]
@@ -99,6 +104,9 @@ internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCou
             if (tokenActivatedAbilities.isNotEmpty()) {
                 parts.add(arg("activatedAbilities", Call("listOf", tokenActivatedAbilities.map { arg(it) })))
             }
+            // The recipient ("its controller creates …") is a named arg on both ctors, independent of
+            // the count, so add it once before resolving the count overload below.
+            if (controller != null) parts.add(arg("controller", Lit(controller)))
             // Count rendering depends on the constructor we picked:
             //  - `Effects.CreateToken` facade: a fixed count is the trailing named `count: Int` overload;
             //    a dynamic count is the `count: DynamicAmount` first-positional overload.

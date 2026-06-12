@@ -4,6 +4,7 @@
 
 package com.wingedsheep.mtg.sets.definitions.ulg.cards
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -24,7 +25,7 @@ val WingSnare = card("Wing Snare") {
     typeLine = "Sorcery"
     oracleText = "Destroy target creature with flying."
     spell {
-        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature.withKeyword(Keyword.FLYING)))
         effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
     metadata {

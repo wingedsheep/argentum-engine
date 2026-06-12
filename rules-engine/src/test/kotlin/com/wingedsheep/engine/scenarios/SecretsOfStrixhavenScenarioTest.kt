@@ -3,14 +3,17 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
@@ -399,5 +402,62 @@ class SecretsOfStrixhavenScenarioTest : ScenarioTestBase() {
             }
             game.getLifeTotal(2) shouldBe 17
         }
+
+        test("Cost of Brilliance: player draws and loses life, optional creature gets counter") {
+            val game = scenario()
+                .withPlayers()
+                .withCardInHand(1, "Cost of Brilliance")
+                .withCardOnBattlefield(1, "Glory Seeker")
+                .withLandsOnBattlefield(1, "Swamp", 3)
+                .withCardInLibrary(2, "Island")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val creature = game.findPermanent("Glory Seeker")!!
+            game.execute(
+                CastSpell(
+                    game.player1Id,
+                    game.findCardsInHand(1, "Cost of Brilliance").first(),
+                    listOf(ChosenTarget.Player(game.player2Id), ChosenTarget.Permanent(creature)),
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.getLifeTotal(2) shouldBe 18
+            game.handSize(2) shouldBe 2
+            plusOnePlusOne(game, creature) shouldBe 1
+            projector.getProjectedPower(game.state, creature) shouldBe 3
+        }
+
+        test("Pterafractyl: X counters are inherited as it enters and ETB gains life") {
+            val game = scenario()
+                .withPlayers()
+                .withCardInHand(1, "Pterafractyl")
+                .withLandsOnBattlefield(1, "Forest", 4)
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.execute(
+                CastSpell(
+                    game.player1Id,
+                    game.findCardsInHand(1, "Pterafractyl").first(),
+                    xValue = 3,
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            val pterafractyl = game.findPermanent("Pterafractyl")!!
+            plusOnePlusOne(game, pterafractyl) shouldBe 3
+            projector.getProjectedPower(game.state, pterafractyl) shouldBe 4
+            projector.getProjectedToughness(game.state, pterafractyl) shouldBe 3
+            game.getLifeTotal(1) shouldBe 22
+        }
     }
+
+    private fun plusOnePlusOne(game: TestGame, id: EntityId): Int =
+        game.state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 }

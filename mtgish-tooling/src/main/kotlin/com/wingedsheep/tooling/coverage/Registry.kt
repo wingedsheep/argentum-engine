@@ -30,7 +30,12 @@ object Registry {
     // --- import resolution: symbol -> package, from a live scan of the SDK source (anti-rot) -----
     private val DECL = Regex(
         """^(?:public\s+|internal\s+)?(?:sealed\s+|abstract\s+|open\s+|data\s+|value\s+)?""" +
-            """(?:class|object|interface|enum class|fun|val)\s+(?:<[^>]*>\s+)?([A-Za-z_][A-Za-z0-9_]*)"""
+            // The `(?:Receiver\.)*` segment skips an extension's receiver type so e.g.
+            // `fun GameObjectFilter.namedFromVariable(...)` is indexed under `namedFromVariable`, not the
+            // receiver `GameObjectFilter` — otherwise the receiver (which actually lives in another
+            // package) would be mis-imported from this one (dsl), breaking every auto-import that names it.
+            """(?:class|object|interface|enum class|fun|val)\s+(?:<[^>]*>\s+)?""" +
+            """(?:[A-Za-z_][A-Za-z0-9_]*\.)*([A-Za-z_][A-Za-z0-9_]*)"""
     )
     private val PKG_PREF = listOf(
         "com.wingedsheep.sdk.dsl", "com.wingedsheep.sdk.scripting.effects",

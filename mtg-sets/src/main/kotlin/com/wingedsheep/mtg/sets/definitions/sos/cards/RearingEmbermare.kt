@@ -23,7 +23,7 @@ val RearingEmbermare = card("Rearing Embermare") {
     oracleText = "Reach, haste"
     power = 4
     toughness = 5
-    keywords(Keyword.HASTE, Keyword.REACH)
+    keywords(Keyword.REACH, Keyword.HASTE)
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "127"

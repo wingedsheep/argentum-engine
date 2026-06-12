@@ -1,0 +1,1826 @@
+// Crazed Goblin
+{
+    "name": "Crazed Goblin",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "This creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Darrell Riche",
+        "flavorText": "Because fighting is easier than figuring out what else to do.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15fdb57b-7547-4588-9780-15e3bea0bc4c.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Darksteel Citadel
+{
+    "name": "Darksteel Citadel",
+    "manaCost": "",
+    "typeLine": "Artifact Land",
+    "oracleText": "Indestructible\n{T}: Add {C}.",
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "John Avon",
+        "flavorText": "Panopticon, forge of the Darksteel Eye, home of Mirrodin's keeper.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5d0e808-d67b-4ea3-9c04-d20269fe692c.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Darksteel Forge
+{
+    "name": "Darksteel Forge",
+    "manaCost": "{9}",
+    "typeLine": "Artifact",
+    "oracleText": "Artifacts you control have indestructible. (Effects that say \"destroy\" don't destroy them. Artifact creatures with indestructible can't be destroyed by damage.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "artifact ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Martina Pilcerova",
+        "flavorText": "\"Did it have this shape upon Mirrodin's creation, or did some inconceivable force shape the unshapable?\"\n—Pontifex, elder researcher",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99078ecc-f50a-43e0-93c1-63240cd97bf7.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Darksteel Gargoyle
+{
+    "name": "Darksteel Gargoyle",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Flying\nIndestructible (Damage and effects that say \"destroy\" don't destroy this creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "INDESTRUCTIBLE"
+    ],
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spencer",
+        "flavorText": "The ultimate treasure is one that guards itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d4fc3bf-a2c1-4a5f-a05e-b0a814c358bd.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Darksteel Ingot
+{
+    "name": "Darksteel Ingot",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Indestructible (Effects that say \"destroy\" don't destroy this artifact.)\n{T}: Add one mana of any color.",
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Martina Pilcerova",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b02b9634-77e9-48ae-a6bf-859598d12c52.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Darksteel Pendant
+{
+    "name": "Darksteel Pendant",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Indestructible (Effects that say \"destroy\" don't destroy this artifact.)\n{1}, {T}: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "scried"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "scried",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "toBottom",
+                            "storeRemainder": "toTop",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        "EmitScriedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Terese Nielsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c1bac5f-c41a-49f0-94b0-79653b6fa67a.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Dross Golem
+{
+    "name": "Dross Golem",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Affinity for Swamps (This spell costs {1} less to cast for each Swamp you control.)\nFear (This creature can't be blocked except by artifact creatures and/or black creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FEAR"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Swamp"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Adam Rex",
+        "flavorText": "The longer it skulks through the corrosive gases of Mephidross, the more it adopts their thirst for death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1df2f4fd-b96a-4537-93a4-38141b0fa577.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Echoing Courage
+{
+    "name": "Echoing Courage",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature and all other creatures with the same name as that creature get +2/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature",
+                    "excludeSelf": true
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "Self"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Greg Staples",
+        "flavorText": "A single seed unleashes a flurry of growth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f37bf33-f340-44eb-a092-1cb9385c8981.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Echoing Decay
+{
+    "name": "Echoing Decay",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature and all other creatures with the same name as that creature get -2/-2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature",
+                    "excludeSelf": true
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": "Self"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Greg Staples",
+        "flavorText": "A single fear unleashes a torrent of nightmares.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8e688e7-8350-4b78-bd49-a6ffdedad556.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Essence Drain
+{
+    "name": "Essence Drain",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Essence Drain deals 3 damage to any target and you gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Tony Szczudlo",
+        "flavorText": "Mephidross claims all life within it. What cannot be twisted is absorbed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9950052e-f674-4f09-802e-3f5f52f5e717.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Grimclaw Bats
+{
+    "name": "Grimclaw Bats",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Bat",
+    "oracleText": "Flying\n{B}, Pay 1 life: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Tom Wänerstrand",
+        "flavorText": "Even on a world of metal, there are those who thirst for blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/132d6ed5-0bbc-465e-bc30-3174c910b435.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hoverguard Observer
+{
+    "name": "Hoverguard Observer",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Drone",
+    "oracleText": "Flying\nThis creature can block only creatures with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "It could be made to run silently, but its low hum reminds the Neurok that they are always watched.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7ab80bf-d115-4155-82e1-9a3a70b1b67d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Krark-Clan Stoker
+{
+    "name": "Krark-Clan Stoker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Shaman",
+    "oracleText": "{T}, Sacrifice an artifact: Add {R}{R}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Pete Venters",
+        "flavorText": "Fallen enemies are fed to the scavengers. Fallen friends are thrown into the Great Furnace, their souls returned to the Great Mother.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a90da818-ffa1-435d-8734-fc7a1330d323.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Leonin Battlemage
+{
+    "name": "Leonin Battlemage",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat Wizard",
+    "oracleText": "{T}: Target creature gets +1/+1 until end of turn.\nWhenever you cast a spell, you may untap this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "optional": true
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Stephen Tappin",
+        "flavorText": "The strongest of the pride are measured not by the steel in their hands but by the steel in their souls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02c14e05-8c50-44de-8cd4-5b3a11ecdb30.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Loxodon Mystic
+{
+    "name": "Loxodon Mystic",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Elephant Cleric",
+    "oracleText": "{W}, {T}: Tap target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Edward P. Beard, Jr.",
+        "flavorText": "As the nim storm across the plains, a lone priest stands in their path. At his silent gesture, the battle line breaks, and the tide turns.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5976c352-ac49-4e0d-a4c0-ec9b6b78db9c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Magnetic Flux
+{
+    "name": "Magnetic Flux",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Artifact creatures you control gain flying until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature|artifact ctrl:you"
+                }
+            },
+            "body": {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Alan Rabinowitz",
+        "flavorText": "After the researcher's astonishing success, his assistants spent six hours finding a way to return the specimens safely to the ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03ab7022-fa0f-42da-b0ca-998cbd0c791c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Metal Fatigue
+{
+    "name": "Metal Fatigue",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap all artifacts.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "artifact"
+                }
+            },
+            "body": {
+                "type": "TapUntap",
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Arnie Swekel",
+        "flavorText": "The Auriok have fought the metal hordes for so long now that knowing how to cripple them has become an instinct.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fa32494-24bc-44c7-81d4-7285bd1fe3c8.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Myr Moonvessel
+{
+    "name": "Myr Moonvessel",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Myr",
+    "oracleText": "When this creature dies, add {C}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Dany Orizio",
+        "flavorText": "Memnarch created the myr with three qualities in mind: dependability, controllability, and disposability.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af0515cc-bf2d-4674-b339-4f4eefbc943d.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Nourish
+{
+    "name": "Nourish",
+    "manaCost": "{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 6 life.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Fixed",
+                "amount": 6
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Scott M. Fischer",
+        "flavorText": "Gelfruit grows abundantly wherever Sylvok druids live, as if the Tangle knows that humans are not as hardy as the beasts or as nimble as the elves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0597dd97-fe6f-4e74-88e5-35528ada0140.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Oxidda Golem
+{
+    "name": "Oxidda Golem",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Affinity for Mountains (This spell costs {1} less to cast for each Mountain you control.)\nHaste",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Mountain"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Greg Staples",
+        "flavorText": "The longer it patrols the smoldering crags of the Oxidda Chain, the more it adopts their fiery temper.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4624fff2-e78f-4c13-a444-7e50586cb0b3.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Oxidize
+{
+    "name": "Oxidize",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"Ashes to ashes, rust to rust.\"\n—Viridian shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/1349969e-1cbe-4541-b3ed-154f5a39f1f0.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Purge
+{
+    "name": "Purge",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact creature or black creature. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "flavorText": "For the first and last time, the horrific creature experienced terror.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdcbe727-81f0-469e-92f1-0dd9acdb54ea.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Razor Golem
+{
+    "name": "Razor Golem",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Affinity for Plains (This spell costs {1} less to cast for each Plains you control.)\nVigilance",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Plains"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Christopher Moeller",
+        "flavorText": "The longer it stands among the deadly blades of the Razor Fields, the more it adopts their harsh exterior.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64a86ec3-378f-4fca-b5f7-6dc02d47f7b9.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Reshape
+{
+    "name": "Reshape",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact.\nSearch your library for an artifact card with mana value X or less, put it onto the battlefield, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Jon Foster",
+        "flavorText": "\"Today's paperweight, tomorrow's leveler.\"\n—Bruenna, Neurok leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05a8d65d-0c6f-433d-a818-002c242a17e8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ritual of Restoration
+{
+    "name": "Ritual of Restoration",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target artifact card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Dany Orizio",
+        "flavorText": "Leonin raising ceremonies take place at the white sun's dawn, the rebirth of artifacts mirroring the birth of a new day.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73142844-de7c-4427-8183-c2281bde6449.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Roaring Slagwurm
+{
+    "name": "Roaring Slagwurm",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Whenever this creature attacks, tap all artifacts.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "David Martin",
+        "flavorText": "Wurms compete for nesting grounds near the Radix. The young who hatch closest have the best chance for survival.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/0338c6fe-54f6-4be0-a70d-b15e5403d842.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Scavenging Scarab
+{
+    "name": "Scavenging Scarab",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Jeff Easley",
+        "flavorText": "The beetles feed not on the flesh of corpses but on the metal, grinding out the iron and steel to add to their own bulky shells.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/023603c1-3f1e-42d1-81e1-535547ef6ee0.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Shield of Kaldra
+{
+    "name": "Shield of Kaldra",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipment named Sword of Kaldra, Shield of Kaldra, and Helm of Kaldra have indestructible.\nEquipped creature has indestructible. (Damage and effects that say \"destroy\" don't destroy it.)\nEquip {4}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "permanent"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE"
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3e09c8a-6c55-491b-96e9-6cf05f673ac3.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Slobad, Goblin Tinkerer
+{
+    "name": "Slobad, Goblin Tinkerer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Goblin Artificer",
+    "oracleText": "Sacrifice an artifact: Target artifact gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"I used to joke that he had been exiled for being too smart. Now I know why he never laughed.\"\n—Glissa Sunseeker",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df14aa0e-6d34-48ca-aee0-3563bbfb3b15.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Soulscour
+{
+    "name": "Soulscour",
+    "manaCost": "{7}{W}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all nonartifact permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "artifact"
+                }
+            },
+            "body": {
+                "type": "MoveToZone",
+                "target": "Self",
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"I have seen the end of times, a future in which all our kind are torn from this world.\"\n—Ushanti, leonin shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b431711-ac9d-4f05-af66-44f1ca5fabf1.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Spire Golem
+{
+    "name": "Spire Golem",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Affinity for Islands (This spell costs {1} less to cast for each Island you control.)\nFlying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Island"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Daren Bader",
+        "flavorText": "The longer it soars above the shimmering swirls of the Quicksilver Sea, the more it adopts their unpredictability.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19239c7b-add3-4537-bdfd-a0f7d38d4d8e.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Tangle Golem
+{
+    "name": "Tangle Golem",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Affinity for Forests (This spell costs {1} less to cast for each Forest you control.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Forest"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Arnie Swekel",
+        "flavorText": "The longer it weaves through the twisted vines of the Tangle, the more it adopts their hidden strength.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9915977-bd6b-477a-a495-f7ddbbeb82eb.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Tangle Spider
+{
+    "name": "Tangle Spider",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nReach (This creature can block creatures with flying.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "REACH"
+    ],
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Terese Nielsen",
+        "flavorText": "They're considered good luck by the elves they don't eat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3ca75ce1-8f4e-4980-adb7-5816446d56a9.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ur-Golem's Eye
+{
+    "name": "Ur-Golem's Eye",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}{C}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Heather Hudson",
+        "flavorText": "It still stares accusingly at Memnarch, though millennia have passed since he separated the eye from its body.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00cd61eb-a526-46db-8675-334663e0d63a.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Viridian Acolyte
+{
+    "name": "Viridian Acolyte",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "{1}, {T}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "D. Alexander Gregory",
+        "flavorText": "\"We have no sun to guide our dead, so I tend the prismatic flames of the spirit fires that show the souls their way. When I die, I hope there is one left to guide my spirit home.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64448241-978c-43e0-b0ea-b4bb3e25b715.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Viridian Zealot
+{
+    "name": "Viridian Zealot",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "{1}{G}, Sacrifice this creature: Destroy target artifact or enchantment.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"I will fight only the way nature intended—and nature intended us to win.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca1ecdd4-9dbc-4635-a0ef-0aae6f8ffcdb.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Voltaic Construct
+{
+    "name": "Voltaic Construct",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem Construct",
+    "oracleText": "{2}: Untap target artifact creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|artifact"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Jeff Easley",
+        "flavorText": "The undead may outlast the living, but those who have never lived outlast them both.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1ca55ec-d262-40d8-b654-40e177bcfd6e.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Vulshok Morningstar
+{
+    "name": "Vulshok Morningstar",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "David Martin",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acf00de0-af24-4ef9-8ac2-135e6b53a8fd.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Vulshok War Boar
+{
+    "name": "Vulshok War Boar",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Boar Beast",
+    "oracleText": "When this creature enters, sacrifice it unless you sacrifice an artifact.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "artifact"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "flavorText": "It must eat its weight in metal daily, or its furnacelike belly will consume itself for lack of fuel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb6b232a-834c-4c9a-bf36-821d125dc318.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Wand of the Elements
+{
+    "name": "Wand of the Elements",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Sacrifice an Island: Create a 2/2 blue Elemental creature token with flying.\n{T}, Sacrifice a Mountain: Create a 3/3 red Elemental creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Island"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Mountain"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Thomas M. Baxa",
+        "flavorText": "It gives legs to the earth and wings to the sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1131c187-8fc3-4cee-9422-355ef6622de7.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Whispersilk Cloak
+{
+    "name": "Whispersilk Cloak",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature can't be blocked and has shroud. (It can't be the target of spells or abilities.)\nEquip {2}",
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SHROUD"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "160",
+        "artist": "Luca Zontini",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac4fdefd-8774-400d-bea6-4064d87383f1.jpg"
+    },
+    "colorIdentityOverride": []
+}

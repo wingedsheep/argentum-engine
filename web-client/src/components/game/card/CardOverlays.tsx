@@ -58,6 +58,7 @@ export function KeywordIcons({
   hexproofFromColors,
   hexproofFromMonocolored,
   isSuspected,
+  topOffset,
   size,
 }: {
   keywords: readonly Keyword[]
@@ -68,6 +69,8 @@ export function KeywordIcons({
   hexproofFromMonocolored?: boolean
   /** Whether the permanent currently has the suspected status (CR 701.60). */
   isSuspected?: boolean
+  /** Override the column's top offset (px) so it can clear the ring-bearer badge in the same corner. */
+  topOffset?: number
   size: number
 }) {
   // Filter out PROTECTION (rendered via protections array) and FIRST_STRIKE when DOUBLE_STRIKE is present.
@@ -94,7 +97,7 @@ export function KeywordIcons({
   if (!hasKeywords && !hasProtections && !hasHexproofFrom && !hasSuspected) return null
 
   return (
-    <div style={styles.keywordIconsContainer}>
+    <div style={topOffset === undefined ? styles.keywordIconsContainer : { ...styles.keywordIconsContainer, top: topOffset }}>
       {hasSuspected && (
         <div key="suspected" style={styles.keywordIconWrapper} title="Suspected (has menace and can't block)">
           <KeywordGlyph name="SUSPECTED" size={size} />

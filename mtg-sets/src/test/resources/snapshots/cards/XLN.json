@@ -256,6 +256,76 @@
     ]
 }
 
+// Skulduggery
+{
+    "name": "Skulduggery",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature you control gets +1/+1 and target creature an opponent controls gets -1/-1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "yours"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "theirs"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "yours"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "theirs"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"They're so much more willing to parley once they're hanging from a boom by the ankle!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba30343b-1637-490f-810e-d614219789e3.jpg?1575629239"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sunbird's Invocation
 {
     "name": "Sunbird's Invocation",

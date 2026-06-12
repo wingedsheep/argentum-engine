@@ -9,6 +9,7 @@ import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.strField
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 
 /** Player-delegated actions ("target player does X" / each-player), the `you may` wrapper, and the
@@ -131,6 +132,17 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): Dsl? {
     if (jsonContains(node, "_Player", "OwnerOfPermanent") && jsonContains(node, "_Action", "GainLife")) {
         // Path of Peace: destroyed permanent's owner gains N
         return call("OwnerGainsLifeEffect", arg("${findInteger(args)}"))
+    }
+    // "Its controller creates …" — the acting player is the CONTROLLER of the targeted permanent
+    // (ControllerOfPermanent(Ref_TargetPermanent)). After "Destroy target …", the destroyed permanent's
+    // controller resolves at resolution time via EffectTarget.TargetController (Beast Within precedent),
+    // so the wrapped CreateTokens renders with `controller = EffectTarget.TargetController` (Bovine
+    // Intervention). Only the bare controller-creates-tokens shape renders; any other action under a
+    // ControllerOfPermanent ref declines -> SCAFFOLD rather than mis-attribute it.
+    if (jsonContains(node, "_Player", "ControllerOfPermanent") && jsonContains(node, "_Action", "CreateTokens")) {
+        val createTokens = (args as? JsonArray)?.firstOrNull { it is JsonObject && it.containsKey("_Action") } as? JsonObject
+        val spec = createTokens?.get("args").asArr?.firstOrNull() as? JsonObject ?: return null
+        return createTokenDsl(spec, controller = "EffectTarget.TargetController")
     }
     val inner = innerAction(node) ?: return null
     val ptv = refTarget(args, tvar)  // the player the action applies to

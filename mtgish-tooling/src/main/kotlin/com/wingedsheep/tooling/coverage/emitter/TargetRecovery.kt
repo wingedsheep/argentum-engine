@@ -622,7 +622,37 @@ internal fun EmitCtx.revealedHandFilterExpr(filterNode: JsonElement?): Dsl? {
 
 internal fun EmitCtx.landSearchFilterDsl(filterNode: JsonElement?): String = render(landSearchFilterExpr(filterNode))
 
+/**
+ * The "basic land card and/or <subtype> card" union (Map the Frontier, Silver Deputy) rendered as
+ * `GameObjectFilter.BasicLand or GameObjectFilter.Land.withSubtype("<subtype>")`, or null when the
+ * filter isn't that exact union. The mtgish shape is an `Or` with a basic-land arm
+ * (`And[IsSupertype "Basic", IsCardtype "Land"]`) and a land-subtype arm (`IsLandType "<subtype>"`).
+ * Returning the faithful union (instead of either single arm) keeps the search from silently dropping
+ * "basic land" or narrowing to the subtype only.
+ */
+private fun basicLandOrSubtypeUnion(filterNode: JsonElement?): Dsl? {
+    // Must be an Or whose arms include a basic-land supertype clause.
+    if (filterNode.nodesTagged("Or").isEmpty()) return null
+    val hasBasic = filterNode.argWordsTagged("IsSupertype").any { it == "Basic" } &&
+        filterNode.argWordsTagged("IsCardtype").any { it == "Land" }
+    if (!hasBasic) return null
+    val landSubtype = filterNode.firstArgStringTagged("IsLandType") ?: return null
+    return Infix(
+        "or",
+        listOf(
+            Lit("GameObjectFilter.BasicLand"),
+            Lit("GameObjectFilter.Land").dot("withSubtype", arg(subtypeArg(landSubtype))),
+        ),
+        parenthesized = false,
+    )
+}
+
 internal fun EmitCtx.landSearchFilterExpr(filterNode: JsonElement?): Dsl {
+    // "basic land card and/or <subtype> card" (Map the Frontier, Silver Deputy): an Or unioning the
+    // basic-land supertype (And[IsSupertype Basic, IsCardtype Land]) with a land subtype (IsLandType).
+    // Render the faithful union `BasicLand or Land.withSubtype("<subtype>")` rather than collapsing to
+    // either arm (the bare `subs` branch below would silently drop "basic land" and Desert-only it).
+    basicLandOrSubtypeUnion(filterNode)?.let { return it }
     val subs = subtypes(filterNode)
     // Dual-land fetch ("a Swamp or Mountain card") -> Land + Or[HasSubtype…], i.e. withAnySubtype;
     // golden factors IsLand out (unlike the distributed creature-subtype form).
