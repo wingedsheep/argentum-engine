@@ -113,20 +113,21 @@ export function useSlotSizedResponsive(
     // slot's width (accounting for inter-card gaps). With 0–1 cards per line,
     // no horizontal constraint applies.
     //
-    // Each tapped card's rotated container is ≈cardHeight (= 1.4 × cardWidth)
-    // wide rather than cardWidth. Flex-wrap breaks lines greedily, so we can't
-    // control which cards share a line — assume the worst case where a line
-    // holds as many tapped cards as possible. Solving for cardWidth with t
-    // tapped out of n on a line:
-    //   slotWidth ≥ cw × (n + 0.4·t) + (n − 1) × gap
-    //   cw ≤ (slotWidth − (n − 1) × gap) / (n + 0.4·t)
+    // Each tapped card's rotated container is cardHeight + 8 (= 1.4 ×
+    // cardWidth + 8, see GameCard's needsLandscapeContainer) wide rather than
+    // cardWidth. Flex-wrap breaks lines greedily, so we can't control which
+    // cards share a line — assume the worst case where a line holds as many
+    // tapped cards as possible. Solving for cardWidth with t tapped out of n
+    // on a line:
+    //   slotWidth ≥ cw × (n + 0.4·t) + 8·t + (n − 1) × gap
+    //   cw ≤ (slotWidth − 8·t − (n − 1) × gap) / (n + 0.4·t)
     const widthCapForRow = (count: number, tappedCount: number, lines: number): number => {
       const cardsPerLine = Math.ceil(count / lines)
       if (cardsPerLine <= 1) return SLOT_MAX_CARD_WIDTH
       const tappedOnLine = Math.max(0, Math.min(tappedCount, cardsPerLine))
       const widthDivisor = cardsPerLine + 0.4 * tappedOnLine
       const totalGap = (cardsPerLine - 1) * base.cardGap
-      return Math.floor((slotSize.width - totalGap) / widthDivisor)
+      return Math.floor((slotSize.width - totalGap - 8 * tappedOnLine) / widthDivisor)
     }
 
     // Search every (frontLines, backLines) combination and keep whichever
@@ -163,6 +164,26 @@ export function useSlotSizedResponsive(
     }
 
     const slotCardWidth = Math.max(60, bestWidth)
+    if (bestWidth < 60) {
+      // The 60px readability floor overrode the fit math, so the planned line
+      // counts no longer hold — at the floor width, rows wrap into more lines
+      // than budgeted and some overflow is unavoidable. Re-derive each row's
+      // line count from what greedy flex-wrap actually produces at the floor
+      // width, so the minHeight reservations in Battlefield.tsx track reality
+      // instead of the impossible plan.
+      const linesAtFloor = (count: number, tappedCount: number): number => {
+        if (count <= 0) return 1
+        const contentWidth =
+          count * (slotCardWidth + base.cardGap) + tappedCount * (0.4 * slotCardWidth + 8)
+        const lineCapacity = slotSize.width + base.cardGap
+        return Math.min(
+          MAX_LINES_PER_ROW,
+          Math.max(1, Math.ceil(contentWidth / lineCapacity)),
+        )
+      }
+      frontRowLines = linesAtFloor(frontRowCount, frontRowTappedCount)
+      backRowLines = linesAtFloor(backRowCount, backRowTappedCount)
+    }
     const slotCardHeight = Math.round(slotCardWidth * 1.4)
 
     // No-op if the resulting size matches what the base context already supplies

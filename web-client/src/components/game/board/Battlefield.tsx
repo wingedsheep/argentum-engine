@@ -394,15 +394,41 @@ function BattlefieldContent({
    * instead of pushing the side items (enchantments / planeswalkers)
    * onto a new line below. The two sub-groups are centered as a whole,
    * keeping the row's visual weight at the viewport center.
+   *
+   * `lines` is the wrap-line budget from useSlotSizedResponsive. When > 1
+   * and the center group is all single cards, the group gets a maxWidth
+   * sized for ceil(n / lines) cards so flex-wrap breaks into evenly filled
+   * lines instead of greedily stuffing the first line and orphaning the
+   * remainder (21 + 1 instead of 11 + 11). The cap fits a worst-case
+   * tapped mix per line, so it can never force *more* lines than budgeted.
+   * Skipped for grouped stacks (lands) — their footprint per item varies
+   * with stack size, so a count-based cap could wrap them an extra time.
    */
   const renderGridRow = (
     centerItems: readonly GroupedCard[],
     sideItems: readonly GroupedCard[],
+    lines: number,
     extra?: React.CSSProperties,
   ) => {
     const hasCenter = centerItems.length > 0
     const hasSide = sideItems.length > 0
     const showDividerBetween = hasCenter && hasSide
+    const balancedMaxWidth = (() => {
+      if (lines <= 1) return undefined
+      if (centerItems.some((g) => g.count > 1)) return undefined
+      const perLine = Math.ceil(centerItems.length / lines)
+      if (perLine >= centerItems.length) return undefined
+      const tapped = centerItems.reduce((sum, g) => sum + (g.card.isTapped ? 1 : 0), 0)
+      const tappedPerLine = Math.min(tapped, perLine)
+      const cw = responsive.battlefieldCardWidth
+      // Mirrors the per-line width model in useSlotSizedResponsive: tapped
+      // cards occupy 1.4 × width + 8 (rotated container).
+      return Math.ceil(
+        perLine * cw +
+        tappedPerLine * (0.4 * cw + 8) +
+        (perLine - 1) * responsive.cardGap,
+      ) + 2
+    })()
     return (
       <div style={{
         display: 'flex',
@@ -421,6 +447,7 @@ function BattlefieldContent({
             justifyContent: 'center',
             gap: responsive.cardGap,
             minWidth: 0,
+            ...(balancedMaxWidth !== undefined ? { maxWidth: balancedMaxWidth } : {}),
           }}>
             {centerItems.map((group) => renderWithAttachments(group))}
           </div>
@@ -476,11 +503,13 @@ function BattlefieldContent({
   const frontRow = renderGridRow(
     groupedCreatures,
     groupedPlaneswalkers,
+    frontRowLines,
     { minHeight: rowMinHeight(frontRowLines) },
   )
   const backRow = renderGridRow(
     groupedLands,
     groupedOther,
+    backRowLines,
     { minHeight: rowMinHeight(backRowLines) },
   )
 
