@@ -952,6 +952,16 @@ file (see `backlog/inline-pipeline-dsl.md`). Named `Patterns.*` entries are for 
 and shapes with a demonstrated second user; one-off pipelines go inline via the builder instead of
 hand-threading string slot keys between raw step constructors.
 
+> **The boundary is enforced.** `FacadeBoundaryTest` bans the raw pipeline-step constructors
+> (`GatherCardsEffect(`, `SelectFromCollectionEffect(`, `MoveCollectionEffect(`,
+> `FilterCollectionEffect(`, `RevealCollectionEffect(`, `ConditionalOnCollectionEffect(`, …) in card
+> definitions — compose them through `Effects.Pipeline { }` (or `Effects.PipelineSteps { }`, below)
+> instead. The raw `@Serializable` step types stay the JSON/custom-card surface; the ban is purely on
+> the Kotlin card-authoring layer. A short, documented allowlist in the test covers the handful of
+> cards holding a step in a shape the builder can't reproduce byte-identically (a lone step as a
+> `ConditionalEffect` branch, an opaque pattern-composite `.then` left side, an empty-`Composite`
+> conditional branch, a reused step-`listOf`).
+
 Each builder verb serializes to the existing pipeline step `Effect` — the result is the exact same
 `CompositeEffect` tree the raw constructors produce (zero engine change, zero JSON-contract change).
 Steps return **typed slot handles**; the only way to obtain a handle is from a step that produced
@@ -990,7 +1000,7 @@ with cards):
 |---|---|
 | `gather(source)` / `gather(filter, player?, …)` (battlefield shorthand) | `GatherCardsEffect` |
 | `gatherUntilMatch(filter, …)` → `(match, revealed)` | `GatherUntilMatchEffect` |
-| `chooseExactly(n, from)` / `chooseUpTo` / `chooseAnyNumber` / `chooseRandom` / `selectAll` (+ `…Split` variants returning `(selected, remainder)`) | `SelectFromCollectionEffect` |
+| `chooseExactly(n, from)` / `chooseUpTo` / `chooseAnyNumber` / `chooseRandom` / `selectAll(…, matchChosenCreatureType?)` (+ `…Split` / `selectAllSplit` variants returning `(selected, remainder)`; the count-taking `*Split` verbs accept an `Int` or a `DynamicAmount`) | `SelectFromCollectionEffect` |
 | `filter(from, filter)` / `filterSplit(…)` → `(matching, rest)` | `FilterCollectionEffect` |
 | `move(from, destination, …)` / `moveTracked(…)` / sugar `destroy`, `sacrifice`, `exile`, `toHand`, `toGraveyard`, `toLibraryTop`, `toLibraryBottom` | `MoveCollectionEffect` |
 | `reveal(from, …)` | `RevealCollectionEffect` |
@@ -1028,6 +1038,21 @@ effect = Effects.Pipeline {
         toGraveyard(drawn)
     }
 }
+```
+
+**`Effects.PipelineSteps { }`** — for the few effects that take a bare `List<Effect>` of pipeline
+steps directly (`ForEachPlayerEffect(effects = …)`, `ForEachTargetEffect(…)`), where wrapping the
+steps in a `CompositeEffect` would change the serialized tree. Same verbs and `name =` rules as
+`Effects.Pipeline { }`, but it returns the raw `List<Effect>` instead of a `CompositeEffect`:
+
+```kotlin
+effect = ForEachPlayerEffect(
+    effects = Effects.PipelineSteps {
+        val pool = gather(CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)))
+        val kept = chooseUpTo(1, from = pool)
+        toGraveyard(kept)
+    }
+)
 ```
 
 A card needing a genuinely **new step semantic** (a new capture kind, a new decision shape) still

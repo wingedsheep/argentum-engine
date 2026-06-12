@@ -91,6 +91,14 @@ more useful than abstract objection.
 Reference: `docs/architecture-principles.md` §1.5 (atomic pipelines), §1.2 (AST for
 dynamic values), §1.3 (composable filtering), §1.6 (DSL as abstraction).
 
+**Inline pipelines:** one-off Gather → Select → Move pipelines go inline via
+`Effects.Pipeline { }` (or `Effects.PipelineSteps { }` for `ForEach*` list params), not a
+new single-use `*Patterns` entry and not raw step constructors. The raw step constructors
+(`GatherCardsEffect(`, `SelectFromCollectionEffect(`, `MoveCollectionEffect(`, …) are now
+banned in card files by `FacadeBoundaryTest` (a small documented allowlist covers the
+structural exceptions), so a raw step in a card is a test failure, not a judgment call. See
+`card-sdk-language-reference.md` §5.5.
+
 ## 2b. Printing placement for new / reprinted cards
 
 For every card whose `CardDefinition` or `Printing(...)` row is added or moved in the

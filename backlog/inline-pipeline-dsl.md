@@ -1,10 +1,14 @@
 # Inline pipeline DSL — typed slot handles for card-file pipelines
 
-_Drafted 2026-06-12, out of the PR #630 (Drop of Honey) review discussion. Status: §5 step 1
-(builder core) + pilot migration implemented — `mtg-sdk/dsl/PipelineBuilder.kt`, entry point
-`Effects.Pipeline { }`, reference in `card-sdk-language-reference.md` §5.5; `inv/cards/Lobotomy.kt`
-migrated byte-identically. Steps 2–5 (new-card pilots, corpus migration, facade closure, emitter
-renderer) remain open._
+_Drafted 2026-06-12, out of the PR #630 (Drop of Honey) review discussion. Status: §5 steps 1–4
+implemented. Step 1 (builder core) + pilot in PR #636. Steps 3–4 (this PR): the corpus migration —
+250/254 inline-pipeline card files moved to `Effects.Pipeline { }` / `Effects.PipelineSteps { }`
+byte-identically (snapshot goldens untouched), the builder extended (`selectAll` +
+`matchChosenCreatureType`/`selectAllSplit`, `DynamicAmount` overloads on the `*Split` verbs,
+`Effects.PipelineSteps { }` for `ForEach*` list params), and the facade boundary closed —
+`FacadeBoundaryTest` now bans the raw step constructors with a documented 12-file allowlist for the
+structural exceptions the builder can't reproduce byte-identically. **Step 5 (mtgish emitter
+renderer) remains open.**_
 
 ## 0. The problem
 
@@ -201,26 +205,41 @@ ceiling on unseen sets without per-pattern emitter handlers, and keeps the
 
 Phased so each step is independently shippable and the goldens stay quiet:
 
-1. **Builder core** (`mtg-sdk/dsl/PipelineBuilder.kt`, entry point `Effects.Pipeline { }`):
-   handles, deterministic keys, the §2.3 verb set, `require`-on-duplicate-names. Unit tests
-   assert byte-identical serialization against hand-built `CompositeEffect` trees for the
-   worked examples. Update `docs/card-sdk-language-reference.md` in the same change (hard
-   rule).
-2. **Pilot:** author the next 2–3 one-off pipeline cards with it; fold PR #630's
-   `destroyLeastPowerCreature` question into practice (that one *keeps* its named pattern —
-   Porphyry Nodes is the second user).
-3. **Mechanical migration of the 231 inline cards**, per set, using explicit
-   `name = "<existing key>"` everywhere → serialized JSON is unchanged, snapshot goldens are
-   untouched, review is pure source diff. (Fan-out friendly: edit-only agents, no Gradle.)
-4. **Close the boundary:** add the raw step constructors (`GatherCardsEffect(`,
-   `SelectFromCollectionEffect(`, `MoveCollectionEffect(`, `FilterCollectionEffect(`, …) to
-   `FacadeBoundaryTest`'s forbidden list with hint "use Effects.Pipeline { }". Rescope the
-   "no single-use patterns" guidance in the review-changes skill + memory.
-5. **Emitter renderer** (independent, optional): generic pipeline-tree → `pipeline { }` text
-   in the mtgish emitter; verify with `coverage-verify` (POR must stay 0-mismatch).
+1. **Builder core** ✅ (PR #636) — `mtg-sdk/dsl/PipelineBuilder.kt`, entry point
+   `Effects.Pipeline { }`, handles, deterministic keys, the §2.3 verb set,
+   `require`-on-duplicate-names; byte-identical unit tests; `card-sdk-language-reference.md` §5.5.
+2. **Pilot** ✅ — `inv/cards/Lobotomy.kt` migrated byte-identically (PR #636); PR #630's
+   `destroyLeastPowerCreature` *keeps* its named pattern (Porphyry Nodes is the second user).
+3. **Mechanical migration** ✅ (this PR) — 250/254 inline cards moved to `Effects.Pipeline { }`
+   (or `Effects.PipelineSteps { }` for `ForEach*` list params), per set via edit-only fan-out,
+   explicit `name = "<existing key>"` everywhere → serialized JSON unchanged, snapshot goldens
+   untouched. The builder gained `selectAll(matchChosenCreatureType=)` / `selectAllSplit`,
+   `DynamicAmount` overloads on the `*Split` verbs, and `Effects.PipelineSteps { }`.
+4. **Close the boundary** ✅ (this PR) — `FacadeBoundaryTest` now bans the raw step constructors
+   (`GatherCardsEffect(`, `SelectFromCollectionEffect(`, `MoveCollectionEffect(`, …) with the hint
+   "use Effects.Pipeline { }", plus a documented 12-file allowlist for the structural exceptions
+   below. "No single-use patterns" guidance rescoped in the review-changes skill + memory.
+5. **Emitter renderer** (independent, optional, **still open**): generic pipeline-tree →
+   `Effects.Pipeline { }` text in the mtgish emitter; verify with `coverage-verify` (POR must stay
+   0-mismatch).
 
-Steps 1–2 deliver the authoring win on their own; 3–4 are hygiene that can trail; 5 is a
-separate mtgish work item.
+Steps 1–2 delivered the authoring win; 3–4 (this PR) close the boundary; 5 is a separate mtgish
+work item.
+
+**Structural exceptions (the 12-file allowlist, step 4).** A small set of cards hold a raw step in a
+shape the builder cannot reproduce byte-identically, so converting them would churn the snapshot
+golden. They are explicitly allowlisted in `FacadeBoundaryTest` (every *other* facade rule still
+applies to them):
+
+- A single step as a `ConditionalEffect` branch (`effect`/`elseEffect`) — not a multi-step pipeline;
+  wrapping would add a `CompositeEffect` node: AetherRift, BreOfClanStoutarm, CelestialReunion,
+  WhiskervaleForerunner.
+- A `.then(...)` chain whose leftmost element is an opaque pattern-composite (`Patterns.Library.scry`,
+  `Patterns.Hand.putFromHand`, …); `then` flattens that composite's children: ElvenFarsight, MeekAttack,
+  Dermoplasm, TerminalVelocity, CauldronDance.
+- A `ConditionalOnCollectionEffect` with an empty-`Composite` branch (`ifNotEmpty { }`/`orElse { }`
+  require a non-empty body): PulsarSquadronAce, ManholeMissile.
+- A reused `val steps = listOf(<raw steps>)` concatenated across modes: CruelclawsHeist.
 
 ## 6. Open questions
 
