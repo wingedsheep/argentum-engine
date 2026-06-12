@@ -7,12 +7,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -33,28 +29,25 @@ val Divest = card("Divest") {
 
     spell {
         val t = target("target", TargetOpponent())
-        effect = Effects.Composite(
-            listOf(
-                RevealHandEffect(t),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    filter = GameObjectFilter.Artifact or GameObjectFilter.Creature,
-                    storeSelected = "toDiscard",
-                    prompt = "Choose an artifact or creature card to discard"
-                ),
-                MoveCollectionEffect(
-                    from = "toDiscard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                    moveType = MoveType.Discard
-                )
+        effect = Effects.Pipeline {
+            run(RevealHandEffect(t))
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
+                name = "hand"
             )
-        )
+            val toDiscard = chooseExactly(
+                1, from = hand,
+                chooser = Chooser.Controller,
+                filter = GameObjectFilter.Artifact or GameObjectFilter.Creature,
+                prompt = "Choose an artifact or creature card to discard",
+                name = "toDiscard"
+            )
+            move(
+                toDiscard,
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                moveType = MoveType.Discard
+            )
+        }
     }
 
     metadata {

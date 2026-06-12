@@ -8,10 +8,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -36,17 +34,14 @@ val KulrathZealot = card("Kulrath Zealot") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
-                storeAs = "exiledCard"
-            ),
-            MoveCollectionEffect(
-                from = "exiledCard",
-                destination = CardDestination.ToZone(Zone.EXILE)
-            ),
-            GrantMayPlayFromExileEffect("exiledCard", MayPlayExpiry.UntilEndOfNextTurn)
-        ))
+        effect = Effects.Pipeline {
+            val exiledCard = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
+                name = "exiledCard"
+            )
+            move(exiledCard, destination = CardDestination.ToZone(Zone.EXILE))
+            run(GrantMayPlayFromExileEffect("exiledCard", MayPlayExpiry.UntilEndOfNextTurn))
+        }
     }
 
     keywordAbility(KeywordAbility.basicLandcycling(ManaCost.parse("{1}{R}")))

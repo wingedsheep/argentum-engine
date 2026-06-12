@@ -10,8 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -35,25 +33,19 @@ val LoafingGiant = card("Loafing Giant") {
     toughness = 6
     oracleText = "Whenever this creature attacks or blocks, mill a card. If a land card was milled this way, prevent all combat damage this creature would deal this turn."
 
-    val millAndMaybePrevent = Effects.Composite(
-        listOf(
-            // Mill a card: gather top card, move it to the graveyard.
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
-                storeAs = "milled"
-            ),
-            MoveCollectionEffect(
-                from = "milled",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD)
-            ),
-            // If a land card was milled this way, prevent all combat damage this creature
-            // would deal this turn.
+    val millAndMaybePrevent = Effects.Pipeline {
+        // Mill a card: gather top card, move it to the graveyard.
+        val milled = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(1)), name = "milled")
+        move(milled, CardDestination.ToZone(Zone.GRAVEYARD))
+        // If a land card was milled this way, prevent all combat damage this creature
+        // would deal this turn.
+        run(
             ConditionalEffect(
                 condition = Conditions.CollectionContainsMatch("milled", GameObjectFilter.Land),
                 effect = Effects.PreventCombatDamageFrom(GroupFilter.source())
             )
         )
-    )
+    }
 
     triggeredAbility {
         trigger = Triggers.Attacks

@@ -11,9 +11,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithAdditionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.dsl.Costs
 
 /**
@@ -40,31 +37,28 @@ val TheInfamousCruelclaw = card("The Infamous Cruelclaw") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = Effects.Composite(
-            listOf(
-                // Exile from top until nonland
-                GatherUntilMatchEffect(
-                    filter = GameObjectFilter.Nonland,
-                    storeMatch = "nonland",
-                    storeRevealed = "allRevealed"
-                ),
-                RevealCollectionEffect(from = "allRevealed"),
-                // Move all revealed cards to exile
-                MoveCollectionEffect(
-                    from = "allRevealed",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                // Grant permission to play the nonland from exile
-                GrantMayPlayFromExileEffect("nonland"),
-                // Waive mana cost
-                GrantPlayWithoutPayingCostEffect("nonland"),
-                // Require discarding a card as additional cost
+        effect = Effects.Pipeline {
+            // Exile from top until nonland
+            val (nonland, allRevealed) = gatherUntilMatch(
+                filter = GameObjectFilter.Nonland,
+                matchName = "nonland",
+                revealedName = "allRevealed"
+            )
+            reveal(allRevealed)
+            // Move all revealed cards to exile
+            move(allRevealed, CardDestination.ToZone(Zone.EXILE))
+            // Grant permission to play the nonland from exile
+            run(GrantMayPlayFromExileEffect("nonland"))
+            // Waive mana cost
+            run(GrantPlayWithoutPayingCostEffect("nonland"))
+            // Require discarding a card as additional cost
+            run(
                 GrantPlayWithAdditionalCostEffect(
                     from = "nonland",
                     additionalCost = Costs.additional.DiscardCards(1)
                 )
             )
-        )
+        }
     }
 
     metadata {

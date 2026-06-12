@@ -10,13 +10,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -47,26 +43,23 @@ val TersaLightshatter = card("Tersa Lightshatter") {
     // discarded via the pipeline collection's `_count` (declining discards draws zero).
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(2)),
-                    storeSelected = "discarded",
-                    prompt = "Discard up to two cards"
-                ),
-                MoveCollectionEffect(
-                    from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
-                    moveType = MoveType.Discard
-                ),
-                DrawCardsEffect(DynamicAmount.VariableReference("discarded_count"))
+        effect = Effects.Pipeline {
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.You),
+                name = "hand"
             )
-        )
+            val discarded = chooseUpTo(
+                2, from = hand,
+                prompt = "Discard up to two cards",
+                name = "discarded"
+            )
+            move(
+                discarded,
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                moveType = MoveType.Discard
+            )
+            run(DrawCardsEffect(DynamicAmount.VariableReference("discarded_count")))
+        }
         description = "When Tersa Lightshatter enters, discard up to two cards, then draw that many cards."
     }
 
@@ -75,24 +68,21 @@ val TersaLightshatter = card("Tersa Lightshatter") {
     triggeredAbility {
         trigger = Triggers.Attacks
         triggerCondition = Conditions.CardsInGraveyardAtLeast(7)
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.GRAVEYARD, Player.You),
-                    storeAs = "graveyardExile"
-                ),
-                SelectFromCollectionEffect(
-                    from = "graveyardExile",
-                    selection = SelectionMode.Random(DynamicAmount.Fixed(1)),
-                    storeSelected = "exiledAtRandom"
-                ),
-                MoveCollectionEffect(
-                    from = "exiledAtRandom",
-                    destination = CardDestination.ToZone(Zone.EXILE, Player.You)
-                ),
-                GrantMayPlayFromExileEffect("exiledAtRandom", MayPlayExpiry.EndOfTurn)
+        effect = Effects.Pipeline {
+            val graveyardExile = gather(
+                CardSource.FromZone(Zone.GRAVEYARD, Player.You),
+                name = "graveyardExile"
             )
-        )
+            val exiledAtRandom = chooseRandom(
+                1, from = graveyardExile,
+                name = "exiledAtRandom"
+            )
+            move(
+                exiledAtRandom,
+                destination = CardDestination.ToZone(Zone.EXILE, Player.You)
+            )
+            run(GrantMayPlayFromExileEffect("exiledAtRandom", MayPlayExpiry.EndOfTurn))
+        }
         description = "Whenever Tersa Lightshatter attacks, if there are seven or more cards in your " +
             "graveyard, exile a card at random from your graveyard. You may play that card this turn."
     }

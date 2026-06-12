@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -61,34 +57,25 @@ val AjaniOutlandChaperone = card("Ajani, Outland Chaperone") {
     // put any number of nonland permanent cards with mana value 3 or less from among
     // them onto the battlefield. Then shuffle.
     loyaltyAbility(-8) {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.YourLifeTotal),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseAnyNumber,
-                    filter = GameObjectFilter.NonlandPermanent.manaValueAtMost(3),
-                    showAllCards = true,
-                    storeSelected = "toBattlefield",
-                    storeRemainder = "rest",
-                    prompt = "You may put any number of nonland permanent cards with mana value 3 or less onto the battlefield",
-                    selectedLabel = "Put onto the battlefield",
-                    remainderLabel = "Shuffle into your library"
-                ),
-                MoveCollectionEffect(
-                    from = "toBattlefield",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY)
-                ),
-                ShuffleLibraryEffect()
+        effect = Effects.Pipeline {
+            val looked = gather(
+                CardSource.TopOfLibrary(DynamicAmount.YourLifeTotal),
+                name = "looked"
             )
-        )
+            val (toBattlefield, rest) = chooseAnyNumberSplit(
+                from = looked,
+                filter = GameObjectFilter.NonlandPermanent.manaValueAtMost(3),
+                showAllCards = true,
+                prompt = "You may put any number of nonland permanent cards with mana value 3 or less onto the battlefield",
+                selectedLabel = "Put onto the battlefield",
+                remainderLabel = "Shuffle into your library",
+                name = "toBattlefield",
+                remainderName = "rest"
+            )
+            move(toBattlefield, destination = CardDestination.ToZone(Zone.BATTLEFIELD))
+            move(rest, destination = CardDestination.ToZone(Zone.LIBRARY))
+            run(ShuffleLibraryEffect())
+        }
     }
 
     metadata {

@@ -10,13 +10,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Costs
 
 /**
@@ -45,24 +41,20 @@ val AetherRift = card("Aether Rift") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = Effects.Composite(
-            listOf(
-                // Discard a card at random, remembering it as "discarded".
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.Random(DynamicAmount.Fixed(1)),
-                    storeSelected = "discarded"
-                ),
-                MoveCollectionEffect(
-                    from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
-                    moveType = MoveType.Discard
-                ),
-                // If the discarded card was a creature, return it unless any player pays 5 life.
+        effect = Effects.Pipeline {
+            // Discard a card at random, remembering it as "discarded".
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.You),
+                name = "hand"
+            )
+            val discarded = chooseRandom(1, from = hand, name = "discarded")
+            move(
+                discarded,
+                CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                moveType = MoveType.Discard
+            )
+            // If the discarded card was a creature, return it unless any player pays 5 life.
+            run(
                 ConditionalEffect(
                     condition = Conditions.CollectionContainsMatch("discarded", GameObjectFilter.Creature),
                     effect = Effects.UnlessAnyPlayerPays(
@@ -74,7 +66,7 @@ val AetherRift = card("Aether Rift") {
                     )
                 )
             )
-        )
+        }
     }
 
     metadata {

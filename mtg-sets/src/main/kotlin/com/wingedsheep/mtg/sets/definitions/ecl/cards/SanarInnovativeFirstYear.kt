@@ -9,13 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.dsl.Effects
@@ -56,41 +50,35 @@ val SanarInnovativeFirstYear = card("Sanar, Innovative First-Year") {
 
     triggeredAbility {
         trigger = Triggers.FirstMainPhase
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Walk the library until X nonland cards have been revealed.
-            GatherUntilMatchEffect(
+            val (nonlandCards, allRevealed) = gatherUntilMatch(
                 filter = GameObjectFilter.Nonland,
-                storeMatch = "nonlandCards",
-                storeRevealed = "allRevealed",
-                count = colorCount
-            ),
-            RevealCollectionEffect(from = "allRevealed"),
+                count = colorCount,
+                matchName = "nonlandCards",
+                revealedName = "allRevealed"
+            )
+            reveal(allRevealed)
             // The caster picks one card per colour (up to X) of the revealed nonlands to exile.
-            SelectFromCollectionEffect(
-                from = "nonlandCards",
-                selection = SelectionMode.ChooseUpTo(colorCount),
-                storeSelected = "toExile",
+            val toExile = chooseUpTo(
+                colorCount,
+                from = nonlandCards,
                 selectedLabel = "Exile (you may cast this turn)",
                 alwaysPrompt = true,
-                restrictions = listOf(SelectionRestriction.OnePerColor(matchControllerPermanentColors = true))
-            ),
-            MoveCollectionEffect(
-                from = "toExile",
-                destination = CardDestination.ToZone(Zone.EXILE)
-            ),
+                restrictions = listOf(SelectionRestriction.OnePerColor(matchControllerPermanentColors = true)),
+                name = "toExile"
+            )
+            move(toExile, destination = CardDestination.ToZone(Zone.EXILE))
             // Everything revealed minus the exiled cards goes back to the library, shuffled.
-            FilterCollectionEffect(
-                from = "allRevealed",
-                filter = CollectionFilter.ExcludeOtherCollection("toExile"),
-                storeMatching = "toLibrary"
-            ),
-            MoveCollectionEffect(
-                from = "toLibrary",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled)
-            ),
+            val toLibrary = filter(
+                allRevealed,
+                CollectionFilter.ExcludeOtherCollection("toExile"),
+                name = "toLibrary"
+            )
+            move(toLibrary, destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled))
             // You may cast the exiled cards this turn (paying their normal costs).
-            GrantMayPlayFromExileEffect(from = "toExile")
-        ))
+            run(GrantMayPlayFromExileEffect(from = "toExile"))
+        }
     }
 
     metadata {

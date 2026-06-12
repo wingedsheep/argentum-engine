@@ -8,11 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -34,44 +29,36 @@ val StrategicBetrayal = card("Strategic Betrayal") {
 
     spell {
         target("target opponent", Targets.Opponent)
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.BattlefieldMatching(
-                        filter = GameObjectFilter.Creature,
-                        player = Player.ContextPlayer(0)
-                    ),
-                    storeAs = "creaturesCanExile"
+        effect = Effects.Pipeline {
+            val creaturesCanExile = gather(
+                CardSource.BattlefieldMatching(
+                    filter = GameObjectFilter.Creature,
+                    player = Player.ContextPlayer(0)
                 ),
-                ConditionalOnCollectionEffect(
-                    collection = "creaturesCanExile",
-                    ifNotEmpty = Effects.Composite(
-                        listOf(
-                            SelectFromCollectionEffect(
-                                from = "creaturesCanExile",
-                                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                chooser = Chooser.TargetPlayer,
-                                storeSelected = "chosenCreature",
-                                prompt = "Choose a creature to exile",
-                                useTargetingUI = true
-                            ),
-                            MoveCollectionEffect(
-                                from = "chosenCreature",
-                                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
-                            )
-                        )
-                    )
-                ),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                    storeAs = "opponentGraveyard"
-                ),
-                MoveCollectionEffect(
-                    from = "opponentGraveyard",
+                name = "creaturesCanExile"
+            )
+            ifNotEmpty(creaturesCanExile) {
+                val chosenCreature = chooseExactly(
+                    1, from = creaturesCanExile,
+                    chooser = Chooser.TargetPlayer,
+                    prompt = "Choose a creature to exile",
+                    useTargetingUI = true,
+                    name = "chosenCreature"
+                )
+                move(
+                    chosenCreature,
                     destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
                 )
+            }
+            val opponentGraveyard = gather(
+                CardSource.FromZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                name = "opponentGraveyard"
             )
-        )
+            move(
+                opponentGraveyard,
+                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
+            )
+        }
     }
 
     metadata {

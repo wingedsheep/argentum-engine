@@ -13,12 +13,8 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -52,27 +48,24 @@ val ThoughtStalkerWarlock = card("Thought-Stalker Warlock") {
         effect = ConditionalEffect(
             condition = Conditions.OpponentLostLifeThisTurn,
             // If they lost life: reveal hand, controller chooses nonland, discard it
-            effect = Effects.Composite(
-                listOf(
-                    RevealHandEffect(opponent),
-                    GatherCardsEffect(
-                        source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0), GameObjectFilter.Nonland),
-                        storeAs = "nonlandCards"
-                    ),
-                    SelectFromCollectionEffect(
-                        from = "nonlandCards",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                        chooser = Chooser.Controller,
-                        storeSelected = "chosenCard",
-                        prompt = "Choose a nonland card to discard"
-                    ),
-                    MoveCollectionEffect(
-                        from = "chosenCard",
-                        destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                        moveType = MoveType.Discard
-                    )
+            effect = Effects.Pipeline {
+                run(RevealHandEffect(opponent))
+                val nonlandCards = gather(
+                    CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0), GameObjectFilter.Nonland),
+                    name = "nonlandCards"
                 )
-            ),
+                val chosenCard = chooseExactly(
+                    1, from = nonlandCards,
+                    chooser = Chooser.Controller,
+                    prompt = "Choose a nonland card to discard",
+                    name = "chosenCard"
+                )
+                move(
+                    chosenCard,
+                    CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                    moveType = MoveType.Discard
+                )
+            },
             // Otherwise: they discard a card (their choice)
             elseEffect = Patterns.Hand.discardCards(1, opponent)
         )

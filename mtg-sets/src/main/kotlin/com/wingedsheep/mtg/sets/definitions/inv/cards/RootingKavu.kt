@@ -8,9 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -40,27 +38,25 @@ val RootingKavu = card("Rooting Kavu") {
         trigger = Triggers.Dies
         triggerZone = Zone.GRAVEYARD
         effect = MayEffect(
-            effect = Effects.Composite(
-                listOf(
-                    Effects.Exile(EffectTarget.Self),
-                    GatherCardsEffect(
-                        source = CardSource.FromZone(
-                            Zone.GRAVEYARD,
-                            Player.You,
-                            GameObjectFilter.Creature
-                        ),
-                        storeAs = "graveyardCreatures"
+            effect = Effects.Pipeline {
+                run(Effects.Exile(EffectTarget.Self))
+                val graveyardCreatures = gather(
+                    CardSource.FromZone(
+                        Zone.GRAVEYARD,
+                        Player.You,
+                        GameObjectFilter.Creature
                     ),
-                    MoveCollectionEffect(
-                        from = "graveyardCreatures",
-                        destination = CardDestination.ToZone(
-                            Zone.LIBRARY,
-                            Player.You,
-                            ZonePlacement.Shuffled
-                        )
+                    name = "graveyardCreatures"
+                )
+                move(
+                    graveyardCreatures,
+                    CardDestination.ToZone(
+                        Zone.LIBRARY,
+                        Player.You,
+                        ZonePlacement.Shuffled
                     )
                 )
-            ),
+            },
             descriptionOverride = "You may exile this creature. If you do, shuffle all " +
                 "creature cards from your graveyard into your library."
         )

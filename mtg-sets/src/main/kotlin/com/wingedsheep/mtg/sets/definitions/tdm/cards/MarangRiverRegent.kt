@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 
@@ -46,13 +44,13 @@ val MarangRiverRegent = card("Marang River Regent") {
             "up to two other target nonland permanents",
             TargetPermanent(count = 2, optional = true, filter = TargetFilter.NonlandPermanent.other())
         )
-        effect = Effects.Composite(
-            GatherCardsEffect(source = CardSource.ChosenTargets, storeAs = "marangRiverRegent_targets"),
-            MoveCollectionEffect(
-                from = "marangRiverRegent_targets",
+        effect = Effects.Pipeline {
+            val marangRiverRegentTargets = gather(CardSource.ChosenTargets, name = "marangRiverRegent_targets")
+            move(
+                marangRiverRegentTargets,
                 destination = CardDestination.ToZone(Zone.HAND),
-            ),
-        )
+            )
+        }
         description = "When this creature enters, return up to two other target nonland permanents to " +
             "their owners' hands."
     }

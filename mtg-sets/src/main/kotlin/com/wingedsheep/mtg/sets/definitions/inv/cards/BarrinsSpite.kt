@@ -6,13 +6,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -45,36 +40,30 @@ val BarrinsSpite = card("Barrin's Spite") {
 
     spell {
         target = TargetCreature(count = 2, sameController = true)
-        effect = Effects.Composite(
-            listOf(
-                // 1. Reference the two targeted creatures (still on the battlefield).
-                GatherCardsEffect(
-                    source = CardSource.ChosenTargets,
-                    storeAs = "spiteCreatures"
-                ),
-                // 2. Their controller chooses one to sacrifice; the other is the remainder.
-                SelectFromCollectionEffect(
-                    from = "spiteCreatures",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.ControllerOfSelection,
-                    storeSelected = "sacrificed",
-                    storeRemainder = "returned",
-                    useTargetingUI = true,
-                    prompt = "Choose one of the two creatures to sacrifice"
-                ),
-                // 3. Sacrifice the chosen creature (owner's graveyard, fires sacrifice triggers).
-                MoveCollectionEffect(
-                    from = "sacrificed",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                    moveType = MoveType.Sacrifice
-                ),
-                // 4. Return the other to its owner's hand.
-                MoveCollectionEffect(
-                    from = "returned",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                )
+        effect = Effects.Pipeline {
+            // 1. Reference the two targeted creatures (still on the battlefield).
+            val spiteCreatures = gather(CardSource.ChosenTargets, name = "spiteCreatures")
+            // 2. Their controller chooses one to sacrifice; the other is the remainder.
+            val (sacrificed, returned) = chooseExactlySplit(
+                1, from = spiteCreatures,
+                chooser = Chooser.ControllerOfSelection,
+                useTargetingUI = true,
+                prompt = "Choose one of the two creatures to sacrifice",
+                name = "sacrificed",
+                remainderName = "returned"
             )
-        )
+            // 3. Sacrifice the chosen creature (owner's graveyard, fires sacrifice triggers).
+            move(
+                sacrificed,
+                CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = MoveType.Sacrifice
+            )
+            // 4. Return the other to its owner's hand.
+            move(
+                returned,
+                CardDestination.ToZone(Zone.HAND)
+            )
+        }
     }
 
     metadata {

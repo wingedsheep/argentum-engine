@@ -6,10 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -46,47 +42,43 @@ val RiteOfRenewal = card("Rite of Renewal") {
         "Exile Rite of Renewal."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                // Return up to two permanent cards from your graveyard to your hand.
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.GRAVEYARD,
-                        player = Player.You,
-                        filter = GameObjectFilter.Permanent
-                    ),
-                    storeAs = "yourGraveyard"
+        effect = Effects.Pipeline {
+            // Return up to two permanent cards from your graveyard to your hand.
+            val yourGraveyard = gather(
+                CardSource.FromZone(
+                    zone = Zone.GRAVEYARD,
+                    player = Player.You,
+                    filter = GameObjectFilter.Permanent
                 ),
-                SelectFromCollectionEffect(
-                    from = "yourGraveyard",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(2)),
-                    storeSelected = "toHand",
-                    selectedLabel = "Return to hand"
-                ),
-                MoveCollectionEffect(
-                    from = "toHand",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                // Shuffle up to four cards from graveyards into their owners' libraries.
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.GRAVEYARD,
-                        player = Player.Each
-                    ),
-                    storeAs = "anyGraveyard"
-                ),
-                SelectFromCollectionEffect(
-                    from = "anyGraveyard",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(4)),
-                    storeSelected = "toLibrary",
-                    selectedLabel = "Shuffle into library"
-                ),
-                MoveCollectionEffect(
-                    from = "toLibrary",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled)
-                )
+                name = "yourGraveyard"
             )
-        )
+            val toHand = chooseUpTo(
+                2, from = yourGraveyard,
+                selectedLabel = "Return to hand",
+                name = "toHand"
+            )
+            move(
+                toHand,
+                destination = CardDestination.ToZone(Zone.HAND)
+            )
+            // Shuffle up to four cards from graveyards into their owners' libraries.
+            val anyGraveyard = gather(
+                CardSource.FromZone(
+                    zone = Zone.GRAVEYARD,
+                    player = Player.Each
+                ),
+                name = "anyGraveyard"
+            )
+            val toLibrary = chooseUpTo(
+                4, from = anyGraveyard,
+                selectedLabel = "Shuffle into library",
+                name = "toLibrary"
+            )
+            move(
+                toLibrary,
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled)
+            )
+        }
         selfExile()
     }
 

@@ -9,11 +9,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -49,25 +45,22 @@ val JayaBallard = card("Jaya Ballard") {
     // +1: Discard up to three cards, then draw that many cards
     loyaltyAbility(+1) {
         description = "+1: Discard up to three cards, then draw that many cards."
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(3)),
-                    storeSelected = "toDiscard"
-                ),
-                MoveCollectionEffect(
-                    from = "toDiscard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                    moveType = MoveType.Discard
-                ),
-                DrawCardsEffect(DynamicAmount.VariableReference("toDiscard_count"))
+        effect = Effects.Pipeline {
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.You),
+                name = "hand"
             )
-        )
+            val toDiscard = chooseUpTo(
+                3, from = hand,
+                name = "toDiscard"
+            )
+            move(
+                toDiscard,
+                destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = MoveType.Discard
+            )
+            run(DrawCardsEffect(DynamicAmount.VariableReference("toDiscard_count")))
+        }
     }
 
     // −8: Emblem — not yet implemented (requires new engine mechanics)

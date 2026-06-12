@@ -8,10 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -38,31 +34,28 @@ val TheAntiquitiesWar = card("The Antiquities War") {
         "I, II — Look at the top five cards of your library. You may reveal an artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.\n" +
         "III — Artifacts you control become artifact creatures with base power and toughness 5/5 until end of turn."
 
-    val lookForArtifact = Effects.Composite(
-        listOf(
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
-                storeAs = "looked"
-            ),
-            SelectFromCollectionEffect(
-                from = "looked",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                filter = GameObjectFilter.Artifact,
-                storeSelected = "kept",
-                storeRemainder = "rest",
-                prompt = "You may reveal an artifact card and put it into your hand",
-                showAllCards = true
-            ),
-            MoveCollectionEffect(
-                from = "kept",
-                destination = CardDestination.ToZone(Zone.HAND)
-            ),
-            MoveCollectionEffect(
-                from = "rest",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
-            )
+    val lookForArtifact = Effects.Pipeline {
+        val looked = gather(
+            CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
+            name = "looked"
         )
-    )
+        val (kept, rest) = chooseUpToSplit(
+            1, from = looked,
+            filter = GameObjectFilter.Artifact,
+            prompt = "You may reveal an artifact card and put it into your hand",
+            showAllCards = true,
+            name = "kept",
+            remainderName = "rest"
+        )
+        move(
+            kept,
+            destination = CardDestination.ToZone(Zone.HAND)
+        )
+        move(
+            rest,
+            destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
+        )
+    }
 
     sagaChapter(1) {
         effect = lookForArtifact

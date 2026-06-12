@@ -16,16 +16,10 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Trystan, Callous Cultivator // Trystan, Penitent Culler
@@ -56,38 +50,34 @@ private val millThenGainLifeIfElf = Effects.Composite(
     )
 )
 
-private val millThenExileElfThenDrain = Effects.Composite(
-    listOf(
-        Patterns.Library.mill(3),
-        GatherCardsEffect(
-            source = CardSource.FromZone(
-                zone = Zone.GRAVEYARD,
-                player = Player.You,
-                filter = GameObjectFilter.Any.withSubtype(Subtype.ELF)
-            ),
-            storeAs = "elfChoices"
+private val millThenExileElfThenDrain = Effects.Pipeline {
+    run(Patterns.Library.mill(3))
+    val elfChoices = gather(
+        CardSource.FromZone(
+            zone = Zone.GRAVEYARD,
+            player = Player.You,
+            filter = GameObjectFilter.Any.withSubtype(Subtype.ELF)
         ),
-        SelectFromCollectionEffect(
-            from = "elfChoices",
-            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-            chooser = Chooser.Controller,
-            storeSelected = "exiledElf",
-            prompt = "Exile an Elf card from your graveyard (or cancel)",
-            alwaysPrompt = true
-        ),
-        MoveCollectionEffect(
-            from = "exiledElf",
-            destination = CardDestination.ToZone(Zone.EXILE)
-        ),
-        ConditionalOnCollectionEffect(
-            collection = "exiledElf",
-            ifNotEmpty = Effects.LoseLife(
+        name = "elfChoices"
+    )
+    val exiledElf = chooseUpTo(
+        1,
+        from = elfChoices,
+        chooser = Chooser.Controller,
+        prompt = "Exile an Elf card from your graveyard (or cancel)",
+        alwaysPrompt = true,
+        name = "exiledElf"
+    )
+    move(exiledElf, destination = CardDestination.ToZone(Zone.EXILE))
+    ifNotEmpty(exiledElf) {
+        run(
+            Effects.LoseLife(
                 amount = 2,
                 target = EffectTarget.PlayerRef(Player.EachOpponent)
             )
         )
-    )
-)
+    }
+}
 
 private val TrystanPenitentCuller = card("Trystan, Penitent Culler") {
     manaCost = ""

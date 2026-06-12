@@ -14,10 +14,8 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -61,38 +59,37 @@ val BreOfClanStoutarm = card("Bre of Clan Stoutarm") {
     triggeredAbility {
         trigger = Triggers.YourEndStep
         triggerCondition = Conditions.YouGainedLifeThisTurn
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Exile from top until nonland — same pipeline as The Infamous Cruelclaw.
-            GatherUntilMatchEffect(
+            val (nonland, allRevealed) = gatherUntilMatch(
                 filter = GameObjectFilter.Nonland,
-                storeMatch = "nonland",
-                storeRevealed = "allRevealed"
-            ),
-            RevealCollectionEffect(from = "allRevealed"),
-            MoveCollectionEffect(
-                from = "allRevealed",
-                destination = CardDestination.ToZone(Zone.EXILE)
-            ),
+                matchName = "nonland",
+                revealedName = "allRevealed"
+            )
+            reveal(allRevealed)
+            move(allRevealed, destination = CardDestination.ToZone(Zone.EXILE))
             // Compare the exiled nonland's mana value to the life gained this turn.
-            ConditionalEffect(
-                condition = Compare(
-                    left = DynamicAmount.StoredCardManaValue("nonland"),
-                    operator = ComparisonOperator.LTE,
-                    right = DynamicAmounts.lifeGainedThisTurn()
-                ),
-                // MV ≤ life gained: you may cast it for free *while this ability resolves* (the
-                // printed ruling — you can't wait to cast it later), so cast inline from exile
-                // rather than granting deferred may-play permission. Declining leaves it in exile.
-                effect = MayEffect(Effects.CastFromCollectionWithoutPayingCost("nonland")),
-                // Otherwise (MV > life gained), put the nonland into your hand. The "Otherwise" is
-                // tied to the mana-value comparison, not to declining the cast — cf. Solstice
-                // Revelations' distinct "if you don't cast that card this way" wording.
-                elseEffect = MoveCollectionEffect(
-                    from = "nonland",
-                    destination = CardDestination.ToZone(Zone.HAND)
+            run(
+                ConditionalEffect(
+                    condition = Compare(
+                        left = DynamicAmount.StoredCardManaValue("nonland"),
+                        operator = ComparisonOperator.LTE,
+                        right = DynamicAmounts.lifeGainedThisTurn()
+                    ),
+                    // MV ≤ life gained: you may cast it for free *while this ability resolves* (the
+                    // printed ruling — you can't wait to cast it later), so cast inline from exile
+                    // rather than granting deferred may-play permission. Declining leaves it in exile.
+                    effect = MayEffect(Effects.CastFromCollectionWithoutPayingCost("nonland")),
+                    // Otherwise (MV > life gained), put the nonland into your hand. The "Otherwise" is
+                    // tied to the mana-value comparison, not to declining the cast — cf. Solstice
+                    // Revelations' distinct "if you don't cast that card this way" wording.
+                    elseEffect = MoveCollectionEffect(
+                        from = "nonland",
+                        destination = CardDestination.ToZone(Zone.HAND)
+                    )
                 )
             )
-        ))
+        }
     }
 
     metadata {

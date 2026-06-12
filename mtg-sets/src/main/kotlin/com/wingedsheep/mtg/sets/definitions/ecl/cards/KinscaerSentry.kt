@@ -10,11 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -43,28 +38,24 @@ val KinscaerSentry = card("Kinscaer Sentry") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature),
-                storeAs = "handCreatures"
-            ),
-            FilterCollectionEffect(
-                from = "handCreatures",
-                filter = CollectionFilter.ManaValueAtMost(DynamicAmounts.attackingCreaturesYouControl()),
-                storeMatching = "eligible"
-            ),
-            SelectFromCollectionEffect(
-                from = "eligible",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                storeSelected = "chosen",
-                prompt = "Put a creature card onto the battlefield tapped and attacking",
-                selectedLabel = "Put onto the battlefield tapped and attacking"
-            ),
-            MoveCollectionEffect(
-                from = "chosen",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD, Player.You, ZonePlacement.TappedAndAttacking)
+        effect = Effects.Pipeline {
+            val handCreatures = gather(
+                CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature),
+                name = "handCreatures"
             )
-        ))
+            val eligible = filter(
+                handCreatures,
+                CollectionFilter.ManaValueAtMost(DynamicAmounts.attackingCreaturesYouControl()),
+                name = "eligible"
+            )
+            val chosen = chooseUpTo(
+                1, from = eligible,
+                prompt = "Put a creature card onto the battlefield tapped and attacking",
+                selectedLabel = "Put onto the battlefield tapped and attacking",
+                name = "chosen"
+            )
+            move(chosen, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You, ZonePlacement.TappedAndAttacking))
+        }
     }
 
     metadata {

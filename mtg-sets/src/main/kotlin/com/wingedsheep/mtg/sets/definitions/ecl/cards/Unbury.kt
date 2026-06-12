@@ -8,12 +8,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -51,30 +47,24 @@ val Unbury = card("Unbury") {
                 "Return target creature card from your graveyard to your hand"
             ),
             Mode.noTarget(
-                Effects.Composite(
-                    listOf(
-                        ChooseCreatureTypeEffect,
-                        GatherCardsEffect(
-                            source = CardSource.FromZone(
-                                zone = Zone.GRAVEYARD,
-                                player = Player.You,
-                                filter = GameObjectFilter.Creature
-                            ),
-                            storeAs = "graveyardCreatures"
+                Effects.Pipeline {
+                    run(ChooseCreatureTypeEffect)
+                    val graveyardCreatures = gather(
+                        CardSource.FromZone(
+                            zone = Zone.GRAVEYARD,
+                            player = Player.You,
+                            filter = GameObjectFilter.Creature
                         ),
-                        SelectFromCollectionEffect(
-                            from = "graveyardCreatures",
-                            selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(2)),
-                            matchChosenCreatureType = true,
-                            storeSelected = "chosen",
-                            prompt = "Choose two creature cards of the chosen type"
-                        ),
-                        MoveCollectionEffect(
-                            from = "chosen",
-                            destination = CardDestination.ToZone(Zone.HAND)
-                        )
+                        name = "graveyardCreatures"
                     )
-                ),
+                    val chosen = chooseExactly(
+                        2, from = graveyardCreatures,
+                        matchChosenCreatureType = true,
+                        prompt = "Choose two creature cards of the chosen type",
+                        name = "chosen"
+                    )
+                    move(chosen, CardDestination.ToZone(Zone.HAND))
+                },
                 "Return two creature cards that share a creature type from your graveyard"
             )
         )

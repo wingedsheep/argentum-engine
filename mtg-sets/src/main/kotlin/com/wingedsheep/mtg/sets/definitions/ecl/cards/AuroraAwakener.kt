@@ -8,12 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -43,45 +37,41 @@ val AuroraAwakener = card("Aurora Awakener") {
     keywords(Keyword.TRAMPLE)
 
     vividEtb { colorCount ->
-        Effects.Composite(listOf(
-            GatherUntilMatchEffect(
+        Effects.Pipeline {
+            val (permanentsFound, allRevealed) = gatherUntilMatch(
                 filter = GameObjectFilter.Permanent,
-                storeMatch = "permanentsFound",
-                storeRevealed = "allRevealed",
-                count = colorCount
-            ),
+                count = colorCount,
+                matchName = "permanentsFound",
+                revealedName = "allRevealed"
+            )
             // Public reveal so spectators/opponent see what was walked. The caster's
             // selection modal below supersedes this reveal in the UI.
-            RevealCollectionEffect(from = "allRevealed"),
+            reveal(allRevealed)
             // Single-step reveal+select for the caster: the modal shows every revealed
             // card with only the permanents selectable.
-            SelectFromCollectionEffect(
-                from = "allRevealed",
-                selection = SelectionMode.ChooseAnyNumber,
+            val (toBattlefield, unchosenRevealed) = chooseAnyNumberSplit(
+                from = allRevealed,
                 filter = GameObjectFilter.Permanent,
                 showAllCards = true,
-                storeSelected = "toBattlefield",
-                storeRemainder = "unchosenRevealed",
                 selectedLabel = "Put onto the battlefield",
-                remainderLabel = "Put on bottom of library"
-            ),
-            MoveCollectionEffect(
-                from = "toBattlefield",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
-            ),
+                remainderLabel = "Put on bottom of library",
+                name = "toBattlefield",
+                remainderName = "unchosenRevealed"
+            )
+            move(toBattlefield, destination = CardDestination.ToZone(Zone.BATTLEFIELD))
             // Everything revealed minus the cards that went to the battlefield goes to
             // the bottom of the library in a random order.
-            FilterCollectionEffect(
-                from = "allRevealed",
-                filter = CollectionFilter.ExcludeOtherCollection("toBattlefield"),
-                storeMatching = "toBottom"
-            ),
-            MoveCollectionEffect(
-                from = "toBottom",
+            val toBottom = filter(
+                allRevealed,
+                CollectionFilter.ExcludeOtherCollection("toBattlefield"),
+                name = "toBottom"
+            )
+            move(
+                toBottom,
                 destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
                 order = CardOrder.Random
             )
-        ))
+        }
     }
 
     metadata {

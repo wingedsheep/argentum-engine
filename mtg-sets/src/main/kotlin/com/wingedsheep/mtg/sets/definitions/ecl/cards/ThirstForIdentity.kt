@@ -11,13 +11,8 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Thirst for Identity
@@ -42,29 +37,27 @@ val ThirstForIdentity = card("Thirst for Identity") {
                     choices = listOf(
                         EffectChoice(
                             label = "Discard a creature card",
-                            effect = Effects.Composite(
-                                listOf(
-                                    GatherCardsEffect(
-                                        source = CardSource.FromZone(
-                                            Zone.HAND,
-                                            Player.You,
-                                            GameObjectFilter.Creature
-                                        ),
-                                        storeAs = "creatures"
+                            effect = Effects.Pipeline {
+                                val creatures = gather(
+                                    CardSource.FromZone(
+                                        Zone.HAND,
+                                        Player.You,
+                                        GameObjectFilter.Creature
                                     ),
-                                    SelectFromCollectionEffect(
-                                        from = "creatures",
-                                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                        storeSelected = "discarded",
-                                        prompt = "Choose a creature card to discard"
-                                    ),
-                                    MoveCollectionEffect(
-                                        from = "discarded",
-                                        destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                                        moveType = MoveType.Discard
-                                    )
+                                    name = "creatures"
                                 )
-                            ),
+                                val discarded = chooseExactly(
+                                    1,
+                                    from = creatures,
+                                    prompt = "Choose a creature card to discard",
+                                    name = "discarded"
+                                )
+                                move(
+                                    discarded,
+                                    destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                                    moveType = MoveType.Discard
+                                )
+                            },
                             feasibilityCheck = FeasibilityCheck.HasCardsInZone(
                                 Zone.HAND,
                                 GameObjectFilter.Creature,

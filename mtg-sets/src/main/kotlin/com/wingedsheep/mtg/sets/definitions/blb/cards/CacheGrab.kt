@@ -9,10 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -34,33 +30,23 @@ val CacheGrab = card("Cache Grab") {
     val squirrelFilter = GameObjectFilter.Any.withSubtype("Squirrel")
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                // Mill 4: gather top 4, move to graveyard
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "milled"
-                ),
-                MoveCollectionEffect(
-                    from = "milled",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD)
-                ),
-                // You may put a permanent card from among the milled cards into your hand
-                SelectFromCollectionEffect(
-                    from = "milled",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Permanent,
-                    storeSelected = "selected",
-                    showAllCards = true,
-                    prompt = "You may put a permanent card into your hand",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Leave in graveyard"
-                ),
-                MoveCollectionEffect(
-                    from = "selected",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                // If you control a Squirrel or returned a Squirrel card, create a Food token
+        effect = Effects.Pipeline {
+            // Mill 4: gather top 4, move to graveyard
+            val milled = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(4)), name = "milled")
+            move(milled, CardDestination.ToZone(Zone.GRAVEYARD))
+            // You may put a permanent card from among the milled cards into your hand
+            val selected = chooseUpTo(
+                1, from = milled,
+                filter = GameObjectFilter.Permanent,
+                showAllCards = true,
+                prompt = "You may put a permanent card into your hand",
+                selectedLabel = "Put in hand",
+                remainderLabel = "Leave in graveyard",
+                name = "selected"
+            )
+            move(selected, CardDestination.ToZone(Zone.HAND))
+            // If you control a Squirrel or returned a Squirrel card, create a Food token
+            run(
                 ConditionalEffect(
                     condition = Conditions.Any(
                         Conditions.ControlCreatureOfType(com.wingedsheep.sdk.core.Subtype("Squirrel")),
@@ -69,7 +55,7 @@ val CacheGrab = card("Cache Grab") {
                     effect = Effects.CreateFood()
                 )
             )
-        )
+        }
     }
 
     metadata {

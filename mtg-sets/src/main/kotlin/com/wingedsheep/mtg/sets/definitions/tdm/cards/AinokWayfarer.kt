@@ -8,11 +8,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -43,47 +40,44 @@ val AinokWayfarer = card("Ainok Wayfarer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                // Mill three: gather the top three, then move them to the graveyard.
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(3)),
-                    storeAs = "milled"
-                ),
-                MoveCollectionEffect(
-                    from = "milled",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD)
-                ),
-                // You may put a land card from among them into your hand.
-                // If you don't, put a +1/+1 counter on this creature.
-                // Success is gated on whether a land actually reached your hand:
-                // SuccessCriterion.Auto probes the terminal hand move's destination
-                // zone, so the "if you don't" counter only fires when the player
-                // declines or no land is among the milled cards. There is no "if you do"
-                // payoff, so that branch is an empty composite.
+        effect = Effects.Pipeline {
+            // Mill three: gather the top three, then move them to the graveyard.
+            val milled = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(3)),
+                name = "milled"
+            )
+            move(
+                milled,
+                destination = CardDestination.ToZone(Zone.GRAVEYARD)
+            )
+            // You may put a land card from among them into your hand.
+            // If you don't, put a +1/+1 counter on this creature.
+            // Success is gated on whether a land actually reached your hand:
+            // SuccessCriterion.Auto probes the terminal hand move's destination
+            // zone, so the "if you don't" counter only fires when the player
+            // declines or no land is among the milled cards. There is no "if you do"
+            // payoff, so that branch is an empty composite.
+            run(
                 Effects.IfYouDo(
-                    action = Effects.Composite(
-                        listOf(
-                            SelectFromCollectionEffect(
-                                from = "milled",
-                                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                                filter = GameObjectFilter.Land,
-                                storeSelected = "chosen",
-                                storeRemainder = "leftInGraveyard",
-                                selectedLabel = "Put in hand"
-                            ),
-                            MoveCollectionEffect(
-                                from = "chosen",
-                                destination = CardDestination.ToZone(Zone.HAND),
-                                revealed = true
-                            )
+                    action = Effects.Pipeline {
+                        val (chosen, leftInGraveyard) = chooseUpToSplit(
+                            1, from = CollectionSlot("milled"),
+                            filter = GameObjectFilter.Land,
+                            selectedLabel = "Put in hand",
+                            name = "chosen",
+                            remainderName = "leftInGraveyard"
                         )
-                    ),
+                        move(
+                            chosen,
+                            destination = CardDestination.ToZone(Zone.HAND),
+                            revealed = true
+                        )
+                    },
                     ifYouDo = Effects.Composite(),
                     ifYouDont = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
                 )
             )
-        )
+        }
     }
 
     metadata {

@@ -10,11 +10,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -41,22 +37,21 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
     // ETB: Choose four nonenchantment permanents you don't control, put aim counters on them
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.BattlefieldMatching(
+        effect = Effects.Pipeline {
+            val candidates = gather(
+                CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.Nonenchantment.opponentControls()
                 ),
-                storeAs = "candidates"
-            ),
-            SelectFromCollectionEffect(
-                from = "candidates",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(4)),
-                storeSelected = "chosen",
+                name = "candidates"
+            )
+            val chosen = chooseExactly(
+                4, from = candidates,
                 prompt = "Choose four nonenchantment permanents you don't control",
-                useTargetingUI = true
-            ),
-            Effects.AddCountersToCollection("chosen", Counters.AIM)
-        ))
+                useTargetingUI = true,
+                name = "chosen"
+            )
+            run(Effects.AddCountersToCollection(chosen.key, Counters.AIM))
+        }
     }
 
     // End step: If 2+ opponent permanents have aim counters, destroy one at random
@@ -71,24 +66,23 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(2)
         )
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.BattlefieldMatching(
+        effect = Effects.Pipeline {
+            val aimPermanents = gather(
+                CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.Any.withCounter(Counters.AIM).opponentControls()
                 ),
-                storeAs = "aim_permanents"
-            ),
-            SelectFromCollectionEffect(
-                from = "aim_permanents",
-                selection = SelectionMode.Random(DynamicAmount.Fixed(1)),
-                storeSelected = "to_destroy"
-            ),
-            MoveCollectionEffect(
-                from = "to_destroy",
+                name = "aim_permanents"
+            )
+            val toDestroy = chooseRandom(
+                1, from = aimPermanents,
+                name = "to_destroy"
+            )
+            move(
+                toDestroy,
                 destination = CardDestination.ToZone(Zone.GRAVEYARD),
                 moveType = MoveType.Destroy
             )
-        ))
+        }
     }
 
     metadata {

@@ -9,15 +9,9 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -55,55 +49,50 @@ val CelestialReunion = card("Celestial Reunion") {
         "your hand."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                // Optional: choose a creature type and behold two creatures of that type.
+        effect = Effects.Pipeline {
+            // Optional: choose a creature type and behold two creatures of that type.
+            run(
                 MayEffect(
                     descriptionOverride = "Choose a creature type and behold two creatures of that type?",
-                    effect = Effects.Composite(
-                        listOf(
-                            ChooseOptionEffect(
-                                optionType = OptionType.CREATURE_TYPE,
-                                storeAs = "chosenCreatureType"
+                    effect = Effects.Pipeline {
+                        chooseOption(OptionType.CREATURE_TYPE, name = "chosenCreatureType")
+                        val beholdable = gather(
+                            CardSource.FromMultipleZones(
+                                zones = listOf(Zone.BATTLEFIELD, Zone.HAND),
+                                player = Player.You,
+                                filter = GameObjectFilter.Creature
+                                    .withSubtypeFromVariable("chosenCreatureType")
                             ),
-                            GatherCardsEffect(
-                                source = CardSource.FromMultipleZones(
-                                    zones = listOf(Zone.BATTLEFIELD, Zone.HAND),
-                                    player = Player.You,
-                                    filter = GameObjectFilter.Creature
-                                        .withSubtypeFromVariable("chosenCreatureType")
-                                ),
-                                storeAs = "beholdable"
-                            ),
-                            SelectFromCollectionEffect(
-                                from = "beholdable",
-                                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(2)),
-                                storeSelected = "beheld",
-                                prompt = "Behold two creatures of the chosen type"
-                            ),
-                            RevealCollectionEffect(from = "beheld")
+                            name = "beholdable"
                         )
-                    )
-                ),
-                // Search library for a creature card with mana value X or less.
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Creature),
-                    storeAs = "searchable"
-                ),
-                FilterCollectionEffect(
-                    from = "searchable",
-                    filter = CollectionFilter.ManaValueAtMost(DynamicAmount.XValue),
-                    storeMatching = "mvOk"
-                ),
-                SelectFromCollectionEffect(
-                    from = "mvOk",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "found",
-                    prompt = "Search your library for a creature card with mana value X or less"
-                ),
-                // Searcher just picked the card — reveal it to opponents only.
-                RevealCollectionEffect(from = "found", revealToSelf = false),
-                // If beheld and revealed card matches the chosen type → battlefield, else → hand.
+                        val beheld = chooseExactly(
+                            2, from = beholdable,
+                            prompt = "Behold two creatures of the chosen type",
+                            name = "beheld"
+                        )
+                        reveal(beheld)
+                    }
+                )
+            )
+            // Search library for a creature card with mana value X or less.
+            val searchable = gather(
+                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Creature),
+                name = "searchable"
+            )
+            val mvOk = filter(
+                searchable,
+                CollectionFilter.ManaValueAtMost(DynamicAmount.XValue),
+                name = "mvOk"
+            )
+            val found = chooseUpTo(
+                1, from = mvOk,
+                prompt = "Search your library for a creature card with mana value X or less",
+                name = "found"
+            )
+            // Searcher just picked the card — reveal it to opponents only.
+            reveal(found, revealToSelf = false)
+            // If beheld and revealed card matches the chosen type → battlefield, else → hand.
+            run(
                 ConditionalEffect(
                     condition = CollectionContainsMatch(
                         collection = "found",
@@ -118,10 +107,10 @@ val CelestialReunion = card("Celestial Reunion") {
                         from = "found",
                         destination = CardDestination.ToZone(Zone.HAND)
                     )
-                ),
-                ShuffleLibraryEffect()
+                )
             )
-        )
+            run(ShuffleLibraryEffect())
+        }
     }
 
     metadata {

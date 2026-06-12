@@ -7,8 +7,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -35,23 +33,21 @@ val TwilightsCall = card("Twilight's Call") {
     keywordAbility(KeywordAbility.flashKicker("{2}"))
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.GRAVEYARD,
-                        player = Player.Each,
-                        filter = GameObjectFilter.Creature
-                    ),
-                    storeAs = "graveyardCreatures"
+        effect = Effects.Pipeline {
+            val graveyardCreatures = gather(
+                CardSource.FromZone(
+                    zone = Zone.GRAVEYARD,
+                    player = Player.Each,
+                    filter = GameObjectFilter.Creature
                 ),
-                MoveCollectionEffect(
-                    from = "graveyardCreatures",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                    underOwnersControl = true
-                )
+                name = "graveyardCreatures"
             )
-        )
+            move(
+                graveyardCreatures,
+                CardDestination.ToZone(Zone.BATTLEFIELD),
+                underOwnersControl = true
+            )
+        }
     }
 
     metadata {

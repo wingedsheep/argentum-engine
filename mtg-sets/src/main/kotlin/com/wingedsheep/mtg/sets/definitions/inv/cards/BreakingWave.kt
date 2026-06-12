@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -38,24 +37,24 @@ val BreakingWave = card("Breaking Wave") {
     keywordAbility(KeywordAbility.flashKicker("{2}"))
 
     spell {
-        effect = Effects.Composite(
-            GatherCardsEffect(
-                source = CardSource.BattlefieldMatching(
+        effect = Effects.Pipeline {
+            gather(
+                CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.Creature.tapped(),
                     player = Player.Each,
                 ),
-                storeAs = "breakingWave_tapped",
-            ),
-            GatherCardsEffect(
-                source = CardSource.BattlefieldMatching(
+                name = "breakingWave_tapped",
+            )
+            gather(
+                CardSource.BattlefieldMatching(
                     filter = GameObjectFilter.Creature.untapped(),
                     player = Player.Each,
                 ),
-                storeAs = "breakingWave_untapped",
-            ),
-            TapUntapCollectionEffect(collectionName = "breakingWave_tapped", tap = false),
-            TapUntapCollectionEffect(collectionName = "breakingWave_untapped", tap = true),
-        )
+                name = "breakingWave_untapped",
+            )
+            run(TapUntapCollectionEffect(collectionName = "breakingWave_tapped", tap = false))
+            run(TapUntapCollectionEffect(collectionName = "breakingWave_untapped", tap = true))
+        }
     }
 
     metadata {

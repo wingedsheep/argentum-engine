@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -36,18 +34,16 @@ val LumraBellowOfTheWoods = card("Lumra, Bellow of the Woods") {
         trigger = Triggers.EntersBattlefield
         effect = Patterns.Library.mill(4)
             .then(
-                Effects.Composite(
-                    listOf(
-                        GatherCardsEffect(
-                            source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Land),
-                            storeAs = "graveyard_lands"
-                        ),
-                        MoveCollectionEffect(
-                            from = "graveyard_lands",
-                            destination = CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
-                        )
+                Effects.Pipeline {
+                    val graveyardLands = gather(
+                        CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Land),
+                        name = "graveyard_lands"
                     )
-                )
+                    move(
+                        graveyardLands,
+                        CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
+                    )
+                }
             )
     }
 

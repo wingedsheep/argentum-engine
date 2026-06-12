@@ -9,10 +9,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -42,31 +38,30 @@ val DispellingExhale = card("Dispelling Exhale") {
 
     spell {
         target("target spell", Targets.Spell)
-        effect = Effects.Composite(
-            listOf(
-                // Optional behold: gather your Dragons and choose up to one of them.
-                GatherCardsEffect(
-                    source = CardSource.FromMultipleZones(
-                        zones = listOf(Zone.BATTLEFIELD, Zone.HAND),
-                        player = Player.You,
-                        filter = Filters.WithSubtype("Dragon")
-                    ),
-                    storeAs = "beholdable"
+        effect = Effects.Pipeline {
+            // Optional behold: gather your Dragons and choose up to one of them.
+            val beholdable = gather(
+                CardSource.FromMultipleZones(
+                    zones = listOf(Zone.BATTLEFIELD, Zone.HAND),
+                    player = Player.You,
+                    filter = Filters.WithSubtype("Dragon")
                 ),
-                SelectFromCollectionEffect(
-                    from = "beholdable",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "beheld",
-                    prompt = "You may behold a Dragon"
-                ),
-                RevealCollectionEffect(from = "beheld"),
+                name = "beholdable"
+            )
+            val beheld = chooseUpTo(
+                1, from = beholdable,
+                prompt = "You may behold a Dragon",
+                name = "beheld"
+            )
+            reveal(beheld)
+            run(
                 ConditionalEffect(
                     condition = Conditions.CollectionContainsMatch("beheld"),
                     effect = Effects.CounterUnlessPays("{4}"),
                     elseEffect = Effects.CounterUnlessPays("{2}")
                 )
             )
-        )
+        }
     }
 
     metadata {

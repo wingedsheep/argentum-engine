@@ -5,11 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.core.Zone
@@ -30,40 +26,38 @@ val FinalParting = card("Final Parting") {
     oracleText = "Search your library for two cards. Put one into your hand and the other into your graveyard. Then shuffle."
 
     spell {
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Gather all cards from library
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any),
-                storeAs = "searchable"
-            ),
+            val searchable = gather(
+                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any),
+                name = "searchable"
+            )
             // Select exactly 2 cards
-            SelectFromCollectionEffect(
-                from = "searchable",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(2)),
-                storeSelected = "found",
-                prompt = "Search your library for two cards"
-            ),
+            val found = chooseUpTo(
+                2, from = searchable,
+                prompt = "Search your library for two cards",
+                name = "found"
+            )
             // From the 2 selected, choose 1 to put in hand (remainder goes to graveyard)
-            SelectFromCollectionEffect(
-                from = "found",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                storeSelected = "toHand",
-                storeRemainder = "toGraveyard",
-                prompt = "Choose a card to put into your hand"
-            ),
+            val (toHand, toGraveyard) = chooseExactlySplit(
+                1, from = found,
+                prompt = "Choose a card to put into your hand",
+                name = "toHand",
+                remainderName = "toGraveyard"
+            )
             // Move chosen card to hand
-            MoveCollectionEffect(
-                from = "toHand",
+            move(
+                toHand,
                 destination = CardDestination.ToZone(Zone.HAND)
-            ),
+            )
             // Move the other to graveyard
-            MoveCollectionEffect(
-                from = "toGraveyard",
+            move(
+                toGraveyard,
                 destination = CardDestination.ToZone(Zone.GRAVEYARD)
-            ),
+            )
             // Shuffle library
-            ShuffleLibraryEffect()
-        ))
+            run(ShuffleLibraryEffect())
+        }
     }
 
     metadata {

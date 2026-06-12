@@ -12,8 +12,6 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.Aggregation
@@ -61,19 +59,17 @@ val MaralenFaeAscendant = card("Maralen, Fae Ascendant") {
             binding = TriggerBinding.ANY
         )
         val opponent = target("opponent", TargetOpponent())
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2), Player.ContextPlayer(0)),
-                    storeAs = "exiled"
-                ),
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE),
-                    linkToSource = true
-                )
+        effect = Effects.Pipeline {
+            val exiled = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(2), Player.ContextPlayer(0)),
+                name = "exiled"
             )
-        )
+            move(
+                exiled,
+                destination = CardDestination.ToZone(Zone.EXILE),
+                linkToSource = true
+            )
+        }
     }
 
     staticAbility {

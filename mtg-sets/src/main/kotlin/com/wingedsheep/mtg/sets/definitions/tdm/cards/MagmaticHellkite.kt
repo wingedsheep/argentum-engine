@@ -13,10 +13,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -82,30 +78,27 @@ val MagmaticHellkite = card("Magmatic Hellkite") {
 
         effect = Effects.Destroy(land)
             .then(
-                Effects.Composite(
-                    listOf(
-                        GatherCardsEffect(
-                            source = CardSource.FromZone(Zone.LIBRARY, landController, GameObjectFilter.BasicLand),
-                            storeAs = "rampLands"
-                        ),
-                        SelectFromCollectionEffect(
-                            from = "rampLands",
-                            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                            chooser = Chooser.ControllerOfTarget,
-                            storeSelected = "rampChosen"
-                        ),
-                        MoveCollectionEffect(
-                            from = "rampChosen",
-                            destination = CardDestination.ToZone(
-                                Zone.BATTLEFIELD,
-                                landController,
-                                ZonePlacement.Tapped
-                            ),
-                            addCounterType = CounterType.STUN
-                        ),
-                        ShuffleLibraryEffect(target = EffectTarget.TargetController),
+                Effects.Pipeline {
+                    val rampLands = gather(
+                        CardSource.FromZone(Zone.LIBRARY, landController, GameObjectFilter.BasicLand),
+                        name = "rampLands"
                     )
-                )
+                    val rampChosen = chooseUpTo(
+                        1, from = rampLands,
+                        chooser = Chooser.ControllerOfTarget,
+                        name = "rampChosen"
+                    )
+                    move(
+                        rampChosen,
+                        destination = CardDestination.ToZone(
+                            Zone.BATTLEFIELD,
+                            landController,
+                            ZonePlacement.Tapped
+                        ),
+                        addCounterType = CounterType.STUN
+                    )
+                    run(ShuffleLibraryEffect(target = EffectTarget.TargetController))
+                }
             )
         description = "destroy target nonbasic land an opponent controls. Its controller searches " +
             "their library for a basic land card, puts it onto the battlefield tapped with a stun " +

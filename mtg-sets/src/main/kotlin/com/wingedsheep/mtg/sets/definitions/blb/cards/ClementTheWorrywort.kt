@@ -19,12 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -69,36 +64,32 @@ val ClementTheWorrywort = card("Clement, the Worrywort") {
             ),
             binding = TriggerBinding.ANY
         )
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Gather all creatures you control on the battlefield
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.BATTLEFIELD, Player.You, GameObjectFilter.Creature),
-                storeAs = "myCreatures"
-            ),
+            val myCreatures = gather(
+                CardSource.FromZone(Zone.BATTLEFIELD, Player.You, GameObjectFilter.Creature),
+                name = "myCreatures"
+            )
             // Filter to those with MV strictly less than the entering creature's MV
-            FilterCollectionEffect(
-                from = "myCreatures",
-                filter = CollectionFilter.ManaValueAtMost(
+            val eligible = filter(
+                myCreatures,
+                CollectionFilter.ManaValueAtMost(
                     DynamicAmount.Subtract(
                         DynamicAmount.EntityProperty(EntityReference.Triggering, EntityNumericProperty.ManaValue),
                         DynamicAmount.Fixed(1)
                     )
                 ),
-                storeMatching = "eligible"
-            ),
-            // Select up to one to return to hand
-            SelectFromCollectionEffect(
-                from = "eligible",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                storeSelected = "chosen",
-                selectedLabel = "Return to hand"
-            ),
-            // Move the chosen creature to its owner's hand
-            MoveCollectionEffect(
-                from = "chosen",
-                destination = CardDestination.ToZone(Zone.HAND)
+                name = "eligible"
             )
-        ))
+            // Select up to one to return to hand
+            val chosen = chooseUpTo(
+                1, from = eligible,
+                selectedLabel = "Return to hand",
+                name = "chosen"
+            )
+            // Move the chosen creature to its owner's hand
+            move(chosen, CardDestination.ToZone(Zone.HAND))
+        }
     }
 
     // Frogs you control have "{T}: Add {G} or {U}. Spend this mana only to cast a creature spell."

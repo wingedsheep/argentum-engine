@@ -10,11 +10,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -52,43 +48,40 @@ val BreachingDragonstorm = card("Breaching Dragonstorm") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                // Exile from the top of the library until a nonland card is exiled.
-                GatherUntilMatchEffect(
-                    filter = GameObjectFilter.Nonland,
-                    storeMatch = "nonland",
-                    storeRevealed = "allRevealed"
-                ),
-                MoveCollectionEffect(
-                    from = "allRevealed",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                // Only mana value ≤ 8 may be cast for free.
-                FilterCollectionEffect(
-                    from = "nonland",
-                    filter = CollectionFilter.ManaValueAtMost(DynamicAmount.Fixed(8)),
-                    storeMatching = "castable"
-                ),
-                // You may cast it without paying its mana cost — only prompted when there is a
-                // mana-value-≤-8 nonland to cast (no empty "may cast" when MV > 8).
-                ConditionalOnCollectionEffect(
-                    collection = "castable",
-                    ifNotEmpty = MayEffect(Effects.CastFromCollectionWithoutPayingCost("castable"))
-                ),
-                // If you don't (declined, or MV > 8), put that card into your hand. The card just
-                // cast has left exile for the stack, so only the nonland still in exile moves.
-                FilterCollectionEffect(
-                    from = "nonland",
-                    filter = CollectionFilter.InZone(Zone.EXILE),
-                    storeMatching = "uncast"
-                ),
-                MoveCollectionEffect(
-                    from = "uncast",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                )
+        effect = Effects.Pipeline {
+            // Exile from the top of the library until a nonland card is exiled.
+            val (nonland, allRevealed) = gatherUntilMatch(
+                filter = GameObjectFilter.Nonland,
+                matchName = "nonland",
+                revealedName = "allRevealed"
             )
-        )
+            move(
+                allRevealed,
+                destination = CardDestination.ToZone(Zone.EXILE)
+            )
+            // Only mana value ≤ 8 may be cast for free.
+            val castable = filter(
+                nonland,
+                CollectionFilter.ManaValueAtMost(DynamicAmount.Fixed(8)),
+                name = "castable"
+            )
+            // You may cast it without paying its mana cost — only prompted when there is a
+            // mana-value-≤-8 nonland to cast (no empty "may cast" when MV > 8).
+            ifNotEmpty(castable) {
+                run(MayEffect(Effects.CastFromCollectionWithoutPayingCost("castable")))
+            }
+            // If you don't (declined, or MV > 8), put that card into your hand. The card just
+            // cast has left exile for the stack, so only the nonland still in exile moves.
+            val uncast = filter(
+                nonland,
+                CollectionFilter.InZone(Zone.EXILE),
+                name = "uncast"
+            )
+            move(
+                uncast,
+                destination = CardDestination.ToZone(Zone.HAND)
+            )
+        }
         description = "When this enchantment enters, exile cards from the top of your library " +
             "until you exile a nonland card. You may cast it without paying its mana cost if " +
             "that spell's mana value is 8 or less. If you don't, put that card into your hand."

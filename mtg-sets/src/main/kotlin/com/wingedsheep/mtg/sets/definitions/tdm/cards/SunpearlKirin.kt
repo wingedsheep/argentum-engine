@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -54,20 +53,22 @@ val SunpearlKirin = card("Sunpearl Kirin") {
                 filter = TargetFilter.NonlandPermanent.youControl().other()
             )
         )
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Capture the chosen permanent so we can inspect its token status before it leaves.
-            GatherCardsEffect(source = CardSource.ChosenTargets, storeAs = "returned"),
+            gather(CardSource.ChosenTargets, name = "returned")
             // If the captured permanent was a token, draw a card (resolved while it's still in play).
-            ConditionalEffect(
-                condition = Conditions.CollectionContainsMatch(
-                    "returned",
-                    GameObjectFilter(cardPredicates = listOf(CardPredicate.IsToken))
-                ),
-                effect = Effects.DrawCards(1)
-            ),
+            run(
+                ConditionalEffect(
+                    condition = Conditions.CollectionContainsMatch(
+                        "returned",
+                        GameObjectFilter(cardPredicates = listOf(CardPredicate.IsToken))
+                    ),
+                    effect = Effects.DrawCards(1)
+                )
+            )
             // Return the chosen permanent to its owner's hand (no-op if no target was chosen).
-            Effects.ReturnToHand(permanent)
-        ))
+            run(Effects.ReturnToHand(permanent))
+        }
         description = "When this creature enters, return up to one other target nonland permanent you " +
             "control to its owner's hand. If it was a token, draw a card."
     }

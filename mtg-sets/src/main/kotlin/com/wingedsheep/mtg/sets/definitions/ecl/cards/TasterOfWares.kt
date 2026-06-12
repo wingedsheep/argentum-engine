@@ -11,14 +11,8 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
-import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -59,58 +53,49 @@ val TasterOfWares = card("Taster of Wares") {
             "where X is the number of Goblins you control. You choose one of those cards. " +
             "That player exiles it. If an instant or sorcery card is exiled this way, you may cast it " +
             "for as long as you control this creature, and mana of any type can be spent to cast that spell."
-        effect = Effects.Composite(
-            listOf(
-                // Snapshot the number of Goblins you control as X
-                StoreNumberEffect(
-                    name = "goblinCount",
-                    amount = DynamicAmounts.battlefield(
-                        Player.You,
-                        GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
-                    ).count()
-                ),
-                // Gather opponent's hand
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                    storeAs = "hand"
-                ),
-                // Opponent chooses X cards to reveal
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseExactly(
-                        DynamicAmount.VariableReference("goblinCount")
-                    ),
-                    chooser = Chooser.TargetPlayer,
-                    storeSelected = "revealed",
-                    prompt = "Reveal X cards from your hand (X = number of Goblins your opponent controls)"
-                ),
-                // You choose one of the revealed cards (use ChooseUpTo so X=0
-                // and empty-hand cases resolve cleanly)
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    storeSelected = "chosen",
-                    prompt = "Choose one of the revealed cards to exile"
-                ),
-                // That player exiles it
-                MoveCollectionEffect(
-                    from = "chosen",
-                    destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
-                ),
-                // If the exiled card is an instant or sorcery, grant cast-from-exile
-                FilterCollectionEffect(
-                    from = "chosen",
-                    filter = CollectionFilter.MatchesFilter(GameObjectFilter.InstantOrSorcery),
-                    storeMatching = "instantOrSorcery"
-                ),
+        effect = Effects.Pipeline {
+            // Snapshot the number of Goblins you control as X
+            val goblinCount = storeNumber(
+                DynamicAmounts.battlefield(
+                    Player.You,
+                    GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
+                ).count(),
+                name = "goblinCount"
+            )
+            // Gather opponent's hand
+            val hand = gather(CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)), name = "hand")
+            // Opponent chooses X cards to reveal
+            val revealed = chooseExactly(
+                DynamicAmount.VariableReference("goblinCount"),
+                from = hand,
+                chooser = Chooser.TargetPlayer,
+                prompt = "Reveal X cards from your hand (X = number of Goblins your opponent controls)",
+                name = "revealed"
+            )
+            // You choose one of the revealed cards (use ChooseUpTo so X=0
+            // and empty-hand cases resolve cleanly)
+            val chosen = chooseUpTo(
+                1, from = revealed,
+                chooser = Chooser.Controller,
+                prompt = "Choose one of the revealed cards to exile",
+                name = "chosen"
+            )
+            // That player exiles it
+            move(chosen, CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0)))
+            // If the exiled card is an instant or sorcery, grant cast-from-exile
+            val instantOrSorcery = filter(
+                chosen,
+                CollectionFilter.MatchesFilter(GameObjectFilter.InstantOrSorcery),
+                name = "instantOrSorcery"
+            )
+            run(
                 GrantMayPlayFromExileEffect(
                     from = "instantOrSorcery",
                     expiry = MayPlayExpiry.Permanent,
                     withAnyManaType = true
                 )
             )
-        )
+        }
     }
 
     metadata {

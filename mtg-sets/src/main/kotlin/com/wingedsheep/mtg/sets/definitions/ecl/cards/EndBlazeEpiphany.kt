@@ -10,12 +10,8 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
@@ -45,33 +41,29 @@ val EndBlazeEpiphany = card("End-Blaze Epiphany") {
                     trigger = Triggers.Dies,
                     watchedTarget = creature,
                     expiry = DelayedTriggerExpiry.EndOfTurn,
-                    effect = Effects.Composite(
-                        listOf(
-                            GatherCardsEffect(
-                                source = CardSource.TopOfLibrary(
-                                    count = DynamicAmount.EntityProperty(
-                                        entity = EntityReference.Triggering,
-                                        numericProperty = EntityNumericProperty.Power
-                                    )
-                                ),
-                                storeAs = "exiled"
+                    effect = Effects.Pipeline {
+                        val exiled = gather(
+                            CardSource.TopOfLibrary(
+                                count = DynamicAmount.EntityProperty(
+                                    entity = EntityReference.Triggering,
+                                    numericProperty = EntityNumericProperty.Power
+                                )
                             ),
-                            MoveCollectionEffect(
-                                from = "exiled",
-                                destination = CardDestination.ToZone(Zone.EXILE)
-                            ),
-                            SelectFromCollectionEffect(
-                                from = "exiled",
-                                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                storeSelected = "chosen",
-                                prompt = "Choose a card you may play"
-                            ),
+                            name = "exiled"
+                        )
+                        move(exiled, CardDestination.ToZone(Zone.EXILE))
+                        val chosen = chooseExactly(
+                            1, from = exiled,
+                            prompt = "Choose a card you may play",
+                            name = "chosen"
+                        )
+                        run(
                             GrantMayPlayFromExileEffect(
                                 from = "chosen",
                                 expiry = MayPlayExpiry.UntilEndOfNextTurn
                             )
                         )
-                    )
+                    }
                 )
             )
         )

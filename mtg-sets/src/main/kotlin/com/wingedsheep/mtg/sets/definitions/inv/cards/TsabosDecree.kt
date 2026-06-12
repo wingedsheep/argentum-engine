@@ -1,14 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -44,31 +43,34 @@ val TsabosDecree = card("Tsabo's Decree") {
 
     spell {
         val targetPlayer = target("target player", TargetPlayer())
-        effect = Effects.Composite(
-            listOf(
-                ChooseCreatureTypeEffect,
-                // Target player reveals their hand and discards all creature cards of that type.
-                RevealHandEffect(targetPlayer),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.HAND,
-                        player = Player.ContextPlayer(0),
-                        filter = GameObjectFilter.Creature,
-                    ),
-                    storeAs = "tsaboHand",
+        effect = Effects.Pipeline {
+            run(ChooseCreatureTypeEffect)
+            // Target player reveals their hand and discards all creature cards of that type.
+            run(RevealHandEffect(targetPlayer))
+            gather(
+                CardSource.FromZone(
+                    zone = Zone.HAND,
+                    player = Player.ContextPlayer(0),
+                    filter = GameObjectFilter.Creature,
                 ),
+                name = "tsaboHand",
+            )
+            // `matchChosenCreatureType` has no generic verb on the All path; keep the raw step.
+            run(
                 SelectFromCollectionEffect(
                     from = "tsaboHand",
                     selection = SelectionMode.All,
                     matchChosenCreatureType = true,
                     storeSelected = "tsaboDiscard",
-                ),
-                MoveCollectionEffect(
-                    from = "tsaboDiscard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                    moveType = MoveType.Discard,
-                ),
-                // Then destroy all creatures of that type that player controls; no regeneration.
+                )
+            )
+            move(
+                CollectionSlot("tsaboDiscard"),
+                CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                moveType = MoveType.Discard,
+            )
+            // Then destroy all creatures of that type that player controls; no regeneration.
+            run(
                 Effects.ForEachInGroup(
                     filter = GroupFilter(
                         baseFilter = GameObjectFilter.Creature.targetPlayerControls(),
@@ -81,8 +83,8 @@ val TsabosDecree = card("Tsabo's Decree") {
                         ),
                     ),
                 ),
-            ),
-        )
+            )
+        }
     }
 
     metadata {

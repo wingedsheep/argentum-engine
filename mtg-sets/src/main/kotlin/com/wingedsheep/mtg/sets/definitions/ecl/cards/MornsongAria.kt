@@ -14,14 +14,9 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Mornsong Aria
@@ -49,27 +44,22 @@ val MornsongAria = card("Mornsong Aria") {
         )
         effect = Effects.LoseLife(3, target = EffectTarget.PlayerRef(Player.TriggeringPlayer))
             .then(
-                Effects.Composite(
-                    listOf(
-                        GatherCardsEffect(
-                            source = CardSource.FromZone(Zone.LIBRARY, Player.TriggeringPlayer, GameObjectFilter.Any),
-                            storeAs = "searchable"
-                        ),
-                        SelectFromCollectionEffect(
-                            from = "searchable",
-                            selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                            chooser = Chooser.TriggeringPlayer,
-                            storeSelected = "found",
-                            prompt = "Search your library for a card",
-                            selectedLabel = "Put into hand"
-                        ),
-                        MoveCollectionEffect(
-                            from = "found",
-                            destination = CardDestination.ToZone(Zone.HAND, Player.TriggeringPlayer)
-                        ),
-                        ShuffleLibraryEffect(target = EffectTarget.PlayerRef(Player.TriggeringPlayer))
+                Effects.Pipeline {
+                    val searchable = gather(
+                        CardSource.FromZone(Zone.LIBRARY, Player.TriggeringPlayer, GameObjectFilter.Any),
+                        name = "searchable"
                     )
-                )
+                    val found = chooseExactly(
+                        1,
+                        from = searchable,
+                        chooser = Chooser.TriggeringPlayer,
+                        prompt = "Search your library for a card",
+                        selectedLabel = "Put into hand",
+                        name = "found"
+                    )
+                    move(found, destination = CardDestination.ToZone(Zone.HAND, Player.TriggeringPlayer))
+                    run(ShuffleLibraryEffect(target = EffectTarget.PlayerRef(Player.TriggeringPlayer)))
+                }
             )
     }
 

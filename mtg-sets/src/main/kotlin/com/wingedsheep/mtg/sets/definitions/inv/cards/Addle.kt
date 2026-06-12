@@ -8,16 +8,11 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Addle
@@ -36,32 +31,29 @@ val Addle = card("Addle") {
     spell {
         val targetPlayer = target("target player", TargetPlayer())
         effect = Effects.ChooseColorThen(
-            then = Effects.Composite(
-                listOf(
-                    RevealHandEffect(targetPlayer),
-                    GatherCardsEffect(
-                        source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                        storeAs = "targetHand",
+            then = Effects.Pipeline {
+                run(RevealHandEffect(targetPlayer))
+                val targetHand = gather(
+                    CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
+                    name = "targetHand",
+                )
+                val toDiscard = chooseExactly(
+                    1, from = targetHand,
+                    chooser = Chooser.Controller,
+                    filter = GameObjectFilter(
+                        cardPredicates = listOf(CardPredicate.HasChosenColor),
                     ),
-                    SelectFromCollectionEffect(
-                        from = "targetHand",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                        chooser = Chooser.Controller,
-                        filter = GameObjectFilter(
-                            cardPredicates = listOf(CardPredicate.HasChosenColor),
-                        ),
-                        storeSelected = "toDiscard",
-                        prompt = "Choose a card of the chosen color to discard",
-                        alwaysPrompt = true,
-                        showAllCards = true,
-                    ),
-                    MoveCollectionEffect(
-                        from = "toDiscard",
-                        destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                        moveType = MoveType.Discard,
-                    ),
-                ),
-            ),
+                    prompt = "Choose a card of the chosen color to discard",
+                    alwaysPrompt = true,
+                    showAllCards = true,
+                    name = "toDiscard",
+                )
+                move(
+                    toDiscard,
+                    CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                    moveType = MoveType.Discard,
+                )
+            },
         )
     }
 

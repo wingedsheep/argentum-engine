@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
@@ -47,35 +43,36 @@ val PiercingExhale = card("Piercing Exhale") {
     spell {
         val myCreature = target("target creature you control", Targets.CreatureYouControl)
         val victim = target("target creature or planeswalker", Targets.CreatureOrPlaneswalker)
-        effect = Effects.Composite(
-            listOf(
-                // Optional behold: gather your Dragons and choose up to one of them.
-                GatherCardsEffect(
-                    source = CardSource.FromMultipleZones(
-                        zones = listOf(Zone.BATTLEFIELD, Zone.HAND),
-                        player = Player.You,
-                        filter = Filters.WithSubtype("Dragon")
-                    ),
-                    storeAs = "beholdable"
+        effect = Effects.Pipeline {
+            // Optional behold: gather your Dragons and choose up to one of them.
+            val beholdable = gather(
+                CardSource.FromMultipleZones(
+                    zones = listOf(Zone.BATTLEFIELD, Zone.HAND),
+                    player = Player.You,
+                    filter = Filters.WithSubtype("Dragon")
                 ),
-                SelectFromCollectionEffect(
-                    from = "beholdable",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "beheld",
-                    prompt = "You may behold a Dragon"
-                ),
-                RevealCollectionEffect(from = "beheld"),
+                name = "beholdable"
+            )
+            val beheld = chooseUpTo(
+                1, from = beholdable,
+                prompt = "You may behold a Dragon",
+                name = "beheld"
+            )
+            reveal(beheld)
+            run(
                 Effects.DealDamage(
                     amount = DynamicAmount.EntityProperty(EntityReference.Target(0), EntityNumericProperty.Power),
                     target = victim,
                     damageSource = myCreature
-                ),
+                )
+            )
+            run(
                 ConditionalEffect(
                     condition = Conditions.CollectionContainsMatch("beheld"),
                     effect = Patterns.Library.surveil(2)
                 )
             )
-        )
+        }
     }
 
     metadata {

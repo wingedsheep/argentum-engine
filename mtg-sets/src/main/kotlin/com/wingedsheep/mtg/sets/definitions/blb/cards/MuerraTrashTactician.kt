@@ -10,10 +10,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -64,19 +62,11 @@ val MuerraTrashTactician = card("Muerra, Trash Tactician") {
     // Until the end of your next turn, you may play those cards.
     triggeredAbility {
         trigger = Triggers.Expend(8)
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
-                    storeAs = "exiledCards"
-                ),
-                MoveCollectionEffect(
-                    from = "exiledCards",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                GrantMayPlayFromExileEffect(from = "exiledCards", expiry = MayPlayExpiry.UntilEndOfNextTurn)
-            )
-        )
+        effect = Effects.Pipeline {
+            val exiledCards = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(2)), name = "exiledCards")
+            move(exiledCards, CardDestination.ToZone(Zone.EXILE))
+            run(GrantMayPlayFromExileEffect(from = "exiledCards", expiry = MayPlayExpiry.UntilEndOfNextTurn))
+        }
     }
 
     metadata {

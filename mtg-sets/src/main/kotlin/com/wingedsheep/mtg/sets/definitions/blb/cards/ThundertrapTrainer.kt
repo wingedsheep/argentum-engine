@@ -11,10 +11,6 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -53,37 +49,24 @@ val ThundertrapTrainer = card("Thundertrap Trainer") {
     // ETB: look at top 4, may take a noncreature nonland card, rest on bottom
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "looked"
+        effect = Effects.Pipeline {
+            val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(4)), name = "looked")
+            val (kept, rest) = chooseUpToSplit(
+                1, from = looked,
+                filter = GameObjectFilter(
+                    cardPredicates = listOf(
+                        CardPredicate.IsNoncreature,
+                        CardPredicate.IsNonland
+                    )
                 ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter(
-                        cardPredicates = listOf(
-                            CardPredicate.IsNoncreature,
-                            CardPredicate.IsNonland
-                        )
-                    ),
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Put on bottom"
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND),
-                    revealed = true
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
-                )
+                selectedLabel = "Put in hand",
+                remainderLabel = "Put on bottom",
+                name = "kept",
+                remainderName = "rest"
             )
-        )
+            move(kept, CardDestination.ToZone(Zone.HAND), revealed = true)
+            move(rest, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom))
+        }
     }
 
     metadata {

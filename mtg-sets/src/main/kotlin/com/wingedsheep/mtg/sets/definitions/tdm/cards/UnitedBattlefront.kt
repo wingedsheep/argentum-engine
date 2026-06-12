@@ -7,10 +7,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -37,39 +33,36 @@ val UnitedBattlefront = card("United Battlefront") {
         "Put the rest on the bottom of your library in a random order."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(7)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(2)),
-                    filter = GameObjectFilter(
-                        cardPredicates = listOf(
-                            CardPredicate.IsNoncreature,
-                            CardPredicate.IsNonland,
-                            CardPredicate.IsPermanent,
-                            CardPredicate.ManaValueAtMost(3)
-                        )
-                    ),
-                    storeSelected = "onto",
-                    storeRemainder = "rest",
-                    selectedLabel = "Put onto the battlefield",
-                    remainderLabel = "Put on bottom"
-                ),
-                MoveCollectionEffect(
-                    from = "onto",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-                    order = CardOrder.Random
-                )
+        effect = Effects.Pipeline {
+            val looked = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(7)),
+                name = "looked"
             )
-        )
+            val (onto, rest) = chooseUpToSplit(
+                2, from = looked,
+                filter = GameObjectFilter(
+                    cardPredicates = listOf(
+                        CardPredicate.IsNoncreature,
+                        CardPredicate.IsNonland,
+                        CardPredicate.IsPermanent,
+                        CardPredicate.ManaValueAtMost(3)
+                    )
+                ),
+                selectedLabel = "Put onto the battlefield",
+                remainderLabel = "Put on bottom",
+                name = "onto",
+                remainderName = "rest"
+            )
+            move(
+                onto,
+                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+            )
+            move(
+                rest,
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                order = CardOrder.Random
+            )
+        }
     }
 
     metadata {

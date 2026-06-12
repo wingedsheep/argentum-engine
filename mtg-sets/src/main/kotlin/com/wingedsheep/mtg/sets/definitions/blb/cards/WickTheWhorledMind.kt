@@ -14,10 +14,7 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -66,29 +63,28 @@ val WickTheWhorledMind = card("Wick, the Whorled Mind") {
                 creatureTypes = setOf("Snail"),
                 imageUri = "https://cards.scryfall.io/normal/front/d/9/d9bb0a91-b73e-465b-8c0e-50fc28e66fda.jpg?1721425912"
             ),
-            elseEffect = Effects.Composite(
-                listOf(
-                    GatherCardsEffect(
-                        source = CardSource.BattlefieldMatching(
-                            filter = GameObjectFilter.Creature.withSubtype("Snail"),
-                            player = Player.You
-                        ),
-                        storeAs = "snails"
+            elseEffect = Effects.Pipeline {
+                val snails = gather(
+                    CardSource.BattlefieldMatching(
+                        filter = GameObjectFilter.Creature.withSubtype("Snail"),
+                        player = Player.You
                     ),
-                    SelectFromCollectionEffect(
-                        from = "snails",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                        storeSelected = "chosen_snail",
-                        useTargetingUI = true,
-                        prompt = "Choose a Snail to put a +1/+1 counter on"
-                    ),
+                    name = "snails"
+                )
+                val chosenSnail = chooseExactly(
+                    1, from = snails,
+                    useTargetingUI = true,
+                    prompt = "Choose a Snail to put a +1/+1 counter on",
+                    name = "chosen_snail"
+                )
+                run(
                     AddCountersToCollectionEffect(
                         collectionName = "chosen_snail",
                         counterType = Counters.PLUS_ONE_PLUS_ONE,
                         count = 1
                     )
                 )
-            )
+            }
         )
     }
 

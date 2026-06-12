@@ -12,10 +12,8 @@ import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent
@@ -56,17 +54,14 @@ val SeasonOfTheBold = card("Season of the Bold") {
                 // {P}{P} — Exile top 2 and play until end of next turn
                 BudgetMode(
                     cost = 2,
-                    effect = Effects.Composite(listOf(
-                        GatherCardsEffect(
-                            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
-                            storeAs = "exiledCards"
-                        ),
-                        MoveCollectionEffect(
-                            from = "exiledCards",
-                            destination = CardDestination.ToZone(Zone.EXILE)
-                        ),
-                        GrantMayPlayFromExileEffect("exiledCards", MayPlayExpiry.UntilEndOfNextTurn)
-                    )),
+                    effect = Effects.Pipeline {
+                        val exiledCards = gather(
+                            CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
+                            name = "exiledCards"
+                        )
+                        move(exiledCards, CardDestination.ToZone(Zone.EXILE))
+                        run(GrantMayPlayFromExileEffect("exiledCards", MayPlayExpiry.UntilEndOfNextTurn))
+                    },
                     description = "Exile the top two cards of your library. Until the end of your next turn, you may play them"
                 ),
                 // {P}{P}{P} — Until end of your next turn, whenever you cast a spell,

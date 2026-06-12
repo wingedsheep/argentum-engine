@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -42,32 +38,23 @@ val StarCharter = card("Star Charter") {
     triggeredAbility {
         trigger = Triggers.YourEndStep
         triggerCondition = Conditions.YouGainedOrLostLifeThisTurn
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Creature.powerAtMost(3),
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    prompt = "You may reveal a creature card with power 3 or less and put it into your hand",
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-                    order = CardOrder.Random
-                )
+        effect = Effects.Pipeline {
+            val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(4)), name = "looked")
+            val (kept, rest) = chooseUpToSplit(
+                1, from = looked,
+                filter = GameObjectFilter.Creature.powerAtMost(3),
+                prompt = "You may reveal a creature card with power 3 or less and put it into your hand",
+                showAllCards = true,
+                name = "kept",
+                remainderName = "rest"
             )
-        )
+            move(kept, CardDestination.ToZone(Zone.HAND))
+            move(
+                rest,
+                CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                order = CardOrder.Random
+            )
+        }
     }
 
     metadata {

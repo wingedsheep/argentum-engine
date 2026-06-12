@@ -11,9 +11,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -43,23 +40,20 @@ val TeferiHeroOfDominaria = card("Teferi, Hero of Dominaria") {
                 Effects.DrawCards(1),
                 CreateDelayedTriggerEffect(
                     step = Step.END,
-                    effect = Effects.Composite(
-                        listOf(
-                            GatherCardsEffect(
-                                source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Land),
-                                storeAs = "lands"
-                            ),
-                            SelectFromCollectionEffect(
-                                from = "lands",
-                                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(2)),
-                                storeSelected = "toUntap"
-                            ),
-                            TapUntapCollectionEffect(
-                                collectionName = "toUntap",
-                                tap = false
-                            )
+                    effect = Effects.Pipeline {
+                        val lands = gather(
+                            CardSource.ControlledPermanents(Player.You, GameObjectFilter.Land),
+                            name = "lands"
                         )
-                    )
+                        val toUntap = chooseUpTo(
+                            2, from = lands,
+                            name = "toUntap"
+                        )
+                        run(TapUntapCollectionEffect(
+                            collectionName = toUntap.key,
+                            tap = false
+                        ))
+                    }
                 )
             )
         )

@@ -5,12 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -47,69 +42,49 @@ val PortentOfCalamity = card("Portent of Calamity") {
     oracleText = "Reveal the top X cards of your library. For each card type, you may exile a card of that type from among them. Put the rest into your graveyard. You may cast a spell from among the exiled cards without paying its mana cost if you exiled four or more cards this way. Then put the rest of the exiled cards into your hand."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                // 1. Reveal the top X cards.
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.XValue),
-                    storeAs = "revealed",
-                    revealed = true
-                ),
-                // 2. "For each card type, you may exile a card of that type from among them."
-                //    The engine enforces the one-per-card-type constraint; the remainder
-                //    flows into "graveyardPile" for the next step.
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(9)),
-                    restrictions = listOf(SelectionRestriction.OnePerCardType),
-                    storeSelected = "exiled",
-                    storeRemainder = "graveyardPile",
-                    prompt = "Choose cards to exile — at most one per card type. Unchosen cards go to your graveyard.",
-                    selectedLabel = "Exile",
-                    remainderLabel = "Graveyard"
-                ),
-                // 3. Put the rest into your graveyard.
-                MoveCollectionEffect(
-                    from = "graveyardPile",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD)
-                ),
-                // 4. Move the chosen cards to exile.
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                // 5a. If four or more cards were exiled: pick up to one to cast for free,
-                //     grant the permission, then send the rest of the exiled cards to hand.
-                // 5b. Otherwise: put all exiled cards into hand immediately.
-                ConditionalOnCollectionEffect(
-                    collection = "exiled",
-                    minSize = 4,
-                    countDistinctCardTypes = true,
-                    ifNotEmpty = Effects.Composite(
-                        listOf(
-                            SelectFromCollectionEffect(
-                                from = "exiled",
-                                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                                storeSelected = "freeCast",
-                                storeRemainder = "toHand",
-                                prompt = "You may cast a spell from among the exiled cards without paying its mana cost"
-                            ),
-                            GrantFreeCastTargetFromExileEffect(
-                                target = EffectTarget.PipelineTarget("freeCast", 0)
-                            ),
-                            MoveCollectionEffect(
-                                from = "toHand",
-                                destination = CardDestination.ToZone(Zone.HAND)
-                            )
-                        )
-                    ),
-                    ifEmpty = MoveCollectionEffect(
-                        from = "exiled",
-                        destination = CardDestination.ToZone(Zone.HAND)
+        effect = Effects.Pipeline {
+            // 1. Reveal the top X cards.
+            val revealed = gather(
+                CardSource.TopOfLibrary(DynamicAmount.XValue),
+                revealed = true,
+                name = "revealed"
+            )
+            // 2. "For each card type, you may exile a card of that type from among them."
+            //    The engine enforces the one-per-card-type constraint; the remainder
+            //    flows into "graveyardPile" for the next step.
+            val (exiled, graveyardPile) = chooseUpToSplit(
+                9, from = revealed,
+                restrictions = listOf(SelectionRestriction.OnePerCardType),
+                prompt = "Choose cards to exile — at most one per card type. Unchosen cards go to your graveyard.",
+                selectedLabel = "Exile",
+                remainderLabel = "Graveyard",
+                name = "exiled",
+                remainderName = "graveyardPile"
+            )
+            // 3. Put the rest into your graveyard.
+            move(graveyardPile, CardDestination.ToZone(Zone.GRAVEYARD))
+            // 4. Move the chosen cards to exile.
+            move(exiled, CardDestination.ToZone(Zone.EXILE))
+            // 5a. If four or more cards were exiled: pick up to one to cast for free,
+            //     grant the permission, then send the rest of the exiled cards to hand.
+            // 5b. Otherwise: put all exiled cards into hand immediately.
+            ifNotEmpty(exiled, minSize = 4, countDistinctCardTypes = true) {
+                val (freeCast, toHand) = chooseUpToSplit(
+                    1, from = exiled,
+                    prompt = "You may cast a spell from among the exiled cards without paying its mana cost",
+                    name = "freeCast",
+                    remainderName = "toHand"
+                )
+                run(
+                    GrantFreeCastTargetFromExileEffect(
+                        target = EffectTarget.PipelineTarget("freeCast", 0)
                     )
                 )
-            )
-        )
+                move(toHand, CardDestination.ToZone(Zone.HAND))
+            } orElse {
+                move(exiled, CardDestination.ToZone(Zone.HAND))
+            }
+        }
     }
 
     metadata {

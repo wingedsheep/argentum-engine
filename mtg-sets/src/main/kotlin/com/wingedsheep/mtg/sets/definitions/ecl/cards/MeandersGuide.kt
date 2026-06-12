@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
-import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -27,19 +26,19 @@ val MeandersGuide = card("Meanders Guide") {
         // choice. Selecting the Merfolk happens via SelectTargetEffect after the player
         // accepts the optional, so declining the may does not force them to commit to one.
         effect = ReflexiveTriggerEffect(
-            action = Effects.Composite(listOf(
-                SelectTargetEffect(
-                    requirement = TargetObject(
+            action = Effects.Pipeline {
+                selectTarget(
+                    TargetObject(
                         // Permanent (not Creature) so Kindred Artifacts with the Merfolk subtype qualify.
                         filter = TargetFilter.PermanentYouControl
                             .withSubtype("Merfolk")
                             .untapped()
                             .other()
                     ),
-                    storeAs = "merfolkToTap"
-                ),
-                Effects.Tap(EffectTarget.PipelineTarget("merfolkToTap"))
-            )),
+                    name = "merfolkToTap"
+                )
+                run(Effects.Tap(EffectTarget.PipelineTarget("merfolkToTap")))
+            },
             optional = true,
             reflexiveEffect = Effects.Move(
                 target = EffectTarget.ContextTarget(0),

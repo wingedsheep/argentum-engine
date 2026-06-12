@@ -6,8 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -36,13 +34,13 @@ val DistortingWake = card("Distorting Wake") {
             filter = TargetFilter.NonlandPermanent,
             dynamicMaxCount = DynamicAmount.XValue,
         )
-        effect = Effects.Composite(
-            GatherCardsEffect(source = CardSource.ChosenTargets, storeAs = "distortingWake_targets"),
-            MoveCollectionEffect(
-                from = "distortingWake_targets",
-                destination = CardDestination.ToZone(Zone.HAND),
-            ),
-        )
+        effect = Effects.Pipeline {
+            val distortingWakeTargets = gather(CardSource.ChosenTargets, name = "distortingWake_targets")
+            move(
+                distortingWakeTargets,
+                CardDestination.ToZone(Zone.HAND),
+            )
+        }
     }
 
     metadata {

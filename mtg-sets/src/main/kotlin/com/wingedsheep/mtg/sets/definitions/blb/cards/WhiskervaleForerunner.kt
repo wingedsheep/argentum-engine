@@ -9,12 +9,10 @@ import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -42,58 +40,44 @@ val WhiskervaleForerunner = card("Whiskervale Forerunner") {
     // If your turn: choose battlefield or hand. If not your turn: hand.
     triggeredAbility {
         trigger = Triggers.Valiant
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Look at top 5
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
-                storeAs = "looked"
-            ),
+            val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(5)), name = "looked")
             // May reveal a creature with MV ≤ 3
-            SelectFromCollectionEffect(
-                from = "looked",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+            val (kept, rest) = chooseUpToSplit(
+                1, from = looked,
                 filter = GameObjectFilter.Creature.manaValueAtMost(3),
-                storeSelected = "kept",
-                storeRemainder = "rest",
                 selectedLabel = "Reveal",
-                remainderLabel = "Put on bottom"
-            ),
+                remainderLabel = "Put on bottom",
+                name = "kept",
+                remainderName = "rest"
+            )
             // Rest on bottom in random order
-            MoveCollectionEffect(
-                from = "rest",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
-            ),
+            move(rest, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom))
             // If your turn: choose to put on battlefield or hand
             // If not your turn: put in hand
-            ConditionalEffect(
-                condition = IsYourTurn,
-                effect = Effects.Composite(listOf(
-                    SelectFromCollectionEffect(
+            run(
+                ConditionalEffect(
+                    condition = IsYourTurn,
+                    effect = Effects.Pipeline {
+                        val (toBattlefield, toHand) = chooseUpToSplit(
+                            1, from = CollectionSlot("kept"),
+                            selectedLabel = "Put onto the battlefield",
+                            remainderLabel = "Put into your hand",
+                            name = "toBattlefield",
+                            remainderName = "toHand"
+                        )
+                        move(toBattlefield, CardDestination.ToZone(Zone.BATTLEFIELD), revealed = true)
+                        move(toHand, CardDestination.ToZone(Zone.HAND), revealed = true)
+                    },
+                    elseEffect = MoveCollectionEffect(
                         from = "kept",
-                        selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                        storeSelected = "toBattlefield",
-                        storeRemainder = "toHand",
-                        selectedLabel = "Put onto the battlefield",
-                        remainderLabel = "Put into your hand"
-                    ),
-                    MoveCollectionEffect(
-                        from = "toBattlefield",
-                        destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                        revealed = true
-                    ),
-                    MoveCollectionEffect(
-                        from = "toHand",
                         destination = CardDestination.ToZone(Zone.HAND),
                         revealed = true
                     )
-                )),
-                elseEffect = MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND),
-                    revealed = true
                 )
             )
-        ))
+        }
     }
 
     metadata {

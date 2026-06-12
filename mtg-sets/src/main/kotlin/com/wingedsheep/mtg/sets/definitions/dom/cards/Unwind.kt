@@ -6,9 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -28,21 +25,20 @@ val Unwind = card("Unwind") {
     spell {
         target = Targets.NoncreatureSpell
         effect = Effects.CounterSpell()
-            .then(Effects.Composite(listOf(
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Land),
-                    storeAs = "lands"
-                ),
-                SelectFromCollectionEffect(
-                    from = "lands",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(3)),
-                    storeSelected = "toUntap"
-                ),
-                TapUntapCollectionEffect(
-                    collectionName = "toUntap",
-                    tap = false
+            .then(Effects.Pipeline {
+                val lands = gather(
+                    CardSource.ControlledPermanents(Player.You, GameObjectFilter.Land),
+                    name = "lands"
                 )
-            )))
+                val toUntap = chooseUpTo(
+                    3, from = lands,
+                    name = "toUntap"
+                )
+                run(TapUntapCollectionEffect(
+                    collectionName = toUntap.key,
+                    tap = false
+                ))
+            })
     }
 
     metadata {

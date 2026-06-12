@@ -13,15 +13,12 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -92,18 +89,18 @@ val ZoralineCosmosCaller = card("Zoraline, Cosmos Caller") {
  * May pay {W}{B} and 2 life → return nonland permanent card MV ≤ 3
  * from graveyard to battlefield with a finality counter.
  */
-private fun zoralineReanimateEffect() = Effects.Composite(
-    listOf(
-        // Gather nonland permanent cards with MV ≤ 3 from your graveyard first,
-        // so the player can see eligible cards before deciding to pay
-        GatherCardsEffect(
-            source = CardSource.FromZone(
-                Zone.GRAVEYARD,
-                Player.You,
-                GameObjectFilter.NonlandPermanent.manaValueAtMost(3)
-            ),
-            storeAs = "eligible"
+private fun zoralineReanimateEffect() = Effects.Pipeline {
+    // Gather nonland permanent cards with MV ≤ 3 from your graveyard first,
+    // so the player can see eligible cards before deciding to pay
+    gather(
+        CardSource.FromZone(
+            Zone.GRAVEYARD,
+            Player.You,
+            GameObjectFilter.NonlandPermanent.manaValueAtMost(3)
         ),
+        name = "eligible"
+    )
+    run(
         OptionalCostEffect(
             cost = Effects.Composite(
                 listOf(
@@ -111,24 +108,18 @@ private fun zoralineReanimateEffect() = Effects.Composite(
                     PayLifeEffect(2)
                 )
             ),
-            ifPaid = Effects.Composite(
-                listOf(
-                    // Select one to return
-                    SelectFromCollectionEffect(
-                        from = "eligible",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                        storeSelected = "chosen",
-                        prompt = "Choose a nonland permanent card with mana value 3 or less to return to the battlefield"
-                    ),
-                    // Move to battlefield
-                    MoveCollectionEffect(
-                        from = "chosen",
-                        destination = CardDestination.ToZone(Zone.BATTLEFIELD)
-                    ),
-                    // Add finality counter
-                    AddCountersToCollectionEffect("chosen", Counters.FINALITY, 1)
+            ifPaid = Effects.Pipeline {
+                // Select one to return
+                val chosen = chooseExactly(
+                    1, from = CollectionSlot("eligible"),
+                    prompt = "Choose a nonland permanent card with mana value 3 or less to return to the battlefield",
+                    name = "chosen"
                 )
-            )
+                // Move to battlefield
+                move(chosen, CardDestination.ToZone(Zone.BATTLEFIELD))
+                // Add finality counter
+                run(AddCountersToCollectionEffect("chosen", Counters.FINALITY, 1))
+            }
         )
     )
-)
+}

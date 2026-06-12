@@ -10,15 +10,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Metathran Aerostat
@@ -48,35 +42,31 @@ val MetathranAerostat = card("Metathran Aerostat") {
 
     activatedAbility {
         cost = Costs.Mana("{X}{U}")
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.HAND,
-                        player = Player.You,
-                        filter = GameObjectFilter.Creature.copy(
-                            cardPredicates = GameObjectFilter.Creature.cardPredicates +
-                                CardPredicate.ManaValueEqualsX,
-                        ),
+        effect = Effects.Pipeline {
+            val aerostatCandidates = gather(
+                CardSource.FromZone(
+                    zone = Zone.HAND,
+                    player = Player.You,
+                    filter = GameObjectFilter.Creature.copy(
+                        cardPredicates = GameObjectFilter.Creature.cardPredicates +
+                            CardPredicate.ManaValueEqualsX,
                     ),
-                    storeAs = "aerostatCandidates",
                 ),
-                SelectFromCollectionEffect(
-                    from = "aerostatCandidates",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "aerostatPutting",
-                    prompt = "You may put a creature card with that mana value onto the battlefield",
-                ),
-                MoveCollectionEffect(
-                    from = "aerostatPutting",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD, Player.You),
-                ),
-                ConditionalOnCollectionEffect(
-                    collection = "aerostatPutting",
-                    ifNotEmpty = Effects.ReturnToHand(EffectTarget.Self),
-                ),
-            ),
-        )
+                name = "aerostatCandidates",
+            )
+            val aerostatPutting = chooseUpTo(
+                1, from = aerostatCandidates,
+                prompt = "You may put a creature card with that mana value onto the battlefield",
+                name = "aerostatPutting",
+            )
+            move(
+                aerostatPutting,
+                CardDestination.ToZone(Zone.BATTLEFIELD, Player.You),
+            )
+            ifNotEmpty(aerostatPutting) {
+                run(Effects.ReturnToHand(EffectTarget.Self))
+            }
+        }
         description = "{X}{U}: You may put a creature card with mana value X from your hand onto " +
             "the battlefield. If you do, return this creature to its owner's hand."
     }

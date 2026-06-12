@@ -11,12 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -42,47 +37,43 @@ val WishingWell = card("Wishing Well") {
         cost = Costs.Tap
         timing = TimingRule.SorcerySpeed
 
-        effect = Effects.Composite(
-            listOf(
-                // Put a coin counter on this artifact
-                AddCountersEffect("coin", 1, EffectTarget.Self),
-                // Gather all instant/sorcery from your graveyard
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.GRAVEYARD,
-                        player = Player.You,
-                        filter = GameObjectFilter.InstantOrSorcery
-                    ),
-                    storeAs = "graveyardSpells"
+        effect = Effects.Pipeline {
+            // Put a coin counter on this artifact
+            run(AddCountersEffect("coin", 1, EffectTarget.Self))
+            // Gather all instant/sorcery from your graveyard
+            val graveyardSpells = gather(
+                CardSource.FromZone(
+                    zone = Zone.GRAVEYARD,
+                    player = Player.You,
+                    filter = GameObjectFilter.InstantOrSorcery
                 ),
-                // Filter to those with MV = number of coin counters on this artifact
-                FilterCollectionEffect(
-                    from = "graveyardSpells",
-                    filter = CollectionFilter.ManaValueEquals(
-                        DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("coin"))
-                    ),
-                    storeMatching = "matchingSpells"
+                name = "graveyardSpells"
+            )
+            // Filter to those with MV = number of coin counters on this artifact
+            val matchingSpells = filter(
+                graveyardSpells,
+                CollectionFilter.ManaValueEquals(
+                    DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("coin"))
                 ),
-                // Select up to 1 (representing the "you may cast target" choice)
-                SelectFromCollectionEffect(
-                    from = "matchingSpells",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "selected",
-                    storeRemainder = "remainder",
-                    prompt = "Choose an instant or sorcery card to cast"
-                ),
-                // Move selected to exile
-                MoveCollectionEffect(
-                    from = "selected",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                // Grant free cast from exile + exile after resolve
+                name = "matchingSpells"
+            )
+            // Select up to 1 (representing the "you may cast target" choice)
+            val (selected, remainder) = chooseUpToSplit(
+                1, from = matchingSpells,
+                prompt = "Choose an instant or sorcery card to cast",
+                name = "selected",
+                remainderName = "remainder"
+            )
+            // Move selected to exile
+            move(selected, CardDestination.ToZone(Zone.EXILE))
+            // Grant free cast from exile + exile after resolve
+            run(
                 GrantFreeCastTargetFromExileEffect(
                     target = EffectTarget.PipelineTarget("selected", 0),
                     exileAfterResolve = true
                 )
             )
-        )
+        }
     }
 
     metadata {

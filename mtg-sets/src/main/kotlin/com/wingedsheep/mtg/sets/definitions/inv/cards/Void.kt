@@ -7,8 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -39,9 +37,9 @@ val Void = card("Void") {
     spell {
         val targetPlayer = target("target player", TargetPlayer())
         effect = Effects.ChooseNumberThen(
-            then = Effects.Composite(
-                listOf(
-                    // Destroy all artifacts and creatures with mana value equal to the chosen number.
+            then = Effects.Pipeline {
+                // Destroy all artifacts and creatures with mana value equal to the chosen number.
+                run(
                     Effects.DestroyAll(
                         filter = GameObjectFilter(
                             cardPredicates = listOf(
@@ -49,29 +47,29 @@ val Void = card("Void") {
                                 CardPredicate.ManaValueEqualsX,
                             ),
                         ),
-                    ),
-                    // Target player reveals their hand and discards all nonland cards with that mana value.
-                    RevealHandEffect(targetPlayer),
-                    GatherCardsEffect(
-                        source = CardSource.FromZone(
-                            zone = Zone.HAND,
-                            player = Player.ContextPlayer(0),
-                            filter = GameObjectFilter(
-                                cardPredicates = listOf(
-                                    CardPredicate.IsNonland,
-                                    CardPredicate.ManaValueEqualsX,
-                                ),
+                    )
+                )
+                // Target player reveals their hand and discards all nonland cards with that mana value.
+                run(RevealHandEffect(targetPlayer))
+                val voidDiscard = gather(
+                    CardSource.FromZone(
+                        zone = Zone.HAND,
+                        player = Player.ContextPlayer(0),
+                        filter = GameObjectFilter(
+                            cardPredicates = listOf(
+                                CardPredicate.IsNonland,
+                                CardPredicate.ManaValueEqualsX,
                             ),
                         ),
-                        storeAs = "voidDiscard",
                     ),
-                    MoveCollectionEffect(
-                        from = "voidDiscard",
-                        destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                        moveType = MoveType.Discard,
-                    ),
-                ),
-            ),
+                    name = "voidDiscard",
+                )
+                move(
+                    voidDiscard,
+                    CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                    moveType = MoveType.Discard,
+                )
+            },
         )
     }
 

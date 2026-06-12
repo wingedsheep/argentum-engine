@@ -9,13 +9,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Perfect Intimidation
@@ -39,25 +34,20 @@ val PerfectIntimidation = card("Perfect Intimidation") {
         "• Target opponent exiles two cards from their hand.\n" +
         "• Remove all counters from target creature."
 
-    val opponentExilesTwo = Effects.Composite(
-        listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0), GameObjectFilter.Any),
-                storeAs = "handCards"
-            ),
-            SelectFromCollectionEffect(
-                from = "handCards",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(2)),
-                chooser = Chooser.TargetPlayer,
-                storeSelected = "exiledCards",
-                prompt = "Exile two cards from your hand"
-            ),
-            MoveCollectionEffect(
-                from = "exiledCards",
-                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
-            )
+    val opponentExilesTwo = Effects.Pipeline {
+        val handCards = gather(
+            CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0), GameObjectFilter.Any),
+            name = "handCards"
         )
-    )
+        val exiledCards = chooseExactly(
+            2,
+            from = handCards,
+            chooser = Chooser.TargetPlayer,
+            prompt = "Exile two cards from your hand",
+            name = "exiledCards"
+        )
+        move(exiledCards, destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0)))
+    }
 
     spell {
         modal(chooseCount = 2, minChooseCount = 1) {

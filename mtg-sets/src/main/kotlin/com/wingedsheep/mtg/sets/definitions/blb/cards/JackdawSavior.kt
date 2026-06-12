@@ -10,11 +10,6 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -62,37 +57,33 @@ val JackdawSavior = card("Jackdaw Savior") {
         )
 
         // Pipeline: gather creature cards from graveyard, exclude dying creature ("another"), filter by lesser MV, select one, move to battlefield
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
-                storeAs = "graveyardCreatures"
-            ),
-            FilterCollectionEffect(
-                from = "graveyardCreatures",
-                filter = CollectionFilter.ExcludeEntity(EntityReference.Triggering),
-                storeMatching = "otherCreatures"
-            ),
-            FilterCollectionEffect(
-                from = "otherCreatures",
-                filter = CollectionFilter.ManaValueAtMost(
+        effect = Effects.Pipeline {
+            val graveyardCreatures = gather(
+                CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
+                name = "graveyardCreatures"
+            )
+            val otherCreatures = filter(
+                graveyardCreatures,
+                CollectionFilter.ExcludeEntity(EntityReference.Triggering),
+                name = "otherCreatures"
+            )
+            val validTargets = filter(
+                otherCreatures,
+                CollectionFilter.ManaValueAtMost(
                     DynamicAmount.Subtract(
                         DynamicAmount.EntityProperty(EntityReference.Triggering, EntityNumericProperty.ManaValue),
                         DynamicAmount.Fixed(1)
                     )
                 ),
-                storeMatching = "validTargets"
-            ),
-            SelectFromCollectionEffect(
-                from = "validTargets",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                storeSelected = "chosen",
-                selectedLabel = "Return to the battlefield"
-            ),
-            MoveCollectionEffect(
-                from = "chosen",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+                name = "validTargets"
             )
-        ))
+            val chosen = chooseExactly(
+                1, from = validTargets,
+                selectedLabel = "Return to the battlefield",
+                name = "chosen"
+            )
+            move(chosen, CardDestination.ToZone(Zone.BATTLEFIELD))
+        }
 
     }
 

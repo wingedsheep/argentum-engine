@@ -9,10 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -38,29 +34,26 @@ val ClifftopLookout = card("Clifftop Lookout") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(listOf(
-            GatherUntilMatchEffect(
+        effect = Effects.Pipeline {
+            val (revealedLand, allRevealed) = gatherUntilMatch(
                 filter = GameObjectFilter.Land,
-                storeMatch = "revealedLand",
-                storeRevealed = "allRevealed"
-            ),
-            RevealCollectionEffect(from = "allRevealed"),
+                matchName = "revealedLand",
+                revealedName = "allRevealed"
+            )
+            reveal(allRevealed)
             // allRevealed includes the matched land, so subtract it before bottoming.
-            FilterCollectionEffect(
-                from = "allRevealed",
-                filter = CollectionFilter.ExcludeOtherCollection("revealedLand"),
-                storeMatching = "nonLandRevealed"
-            ),
-            MoveCollectionEffect(
-                from = "revealedLand",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
-            ),
-            MoveCollectionEffect(
-                from = "nonLandRevealed",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+            val nonLandRevealed = filter(
+                allRevealed,
+                CollectionFilter.ExcludeOtherCollection("revealedLand"),
+                name = "nonLandRevealed"
+            )
+            move(revealedLand, CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped))
+            move(
+                nonLandRevealed,
+                CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
                 order = CardOrder.Random
             )
-        ))
+        }
     }
 
     metadata {

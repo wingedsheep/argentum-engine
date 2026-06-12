@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -68,16 +67,18 @@ val MarduSiegebreaker = card("Mardu Siegebreaker") {
     // Attacks: create a tapped, attacking token copy of the exiled card; sacrifice it at your next end step.
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(source = CardSource.FromLinkedExile(), storeAs = "exiledCard"),
-            Effects.CreateTokenCopyOfTarget(
-                target = EffectTarget.PipelineTarget("exiledCard"),
-                tapped = true,
-                attacking = true,
-                sacrificeAtStep = Step.END,
-                sacrificeOnlyOnControllersTurn = true
+        effect = Effects.Pipeline {
+            gather(CardSource.FromLinkedExile(), name = "exiledCard")
+            run(
+                Effects.CreateTokenCopyOfTarget(
+                    target = EffectTarget.PipelineTarget("exiledCard"),
+                    tapped = true,
+                    attacking = true,
+                    sacrificeAtStep = Step.END,
+                    sacrificeOnlyOnControllersTurn = true
+                )
             )
-        ))
+        }
     }
 
     metadata {

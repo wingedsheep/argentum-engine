@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -40,32 +36,24 @@ val LluwenImperfectNaturalist = card("Lluwen, Imperfect Naturalist") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "milled"
-                ),
-                MoveCollectionEffect(
-                    from = "milled",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD)
-                ),
-                SelectFromCollectionEffect(
-                    from = "milled",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Creature or GameObjectFilter.Land,
-                    storeSelected = "kept",
-                    showAllCards = true,
-                    prompt = "You may put a creature or land card on top of your library",
-                    selectedLabel = "Put on top of library",
-                    remainderLabel = "Leave in graveyard"
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
-                )
+        effect = Effects.Pipeline {
+            val milled = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
+                name = "milled"
             )
-        )
+            move(milled, destination = CardDestination.ToZone(Zone.GRAVEYARD))
+            val kept = chooseUpTo(
+                1,
+                from = milled,
+                filter = GameObjectFilter.Creature or GameObjectFilter.Land,
+                showAllCards = true,
+                prompt = "You may put a creature or land card on top of your library",
+                selectedLabel = "Put on top of library",
+                remainderLabel = "Leave in graveyard",
+                name = "kept"
+            )
+            move(kept, destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top))
+        }
     }
 
     activatedAbility {

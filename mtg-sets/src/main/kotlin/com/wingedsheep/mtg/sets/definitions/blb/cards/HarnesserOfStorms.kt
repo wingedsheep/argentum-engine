@@ -8,10 +8,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -38,17 +36,11 @@ val HarnesserOfStorms = card("Harnesser of Storms") {
         )
         oncePerTurn = true
         effect = MayEffect(
-            Effects.Composite(listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
-                    storeAs = "exiledCard"
-                ),
-                MoveCollectionEffect(
-                    from = "exiledCard",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                GrantMayPlayFromExileEffect("exiledCard")
-            ))
+            Effects.Pipeline {
+                val exiledCard = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(1)), name = "exiledCard")
+                move(exiledCard, CardDestination.ToZone(Zone.EXILE))
+                run(GrantMayPlayFromExileEffect("exiledCard"))
+            }
         )
     }
 

@@ -8,10 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -38,41 +34,28 @@ val EclipsedFlamekin = card("Eclipsed Flamekin") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "looked"
+        effect = Effects.Pipeline {
+            val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(4)), name = "looked")
+            val (kept, rest) = chooseUpToSplit(
+                1, from = looked,
+                filter = GameObjectFilter(
+                    cardPredicates = listOf(
+                        CardPredicate.Or(listOf(
+                        CardPredicate.HasSubtype(Subtype.ELEMENTAL),
+                        CardPredicate.HasSubtype(Subtype.ISLAND),
+                        CardPredicate.HasSubtype(Subtype.MOUNTAIN),
+                        ))
+                    )
                 ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter(
-                        cardPredicates = listOf(
-                            CardPredicate.Or(listOf(
-                            CardPredicate.HasSubtype(Subtype.ELEMENTAL),
-                            CardPredicate.HasSubtype(Subtype.ISLAND),
-                            CardPredicate.HasSubtype(Subtype.MOUNTAIN),
-                            ))
-                        )
-                    ),
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Put on bottom",
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND),
-                    revealed = true
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
-                )
+                selectedLabel = "Put in hand",
+                remainderLabel = "Put on bottom",
+                showAllCards = true,
+                name = "kept",
+                remainderName = "rest"
             )
-        )
+            move(kept, CardDestination.ToZone(Zone.HAND), revealed = true)
+            move(rest, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom))
+        }
     }
 
     metadata {

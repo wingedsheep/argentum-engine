@@ -10,15 +10,10 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Aggressive Negotiations
@@ -48,30 +43,27 @@ val AggressiveNegotiations = card("Aggressive Negotiations") {
             TargetCreature(optional = true, filter = TargetFilter.CreatureYouControl)
         )
 
-        effect = Effects.Composite(
-            listOf(
-                RevealHandEffect(opponent),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.HAND,
-                        player = Player.ContextPlayer(0),
-                        filter = GameObjectFilter.Nonland,
-                    ),
-                    storeAs = "revealedNonland",
+        effect = Effects.Pipeline {
+            run(RevealHandEffect(opponent))
+            val revealedNonland = gather(
+                CardSource.FromZone(
+                    zone = Zone.HAND,
+                    player = Player.ContextPlayer(0),
+                    filter = GameObjectFilter.Nonland,
                 ),
-                SelectFromCollectionEffect(
-                    from = "revealedNonland",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    storeSelected = "chosenCard",
-                    prompt = "Choose a nonland card to exile",
-                ),
-                MoveCollectionEffect(
-                    from = "chosenCard",
-                    destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0)),
-                ),
-            ),
-        ).then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature))
+                name = "revealedNonland",
+            )
+            val chosenCard = chooseExactly(
+                1, from = revealedNonland,
+                chooser = Chooser.Controller,
+                prompt = "Choose a nonland card to exile",
+                name = "chosenCard",
+            )
+            move(
+                chosenCard,
+                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0)),
+            )
+        }.then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature))
     }
 
     metadata {

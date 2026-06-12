@@ -6,10 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -40,28 +36,27 @@ val GurmagNightwatch = card("Gurmag Nightwatch") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(3)),
-                storeAs = "looked"
-            ),
-            SelectFromCollectionEffect(
-                from = "looked",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                storeSelected = "keptOnTop",
-                storeRemainder = "toGraveyard",
+        effect = Effects.Pipeline {
+            val looked = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(3)),
+                name = "looked"
+            )
+            val (keptOnTop, toGraveyard) = chooseUpToSplit(
+                1, from = looked,
                 selectedLabel = "Put back on top of your library",
-                remainderLabel = "Put into your graveyard"
-            ),
-            MoveCollectionEffect(
-                from = "keptOnTop",
+                remainderLabel = "Put into your graveyard",
+                name = "keptOnTop",
+                remainderName = "toGraveyard"
+            )
+            move(
+                keptOnTop,
                 destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
-            ),
-            MoveCollectionEffect(
-                from = "toGraveyard",
+            )
+            move(
+                toGraveyard,
                 destination = CardDestination.ToZone(Zone.GRAVEYARD)
             )
-        ))
+        }
         description = "When this creature enters, look at the top three cards of your library. " +
             "You may put one of those cards back on top of your library. Put the rest into your graveyard."
     }

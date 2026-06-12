@@ -7,12 +7,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ForEachInCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -39,47 +35,45 @@ val FightOrFlight = card("Fight or Flight") {
 
     triggeredAbility {
         trigger = Triggers.phase(Step.BEGIN_COMBAT, Player.EachOpponent)
-        effect = Effects.Composite(
-            listOf(
-                // 1. Gather the creatures the active opponent controls.
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(
-                        player = Player.Opponent,
-                        filter = GameObjectFilter.Creature
-                    ),
-                    storeAs = "creatures"
+        effect = Effects.Pipeline {
+            // 1. Gather the creatures the active opponent controls.
+            val creatures = gather(
+                CardSource.ControlledPermanents(
+                    player = Player.Opponent,
+                    filter = GameObjectFilter.Creature
                 ),
-                // 2. You separate that player's creatures into two piles.
-                SelectFromCollectionEffect(
-                    from = "creatures",
-                    selection = SelectionMode.ChooseAnyNumber,
-                    chooser = Chooser.Controller,
-                    storeSelected = "pileA",
-                    storeRemainder = "pileB",
-                    selectedLabel = "Pile 1",
-                    remainderLabel = "Pile 2",
-                    prompt = "Separate the active player's creatures into two piles. The creatures you select form Pile 1; the rest form Pile 2.",
-                    useTargetingUI = true,
-                    alwaysPrompt = true
-                ),
-                // 3. That player chooses which pile may attack.
-                ChoosePileEffect(
-                    pileA = "pileA",
-                    pileB = "pileB",
-                    pileALabel = "Pile 1",
-                    pileBLabel = "Pile 2",
-                    chooser = Chooser.Opponent,
-                    storeChosenAs = "canAttack",
-                    storeOtherAs = "cantAttack",
-                    prompt = "Choose which pile of your creatures can attack this turn."
-                ),
-                // 4. Only the chosen pile can attack — the other pile can't attack this turn.
+                name = "creatures"
+            )
+            // 2. You separate that player's creatures into two piles.
+            val (pileA, pileB) = chooseAnyNumberSplit(
+                from = creatures,
+                chooser = Chooser.Controller,
+                selectedLabel = "Pile 1",
+                remainderLabel = "Pile 2",
+                prompt = "Separate the active player's creatures into two piles. The creatures you select form Pile 1; the rest form Pile 2.",
+                useTargetingUI = true,
+                alwaysPrompt = true,
+                name = "pileA",
+                remainderName = "pileB"
+            )
+            // 3. That player chooses which pile may attack.
+            choosePile(
+                pileA, pileB,
+                pileALabel = "Pile 1",
+                pileBLabel = "Pile 2",
+                chooser = Chooser.Opponent,
+                prompt = "Choose which pile of your creatures can attack this turn.",
+                chosenName = "canAttack",
+                otherName = "cantAttack"
+            )
+            // 4. Only the chosen pile can attack — the other pile can't attack this turn.
+            run(
                 ForEachInCollectionEffect(
                     collection = "cantAttack",
                     effect = Effects.CantAttack(EffectTarget.Self)
                 )
             )
-        )
+        }
     }
 
     metadata {
