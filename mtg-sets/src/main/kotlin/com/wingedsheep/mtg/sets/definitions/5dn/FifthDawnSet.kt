@@ -8,8 +8,9 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Fifth Dawn (2004)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * mtgish-tooling auto-generated seed: the cards the emitter can render whole (complete renders),
+ * plus Printing(...) rows for cards whose canonical earliest printing lives in another set.
+ * Intentionally incomplete relative to the official set.
  *
  * Set Code: 5DN
  * Release Date: 2004-06-04

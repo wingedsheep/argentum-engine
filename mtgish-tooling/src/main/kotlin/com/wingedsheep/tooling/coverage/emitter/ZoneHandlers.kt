@@ -246,6 +246,12 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     // count isn't a fixed amount, and the CreateTokens payoff would be dropped. Decline -> SCAFFOLD rather
     // than emit a wrong hand-search that silently loses the token clause.
     if ("ExileFoundCards" in blob || "CreateTokens" in blob || "FindAnyNumberOfCardsOfType" in blob) return null
+    // "search for an Equipment card" (Steelshaper's Gift): an artifact-subtype (IsArtifactType) the
+    // land/type search filter can't express — it falls through to GameObjectFilter.Any, silently dropping
+    // the subtype. "...artifact card with mana value 1 or less" (Trinket Mage): a ManaValueIs cap the
+    // search filter drops, widening the tutor to any artifact. Decline (-> SCAFFOLD) for either rather
+    // than emit a too-broad search.
+    if ("IsArtifactType" in blob || "ManaValueIs" in blob) return null
     val dest = when {
         "PutFoundCardsOntoBattlefield" in blob -> "BATTLEFIELD"
         "PutFoundCardsIntoHand" in blob -> "HAND"

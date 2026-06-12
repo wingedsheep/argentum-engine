@@ -446,6 +446,10 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
     }
     if (ttype == "TargetGraveyardCard" || ttype == "UptoOneTargetGraveyardCard") {
         val blob = compact(args)
+        // "target artifact card WITH MANA VALUE 1 OR LESS from your graveyard" (Auriok Salvagers, Leonin
+        // Squire): a ManaValueIs cap the graveyard filters below don't compose — emitting without it would
+        // widen the target to any artifact in the graveyard. Decline (-> SCAFFOLD) rather than drop it.
+        if ("ManaValueIs" in blob) return null
         val types = targetTypes(args)
         val filt: Dsl = when {
             types.isEmpty() && "IsCardtype" !in blob -> Lit("TargetFilter.CardInGraveyard")
@@ -526,6 +530,15 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     // surface — widening it to GameObjectFilter.Enchantment/Permanent would silently drop the subtype.
     // Decline rather than emit a too-broad filter (The Spirit Oasis / Kyoshi Island Plaza Shrine triggers).
     if (filterNode.argWordsTagged("IsEnchantmentType").isNotEmpty()) return null
+    // "destroy each NONLAND artifact" (Granulate): a negated cardtype (IsNonCardtype). This surface has
+    // no nonland/non-cardtype rendering, and the positive-type `when` below would misread the IsNonCardtype
+    // "Land" clause as a positive Land filter — destroying lands instead of the nonland artifacts. Decline
+    // (-> SCAFFOLD) rather than emit a confidently-wrong mass filter.
+    if (filterNode.argWordsTagged("IsNonCardtype").isNotEmpty()) return null
+    // "creatures that dealt damage to you this turn" (Retaliate): a DealtDamageToPlayerThisTurn relational
+    // predicate this flat GroupFilter can't express. Silently dropping it would widen the destroy to a
+    // one-sided board wipe, so decline rather than misrender.
+    if ("DealtDamageToPlayerThisTurn" in blob) return null
     val types = targetTypes(filterNode)
     val subs = subtypes(filterNode)
     // Creature subtypes come from IsCreatureType (subtypes() only collects land/card subtypes).

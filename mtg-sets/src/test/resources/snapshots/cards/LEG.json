@@ -126,6 +126,45 @@
     ]
 }
 
+// Relic Barrier
+{
+    "name": "Relic Barrier",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Tap target artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "292",
+        "rarity": "UNCOMMON",
+        "artist": "Harold McNeill",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c062cbae-ce5e-43be-9932-c81a0a3622e8.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Remove Soul
 {
     "name": "Remove Soul",

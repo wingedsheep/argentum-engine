@@ -269,6 +269,18 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // over-count, so decline (-> SCAFFOLD) rather than misrender.
         if ("SharesACreatureTypeWithPermanent" in compact(node)) return null
         val oracle = oracleText?.lowercase() ?: ""
+        // The count filter is recovered by landSearchFilterExpr, which renders only type/subtype/color/land
+        // shapes — it silently widens anything else (its `else` arm is GameObjectFilter.Any) and its
+        // oracle-text fallbacks can misfire on a clause that belongs to the card's TARGET rather than its
+        // count. Decline (-> SCAFFOLD) for count filters carrying predicates that path can't faithfully
+        // render:
+        //   IsArtifactType  — "number of Equipment you control" (Armed Response): no artifact-subtype
+        //     rendering, and the oracle fallback wrongly latches onto the card's "attacking creature" TARGET.
+        //   a tapped/untapped LAND — only "tapped creature" is recovered, via the oracle text (Theft of
+        //     Dreams, correctly); "tapped land" (Mana Geyser) would silently drop the restriction.
+        val countBlob = compact(node)
+        if ("IsArtifactType" in countBlob) return null
+        if (("IsTapped" in countBlob && "tapped creature" !in oracle) || "IsUntapped" in countBlob) return null
         // The hand/"in it" guard catches a generic "NumberOf" count that's really about hand cards. It must
         // NOT fire for an explicit battlefield count (TheNumberOfPermanentsOnTheBattlefield) — a card may
         // mention "hand" elsewhere in its text (e.g. Slate of Ancestry's "Discard your hand" cost) while the
