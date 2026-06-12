@@ -1513,6 +1513,10 @@ work for abilities-on-stack (which carry no `CardComponent`).
   payoffs that target/choose/sacrifice/return "a creature that crewed/saddled it this turn" (Giant
   Beaver, Rambling Possum, The Gitrog, Calamity). For the *count* of those creatures use
   `DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn` instead.
+- `HasGreatestPower` (filter builder `hasGreatestPower()`) / `HasLeastPower` (filter builder
+  `hasLeastPower()`) — has the greatest / least projected power among creatures *its controller*
+  controls (ties all qualify). Used for "creature with the greatest/least power" target and edict
+  filters, e.g. Witch-king, Bringer of Ruin: `Effects.Sacrifice(Creature.hasLeastPower(), 1, EachOpponent)`.
 - `IsFaceDown` — currently face-down.
 - `HasCounter(type)` — has at least one counter of `type`.
 - `AttachedToCardType(cardType)` — Aura/Equipment whose `AttachedToComponent` points to a

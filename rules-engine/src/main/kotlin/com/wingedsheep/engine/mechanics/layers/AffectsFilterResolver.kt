@@ -399,6 +399,7 @@ internal class AffectsFilterResolver {
             container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()
         StatePredicate.HasGreatestPower -> hasGreatestPowerInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasLeastPowerAmongAllCreatures -> hasLeastPowerAmongAllCreaturesInProjection(state, entityId, container, projectedValues)
+        StatePredicate.HasLeastPower -> hasLeastPowerInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasAnyCounter -> {
             val counters = container.get<CountersComponent>()
             counters != null && counters.counters.values.any { it > 0 }
@@ -455,6 +456,30 @@ internal class AffectsFilterResolver {
             ?: return false
         val minPower = state.getBattlefield()
             .filter { isCreatureInProjection(state, it, projectedValues) }
+            .minOfOrNull {
+                projectedValues[it]?.power
+                    ?: state.getEntity(it)?.get<CardComponent>()?.baseStats?.basePower
+                    ?: Int.MAX_VALUE
+            }
+            ?: return false
+        return entityPower <= minPower
+    }
+
+    private fun hasLeastPowerInProjection(
+        state: GameState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): Boolean {
+        val entityController = projectedController(state, entityId, projectedValues) ?: return false
+        val entityPower = projectedValues[entityId]?.power
+            ?: container.get<CardComponent>()?.baseStats?.basePower
+            ?: return false
+        val minPower = state.getBattlefield()
+            .filter { id ->
+                projectedController(state, id, projectedValues) == entityController &&
+                    isCreatureInProjection(state, id, projectedValues)
+            }
             .minOfOrNull {
                 projectedValues[it]?.power
                     ?: state.getEntity(it)?.get<CardComponent>()?.baseStats?.basePower

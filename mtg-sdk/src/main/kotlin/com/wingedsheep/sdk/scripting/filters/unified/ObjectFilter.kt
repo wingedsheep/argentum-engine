@@ -573,6 +573,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.HasLeastPowerAmongAllCreatures
     )
 
+    /** Must have the least power among creatures its controller controls */
+    fun hasLeastPower() = copy(
+        statePredicates = statePredicates + StatePredicate.HasLeastPower
+    )
+
     /** Must have at least one Equipment attached */
     fun equipped() = copy(
         statePredicates = statePredicates + StatePredicate.IsEquipped

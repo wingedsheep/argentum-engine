@@ -405,6 +405,7 @@ class BeginningPhaseManager(
         StatePredicate.HasAnyCounter,
         StatePredicate.HasGreatestPower,
         StatePredicate.HasLeastPowerAmongAllCreatures,
+        StatePredicate.HasLeastPower,
         StatePredicate.IsEquipped,
         StatePredicate.IsModified,
         StatePredicate.IsSaddled,

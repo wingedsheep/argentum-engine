@@ -14921,6 +14921,54 @@
     ]
 }
 
+// Witch-king, Bringer of Ruin
+{
+    "name": "Witch-king, Bringer of Ruin",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Wraith Noble",
+    "oracleText": "Flying\nWhenever Witch-king attacks, defending player sacrifices a creature with the least power among creatures they control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "HasLeastPower"
+                        ]
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "rarity": "RARE",
+        "artist": "Denman Rooke",
+        "flavorText": "\"No living man may hinder me!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90da1d3e-dbcb-4b1e-a606-d4fc1a60a8fe.jpg?1687424793"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wizard's Rockets
 {
     "name": "Wizard's Rockets",

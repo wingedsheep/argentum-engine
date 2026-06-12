@@ -242,6 +242,13 @@ sealed interface StatePredicate {
         override val description: String = "with the least power"
     }
 
+    /** Has the least power among creatures its controller controls */
+    @SerialName("HasLeastPower")
+    @Serializable
+    data object HasLeastPower : Entity {
+        override val description: String = "with the least power"
+    }
+
     // =============================================================================
     // Equipment (Entity)
     // =============================================================================

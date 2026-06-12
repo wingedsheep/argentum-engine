@@ -852,6 +852,23 @@ class PredicateEvaluator {
                 entityPower <= minPower
             }
 
+            StatePredicate.HasLeastPower -> {
+                val projected = state.projectedState
+                val entityController = projected.getController(entityId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                    ?: return false
+                val entityPower = projected.getPower(entityId) ?: return false
+                val minPower = state.getBattlefield()
+                    .filter { id ->
+                        val ctrl = projected.getController(id)
+                            ?: state.getEntity(id)?.get<ControllerComponent>()?.playerId
+                        ctrl == entityController && projected.isCreature(id)
+                    }
+                    .minOfOrNull { projected.getPower(it) ?: Int.MAX_VALUE }
+                    ?: return false
+                entityPower <= minPower
+            }
+
             // Composite / logical combinators
             is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicate(state, entityId, it, context) }
             is StatePredicate.And -> predicate.predicates.all { matchesStatePredicate(state, entityId, it, context) }

@@ -82,3 +82,17 @@ entries below for the actual decisions.
   `BattleScarredGoblinScenarioTest` (proves only its blockers die), SDK reference.
 - **Reusable for:** any "becomes blocked → affect each blocker" card.
 
+### Witch-king, Bringer of Ruin (Black, Extra) — Gap 36 (least-power filter)
+
+- **Oracle:** "Flying. Whenever Witch-king attacks, defending player sacrifices a creature with the
+  least power among creatures they control."
+- **Decision:** added `StatePredicate.HasLeastPower` + `GameObjectFilter.Creature.hasLeastPower()`,
+  mirroring the existing `HasGreatestPower` (controller-relative min, ties qualify). Edict reuses
+  `Effects.Sacrifice(filter, 1, target)`. "Defending player" modeled as `Player.EachOpponent` per the
+  committed engine convention (Agate Blade Assassin) — correct for 2-player, non-targeted.
+- **Touched (exhaustive-when fan-out):** `StatePredicate.kt`, `ObjectFilter.kt`, `PredicateEvaluator.kt`
+  (min/≤ eval), `AffectsFilterResolver.kt` (+`hasLeastPowerInProjection`), `BeginningPhaseManager.kt`
+  + `TriggerMatcher.kt` (no-constraint lists), card + scenario test (unique-min auto-sacrifice), SDK ref.
+- **Reusable for:** any "least power" target/edict (also helps Witch-king of Angmar / Shadowfax power
+  comparisons later).
+
