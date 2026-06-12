@@ -2306,6 +2306,64 @@
     ]
 }
 
+// Vibrant Outburst
+{
+    "name": "Vibrant Outburst",
+    "manaCost": "{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Vibrant Outburst deals 3 damage to any target. Tap up to one target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t1"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "UNCOMMON",
+        "artist": "Eelis Kyttanen",
+        "flavorText": "\"I'll show you a 'colorful insult'!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9ba68ef-6efc-4249-8b74-e33f47173902.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Wander Off
 {
     "name": "Wander Off",

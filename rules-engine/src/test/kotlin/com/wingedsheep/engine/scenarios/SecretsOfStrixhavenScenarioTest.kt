@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -256,6 +257,55 @@ class SecretsOfStrixhavenScenarioTest : ScenarioTestBase() {
                 cardRegistry.getCard("Tome Blast")!!.keywordAbilities
                     .any { it.keyword == Keyword.FLASHBACK }.shouldBeTrue()
             }
+        }
+
+        test("Vibrant Outburst: 3 damage to any target and taps up to one target creature") {
+            val game = scenario()
+                .withPlayers()
+                .withCardInHand(1, "Vibrant Outburst")
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val bear = game.findPermanents("Grizzly Bears").first()
+            game.execute(
+                CastSpell(
+                    game.player1Id,
+                    game.findCardsInHand(1, "Vibrant Outburst").first(),
+                    listOf(ChosenTarget.Player(game.player2Id), ChosenTarget.Permanent(bear))
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.getLifeTotal(2) shouldBe 17
+            withClue("up-to-one target creature is tapped") {
+                game.state.getEntity(bear)?.has<TappedComponent>() shouldBe true
+            }
+        }
+
+        test("Vibrant Outburst: the creature tap is optional (cast with no second target)") {
+            val game = scenario()
+                .withPlayers()
+                .withCardInHand(1, "Vibrant Outburst")
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.execute(
+                CastSpell(
+                    game.player1Id,
+                    game.findCardsInHand(1, "Vibrant Outburst").first(),
+                    listOf(ChosenTarget.Player(game.player2Id))
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.getLifeTotal(2) shouldBe 17
         }
 
         test("Sneering Shadewriter: ETB drains each opponent for 2 and gains you 2") {
