@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -10,8 +9,6 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -47,7 +44,7 @@ val TsabosDecree = card("Tsabo's Decree") {
             run(ChooseCreatureTypeEffect)
             // Target player reveals their hand and discards all creature cards of that type.
             run(RevealHandEffect(targetPlayer))
-            gather(
+            val tsaboHand = gather(
                 CardSource.FromZone(
                     zone = Zone.HAND,
                     player = Player.ContextPlayer(0),
@@ -55,17 +52,13 @@ val TsabosDecree = card("Tsabo's Decree") {
                 ),
                 name = "tsaboHand",
             )
-            // `matchChosenCreatureType` has no generic verb on the All path; keep the raw step.
-            run(
-                SelectFromCollectionEffect(
-                    from = "tsaboHand",
-                    selection = SelectionMode.All,
-                    matchChosenCreatureType = true,
-                    storeSelected = "tsaboDiscard",
-                )
+            val tsaboDiscard = selectAll(
+                from = tsaboHand,
+                matchChosenCreatureType = true,
+                name = "tsaboDiscard",
             )
             move(
-                CollectionSlot("tsaboDiscard"),
+                tsaboDiscard,
                 CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
                 moveType = MoveType.Discard,
             )

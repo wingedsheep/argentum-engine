@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.BudgetModalEffect
 import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -55,36 +54,40 @@ val SeasonOfTheBurrow = card("Season of the Burrow") {
                 // {P}{P} — Exile target nonland permanent. Its controller draws a card.
                 BudgetMode(
                     cost = 2,
-                    effect = SelectTargetEffect(
-                        requirement = TargetObject(
-                            filter = TargetFilter.NonlandPermanent,
-                            id = "target nonland permanent to exile"
-                        ),
-                        storeAs = "exileTarget"
-                    )
-                        .then(Effects.Exile(EffectTarget.PipelineTarget("exileTarget")))
-                        .then(DrawCardsEffect(
+                    effect = Effects.Pipeline {
+                        selectTarget(
+                            TargetObject(
+                                filter = TargetFilter.NonlandPermanent,
+                                id = "target nonland permanent to exile"
+                            ),
+                            name = "exileTarget"
+                        )
+                        run(Effects.Exile(EffectTarget.PipelineTarget("exileTarget")))
+                        run(DrawCardsEffect(
                             count = DynamicAmount.Fixed(1),
                             target = EffectTarget.ControllerOfPipelineTarget("exileTarget")
-                        )),
+                        ))
+                    },
                     description = "Exile target nonland permanent. Its controller draws a card"
                 ),
                 // {P}{P}{P} — Return target permanent card with MV 3 or less from your graveyard
                 //             to the battlefield with an indestructible counter on it
                 BudgetMode(
                     cost = 3,
-                    effect = SelectTargetEffect(
-                        requirement = TargetObject(
-                            filter = TargetFilter(
-                                GameObjectFilter.Permanent.manaValueAtMost(3).ownedByYou(),
-                                zone = Zone.GRAVEYARD
+                    effect = Effects.Pipeline {
+                        selectTarget(
+                            TargetObject(
+                                filter = TargetFilter(
+                                    GameObjectFilter.Permanent.manaValueAtMost(3).ownedByYou(),
+                                    zone = Zone.GRAVEYARD
+                                ),
+                                id = "target permanent card with mana value 3 or less in your graveyard"
                             ),
-                            id = "target permanent card with mana value 3 or less in your graveyard"
-                        ),
-                        storeAs = "returnTarget"
-                    )
-                        .then(Effects.PutOntoBattlefield(EffectTarget.PipelineTarget("returnTarget")))
-                        .then(Effects.AddCounters(Counters.INDESTRUCTIBLE, 1, EffectTarget.PipelineTarget("returnTarget"))),
+                            name = "returnTarget"
+                        )
+                        run(Effects.PutOntoBattlefield(EffectTarget.PipelineTarget("returnTarget")))
+                        run(Effects.AddCounters(Counters.INDESTRUCTIBLE, 1, EffectTarget.PipelineTarget("returnTarget")))
+                    },
                     description = "Return target permanent card with mana value 3 or less from your graveyard to the battlefield with an indestructible counter on it"
                 )
             )

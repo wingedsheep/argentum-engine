@@ -1,15 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -43,30 +40,26 @@ val DesperateResearch = card("Desperate Research") {
                 )
             )
             // 2. Reveal the top seven cards of your library.
-            gather(
+            val revealed = gather(
                 CardSource.TopOfLibrary(DynamicAmount.Fixed(7), Player.You),
                 revealed = true,
                 name = "revealed"
             )
             // 3. Partition: cards with the chosen name vs. the rest.
-            //    (SelectionMode.All has no split verb; keep the raw step.)
-            run(
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.All,
-                    filter = GameObjectFilter.Any.namedFromVariable("chosenName"),
-                    storeSelected = "matches",
-                    storeRemainder = "rest"
-                )
+            val (matches, rest) = selectAllSplit(
+                from = revealed,
+                filter = GameObjectFilter.Any.namedFromVariable("chosenName"),
+                name = "matches",
+                remainderName = "rest"
             )
             // 4. Put all matches into your hand.
             move(
-                CollectionSlot("matches"),
+                matches,
                 CardDestination.ToZone(Zone.HAND, Player.You)
             )
             // 5. Exile the rest.
             move(
-                CollectionSlot("rest"),
+                rest,
                 CardDestination.ToZone(Zone.EXILE, Player.You)
             )
         }

@@ -12,13 +12,8 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -45,26 +40,25 @@ val SotheraTheSupervoid = card("Sothera, the Supervoid") {
         trigger = Triggers.YourCreatureDies
         effect = ForEachPlayerEffect(
             players = Player.EachOpponent,
-            effects = listOf(
-                GatherCardsEffect(
-                    source = CardSource.BattlefieldMatching(
+            effects = Effects.PipelineSteps {
+                val opponentCreatures = gather(
+                    CardSource.BattlefieldMatching(
                         filter = GameObjectFilter.Creature,
                         player = Player.You
                     ),
-                    storeAs = "opponent_creatures"
-                ),
-                SelectFromCollectionEffect(
-                    from = "opponent_creatures",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    storeSelected = "chosen_creature",
-                    prompt = "Choose a creature to exile"
-                ),
-                MoveCollectionEffect(
-                    from = "chosen_creature",
-                    destination = CardDestination.ToZone(Zone.EXILE),
+                    name = "opponent_creatures"
+                )
+                val chosenCreature = chooseExactly(
+                    1, from = opponentCreatures,
+                    prompt = "Choose a creature to exile",
+                    name = "chosen_creature"
+                )
+                move(
+                    chosenCreature,
+                    CardDestination.ToZone(Zone.EXILE),
                     linkToSource = true
                 )
-            )
+            }
         )
         description = "Whenever a creature you control dies, each opponent chooses a creature they control and exiles it."
     }

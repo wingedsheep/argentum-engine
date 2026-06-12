@@ -301,7 +301,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
 
     /** Like [chooseExactly], but also keeps the non-selected cards as a remainder slot. */
     fun chooseExactlySplit(
-        count: Int,
+        count: DynamicAmount,
         from: CollectionSlot,
         chooser: Chooser = Chooser.Controller,
         filter: GameObjectFilter = GameObjectFilter.Any,
@@ -316,9 +316,30 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         name: String? = null,
         remainderName: String? = null
     ): SelectionSlots = select(
-        SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)), from, chooser, filter, prompt,
+        SelectionMode.ChooseExactly(count), from, chooser, filter, prompt,
         selectedLabel, remainderLabel, useTargetingUI, showAllCards, restrictions, alwaysPrompt,
         matchChosenCreatureType, name, remainderName, withRemainder = true
+    )
+
+    /** Like [chooseExactly], but also keeps the non-selected cards as a remainder slot. */
+    fun chooseExactlySplit(
+        count: Int,
+        from: CollectionSlot,
+        chooser: Chooser = Chooser.Controller,
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        prompt: String? = null,
+        selectedLabel: String? = null,
+        remainderLabel: String? = null,
+        useTargetingUI: Boolean = false,
+        showAllCards: Boolean = false,
+        restrictions: List<SelectionRestriction> = emptyList(),
+        alwaysPrompt: Boolean = false,
+        matchChosenCreatureType: Boolean = false,
+        name: String? = null,
+        remainderName: String? = null
+    ): SelectionSlots = chooseExactlySplit(
+        DynamicAmount.Fixed(count), from, chooser, filter, prompt, selectedLabel, remainderLabel,
+        useTargetingUI, showAllCards, restrictions, alwaysPrompt, matchChosenCreatureType, name, remainderName
     )
 
     /** Player may choose up to [count] cards from [from]. */
@@ -364,7 +385,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
 
     /** Like [chooseUpTo], but also keeps the non-selected cards as a remainder slot. */
     fun chooseUpToSplit(
-        count: Int,
+        count: DynamicAmount,
         from: CollectionSlot,
         chooser: Chooser = Chooser.Controller,
         filter: GameObjectFilter = GameObjectFilter.Any,
@@ -379,9 +400,30 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         name: String? = null,
         remainderName: String? = null
     ): SelectionSlots = select(
-        SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)), from, chooser, filter, prompt,
+        SelectionMode.ChooseUpTo(count), from, chooser, filter, prompt,
         selectedLabel, remainderLabel, useTargetingUI, showAllCards, restrictions, alwaysPrompt,
         matchChosenCreatureType, name, remainderName, withRemainder = true
+    )
+
+    /** Like [chooseUpTo], but also keeps the non-selected cards as a remainder slot. */
+    fun chooseUpToSplit(
+        count: Int,
+        from: CollectionSlot,
+        chooser: Chooser = Chooser.Controller,
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        prompt: String? = null,
+        selectedLabel: String? = null,
+        remainderLabel: String? = null,
+        useTargetingUI: Boolean = false,
+        showAllCards: Boolean = false,
+        restrictions: List<SelectionRestriction> = emptyList(),
+        alwaysPrompt: Boolean = false,
+        matchChosenCreatureType: Boolean = false,
+        name: String? = null,
+        remainderName: String? = null
+    ): SelectionSlots = chooseUpToSplit(
+        DynamicAmount.Fixed(count), from, chooser, filter, prompt, selectedLabel, remainderLabel,
+        useTargetingUI, showAllCards, restrictions, alwaysPrompt, matchChosenCreatureType, name, remainderName
     )
 
     /** Player may select any number of cards (0..all) from [from] ([SelectionMode.ChooseAnyNumber]). */
@@ -450,13 +492,28 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     fun selectAll(
         from: CollectionSlot,
         filter: GameObjectFilter = GameObjectFilter.Any,
+        matchChosenCreatureType: Boolean = false,
         name: String? = null
     ): CollectionSlot = select(
         SelectionMode.All, from, Chooser.Controller, filter, prompt = null,
         selectedLabel = null, remainderLabel = null, useTargetingUI = false, showAllCards = false,
-        restrictions = emptyList(), alwaysPrompt = false, matchChosenCreatureType = false,
+        restrictions = emptyList(), alwaysPrompt = false, matchChosenCreatureType = matchChosenCreatureType,
         name = name, remainderName = null, withRemainder = false
     ).selected
+
+    /** Like [selectAll], but also keeps the non-selected (filtered-out) cards as a remainder slot. */
+    fun selectAllSplit(
+        from: CollectionSlot,
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        matchChosenCreatureType: Boolean = false,
+        name: String? = null,
+        remainderName: String? = null
+    ): SelectionSlots = select(
+        SelectionMode.All, from, Chooser.Controller, filter, prompt = null,
+        selectedLabel = null, remainderLabel = null, useTargetingUI = false, showAllCards = false,
+        restrictions = emptyList(), alwaysPrompt = false, matchChosenCreatureType = matchChosenCreatureType,
+        name = name, remainderName = remainderName, withRemainder = true
+    )
 
     // =========================================================================
     // Filter / partition (no player choice)
@@ -800,14 +857,24 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             descriptionAmounts: List<DynamicAmount>,
             block: PipelineBuilder.() -> Unit
         ): Effect {
-            val builder = PipelineBuilder(Shared()).apply(block)
-            require(builder.steps.isNotEmpty()) { "pipeline { } must add at least one step" }
+            val steps = buildSteps(block)
+            require(steps.isNotEmpty()) { "pipeline { } must add at least one step" }
             return CompositeEffect(
-                effects = builder.steps.toList(),
+                effects = steps,
                 stopOnError = stopOnError,
                 descriptionOverride = descriptionOverride,
                 descriptionAmounts = descriptionAmounts
             )
         }
+
+        /**
+         * Build the raw `List<Effect>` of pipeline steps with the same typed-handle threading as
+         * [build], but WITHOUT wrapping them in a [CompositeEffect]. For effects that take a bare
+         * `List<Effect>` of pipeline steps directly (e.g. `ForEachPlayerEffect(effects = …)`,
+         * `ForEachTargetEffect(…)`), where wrapping in a `CompositeEffect` would change the
+         * serialized tree. Entry point: [Effects.PipelineSteps].
+         */
+        internal fun buildSteps(block: PipelineBuilder.() -> Unit): List<Effect> =
+            PipelineBuilder(Shared()).apply(block).steps.toList()
     }
 }

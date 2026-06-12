@@ -11,10 +11,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -60,29 +56,23 @@ val FamishedWorldsire = card("Famished Worldsire") {
         trigger = Triggers.EntersBattlefield
         effect = run {
             val countSource = DynamicAmounts.sourcePower()
-            Effects.Composite(
-                listOf(
-                    GatherCardsEffect(
-                        source = CardSource.TopOfLibrary(countSource),
-                        storeAs = "looked"
-                    ),
-                    SelectFromCollectionEffect(
-                        from = "looked",
-                        selection = SelectionMode.ChooseUpTo(countSource),
-                        filter = GameObjectFilter.Land,
-                        storeSelected = "toBattlefield",
-                        storeRemainder = "rest"
-                    ),
-                    MoveCollectionEffect(
-                        from = "toBattlefield",
-                        destination = CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
-                    ),
-                    MoveCollectionEffect(
-                        from = "rest",
-                        destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled)
-                    )
+            Effects.Pipeline {
+                val looked = gather(CardSource.TopOfLibrary(countSource), name = "looked")
+                val (toBattlefield, rest) = chooseUpToSplit(
+                    countSource, from = looked,
+                    filter = GameObjectFilter.Land,
+                    name = "toBattlefield",
+                    remainderName = "rest"
                 )
-            )
+                move(
+                    toBattlefield,
+                    CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
+                )
+                move(
+                    rest,
+                    CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled)
+                )
+            }
         }
         description = "When this creature enters, look at the top X cards of your library, " +
             "where X is this creature's power. Put any number of land cards from among them " +

@@ -8,8 +8,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.EachPlayerChoosesCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -27,28 +25,28 @@ val PatriarchsBidding = card("Patriarch's Bidding") {
     oracleText = "Each player chooses a creature type. Each player returns all creature cards of a type chosen this way from their graveyard to the battlefield."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                EachPlayerChoosesCreatureTypeEffect(storeAs = "biddingTypes"),
+        effect = Effects.Pipeline {
+            run(EachPlayerChoosesCreatureTypeEffect(storeAs = "biddingTypes"))
+            run(
                 ForEachPlayerEffect(
                     players = Player.ActivePlayerFirst,
-                    effects = listOf(
-                        GatherCardsEffect(
-                            source = CardSource.FromZone(
+                    effects = Effects.PipelineSteps {
+                        val toReturn = gather(
+                            CardSource.FromZone(
                                 zone = Zone.GRAVEYARD,
                                 player = Player.You,
                                 filter = GameObjectFilter.Creature.withSubtypeInStoredList("biddingTypes")
                             ),
-                            storeAs = "toReturn"
-                        ),
-                        MoveCollectionEffect(
-                            from = "toReturn",
-                            destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+                            name = "toReturn"
                         )
-                    )
+                        move(
+                            toReturn,
+                            CardDestination.ToZone(Zone.BATTLEFIELD)
+                        )
+                    }
                 )
             )
-        )
+        }
     }
 
     metadata {

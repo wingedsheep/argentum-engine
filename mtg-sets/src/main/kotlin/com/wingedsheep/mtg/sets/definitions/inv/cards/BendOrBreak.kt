@@ -4,16 +4,12 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -41,48 +37,46 @@ val BendOrBreak = card("Bend or Break") {
     spell {
         effect = ForEachPlayerEffect(
             players = Player.Each,
-            effects = listOf(
+            effects = Effects.PipelineSteps {
                 // 1. Gather the nontoken lands this player controls.
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(
+                val lands = gather(
+                    CardSource.ControlledPermanents(
                         player = Player.You,
                         filter = GameObjectFilter.Land.nontoken()
                     ),
-                    storeAs = "lands"
-                ),
+                    name = "lands"
+                )
                 // 2. This player separates their lands into two piles.
-                SelectFromCollectionEffect(
-                    from = "lands",
-                    selection = SelectionMode.ChooseAnyNumber,
+                val (pileA, pileB) = chooseAnyNumberSplit(
+                    from = lands,
                     chooser = Chooser.Controller,
-                    storeSelected = "pileA",
-                    storeRemainder = "pileB",
                     selectedLabel = "Pile 1",
                     remainderLabel = "Pile 2",
                     prompt = "Separate your lands into two piles. The lands you select form Pile 1; the rest form Pile 2.",
                     useTargetingUI = true,
-                    alwaysPrompt = true
-                ),
+                    alwaysPrompt = true,
+                    name = "pileA",
+                    remainderName = "pileB"
+                )
                 // 3. An opponent chooses one of this player's piles to be destroyed.
-                ChoosePileEffect(
-                    pileA = "pileA",
-                    pileB = "pileB",
+                val (destroyed, tapped) = choosePile(
+                    pileA, pileB,
                     pileALabel = "Pile 1",
                     pileBLabel = "Pile 2",
                     chooser = Chooser.Opponent,
-                    storeChosenAs = "destroyed",
-                    storeOtherAs = "tapped",
-                    prompt = "Choose which of the player's land piles is destroyed; the other pile is tapped."
-                ),
+                    prompt = "Choose which of the player's land piles is destroyed; the other pile is tapped.",
+                    chosenName = "destroyed",
+                    otherName = "tapped"
+                )
                 // 4. Destroy the chosen pile.
-                MoveCollectionEffect(
-                    from = "destroyed",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                move(
+                    destroyed,
+                    CardDestination.ToZone(Zone.GRAVEYARD),
                     moveType = MoveType.Destroy
-                ),
+                )
                 // 5. Tap the other pile.
-                TapUntapCollectionEffect(collectionName = "tapped", tap = true)
-            )
+                run(TapUntapCollectionEffect(collectionName = "tapped", tap = true))
+            }
         )
     }
 

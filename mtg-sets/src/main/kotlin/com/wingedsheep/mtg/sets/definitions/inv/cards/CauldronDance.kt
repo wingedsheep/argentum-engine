@@ -41,9 +41,32 @@ val CauldronDance = card("Cauldron Dance") {
         castOnlyDuring(Phase.COMBAT)
         target = Targets.CreatureCardInYourGraveyard
 
-        // Part 1 — reanimate the targeted graveyard creature, give it haste, and bounce
-        // it to its owner's hand at the next end step.
-        val reanimate = Effects.Pipeline {
+        // Part 2 — optionally drop a creature from hand, give it haste, and sacrifice it
+        // at the next end step. The leftmost element is an opaque pattern-composite
+        // (`Patterns.Hand.putFromHand`), so this stays a raw `.then(...)` chain appended
+        // verbatim via `run(...)`.
+        val fromHand = Patterns.Hand.putFromHand(
+            filter = GameObjectFilter.Creature
+        ).then(
+            ConditionalOnCollectionEffect(
+                collection = "putting",
+                ifNotEmpty = Effects.Composite(
+                    Effects.GrantKeyword(
+                        keyword = Keyword.HASTE,
+                        target = EffectTarget.PipelineTarget("putting", 0),
+                        duration = Duration.Permanent
+                    ),
+                    CreateDelayedTriggerEffect(
+                        step = Step.END,
+                        effect = Effects.SacrificeTarget(EffectTarget.PipelineTarget("putting", 0))
+                    )
+                )
+            )
+        )
+
+        effect = Effects.Pipeline {
+            // Part 1 — reanimate the targeted graveyard creature, give it haste, and bounce
+            // it to its owner's hand at the next end step.
             val reanimated = gather(CardSource.ChosenTargets, name = "reanimated")
             move(
                 reanimated,
@@ -64,30 +87,9 @@ val CauldronDance = card("Cauldron Dance") {
                     )
                 )
             }
+            // Part 2 appended verbatim (opaque pattern-composite left raw).
+            run(fromHand)
         }
-
-        // Part 2 — optionally drop a creature from hand, give it haste, and sacrifice it
-        // at the next end step.
-        val fromHand = Patterns.Hand.putFromHand(
-            filter = GameObjectFilter.Creature
-        ).then(
-            ConditionalOnCollectionEffect(
-                collection = "putting",
-                ifNotEmpty = Effects.Composite(
-                    Effects.GrantKeyword(
-                        keyword = Keyword.HASTE,
-                        target = EffectTarget.PipelineTarget("putting", 0),
-                        duration = Duration.Permanent
-                    ),
-                    CreateDelayedTriggerEffect(
-                        step = Step.END,
-                        effect = Effects.SacrificeTarget(EffectTarget.PipelineTarget("putting", 0))
-                    )
-                )
-            )
-        )
-
-        effect = reanimate then fromHand
     }
 
     metadata {

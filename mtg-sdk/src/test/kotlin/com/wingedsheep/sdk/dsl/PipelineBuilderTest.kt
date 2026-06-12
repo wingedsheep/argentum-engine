@@ -325,4 +325,76 @@ class PipelineBuilderTest : DescribeSpec({
             inner.amount shouldBe DynamicAmount.VariableReference("perPlayer")
         }
     }
+
+    describe("All-selection and dynamic-count split coverage") {
+
+        it("selectAll carries matchChosenCreatureType through") {
+            val built = Effects.Pipeline {
+                val pool = gather(CardSource.FromZone(Zone.GRAVEYARD, Player.You))
+                val ofType = selectAll(pool, matchChosenCreatureType = true, name = "ofType")
+                toHand(ofType)
+            } as CompositeEffect
+            val select = built.effects[1] as SelectFromCollectionEffect
+            select.selection shouldBe SelectionMode.All
+            select.matchChosenCreatureType shouldBe true
+            select.storeRemainder shouldBe null
+        }
+
+        it("selectAllSplit keeps the filtered-out cards as a remainder slot") {
+            val built = Effects.Pipeline {
+                val pool = gather(CardSource.FromZone(Zone.GRAVEYARD, Player.You))
+                val (matched, rest) = selectAllSplit(
+                    pool, filter = GameObjectFilter.Creature, name = "matched", remainderName = "rest"
+                )
+                toHand(matched)
+                toGraveyard(rest)
+            } as CompositeEffect
+            val select = built.effects[1] as SelectFromCollectionEffect
+            select.selection shouldBe SelectionMode.All
+            select.storeSelected shouldBe "matched"
+            select.storeRemainder shouldBe "rest"
+        }
+
+        it("chooseUpToSplit accepts a non-Fixed DynamicAmount count") {
+            val built = Effects.Pipeline {
+                val pool = gather(CardSource.FromZone(Zone.HAND, Player.You))
+                val (kept, rest) = chooseUpToSplit(
+                    DynamicAmount.XValue, from = pool, name = "kept", remainderName = "rest"
+                )
+                toHand(kept)
+                toGraveyard(rest)
+            } as CompositeEffect
+            val select = built.effects[1] as SelectFromCollectionEffect
+            select.selection shouldBe SelectionMode.ChooseUpTo(DynamicAmount.XValue)
+            select.storeRemainder shouldBe "rest"
+        }
+    }
+
+    describe("PipelineSteps builds a bare list, not a Composite") {
+
+        it("returns the same List<Effect> a hand-built list produces — no CompositeEffect wrapper") {
+            val handBuilt: List<Effect> = listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.LIBRARY, Player.You),
+                    storeAs = "deck"
+                ),
+                SelectFromCollectionEffect(
+                    from = "deck",
+                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                    storeSelected = "found"
+                ),
+                MoveCollectionEffect(
+                    from = "found",
+                    destination = CardDestination.ToZone(Zone.HAND, Player.You)
+                )
+            )
+            val builtList = Effects.PipelineSteps {
+                val deck = gather(CardSource.FromZone(Zone.LIBRARY, Player.You), name = "deck")
+                val found = chooseExactly(1, from = deck, name = "found")
+                move(found, CardDestination.ToZone(Zone.HAND, Player.You))
+            }
+            // Same serialized JSON, element-for-element, with no surrounding CompositeEffect.
+            builtList.map { jsonOf(it) } shouldBe handBuilt.map { jsonOf(it) }
+        }
+    }
 })

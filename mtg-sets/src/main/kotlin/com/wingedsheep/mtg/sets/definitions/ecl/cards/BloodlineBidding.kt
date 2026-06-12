@@ -8,10 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -34,25 +30,19 @@ val BloodlineBidding = card("Bloodline Bidding") {
     keywords(Keyword.CONVOKE)
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                ChooseCreatureTypeEffect,
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
-                    storeAs = "graveyardCreatures"
-                ),
-                SelectFromCollectionEffect(
-                    from = "graveyardCreatures",
-                    selection = SelectionMode.All,
-                    matchChosenCreatureType = true,
-                    storeSelected = "chosen"
-                ),
-                MoveCollectionEffect(
-                    from = "chosen",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD)
-                )
+        effect = Effects.Pipeline {
+            run(ChooseCreatureTypeEffect)
+            val graveyardCreatures = gather(
+                CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
+                name = "graveyardCreatures"
             )
-        )
+            val chosen = selectAll(
+                from = graveyardCreatures,
+                matchChosenCreatureType = true,
+                name = "chosen"
+            )
+            move(chosen, CardDestination.ToZone(Zone.BATTLEFIELD))
+        }
     }
 
     metadata {

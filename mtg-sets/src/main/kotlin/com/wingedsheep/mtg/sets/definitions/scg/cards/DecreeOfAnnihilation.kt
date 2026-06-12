@@ -9,8 +9,6 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -40,20 +38,25 @@ val DecreeOfAnnihilation = card("Decree of Annihilation") {
             )
         )
 
-        effect = Effects.ForEachInGroup(
-            filter = GroupFilter(artifactCreatureOrLand),
-            effect = Effects.Move(EffectTarget.Self, Zone.EXILE)
-        ).then(
-            ForEachPlayerEffect(
-                players = Player.Each,
-                effects = listOf(
-                    GatherCardsEffect(source = CardSource.FromZone(Zone.GRAVEYARD), storeAs = "graveyard"),
-                    MoveCollectionEffect(from = "graveyard", destination = CardDestination.ToZone(Zone.EXILE)),
-                    GatherCardsEffect(source = CardSource.FromZone(Zone.HAND), storeAs = "hand"),
-                    MoveCollectionEffect(from = "hand", destination = CardDestination.ToZone(Zone.EXILE))
+        effect = Effects.Pipeline {
+            run(
+                Effects.ForEachInGroup(
+                    filter = GroupFilter(artifactCreatureOrLand),
+                    effect = Effects.Move(EffectTarget.Self, Zone.EXILE)
                 )
             )
-        )
+            run(
+                ForEachPlayerEffect(
+                    players = Player.Each,
+                    effects = Effects.PipelineSteps {
+                        val graveyard = gather(CardSource.FromZone(Zone.GRAVEYARD), name = "graveyard")
+                        move(graveyard, CardDestination.ToZone(Zone.EXILE))
+                        val hand = gather(CardSource.FromZone(Zone.HAND), name = "hand")
+                        move(hand, CardDestination.ToZone(Zone.EXILE))
+                    }
+                )
+            )
+        }
     }
 
     keywordAbility(KeywordAbility.cycling("{5}{R}{R}"))

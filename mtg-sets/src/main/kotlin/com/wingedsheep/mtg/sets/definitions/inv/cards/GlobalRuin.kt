@@ -1,18 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -38,36 +35,35 @@ val GlobalRuin = card("Global Ruin") {
     spell {
         effect = ForEachPlayerEffect(
             players = Player.Each,
-            effects = listOf(
+            effects = Effects.PipelineSteps {
                 // 1. Gather the lands this player controls.
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(
+                val lands = gather(
+                    CardSource.ControlledPermanents(
                         player = Player.You,
                         filter = GameObjectFilter.Land
                     ),
-                    storeAs = "lands"
-                ),
+                    name = "lands"
+                )
                 // 2. This player keeps one land of each basic land type; the rest are the remainder.
-                SelectFromCollectionEffect(
-                    from = "lands",
-                    selection = SelectionMode.ChooseAnyNumber,
+                val (kept, sacrificed) = chooseAnyNumberSplit(
+                    from = lands,
                     chooser = Chooser.Controller,
                     restrictions = listOf(SelectionRestriction.OnePerBasicLandType),
-                    storeSelected = "kept",
-                    storeRemainder = "sacrificed",
                     selectedLabel = "Keep",
                     remainderLabel = "Sacrifice",
                     prompt = "Choose a land of each basic land type to keep; the rest are sacrificed.",
                     useTargetingUI = true,
-                    alwaysPrompt = true
-                ),
+                    alwaysPrompt = true,
+                    name = "kept",
+                    remainderName = "sacrificed"
+                )
                 // 3. Sacrifice the rest.
-                MoveCollectionEffect(
-                    from = "sacrificed",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                move(
+                    sacrificed,
+                    CardDestination.ToZone(Zone.GRAVEYARD),
                     moveType = MoveType.Sacrifice
                 )
-            )
+            }
         )
     }
 

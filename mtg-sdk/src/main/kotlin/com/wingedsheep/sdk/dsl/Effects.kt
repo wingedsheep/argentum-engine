@@ -1729,6 +1729,18 @@ object Effects {
     ): Effect = PipelineBuilder.build(stopOnError, descriptionOverride, descriptionAmounts, block)
 
     /**
+     * Build a bare `List<Effect>` of pipeline steps with the same typed-handle threading as
+     * [Pipeline], but without wrapping them in a [com.wingedsheep.sdk.scripting.effects.CompositeEffect].
+     *
+     * For the effects that consume a raw `List<Effect>` of pipeline steps directly — e.g.
+     * `ForEachPlayerEffect(effects = Effects.PipelineSteps { … })` or `ForEachTargetEffect(…)` —
+     * where wrapping the steps in a `Composite` would change the serialized tree. Same step
+     * vocabulary and `name =` rules as [Pipeline]; see [PipelineBuilder].
+     */
+    fun PipelineSteps(block: PipelineBuilder.() -> Unit): List<Effect> =
+        PipelineBuilder.buildSteps(block)
+
+    /**
      * Move [target] to [destination] zone — the foundational single-target zone-change effect.
      *
      * Prefer the named shortcuts ([Destroy], [Exile], [ReturnToHand], [PutOnTopOfLibrary],

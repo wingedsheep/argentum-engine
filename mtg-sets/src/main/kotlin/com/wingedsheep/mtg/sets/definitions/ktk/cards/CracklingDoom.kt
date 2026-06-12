@@ -24,33 +24,33 @@ val CracklingDoom = card("Crackling Doom") {
     oracleText = "Crackling Doom deals 2 damage to each opponent. Each opponent sacrifices a creature with the greatest power among creatures that player controls."
 
     spell {
-        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent)) then
+        effect = Effects.Pipeline {
+            run(Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent)))
+            run(
                 ForEachPlayerEffect(
                     players = Player.EachOpponent,
-                    effects = listOf(
-                        GatherCardsEffect(
-                            source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Creature),
-                            storeAs = "creatures"
-                        ),
-                        FilterCollectionEffect(
-                            from = "creatures",
-                            filter = CollectionFilter.GreatestPower,
-                            storeMatching = "greatest"
-                        ),
-                        SelectFromCollectionEffect(
-                            from = "greatest",
-                            selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                    effects = Effects.PipelineSteps {
+                        val creatures = gather(
+                            CardSource.ControlledPermanents(Player.You, GameObjectFilter.Creature),
+                            name = "creatures"
+                        )
+                        val greatest = filter(creatures, CollectionFilter.GreatestPower, name = "greatest")
+                        val toSacrifice = chooseExactly(
+                            1,
+                            from = greatest,
                             chooser = Chooser.Controller,
-                            storeSelected = "toSacrifice",
-                            prompt = "Choose a creature to sacrifice"
-                        ),
-                        MoveCollectionEffect(
-                            from = "toSacrifice",
-                            destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                            prompt = "Choose a creature to sacrifice",
+                            name = "toSacrifice"
+                        )
+                        move(
+                            toSacrifice,
+                            CardDestination.ToZone(Zone.GRAVEYARD),
                             moveType = MoveType.Sacrifice
                         )
-                    )
+                    }
                 )
+            )
+        }
     }
 
     metadata {

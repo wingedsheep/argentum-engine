@@ -9,16 +9,10 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Winnowing
@@ -42,38 +36,37 @@ val Winnowing = card("Winnowing") {
     spell {
         effect = ForEachPlayerEffect(
             players = Player.ActivePlayerFirst,
-            effects = listOf(
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(
+            effects = Effects.PipelineSteps {
+                val playerCreatures = gather(
+                    CardSource.ControlledPermanents(
                         player = Player.You,
                         filter = GameObjectFilter.Creature
                     ),
-                    storeAs = "playerCreatures"
-                ),
-                SelectFromCollectionEffect(
-                    from = "playerCreatures",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                    name = "playerCreatures"
+                )
+                val (chosen, rest) = chooseExactlySplit(
+                    1, from = playerCreatures,
                     chooser = Chooser.SourceController,
-                    storeSelected = "chosen",
-                    storeRemainder = "rest",
                     prompt = "Choose a creature this player controls",
-                    useTargetingUI = true
-                ),
-                GatherSubtypesEffect(from = "chosen", storeAs = "chosenSubtypes"),
-                FilterCollectionEffect(
-                    from = "rest",
-                    filter = CollectionFilter.MatchesFilter(
+                    useTargetingUI = true,
+                    name = "chosen",
+                    remainderName = "rest"
+                )
+                val chosenSubtypes = gatherSubtypes(chosen, name = "chosenSubtypes")
+                val (shareTypes, noShareTypes) = filterSplit(
+                    rest,
+                    CollectionFilter.MatchesFilter(
                         GameObjectFilter.Creature.withSubtypeInEachStoredGroup("chosenSubtypes")
                     ),
-                    storeMatching = "shareTypes",
-                    storeNonMatching = "noShareTypes"
-                ),
-                MoveCollectionEffect(
-                    from = "noShareTypes",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                    name = "shareTypes",
+                    restName = "noShareTypes"
+                )
+                move(
+                    noShareTypes,
+                    CardDestination.ToZone(Zone.GRAVEYARD),
                     moveType = MoveType.Sacrifice
                 )
-            )
+            }
         )
     }
 

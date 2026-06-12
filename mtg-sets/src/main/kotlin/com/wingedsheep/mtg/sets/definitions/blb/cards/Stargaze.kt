@@ -6,10 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -27,34 +23,27 @@ val Stargaze = card("Stargaze") {
     oracleText = "Look at twice X cards from the top of your library. Put X cards from among them into your hand and the rest into your graveyard. You lose X life."
 
     spell {
-        effect = Effects.Composite(listOf(
+        effect = Effects.Pipeline {
             // Gather twice X cards from top of library
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Multiply(DynamicAmount.XValue, 2)),
-                storeAs = "looked"
-            ),
+            val looked = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Multiply(DynamicAmount.XValue, 2)),
+                name = "looked"
+            )
             // Select exactly X to keep
-            SelectFromCollectionEffect(
-                from = "looked",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.XValue),
-                storeSelected = "kept",
-                storeRemainder = "rest",
+            val (kept, rest) = chooseExactlySplit(
+                DynamicAmount.XValue, from = looked,
                 selectedLabel = "Put in hand",
-                remainderLabel = "Put in graveyard"
-            ),
+                remainderLabel = "Put in graveyard",
+                name = "kept",
+                remainderName = "rest"
+            )
             // Move selected to hand
-            MoveCollectionEffect(
-                from = "kept",
-                destination = CardDestination.ToZone(Zone.HAND)
-            ),
+            move(kept, CardDestination.ToZone(Zone.HAND))
             // Move rest to graveyard
-            MoveCollectionEffect(
-                from = "rest",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD)
-            ),
+            move(rest, CardDestination.ToZone(Zone.GRAVEYARD))
             // Lose X life
-            Effects.LoseLife(DynamicAmount.XValue, EffectTarget.Controller)
-        ))
+            run(Effects.LoseLife(DynamicAmount.XValue, EffectTarget.Controller))
+        }
     }
 
     metadata {
