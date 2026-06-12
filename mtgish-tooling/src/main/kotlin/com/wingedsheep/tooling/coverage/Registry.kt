@@ -28,9 +28,15 @@ object Registry {
             .toSet()
 
     // --- import resolution: symbol -> package, from a live scan of the SDK source (anti-rot) -----
+    // For `fun`/`val`, the trailing guard rejects extension declarations: in
+    // `fun GameObjectFilter.namedFromVariable(...)` the captured identifier is the *receiver
+    // type*, not a declaration in this package — indexing it would shadow the type's real home
+    // (the receiver's name is followed by `.`, or by `<` for a generic receiver, while a true
+    // function/property name is followed by `(`, `=`, `:`, or whitespace).
     private val DECL = Regex(
         """^(?:public\s+|internal\s+)?(?:sealed\s+|abstract\s+|open\s+|data\s+|value\s+)?""" +
-            """(?:class|object|interface|enum class|fun|val)\s+(?:<[^>]*>\s+)?([A-Za-z_][A-Za-z0-9_]*)"""
+            """(?:(?:class|object|interface|enum class)\s+([A-Za-z_][A-Za-z0-9_]*)""" +
+            """|(?:fun|val)\s+(?:<[^>]*>\s+)?([A-Za-z_][A-Za-z0-9_]*)(?![\w.<]))"""
     )
     private val PKG_PREF = listOf(
         "com.wingedsheep.sdk.dsl", "com.wingedsheep.sdk.scripting.effects",
@@ -47,7 +53,10 @@ object Registry {
                 val pm = Regex("""^package\s+([\w.]+)""").find(line)
                 if (pm != null) { pkg = pm.groupValues[1]; continue }
                 if (pkg != null && line.isNotEmpty() && !line[0].isWhitespace()) {
-                    DECL.find(line)?.let { idx.getOrPut(it.groupValues[1]) { mutableSetOf() }.add(pkg) }
+                    DECL.find(line)?.let { m ->
+                        val name = m.groupValues[1].ifEmpty { m.groupValues[2] }
+                        idx.getOrPut(name) { mutableSetOf() }.add(pkg!!)
+                    }
                 }
             }
         }
