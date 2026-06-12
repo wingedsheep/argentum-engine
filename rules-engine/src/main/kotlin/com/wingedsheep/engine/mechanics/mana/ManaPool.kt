@@ -30,6 +30,8 @@ data class SpellPaymentContext(
     val hasXInCost: Boolean = false,
     val subtypes: Set<String> = emptySet(),
     val isFromExile: Boolean = false,
+    /** True when the spell being cast is legendary (has the Legendary supertype). */
+    val isLegendary: Boolean = false,
     /** Card types of the spell being cast (empty for non-spell contexts). */
     val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     val isAbilityActivation: Boolean = false,
@@ -58,6 +60,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
         !context.isAbilityActivation && context.isCreature && (context.manaValue >= 4 || context.hasXInCost)
     is ManaRestriction.SpellsMV4OrGreater -> !context.isAbilityActivation && context.manaValue >= 4
     is ManaRestriction.CreatureSpellsOnly -> !context.isAbilityActivation && context.isCreature
+    is ManaRestriction.LegendarySpellsOnly -> !context.isAbilityActivation && context.isLegendary
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
             context.subtypes.any { it.equals(subtype, ignoreCase = true) }

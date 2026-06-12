@@ -3512,6 +3512,10 @@ restriction matches the spell context.
 - `ManaRestriction.KickedSpellsOnly` — only kicked spells.
 - `ManaRestriction.CreatureSpellsOnly` / `CreatureMV4OrXCost` / `SpellsMV4OrGreater` —
   creature- or mana-value-gated.
+- `ManaRestriction.LegendarySpellsOnly` — only legendary spells (matches `SpellPaymentContext.isLegendary`,
+  populated from the cast card's `typeLine.isLegendary`). Great Hall of the Citadel
+  (`AddManaInAnyCombination(2, restriction = LegendarySpellsOnly)`); Delighted Halfling pairs it with
+  the `ManaSpellRider.MakesSpellUncounterable` rider on a one-mana any-color ability.
 - `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype, creatureOnly?)` — Cavern of Souls /
   Unclaimed Territory: only spells of a baked subtype, optionally creature-only.
 - `ManaRestriction.SubtypeSpellsOnly(subtypes)` — multi-subtype spend restriction: only spells

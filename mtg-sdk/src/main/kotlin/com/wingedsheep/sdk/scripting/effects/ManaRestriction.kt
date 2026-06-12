@@ -66,6 +66,16 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype
+     * (Great Hall of the Citadel, Delighted Halfling).
+     */
+    @SerialName("LegendarySpellsOnly")
+    @Serializable
+    data object LegendarySpellsOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast legendary spells"
+    }
+
+    /**
      * "Spend this mana only to cast spells with mana value 4 or greater."
      */
     @SerialName("SpellsMV4OrGreater")
