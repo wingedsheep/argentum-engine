@@ -944,6 +944,81 @@
     ]
 }
 
+// Barad-dûr
+{
+    "name": "Barad-dûr",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "Barad-dûr enters tapped unless you control a legendary creature.\n{T}: Add {B}.\n{X}{X}{B}, {T}: Amass Orcs X. Activate only if a creature died this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{X}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Amass",
+                    "amount": "XValue",
+                    "subtype": "Orc"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": "CreatureDiedThisTurn"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "RARE",
+        "artist": "Sean Vo",
+        "flavorText": "\"Those who pass the gates of Barad-dûr do not return.\"\n—Gandalf",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb5038af-06b0-401e-8dea-a1a8483788ae.jpg?1686970323"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Battle-Scarred Goblin
 {
     "name": "Battle-Scarred Goblin",
@@ -11084,6 +11159,105 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ringwraiths
+{
+    "name": "Ringwraiths",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Wraith Knight",
+    "oracleText": "When this creature enters, target creature an opponent controls gets -3/-3 until end of turn. If that creature is legendary, its controller loses 3 life.\nWhen the Ring tempts you, return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature an opponent controls"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "TargetMatchesFilter",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "IsLegendary"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target creature"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "creature an opponent controls"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "RingTemptedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "activeZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "RARE",
+        "artist": "Warren Mahy",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a8495c3-96cf-40ab-b68a-1b5711b7659e.jpg?1719684265"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

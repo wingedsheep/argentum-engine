@@ -136,3 +136,24 @@ entries below for the actual decisions.
   mirroring UndeadGladiatorTest) proves return-from-GY by sacrifice + sorcery-speed restriction.
 - No new SDK; one commit per card.
 
+### Ringwraiths (Black, Extra) — Gap 21 OBSOLETE + Barad-dûr (Land) — Gap 25 OBSOLETE
+
+- **Probe finding:** Gap 21 (graveyard TRIGGERED ability) is landed — `TriggeredAbility.activeZone` /
+  DSL `triggerZone = Zone.GRAVEYARD` (templates Pyre Zombie, Persistent Marshstalker). Gap 25 ({X} in
+  an activated-ability cost) is landed — X-cost activation continuation threads X into
+  `DynamicAmount.XValue` (templates Atalya, Soul Burn). Gap 22 (restricted mana) is also landed
+  (`ManaRestriction` + `ManaSpellRider`) — but NOT a "legendary spells only" variant (Great Hall /
+  Delighted Halfling still need a new `ManaRestriction` for supertype=legendary). Gap 8 protection
+  partially: `ProtectionScope.Everything`/`CardType` exist on permanents, but PLAYER protection
+  (The One Ring) and dynamic chosen-card-type grant (Pippin) are missing.
+- **Ringwraiths:** ETB `ModifyStats(-3,-3)` then `ConditionalEffect(TargetMatchesFilter(legendary,0),
+  LoseLife(3, ControllerOf("target creature")))` — legendary check is mid-resolution so the targeted
+  creature is still present (SBAs run after). Graveyard half: `Triggers.RingTemptsYou` with
+  `triggerZone = Zone.GRAVEYARD` → `Move(Self, HAND)`. Scenario test covers legendary vs non-legendary.
+- **Barad-dûr:** Legendary Land modeled on Mines of Moria — `EntersTapped(unlessCondition = Exists(You,
+  BATTLEFIELD, Creature.legendary()))`, `{T}: AddMana(BLACK)`, and
+  `{X}{X}{B},{T}: Effects.Amass(XValue, "Orc")` gated by
+  `ActivationRestriction.OnlyIfCondition(Conditions.CreatureDiedThisTurn)`. No dedicated test (all
+  pieces individually tested; snapshot covers registration).
+- No new SDK for either; one commit per card.
+
