@@ -223,6 +223,19 @@ cards and "each opponent" staples (Syphon Mind effects) need. Nothing commander-
 
 ## Phase 1 — N-player engine correctness
 
+**Status: engine work landed (1.1–1.3); 1.4 partially.** The single chokepoint for departed
+players is `GameState.withPriority` (priority that would go to a left player passes to the next
+remaining player, CR 800.4a/j), plus `getNextPlayer`/`allPlayersPassed` filtering. Leaving the
+game (1.2) is a `PlayerLeavesGameProcessor` run by the `PlayerLeavesGameCheck` SBA (gated so a
+two-player game's end-state is unchanged); `ConcedeHandler` marks-lost-and-continues. Multi-defender
+combat (1.1) sequences each defender's block declaration via `CombatDefenders.defendingPlayersInApnapOrder`
++ the existing priority round, and `BlockPhaseManager` enforces CR 509.1b. First-turn draw (1.3) is
+gated on a two-player table (CR 103.8a/c). Verified by `LeaveTheGameTest`, `MultiDefenderCombatTest`,
+and the extended `MultiplayerSmokeTest` (full 4-player games end-to-end through the real engine).
+The gym self-play harness already accepts N players (`EnvConfig` requires ≥2). The scenario-builder
+N-seat widening (1.4) is deferred into Phase 2, since the session/WebSocket layer it feeds is still
+two-seat — widening the builder alone can't run a 4-player session yet.
+
 ### 1.1 Multi-defender combat
 
 Attack declaration already supports per-creature defenders. The work is the defending side:
