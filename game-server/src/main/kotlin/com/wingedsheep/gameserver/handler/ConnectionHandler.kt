@@ -15,6 +15,7 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.WebSocketSession
 import java.util.concurrent.TimeUnit
 
@@ -140,10 +141,21 @@ class ConnectionHandler(
             }
         }
 
+        // If the identity is still attached to a different live socket (same player opened
+        // another tab/device), tell that socket it lost the session and close it. Without
+        // this the old tab silently loses its mapping and every message it sends gets a
+        // confusing NOT_CONNECTED error — or worse, fights this socket for the session.
+        val replacedWs = identity.webSocketSession
         sessionRegistry.removeOldWsMapping(identity.token)
 
         identity.webSocketSession = session
         sessionRegistry.mapWsToToken(session.id, identity.token)
+
+        if (replacedWs != null && replacedWs.id != session.id && replacedWs.isOpen) {
+            logger.info("Session for ${identity.playerName} replaced by a new connection; notifying old socket ${replacedWs.id}")
+            sender.send(replacedWs, ServerMessage.SessionReplaced)
+            runCatching { replacedWs.close(CloseStatus.NORMAL) }
+        }
 
         val playerSession = PlayerSession(
             webSocketSession = session,

@@ -14,6 +14,7 @@ import { DelveSelector } from './components/ui/DelveSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DisconnectCountdown } from './components/ui/DisconnectCountdown'
+import { SessionReplacedOverlay } from './components/ui/SessionReplacedOverlay'
 import { MatchIntroAnimation } from './components/animations/MatchIntroAnimation'
 import { StandaloneConcedeButton } from './components/game/overlay'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
@@ -45,6 +46,7 @@ export default function App() {
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
   const spectateGame = useGameStore((state) => state.spectateGame)
+  const sessionReplaced = useGameStore((state) => state.sessionReplaced)
   const hasConnectedRef = useRef(false)
 
   // Dev deep-link: /?spectate=<gameSessionId> connects and auto-spectates that game,
@@ -68,6 +70,9 @@ export default function App() {
 
   useEffect(() => {
     if (connectionStatus !== 'disconnected' || hasConnectedRef.current) return
+    // Another tab/device owns the session; reconnecting here would steal it back.
+    // The SessionReplacedOverlay's "Use here" is the only way back in.
+    if (sessionReplaced) return
     if (spectateParam) {
       // Spectate deep-link: connect as an isolated, ephemeral spectator (no shared token/name) so
       // it doesn't collide with the user's identity and each watch gets a fresh session.
@@ -81,7 +86,7 @@ export default function App() {
       hasConnectedRef.current = true
       connect(storedName)
     }
-  }, [connectionStatus, connect, spectateParam])
+  }, [connectionStatus, connect, spectateParam, sessionReplaced])
 
   // Once connected, honor a /?spectate=<gameId> deep-link (fire once).
   useEffect(() => {
@@ -347,6 +352,9 @@ export default function App() {
 
       {/* Spectator view (when watching another game — skip when ReplayViewer handles its own UI) */}
       {spectatingState && !spectatingState.isReplay && <SpectatorGameBoard />}
+
+      {/* Session takeover overlay (this tab's identity connected from another tab/device) */}
+      <SessionReplacedOverlay />
     </div>
   )
 }

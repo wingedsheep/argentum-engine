@@ -25,6 +25,11 @@ export interface ConnectionSliceState {
   aiEnabled: boolean
   availableSets: readonly AvailableSet[]
   onlinePlayers: number | null
+  /**
+   * True when the server reported this socket's session was taken over by another
+   * tab/device. Auto-reconnect is stopped; the user reclaims via the takeover overlay.
+   */
+  sessionReplaced: boolean
 }
 
 export interface ConnectionSliceActions {
@@ -52,6 +57,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
   aiEnabled: false,
   availableSets: [],
   onlinePlayers: null,
+  sessionReplaced: false,
 
   // Actions
   connect: (playerName, options) => {
@@ -60,6 +66,8 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
     if (connectionStatus === 'connecting' || connectionStatus === 'connected') {
       return
     }
+
+    set({ sessionReplaced: false })
 
     const existingWs = getWebSocket()
     if (existingWs) {
@@ -129,6 +137,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
     clearLobbyId()
     clearDeckState()
     set({
+      sessionReplaced: false,
       connectionStatus: 'disconnected',
       playerId: null,
       sessionId: null,

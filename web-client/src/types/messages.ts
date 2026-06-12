@@ -76,6 +76,8 @@ export type ServerMessage =
   | OnlinePlayersCountMessage
   // Liveness
   | PongMessage
+  // Session takeover
+  | SessionReplacedMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -2387,6 +2389,16 @@ export interface OnlinePlayersCountMessage {
  */
 export interface PongMessage {
   readonly type: 'pong'
+}
+
+/**
+ * This socket's identity just authenticated from a different socket (the player opened
+ * the game in another tab or device). The server closes this socket right after sending;
+ * the client must stop auto-reconnecting — taking the session back is an explicit user
+ * action (the "Use here" button).
+ */
+export interface SessionReplacedMessage {
+  readonly type: 'sessionReplaced'
 }
 
 export interface CreateQuickGameLobbyMessage {

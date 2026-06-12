@@ -6,7 +6,12 @@ import { entityId, createJoinLobbyMessage, createSpectateGameMessage } from '@/t
 import { getWebSocket, clearLobbyId, loadLobbyId } from '../shared'
 import type { SetState, GetState } from './types'
 
-type ConnectionHandlerKeys = 'onConnected' | 'onReconnected' | 'onOnlinePlayersCount' | 'onPong'
+type ConnectionHandlerKeys =
+  | 'onConnected'
+  | 'onReconnected'
+  | 'onOnlinePlayersCount'
+  | 'onPong'
+  | 'onSessionReplaced'
 
 export function createConnectionHandlers(set: SetState, get: GetState): Pick<MessageHandlers, ConnectionHandlerKeys> {
   return {
@@ -78,5 +83,16 @@ export function createConnectionHandlers(set: SetState, get: GetState): Pick<Mes
     // Liveness replies are consumed by GameWebSocket's last-message tracking; nothing
     // store-side to update.
     onPong: () => {},
+
+    onSessionReplaced: () => {
+      // Another tab/device took over this identity. Stop all auto-reconnect machinery —
+      // reconnecting would just steal the session back and the two tabs would fight.
+      // The takeover overlay offers an explicit "Use here" to reclaim.
+      // Set the flag BEFORE the status flips to 'disconnected', so auto-connect effects
+      // keyed on connectionStatus see it and stand down.
+      set({ sessionReplaced: true })
+      getWebSocket()?.disconnect()
+      set({ connectionStatus: 'disconnected' })
+    },
   }
 }

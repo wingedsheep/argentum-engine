@@ -144,6 +144,11 @@ Related recovery contracts:
 - A `NOT_CONNECTED` error (server) means the socket is open but not associated with an
   authenticated session (e.g. the server restarted). The client recovers by re-sending `connect`
   with its stored token rather than surfacing the error.
+- `{"type": "sessionReplaced"}` (server) is sent to the *previous* socket when the same identity
+  (token) authenticates from a new socket — i.e. the player opened the game in another tab or
+  device. The server closes that socket right after sending; the receiving client stops all
+  auto-reconnect (reconnecting would steal the session straight back) and shows a takeover
+  overlay whose "Use here" button reclaims the session explicitly.
 
 ---
 

@@ -118,6 +118,8 @@ export interface MessageHandlers {
   onOnlinePlayersCount: (message: OnlinePlayersCountMessage) => void
   // Liveness handlers
   onPong: () => void
+  // Session takeover handlers
+  onSessionReplaced: () => void
 }
 
 /**
@@ -285,6 +287,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'pong':
       handlers.onPong()
+      break
+    case 'sessionReplaced':
+      handlers.onSessionReplaced()
       break
     default: {
       // TypeScript exhaustiveness check

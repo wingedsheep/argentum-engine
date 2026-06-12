@@ -41,6 +41,29 @@ class GameConnectionTest : GameServerTestBase() {
                 }
             }
 
+            test("connecting from a second socket with the same token notifies and closes the first") {
+                val first = createClient()
+                first.connectAs("TabTester")
+                val token = first.messages.filterIsInstance<ServerMessage.Connected>().first().token
+
+                val second = createClient()
+                second.connect()
+                second.send(ClientMessage.Connect("TabTester", token))
+
+                eventually(5.seconds) {
+                    second.messages.any { it is ServerMessage.Reconnected } shouldBe true
+                }
+                eventually(5.seconds) {
+                    first.messages.any { it is ServerMessage.SessionReplaced } shouldBe true
+                }
+
+                // The winning socket keeps working.
+                second.send(ClientMessage.Ping)
+                eventually(5.seconds) {
+                    second.messages.any { it is ServerMessage.Pong } shouldBe true
+                }
+            }
+
             test("two players can create and join a game") {
                 val ctx = setupGame(skipMulligan = false)
                 ctx.sessionId shouldNotBe null

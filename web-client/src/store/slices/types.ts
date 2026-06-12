@@ -732,6 +732,8 @@ export type GameStore = {
   aiEnabled: boolean
   availableSets: readonly AvailableSet[]
   onlinePlayers: number | null
+  /** True when another tab/device took over this identity; auto-reconnect is stopped. */
+  sessionReplaced: boolean
   connect: (playerName: string, options?: { spectator?: boolean }) => void
   disconnect: () => void
   setPendingTournamentId: (lobbyId: string | null) => void

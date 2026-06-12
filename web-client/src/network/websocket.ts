@@ -90,11 +90,9 @@ export class GameWebSocket {
     this.cancelReconnect()
     this.cancelLivenessCheck()
     this.teardownRecoveryHandlers()
-
-    if (this.ws) {
-      this.ws.close(1000, 'Client disconnected')
-      this.ws = null
-    }
+    // Detach handlers before closing: a message already queued on this socket must not
+    // dispatch after we've decided the connection is over.
+    this.discardSocket()
 
     this.lastStateVersion = null
     this.resyncRequested = false

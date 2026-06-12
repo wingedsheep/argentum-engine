@@ -998,6 +998,16 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("pong")
     data object Pong : ServerMessage
+
+    /**
+     * Sent to a socket whose identity just authenticated from a *different* socket
+     * (the same player opened the game in another tab or device). The receiving
+     * client must stop auto-reconnecting — winning the session back is an explicit
+     * user action — and the server closes this socket right after sending.
+     */
+    @Serializable
+    @SerialName("sessionReplaced")
+    data object SessionReplaced : ServerMessage
 }
 
 @Serializable

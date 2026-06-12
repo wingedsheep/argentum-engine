@@ -310,6 +310,7 @@ export type {
   OnlinePlayersCountMessage,
   PingMessage,
   PongMessage,
+  SessionReplacedMessage,
   DeckFormat,
 } from './messages'
 export {
