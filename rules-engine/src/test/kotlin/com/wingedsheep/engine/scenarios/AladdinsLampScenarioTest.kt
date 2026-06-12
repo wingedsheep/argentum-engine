@@ -2,7 +2,9 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -96,6 +98,47 @@ class AladdinsLampScenarioTest : ScenarioTestBase() {
                 }
                 withClue("The rejected card (Swamp) is on the bottom of the library") {
                     libraryNames().last() shouldBe "Swamp"
+                }
+            }
+
+            test("the {X} cost can be paid from mana already floating in the pool") {
+                // Regression: activating an {X} ability whose X is covered by floating mana used to
+                // fail with "Not enough mana", because the X portion was solved purely by tapping
+                // sources and never credited the pool (autoTapForManaCost).
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Aladdin's Lamp", summoningSickness = false)
+                    .withLandsOnBattlefield(1, "Island", 1)   // one untapped source — not enough for X=4 alone
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(1, "Swamp")
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Hill Giant")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Four mana already floating in the pool; X=4 should be paid entirely from it.
+                game.state = game.state.updateEntity(game.player1Id) { c ->
+                    c.with(ManaPoolComponent(blue = 4))
+                }
+
+                val activation = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = game.findPermanent("Aladdin's Lamp")!!,
+                        abilityId = lampAbilityId,
+                        xValue = 4,
+                    )
+                )
+                withClue("Activating with X=4 paid from 4 floating mana should succeed: ${activation.error}") {
+                    activation.error shouldBe null
+                }
+                withClue("The {X} cost should be drained from the floating pool") {
+                    game.state.getEntity(game.player1Id)?.get<ManaPoolComponent>()?.blue shouldBe 0
+                }
+                withClue("The lone Island was not needed and stays untapped") {
+                    game.state.getEntity(game.findPermanent("Island")!!)?.get<TappedComponent>() shouldBe null
                 }
             }
         }

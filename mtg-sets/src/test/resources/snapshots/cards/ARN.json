@@ -73,8 +73,11 @@
                     "type": "CostComposite",
                     "costs": [
                         {
-                            "type": "CostMana",
-                            "cost": "{X}"
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
                         },
                         "CostTap"
                     ]

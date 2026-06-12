@@ -3,9 +3,10 @@
   "player2Name": "Bob",
   "player1": {
     "lifeTotal": 20,
-    "hand": [],
+    "hand": ["Opt"],
     "battlefield": [
       {"name": "Aladdin's Lamp"},
+      {"name": "Island"},
       {"name": "Plains"},
       {"name": "Plains"},
       {"name": "Plains"},
@@ -30,5 +31,6 @@
   "player1StopAtSteps": ["UPKEEP", "DRAW"],
   "player2StopAtSteps": [],
   "player1OpponentStopAtSteps": [],
-  "player2OpponentStopAtSteps": []
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
 }
