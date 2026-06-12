@@ -1703,6 +1703,32 @@ object Effects {
     ): Effect = CompositeEffect(effects, stopOnError, descriptionOverride, descriptionAmounts)
 
     /**
+     * Compose an inline Gather → Select → Move pipeline with typed slot handles —
+     * the facade-respecting replacement for hand-threading string slot keys between
+     * raw pipeline step constructors. Serializes to the exact [CompositeEffect] tree
+     * the steps would produce by hand; see [PipelineBuilder] for the step vocabulary.
+     *
+     * ```kotlin
+     * effect = Effects.Pipeline {
+     *     val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(7)))
+     *     val (kept, rest) = chooseExactlySplit(2, from = looked)
+     *     toHand(kept)
+     *     toGraveyard(rest)
+     * }
+     * ```
+     *
+     * @param stopOnError when true, abort the remaining steps if one fails.
+     * @param descriptionOverride render a single hand-written sentence instead of joining steps.
+     * @param descriptionAmounts dynamic values interpolated into `{0}`, `{1}`, … of [descriptionOverride] at runtime.
+     */
+    fun Pipeline(
+        stopOnError: Boolean = false,
+        descriptionOverride: String? = null,
+        descriptionAmounts: List<DynamicAmount> = emptyList(),
+        block: PipelineBuilder.() -> Unit
+    ): Effect = PipelineBuilder.build(stopOnError, descriptionOverride, descriptionAmounts, block)
+
+    /**
      * Move [target] to [destination] zone — the foundational single-target zone-change effect.
      *
      * Prefer the named shortcuts ([Destroy], [Exile], [ReturnToHand], [PutOnTopOfLibrary],

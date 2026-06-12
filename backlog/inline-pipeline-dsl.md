@@ -1,6 +1,10 @@
 # Inline pipeline DSL — typed slot handles for card-file pipelines
 
-_Drafted 2026-06-12, out of the PR #630 (Drop of Honey) review discussion. Status: proposal._
+_Drafted 2026-06-12, out of the PR #630 (Drop of Honey) review discussion. Status: §5 step 1
+(builder core) + pilot migration implemented — `mtg-sdk/dsl/PipelineBuilder.kt`, entry point
+`Effects.Pipeline { }`, reference in `card-sdk-language-reference.md` §5.5; `inv/cards/Lobotomy.kt`
+migrated byte-identically. Steps 2–5 (new-card pilots, corpus migration, facade closure, emitter
+renderer) remain open._
 
 ## 0. The problem
 

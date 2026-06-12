@@ -858,6 +858,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ## 5. Effect patterns (`Patterns.Library.*` / `Patterns.Hand.*` / `Patterns.Group.*` / `Patterns.Exile.*` / `Patterns.CreatureType.*` / `Patterns.Mechanic.*`)
 
 Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` shapes and similar).
+Named entries here are for named MTG mechanics and shapes with a demonstrated second user — a
+one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5.5) instead.
 
 **Library search & reveal**
 
@@ -940,6 +942,99 @@ Composed pipelines (`GatherCards → SelectFromCollection → MoveCollection` sh
 - `modifyStatsForAll(power, toughness, filter, duration?)` — give every match +X/+Y (`Int` or `DynamicAmount`).
 - `doublePowerAndToughnessForAll(filter, duration?)` — double each match's power and toughness. Resolves to a fixed +P/+T modification read per-entity from projected state via `DynamicAmount.EntityProperty(EntityReference.IterationEntity, …)`, so the bonus locks in at resolution (no re-doubling) and negative power doubles correctly. Roar of Endless Song, Unnatural Growth.
 - `grantKeywordToAll(keyword, filter, duration?)` / `removeKeywordFromAll(...)`; `tapAll(filter)` / `untapGroup(filter?)`; `dealDamageToAll(amount, filter)`; `destroyAll(filter, noRegenerate?)`; `gainControlOfGroup(filter?, duration?)`.
+
+---
+
+## 5.5 Inline pipelines (`Effects.Pipeline { }`)
+
+The facade-respecting way to compose a **one-off** Gather → Select → Move pipeline inside a card
+file (see `backlog/inline-pipeline-dsl.md`). Named `Patterns.*` entries are for named MTG mechanics
+and shapes with a demonstrated second user; one-off pipelines go inline via the builder instead of
+hand-threading string slot keys between raw step constructors.
+
+Each builder verb serializes to the existing pipeline step `Effect` — the result is the exact same
+`CompositeEffect` tree the raw constructors produce (zero engine change, zero JSON-contract change).
+Steps return **typed slot handles**; the only way to obtain a handle is from a step that produced
+it, so a read-without-write (the `CardLinter` dangling-slot error class) cannot be expressed.
+
+```kotlin
+effect = Effects.Pipeline {
+    val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(7)))
+    val (kept, rest) = chooseExactlySplit(2, from = looked)
+    toHand(kept)
+    toGraveyard(rest)
+}
+```
+
+**Slot handles** (one per `EffectContext` namespace, mirroring `CardLinter.Space`):
+
+| Handle | Backing store | Produced by | Consumed by |
+|---|---|---|---|
+| `CollectionSlot` | `storedCollections` | `gather`, `chooseExactly`, `filter`, `captureControllers`, `moveTracked`, … | `move`, `reveal`, the select/filter verbs, `forEachCaptured` |
+| `NumberSlot` | `storedNumbers` | `storeNumber`, `forEachCaptured`'s block param | `.amount` → `DynamicAmount.VariableReference` |
+| `ChosenSlot` | `chosenValues` | `storeCardName`, `chooseOption`, `noteCreatureType` | `GameObjectFilter.namedFromVariable(slot)` |
+| `SubtypeGroupsSlot` | `storedSubtypeGroups` | `gatherSubtypes` | subtype-matching filters |
+
+**Keys are auto-generated deterministically** — `"<verb><stepIndex>"` per builder instance
+(`gathered0`, `selected1`, `matching3`), so renaming a Kotlin `val` never churns the serialized
+JSON, while reordering steps changes keys (the tree changed anyway). Every producing step takes an
+optional `name = "..."` override: use it for readable goldens on gnarly cards and for **churn-free
+migration** of existing inline cards (keep the old hand-written keys → byte-identical JSON,
+untouched snapshot goldens; `inv/cards/Lobotomy.kt` is the worked example). Duplicate explicit
+names, empty pipelines, and empty branch blocks fail at card-load with `require`.
+
+**Step vocabulary** (one verb per existing step type — the vocabulary grows with step types, never
+with cards):
+
+| Builder verb | Serializes to |
+|---|---|
+| `gather(source)` / `gather(filter, player?, …)` (battlefield shorthand) | `GatherCardsEffect` |
+| `gatherUntilMatch(filter, …)` → `(match, revealed)` | `GatherUntilMatchEffect` |
+| `chooseExactly(n, from)` / `chooseUpTo` / `chooseAnyNumber` / `chooseRandom` / `selectAll` (+ `…Split` variants returning `(selected, remainder)`) | `SelectFromCollectionEffect` |
+| `filter(from, filter)` / `filterSplit(…)` → `(matching, rest)` | `FilterCollectionEffect` |
+| `move(from, destination, …)` / `moveTracked(…)` / sugar `destroy`, `sacrifice`, `exile`, `toHand`, `toGraveyard`, `toLibraryTop`, `toLibraryBottom` | `MoveCollectionEffect` |
+| `reveal(from, …)` | `RevealCollectionEffect` |
+| `captureControllers(from)` | `CaptureControllersEffect` |
+| `forEachCaptured(collection, original, controllers) { count -> … }` | `ForEachCapturedControllerEffect` |
+| `gatherSubtypes(from)` | `GatherSubtypesEffect` |
+| `storeCardName(from)` | `StoreCardNameEffect` |
+| `storeNumber(amount)` | `StoreNumberEffect` |
+| `chooseOption(optionType, …)` / `noteCreatureType(…)` | `ChooseOptionEffect` / `NoteCreatureTypeEffect` |
+| `choosePile(a, b, chooser?, …)` → `(chosen, other)` | `ChoosePileEffect` |
+| `selectTarget(requirement)` (resolution-time choice — never printed "target") | `SelectTargetEffect` |
+| `ifNotEmpty(slot, filter?, minSize?) { … } orElse { … }` | `ConditionalOnCollectionEffect` |
+| `whenMatches(slot, filter)` (returns a `Condition`, adds no step) | `CollectionContainsMatch` |
+| `run(effect)` | any other `Effect`, verbatim |
+
+`run(...)` keeps the builder open: non-pipeline effects (a `ShuffleLibraryEffect`, a damage effect)
+interleave without the builder needing a verb for everything. Optional secondary outputs
+(`storeRemainder`, `storeNonMatching`, `storeMovedAs`) are only serialized when the card actually
+requests the handle (`chooseExactlySplit`, `filterSplit`, `moveTracked`), keeping emitted JSON free
+of never-read writes.
+
+**Branch scoping** matches the engine's `EffectContext`: handles from the outer scope are visible
+inside `ifNotEmpty` / `forEachCaptured` blocks by plain lexical capture (branches don't start fresh
+scopes; nested *abilities* do). Branch bodies with one step stay bare; multiple steps wrap in a
+nested `CompositeEffect`. Nested scopes share the key counter, so auto-keys never collide.
+
+```kotlin
+// Branch-on-gathered (the PR #618 idiom):
+effect = Effects.Pipeline {
+    val drawn = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(1)))
+    reveal(drawn)
+    ifNotEmpty(drawn, filter = GameObjectFilter.Creature) {
+        toHand(drawn)
+    } orElse {
+        toGraveyard(drawn)
+    }
+}
+```
+
+A card needing a genuinely **new step semantic** (a new capture kind, a new decision shape) still
+adds the `Effect` + executor first (`add-feature`); the builder only composes the existing
+vocabulary. The JSON/custom-card authoring path is unchanged — raw step types stay `@Serializable`
+with string keys, and `CardLinter` remains the backstop for that path and for anything the builder
+can't statically prevent (cross-trigger flows, `Self`-vs-`ContextTarget` inside `ForEach`).
 
 ---
 
@@ -3390,6 +3485,7 @@ the linter).
 | Card DSL           | `mtg-sdk/src/main/kotlin/.../dsl/CardBuilder.kt`                |
 | Effects            | `mtg-sdk/src/main/kotlin/.../dsl/Effects.kt`                    |
 | Effect patterns    | `mtg-sdk/src/main/kotlin/.../dsl/{Library,Hand,Group,Exile,CreatureType,Misc}Patterns.kt` |
+| Inline pipelines   | `mtg-sdk/src/main/kotlin/.../dsl/PipelineBuilder.kt`            |
 | Triggers           | `mtg-sdk/src/main/kotlin/.../dsl/Triggers.kt`                   |
 | Costs              | `mtg-sdk/src/main/kotlin/.../dsl/Costs.kt`                      |
 | Conditions         | `mtg-sdk/src/main/kotlin/.../dsl/Conditions.kt`                 |
