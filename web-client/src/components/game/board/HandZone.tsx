@@ -41,9 +41,22 @@ export function CardRow({
     return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
-  // Calculate available width for the hand (viewport - padding - zone piles on sides)
-  const sideZoneWidth = responsive.pileWidth + 20 // pile + margin
-  const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - (sideZoneWidth * 2)
+  // Calculate available width for the hand (viewport - padding - reserved sides).
+  // Desktop reserves the zone-pile column on both sides. On phones the piles
+  // sit above the hand row and the game log is hidden (see GameBoard), so the
+  // left side is nearly free — but the player's own hand must still clear the
+  // pass/auto button cluster in the bottom-right corner. Reserving
+  // asymmetrically shifts the fan left into the space the log used to take.
+  const isOwnHand = interactive && !faceDown
+  const leftReserve = responsive.isMobile ? 8 : responsive.pileWidth + 20 // pile + margin
+  const rightReserve = responsive.isMobile
+    ? (isOwnHand ? 110 : 8)
+    : responsive.pileWidth + 20
+  const availableWidth =
+    responsive.viewportWidth - (responsive.containerPadding * 2) - leftReserve - rightReserve
+  // Centering the fan with this much right margin places it exactly between
+  // the reserves (left edge ≥ leftReserve, right edge clear of the buttons).
+  const fanShift = rightReserve - leftReserve
 
   // Calculate card width that fits all cards (revealed + unrevealed + ghost)
   const totalCardCount = (faceDown ? zoneSize : cards.length) + ghostCards.length
@@ -85,6 +98,7 @@ export function CardRow({
         small={small}
         inverted={inverted}
         ghostCards={ghostCards}
+        shiftLeft={fanShift}
       />
     )
   }
@@ -151,6 +165,7 @@ export function HandFan({
   small,
   inverted = false,
   ghostCards = [],
+  shiftLeft = 0,
 }: {
   cards: readonly ClientCard[]
   placeholderCount?: number
@@ -163,6 +178,8 @@ export function HandFan({
   small: boolean
   inverted?: boolean
   ghostCards?: readonly ClientCard[]
+  /** Extra right margin: with flex centering, shifts the fan left by half this. */
+  shiftLeft?: number
 }) {
   const [, setHoveredIndex] = useState<number | null>(null)
 
@@ -221,6 +238,7 @@ export function HandFan({
         height: cardHeight + maxVerticalOffset + 40, // Extra space for hover lift
         marginBottom: inverted ? 0 : edgeMargin,
         marginTop: inverted ? edgeMargin : 0,
+        marginRight: shiftLeft > 0 ? shiftLeft : undefined,
       }}
     >
       {items.map((item, index) => {

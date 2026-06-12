@@ -700,19 +700,26 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               style={{
                 ...styles.floatingBarButton,
                 ...(passEnabled ? getPassButtonStyle() : {}),
-                width: 170,
-                height: 42,
-                padding: '0 24px',
+                // On phones the desktop-sized button dwarfs the other
+                // controls and covers the hand — let the label size it.
+                width: responsive.isMobile ? 'auto' : 170,
+                height: responsive.isMobile ? 28 : 42,
+                padding: responsive.isMobile ? '0 10px' : '0 24px',
                 color: passEnabled ? 'white' : '#555',
                 fontWeight: 600,
-                fontSize: responsive.fontSize.normal,
+                fontSize: responsive.isMobile ? 12 : responsive.fontSize.normal,
                 border: passEnabled ? `1px solid ${getPassButtonStyle().borderColor}` : '1px solid #333',
                 transition: 'background-color 0.2s, border-color 0.2s',
                 opacity: passEnabled ? 1 : 0.4,
                 cursor: passEnabled ? 'pointer' : 'default',
               }}
             >
-              {passEnabled ? getPassButtonLabel() : 'Pass'}
+              {(() => {
+                const label = passEnabled ? getPassButtonLabel() : 'Pass'
+                // "Pass to Attackers" is too wide for a phone — "→ Attackers"
+                // carries the same meaning in half the space.
+                return responsive.isMobile ? label.replace(/^Pass to /, '→ ') : label
+              })()}
             </button>
           </div>
         )
@@ -722,7 +729,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {!spectatorMode && viewingPlayer && !isInManaSelectionMode && !isInCounterDistMode && (
         <div style={{
           position: 'fixed',
-          bottom: responsive.isMobile ? 64 : 66,
+          bottom: responsive.isMobile ? 50 : 66,
           right: 16,
           display: 'flex',
           gap: 4,
@@ -1120,7 +1127,10 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {/* Dragged card overlay - hidden in spectator mode */}
       {!spectatorMode && <DraggedCardOverlay />}
       <CardPreview />
-      {!spectatorMode && <GameLog />}
+      {/* Hidden on phones (portrait): the bottom-left toggle steals the little
+          horizontal space the hand has, and the expanded panel is unusable at
+          that size anyway. */}
+      {!spectatorMode && !responsive.isMobile && <GameLog />}
 
       {/* Draw animations */}
       <DrawAnimations />

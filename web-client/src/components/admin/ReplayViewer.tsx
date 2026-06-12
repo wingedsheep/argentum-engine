@@ -6,6 +6,7 @@ import { CombatArrows } from '../combat/CombatArrows'
 import type { SpectatingState } from '@/store/slices'
 import { reconstructSnapshots, type ReplayData } from '@/replay/reconstructSnapshots.ts'
 import { buildReplayScenarioUrl } from '../scenario/shareScenario'
+import { useViewportSize } from '@/hooks/useResponsive.ts'
 
 // ============================================================================
 // Types
@@ -379,6 +380,11 @@ function ReplayView({
     return () => ro.disconnect()
   }, [])
 
+  // Same breakpoint as useResponsive's isMobile. The scenario/snapshot/share
+  // buttons don't fit the header on phones — hide them there (they're
+  // desktop-tooling features anyway).
+  const isMobile = useViewportSize().width < 640
+
   const [scenarioCopied, setScenarioCopied] = useState(false)
   const handleShareAsScenario = async () => {
     const url = buildReplayScenarioUrl(window.location.origin, snapshot.gameSessionId, currentStep)
@@ -462,27 +468,31 @@ function ReplayView({
               {snapshot.player1Name} vs {snapshot.player2Name}
             </span>
           </div>
-          <button
-            onClick={() => void handleShareAsScenario()}
-            style={styles.scenarioButton}
-            title="Copy a short link that drops you into this exact position — full board, hands, libraries, stack, targets and mana — to play it out yourself or against the AI."
-          >
-            {scenarioCopied ? 'Copied!' : 'Share as scenario'}
-          </button>
-          <button
-            onClick={() => void handleDownloadSnapshot()}
-            style={styles.scenarioButton}
-            title="Download this exact position as a snapshot file you can reload later from the Scenario Builder ('Load file')."
-          >
-            {downloaded ? 'Saved!' : 'Save snapshot'}
-          </button>
-          <button
-            onClick={() => void handleShareReplay()}
-            style={styles.shareReplayButton}
-            title="Copy a link to watch this replay."
-          >
-            {replayCopied ? 'Copied!' : 'Share replay'}
-          </button>
+          {!isMobile && (
+            <>
+              <button
+                onClick={() => void handleShareAsScenario()}
+                style={styles.scenarioButton}
+                title="Copy a short link that drops you into this exact position — full board, hands, libraries, stack, targets and mana — to play it out yourself or against the AI."
+              >
+                {scenarioCopied ? 'Copied!' : 'Share as scenario'}
+              </button>
+              <button
+                onClick={() => void handleDownloadSnapshot()}
+                style={styles.scenarioButton}
+                title="Download this exact position as a snapshot file you can reload later from the Scenario Builder ('Load file')."
+              >
+                {downloaded ? 'Saved!' : 'Save snapshot'}
+              </button>
+              <button
+                onClick={() => void handleShareReplay()}
+                style={styles.shareReplayButton}
+                title="Copy a link to watch this replay."
+              >
+                {replayCopied ? 'Copied!' : 'Share replay'}
+              </button>
+            </>
+          )}
         </div>
         <div style={styles.gameBoardContainer}>
           <GameBoard spectatorMode topOffset={headerHeight} />

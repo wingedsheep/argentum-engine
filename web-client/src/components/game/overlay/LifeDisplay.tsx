@@ -141,6 +141,12 @@ export function LifeDisplay({
   const roleColor = isPlayer ? 'rgba(74, 154, 234, 0.7)' : 'rgba(255, 158, 70, 0.8)'
   const roleBorder = isPlayer ? 'rgba(74, 154, 234, 0.35)' : 'rgba(255, 158, 70, 0.4)'
 
+  // On phones the side-by-side name labels push past the screen edges (the
+  // step strip leaves them no room) — show a small name *under* the orb
+  // instead, and drop the role tag (left/right position already says who's
+  // who).
+  const compactName = responsive.isMobile
+
   const nameLabel = (
     <div
       style={{
@@ -191,7 +197,7 @@ export function LifeDisplay({
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isDistributeTarget ? 4 : 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* Name on outer side: left of opponent's orb, right of player's orb */}
-        {!isPlayer && nameLabel}
+        {!isPlayer && !compactName && nameLabel}
         <div
           data-player-id={playerId}
           data-life-id={playerId}
@@ -251,8 +257,28 @@ export function LifeDisplay({
             </div>
           )}
         </div>
-        {isPlayer && nameLabel}
+        {isPlayer && !compactName && nameLabel}
       </div>
+
+      {compactName && (
+        <span
+          title={playerName}
+          style={{
+            marginTop: 2,
+            maxWidth: 64,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.4px',
+            color: isPlayer ? '#4a9aea' : '#ff9e46',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          {nameText}
+        </span>
+      )}
 
       {/* Inline +/- controls for distribute mode */}
       {isDistributeTarget && (
