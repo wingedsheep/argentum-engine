@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 219 / 291
+**Implemented:** 221 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -114,8 +114,8 @@ starter-deck/special cards and basic lands.
 - [x] Claim the Precious
 - [x] Dunland Crebain
 - [x] Easterling Vanguard
-- [ ] Gollum, Patient Plotter
-- [ ] Gollum's Bite
+- [x] Gollum, Patient Plotter
+- [x] Gollum's Bite
 - [x] Gorbag of Minas Morgul
 - [x] Gothmog, Morgul Lieutenant
 - [x] Gríma Wormtongue

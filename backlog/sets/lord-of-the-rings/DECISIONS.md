@@ -121,3 +121,18 @@ entries below for the actual decisions.
   `DynamicAmounts.kt` facade, card + scenario test (1 Food when opp sacrifices, 0 when no creature),
   SDK ref. Note: 2-player → at most 1 sacrifice from the edict (each opponent sacrifices one).
 
+### Gollum's Bite + Gollum, Patient Plotter (Black) — Gap 11 OBSOLETE (no engine change)
+
+- **Finding:** Gap 11 (activated abilities from the graveyard) is fully engine-landed —
+  `ActivatedAbility.activateFromZone = Zone.GRAVEYARD`, `Costs.ExileSelf`, the dedicated
+  `GraveyardAbilityEnumerator`, and sorcery-speed gating all exist, with template cards Bonebind
+  Orator (exile-from-GY cost) and Undead Gladiator (sorcery-speed return-from-GY).
+- **Gollum's Bite** (Instant): `spell { Effects.ModifyStats(-2,-2, target) }` + a graveyard
+  `activatedAbility { cost = Composite(Mana("{3}{B}"), Costs.ExileSelf); activateFromZone = GRAVEYARD;
+  timing = SorcerySpeed; effect = TheRingTemptsYou() }`.
+- **Gollum, Patient Plotter** (Creature 3/1): `LeavesBattlefield → TheRingTemptsYou`, plus a graveyard
+  `activatedAbility { cost = Composite(Mana("{B}"), Costs.Sacrifice(Creature)); activateFromZone =
+  GRAVEYARD; timing = SorcerySpeed; effect = Move(Self, Zone.HAND) }`. Scenario test (GameTestDriver,
+  mirroring UndeadGladiatorTest) proves return-from-GY by sacrifice + sorcery-speed restriction.
+- No new SDK; one commit per card.
+
