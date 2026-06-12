@@ -49,3 +49,18 @@ entries below for the actual decisions.
 - **Composition:** `TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.ownedByYou()))`
   + `Effects.Composite(Move EXILE, Move BATTLEFIELD, TheRingTemptsYou)`.
 
+### Dreadful as the Storm (Blue) — Gap 13, set base P/T (facade only)
+
+- **Oracle:** "Target creature has base power and toughness 5/5 until end of turn. The Ring tempts you."
+- **Decision:** Gap 13 was engine-landed already — `SetBasePowerToughnessEffect` and its registered
+  `SetBasePowerToughnessExecutor` exist; only the DSL facade was missing. Added
+  `Effects.SetBasePowerAndToughness(power, toughness, target, duration)` (mirrors `SetBasePower`).
+  Card composes it (5/5, EndOfTurn) with `Effects.TheRingTemptsYou()`. This also partially unblocks
+  Frodo, Sauron's Bane. Scenario test asserts base P/T 5/5.
+- **Triage note:** the parallel Explore triage over-claimed composability — Elrond (needs an
+  "Nth ability resolution this turn" condition), Dúnedain Rangers (needs a player-level "you control a
+  Ring-bearer" condition), Frodo Baggins (needs a conditional "must be blocked" static), Ringwraiths
+  (graveyard-functional trigger) all genuinely need new primitives. The TODO gap list is largely
+  ACCURATE; only Gap 14 (flicker) and Gap 13 (set base P/T, facade) were obsolete. **Do not trust a
+  COMPOSABLE verdict without grepping the named primitive.**
+

@@ -2550,6 +2550,50 @@
     ]
 }
 
+// Dreadful as the Storm
+{
+    "name": "Dreadful as the Storm",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature has base power and toughness 5/5 until end of turn. The Ring tempts you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetBasePowerToughness",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    },
+                    "power": 5,
+                    "toughness": 5,
+                    "duration": "EndOfTurn"
+                },
+                "TheRingTemptsYou"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Daniel Correia",
+        "flavorText": "\"I shall not be dark, but beautiful and terrible as the Morning and the Night! All shall love me and despair!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6e0b4ff-85b5-485f-a78f-1a58bb343238.jpg?1686968073"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dunland Crebain
 {
     "name": "Dunland Crebain",

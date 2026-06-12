@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeSaddledEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
+import com.wingedsheep.sdk.scripting.effects.SetBasePowerToughnessEffect
 
 import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
@@ -1195,6 +1196,17 @@ object Effects {
         power: DynamicAmount,
         duration: Duration = Duration.Permanent
     ): Effect = SetBasePowerEffect(target, power, duration)
+
+    /**
+     * Set a creature's base power AND toughness to fixed values (Layer 7b, set values).
+     * "Target creature has base power and toughness 5/5 until end of turn." (Dreadful as the Storm)
+     */
+    fun SetBasePowerAndToughness(
+        power: Int,
+        toughness: Int,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = SetBasePowerToughnessEffect(target, power, toughness, duration)
 
     // =========================================================================
     // Mana Effects
