@@ -68,28 +68,19 @@ val GrubsCommand = card("Grub's Command") {
             }
             mode("Target player mills five cards, then puts each Goblin card milled this way into their hand") {
                 target("target player", TargetPlayer())
-                effect = Effects.Composite(
-                    listOf(
-                        GatherCardsEffect(
-                            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5), Player.ContextPlayer(0)),
-                            storeAs = "milled"
-                        ),
-                        MoveCollectionEffect(
-                            from = "milled",
-                            destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0))
-                        ),
-                        SelectFromCollectionEffect(
-                            from = "milled",
-                            selection = SelectionMode.All,
-                            filter = GameObjectFilter.Any.withSubtype("Goblin"),
-                            storeSelected = "milledGoblins"
-                        ),
-                        MoveCollectionEffect(
-                            from = "milledGoblins",
-                            destination = CardDestination.ToZone(Zone.HAND, Player.ContextPlayer(0))
-                        )
+                effect = Effects.Pipeline {
+                    val milled = gather(
+                        CardSource.TopOfLibrary(DynamicAmount.Fixed(5), Player.ContextPlayer(0)),
+                        name = "milled"
                     )
-                )
+                    move(milled, CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)))
+                    val milledGoblins = selectAll(
+                        from = milled,
+                        filter = GameObjectFilter.Any.withSubtype("Goblin"),
+                        name = "milledGoblins"
+                    )
+                    move(milledGoblins, CardDestination.ToZone(Zone.HAND, Player.ContextPlayer(0)))
+                }
             }
         }
     }

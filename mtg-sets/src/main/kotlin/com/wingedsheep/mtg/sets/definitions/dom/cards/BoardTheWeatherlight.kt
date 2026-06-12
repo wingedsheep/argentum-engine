@@ -6,10 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -30,31 +26,18 @@ val BoardTheWeatherlight = card("Board the Weatherlight") {
     oracleText = "Look at the top five cards of your library. You may reveal a historic card from among them and put it into your hand. Put the rest on the bottom of your library in a random order. (A card is historic if it has the legendary supertype, the artifact card type, or the Saga subtype.)"
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Historic,
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    prompt = "You may reveal a historic card and put it into your hand",
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
-                )
+        effect = Effects.Pipeline {
+            val looked = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(5)), name = "looked")
+            val (kept, rest) = chooseUpToSplit(
+                1, from = looked,
+                filter = GameObjectFilter.Historic,
+                prompt = "You may reveal a historic card and put it into your hand",
+                showAllCards = true,
+                name = "kept", remainderName = "rest"
             )
-        )
+            move(kept, CardDestination.ToZone(Zone.HAND))
+            move(rest, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom))
+        }
     }
 
     metadata {

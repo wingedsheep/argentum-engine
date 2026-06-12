@@ -11,11 +11,7 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -93,31 +89,25 @@ val UginEyeOfTheStorms = card("Ugin, Eye of the Storms") {
     loyaltyAbility(-11) {
         description = "Search your library for any number of colorless nonland cards, exile them, then " +
             "shuffle. Until end of turn, you may cast those cards without paying their mana costs."
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        Zone.LIBRARY,
-                        Player.You,
-                        GameObjectFilter(cardPredicates = listOf(CardPredicate.IsColorless, CardPredicate.IsNonland))
-                    ),
-                    storeAs = "searchable"
+        effect = Effects.Pipeline {
+            val searchable = gather(
+                CardSource.FromZone(
+                    Zone.LIBRARY,
+                    Player.You,
+                    GameObjectFilter(cardPredicates = listOf(CardPredicate.IsColorless, CardPredicate.IsNonland))
                 ),
-                SelectFromCollectionEffect(
-                    from = "searchable",
-                    selection = SelectionMode.ChooseAnyNumber,
-                    storeSelected = "exiled",
-                    prompt = "Search your library for any number of colorless nonland cards"
-                ),
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE, Player.You)
-                ),
-                ShuffleLibraryEffect(),
-                Effects.GrantMayPlayFromExile("exiled", MayPlayExpiry.EndOfTurn),
-                Effects.GrantPlayWithoutPayingCost("exiled")
+                name = "searchable"
             )
-        )
+            val exiled = chooseAnyNumber(
+                from = searchable,
+                prompt = "Search your library for any number of colorless nonland cards",
+                name = "exiled"
+            )
+            move(exiled, destination = CardDestination.ToZone(Zone.EXILE, Player.You))
+            run(ShuffleLibraryEffect())
+            run(Effects.GrantMayPlayFromExile("exiled", MayPlayExpiry.EndOfTurn))
+            run(Effects.GrantPlayWithoutPayingCost("exiled"))
+        }
     }
 
     metadata {

@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -10,9 +11,6 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -45,22 +43,16 @@ val ZeroPointBallad = card("Zero Point Ballad") {
                         ComparisonOperator.GTE,
                         DynamicAmount.Fixed(6)
                     ),
-                    effect = Effects.Composite(
-                        listOf(
-                            SelectFromCollectionEffect(
-                                from = "destroyed",
-                                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                chooser = Chooser.Controller,
-                                // Oracle reads "a creature card" — tokens cease to exist on death.
-                                filter = GameObjectFilter.Creature.nontoken(),
-                                storeSelected = "reanimated"
-                            ),
-                            MoveCollectionEffect(
-                                from = "reanimated",
-                                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
-                            )
+                    effect = Effects.Pipeline {
+                        val reanimated = chooseExactly(
+                            1, from = CollectionSlot("destroyed"),
+                            chooser = Chooser.Controller,
+                            // Oracle reads "a creature card" — tokens cease to exist on death.
+                            filter = GameObjectFilter.Creature.nontoken(),
+                            name = "reanimated"
                         )
-                    )
+                        move(reanimated, destination = CardDestination.ToZone(Zone.BATTLEFIELD))
+                    }
                 )
             )
         )

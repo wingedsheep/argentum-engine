@@ -9,13 +9,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -62,26 +58,23 @@ val GoliathDaydreamer = card("Goliath Daydreamer") {
     // Casting mid-resolution also ignores card-type timing (a sorcery is cast in combat).
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.EXILE,
-                        player = Player.You,
-                        filter = GameObjectFilter.Nonland.withCounter(Counters.DREAM)
-                    ),
-                    storeAs = "dreamPool"
+        effect = Effects.Pipeline {
+            val dreamPool = gather(
+                CardSource.FromZone(
+                    zone = Zone.EXILE,
+                    player = Player.You,
+                    filter = GameObjectFilter.Nonland.withCounter(Counters.DREAM)
                 ),
-                SelectFromCollectionEffect(
-                    from = "dreamPool",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "toCast",
-                    prompt = "You may cast a spell with a dream counter on it without paying its mana cost.",
-                    selectedLabel = "Cast for free",
-                ),
-                CastFromCollectionWithoutPayingCostEffect(from = "toCast")
+                name = "dreamPool"
             )
-        )
+            val toCast = chooseUpTo(
+                1, from = dreamPool,
+                prompt = "You may cast a spell with a dream counter on it without paying its mana cost.",
+                selectedLabel = "Cast for free",
+                name = "toCast"
+            )
+            run(CastFromCollectionWithoutPayingCostEffect(from = "toCast"))
+        }
     }
 
     metadata {

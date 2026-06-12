@@ -9,8 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -38,18 +36,10 @@ val PrecognitionField = card("Precognition Field") {
 
     activatedAbility {
         cost = Costs.Mana("{3}")
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
-                    storeAs = "exiled"
-                ),
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                )
-            )
-        )
+        effect = Effects.Pipeline {
+            val exiled = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(1)), name = "exiled")
+            move(exiled, CardDestination.ToZone(Zone.EXILE))
+        }
     }
 
     metadata {

@@ -48,57 +48,51 @@ val GlacialDragonhunt = card("Glacial Dragonhunt") {
         "Then exile this spell.)"
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                Effects.DrawCards(1),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+        effect = Effects.Pipeline {
+            run(Effects.DrawCards(1))
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.You),
+                name = "hand"
+            )
+            val discarded = chooseUpTo(
+                1,
+                from = hand,
+                chooser = Chooser.Controller,
+                prompt = "You may discard a card",
+                name = "discarded"
+            )
+            move(
+                discarded,
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                moveType = MoveType.Discard
+            )
+            // Reflexive trigger: only when a nonland was discarded do we pick a target creature
+            // and deal it 3 damage.
+            ifNotEmpty(discarded, filter = GameObjectFilter.Nonland) {
+                val creatures = gather(
+                    CardSource.BattlefieldMatching(
+                        filter = GameObjectFilter.Creature,
+                        player = Player.Each
+                    ),
+                    name = "creatures"
+                )
+                chooseExactly(
+                    1,
+                    from = creatures,
                     chooser = Chooser.Controller,
-                    storeSelected = "discarded",
-                    prompt = "You may discard a card"
-                ),
-                MoveCollectionEffect(
-                    from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
-                    moveType = MoveType.Discard
-                ),
-                // Reflexive trigger: only when a nonland was discarded do we pick a target creature
-                // and deal it 3 damage.
-                ConditionalOnCollectionEffect(
-                    collection = "discarded",
-                    filter = GameObjectFilter.Nonland,
-                    ifNotEmpty = Effects.Composite(
-                        listOf(
-                            GatherCardsEffect(
-                                source = CardSource.BattlefieldMatching(
-                                    filter = GameObjectFilter.Creature,
-                                    player = Player.Each
-                                ),
-                                storeAs = "creatures"
-                            ),
-                            SelectFromCollectionEffect(
-                                from = "creatures",
-                                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                chooser = Chooser.Controller,
-                                storeSelected = "damageTarget",
-                                prompt = "Choose a creature to deal 3 damage to",
-                                useTargetingUI = true
-                            ),
-                            Effects.DealDamage(
-                                3,
-                                EffectTarget.PipelineTarget("damageTarget"),
-                                damageSource = EffectTarget.Self
-                            )
-                        )
+                    prompt = "Choose a creature to deal 3 damage to",
+                    useTargetingUI = true,
+                    name = "damageTarget"
+                )
+                run(
+                    Effects.DealDamage(
+                        3,
+                        EffectTarget.PipelineTarget("damageTarget"),
+                        damageSource = EffectTarget.Self
                     )
                 )
-            )
-        )
+            }
+        }
     }
 
     keywordAbility(KeywordAbility.harmonize("{4}{U}{R}"))

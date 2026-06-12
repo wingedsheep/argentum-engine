@@ -8,11 +8,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -38,35 +34,33 @@ val CabalInterrogator = card("Cabal Interrogator") {
         cost = Costs.Composite(Costs.Mana("{X}{B}"), Costs.Tap)
         timing = TimingRule.SorcerySpeed
         target = TargetPlayer()
-        effect = Effects.Composite(
-            listOf(
-                // 1. Gather all cards from target player's hand
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                    storeAs = "hand"
-                ),
-                // 2. Target player chooses X cards to reveal (auto-selects all if ≤X, skips if empty)
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.XValue),
-                    chooser = Chooser.TargetPlayer,
-                    storeSelected = "revealed"
-                ),
-                // 3. Controller chooses 1 to discard
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    storeSelected = "toDiscard"
-                ),
-                // 4. Move chosen card to target player's graveyard
-                MoveCollectionEffect(
-                    from = "toDiscard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                    moveType = MoveType.Discard
-                )
+        effect = Effects.Pipeline {
+            // 1. Gather all cards from target player's hand
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
+                name = "hand"
             )
-        )
+            // 2. Target player chooses X cards to reveal (auto-selects all if ≤X, skips if empty)
+            val revealed = chooseExactly(
+                DynamicAmount.XValue,
+                from = hand,
+                chooser = Chooser.TargetPlayer,
+                name = "revealed"
+            )
+            // 3. Controller chooses 1 to discard
+            val toDiscard = chooseExactly(
+                1,
+                from = revealed,
+                chooser = Chooser.Controller,
+                name = "toDiscard"
+            )
+            // 4. Move chosen card to target player's graveyard
+            move(
+                toDiscard,
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                moveType = MoveType.Discard
+            )
+        }
     }
 
     metadata {
