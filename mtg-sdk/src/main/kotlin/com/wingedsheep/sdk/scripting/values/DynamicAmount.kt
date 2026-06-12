@@ -1048,4 +1048,16 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         }
     }
 
+    /**
+     * Number of permanents sacrificed by the current resolving effect ("this way"). Reads the
+     * effect context's `sacrificedPermanents` snapshot list, populated when an edict (e.g. "each
+     * opponent sacrifices a creature") resolves earlier in the same composite. Used by "Create a
+     * Food token for each creature sacrificed this way" (Voracious Fell Beast).
+     */
+    @SerialName("PermanentsSacrificedThisWay")
+    @Serializable
+    data object PermanentsSacrificedThisWay : DynamicAmount {
+        override val description: String = "the number of permanents sacrificed this way"
+    }
+
 }

@@ -446,4 +446,12 @@ object DynamicAmounts {
      */
     fun creaturesThatCrewedOrSaddledThisTurn(): DynamicAmount =
         DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn
+
+    /**
+     * Number of permanents sacrificed by the current resolving effect ("this way"), read from the
+     * effect context's `sacrificedPermanents`. See [DynamicAmount.PermanentsSacrificedThisWay]. Used
+     * by "Create a Food token for each creature sacrificed this way" (Voracious Fell Beast).
+     */
+    fun permanentsSacrificedThisWay(): DynamicAmount =
+        DynamicAmount.PermanentsSacrificedThisWay
 }

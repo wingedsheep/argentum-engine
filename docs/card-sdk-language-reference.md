@@ -3313,6 +3313,12 @@ Numbers computed at resolution time.
   plain `Count` over `crewedOrSaddledSourceThisTurn()` can't express that. Evaluates to 0 with no
   source / no component. For *which* creatures (targeting/gathering) use the
   `CrewedOrSaddledSourceThisTurn` state predicate instead.
+- `PermanentsSacrificedThisWay` (facade `DynamicAmounts.permanentsSacrificedThisWay()`) — number of
+  permanents sacrificed by the current resolving effect ("this way"); reads the effect context's
+  `sacrificedPermanents` snapshot list (populated when an edict resolves earlier in the same
+  composite — the sibling-rider wiring from the sacrifice-snapshot work). Used by "each opponent
+  sacrifices a creature … create a Food token for each creature sacrificed this way" (Voracious Fell
+  Beast). Evaluates to 0 when nothing was sacrificed.
 
 ### Counters
 

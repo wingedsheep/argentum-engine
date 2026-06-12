@@ -470,6 +470,8 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            is DynamicAmount.PermanentsSacrificedThisWay -> context.sacrificedPermanents.size
+
         }
     }
 

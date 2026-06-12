@@ -108,3 +108,16 @@ entries below for the actual decisions.
   via the equip activated ability, asserts block illegal vs a nonbasic land and legal vs only basics),
   SDK reference.
 
+### Voracious Fell Beast (Black) — Gap 16 (count of permanents sacrificed by an effect)
+
+- **Oracle:** "Flying. When this creature enters, each opponent sacrifices a creature of their choice.
+  Create a Food token for each creature sacrificed this way."
+- **Decision:** added `DynamicAmount.PermanentsSacrificedThisWay` (facade
+  `DynamicAmounts.permanentsSacrificedThisWay()`) → reads `EffectContext.sacrificedPermanents.size`.
+  The Gap-17 sacrifice-snapshot work already injects sacrifices into the resolving context so a
+  sibling rider can read them. Card = ETB `Effects.Sacrifice(Creature, 1, EachOpponent)` then
+  `CreatePredefinedTokenEffect("Food", dynamicCount = permanentsSacrificedThisWay())`.
+- **Touched:** `DynamicAmount.kt`, `DynamicAmountEvaluator.kt` (exhaustive when),
+  `DynamicAmounts.kt` facade, card + scenario test (1 Food when opp sacrifices, 0 when no creature),
+  SDK ref. Note: 2-player → at most 1 sacrifice from the edict (each opponent sacrifices one).
+
