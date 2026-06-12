@@ -173,3 +173,45 @@ entries below for the actual decisions.
   (matcher unit test: pays legendary, not non-legendary, not abilities), SDK ref. ManaRestriction is
   server-side only → no client change.
 
+## Verified gap-status of remaining cards (probed, NOT yet implemented)
+
+These were checked against the real SDK this session. Each needs the **small** new primitive noted
+(the rest composes), unless marked bigger. Use this to resume without re-probing:
+
+- **Boromir, Warden of the Tower** — needs a *triggering-spell*-relative "no mana was spent to cast it"
+  condition. `Conditions.NoManaSpentToCast` exists but is SOURCE-relative (reads the ability source's
+  own cast record), so it can't gate on the opponent's triggering spell. `Effects.CounterTriggeringSpell()`
+  and group-indestructible (`ForEachInGroup(GroupFilter.AllCreaturesYouControl, GrantKeyword(INDESTRUCTIBLE))`)
+  both exist. ADD: a trigger-spell-relative no-mana-spent condition.
+- **Frodo Baggins** — needs a `MustBeBlocked` STATIC ability (only `MustBlock` static + `MustBeBlockedEffect`
+  effect exist) to wrap in `ConditionalStaticAbility(_, Conditions.SourceIsRingBearer)`. ETB-tempt-on-legendary
+  composes.
+- **Dúnedain Rangers** + **Frodo Baggins (tempt)** — need a Ring-bearer `GameObjectFilter`/predicate for a
+  player-level "you (don't) control a Ring-bearer" condition. None exists (only source-level
+  `SourceIsRingBearer`). ADD: a `RingBearer` filter predicate.
+- **Barrow-Blade** — `Triggers.BlocksOrBecomesBlockedBy(filter)` + `Effects.RemoveAllAbilities(TriggeringEntity)`
+  exist, but the facade hardcodes `binding = SELF`; needs an ATTACHED binding (for the equipped creature) and
+  the detector must populate `triggeringEntity` = the partner under ATTACHED. ADD/verify: binding param +
+  detector support.
+- **Riders of the Mark** — Affinity(`KeywordAbility.AffinityForSubtype(Subtype.HUMAN)`), trample/haste,
+  `SourceAttackedThisTurn`, ReturnToHand(Self) all exist; the subtlety is "create tokens = its toughness"
+  AFTER bouncing itself (last-known toughness once it leaves). Needs a last-known-toughness capture (or a
+  reflexive that reads it before the move).
+- **Mount Doom** — needs "destroy all creatures except up to two chosen" (no destroy-all-except primitive).
+- **The Grey Havens** — needs "add one mana of a color among cards in a zone matching a filter" (graveyard
+  legendary-creature colors) mana ability.
+- **Sting, the Glinting Dagger** — needs a static granting a keyword conditioned on "blocking or blocked by a
+  creature matching a filter (Goblin/Orc)" (Gap 29).
+- **Shadowfax** — needs "put a creature from hand onto the battlefield tapped AND attacking" (combat-assignment
+  on a put-from-hand) + power comparator.
+- **Bewitching Leechcraft** — needs a custom untap-replacement ("if it would untap, remove a +1/+1 counter
+  instead; if you do, untap it").
+- **Ent-Draught Basin** / **Grishnákh** — both blocked on the same gap: a TARGET filter referencing a dynamic
+  value (the paid X / the amassed Army's power) DURING targeting. `{X}` in activated cost itself works.
+- **Glamdring / Galadriel of Lothlórien / Press the Enemy / Flame of Anor** — `CastFromCollectionWithoutPayingCost`
+  and `MayCastWithoutPayingManaCost` exist; the open question is the dynamic MV/zone filters and (Galadriel)
+  a "reveal top, if land put onto battlefield tapped" pattern — verify next session.
+
+Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T facade), 14 (flicker),
+21 (graveyard-triggered), 25 ({X} in activated cost), 22-partial (added LegendarySpellsOnly).
+
