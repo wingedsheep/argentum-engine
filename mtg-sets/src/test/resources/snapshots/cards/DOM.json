@@ -5523,7 +5523,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": {
                             "statePredicates": [
                                 {

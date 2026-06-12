@@ -350,7 +350,6 @@ data class ForEachContinuation(
  * @property sourceId The spell/ability that caused this effect
  * @property sourceName Name of the source for display
  * @property controllerId The controller of the effect
- * @property opponentId The opponent (for effect context)
  * @property xValue The X value (if applicable)
  * @property targets The chosen targets (for effect context)
  * @property phase Current phase of the repeat loop

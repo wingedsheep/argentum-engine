@@ -79,7 +79,6 @@ class TargetValidator {
                         val context = EffectContext(
                             sourceId = sourceId,
                             controllerId = casterId,
-                            opponentId = state.getOpponent(casterId),
                             xValue = xValue
                         )
                         DynamicAmountEvaluator().evaluate(state, dyn, context).coerceAtLeast(0)

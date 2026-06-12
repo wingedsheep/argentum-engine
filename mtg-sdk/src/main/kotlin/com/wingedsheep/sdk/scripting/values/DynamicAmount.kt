@@ -195,7 +195,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * Examples:
      * ```kotlin
      * LifeTotal(Player.You)       // your life total
-     * LifeTotal(Player.Opponent)  // opponent's life total
+     * LifeTotal(Player.TargetOpponent)  // target opponent's life total
      * ```
      */
     @SerialName("LifeTotal")
@@ -414,7 +414,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
 
     /**
      * Multiply a dynamic amount by a fixed multiplier.
-     * Example: Multiply(AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()), 3)
+     * Example: Multiply(AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature.attacking()), 3)
      */
     @SerialName("Multiply")
     @Serializable
@@ -554,7 +554,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 Zone.BATTLEFIELD -> {
                     when (player) {
                         Player.You -> append("you control")
-                        Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                        Player.TargetOpponent -> append("${player.description} controls")
                         Player.Each -> append("on the battlefield")
                         else -> append("${player.description} controls")
                     }
@@ -658,7 +658,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
             append(" ")
             when (player) {
                 Player.You -> append("you control")
-                Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                Player.TargetOpponent -> append("${player.description} controls")
                 Player.Each -> append("on the battlefield")
                 else -> append("${player.description} controls")
             }

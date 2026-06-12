@@ -391,7 +391,7 @@ data class PlayersCantCastSpells(
     override val description: String = buildString {
         when (affected) {
             is Player.You -> append("You can't cast ")
-            is Player.Opponent, is Player.EachOpponent -> append("Your opponents can't cast ")
+            is Player.EachOpponent -> append("Your opponents can't cast ")
             else -> append("${affected.description.replaceFirstChar { it.uppercase() }} can't cast ")
         }
         append(if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells")

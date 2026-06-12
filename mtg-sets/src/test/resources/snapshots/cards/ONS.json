@@ -2248,7 +2248,7 @@
                     "filter": "creature",
                     "target": {
                         "type": "PlayerRef",
-                        "player": "Opponent"
+                        "player": "DefendingPlayer"
                     }
                 }
             }
@@ -2386,7 +2386,7 @@
             {
                 "type": "EntersWithChoice",
                 "choiceType": "CREATURE_TYPE",
-                "chooser": "Opponent"
+                "chooser": "AnOpponent"
             }
         ]
     },
@@ -5243,7 +5243,7 @@
                         "type": "Divide",
                         "numerator": {
                             "type": "LifeTotal",
-                            "player": "Opponent"
+                            "player": "DefendingPlayer"
                         },
                         "denominator": {
                             "type": "Fixed",
@@ -5252,7 +5252,7 @@
                     },
                     "target": {
                         "type": "PlayerRef",
-                        "player": "Opponent"
+                        "player": "DefendingPlayer"
                     }
                 }
             }
@@ -12582,7 +12582,7 @@
                         },
                         "newController": {
                             "type": "PlayerRef",
-                            "player": "Opponent"
+                            "player": "AnOpponent"
                         }
                     }
                 },
@@ -14277,7 +14277,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -15591,7 +15591,7 @@
                     "source": {
                         "type": "FromZone",
                         "zone": "Hand",
-                        "player": "Opponent"
+                        "player": "AnOpponent"
                     },
                     "storeAs": "hand"
                 },
@@ -15615,7 +15615,7 @@
                     "destination": {
                         "type": "ToZone",
                         "zone": "Graveyard",
-                        "player": "Opponent"
+                        "player": "AnOpponent"
                     },
                     "moveType": "Discard"
                 },
@@ -17304,7 +17304,7 @@
                             "type": "Compare",
                             "left": {
                                 "type": "AggregateBattlefield",
-                                "player": "Opponent",
+                                "player": "EachOpponent",
                                 "filter": "land"
                             },
                             "operator": "GT",

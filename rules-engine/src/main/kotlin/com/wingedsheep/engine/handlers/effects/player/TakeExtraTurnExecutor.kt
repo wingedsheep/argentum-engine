@@ -14,8 +14,8 @@ import kotlin.reflect.KClass
  * Executor for TakeExtraTurnEffect.
  * "Take an extra turn after this one."
  *
- * In a 2-player game, this is implemented by making the opponent skip their next turn,
- * which effectively gives the caster an extra turn.
+ * Implemented by making every other player skip their next turn, which inserts one
+ * extra turn for the taker regardless of player count.
  *
  * If loseAtEndStep is true (e.g., Last Chance), the caster will also lose the game
  * at the beginning of their next end step.
@@ -40,13 +40,16 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
             return EffectResult.success(state)
         }
 
-        // In a 2-player game, "take an extra turn" means the other player skips their next turn
-        val otherPlayerId = state.getOpponent(turnTakerId)
-            ?: return EffectResult.error(state, "No opponent found")
-
-        // Add SkipNextTurnComponent to the other player
-        var newState = state.updateEntity(otherPlayerId) { container ->
-            container.with(SkipNextTurnComponent)
+        // "Take an extra turn" is modeled as every other player skipping their next turn,
+        // which inserts one extra turn for the taker regardless of player count.
+        val otherPlayerIds = state.getOpponents(turnTakerId)
+        if (otherPlayerIds.isEmpty()) {
+            return EffectResult.error(state, "No opponent found")
+        }
+        var newState = otherPlayerIds.fold(state) { acc, otherPlayerId ->
+            acc.updateEntity(otherPlayerId) { container ->
+                container.with(SkipNextTurnComponent)
+            }
         }
 
         // If loseAtEndStep is true, mark the turn-taker to lose at their next end step

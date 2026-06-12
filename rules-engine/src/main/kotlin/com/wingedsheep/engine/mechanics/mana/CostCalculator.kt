@@ -272,7 +272,7 @@ class CostCalculator(
                 // Player-scoped conditions ("during your turn", "you've cast another spell", ...)
                 // evaluate against the caster. The cost modifier's source is a non-spell permanent
                 // (or the spell card itself for SelfCast), neither of which the condition needs.
-                val ctx = EffectContext(sourceId = null, controllerId = casterId, opponentId = null)
+                val ctx = EffectContext(sourceId = null, controllerId = casterId)
                 conditionEvaluator.evaluate(state, gating.condition, ctx)
             }
         }

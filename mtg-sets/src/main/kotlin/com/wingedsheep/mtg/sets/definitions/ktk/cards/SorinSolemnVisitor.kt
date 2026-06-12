@@ -72,7 +72,7 @@ val SorinSolemnVisitor = card("Sorin, Solemn Visitor") {
                 effect = ForceSacrificeEffect(
                     filter = GameObjectFilter.Creature,
                     count = 1,
-                    target = EffectTarget.PlayerRef(Player.Opponent)
+                    target = EffectTarget.PlayerRef(Player.TriggeringPlayer)
                 )
             ),
             descriptionOverride = "At the beginning of each opponent's upkeep, that player sacrifices a creature."

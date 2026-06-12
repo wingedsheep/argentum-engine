@@ -81,7 +81,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
                 spellEffect = DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller),
                 spellName = "X Bolt"
             ),
-            EffectContext(sourceId = spellEntity, controllerId = p1, opponentId = null)
+            EffectContext(sourceId = spellEntity, controllerId = p1)
         )
 
     fun copyComponent(state: GameState): SpellOnStackComponent {

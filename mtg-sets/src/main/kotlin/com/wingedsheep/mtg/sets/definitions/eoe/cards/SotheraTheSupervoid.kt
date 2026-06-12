@@ -74,7 +74,7 @@ val SotheraTheSupervoid = card("Sothera, the Supervoid") {
         triggerCondition = AnyCondition(
             listOf(
                 Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature, negate = true),
-                Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Creature, negate = true)
+                Exists(Player.EachOpponent, Zone.BATTLEFIELD, GameObjectFilter.Creature, negate = true)
             )
         )
         effect = Effects.Composite(

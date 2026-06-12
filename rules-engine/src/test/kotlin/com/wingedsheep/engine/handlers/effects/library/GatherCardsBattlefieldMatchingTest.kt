@@ -73,7 +73,6 @@ class GatherCardsBattlefieldMatchingTest : FunSpec({
     fun context(controllerId: EntityId) = EffectContext(
         sourceId = null,
         controllerId = controllerId,
-        opponentId = opponentId
     )
 
     fun gatherEffect(

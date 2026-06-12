@@ -26,11 +26,38 @@ sealed interface Player {
         override val description: String = "you"
     }
 
-    /** Any single opponent (not targeted) */
-    @SerialName("Opponent")
+    /**
+     * A genuinely non-targeted "an opponent" — used only where the printed text has a
+     * single opponent act without targeting them (a chooser: "an opponent chooses a
+     * creature type", "choose ... an opponent"). The engine currently resolves this to
+     * the controller's first opponent in turn order; the proper multiplayer flow (the
+     * controller picks which opponent) is tracked in `backlog/multiplayer.md`.
+     *
+     * Do NOT use this for:
+     * - "target opponent" → [TargetOpponent]
+     * - "each opponent" / "your opponents" / "an opponent controls" (exists/aggregation) → [EachOpponent]
+     * - "defending player" / combat-damage-to-a-player triggers → [DefendingPlayer]
+     * - "that player" in a per-opponent trigger ("at the beginning of each opponent's
+     *   upkeep, that player ...") → [TriggeringPlayer]
+     */
+    @SerialName("AnOpponent")
     @Serializable
-    data object Opponent : Player {
+    data object AnOpponent : Player {
         override val description: String = "an opponent"
+    }
+
+    /**
+     * The defending player, per CR 802.2a: the specific player the ability's source is
+     * attacking, determined per attacking creature — never "the opponent" via turn order.
+     * Resolves through the source's attack assignment (a creature attacking a planeswalker
+     * defends against that planeswalker's controller); for "deals combat damage to a
+     * player" triggers whose source has left combat before resolution, the damaged player
+     * is read from the trigger context as last-known information.
+     */
+    @SerialName("DefendingPlayer")
+    @Serializable
+    data object DefendingPlayer : Player {
+        override val description: String = "defending player"
     }
 
     /** All opponents */
@@ -151,7 +178,8 @@ sealed interface Player {
     val possessive: String
         get() = when (this) {
             You -> "your"
-            Opponent -> "opponent's"
+            AnOpponent -> "an opponent's"
+            DefendingPlayer -> "defending player's"
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
             Each -> "each player's"

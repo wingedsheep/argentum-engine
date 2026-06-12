@@ -1266,7 +1266,6 @@ class ClientStateTransformer(
             val context = EffectContext(
                 sourceId = spellEntityId,
                 controllerId = spellOnStack.casterId,
-                opponentId = state.getOpponent(spellOnStack.casterId),
                 xValue = spellOnStack.xValue,
                 wasKicked = spellOnStack.wasKicked,
                 wasBlightPaid = spellOnStack.wasBlightPaid,
@@ -1335,7 +1334,6 @@ class ClientStateTransformer(
         val context = EffectContext(
             sourceId = spellEntityId,
             controllerId = spellOnStack.casterId,
-            opponentId = state.getOpponent(spellOnStack.casterId),
             xValue = spellOnStack.xValue,
             sacrificedPermanents = spellOnStack.sacrificedPermanents,
             exiledCardCount = spellOnStack.exiledCardCount,
@@ -1428,7 +1426,6 @@ class ClientStateTransformer(
         val context = EffectContext(
             sourceId = abilityEntityId,
             controllerId = activated.controllerId,
-            opponentId = state.getOpponent(activated.controllerId),
             xValue = activated.xValue,
             sacrificedPermanents = activated.sacrificedPermanents,
             tappedPermanents = activated.tappedPermanents,
@@ -1476,7 +1473,6 @@ class ClientStateTransformer(
     ): EffectContext = EffectContext(
         sourceId = abilityEntityId,
         controllerId = triggered.controllerId,
-        opponentId = state.getOpponent(triggered.controllerId),
         xValue = triggered.xValue,
         triggerDamageAmount = triggered.triggerDamageAmount,
         triggerCounterCount = triggered.triggerCounterCount,
@@ -2517,7 +2513,6 @@ class ClientStateTransformer(
                 val context = com.wingedsheep.engine.handlers.EffectContext(
                     sourceId = null,
                     controllerId = controllerId,
-                    opponentId = state.turnOrder.firstOrNull { it != controllerId }
                 )
                 val evaluator = com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
                 val leftVal = evaluator.evaluate(state, condition.left, context)
@@ -2616,7 +2611,7 @@ class ClientStateTransformer(
 
         return ClientCombatState(
             attackingPlayerId = attackingPlayerId ?: state.activePlayerId ?: return null,
-            defendingPlayerId = defendingPlayerId ?: state.getOpponent(attackingPlayerId!!) ?: return null,
+            defendingPlayerId = defendingPlayerId ?: state.getOpponents(attackingPlayerId!!).firstOrNull() ?: return null,
             attackers = attackers,
             blockers = blockers
         )

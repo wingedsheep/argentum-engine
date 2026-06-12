@@ -111,7 +111,7 @@ class TemurBattlecrierTest : FunSpec({
                 modification = CostModification.ReduceGeneric(2),
                 gating = CostGating.OnlyIf(
                     Compare(
-                        DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature),
+                        DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature),
                         ComparisonOperator.GTE,
                         DynamicAmount.Fixed(3),
                     ),

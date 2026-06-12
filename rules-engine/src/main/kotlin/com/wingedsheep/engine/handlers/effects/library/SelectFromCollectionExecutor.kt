@@ -91,7 +91,7 @@ class SelectFromCollectionExecutor(
         // Resolve who makes the decision
         val decidingPlayerId = when (effect.chooser) {
             Chooser.Controller -> null // null = default to controller in createDecision
-            Chooser.Opponent -> context.opponentId
+            Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
                 ?: return EffectResult.error(state, "No opponent for Opponent chooser")
             Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
                 TargetResolutionUtils.run { it.toEntityId() }

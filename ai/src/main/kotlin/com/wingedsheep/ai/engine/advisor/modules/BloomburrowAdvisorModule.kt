@@ -5,6 +5,7 @@ import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.ai.engine.soleOpponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.Keyword
@@ -85,7 +86,7 @@ private fun handSize(state: GameState, playerId: EntityId): Int =
  * is devastating; giving one to an opponent with 5+ cards barely matters.
  */
 private fun giftPenalty(state: GameState, playerId: EntityId): Double {
-    val opponentId = state.getOpponent(playerId) ?: return 1.5
+    val opponentId = state.soleOpponent(playerId) ?: return 1.5
     val oppHand = handSize(state, opponentId)
     return when {
         oppHand == 0 -> 4.0   // hellbent opponent — huge cost to give them a card
@@ -376,7 +377,7 @@ object BoardWipeAdvisor : CardAdvisor {
     override fun evaluateCast(context: CastContext): Double? {
         val state = context.state
         val playerId = context.playerId
-        val opponentId = state.getOpponent(playerId) ?: return null
+        val opponentId = state.soleOpponent(playerId) ?: return null
         val projected = context.projected
 
         val myBoardValue = creatureBoardValue(state, projected, playerId)
@@ -424,7 +425,7 @@ object GiftRemovalAdvisor : CardAdvisor {
         // For Parting Gust: permanent exile (gift) is almost always better
         // than temporary exile (base), unless opponent is hellbent
         if (context.sourceCardName == "Parting Gust") {
-            val opponentId = state.getOpponent(playerId) ?: return null
+            val opponentId = state.soleOpponent(playerId) ?: return null
             val oppHand = handSize(state, opponentId)
             if (oppHand == 0) {
                 // Don't give a hellbent opponent a card for marginal upside
@@ -437,7 +438,7 @@ object GiftRemovalAdvisor : CardAdvisor {
         // Consider both life and opponent hand
         if (context.sourceCardName == "Nocturnal Hunger") {
             val myLife = lifeTotal(state, playerId)
-            val opponentId = state.getOpponent(playerId) ?: return null
+            val opponentId = state.soleOpponent(playerId) ?: return null
             val oppHand = handSize(state, opponentId)
 
             val preferGift = when {

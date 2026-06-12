@@ -297,7 +297,6 @@ class CombatContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = null
         )
         newState = newState.addFloatingEffect(
             layer = Layer.ABILITY,
@@ -329,7 +328,6 @@ class CombatContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = null
         )
         val modification = if (continuation.amount == null) {
             // Prevent all damage from the chosen source for the rest of the turn (Samite Ministration)

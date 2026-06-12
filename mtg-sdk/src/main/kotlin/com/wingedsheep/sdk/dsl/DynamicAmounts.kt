@@ -193,7 +193,7 @@ object DynamicAmounts {
     // =========================================================================
 
     fun creaturesAttackingYou(multiplier: Int = 1): DynamicAmount {
-        val base = battlefield(Player.Opponent, GameObjectFilter.Creature.attacking()).count()
+        val base = battlefield(Player.EachOpponent, GameObjectFilter.Creature.attacking()).count()
         return if (multiplier == 1) base else DynamicAmount.Multiply(base, multiplier)
     }
 

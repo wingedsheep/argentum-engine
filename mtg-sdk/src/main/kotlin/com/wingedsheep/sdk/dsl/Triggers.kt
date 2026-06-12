@@ -661,7 +661,7 @@ object Triggers {
      * Whenever an opponent draws a card. Fires once per card an opponent draws (CR 121.2).
      */
     val OpponentDraws: TriggerSpec = TriggerSpec(
-        event = DrawEvent(Player.Opponent),
+        event = DrawEvent(Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 
@@ -671,7 +671,7 @@ object Triggers {
      * Orcish Bowmasters / A-Orcish Bowmasters.
      */
     val OpponentDrawsExceptFirstEachDrawStep: TriggerSpec = TriggerSpec(
-        event = DrawEvent(Player.Opponent, exceptFirstInDrawStep = true),
+        event = DrawEvent(Player.EachOpponent, exceptFirstInDrawStep = true),
         binding = TriggerBinding.ANY
     )
 
@@ -827,7 +827,7 @@ object Triggers {
     // -------------------------------------------------------------------------
     // Spell cast by another player (any player / an opponent).
     //
-    // `Player.Each` / `Player.Opponent` are matched at runtime by
+    // `Player.Each` / `Player.EachOpponent` are matched at runtime by
     // `TriggerMatcher.matchesPlayer`. Bind the payoff to the caster with
     // `Player.TriggeringPlayer`.
     // -------------------------------------------------------------------------
@@ -844,7 +844,7 @@ object Triggers {
      * Whenever an opponent casts a spell.
      */
     val OpponentCastsSpell: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(player = Player.Opponent),
+        event = SpellCastEvent(player = Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 
@@ -880,7 +880,7 @@ object Triggers {
         spellFilter: GameObjectFilter = GameObjectFilter.Any,
         requires: Set<SpellCastPredicate> = emptySet(),
     ): TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellFilter = spellFilter, player = Player.Opponent, requires = requires),
+        event = SpellCastEvent(spellFilter = spellFilter, player = Player.EachOpponent, requires = requires),
         binding = TriggerBinding.ANY
     )
 
@@ -892,7 +892,7 @@ object Triggers {
      * Whenever an opponent discards a card.
      */
     val AnyOpponentDiscards: TriggerSpec = TriggerSpec(
-        event = DiscardEvent(player = Player.Opponent),
+        event = DiscardEvent(player = Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 
@@ -913,7 +913,7 @@ object Triggers {
      * - "Whenever a player discards a card":
      *   `discards(player = Player.Each)`
      * - "Whenever an opponent discards a creature card":
-     *   `discards(player = Player.Opponent, cardFilter = GameObjectFilter.Creature)`
+     *   `discards(player = Player.EachOpponent, cardFilter = GameObjectFilter.Creature)`
      *
      * Note: fires once per card discarded — e.g. an opponent discarding 3 cards
      * in one resolution fires this 3 times. Mirrors how [YouDraw] handles
@@ -946,7 +946,7 @@ object Triggers {
      * activated abilities) do. Used for Flamescroll Celebrant.
      */
     val OpponentActivatesAbility: TriggerSpec = TriggerSpec(
-        event = AbilityActivatedEvent(player = Player.Opponent),
+        event = AbilityActivatedEvent(player = Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 

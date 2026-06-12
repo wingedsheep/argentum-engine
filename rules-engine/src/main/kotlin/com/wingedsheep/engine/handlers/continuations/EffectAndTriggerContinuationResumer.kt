@@ -116,7 +116,6 @@ class EffectAndTriggerContinuationResumer(
                     com.wingedsheep.engine.handlers.EffectContext(
                         sourceId = continuation.sourceId,
                         controllerId = continuation.controllerId,
-                        opponentId = state.getOpponent(continuation.controllerId)
                     )
                 )
             } ?: effect.totalDamage

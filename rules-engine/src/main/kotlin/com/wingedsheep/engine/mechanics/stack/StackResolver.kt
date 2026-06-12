@@ -1188,7 +1188,6 @@ class StackResolver(
                     val context = EffectContext(
                         sourceId = spellId,
                         controllerId = controllerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != controllerId }
                     )
                     !com.wingedsheep.engine.handlers.ConditionEvaluator().evaluate(
                         newState, entersTapped.unlessCondition!!, context
@@ -1380,7 +1379,6 @@ class StackResolver(
             val context = EffectContext(
                 sourceId = spellId,
                 controllerId = spellComponent.casterId,
-                opponentId = newState.getOpponent(spellComponent.casterId),
                 targets = targets,
                 // Position-preserving view (null in slots dropped by 608.2b) so positional
                 // references — ContextTarget(n), EntityReference.Target(n), ContextPlayer(n) —
@@ -1776,7 +1774,6 @@ class StackResolver(
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
-            opponentId = state.getOpponent(abilityComponent.controllerId),
             targets = resolvedTargets2,
             triggerDamageAmount = abilityComponent.triggerDamageAmount,
             triggerCounterCount = abilityComponent.triggerCounterCount,
@@ -1871,7 +1868,6 @@ class StackResolver(
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
-            opponentId = state.getOpponent(abilityComponent.controllerId),
             targets = activatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
             xValue = abilityComponent.xValue,
@@ -1939,7 +1935,6 @@ class StackResolver(
                         val condContext = EffectContext(
                             sourceId = entityId,
                             controllerId = controllerId,
-                            opponentId = newState.turnOrder.firstOrNull { it != controllerId }
                         )
                         if (!conditionEvaluator.evaluate(newState, effect.condition!!, condContext)) continue
                     }
@@ -1962,7 +1957,6 @@ class StackResolver(
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = controllerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != controllerId },
                         xValue = xValue,
                         totalManaSpent = totalManaSpent
                     )
@@ -2521,8 +2515,8 @@ class StackResolver(
         choice: EntersWithChoice
     ): ExecutionResult? {
         val chooserId = when (choice.chooser) {
-            com.wingedsheep.sdk.scripting.references.Player.Opponent ->
-                state.turnOrder.firstOrNull { it != controllerId } ?: controllerId
+            com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
+                state.getOpponents(controllerId).firstOrNull() ?: controllerId
             else -> controllerId
         }
 

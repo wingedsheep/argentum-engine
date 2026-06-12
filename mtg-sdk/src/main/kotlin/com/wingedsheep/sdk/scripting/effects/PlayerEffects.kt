@@ -208,7 +208,7 @@ data class HijackNextTurnEffect(
 @SerialName("CantCastSpells")
 @Serializable
 data class CantCastSpellsEffect(
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent),
+    val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} can't cast spells ${duration.description}"
@@ -226,7 +226,7 @@ data class CantCastSpellsEffect(
 @SerialName("CantActivateLoyaltyAbilities")
 @Serializable
 data class CantActivateLoyaltyAbilitiesEffect(
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent),
+    val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} can't activate planeswalkers' loyalty abilities ${duration.description}"

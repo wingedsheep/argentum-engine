@@ -218,7 +218,6 @@ class ModalCopyPreservationTest : FunSpec({
         val context = EffectContext(
             sourceId = spellEntity,
             controllerId = p1,
-            opponentId = null
         )
 
         val executor = StormCopyEffectExecutor(cardRegistry = CardRegistry(), targetFinder = TargetFinder())

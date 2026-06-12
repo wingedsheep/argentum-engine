@@ -57,8 +57,7 @@ object LifeGainModifiers {
                 val recipientMatches = when (lifeGainEvent.player) {
                     Player.Each -> true
                     Player.You -> recipientId == sourceControllerId
-                    Player.Opponent -> recipientId != sourceControllerId
-                    Player.TargetOpponent -> recipientId != sourceControllerId
+                    Player.EachOpponent, Player.TargetOpponent -> recipientId != sourceControllerId
                     else -> recipientId == sourceControllerId
                 }
                 if (!recipientMatches) continue

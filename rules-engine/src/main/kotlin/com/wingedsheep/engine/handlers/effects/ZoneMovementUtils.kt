@@ -567,9 +567,10 @@ object ZoneMovementUtils {
             if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state
 
             val cid = controllerId ?: return state
-            val opponentId = state.getOpponent(cid) ?: return state
-            return state.updateEntity(opponentId) { container ->
-                container.with(SkipNextTurnComponent)
+            return state.getOpponents(cid).fold(state) { acc, opponentId ->
+                acc.updateEntity(opponentId) { container ->
+                    container.with(SkipNextTurnComponent)
+                }
             }
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.AddCountersEffect && entityId != null) {

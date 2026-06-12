@@ -48,7 +48,9 @@ class BeholdEffectExecutor(
         val predicateContext = PredicateContext(
             controllerId = beholder,
             sourceId = context.sourceId,
-            targetOpponentId = context.opponentId,
+            targetOpponentId = context.targets.firstNotNullOfOrNull {
+                (it as? com.wingedsheep.engine.state.components.stack.ChosenTarget.Player)?.playerId
+            },
         )
 
         val projected = state.projectedState

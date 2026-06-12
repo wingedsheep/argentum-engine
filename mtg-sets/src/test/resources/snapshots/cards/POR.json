@@ -482,7 +482,7 @@
                 "type": "Multiply",
                 "amount": {
                     "type": "AggregateBattlefield",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "filter": "creature attacking"
                 },
                 "multiplier": 3
@@ -1396,7 +1396,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -2389,7 +2389,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": "land"
                     },
                     "operator": "GT",

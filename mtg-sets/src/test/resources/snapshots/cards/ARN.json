@@ -810,7 +810,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -1790,7 +1790,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -2155,7 +2155,7 @@
                         },
                         "right": {
                             "type": "TurnTracking",
-                            "player": "Opponent",
+                            "player": "EachOpponent",
                             "tracker": "CREATURES_DIED"
                         }
                     },
@@ -2529,7 +2529,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }

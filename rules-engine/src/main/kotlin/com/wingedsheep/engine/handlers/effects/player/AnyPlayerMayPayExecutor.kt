@@ -279,7 +279,6 @@ class AnyPlayerMayPayExecutor(
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = null,
             pipeline = PipelineState(storedCollections = storedCollections),
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId

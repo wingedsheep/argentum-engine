@@ -1121,7 +1121,7 @@
                                     "type": "Compare",
                                     "left": {
                                         "type": "AggregateBattlefield",
-                                        "player": "Opponent",
+                                        "player": "EachOpponent",
                                         "filter": "land"
                                     },
                                     "operator": "GT",
@@ -1150,7 +1150,7 @@
                                     "operator": "LT",
                                     "right": {
                                         "type": "LifeTotal",
-                                        "player": "Opponent"
+                                        "player": "EachOpponent"
                                     }
                                 }
                             },
@@ -1170,7 +1170,7 @@
                                     "type": "Compare",
                                     "left": {
                                         "type": "AggregateBattlefield",
-                                        "player": "Opponent",
+                                        "player": "EachOpponent",
                                         "filter": "creature"
                                     },
                                     "operator": "GT",
@@ -1206,7 +1206,7 @@
                                     "type": "Compare",
                                     "left": {
                                         "type": "Count",
-                                        "player": "Opponent",
+                                        "player": "EachOpponent",
                                         "zone": "Hand"
                                     },
                                     "operator": "GT",
@@ -3195,7 +3195,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "TurnTracking",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "tracker": "LIFE_LOST"
                     },
                     "operator": "GTE",
@@ -6714,7 +6714,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "TurnTracking",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "tracker": "LIFE_LOST"
                     },
                     "operator": "GTE",
@@ -6810,7 +6810,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "TurnTracking",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "tracker": "LIFE_LOST"
                     },
                     "operator": "GTE",
@@ -7245,7 +7245,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "TurnTracking",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "tracker": "LIFE_LOST"
                     },
                     "operator": "GTE",
@@ -8755,7 +8755,7 @@
                                     "type": "Compare",
                                     "left": {
                                         "type": "TurnTracking",
-                                        "player": "Opponent",
+                                        "player": "EachOpponent",
                                         "tracker": "LIFE_LOST"
                                     },
                                     "operator": "GTE",
@@ -20258,7 +20258,7 @@
                             "type": "Compare",
                             "left": {
                                 "type": "TurnTracking",
-                                "player": "Opponent",
+                                "player": "EachOpponent",
                                 "tracker": "LIFE_LOST"
                             },
                             "operator": "GTE",

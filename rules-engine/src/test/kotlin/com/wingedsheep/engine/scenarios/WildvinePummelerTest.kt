@@ -201,7 +201,6 @@ class WildvinePummelerTest : FunSpec({
         val ctx = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = wickermaw,
             controllerId = activePlayer,
-            opponentId = driver.getOpponent(activePlayer),
         )
         driver.replaceState(
             driver.state.addFloatingEffect(

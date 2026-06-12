@@ -1687,7 +1687,7 @@
                     "type": "GainLife",
                     "amount": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": "creature attacking"
                     }
                 }
@@ -2096,7 +2096,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }

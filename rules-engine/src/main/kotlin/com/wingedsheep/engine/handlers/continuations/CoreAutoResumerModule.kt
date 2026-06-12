@@ -69,7 +69,6 @@ class CoreAutoResumerModule(
             val effectContext = EffectContext(
                 sourceId = continuation.cardId,
                 controllerId = continuation.playerId,
-                opponentId = state.getOpponent(continuation.playerId)
             )
             val searchResult = services.effectExecutorRegistry.execute(state, searchEffect, effectContext).toExecutionResult()
             mergeAndContinue(searchResult, events, checkForMore)
@@ -124,7 +123,6 @@ class CoreAutoResumerModule(
                 controllerId = continuation.controllerId,
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,
-                opponentId = continuation.opponentId,
                 xValue = continuation.xValue,
                 triggeringEntityId = continuation.triggeringEntityId
             )

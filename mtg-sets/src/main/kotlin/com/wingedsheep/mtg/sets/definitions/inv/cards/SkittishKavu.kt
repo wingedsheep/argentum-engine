@@ -32,7 +32,7 @@ val SkittishKavu = card("Skittish Kavu") {
             ability = ModifyStats(1, 1, Filters.Self),
             condition = Conditions.Not(
                 Exists(
-                    Player.Opponent,
+                    Player.EachOpponent,
                     Zone.BATTLEFIELD,
                     GameObjectFilter.Creature.withAnyColor(Color.WHITE, Color.BLUE)
                 )

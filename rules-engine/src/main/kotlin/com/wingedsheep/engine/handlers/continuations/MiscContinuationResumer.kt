@@ -101,7 +101,6 @@ class MiscContinuationResumer(
         val drawContext = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.playerId,
-            opponentId = null
         )
         val result = services.effectExecutorRegistry.execute(currentState, drawEffect, drawContext).toExecutionResult()
 

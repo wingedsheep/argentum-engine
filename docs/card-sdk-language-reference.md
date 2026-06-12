@@ -645,7 +645,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   - `target = CounterTarget.Spell` / `Ability` / `SpellOrAbility` — `SpellOrAbility` dispatches at resolution by inspecting whether the stack entity has a `SpellOnStackComponent`. Used by Teferi's Response.
   - `condition = CounterCondition.UnlessPaysMana(cost, onPaid?)` / `UnlessPaysDynamic(amount, onPaid?)` — "unless its controller pays …" with an optional `onPaid: Effect` rider that fires **only** when the spell's controller pays (Divert Disaster's "If they do, you create a Lander token"). The rider executes with the counter's controller as `controllerId`, so "you" in the rider resolves to the caster of the counter. The rider does not fire when the spell is countered. Facade: `Effects.CounterUnlessPays(cost, onPaid)` / `Effects.CounterUnlessDynamicPays(amount, exileOnCounter, onPaid)`.
 - `CounterAllOnStackEffect(filter?, destination?)` — counter everything matching.
-- `OpenLifeBid(onWin, participant = Player.Opponent)` — open life-bidding auction between you and `participant` (resolved against the effect context). You open at a bid of 1; the two bidders alternate topping the high bid (yes/no to top, then a number for the amount, capped at the bidder's life) until one passes. The high bidder loses that much life; `onWin` runs **only if you win**, with the original targets in context. If `participant` resolves to you (or to nobody), you're the sole bidder and win at the opening bid. For Mages' Contest, bid against the targeted spell's controller and counter it: `Effects.OpenLifeBid(Effects.CounterSpell(), Player.ControllerOf("target spell"))` — pair with a `TargetSpell` requirement.
+- `OpenLifeBid(onWin, participant = Player.AnOpponent)` — open life-bidding auction between you and `participant` (resolved against the effect context). You open at a bid of 1; the two bidders alternate topping the high bid (yes/no to top, then a number for the amount, capped at the bidder's life) until one passes. The high bidder loses that much life; `onWin` runs **only if you win**, with the original targets in context. If `participant` resolves to you (or to nobody), you're the sole bidder and win at the opening bid. For Mages' Contest, bid against the targeted spell's controller and counter it: `Effects.OpenLifeBid(Effects.CounterSpell(), Player.ControllerOf("target spell"))` — pair with a `TargetSpell` requirement.
 - `DestroySourceOfTargetedAbilityEffect` — when the targeted stack object is a permanent's activated/triggered ability, destroy that source permanent. Compose *before* the counter step so the ability component is still readable (Teferi's Response).
 - `CopyTargetSpellEffect(target)` — copy a spell on the stack.
 - `CopyTargetTriggeredAbilityEffect(target)` — copy a triggered ability on the stack.
@@ -1046,7 +1046,35 @@ can't statically prevent (cross-trigger flows, `Self`-vs-`ContextTarget` inside 
 - `EffectTarget.Controller` — controller of the source ability.
 - `EffectTarget.Self` — the source permanent.
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger to fire.
-- `EffectTarget.PlayerRef(...)` — a player slot: `You`, `Each`, `Opponent`, etc.
+- `EffectTarget.PlayerRef(...)` — a player slot; see the `Player` reference list below.
+
+**`Player` references** (multiplayer-safe vocabulary — there is deliberately no bare
+`Player.Opponent`; every reference says *which* player it means):
+
+- `Player.You` — the controller of the ability/effect.
+- `Player.Each` — all players (active players only; lost players are skipped).
+- `Player.EachOpponent` — all of your opponents. Also the *matching* form for "an opponent"
+  in event filters (`SpellCastEvent(player = …)`), exists-conditions, and battlefield
+  aggregations ("creatures your opponents control").
+- `Player.ActivePlayerFirst` — all players in APNAP order.
+- `Player.TargetPlayer` / `Player.TargetOpponent` — the bound player target (resolved from the
+  chosen targets, never from turn order).
+- `Player.DefendingPlayer` — CR 802.2a: the player the ability's source is attacking, read from
+  the source's attack assignment (a creature attacking a planeswalker defends against its
+  controller); falls back to the trigger's damaged player as last-known information for "deals
+  combat damage to a player" triggers. Use for attack/combat-damage triggers ("defending player
+  mills four cards", "that player sacrifices a creature").
+- `Player.TriggeringPlayer` — the player bound by the trigger (the caster for `SpellCastEvent`,
+  the active player for per-player step triggers — "at the beginning of each opponent's upkeep,
+  *that player* …").
+- `Player.AnOpponent` — a genuinely non-targeted "an opponent" (a chooser: "an opponent chooses a
+  creature type"). Currently resolves to the first opponent in turn order; the proper multiplayer
+  choice flow is tracked in `backlog/multiplayer.md`. Do **not** use it where the text means
+  `TargetOpponent`, `EachOpponent`, `DefendingPlayer`, or `TriggeringPlayer`.
+- `Player.ChosenOpponent` — the opponent locked into the source's `ChoiceSlot.OPPONENT` slot.
+- `Player.ControllerOf(desc)` / `Player.OwnerOf(desc)` — controller/owner of the first chosen target.
+- `Player.ContextPlayer(i)` / `Player.Candidate` / `Player.Any` — positional target, CR 115
+  candidate during target-restriction evaluation, and "a player" matching.
 - `EffectTarget.ContextProperty(key)` — value plumbed into `EffectContext` (damage amount, life gained, blight
   amount, …).
 - `EnchantedCreature` / `EquippedCreature` — resolve via `AttachedToComponent`; requires the state-aware
@@ -1571,7 +1599,7 @@ in the repo today):
 
 - `YouDraw` — when you draw a card. Fires once per individual card drawn (CR 121.2), so a
   single "draw N" effect triggers it N times.
-- `OpponentDraws` — when an opponent draws a card (once per card; the `Player.Opponent` analogue
+- `OpponentDraws` — when an opponent draws a card (once per card; the `Player.EachOpponent` analogue
   of `YouDraw`).
 - `OpponentDrawsExceptFirstEachDrawStep` — whenever an opponent draws a card **except** the first
   card they draw in each of their own draw steps (CR 504.1's turn-based draw is exempt; every
@@ -1633,7 +1661,7 @@ Named sugar for the common type-primitive cases; reach for `youCastSpell(...)` p
   Celebrant). Backed by `EventPattern.AbilityActivatedEvent(player)`.
 
 **Other casters.** The same shape, scoped to a different caster via the runtime
-`Player.Each` / `Player.Opponent` matching on `SpellCastEvent`. Bind the payoff to the
+`Player.Each` / `Player.EachOpponent` matching on `SpellCastEvent`. Bind the payoff to the
 caster with `EffectTarget.PlayerRef(Player.TriggeringPlayer)`.
 
 - `AnyPlayerCastsSpell` — any player (including you) casts a spell.
@@ -3241,7 +3269,7 @@ replacementEffect {
   modification occurs before considering any of the individual card draws.") — so a paused-and-
   resumed per-card loop doesn't double-modify. Note that "you" in restriction text reads as the
   drawing player, not the source's controller; for `DrawEvent(player = Player.You)` they coincide,
-  but `DrawEvent(player = Player.Opponent)` cards needing "you" = source controller would have to
+  but `DrawEvent(player = Player.EachOpponent)` cards needing "you" = source controller would have to
   use a source-relative condition instead. Use for "if you would draw one or more cards, you draw
   that many cards plus N instead" (Quantum Riddler:
   `ModifyDrawAmount(modifier = 1, restrictions = listOf(Conditions.CardsInHandAtMost(1)), appliesTo = DrawEvent(player = Player.You))`).

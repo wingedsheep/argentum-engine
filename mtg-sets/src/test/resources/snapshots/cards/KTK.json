@@ -11251,7 +11251,7 @@
                             "filter": "creature",
                             "target": {
                                 "type": "PlayerRef",
-                                "player": "Opponent"
+                                "player": "TriggeringPlayer"
                             }
                         }
                     },

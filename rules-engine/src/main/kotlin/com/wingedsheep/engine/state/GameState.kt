@@ -318,11 +318,23 @@ data class GameState(
     }
 
     /**
-     * Get opponent of a player (for 2-player games).
+     * Players still in the game, in turn order — excludes players who have lost or left
+     * (CR 800.4a keeps them in [turnOrder] for entity history; every iteration helper
+     * must skip them).
      */
-    fun getOpponent(playerId: EntityId): EntityId? {
-        return turnOrder.find { it != playerId }
-    }
+    val activePlayers: List<EntityId>
+        get() = turnOrder.filter {
+            getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+        }
+
+    /**
+     * Opponents of a player, in turn order, excluding players who have lost or left the
+     * game. There is deliberately no single-opponent helper: any code that needs one
+     * specific opponent must say which one (a chosen target, an iteration, or the
+     * per-creature defending player — CR 802.2a).
+     */
+    fun getOpponents(playerId: EntityId): List<EntityId> =
+        activePlayers.filter { it != playerId }
 
     /**
      * Returns the player who currently has *input authority* for [playerId] — that is,

@@ -188,11 +188,9 @@ class PlayLandHandler(
                 val onEnterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>(zoneChangeEvent)
                 newState = newState.tick()
 
-                val opponentId = newState.turnOrder.firstOrNull { it != action.playerId }
                 val effectContext = EffectContext(
                     sourceId = action.cardId,
                     controllerId = action.playerId,
-                    opponentId = opponentId,
                 )
                 val effectResult = effectExecutor(newState, onEnter.effect, effectContext)
                 if (effectResult.isPaused) {
@@ -282,7 +280,6 @@ class PlayLandHandler(
                         val context = EffectContext(
                             sourceId = action.cardId,
                             controllerId = action.playerId,
-                            opponentId = newState.turnOrder.firstOrNull { it != action.playerId }
                         )
                         !ConditionEvaluator().evaluate(newState, entersTapped.unlessCondition!!, context)
                     } else {
@@ -323,8 +320,8 @@ class PlayLandHandler(
                 newState = newState.tick()
 
                 val chooserId = when (firstChoice.chooser) {
-                    com.wingedsheep.sdk.scripting.references.Player.Opponent ->
-                        newState.turnOrder.firstOrNull { it != action.playerId } ?: action.playerId
+                    com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
+                        newState.getOpponents(action.playerId).firstOrNull() ?: action.playerId
                     else -> action.playerId
                 }
 
@@ -608,11 +605,9 @@ class PlayLandHandler(
         sourceId: EntityId,
         controllerId: EntityId
     ): Boolean {
-        val opponentId = state.turnOrder.firstOrNull { it != controllerId }
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = opponentId
         )
         return conditionEvaluator.evaluate(state, condition, context)
     }

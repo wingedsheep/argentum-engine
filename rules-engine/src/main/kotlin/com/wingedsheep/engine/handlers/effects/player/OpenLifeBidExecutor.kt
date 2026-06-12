@@ -183,7 +183,7 @@ object OpenLifeBidLogic {
 
         // The high bidder loses life equal to the high bid (routed through the life-loss
         // executor so prevention/replacement effects apply uniformly).
-        val loseLifeContext = EffectContext(sourceId = sourceId, controllerId = highBidder, opponentId = null)
+        val loseLifeContext = EffectContext(sourceId = sourceId, controllerId = highBidder)
         val lifeResult = executeEffect(
             state,
             LoseLifeEffect(DynamicAmount.Fixed(highBid), EffectTarget.PlayerRef(Player.You)),
@@ -198,7 +198,6 @@ object OpenLifeBidLogic {
             val winContext = EffectContext(
                 sourceId = sourceId,
                 controllerId = casterId,
-                opponentId = null,
                 targets = targets
             )
             val winResult = executeEffect(currentState, onWin, winContext)

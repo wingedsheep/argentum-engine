@@ -34,7 +34,7 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
 
         val deciderId = when (effect.chooser) {
             Chooser.Controller -> context.controllerId
-            Chooser.Opponent -> context.opponentId
+            Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
                 ?: return EffectResult.error(state, "No opponent for ChoosePile chooser")
             Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
                 TargetResolutionUtils.run { it.toEntityId() }

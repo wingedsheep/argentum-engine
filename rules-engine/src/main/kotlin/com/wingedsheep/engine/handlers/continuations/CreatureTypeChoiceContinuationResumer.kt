@@ -138,7 +138,6 @@ class CreatureTypeChoiceContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = null
         )
         val newState = state.addFloatingEffect(
             layer = Layer.TYPE,

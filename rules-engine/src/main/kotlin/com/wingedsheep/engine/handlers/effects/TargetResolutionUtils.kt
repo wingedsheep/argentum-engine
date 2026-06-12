@@ -1,11 +1,13 @@
 package com.wingedsheep.engine.handlers.effects
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureRef
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -79,6 +81,59 @@ object TargetResolutionUtils {
     }
 
     /**
+     * The first chosen target that is a player. "Target player" / "target opponent"
+     * references resolve through the bound targets — never through turn order.
+     */
+    private fun firstPlayerTarget(context: EffectContext): EntityId? =
+        context.targets.firstOrNull { it is ChosenTarget.Player }?.toEntityId()
+            ?: context.targets.firstOrNull()?.toEntityId()
+
+    /**
+     * The defending player for the ability's source, per CR 802.2a: read from the
+     * source's attack assignment (a creature attacking a planeswalker defends against
+     * that planeswalker's controller). When the source has already left combat (e.g.
+     * it died dealing combat damage), the trigger event's player is last-known
+     * information for "deals combat damage to a player" triggers.
+     */
+    fun resolveDefendingPlayer(context: EffectContext, state: GameState): EntityId? {
+        val defenderId = context.sourceId
+            ?.let { state.getEntity(it)?.get<AttackingComponent>()?.defenderId }
+        if (defenderId != null) {
+            return if (defenderId in state.turnOrder) defenderId
+            else state.getEntity(defenderId)?.get<ControllerComponent>()?.playerId
+        }
+        return (context.triggeringPlayerId ?: context.triggeringEntityId)
+            ?.takeIf { it in state.turnOrder }
+    }
+
+    /**
+     * Central single-player resolution for a [Player] reference. Every executor that
+     * maps a `Player` to one concrete player id goes through here — per-executor copies
+     * of this switch are what made `EffectContext.opponentId` so hard to kill.
+     *
+     * Multi-player references ([Player.Each], [Player.EachOpponent],
+     * [Player.ActivePlayerFirst]) return `null`: they have no single-player meaning and
+     * must be resolved through [resolvePlayerTargets] / an iteration.
+     */
+    fun resolvePlayerRef(player: Player, context: EffectContext, state: GameState): EntityId? {
+        return when (player) {
+            Player.You -> context.controllerId
+            Player.TargetPlayer, Player.TargetOpponent, Player.Any -> firstPlayerTarget(context)
+            is Player.ContextPlayer -> context.positionalTarget(player.index)?.toEntityId()
+            Player.TriggeringPlayer -> context.triggeringPlayerId ?: context.triggeringEntityId
+            Player.Candidate -> context.candidatePlayerId
+            Player.AnOpponent -> state.getOpponents(context.controllerId).firstOrNull()
+            Player.DefendingPlayer -> resolveDefendingPlayer(context, state)
+            Player.ChosenOpponent -> context.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
+            is Player.OwnerOf -> context.targets.firstOrNull()?.toEntityId()
+                ?.let { state.getEntity(it)?.get<CardComponent>()?.ownerId }
+            is Player.ControllerOf -> context.targets.firstOrNull()?.toEntityId()
+                ?.let { controllerOf(state, it) }
+            Player.Each, Player.EachOpponent, Player.ActivePlayerFirst -> null
+        }
+    }
+
+    /**
      * Resolve a player target from the effect target definition and context.
      */
     fun resolvePlayerTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {
@@ -90,8 +145,7 @@ object TargetResolutionUtils {
                 context.pipeline.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
                 Player.You -> context.controllerId
-                Player.Opponent, Player.TargetOpponent, Player.EachOpponent -> context.opponentId
-                Player.TargetPlayer, Player.Any -> context.targets.firstOrNull()?.toEntityId()
+                Player.TargetPlayer, Player.TargetOpponent, Player.Any -> firstPlayerTarget(context)
                 Player.TriggeringPlayer -> context.triggeringPlayerId ?: context.triggeringEntityId
                 else -> null
             }
@@ -117,6 +171,12 @@ object TargetResolutionUtils {
      * Resolve a player target with access to game state (for relational references like OwnerOf/ControllerOf).
      */
     fun resolvePlayerTarget(effectTarget: EffectTarget, context: EffectContext, state: GameState): EntityId? {
+        // Player references get the full state-aware resolution (combat derivation,
+        // chosen-opponent slots, relational owner/controller lookups).
+        if (effectTarget is EffectTarget.PlayerRef) {
+            return resolvePlayerRef(effectTarget.player, context, state)
+        }
+
         // Try stateless resolution first
         resolvePlayerTarget(effectTarget, context)?.let { return it }
 
@@ -132,21 +192,7 @@ object TargetResolutionUtils {
             return controllerOf(state, targetEntityId)
         }
 
-        // Handle state-dependent relational references
-        return when (effectTarget) {
-            is EffectTarget.PlayerRef -> when (val player = effectTarget.player) {
-                is Player.OwnerOf -> {
-                    val targetEntity = context.targets.firstOrNull()?.toEntityId() ?: return null
-                    state.getEntity(targetEntity)?.get<CardComponent>()?.ownerId
-                }
-                is Player.ControllerOf -> {
-                    val targetEntity = context.targets.firstOrNull()?.toEntityId() ?: return null
-                    controllerOf(state, targetEntity)
-                }
-                else -> null
-            }
-            else -> null
-        }
+        return null
     }
 
     /**
@@ -168,20 +214,10 @@ object TargetResolutionUtils {
                 controllerId?.let { listOf(it) } ?: emptyList()
             }
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
-                Player.Each -> state.turnOrder
-                Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
-                Player.You -> listOf(context.controllerId)
-                Player.Opponent, Player.TargetOpponent -> state.turnOrder.filter { it != context.controllerId }
-                Player.TargetPlayer, Player.Any -> {
-                    context.targets.firstOrNull()?.toEntityId()?.let { listOf(it) } ?: emptyList()
-                }
-                Player.TriggeringPlayer -> {
-                    (context.triggeringPlayerId ?: context.triggeringEntityId)?.let { listOf(it) } ?: emptyList()
-                }
-                is Player.OwnerOf, is Player.ControllerOf -> {
-                    resolvePlayerTarget(effectTarget, context, state)?.let { listOf(it) } ?: emptyList()
-                }
-                else -> emptyList()
+                Player.Each -> state.activePlayers
+                Player.EachOpponent -> state.getOpponents(context.controllerId)
+                else -> resolvePlayerRef(effectTarget.player, context, state)
+                    ?.let { listOf(it) } ?: emptyList()
             }
             // Use the state-aware resolver so state-dependent targets (e.g. TargetController,
             // which reads the target spell/permanent's controller) resolve here too. It tries

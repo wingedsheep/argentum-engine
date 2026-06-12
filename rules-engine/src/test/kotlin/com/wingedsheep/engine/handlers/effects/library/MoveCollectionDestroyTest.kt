@@ -75,7 +75,6 @@ class MoveCollectionDestroyTest : FunSpec({
     ) = EffectContext(
         sourceId = null,
         controllerId = controllerId,
-        opponentId = opponentId,
         pipeline = PipelineState(storedCollections = mapOf(collectionName to cards))
     )
 

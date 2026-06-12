@@ -845,11 +845,9 @@ class ActivateAbilityHandler(
                     else -> finalEffect
                 }
             }
-            val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
             val context = EffectContext(
                 sourceId = action.sourceId,
                 controllerId = action.playerId,
-                opponentId = opponentId,
                 targets = action.targets,
                 // Thread the chosen X so X-based mana abilities produce the right amount
                 // ("{X}, {T}, Sacrifice this: Add X mana..." — Wizard's Rockets). Without
@@ -1370,7 +1368,6 @@ class ActivateAbilityHandler(
         val reductionContext = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = null,
             targets = targets
         )
         val amount = DynamicAmountEvaluator().evaluate(state, reduction, reductionContext)
@@ -1571,11 +1568,9 @@ class ActivateAbilityHandler(
                 else null
             }
             is ActivationRestriction.OnlyIfCondition -> {
-                val opponentId = state.turnOrder.firstOrNull { it != playerId }
                 val context = EffectContext(
                     sourceId = sourceId,
                     controllerId = playerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = 0
                 )
@@ -1759,12 +1754,10 @@ class ActivateAbilityHandler(
                 // The controller of the enchanted land gets the mana
                 val landController = currentState.getEntity(sourceId)
                     ?.get<ControllerComponent>()?.playerId ?: controllerId
-                val opponentId = currentState.turnOrder.firstOrNull { it != landController }
 
                 val context = EffectContext(
                     sourceId = entityId,
                     controllerId = landController,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = null
                 )
@@ -1863,11 +1856,9 @@ class ActivateAbilityHandler(
                         currentState, currentState.projectedState, sourceId, onSourceTap.sourceFilter, filterContext
                     )) continue
 
-                val opponentId = currentState.turnOrder.firstOrNull { it != tappingPlayerId }
                 val effectContext = EffectContext(
                     sourceId = entityId,
                     controllerId = tappingPlayerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = null
                 )

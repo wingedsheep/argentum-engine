@@ -589,11 +589,9 @@ class CastFromZoneEnumerator : ActionEnumerator {
             // Resolve dynamic mana-value cap (e.g. "spell with mana value ≤ number of Elves
             // and Faeries you control"). Computed once per granter.
             val maxManaValueCap: Int? = grantAbility.maxManaValue?.let { amount ->
-                val opponentId = state.turnOrder.firstOrNull { it != playerId }
                 val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                     sourceId = entityId,
                     controllerId = playerId,
-                    opponentId = opponentId
                 )
                 com.wingedsheep.engine.handlers.DynamicAmountEvaluator().evaluate(state, amount, effectContext)
             }

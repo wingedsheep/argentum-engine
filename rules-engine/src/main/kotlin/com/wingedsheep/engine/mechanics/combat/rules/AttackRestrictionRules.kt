@@ -95,7 +95,7 @@ class DefenderAttackRule : AttackRestrictionRule {
         val cardComp = container.get<CardComponent>() ?: return errorMsg(ctx)
         val cardDef = ctx.cardRegistry.getCard(cardComp.cardDefinitionId) ?: return errorMsg(ctx)
 
-        val effectContext = EffectContext(sourceId = ctx.attackerId, controllerId = ctx.attackingPlayer, opponentId = null)
+        val effectContext = EffectContext(sourceId = ctx.attackerId, controllerId = ctx.attackingPlayer)
         val canAttackDespite = cardDef.staticAbilities
             .filterIsInstance<CanAttackDespiteDefender>()
             .filter { it.filter.scope is Scope.Self }
@@ -167,7 +167,6 @@ class CantAttackUnlessDefenderRule : AttackDefenderRule {
         val effectContext = EffectContext(
             sourceId = ctx.attackerId,
             controllerId = ctx.attackingPlayer,
-            opponentId = defendingPlayer
         )
         if (!conditionEvaluator.evaluate(ctx.state, restriction.condition, effectContext)) {
             return "${cardComponent.name} ${restriction.description}"

@@ -58,7 +58,6 @@ class BudgetModalEffectExecutor(
             modes = effect.modes,
             remainingBudget = effect.budget,
             selectedModeIndices = emptyList(),
-            opponentId = context.opponentId
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

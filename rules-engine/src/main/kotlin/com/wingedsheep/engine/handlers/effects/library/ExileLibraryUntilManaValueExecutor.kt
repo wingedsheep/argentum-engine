@@ -99,10 +99,12 @@ class ExileLibraryUntilManaValueExecutor : EffectExecutor<ExileLibraryUntilManaV
 
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {
         return when (player) {
-            Player.Each, Player.ActivePlayerFirst -> state.turnOrder
+            Player.Each, Player.ActivePlayerFirst -> state.activePlayers
             Player.You -> listOf(context.controllerId)
-            Player.Opponent, Player.EachOpponent, Player.TargetOpponent ->
-                state.turnOrder.filter { it != context.controllerId }
+            Player.EachOpponent -> state.getOpponents(context.controllerId)
+            Player.TargetOpponent -> listOfNotNull(
+                TargetResolutionUtils.resolvePlayerRef(player, context, state)
+            )
             Player.TargetPlayer -> context.targets.firstOrNull()?.let {
                 listOf(TargetResolutionUtils.run { it.toEntityId() })
             } ?: emptyList()
@@ -110,7 +112,7 @@ class ExileLibraryUntilManaValueExecutor : EffectExecutor<ExileLibraryUntilManaV
                 listOf(TargetResolutionUtils.run { it.toEntityId() })
             } ?: emptyList()
             Player.TriggeringPlayer -> listOfNotNull(context.triggeringEntityId)
-            else -> state.turnOrder.filter { it != context.controllerId }
+            else -> state.getOpponents(context.controllerId)
         }
     }
 }

@@ -12,8 +12,9 @@ import kotlin.reflect.KClass
 /**
  * Handler for the Concede action.
  *
- * Concession is always valid and immediately ends the game with
- * the opponent as the winner.
+ * Concession is always valid. The winner is the sole remaining opponent — in a
+ * multiplayer pod the game must instead continue without the conceding player
+ * (CR 800.4a leave-the-game processing, backlog/multiplayer.md Phase 1.2).
  */
 class ConcedeHandler : ActionHandler<Concede> {
     override val actionType: KClass<Concede> = Concede::class
@@ -24,12 +25,12 @@ class ConcedeHandler : ActionHandler<Concede> {
     }
 
     override fun execute(state: GameState, action: Concede): ExecutionResult {
-        val opponent = state.getOpponent(action.playerId)
+        val winner = state.getOpponents(action.playerId).singleOrNull()
         return ExecutionResult.success(
-            state.copy(gameOver = true, winnerId = opponent),
+            state.copy(gameOver = true, winnerId = winner),
             listOf(
                 PlayerLostEvent(action.playerId, GameEndReason.CONCESSION),
-                GameEndedEvent(opponent, GameEndReason.CONCESSION)
+                GameEndedEvent(winner, GameEndReason.CONCESSION)
             )
         )
     }

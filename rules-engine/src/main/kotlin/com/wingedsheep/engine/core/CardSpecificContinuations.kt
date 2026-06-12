@@ -214,7 +214,6 @@ data class RingTemptContinuation(
  * [amount] +1/+1 counters and becomes [subtype] if it isn't already.
  *
  * @property controllerId The player amassing (also the chooser).
- * @property opponentId That player's opponent (for the resolution context).
  * @property subtype The Army subtype being amassed (e.g., "Orc").
  * @property amount Number of +1/+1 counters to place.
  * @property sourceId The amassing source (for context/display).
@@ -224,7 +223,6 @@ data class RingTemptContinuation(
 data class AmassContinuation(
     override val decisionId: String,
     val controllerId: EntityId,
-    val opponentId: EntityId?,
     val subtype: String,
     val amount: Int,
     val sourceId: EntityId?,

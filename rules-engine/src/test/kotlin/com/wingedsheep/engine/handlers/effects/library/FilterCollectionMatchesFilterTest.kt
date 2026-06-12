@@ -75,7 +75,6 @@ class FilterCollectionMatchesFilterTest : FunSpec({
     ) = EffectContext(
         sourceId = null,
         controllerId = controllerId,
-        opponentId = opponentId,
         pipeline = PipelineState(storedCollections = collection)
     )
 

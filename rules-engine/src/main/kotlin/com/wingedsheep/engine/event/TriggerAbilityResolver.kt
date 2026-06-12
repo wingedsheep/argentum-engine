@@ -322,7 +322,6 @@ class TriggerAbilityResolver(
                         val context = EffectContext(
                             sourceId = permanentId,
                             controllerId = controllerId,
-                            opponentId = null
                         )
                         if (ConditionEvaluator().evaluate(state, ability.condition, context)) {
                             result.add(grant.ability)
@@ -451,7 +450,6 @@ class TriggerAbilityResolver(
                         val context = EffectContext(
                             sourceId = permanentId,
                             controllerId = controllerId,
-                            opponentId = null
                         )
                         if (ConditionEvaluator().evaluate(state, ability.condition, context)) conditionalWard else continue
                     }

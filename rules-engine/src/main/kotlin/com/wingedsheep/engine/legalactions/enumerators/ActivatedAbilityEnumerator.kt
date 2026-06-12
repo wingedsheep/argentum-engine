@@ -801,8 +801,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         val playerId = context.playerId
         val projected = context.projected
 
-        val opponentId = state.turnOrder.firstOrNull { it != playerId } ?: return
-        val opponentPermanents = projected.getBattlefieldControlledBy(opponentId)
+        val opponentPermanents = state.getOpponents(playerId)
+            .flatMap { projected.getBattlefieldControlledBy(it) }
 
         for (entityId in opponentPermanents) {
             val container = state.getEntity(entityId) ?: continue
@@ -1129,7 +1129,6 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         val baseContext = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = null
         )
         val amount = if (ability.targetRequirements.isNotEmpty()) {
             maxReductionOverLegalTargets(reduction, ability, state, sourceId, controllerId, enumerationContext, evaluator)
@@ -1164,7 +1163,6 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             val targetContext = com.wingedsheep.engine.handlers.EffectContext(
                 sourceId = sourceId,
                 controllerId = controllerId,
-                opponentId = null,
                 targets = listOf(ChosenTarget.Permanent(targetId))
             )
             evaluator.evaluate(state, reduction, targetContext)

@@ -210,7 +210,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * Examples:
      * - "you would draw a card" → DrawEvent(player = Player.You)
-     * - "an opponent would draw" → DrawEvent(player = Player.Opponent)
+     * - "an opponent would draw" → DrawEvent(player = Player.EachOpponent)
      *
      * When [exceptFirstInDrawStep] is set, the first card the drawing player draws in
      * each of their own draw steps (CR 504.1's turn-based draw, normally) does **not**
@@ -1168,7 +1168,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * `AbilityActivatedEvent` for non-mana activated abilities — including planeswalker loyalty
      * abilities (CR 606), which are activated abilities. This template therefore matches exactly
      * "activates an ability that isn't a mana ability"; [player] scopes whose activations count
-     * ([Player.Opponent] for "an opponent activates …", [Player.You] for your own, etc.).
+     * ([Player.EachOpponent] for "an opponent activates …", [Player.You] for your own, etc.).
      *
      * Used by Flamescroll Celebrant: "Whenever an opponent activates an ability that isn't a mana
      * ability, this creature deals 1 damage to that player."

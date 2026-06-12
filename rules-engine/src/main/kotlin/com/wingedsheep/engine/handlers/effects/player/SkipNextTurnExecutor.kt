@@ -27,12 +27,9 @@ class SkipNextTurnExecutor : EffectExecutor<SkipNextTurnEffect> {
         val targetPlayerId = when (target) {
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.PlayerRef -> {
-                when (target.player) {
-                    Player.You -> context.controllerId
-                    Player.Opponent, Player.TargetOpponent -> context.opponentId
-                        ?: return EffectResult.error(state, "No opponent found")
-                    else -> return EffectResult.error(state, "Unsupported player reference for SkipNextTurnEffect")
-                }
+                com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                    .resolvePlayerRef(target.player, context, state)
+                    ?: return EffectResult.error(state, "Cannot resolve player for SkipNextTurnEffect")
             }
             else -> return EffectResult.error(state, "Unsupported target for SkipNextTurnEffect")
         }

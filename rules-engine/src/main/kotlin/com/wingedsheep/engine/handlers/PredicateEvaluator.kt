@@ -1049,16 +1049,15 @@ data class PredicateContext(
          * Create from EffectContext for compatibility.
          */
         fun fromEffectContext(context: EffectContext): PredicateContext {
-            // Derive the concretely chosen player target from the effect's targets.
-            // Falls back to opponentId when no player target is present — preserves the
-            // historic behavior for cards that reference "target opponent" implicitly.
+            // "Target opponent" / "target player" predicates read the concretely chosen
+            // player target — never a turn-order-derived opponent.
             val chosenPlayerTarget = context.targets.firstNotNullOfOrNull { target ->
                 (target as? ChosenTarget.Player)?.playerId
             }
             return PredicateContext(
                 controllerId = context.controllerId,
-                targetOpponentId = context.opponentId,
-                targetPlayerId = chosenPlayerTarget ?: context.opponentId,
+                targetOpponentId = chosenPlayerTarget,
+                targetPlayerId = chosenPlayerTarget,
                 sourceId = context.sourceId,
                 triggeringEntityId = context.triggeringEntityId,
                 affectedEntityId = context.affectedEntityId,

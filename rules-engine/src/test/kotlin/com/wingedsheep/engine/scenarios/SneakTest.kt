@@ -152,7 +152,7 @@ class SneakTest : FunSpec({
         ConditionEvaluator().evaluate(
             driver.state,
             SneakCostWasPaid,
-            EffectContext(sourceId = ninjaPerm, controllerId = attacker, opponentId = driver.getOpponent(attacker))
+            EffectContext(sourceId = ninjaPerm, controllerId = attacker)
         ).shouldBeTrue()
     }
 
@@ -254,7 +254,7 @@ class SneakTest : FunSpec({
         ConditionEvaluator().evaluate(
             driver.state,
             SneakCostWasPaid,
-            EffectContext(sourceId = ninjaPerm, controllerId = attacker, opponentId = driver.getOpponent(attacker))
+            EffectContext(sourceId = ninjaPerm, controllerId = attacker)
         ).shouldBeFalse()
     }
 

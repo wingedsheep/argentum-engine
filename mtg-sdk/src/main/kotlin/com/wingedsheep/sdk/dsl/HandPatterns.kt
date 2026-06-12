@@ -44,7 +44,10 @@ object HandPatterns {
             }
             return CompositeEffect(listOf(
                 GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.Opponent),
+                    // TODO(multiplayer Phase 1, backlog/multiplayer.md): "each opponent discards,
+                    //  you draw per discard" needs cross-iteration count accumulation; until then
+                    //  this hits one opponent (identical in two-player games).
+                    source = CardSource.FromZone(Zone.HAND, Player.AnOpponent),
                     storeAs = "hand"
                 ),
                 SelectFromCollectionEffect(
@@ -56,7 +59,7 @@ object HandPatterns {
                 ),
                 MoveCollectionEffect(
                     from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player = Player.Opponent),
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player = Player.AnOpponent),
                     moveType = MoveType.Discard
                 ),
                 DrawCardsEffect(count = drawCount)

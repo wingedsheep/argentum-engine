@@ -31,9 +31,9 @@ class DomainDslTest : DescribeSpec({
         }
 
         it("supports counting domain for an opponent") {
-            val amount = DynamicAmounts.domain(Player.Opponent)
+            val amount = DynamicAmounts.domain(Player.AnOpponent)
             amount.shouldBeInstanceOf<DynamicAmount.AggregateBattlefield>()
-            amount.player shouldBe Player.Opponent
+            amount.player shouldBe Player.AnOpponent
             amount.description shouldBe
                 "the number of basic land types among lands an opponent controls"
         }

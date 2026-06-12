@@ -131,7 +131,6 @@ class ModalAndCloneContinuationResumer(
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
             xValue = continuation.xValue,
-            opponentId = continuation.opponentId,
             triggeringEntityId = continuation.triggeringEntityId,
             allowCancelBackToModesList = if (allowCancelBackToModes) continuation.modes else null,
             outerTargets = continuation.outerTargets,
@@ -159,7 +158,6 @@ class ModalAndCloneContinuationResumer(
         sourceId: EntityId?,
         sourceName: String?,
         xValue: Int?,
-        opponentId: EntityId?,
         triggeringEntityId: EntityId?,
         allowCancelBackToModesList: List<Mode>?,
         outerTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
@@ -183,7 +181,6 @@ class ModalAndCloneContinuationResumer(
                 val context = EffectContext(
                     sourceId = sourceId,
                     controllerId = controllerId,
-                    opponentId = opponentId,
                     xValue = xValue,
                     targets = outerTargets,
                     pipeline = PipelineState(namedTargets = outerNamedTargets),
@@ -239,7 +236,6 @@ class ModalAndCloneContinuationResumer(
                     val context = EffectContext(
                         sourceId = sourceId,
                         controllerId = controllerId,
-                        opponentId = opponentId,
                         xValue = xValue,
                         targets = chosenTargets,
                         pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(head.targetRequirements, chosenTargets)),
@@ -279,7 +275,6 @@ class ModalAndCloneContinuationResumer(
                 sourceName = sourceName,
                 effect = head.effect,
                 xValue = xValue,
-                opponentId = opponentId,
                 targetRequirements = head.targetRequirements,
                 modes = if (tail.isEmpty()) allowCancelBackToModesList else null,
                 triggeringEntityId = triggeringEntityId,
@@ -340,7 +335,6 @@ class ModalAndCloneContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = continuation.opponentId,
             xValue = continuation.xValue,
             targets = chosenTargets,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets)),
@@ -359,7 +353,6 @@ class ModalAndCloneContinuationResumer(
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,
                 xValue = continuation.xValue,
-                opponentId = continuation.opponentId,
                 triggeringEntityId = continuation.triggeringEntityId,
                 allowCancelBackToModesList = null,
                 outerTargets = continuation.outerTargets,
@@ -700,8 +693,8 @@ class ModalAndCloneContinuationResumer(
 
         if (nextChoice != null) {
             val chooserId = when (nextChoice.chooser) {
-                com.wingedsheep.sdk.scripting.references.Player.Opponent ->
-                    newState.turnOrder.firstOrNull { it != continuation.controllerId } ?: continuation.controllerId
+                com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
+                    newState.getOpponents(continuation.controllerId).firstOrNull() ?: continuation.controllerId
                 else -> continuation.controllerId
             }
 
@@ -1212,7 +1205,6 @@ class ModalAndCloneContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = continuation.opponentId
         )
 
         val result = services.effectExecutorRegistry.execute(state, CompositeEffect(effects), context).toExecutionResult()
@@ -1279,7 +1271,6 @@ class ModalAndCloneContinuationResumer(
             sourceName = continuation.sourceName,
             modes = modes,
             xValue = continuation.xValue,
-            opponentId = continuation.opponentId,
             triggeringEntityId = continuation.triggeringEntityId,
             outerTargets = continuation.outerTargets,
             outerNamedTargets = continuation.outerNamedTargets
@@ -1327,7 +1318,6 @@ class ModalAndCloneContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = continuation.opponentId,
             targets = continuation.targets,
             triggeringEntityId = continuation.triggeringEntityId,
             pipeline = PipelineState(namedTargets = continuation.namedTargets)

@@ -75,7 +75,7 @@ val SpecimenFreighter = card("Specimen Freighter") {
     // Whenever this Spacecraft attacks, defending player mills four cards
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Patterns.Library.mill(4, EffectTarget.PlayerRef(Player.Opponent))
+        effect = Patterns.Library.mill(4, EffectTarget.PlayerRef(Player.DefendingPlayer))
     }
 
     metadata {

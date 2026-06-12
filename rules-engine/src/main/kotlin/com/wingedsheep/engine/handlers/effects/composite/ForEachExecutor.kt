@@ -38,7 +38,7 @@ import kotlin.reflect.KClass
  * Per-space context binding (see [IterationSpace] for the contract):
  * - Targets: the current target becomes the context's only target (`ContextTarget(0)`),
  *   storedCollections wiped.
- * - Players: `controllerId` rebound to the current player, `opponentId` recomputed
+ * - Players: `controllerId` rebound to the current player
  *   relative to them, storedCollections wiped.
  * - Collection / Group: `pipeline.iterationTarget` set so `EffectTarget.Self` resolves
  *   to the current entity; outer collections preserved.
@@ -177,13 +177,12 @@ class ForEachExecutor(
             pipeline = outerContext.pipeline.copy(storedCollections = emptyMap())
         )
 
-        // Recompute opponentId relative to the iterated player so Chooser.Opponent /
-        // Player.Opponent inside the loop resolve to *this* player's opponent (e.g.
+        // Rebind the controller to the iterated player so You / Chooser.Controller /
+        // Chooser.Opponent inside the loop resolve relative to *this* player (e.g.
         // Bend or Break: an opponent of each separating player chooses that player's
-        // pile), not the original caster's opponent.
+        // pile), not the original caster.
         is ForEachItem.OfPlayer -> outerContext.copy(
             controllerId = item.playerId,
-            opponentId = state.turnOrder.firstOrNull { it != item.playerId } ?: outerContext.opponentId,
             pipeline = outerContext.pipeline.copy(storedCollections = emptyMap())
         )
 
@@ -196,16 +195,17 @@ class ForEachExecutor(
 
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {
         return when (player) {
-            Player.Each -> state.turnOrder
+            Player.Each -> state.activePlayers
             Player.ActivePlayerFirst -> {
-                val activePlayer = state.activePlayerId ?: return state.turnOrder
-                listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
+                val activePlayer = state.activePlayerId ?: return state.activePlayers
+                listOf(activePlayer) + state.activePlayers.filter { it != activePlayer }
             }
             Player.You -> listOf(context.controllerId)
-            Player.Opponent, Player.TargetOpponent, Player.EachOpponent -> {
-                state.turnOrder.filter { it != context.controllerId }
-            }
-            else -> state.turnOrder
+            Player.EachOpponent -> state.getOpponents(context.controllerId)
+            Player.TargetOpponent, Player.TargetPlayer -> listOfNotNull(
+                TargetResolutionUtils.resolvePlayerRef(player, context, state)
+            )
+            else -> state.activePlayers
         }
     }
 

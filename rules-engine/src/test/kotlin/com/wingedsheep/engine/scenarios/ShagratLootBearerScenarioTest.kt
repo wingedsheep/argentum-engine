@@ -59,7 +59,7 @@ class ShagratLootBearerScenarioTest : FunSpec({
         driver.state.getEntity(sword)?.get<CardComponent>()?.typeLine?.isEquipment shouldBe true
         driver.state.getEntity(aura)?.get<CardComponent>()?.typeLine?.isAura shouldBe true
 
-        val ctx = EffectContext(sourceId = shagrat, controllerId = you, opponentId = null)
+        val ctx = EffectContext(sourceId = shagrat, controllerId = you)
         val evaluator = DynamicAmountEvaluator()
         // Equipment-filtered count excludes the Aura …
         evaluator.evaluate(driver.state, DynamicAmounts.equipmentAttachedToSelf(), ctx) shouldBe 1

@@ -23,11 +23,10 @@ class CantCastSpellsExecutor : EffectExecutor<CantCastSpellsEffect> {
         effect: CantCastSpellsEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolvePlayerTarget(effect.target)
-            ?: return EffectResult.error(state, "No valid target for can't cast spells effect")
-
-        if (!state.turnOrder.contains(targetId)) {
-            return EffectResult.error(state, "Target is not a player")
+        val targetIds = context.resolvePlayerTargets(effect.target, state)
+            .filter { state.turnOrder.contains(it) }
+        if (targetIds.isEmpty()) {
+            return EffectResult.error(state, "No valid target for can't cast spells effect")
         }
 
         val removeOn = when (effect.duration) {
@@ -35,8 +34,10 @@ class CantCastSpellsExecutor : EffectExecutor<CantCastSpellsEffect> {
             else -> PlayerEffectRemoval.EndOfTurn
         }
 
-        val newState = state.updateEntity(targetId) { container ->
-            container.with(CantCastSpellsComponent(removeOn = removeOn))
+        val newState = targetIds.fold(state) { acc, targetId ->
+            acc.updateEntity(targetId) { container ->
+                container.with(CantCastSpellsComponent(removeOn = removeOn))
+            }
         }
 
         return EffectResult.success(newState)

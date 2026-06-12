@@ -204,7 +204,7 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         "PowerOfPermanent" ->
             return if (jsonContains(node["args"], "_Permanent", "ThisPermanent")) call("DynamicAmounts.sourcePower") else null
         "LifeTotalOfPlayer" -> {
-            val player = if (jsonContains(node, "_Player", "Opponent")) "Player.Opponent" else "Player.You"
+            val player = if (jsonContains(node, "_Player", "Opponent")) "Player.EachOpponent" else "Player.You"
             return call("DynamicAmount.LifeTotal", arg(player))
         }
         // "the number of [type] spells <player> has cast this turn" (Magebane Lizard). args = a spell
@@ -288,14 +288,14 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         val battlefieldCount = gn == "TheNumberOfPermanentsOnTheBattlefield"
         if (!battlefieldCount && (" hand" in oracle || " in it" in oracle)) return null
         val player = when {
-            "attacking you" in oracle -> "Player.Opponent"
+            "attacking you" in oracle -> "Player.EachOpponent"
             "on the battlefield" in oracle -> "Player.Each"
             "target opponent controls" in oracle || jsonContains(node, "_Player", "Ref_TargetOpponent") -> "Player.TargetOpponent"
             "target player controls" in oracle || jsonContains(node, "_Player", "Ref_TargetPlayer") -> "Player.TargetPlayer"
             // A plain "an opponent controls" controller clause is `ControlledByAPlayer{_Players: Opponent}`
             // — the key is plural `_Players`, so the singular `_Player` probe above misses it and the count
             // would wrongly default to Player.You (Pygmy Kavu's "each black creature your opponents control").
-            jsonContains(node, "_Player", "Opponent") || jsonContains(node, "_Players", "Opponent") -> "Player.Opponent"
+            jsonContains(node, "_Player", "Opponent") || jsonContains(node, "_Players", "Opponent") -> "Player.EachOpponent"
             // An explicit "you control" controller predicate (Fire Dragon's "Mountains you control").
             "ControlledByAPlayer" in compact(node) -> "Player.You"
             // A global battlefield tally with NO controller predicate ("the number of attacking
@@ -333,7 +333,7 @@ private fun spellsCastThisTurnFilter(spells: JsonObject?): String? = when (spell
 private fun spellsCastThisTurnPlayer(player: JsonObject?): String? = when (player?.strField("_Player")) {
     "Trigger_ThatPlayer" -> "Player.TriggeringPlayer"
     "You" -> "Player.You"
-    "Opponent" -> "Player.Opponent"
+    "Opponent" -> "Player.EachOpponent"
     else -> null
 }
 
@@ -367,7 +367,9 @@ private fun EmitCtx.refTargetFromRef(ref: String?, tvar: String?): String? {
     // "{T}: Add {C}. This land deals N damage to you" carries a `_DamageRecipient: Player{You}` recipient
     // that is the controller, not a chosen target (Adarkar Wastes, Caldera Lake, Ancient Tomb).
     if (ref == "You") return "EffectTarget.PlayerRef(Player.You)"
-    if (ref == "Opponent") return "EffectTarget.PlayerRef(Player.Opponent)"
+    // A bare non-targeted "Opponent" recipient has no single multiplayer meaning
+    // (defending player / each opponent / a chosen one) — decline -> SCAFFOLD.
+    if (ref == "Opponent") return null
     return tvar
 }
 

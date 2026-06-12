@@ -238,7 +238,6 @@ internal class EffectApplicator(
                         val context = EffectContext(
                             sourceId = effect.sourceId,
                             controllerId = controllerId,
-                            opponentId = state.getOpponent(controllerId),
                             affectedEntityId = entityId
                         )
                         val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)

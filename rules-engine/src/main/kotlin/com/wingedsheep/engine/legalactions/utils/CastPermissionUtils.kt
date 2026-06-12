@@ -64,11 +64,9 @@ class CastPermissionUtils(
             is ActivationRestriction.DuringPhase -> state.phase == restriction.phase
             is ActivationRestriction.DuringStep -> state.step == restriction.step
             is ActivationRestriction.OnlyIfCondition -> {
-                val opponentId = state.turnOrder.firstOrNull { it != playerId }
                 val context = EffectContext(
                     sourceId = sourceId,
                     controllerId = playerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = 0
                 )
@@ -108,11 +106,9 @@ class CastPermissionUtils(
     ): Boolean {
         if (restrictions.isEmpty()) return true
 
-        val opponentId = state.turnOrder.firstOrNull { it != playerId }
         val context = EffectContext(
             sourceId = null,
             controllerId = playerId,
-            opponentId = opponentId,
             targets = emptyList(),
             xValue = 0
         )
@@ -296,7 +292,6 @@ class CastPermissionUtils(
                     val ctx = EffectContext(
                         sourceId = permanentId,
                         controllerId = controller,
-                        opponentId = state.turnOrder.firstOrNull { it != controller }
                     )
                     if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
                 }
@@ -317,7 +312,7 @@ class CastPermissionUtils(
     private fun affectedPlayerMatches(affected: Player, controllerId: EntityId, castingPlayerId: EntityId): Boolean =
         when (affected) {
             is Player.You -> castingPlayerId == controllerId
-            is Player.Opponent, is Player.EachOpponent -> castingPlayerId != controllerId
+            is Player.EachOpponent -> castingPlayerId != controllerId
             is Player.Each, is Player.Any, is Player.ActivePlayerFirst -> true
             // Target-bound references (TargetPlayer, …) have no meaning for a continuous static.
             else -> false
@@ -381,11 +376,9 @@ class CastPermissionUtils(
         val spellDef = spellCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val conditionalFlash = spellDef?.script?.conditionalFlash
         if (conditionalFlash != null) {
-            val opponentId = state.turnOrder.firstOrNull { it != spellOwner }
             val effectContext = EffectContext(
                 sourceId = spellCardId,
                 controllerId = spellOwner,
-                opponentId = opponentId
             )
             if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) {
                 return true
@@ -484,11 +477,9 @@ class CastPermissionUtils(
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
                         if (!predicate(ability.ability)) continue
-                        val opponentId = state.turnOrder.firstOrNull { it != playerId }
                         val context = com.wingedsheep.engine.handlers.EffectContext(
                             sourceId = entityId,
                             controllerId = playerId,
-                            opponentId = opponentId
                         )
                         if (conditionEvaluator.evaluate(state, ability.condition, context)) return true
                     }
@@ -585,11 +576,9 @@ class CastPermissionUtils(
                 for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                     if (ability is com.wingedsheep.sdk.scripting.ConditionalStaticAbility) {
                         if (ability.ability is MayPlayLandsFromGraveyard) {
-                            val opponentId = state.turnOrder.firstOrNull { it != playerId }
                             val context = com.wingedsheep.engine.handlers.EffectContext(
                                 sourceId = entityId,
                                 controllerId = playerId,
-                                opponentId = opponentId
                             )
                             if (conditionEvaluator.evaluate(state, ability.condition, context)) return true
                         }

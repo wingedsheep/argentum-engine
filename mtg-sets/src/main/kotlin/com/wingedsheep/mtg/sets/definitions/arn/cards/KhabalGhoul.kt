@@ -32,7 +32,7 @@ val KhabalGhoul = card("Khabál Ghoul") {
             Counters.PLUS_ONE_PLUS_ONE,
             DynamicAmount.Add(
                 DynamicAmounts.creaturesDiedThisTurn(Player.You),
-                DynamicAmounts.creaturesDiedThisTurn(Player.Opponent),
+                DynamicAmounts.creaturesDiedThisTurn(Player.EachOpponent),
             ),
             EffectTarget.Self,
         )

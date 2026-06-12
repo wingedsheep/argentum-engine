@@ -52,7 +52,6 @@ data class CounterUnlessPaysContinuation(
  * @property manaCost The mana cost to pay
  * @property effect The effect to execute if the player pays
  * @property controllerId The controller for effect context
- * @property opponentId The opponent for effect context
  * @property xValue The X value if applicable
  * @property targets The chosen targets for effect context
  */

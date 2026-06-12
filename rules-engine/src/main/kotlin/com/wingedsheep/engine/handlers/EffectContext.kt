@@ -24,7 +24,6 @@ data class EffectContext(
     // --- Core ---
     val sourceId: EntityId?,
     val controllerId: EntityId,
-    val opponentId: EntityId?,
     /**
      * The player currently under consideration as a target, bound while evaluating a
      * `TargetPlayer.restriction` / `TargetOpponent.restriction` (CR 115). Resolves

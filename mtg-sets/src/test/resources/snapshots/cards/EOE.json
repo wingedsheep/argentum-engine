@@ -464,7 +464,7 @@
                         "type": "Divide",
                         "numerator": {
                             "type": "LifeTotal",
-                            "player": "Opponent"
+                            "player": "DefendingPlayer"
                         },
                         "denominator": {
                             "type": "Fixed",
@@ -473,7 +473,7 @@
                     },
                     "target": {
                         "type": "PlayerRef",
-                        "player": "Opponent"
+                        "player": "DefendingPlayer"
                     }
                 },
                 "triggerCondition": "Void",
@@ -4528,7 +4528,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "DiscardEvent",
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -8762,7 +8762,7 @@
                         "type": "Compare",
                         "left": {
                             "type": "AggregateBattlefield",
-                            "player": "Opponent",
+                            "player": "EachOpponent",
                             "filter": "creature"
                         },
                         "operator": "GTE",
@@ -14571,7 +14571,7 @@
                         },
                         {
                             "type": "Exists",
-                            "player": "Opponent",
+                            "player": "EachOpponent",
                             "zone": "Battlefield",
                             "filter": "creature",
                             "negate": true
@@ -14711,7 +14711,7 @@
                                     "type": "Fixed",
                                     "amount": 4
                                 },
-                                "player": "Opponent"
+                                "player": "DefendingPlayer"
                             },
                             "storeAs": "milled"
                         },
@@ -14721,7 +14721,7 @@
                             "destination": {
                                 "type": "ToZone",
                                 "zone": "Graveyard",
-                                "player": "Opponent"
+                                "player": "DefendingPlayer"
                             }
                         }
                     ]
@@ -15729,7 +15729,7 @@
                             "type": "Compare",
                             "left": {
                                 "type": "AggregateBattlefield",
-                                "player": "Opponent",
+                                "player": "EachOpponent",
                                 "filter": "land"
                             },
                             "operator": "GT",

@@ -159,7 +159,7 @@ class DecisionResponder(
         }
 
         // Players — prefer opponent
-        val isOpponent = targetId == state.getOpponent(playerId)
+        val isOpponent = targetId == state.soleOpponent(playerId)
         if (isOpponent) return 3.0
 
         return 0.0
@@ -301,7 +301,7 @@ class DecisionResponder(
         playerId: EntityId
     ): DecisionResponse {
         val projected = state.projectedState
-        val opponentId = state.getOpponent(playerId)
+        val opponentId = state.soleOpponent(playerId)
 
         val distribution = mutableMapOf<EntityId, Int>()
         var remaining = decision.totalAmount

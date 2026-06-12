@@ -159,7 +159,6 @@ class CostPaymentContinuationResumer(
         EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.payerId,
-            opponentId = state.turnOrder.firstOrNull { it != continuation.payerId },
             targets = continuation.targets,
             pipeline = PipelineState(
                 namedTargets = continuation.namedTargets,

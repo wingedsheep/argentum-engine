@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.advisor.modules
 import com.wingedsheep.ai.engine.advisor.*
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.ai.engine.soleOpponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -48,7 +49,7 @@ object GoblinSharpshooterAdvisor : CardAdvisor {
         // This fires for the activated ability ({T}: deal 1 damage)
         val state = context.state
         val playerId = context.playerId
-        val opponentId = state.getOpponent(playerId) ?: return null
+        val opponentId = state.soleOpponent(playerId) ?: return null
 
         val projected = context.projected
         val oppCreatures = projected.getBattlefieldControlledBy(opponentId)
@@ -81,7 +82,7 @@ object GoblinSharpshooterAdvisor : CardAdvisor {
 
         val state = context.state
         val playerId = context.playerId
-        val opponentId = state.getOpponent(playerId) ?: return null
+        val opponentId = state.soleOpponent(playerId) ?: return null
         val projected = context.projected
 
         // Priority 1: opponent creatures at exactly 1 remaining toughness (kills → untap → chain)

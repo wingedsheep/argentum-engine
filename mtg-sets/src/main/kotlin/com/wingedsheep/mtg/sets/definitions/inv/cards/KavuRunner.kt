@@ -33,7 +33,7 @@ val KavuRunner = card("Kavu Runner") {
             ability = GrantKeyword(Keyword.HASTE, Filters.Self),
             condition = Conditions.Not(
                 Exists(
-                    Player.Opponent,
+                    Player.EachOpponent,
                     Zone.BATTLEFIELD,
                     GameObjectFilter.Creature.withAnyColor(Color.WHITE, Color.BLUE)
                 )

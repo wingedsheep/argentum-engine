@@ -1918,7 +1918,7 @@ object Effects {
      * the targeted spell's controller and counter it — pair with a `TargetSpell` requirement:
      * `Effects.OpenLifeBid(Effects.CounterSpell(), Player.ControllerOf("target spell"))`.
      */
-    fun OpenLifeBid(onWin: Effect, participant: Player = Player.Opponent): Effect =
+    fun OpenLifeBid(onWin: Effect, participant: Player = Player.AnOpponent): Effect =
         OpenLifeBidEffect(onWin = onWin, participant = participant)
 
     /**
@@ -2213,7 +2213,7 @@ object Effects {
      * Target player can't cast spells this turn.
      * Used for cards like Xantid Swarm.
      */
-    fun CantCastSpells(target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent), duration: Duration = Duration.EndOfTurn): Effect =
+    fun CantCastSpells(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
         CantCastSpellsEffect(target, duration)
 
     /**
@@ -2228,7 +2228,7 @@ object Effects {
      * Target player can't activate planeswalkers' loyalty abilities for the duration.
      * Compose with [CantCastSpells] for cards that forbid both (e.g. Revel in Silence).
      */
-    fun CantActivateLoyaltyAbilities(target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent), duration: Duration = Duration.EndOfTurn): Effect =
+    fun CantActivateLoyaltyAbilities(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
         CantActivateLoyaltyAbilitiesEffect(target, duration)
 
     /**

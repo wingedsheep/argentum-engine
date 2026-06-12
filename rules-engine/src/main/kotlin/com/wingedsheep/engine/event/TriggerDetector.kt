@@ -2204,10 +2204,9 @@ class TriggerDetector(
                     is AdditionalAttackTriggers -> ability
                     is ConditionalStaticAbility ->
                         (ability.ability as? AdditionalAttackTriggers)?.takeIf {
-                            val opponentId = state.turnOrder.firstOrNull { it != controllerId }
                             conditionEvaluator.evaluate(
                                 state, ability.condition,
-                                EffectContext(sourceId = permanentId, controllerId = controllerId, opponentId = opponentId)
+                                EffectContext(sourceId = permanentId, controllerId = controllerId)
                             )
                         }
                     else -> null

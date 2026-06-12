@@ -684,12 +684,12 @@ class DynamicAmountEvaluator(
     ): List<EntityId> {
         return when (player) {
             is Player.You -> listOf(context.controllerId)
-            is Player.Opponent -> state.turnOrder.filter { it != context.controllerId }
-            is Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
-            is Player.TargetOpponent -> listOfNotNull(context.opponentId)
-            is Player.TargetPlayer -> listOfNotNull(context.opponentId)
-            is Player.Each -> state.turnOrder
-            is Player.Any -> state.turnOrder
+            is Player.EachOpponent -> state.getOpponents(context.controllerId)
+            is Player.TargetOpponent, is Player.TargetPlayer -> listOfNotNull(
+                TargetResolutionUtils.resolvePlayerRef(player, context, state)
+            )
+            is Player.Each -> state.activePlayers
+            is Player.Any -> state.activePlayers
             is Player.ContextPlayer -> {
                 val target = context.positionalTarget(player.index) ?: return emptyList()
                 when (target) {
@@ -713,12 +713,15 @@ class DynamicAmountEvaluator(
                 listOfNotNull(context.triggeringPlayerId ?: context.triggeringEntityId)
             }
             is Player.ActivePlayerFirst -> {
-                val activePlayer = state.activePlayerId ?: return state.turnOrder
-                listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
+                val activePlayer = state.activePlayerId ?: return state.activePlayers
+                listOf(activePlayer) + state.activePlayers.filter { it != activePlayer }
             }
             is Player.Candidate -> listOfNotNull(context.candidatePlayerId)
             is Player.ChosenOpponent -> listOfNotNull(
                 context.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
+            )
+            is Player.AnOpponent, is Player.DefendingPlayer -> listOfNotNull(
+                TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
         }
     }
@@ -935,7 +938,7 @@ class DynamicAmountEvaluator(
      */
     private fun basePowerOfPrintedCard(state: GameState, entityId: EntityId): Int {
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0
-        val ctx = EffectContext(sourceId = entityId, controllerId = card.ownerId ?: return 0, opponentId = null)
+        val ctx = EffectContext(sourceId = entityId, controllerId = card.ownerId ?: return 0)
         return when (val p = card.baseStats?.power) {
             is CharacteristicValue.Fixed -> p.value
             is CharacteristicValue.Dynamic -> evaluate(state, p.source, ctx)

@@ -79,7 +79,7 @@ object Conditions {
      */
     val OpponentControlsMoreLands: ConditionInterface =
         Compare(
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Land),
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Land),
             ComparisonOperator.GT,
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land)
         )
@@ -89,7 +89,7 @@ object Conditions {
      */
     val OpponentControlsMoreCreatures: ConditionInterface =
         Compare(
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature),
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature),
             ComparisonOperator.GT,
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature)
         )
@@ -102,7 +102,7 @@ object Conditions {
         Compare(
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature),
             ComparisonOperator.GT,
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature)
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature)
         )
 
     /**
@@ -110,13 +110,13 @@ object Conditions {
      * Used for CantAttackUnless (e.g. Deep-Sea Serpent, Slipstream Eel).
      */
     fun OpponentControlsLandType(landType: String): ConditionInterface =
-        Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype(landType))
+        Exists(Player.EachOpponent, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype(landType))
 
     /**
      * If an opponent controls a creature.
      */
     val OpponentControlsCreature: ConditionInterface =
-        Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Creature)
+        Exists(Player.EachOpponent, Zone.BATTLEFIELD, GameObjectFilter.Creature)
 
     /**
      * If you control a creature.
@@ -385,13 +385,13 @@ object Conditions {
      * If you have more life than an opponent.
      */
     val MoreLifeThanOpponent: ConditionInterface =
-        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GT, DynamicAmount.LifeTotal(Player.Opponent))
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GT, DynamicAmount.LifeTotal(Player.EachOpponent))
 
     /**
      * If you have less life than an opponent.
      */
     val LessLifeThanOpponent: ConditionInterface =
-        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LT, DynamicAmount.LifeTotal(Player.Opponent))
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LT, DynamicAmount.LifeTotal(Player.EachOpponent))
 
     // =========================================================================
     // Hand Conditions (via Compare / Exists)
@@ -419,7 +419,7 @@ object Conditions {
      * If an opponent has N or fewer cards in hand.
      */
     fun OpponentCardsInHandAtMost(count: Int): ConditionInterface =
-        Compare(DynamicAmount.Count(Player.Opponent, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
+        Compare(DynamicAmount.Count(Player.EachOpponent, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
 
     // =========================================================================
     // Graveyard Conditions (via Compare / Exists)
@@ -836,7 +836,7 @@ object Conditions {
      * Used for cards like Hired Claw: "Activate only if an opponent lost life this turn"
      */
     val OpponentLostLifeThisTurn: ConditionInterface =
-        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.Opponent)
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.EachOpponent)
 
     // =========================================================================
     // Candidate-player target restrictions (CR 115)

@@ -374,11 +374,9 @@ class TurnFaceUpHandler(
 
         // Execute face-up replacement effect (e.g., "put five +1/+1 counters on it")
         if (morphData.faceUpEffect != null) {
-            val opponentId = currentState.turnOrder.firstOrNull { it != action.playerId }
             val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                 sourceId = action.sourceId,
                 controllerId = action.playerId,
-                opponentId = opponentId
             )
             val effectResult = effectExecutorRegistry.execute(currentState, morphData.faceUpEffect, effectContext)
             if (effectResult.error == null) {

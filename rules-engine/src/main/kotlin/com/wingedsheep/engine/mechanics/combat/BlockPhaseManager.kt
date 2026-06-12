@@ -762,7 +762,6 @@ internal class BlockPhaseManager(
         val effectContext = EffectContext(
             sourceId = blockerId,
             controllerId = blockingPlayer,
-            opponentId = attackingPlayer
         )
         if (!conditionEvaluator.evaluate(state, restriction.condition, effectContext)) {
             return "${cardComponent.name} ${restriction.description}"
@@ -798,7 +797,6 @@ internal class BlockPhaseManager(
         val effectContext = EffectContext(
             sourceId = blockerId,
             controllerId = blockingPlayer,
-            opponentId = attackingPlayer
         )
         return !conditionEvaluator.evaluate(state, restriction.condition, effectContext)
     }

@@ -51,7 +51,7 @@ class CastChoiceConditionTest : FunSpec({
             .addToZone(ZoneKey(player, Zone.BATTLEFIELD), permanent)
     }
 
-    fun ctx() = EffectContext(sourceId = permanent, controllerId = player, opponentId = null)
+    fun ctx() = EffectContext(sourceId = permanent, controllerId = player)
 
     test("CastChoiceMade is true only when the slot holds a value") {
         val bag = CastChoicesComponent(

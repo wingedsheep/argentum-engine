@@ -881,7 +881,7 @@ class TriggerMatcher(
         return when (player) {
             Player.You -> eventPlayerId == controllerId
             Player.Each -> true
-            Player.Opponent -> eventPlayerId != controllerId
+            Player.EachOpponent -> eventPlayerId != controllerId
             else -> true
         }
     }
@@ -1051,7 +1051,7 @@ class TriggerMatcher(
         return when (player) {
             Player.You -> controllerId == activePlayerId
             Player.Each -> true
-            Player.Opponent, Player.EachOpponent -> controllerId != activePlayerId
+            Player.EachOpponent -> controllerId != activePlayerId
             else -> true
         }
     }
@@ -1145,7 +1145,6 @@ class TriggerMatcher(
             val context = EffectContext(
                 sourceId = trigger.sourceId,
                 controllerId = trigger.controllerId,
-                opponentId = state.turnOrder.firstOrNull { it != trigger.controllerId },
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggerDamageAmount = trigger.triggerContext.damageAmount,
                 triggerCounterCount = trigger.triggerContext.counterCount,

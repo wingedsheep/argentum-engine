@@ -29,7 +29,6 @@ import kotlinx.serialization.Serializable
  * @property sourceName Name of the source for event messages
  * @property modes The full list of modes (indexed by original position)
  * @property xValue The X value if applicable
- * @property opponentId The opponent player ID
  * @property chooseCount Total modes to pick (1 for classic modal, 2+ for Commands)
  * @property selectedModeIndices Original mode indices already picked, in order
  * @property availableIndices Original mode indices still offered; null = all
@@ -47,7 +46,6 @@ data class ModalContinuation(
     val sourceName: String?,
     val modes: List<@Serializable Mode>,
     val xValue: Int? = null,
-    val opponentId: EntityId? = null,
     val triggeringEntityId: EntityId? = null,
     val chooseCount: Int = 1,
     /**
@@ -95,7 +93,6 @@ data class ModalPreChosenContinuation(
     val controllerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val opponentId: EntityId? = null,
     val xValue: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val remainingEntries: List<ModalPreChosenEntry>
@@ -112,7 +109,6 @@ data class ModalPreChosenContinuation(
  * @property sourceName Name of the source for event messages
  * @property effect The chosen mode's effect to execute
  * @property xValue The X value if applicable
- * @property opponentId The opponent player ID
  */
 @Serializable
 data class ModalTargetContinuation(
@@ -122,7 +118,6 @@ data class ModalTargetContinuation(
     val sourceName: String?,
     val effect: Effect,
     val xValue: Int? = null,
-    val opponentId: EntityId? = null,
     val targetRequirements: List<TargetRequirement> = emptyList(),
     /** Original modes list for cancelling back to mode selection */
     val modes: List<@Serializable Mode>? = null,
@@ -350,7 +345,6 @@ data class DevourEntersContinuation(
  * @property modes The budget modes (cost + effect)
  * @property remainingBudget How many pawprints are left to spend
  * @property selectedModeIndices Mode indices selected so far, in order of selection
- * @property opponentId The opponent player ID
  */
 @Serializable
 data class BudgetModalContinuation(
@@ -361,7 +355,6 @@ data class BudgetModalContinuation(
     val modes: List<@Serializable BudgetMode>,
     val remainingBudget: Int,
     val selectedModeIndices: List<Int> = emptyList(),
-    val opponentId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -396,7 +389,6 @@ data class CreateTokenCopyOfChosenContinuation(
  * @property choices The feasible choices presented to the player (indices match the decision options)
  * @property targets Original targets from the effect context (preserved for ContextTarget resolution)
  * @property namedTargets Named targets from the pipeline state
- * @property opponentId The opponent player ID
  * @property triggeringEntityId The entity that triggered the ability
  */
 @Serializable
@@ -409,6 +401,5 @@ data class ChooseActionContinuation(
     val choices: List<@Serializable EffectChoice>,
     val targets: List<ChosenTarget> = emptyList(),
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val opponentId: EntityId? = null,
     val triggeringEntityId: EntityId? = null
 ) : ContinuationFrame

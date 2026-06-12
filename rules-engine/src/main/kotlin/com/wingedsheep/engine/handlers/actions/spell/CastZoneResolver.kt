@@ -321,11 +321,9 @@ class CastZoneResolver(
         val spellDef = spellCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val conditionalFlash = spellDef?.script?.conditionalFlash
         if (conditionalFlash != null) {
-            val opponentId = state.turnOrder.firstOrNull { it != spellOwner }
             val effectContext = EffectContext(
                 sourceId = spellCardId,
                 controllerId = spellOwner,
-                opponentId = opponentId
             )
             if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) {
                 return true
@@ -508,11 +506,9 @@ class CastZoneResolver(
         controllerId: EntityId,
         amount: com.wingedsheep.sdk.scripting.values.DynamicAmount
     ): Int {
-        val opponentId = state.turnOrder.firstOrNull { it != controllerId }
         val context = EffectContext(
             sourceId = granterId,
             controllerId = controllerId,
-            opponentId = opponentId
         )
         return DynamicAmountEvaluator().evaluate(state, amount, context)
     }

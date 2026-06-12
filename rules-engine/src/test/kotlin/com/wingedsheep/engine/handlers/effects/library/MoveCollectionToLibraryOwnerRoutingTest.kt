@@ -72,7 +72,6 @@ class MoveCollectionToLibraryOwnerRoutingTest : FunSpec({
     fun context(controllerId: EntityId, collectionName: String, cards: List<EntityId>) = EffectContext(
         sourceId = null,
         controllerId = controllerId,
-        opponentId = opponentId,
         pipeline = PipelineState(storedCollections = mapOf(collectionName to cards))
     )
 

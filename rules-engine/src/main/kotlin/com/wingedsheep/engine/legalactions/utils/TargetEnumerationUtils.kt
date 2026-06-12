@@ -292,7 +292,6 @@ class TargetEnumerationUtils(
             val context = EffectContext(
                 sourceId = sourceId,
                 controllerId = playerId,
-                opponentId = state.getOpponent(playerId)
             )
             DynamicAmountEvaluator().evaluate(state, dyn, context).coerceAtLeast(0)
         } catch (_: Exception) {

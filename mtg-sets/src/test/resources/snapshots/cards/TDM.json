@@ -1671,21 +1671,25 @@
                                 }
                             },
                             "then": {
-                                "type": "LoseLife",
-                                "amount": {
-                                    "type": "Divide",
-                                    "numerator": {
-                                        "type": "LifeTotal",
-                                        "player": "Opponent"
-                                    },
-                                    "denominator": {
-                                        "type": "Fixed",
-                                        "amount": 2
-                                    }
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "EachOpponent"
                                 },
-                                "target": {
-                                    "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                "body": {
+                                    "type": "LoseLife",
+                                    "amount": {
+                                        "type": "Divide",
+                                        "numerator": {
+                                            "type": "LifeTotal",
+                                            "player": "You"
+                                        },
+                                        "denominator": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "target": "Controller"
                                 }
                             }
                         }

@@ -612,7 +612,6 @@ class StateProjector(
             val context = EffectContext(
                 sourceId = entityId,
                 controllerId = controllerId,
-                opponentId = state.getOpponent(controllerId)
             )
             val baseStats = cardComponent.baseStats ?: continue
             val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()

@@ -164,7 +164,17 @@ layer, the client's "the opponent" rendering, and the AI.
 
 ---
 
-## Phase 0 — Kill the single-opponent context (engine groundwork, no behavior change)
+## Phase 0 — Kill the single-opponent context (engine groundwork, no behavior change) ✅
+
+**Status: landed.** `Player.Opponent` and `EffectContext.opponentId` are gone; `GameState.getOpponent`
+is replaced by `getOpponents(playerId)` (turn-order, excluding lost players) + `activePlayers`. New
+vocabulary: `Player.DefendingPlayer` (CR 802.2a, resolved from the source's attack assignment) and
+`Player.AnOpponent` (genuinely non-targeted "an opponent" chooser shapes only — Callous Oppressor,
+Risky Move; resolves to first opponent in turn order until the choose-an-opponent flow exists).
+Central single-player resolution lives in `TargetResolutionUtils.resolvePlayerRef`. The built-in AI
+keeps an explicitly 1v1 `soleOpponent` helper in the `ai` module. Verified by
+`MultiplayerSmokeTest` (4-player init, priority round-trip, turn cycle, EachOpponent fan-out,
+DefendingPlayer resolution).
 
 The riskiest work, done first, while everything is still verifiable against the existing 2-player test corpus.
 

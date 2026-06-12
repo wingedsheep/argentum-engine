@@ -440,7 +440,7 @@ class GatedEffectExecutor(
 
         SuccessCriterion.Auto.terminalCollectionMove(action)?.let { move ->
             val destination = move.destination as? CardDestination.ToZone ?: return GatedActionSnapshot()
-            val ownerId = resolvePlayer(destination.player, context) ?: return GatedActionSnapshot()
+            val ownerId = resolvePlayer(destination.player, context, state) ?: return GatedActionSnapshot()
             return zoneSnapshot(state, ownerId, destination.zone)
         }
 
@@ -464,15 +464,8 @@ class GatedEffectExecutor(
             destinationZonePreSize = state.zones[ZoneKey(ownerId, zone)]?.size ?: 0
         )
 
-    private fun resolvePlayer(player: Player, context: EffectContext): EntityId? = when (player) {
-        is Player.You -> context.controllerId
-        is Player.Opponent -> context.opponentId
-        is Player.TargetOpponent -> context.opponentId
-        is Player.TargetPlayer -> context.targets.firstOrNull()?.let { TargetResolutionUtils.run { it.toEntityId() } }
-        is Player.ContextPlayer -> context.positionalTarget(player.index)?.let { TargetResolutionUtils.run { it.toEntityId() } }
-        is Player.TriggeringPlayer -> context.triggeringEntityId
-        else -> context.controllerId
-    }
+    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): EntityId? =
+        TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId
 
     companion object {
         /**

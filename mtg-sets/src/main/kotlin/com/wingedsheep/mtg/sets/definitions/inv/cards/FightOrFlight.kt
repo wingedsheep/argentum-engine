@@ -44,7 +44,7 @@ val FightOrFlight = card("Fight or Flight") {
                 // 1. Gather the creatures the active opponent controls.
                 GatherCardsEffect(
                     source = CardSource.ControlledPermanents(
-                        player = Player.Opponent,
+                        player = Player.TriggeringPlayer,
                         filter = GameObjectFilter.Creature
                     ),
                     storeAs = "creatures"

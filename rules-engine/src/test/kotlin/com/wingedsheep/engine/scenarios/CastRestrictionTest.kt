@@ -50,7 +50,6 @@ class CastRestrictionTest : FunSpec({
         val context = EffectContext(
             sourceId = null,
             controllerId = player2,
-            opponentId = player1,
             targets = emptyList(),
             xValue = 0
         )
@@ -80,7 +79,6 @@ class CastRestrictionTest : FunSpec({
         val context = EffectContext(
             sourceId = null,
             controllerId = player2,
-            opponentId = player1,
             targets = emptyList(),
             xValue = 0
         )
@@ -110,7 +108,6 @@ class CastRestrictionTest : FunSpec({
         val context = EffectContext(
             sourceId = null,
             controllerId = player1,
-            opponentId = player2,
             targets = emptyList(),
             xValue = 0
         )

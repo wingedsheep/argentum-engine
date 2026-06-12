@@ -173,7 +173,7 @@ class SpellsCastThisTurnAmountTest : FunSpec({
     // Evaluator-level: per-player resolution, filter, and exclude-self matching
     // =========================================================================
 
-    test("evaluator: counts per player and honors Player.You vs Player.Opponent") {
+    test("evaluator: counts per player and honors Player.You vs Player.EachOpponent") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -195,7 +195,7 @@ class SpellsCastThisTurnAmountTest : FunSpec({
                 )
             )
         )
-        val ctx = EffectContext(sourceId = null, controllerId = you, opponentId = opp)
+        val ctx = EffectContext(sourceId = null, controllerId = you)
 
         // Player.You, Any → both your spells.
         evaluator.evaluate(state, DynamicAmount.SpellsCastThisTurn(Player.You), ctx) shouldBe 2
@@ -205,8 +205,8 @@ class SpellsCastThisTurnAmountTest : FunSpec({
             DynamicAmount.SpellsCastThisTurn(Player.You, GameObjectFilter.Noncreature),
             ctx
         ) shouldBe 1
-        // Player.Opponent, Any → the single opponent spell.
-        evaluator.evaluate(state, DynamicAmount.SpellsCastThisTurn(Player.Opponent), ctx) shouldBe 1
+        // Player.EachOpponent → the single opponent spell.
+        evaluator.evaluate(state, DynamicAmount.SpellsCastThisTurn(Player.EachOpponent), ctx) shouldBe 1
     }
 
     test("evaluator: excludeSelf drops the record whose sourceEntityId matches the source") {
@@ -229,7 +229,7 @@ class SpellsCastThisTurnAmountTest : FunSpec({
         )
 
         // Source is the spell with id 1003 (the resolving one) → excludeSelf counts the other 2.
-        val ctxSelf = EffectContext(sourceId = EntityId("1003"), controllerId = you, opponentId = null)
+        val ctxSelf = EffectContext(sourceId = EntityId("1003"), controllerId = you)
         evaluator.evaluate(
             state,
             DynamicAmount.SpellsCastThisTurn(Player.You, excludeSelf = true),
@@ -244,7 +244,7 @@ class SpellsCastThisTurnAmountTest : FunSpec({
         ) shouldBe 3
 
         // excludeSelf with a source that isn't in the list drops nothing.
-        val ctxOther = EffectContext(sourceId = EntityId("9999"), controllerId = you, opponentId = null)
+        val ctxOther = EffectContext(sourceId = EntityId("9999"), controllerId = you)
         evaluator.evaluate(
             state,
             DynamicAmount.SpellsCastThisTurn(Player.You, excludeSelf = true),

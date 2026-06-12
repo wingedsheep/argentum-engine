@@ -688,7 +688,6 @@ internal class AttackPhaseManager(
                         val ctx = com.wingedsheep.engine.handlers.EffectContext(
                             sourceId = entityId,
                             controllerId = defenderId,
-                            opponentId = attackingPlayer,
                         )
                         val taxPerAttacker = maxOf(0, dynamicAmountEvaluator.evaluate(state, ability.amountPerAttacker, ctx, projected))
                         totalGenericTax += taxPerAttacker * attackerCount

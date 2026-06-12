@@ -98,7 +98,7 @@ class StormIllegalTargetFizzleTest : FunSpec({
                 spellTargetRequirements = listOf(requirement),
                 spellName = "Creature Bolt"
             ),
-            EffectContext(sourceId = spellEntity, controllerId = p1, opponentId = null)
+            EffectContext(sourceId = spellEntity, controllerId = p1)
         )
 
         result.isSuccess shouldBe true
@@ -139,7 +139,7 @@ class StormIllegalTargetFizzleTest : FunSpec({
                 spellTargetRequirements = listOf(requirement),
                 spellName = "Creature Bolt"
             ),
-            EffectContext(sourceId = spellEntity, controllerId = p1, opponentId = null)
+            EffectContext(sourceId = spellEntity, controllerId = p1)
         )
 
         result.isSuccess shouldBe true

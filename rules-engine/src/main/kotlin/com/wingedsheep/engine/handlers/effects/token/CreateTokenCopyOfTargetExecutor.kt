@@ -109,7 +109,10 @@ class CreateTokenCopyOfTargetExecutor(
             // creature (e.g. an animated permanent exiled and reverted to its printed type) still
             // enters tapped but never attacking — see Mardu Siegebreaker's rulings.
             if (effect.attacking && tokenCard.typeLine.isCreature) {
-                val defenderId = newState.getOpponent(controllerId)
+                // The token joins the source's attack (CR 802.2a) — see CreateTokenExecutor.
+                val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                    .resolveDefendingPlayer(context, newState)
+                    ?: newState.getOpponents(controllerId).firstOrNull()
                 if (defenderId != null) {
                     components.add(AttackingComponent(defenderId))
                 }

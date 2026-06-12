@@ -33,7 +33,6 @@ class APlayerLifeAtMostConditionTest : FunSpec({
         val context = EffectContext(
             sourceId = null,
             controllerId = controller,
-            opponentId = state.getOpponent(controller),
             targets = emptyList(),
             xValue = 0
         )
@@ -54,14 +53,14 @@ class APlayerLifeAtMostConditionTest : FunSpec({
 
     test("true when an opponent is at or below the threshold") {
         val driver = createDriver()
-        val opponent = driver.state.getOpponent(driver.activePlayer!!)!!
+        val opponent = driver.getOpponent(driver.activePlayer!!)
         driver.setLifeTotal(opponent, 5)
         driver.evalAtMost(13) shouldBe true
     }
 
     test("boundary — true at exactly the threshold, false at threshold + 1") {
         val driver = createDriver()
-        val opponent = driver.state.getOpponent(driver.activePlayer!!)!!
+        val opponent = driver.getOpponent(driver.activePlayer!!)
         driver.setLifeTotal(driver.activePlayer!!, 14)
         driver.setLifeTotal(opponent, 14)
         driver.evalAtMost(13) shouldBe false

@@ -368,7 +368,6 @@ class ConditionEvaluator(
         return EffectContext(
             sourceId = ctx.sourceId,
             controllerId = controllerId,
-            opponentId = state.getOpponent(controllerId)
         )
     }
 
@@ -467,10 +466,9 @@ class ConditionEvaluator(
 
         val playerIds: List<EntityId> = when (condition.player) {
             is Player.You -> controllerId?.let { listOf(it) } ?: emptyList()
-            is Player.Opponent -> controllerId?.let { c -> state.turnOrder.filter { it != c } } ?: emptyList()
-            is Player.EachOpponent -> controllerId?.let { c -> state.turnOrder.filter { it != c } } ?: emptyList()
-            is Player.Each -> state.turnOrder
-            is Player.Any -> state.turnOrder
+            is Player.EachOpponent -> controllerId?.let { state.getOpponents(it) } ?: emptyList()
+            is Player.Each -> state.activePlayers
+            is Player.Any -> state.activePlayers
             is Player.Candidate -> listOfNotNull((ctx as? Resolution)?.effectContext?.candidatePlayerId)
             is Player.ChosenOpponent -> listOfNotNull(
                 ctx.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
@@ -584,7 +582,7 @@ class ConditionEvaluator(
      *
      * - [Player.You]: controller-of-source (resolution: effectContext.controllerId;
      *   projection: source's projected controller).
-     * - [Player.Opponent]: any opponent of the controller. Returns the first opponent
+     * - [Player.AnOpponent]: a non-targeted opponent of the controller. Returns the first opponent
      *   in turn order — sufficient for per-player tracker reads where each player has
      *   its own bucket.
      * - [Player.TriggeringPlayer]: only resolvable in resolution mode.
@@ -595,9 +593,9 @@ class ConditionEvaluator(
         return when (player) {
             is Player.You -> ctx.controllerId
                 ?: ctx.sourceId?.let { state.getEntity(it)?.get<ControllerComponent>()?.playerId }
-            is Player.Opponent -> {
+            is Player.AnOpponent -> {
                 val c = ctx.controllerId ?: return null
-                state.turnOrder.firstOrNull { it != c }
+                state.getOpponents(c).firstOrNull()
             }
             is Player.TriggeringPlayer -> (ctx as? Resolution)?.effectContext?.triggeringPlayerId
             is Player.Candidate -> (ctx as? Resolution)?.effectContext?.candidatePlayerId
@@ -834,10 +832,10 @@ class ConditionEvaluator(
     }
 
     private fun evaluateOpponentSpellOnStack(state: GameState, context: EffectContext): Boolean {
-        val opponentId = context.opponentId ?: return false
+        val opponents = state.getOpponents(context.controllerId)
         return state.stack.any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
-            container.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()?.casterId == opponentId
+            container.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()?.casterId in opponents
         }
     }
 

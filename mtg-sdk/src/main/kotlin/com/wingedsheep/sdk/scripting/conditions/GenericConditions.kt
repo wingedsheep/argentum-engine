@@ -63,7 +63,7 @@ enum class ComparisonOperator {
  * Compare(LifeTotal(Player.You), ComparisonOperator.LTE, Fixed(5))
  *
  * // More life than opponent
- * Compare(LifeTotal(Player.You), ComparisonOperator.GT, LifeTotal(Player.Opponent))
+ * Compare(LifeTotal(Player.You), ComparisonOperator.GT, LifeTotal(Player.EachOpponent))
  * ```
  */
 @SerialName("Compare")

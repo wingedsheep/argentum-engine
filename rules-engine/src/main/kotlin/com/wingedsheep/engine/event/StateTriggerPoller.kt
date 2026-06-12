@@ -60,11 +60,9 @@ class StateTriggerPoller(
             val abilities = cardDef.script.stateTriggeredAbilities
             if (abilities.isEmpty()) continue
 
-            val opponentId = workingState.turnOrder.firstOrNull { it != controllerId }
             val effectContext = EffectContext(
                 sourceId = permanentId,
                 controllerId = controllerId,
-                opponentId = opponentId
             )
 
             var latches = container.get<StateTriggerLatchesComponent>() ?: StateTriggerLatchesComponent()

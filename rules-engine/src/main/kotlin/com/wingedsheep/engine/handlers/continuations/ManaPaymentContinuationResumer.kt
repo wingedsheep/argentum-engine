@@ -279,11 +279,9 @@ class ManaPaymentContinuationResumer(
             com.wingedsheep.sdk.dsl.Patterns.Hand.discardCards(continuation.count)
         }
 
-        val opponentId = state.turnOrder.firstOrNull { it != continuation.payingPlayerId }
         val discardContext = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = continuation.controllerId,
             controllerId = continuation.payingPlayerId,
-            opponentId = opponentId
         )
 
         val discardResult = services.effectExecutorRegistry
@@ -509,8 +507,8 @@ class ManaPaymentContinuationResumer(
      * paid the counter-unless cost, then continue the pipeline.
      *
      * The rider executes with [riderController] as `controllerId` (the controller of the
-     * counter effect, i.e. "you" in "you create a Lander token"), with the spell's
-     * opponent as `opponentId`. If the rider pauses for a sub-decision we surface that
+     * counter effect, i.e. "you" in "you create a Lander token"). If the rider pauses
+     * for a sub-decision we surface that
      * pause directly; on error we also propagate it. Otherwise events from the prior
      * payment phase are concatenated with the rider's events.
      */
@@ -524,11 +522,9 @@ class ManaPaymentContinuationResumer(
     ): ExecutionResult {
         if (onPaid == null) return checkForMore(state, priorEvents)
 
-        val opponentId = state.turnOrder.firstOrNull { it != riderController }
         val riderContext = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = sourceId,
             controllerId = riderController,
-            opponentId = opponentId
         )
         val riderResult = services.effectExecutorRegistry
             .execute(state, onPaid, riderContext)

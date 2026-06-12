@@ -24,11 +24,10 @@ class CantActivateLoyaltyAbilitiesExecutor : EffectExecutor<CantActivateLoyaltyA
         effect: CantActivateLoyaltyAbilitiesEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolvePlayerTarget(effect.target)
-            ?: return EffectResult.error(state, "No valid target for can't-activate-loyalty effect")
-
-        if (!state.turnOrder.contains(targetId)) {
-            return EffectResult.error(state, "Target is not a player")
+        val targetIds = context.resolvePlayerTargets(effect.target, state)
+            .filter { state.turnOrder.contains(it) }
+        if (targetIds.isEmpty()) {
+            return EffectResult.error(state, "No valid target for can't-activate-loyalty effect")
         }
 
         val removeOn = when (effect.duration) {
@@ -36,8 +35,10 @@ class CantActivateLoyaltyAbilitiesExecutor : EffectExecutor<CantActivateLoyaltyA
             else -> PlayerEffectRemoval.EndOfTurn
         }
 
-        val newState = state.updateEntity(targetId) { container ->
-            container.with(CantActivateLoyaltyAbilitiesComponent(removeOn = removeOn))
+        val newState = targetIds.fold(state) { acc, targetId ->
+            acc.updateEntity(targetId) { container ->
+                container.with(CantActivateLoyaltyAbilitiesComponent(removeOn = removeOn))
+            }
         }
 
         return EffectResult.success(newState)

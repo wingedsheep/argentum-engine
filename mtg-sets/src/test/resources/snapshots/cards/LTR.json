@@ -17,7 +17,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "DrawEvent",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "exceptFirstInDrawStep": true
                 },
                 "binding": "ANY",
@@ -10079,7 +10079,7 @@
                 "id": "ability_2",
                 "trigger": {
                     "type": "DrawEvent",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "exceptFirstInDrawStep": true
                 },
                 "binding": "ANY",

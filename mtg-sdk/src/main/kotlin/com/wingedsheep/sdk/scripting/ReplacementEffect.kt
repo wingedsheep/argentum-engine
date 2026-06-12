@@ -482,7 +482,7 @@ data class CapDamage(
  * mirrors [ModifyLifeLoss]'s shape — use it for cards whose extra-draw clause is gated by
  * arbitrary additional conditions. Note that "you" in restriction text reads as the drawing
  * player, not the source's controller — for `DrawEvent(player = Player.You)` they're the
- * same, but a future `DrawEvent(player = Player.Opponent)` card whose restriction means
+ * same, but a future `DrawEvent(player = Player.EachOpponent)` card whose restriction means
  * "you" = source controller would need a source-relative condition instead.
  *
  * Examples:
@@ -678,9 +678,9 @@ data class ModifyLifeGain(
  * Examples:
  * - Bloodletter of Aclazotz (loses twice as much during your turn):
  *     `ModifyLifeLoss(multiplier = 2, restrictions = listOf(IsYourTurn),
- *                    appliesTo = LifeLossEvent(player = Player.Opponent))`
+ *                    appliesTo = LifeLossEvent(player = Player.EachOpponent))`
  * - "Each opponent loses an additional 1 life":
- *     `ModifyLifeLoss(modifier = 1, appliesTo = LifeLossEvent(player = Player.Opponent))`
+ *     `ModifyLifeLoss(modifier = 1, appliesTo = LifeLossEvent(player = Player.EachOpponent))`
  * - "If you would lose life, you lose 1 less life instead" (with floor at 0):
  *     `ModifyLifeLoss(modifier = -1, appliesTo = LifeLossEvent(player = Player.You))`
  *
@@ -787,7 +787,7 @@ data class LifeLossFloor(
         append(" that would reduce ")
         when ((appliesTo as? EventPattern.LifeLossEvent)?.player) {
             Player.You -> append("your")
-            Player.Opponent, Player.EachOpponent -> append("an opponent's")
+            Player.EachOpponent -> append("an opponent's")
             else -> append("a player's")
         }
         append(" life total to less than $floor reduces it to $floor instead")
@@ -961,7 +961,7 @@ data class ModeOption(
  *
  * Examples:
  * - Riptide Replicator: `EntersWithChoice(ChoiceType.COLOR)`
- * - Callous Oppressor: `EntersWithChoice(ChoiceType.CREATURE_TYPE, chooser = Player.Opponent)`
+ * - Callous Oppressor: `EntersWithChoice(ChoiceType.CREATURE_TYPE, chooser = Player.AnOpponent)`
  * - Dauntless Bodyguard: `EntersWithChoice(ChoiceType.CREATURE_ON_BATTLEFIELD)`
  */
 @SerialName("EntersWithChoice")
@@ -987,12 +987,12 @@ data class EntersWithChoice(
     )
 ) : ReplacementEffect {
     override val description: String = when (choiceType) {
-        ChoiceType.COLOR -> if (chooser == Player.Opponent) {
+        ChoiceType.COLOR -> if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses a color"
         } else {
             "As this permanent enters, choose a color"
         }
-        ChoiceType.CREATURE_TYPE -> if (chooser == Player.Opponent) {
+        ChoiceType.CREATURE_TYPE -> if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses a creature type"
         } else {
             "As this permanent enters, choose a creature type"
@@ -1000,18 +1000,18 @@ data class EntersWithChoice(
         ChoiceType.CREATURE_ON_BATTLEFIELD -> "As this creature enters, choose another creature you control"
         ChoiceType.MODE -> {
             val labels = modeOptions.joinToString(" or ") { it.label }
-            if (chooser == Player.Opponent) {
+            if (chooser == Player.AnOpponent) {
                 "As this permanent enters, an opponent chooses $labels"
             } else {
                 "As this permanent enters, choose $labels"
             }
         }
-        ChoiceType.BASIC_LAND_TYPE -> if (chooser == Player.Opponent) {
+        ChoiceType.BASIC_LAND_TYPE -> if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses a basic land type"
         } else {
             "As this permanent enters, choose a basic land type"
         }
-        ChoiceType.OPPONENT -> if (chooser == Player.Opponent) {
+        ChoiceType.OPPONENT -> if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses an opponent"
         } else {
             "As this permanent enters, choose an opponent"

@@ -752,24 +752,6 @@ class MoveCollectionExecutor(
         return null
     }
 
-    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): EntityId? {
-        return when (player) {
-            is Player.You -> context.controllerId
-            is Player.Opponent -> context.opponentId
-            is Player.TargetOpponent -> context.opponentId
-            is Player.TargetPlayer -> context.targets.firstOrNull()?.let { TargetResolutionUtils.run { it.toEntityId() } }
-            is Player.ContextPlayer -> context.positionalTarget(player.index)?.let { TargetResolutionUtils.run { it.toEntityId() } }
-            is Player.TriggeringPlayer -> context.triggeringEntityId
-            is Player.OwnerOf -> context.targets.firstOrNull()?.let {
-                val eid = TargetResolutionUtils.run { it.toEntityId() }
-                state.getEntity(eid)?.get<CardComponent>()?.ownerId
-            }
-            is Player.ControllerOf -> context.targets.firstOrNull()?.let {
-                val eid = TargetResolutionUtils.run { it.toEntityId() }
-                state.getEntity(eid)?.get<ControllerComponent>()?.playerId
-                    ?: state.getEntity(eid)?.get<CardComponent>()?.ownerId
-            }
-            else -> context.controllerId
-        }
-    }
+    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): EntityId? =
+        TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId
 }

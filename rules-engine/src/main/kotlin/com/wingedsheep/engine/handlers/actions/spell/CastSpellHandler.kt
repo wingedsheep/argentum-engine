@@ -821,11 +821,9 @@ class CastSpellHandler(
         restrictions: List<CastRestriction>,
         playerId: EntityId
     ): String? {
-        val opponentId = state.turnOrder.firstOrNull { it != playerId }
         val context = EffectContext(
             sourceId = null,
             controllerId = playerId,
-            opponentId = opponentId,
             targets = emptyList(),
             xValue = 0
         )
@@ -2259,7 +2257,6 @@ class CastSpellHandler(
             val captureContext = EffectContext(
                 sourceId = action.cardId,
                 controllerId = action.playerId,
-                opponentId = currentState.turnOrder.firstOrNull { it != action.playerId },
                 targets = emptyList(),
                 xValue = 0
             )

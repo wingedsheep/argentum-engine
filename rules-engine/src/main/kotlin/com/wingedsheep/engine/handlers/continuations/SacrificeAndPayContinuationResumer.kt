@@ -198,7 +198,6 @@ class SacrificeAndPayContinuationResumer(
             val context = EffectContext(
                 sourceId = continuation.sourceId,
                 controllerId = continuation.playerId,
-                opponentId = null,
                 targets = continuation.targets,
                 pipeline = PipelineState(namedTargets = continuation.namedTargets),
                 triggeringEntityId = continuation.triggeringEntityId,
@@ -217,7 +216,6 @@ class SacrificeAndPayContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.playerId,
-            opponentId = null,
             targets = continuation.targets,
             pipeline = PipelineState(namedTargets = continuation.namedTargets),
             triggeringEntityId = continuation.triggeringEntityId,
@@ -566,7 +564,6 @@ class SacrificeAndPayContinuationResumer(
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = playerId,
-            opponentId = null,
             targets = continuation.targets,
             pipeline = PipelineState(namedTargets = continuation.namedTargets),
             triggeringEntityId = continuation.triggeringEntityId,
@@ -669,7 +666,6 @@ class SacrificeAndPayContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = null,
             pipeline = PipelineState(storedCollections = continuation.storedCollections),
             triggeringEntityId = continuation.triggeringEntityId,
             triggeringPlayerId = continuation.triggeringPlayerId

@@ -34,12 +34,12 @@ val CrusadingKnight = card("Crusading Knight") {
         ability = GrantDynamicStatsEffect(
             filter = GroupFilter.source(),
             powerBonus = DynamicAmount.Count(
-                player = Player.Opponent,
+                player = Player.EachOpponent,
                 zone = Zone.BATTLEFIELD,
                 filter = GameObjectFilter.Land.withSubtype("Swamp")
             ),
             toughnessBonus = DynamicAmount.Count(
-                player = Player.Opponent,
+                player = Player.EachOpponent,
                 zone = Zone.BATTLEFIELD,
                 filter = GameObjectFilter.Land.withSubtype("Swamp")
             )

@@ -80,11 +80,9 @@ fun MayPlayPermission.gateOpen(
     conditionEvaluator: ConditionEvaluator,
 ): Boolean {
     val condition = condition ?: return true
-    val opponentId = state.turnOrder.firstOrNull { it != controllerId }
     val context = EffectContext(
         sourceId = sourceId ?: cardId,
         controllerId = controllerId,
-        opponentId = opponentId,
     )
     return conditionEvaluator.evaluate(state, condition, context)
 }

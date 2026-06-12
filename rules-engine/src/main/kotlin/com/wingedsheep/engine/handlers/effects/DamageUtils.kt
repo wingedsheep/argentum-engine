@@ -560,10 +560,8 @@ object DamageUtils {
                 when (lifeGainEvent.player) {
                     Player.Each, Player.Any -> return true
                     Player.You -> if (playerId == sourceControllerId) return true
-                    // Player.EachOpponent reads identically to Player.Opponent here — both mean
-                    // "scope this prevention to opponents of the replacement's host controller".
-                    // Used by Gríma Wormtongue (LTR): "Your opponents can't gain life."
-                    Player.Opponent, Player.EachOpponent ->
+                    // "Your opponents can't gain life." — Gríma Wormtongue (LTR).
+                    Player.EachOpponent ->
                         if (playerId != sourceControllerId) return true
                     else -> {}
                 }
@@ -981,7 +979,6 @@ object DamageUtils {
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = sourceControllerId,
-                        opponentId = state.turnOrder.firstOrNull { it != sourceControllerId },
                     )
                     if (effect.restrictions.any { !conditionEvaluator.evaluate(state, it, context) }) continue
                 }
@@ -1356,18 +1353,16 @@ object DamageUtils {
                 val playerMatches = when (pattern.player) {
                     Player.Each, Player.Any -> true
                     Player.You -> losingPlayerId == sourceControllerId
-                    Player.Opponent, Player.EachOpponent -> losingPlayerId != sourceControllerId
+                    Player.EachOpponent -> losingPlayerId != sourceControllerId
                     else -> false
                 }
                 if (!playerMatches) continue
 
                 val restrictions = restrictionsOf(effect)
                 if (restrictions.isNotEmpty()) {
-                    val opponentId = state.turnOrder.firstOrNull { it != sourceControllerId }
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = sourceControllerId,
-                        opponentId = opponentId,
                     )
                     if (restrictions.any { !conditionEvaluator.evaluate(state, it, context) }) continue
                 }

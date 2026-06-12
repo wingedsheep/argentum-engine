@@ -28,7 +28,7 @@ val XantidSwarm = card("Xantid Swarm") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.CantCastSpells(EffectTarget.PlayerRef(Player.Opponent))
+        effect = Effects.CantCastSpells(EffectTarget.PlayerRef(Player.DefendingPlayer))
     }
 
     metadata {
