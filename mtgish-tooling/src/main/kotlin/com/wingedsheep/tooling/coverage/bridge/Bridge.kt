@@ -17,6 +17,10 @@ import com.wingedsheep.tooling.coverage.pascalToUpperSnake
  *                  lives in its nested nodes ("ignore" in the old JSON).
  *  - [supported] — a trigger/cost accepted without registry validation (a `Triggers.*`/`Costs.*`
  *                  facade scan would harden this later).
+ *  - [unsupported] — a tag the SDK *appears* to express but the rules engine does not actually
+ *                  execute (e.g. a `Keyword` enum member with no engine handling). Pinning it
+ *                  blocks the card instead of letting the PascalCase→enum auto-resolve emit a
+ *                  silent no-op; the note names the engine work that would unlock it.
  *
  * To EXTEND: add a line to the relevant module file under `bridge/`, or add a whole new module file
  * with a `BridgeBuilder.() -> Unit` function and register it in [entries] below. Each entry is one
@@ -109,6 +113,10 @@ sealed class MappingEntry(val kind: String, val note: String?, val composes: Lis
     class Composed(note: String?, composes: List<String> = emptyList()) : MappingEntry("composed", note, composes)
     class Envelope(note: String?, composes: List<String> = emptyList()) : MappingEntry("ignore", note, composes)
     class Supported(note: String? = null) : MappingEntry("supported", note, emptyList())
+
+    /** SDK-visible but engine-inert (kind = "MISSING" so [Bridge.Resolution.blocking] is true): pins a
+     *  tag that would otherwise auto-resolve to a no-op, e.g. a `Keyword` enum member with no handling. */
+    class Unsupported(note: String? = null) : MappingEntry("MISSING", note, emptyList())
 }
 
 /** Fluent builder shared by every module file. Keys are the bare mtgish value (the probe also accepts
@@ -139,6 +147,9 @@ class BridgeBuilder {
         values.forEach { add(it, MappingEntry.Envelope(note, composes)) }
 
     fun supported(value: String, note: String? = null) = add(value, MappingEntry.Supported(note))
+
+    /** Pin a tag as engine-unsupported (blocking) — see [MappingEntry.Unsupported]. */
+    fun unsupported(value: String, note: String? = null) = add(value, MappingEntry.Unsupported(note))
 
     fun build(): Map<String, MappingEntry> = map
 }

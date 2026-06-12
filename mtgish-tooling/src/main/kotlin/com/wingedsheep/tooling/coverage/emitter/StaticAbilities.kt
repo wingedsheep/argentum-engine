@@ -84,6 +84,23 @@ internal fun EmitCtx.staticBlock(rule: JsonObject): List<Stmt>? {
     }
     collect(rule)
     if (rules.isEmpty()) { reasons.add("PermanentRuleEffect"); return null }
+    // "Enchanted creature attacks each combat if able" (Furor of the Bitten): the rule's subject is the
+    // aura's HostPermanent, not the card itself. The self-scoped renders below (flags(), the default
+    // GroupFilter.source() statics) would apply the rule to the AURA — a silent no-op. Render the
+    // attached-creature scope for the rules whose StaticAbility takes a GroupFilter; decline the rest.
+    val hostSubject = jsonContains((rule["args"] as? JsonArray)?.getOrNull(0), "_Permanent", "HostPermanent")
+    if (hostSubject) {
+        val stmts = mutableListOf<Stmt>()
+        for (r in rules) {
+            val ability = when (r.strField("_PermanentRule")!!) {
+                "MustAttack" -> call("MustAttack", arg(call("GroupFilter.attachedCreature")))
+                "CantBlock" -> call("CantBlock", arg(call("GroupFilter.attachedCreature")))
+                else -> { reasons.add("PermanentRuleEffect"); return null }
+            }
+            stmts.add(staticAbilityStmt(ability))
+        }
+        return stmts
+    }
     val stmts = mutableListOf<Stmt>()
     for (r in rules) {
         val name = r.strField("_PermanentRule")!!

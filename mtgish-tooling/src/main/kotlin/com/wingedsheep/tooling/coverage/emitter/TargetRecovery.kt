@@ -375,12 +375,37 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             if (ttype == "UptoNumberTargetPermanents") parts.add(0, arg("optional", "true"))
             return Call("TargetCreature", parts)
         }
+        // "target Spirit or enchantment" (Urgent Exorcism): an Or unioning a creature subtype with a
+        // single non-creature cardtype. The single-type branch below would render the cardtype arm
+        // alone, silently dropping the subtype arm — render the faithful union instead. Only the bare
+        // two-arm Or on a plain TargetPermanent (no count, controller, or self-exclusion) is modeled.
+        run {
+            val orNode = args.nodesTagged("Or").firstOrNull { or ->
+                val kids = or["args"].asArr ?: return@firstOrNull false
+                kids.size == 2 && kids.count { it.strField("_Permanents") == "IsCreatureType" } == 1 &&
+                    kids.count { it.strField("_Permanents") == "IsCardtype" } == 1
+            } ?: return@run
+            val kids = orNode["args"].asArr!!
+            val sub = kids.first { it.strField("_Permanents") == "IsCreatureType" }.field("args").asStr() ?: return null
+            val type = kids.first { it.strField("_Permanents") == "IsCardtype" }.field("args").asStr() ?: return null
+            val typeFilter = mapOf(
+                "Enchantment" to "GameObjectFilter.Enchantment",
+                "Artifact" to "GameObjectFilter.Artifact",
+                "Land" to "GameObjectFilter.Land",
+            )[type] ?: return null
+            if (ttype != "TargetPermanent" || "ControlledByAPlayer" in blob || jsonContains(args, "_Permanents", "Other")) return null
+            val union = Infix("or", listOf(Lit("GameObjectFilter.Creature").dot("withSubtype", arg(subtypeArg(sub))), Lit(typeFilter)))
+            return Call("TargetPermanent", listOf(arg("filter", Call("TargetFilter", listOf(arg(union))))))
+        }
         val singleType = mapOf("Land" to "TargetFilter.Land", "Artifact" to "TargetFilter.Artifact", "Enchantment" to "TargetFilter.Enchantment")
         if (types.size == 1 && types.first() in singleType) {
             // "noncreature artifact" (Blinkmoth Well): an IsNonCardtype restriction on top of the single
             // cardtype that no land/artifact/enchantment target filter expresses (there is no .noncreature()).
             // Decline rather than widen to "any artifact".
             if ("IsNonCardtype" in blob) return null
+            // An unrendered creature-subtype clause alongside the single cardtype (an Or arm the union
+            // branch above didn't model) must decline rather than silently drop it (-> SCAFFOLD).
+            if ("IsCreatureType" in blob) return null
             // "target land you control" / "...an opponent controls" — the controller restriction is a
             // ControlledByAPlayer clause. Preserve it as a `.youControl()` / `.opponentControls()` suffix
             // (mirrors the creature path); a controller clause we can't render exactly declines (-> SCAFFOLD)
@@ -471,8 +496,22 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         // widen the target to any artifact in the graveyard. Decline (-> SCAFFOLD) rather than drop it.
         if ("ManaValueIs" in blob) return null
         val types = targetTypes(args)
+        // "target Spirit card from your graveyard" (Angel of Flight Alabaster): a creature-subtype
+        // restriction, usually with an ownership clause. The bare CardInGraveyard constant used to
+        // swallow this shape, silently dropping BOTH constraints (any card, any graveyard).
+        val graveyardSubs = args.argWordsTagged("IsCreatureType")
         val filt: Dsl = when {
-            types.isEmpty() && "IsCardtype" !in blob -> Lit("TargetFilter.CardInGraveyard")
+            types.isEmpty() && "IsCardtype" !in blob -> when {
+                graveyardSubs.size == 1 ->
+                    graveyardFilter(Lit("GameObjectFilter.Any").dot("withSubtype", arg(subtypeArg(graveyardSubs[0]))), blob)
+                graveyardSubs.isEmpty() && ("\"You\"" in blob || "\"Opponent\"" in blob) ->
+                    graveyardFilter(Lit("GameObjectFilter.Any"), blob)  // "from your graveyard" — keep ownership
+                graveyardSubs.isEmpty() -> Lit("TargetFilter.CardInGraveyard")
+                else -> return null
+            }
+            // A creature-subtype clause the typed branches below don't compose ("target Zombie creature
+            // card") must decline rather than widen to any creature/type card.
+            graveyardSubs.isNotEmpty() -> return null
             types == setOf("Creature") -> when {
                 "\"You\"" in blob -> Lit("TargetFilter.CreatureInYourGraveyard")
                 "\"Opponent\"" in blob -> graveyardFilter("Creature", blob)  // "from an opponent's graveyard" (Ashen Powder)
@@ -499,15 +538,18 @@ private val graveyardSingleTypeFilters = mapOf(
     "Sorcery" to "Sorcery",
 )
 
-private fun graveyardFilter(gameObjectFilter: String, blob: String): Dsl {
+private fun graveyardFilter(gameObjectFilter: String, blob: String): Dsl =
+    graveyardFilter(Lit("GameObjectFilter.$gameObjectFilter"), blob)
+
+private fun graveyardFilter(base: Dsl, blob: String): Dsl {
     val owner: Link? = when {
         "\"You\"" in blob -> Link("ownedByYou")
         "\"Opponent\"" in blob -> Link("ownedByOpponent")
         else -> null
     }
-    var base: Dsl = Lit("GameObjectFilter.$gameObjectFilter")
-    owner?.let { base = base.dot(it) }
-    return Call("TargetFilter", listOf(arg(base), arg("zone", "Zone.GRAVEYARD")))
+    var b = base
+    owner?.let { b = b.dot(it) }
+    return Call("TargetFilter", listOf(arg(b), arg("zone", "Zone.GRAVEYARD")))
 }
 
 private fun List<JsonObject>.consumesOnlyTargetPlayer(): Boolean {

@@ -128,6 +128,9 @@ Mapping kinds:
 - `composed`: mtgish action is expressible by existing Argentum primitives.
 - `envelope`: structural IR node whose nested children carry the real capability.
 - `supported`: accepted non-effect capability, such as trigger/cost vocabulary.
+- `unsupported`: SDK-visible but engine-inert — pins a tag that would otherwise auto-resolve to a
+  silent no-op (e.g. `Keyword.INTIMIDATE` exists in the enum but has no engine handling), so the
+  card BLOCKS instead; the note names the engine work that unlocks it.
 
 `effect`/`keyword` tags are validated against a live scan of the SDK source, so a typo or a renamed
 SerialName surfaces as a coverage gap rather than rotting silently.

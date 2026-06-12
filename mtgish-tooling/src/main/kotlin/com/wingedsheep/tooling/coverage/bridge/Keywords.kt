@@ -8,6 +8,12 @@ internal fun BridgeBuilder.keywords() {
     keyword("Vigilance", "VIGILANCE")
     keyword("Reach", "REACH")
     keyword("Defender", "DEFENDER")
+    // Intimidate (CR 702.13) — `Keyword.INTIMIDATE` exists in the SDK enum, so the PascalCase→enum
+    // auto-resolve would accept it, but the rules engine has NO block-evasion handling for it
+    // (BlockEvasionRules covers flying/fear/shadow/horsemanship/landwalk only). A bare or granted
+    // intimidate would compile, lint, and snapshot fine while doing nothing in combat — a silent
+    // no-op. Pin it blocking until the engine implements it; then delete this line.
+    unsupported("Intimidate", "Keyword.INTIMIDATE is enum-only — no BlockEvasionRules handling; implement intimidate block evasion (CR 702.13) to unlock")
     // Saddle N (CR 702.171) — a PARAMETERIZED keyword ability (the N count rides in the rule's args),
     // NOT a bare card keyword. It must be `supported`, not `keyword`: a `keyword` entry would make
     // `keywordLines` stamp a bare `keywords(Keyword.SADDLE)` on the card and drop the N, exactly the

@@ -2,6 +2,8 @@ package com.wingedsheep.tooling.coverage.emitter
 
 import com.wingedsheep.tooling.coverage.Call
 import com.wingedsheep.tooling.coverage.Composite
+import com.wingedsheep.tooling.coverage.bridge.Bridge
+import com.wingedsheep.tooling.coverage.bridge.MappingEntry
 import com.wingedsheep.tooling.coverage.Dsl
 import com.wingedsheep.tooling.coverage.Lit
 import com.wingedsheep.tooling.coverage.arg
@@ -373,6 +375,9 @@ private fun EmitCtx.refTargetFromRef(ref: String?, tvar: String?): String? {
 
 internal fun EmitCtx.keywordOf(node: JsonElement?): String? {
     for (m in Regex("\"(\\w+)\"").findAll(compact(node))) {
+        // A keyword pinned `unsupported` in the bridge (an engine-inert enum member, e.g. Intimidate)
+        // must not render — granting it would be a silent no-op the probe deliberately blocks.
+        if (Bridge[m.groupValues[1]] is MappingEntry.Unsupported) continue
         val kw = pascalToUpperSnake(m.groupValues[1])
         if (kw in keywords) return kw
     }

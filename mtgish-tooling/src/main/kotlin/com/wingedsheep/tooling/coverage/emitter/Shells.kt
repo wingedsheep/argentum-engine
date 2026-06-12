@@ -151,6 +151,9 @@ internal fun keywordLines(card: JsonObject, keywords: Set<String>): Set<String> 
         val entry = Bridge.entry("_Rule", rname)
         val auto = pascalToUpperSnake(rname)
         if (entry is MappingEntry.Keyword) out.add(entry.tag)
+        // An `unsupported` pin (engine-inert keyword, e.g. Intimidate) must not fall through to the
+        // enum auto-resolve below — the enum member exists but rendering it would be a silent no-op.
+        else if (entry is MappingEntry.Unsupported) continue
         // Only a bare keyword rule (no args) is an intrinsic card keyword. A parameterized keyword rule
         // (Crew N, Flashback {cost}, …) carries args and is rendered as an explicit keywordAbility(...)
         // by the Emitter — stamping it bare here would drop its parameter (e.g. "Crew" without the N).

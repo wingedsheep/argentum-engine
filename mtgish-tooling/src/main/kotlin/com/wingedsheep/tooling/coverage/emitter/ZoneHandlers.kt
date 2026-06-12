@@ -241,6 +241,16 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     // (graveyard) can't be rendered as a single fixed SearchDestination — scaffold rather than silently
     // pick one arm (Dina's Guidance).
     if ("ChooseAnAction" in blob || "PutFoundCardsIntoGraveyard" in blob) return null
+    // A CONDITIONAL destination ("If a creature died this turn, you may put that card onto the
+    // battlefield instead" — Caravan Vigil's morbid rider): an `If`/`MayPutFoundCardsOntoBattlefield`
+    // search action. The fixed-destination render would silently pick one arm (and the May-substring
+    // even satisfies the BATTLEFIELD check below, upgrading the card to strictly-stronger-than-printed).
+    // Decline -> SCAFFOLD rather than drop the condition and the choice.
+    if (jsonContains(args, "_SearchLibraryAction", "If") || "MayPutFoundCardsOntoBattlefield" in blob) return null
+    // "put it onto the battlefield ATTACHED TO target player" (Bitterheart Witch's Curse tutor): an
+    // EntersAttachedTo* enter-flag searchLibrary has no attach parameter for — the Aura would enter
+    // unattached and the declared target would be dead weight. Decline -> SCAFFOLD.
+    if ("EntersAttachedTo" in blob) return null
     // "with different names" (Three Dreams) is a group constraint searchLibrary can't enforce — it would
     // silently let the search grab duplicates. Decline rather than drop the restriction.
     if ("DifferentNames" in blob) return null
