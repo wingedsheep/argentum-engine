@@ -30,6 +30,59 @@ class FacadeBoundaryTest : FunSpec({
         Regex("""\bPayCost\.[A-Z]""") to "Costs.pay.*",
     )
 
+    /**
+     * Raw pipeline-step constructors. Card files compose Gather → Select → Move pipelines through
+     * the `Effects.Pipeline { }` builder (or `Effects.PipelineSteps { }` for the few effects that
+     * take a bare `List<Effect>` of steps), which threads typed slot handles instead of hand-written
+     * string keys (see `backlog/inline-pipeline-dsl.md` §5 step 4, `docs/card-sdk-language-reference.md`
+     * §5.5). The builder serializes to the exact same step tree, so this ban is a pure
+     * authoring-surface boundary — the raw `@Serializable` step types remain the JSON/custom-card path.
+     */
+    val pipelineStepHint = "Effects.Pipeline { } (or Effects.PipelineSteps { } for ForEach* lists)"
+    val pipelineStepForbidden = listOf(
+        "GatherCardsEffect", "GatherUntilMatchEffect", "GatherSubtypesEffect",
+        "SelectFromCollectionEffect", "SelectTargetEffect", "MoveCollectionEffect",
+        "FilterCollectionEffect", "RevealCollectionEffect", "CaptureControllersEffect",
+        "ForEachCapturedControllerEffect", "StoreCardNameEffect", "StoreNumberEffect",
+        "ChoosePileEffect", "ConditionalOnCollectionEffect", "ChooseOptionEffect",
+        "NoteCreatureTypeEffect",
+    ).map { Regex("""\b$it\s*\(""") to pipelineStepHint }
+
+    /**
+     * Files exempt from the pipeline-step ban only — each holds a raw step in a shape the builder
+     * cannot reproduce byte-identically, so converting it would churn the snapshot golden. All
+     * OTHER facade rules still apply to these files. Keep this list short and justified; a new
+     * pipeline card should never land here.
+     *
+     *  - A single step as a `ConditionalEffect` branch (`effect`/`elseEffect`) — not a multi-step
+     *    pipeline; wrapping it in `Effects.Pipeline { }` would add a `CompositeEffect` node.
+     *      AetherRift, BreOfClanStoutarm, CelestialReunion, WhiskervaleForerunner
+     *  - A `.then(...)` chain whose leftmost element is an opaque pattern-composite
+     *    (`Patterns.Library.scry`, `Patterns.Hand.putFromHand`, …); `then` flattens that composite's
+     *    children, so the builder can't reproduce the flat list without inlining the pattern.
+     *      ElvenFarsight, MeekAttack, Dermoplasm, TerminalVelocity, CauldronDance
+     *  - A `ConditionalOnCollectionEffect` with an empty-`Composite` branch — `ifNotEmpty { }`/
+     *    `orElse { }` require a non-empty body.
+     *      PulsarSquadronAce, ManholeMissile
+     *  - A reused `val steps = listOf(<raw steps>)` concatenated across modes — the list must stay a
+     *    raw value, not a builder result.
+     *      CruelclawsHeist
+     */
+    val pipelineStepAllowlist = setOf(
+        "inv/cards/AetherRift.kt",
+        "ecl/cards/BreOfClanStoutarm.kt",
+        "ecl/cards/CelestialReunion.kt",
+        "blb/cards/WhiskervaleForerunner.kt",
+        "ltr/cards/ElvenFarsight.kt",
+        "ecl/cards/MeekAttack.kt",
+        "lgn/cards/Dermoplasm.kt",
+        "eoe/cards/TerminalVelocity.kt",
+        "inv/cards/CauldronDance.kt",
+        "eoe/cards/PulsarSquadronAce.kt",
+        "tmt/cards/ManholeMissile.kt",
+        "blb/cards/CruelclawsHeist.kt",
+    )
+
     test("card definitions construct effects/costs via the Effects/Costs facades, not raw types") {
         val definitionsDir = Paths.get(
             "src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
@@ -39,10 +92,12 @@ class FacadeBoundaryTest : FunSpec({
 
         Files.walk(definitionsDir).use { stream ->
             stream.filter { it.name.endsWith(".kt") }.forEach { path ->
+                val rel = definitionsDir.parent.parent.relativize(path)
+                val pipelineExempt = pipelineStepAllowlist.any { rel.toString().endsWith(it) }
+                val rules = if (pipelineExempt) forbidden else forbidden + pipelineStepForbidden
                 stripCommentsAndImports(path.readText()).forEachIndexed { idx, line ->
-                    for ((regex, hint) in forbidden) {
+                    for ((regex, hint) in rules) {
                         if (regex.containsMatchIn(line)) {
-                            val rel = definitionsDir.parent.parent.relativize(path)
                             violations += "$rel:${idx + 1}  →  use $hint instead of `${regex.find(line)!!.value}`"
                         }
                     }
