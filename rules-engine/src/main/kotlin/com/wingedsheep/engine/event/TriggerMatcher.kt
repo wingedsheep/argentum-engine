@@ -1400,6 +1400,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocked,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUnblocked,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.InSameBandAsSource,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingSource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.EnteredThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasDealtDamage,

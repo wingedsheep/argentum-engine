@@ -64,3 +64,21 @@ entries below for the actual decisions.
   ACCURATE; only Gap 14 (flicker) and Gap 13 (set base P/T, facade) were obsolete. **Do not trust a
   COMPOSABLE verdict without grepping the named primitive.**
 
+### Battle-Scarred Goblin (Red) — Gap 15 (deal damage to each blocker)
+
+- **Oracle:** "Whenever this creature becomes blocked, it deals 1 damage to each creature blocking it."
+- **Decision:** the group-damage primitive `Patterns.Group.dealDamageToAll(n, GroupFilter)` and the
+  `Triggers.BecomesBlocked` trigger already existed; the only gap was a *source-relative* "blocking
+  THIS creature" filter (the existing `IsBlocking` matches any blocker in combat, which would wrongly
+  hit blockers of other attackers). Added `StatePredicate.IsBlockingSource` (mirrors the existing
+  source-relative `InSameBandAsSource`): a blocker whose `BlockingComponent.blockedAttackerIds`
+  contains `PredicateContext.sourceId`. Plus filter builder `GameObjectFilter.Creature.blockingSource()`.
+  `ForEachInGroup`→`findMatchingOnBattlefield` already threads the effect's sourceId into the
+  predicate context, so it resolves correctly. Card = `Triggers.BecomesBlocked` +
+  `Patterns.Group.dealDamageToAll(1, GroupFilter(Creature.blockingSource()))`.
+- **Touched (exhaustive-when fan-out):** `StatePredicate.kt` (+predicate), `ObjectFilter.kt`
+  (+`blockingSource()`), `PredicateEvaluator.kt` (real eval), `AffectsFilterResolver.kt` (inert/false
+  in projection), `BeginningPhaseManager.kt` + `TriggerMatcher.kt` (no-constraint lists), card +
+  `BattleScarredGoblinScenarioTest` (proves only its blockers die), SDK reference.
+- **Reusable for:** any "becomes blocked → affect each blocker" card.
+

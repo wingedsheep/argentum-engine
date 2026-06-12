@@ -1499,6 +1499,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   creature". Note: it's only evaluated where the context carries a source entity — currently the
   recipient filter of a `PreventDamage` replacement (see §15); it's inert in group/projection,
   untap, and trigger-gating contexts.
+- `IsBlockingSource` (filter builder `blockingSource()`) — source-relative (CR 509): matches a
+  creature whose blocked-attacker set contains the effect's `PredicateContext.sourceId`, i.e. the
+  source's own blockers. Used with `Patterns.Group.dealDamageToAll(n, GroupFilter(Creature.blockingSource()))`
+  for "Whenever this becomes blocked, it deals N damage to each creature blocking it" (Battle-Scarred
+  Goblin). Resolves in resolution-time effect contexts (where the source is carried); inert in
+  group/projection, untap, and trigger-gating contexts.
 - `CrewedOrSaddledSourceThisTurn` (filter builder `crewedOrSaddledSourceThisTurn()`) —
   source-relative (CR 702.122 / 702.171): matches a creature that crewed or saddled the effect's
   source permanent this turn (i.e. one tapped to pay that permanent's Crew/Saddle cost). Resolves

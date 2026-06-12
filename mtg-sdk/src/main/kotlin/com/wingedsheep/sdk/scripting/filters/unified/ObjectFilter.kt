@@ -485,6 +485,14 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.IsBlocking
     )
 
+    /**
+     * Must be blocking the effect's source (CR 509). Source-relative; only matches the source's
+     * own blockers. "Whenever this becomes blocked, it deals N damage to each creature blocking it."
+     */
+    fun blockingSource() = copy(
+        statePredicates = statePredicates + StatePredicate.IsBlockingSource
+    )
+
     /** Must be attacking or blocking */
     fun attackingOrBlocking() = copy(
         statePredicates = statePredicates + StatePredicate.Or(

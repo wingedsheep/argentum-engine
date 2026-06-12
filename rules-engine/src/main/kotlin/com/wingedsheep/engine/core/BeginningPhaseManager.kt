@@ -393,6 +393,7 @@ class BeginningPhaseManager(
         StatePredicate.IsBlocked,
         StatePredicate.IsUnblocked,
         StatePredicate.InSameBandAsSource,
+        StatePredicate.IsBlockingSource,
         StatePredicate.EnteredThisTurn,
         StatePredicate.WasDealtDamageThisTurn,
         StatePredicate.HasDealtDamage,

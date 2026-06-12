@@ -697,6 +697,14 @@ class PredicateEvaluator {
                 }
             }
 
+            // Creature blocking the effect's source (CR 509). Source-relative: the candidate is a
+            // blocker whose blocked-attacker set contains context.sourceId. Inert with no source.
+            StatePredicate.IsBlockingSource -> {
+                val sourceId = context?.sourceId
+                sourceId != null &&
+                    container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true
+            }
+
             // Crewed/saddled the effect's source permanent this turn (CR 702.122 / 702.171).
             // Source-relative: reads the source's CrewSaddleContributorsComponent and checks
             // membership. Inert with no source context.

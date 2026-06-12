@@ -89,6 +89,18 @@ sealed interface StatePredicate {
         override val description: String = "in the same band as this creature"
     }
 
+    /**
+     * Creature that is blocking the effect's source — i.e. a blocker whose blocked-attacker set
+     * contains the source entity supplied in the evaluation context. Source-relative; yields false
+     * with no source context or outside combat. Used for "Whenever this becomes blocked, it deals N
+     * damage to each creature blocking it" (Battle-Scarred Goblin).
+     */
+    @SerialName("IsBlockingSource")
+    @Serializable
+    data object IsBlockingSource : Entity {
+        override val description: String = "blocking this creature"
+    }
+
     // =============================================================================
     // Summoning Sickness (Entity)
     // =============================================================================

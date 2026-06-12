@@ -944,6 +944,56 @@
     ]
 }
 
+// Battle-Scarred Goblin
+{
+    "name": "Battle-Scarred Goblin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Whenever this creature becomes blocked, it deals 1 damage to each creature blocking it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsBlockingSource"
+                            ]
+                        }
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Hristo D. Chukov",
+        "flavorText": "\"An Orc shot Balin from behind a stone. We slew the Orc, but many more came.\"\n—*Book of Mazarbul*",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b91859de-1983-4c9c-a9e6-289c7dba1eb4.jpg?1686968799"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bilbo's Ring
 {
     "name": "Bilbo's Ring",
