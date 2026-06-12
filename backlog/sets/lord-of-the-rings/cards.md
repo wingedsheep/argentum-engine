@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 223 / 291
+**Implemented:** 225 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -194,7 +194,7 @@ starter-deck/special cards and basic lands.
 - [x] Brandywine Farmer
 - [x] Celeborn the Wise
 - [x] Chance-Met Elves
-- [ ] Delighted Halfling
+- [x] Delighted Halfling
 - [ ] Dúnedain Rangers
 - [x] Elven Chorus
 - [x] Elven Farsight
@@ -299,7 +299,7 @@ starter-deck/special cards and basic lands.
 ### Land
 
 - [x] Barad-dûr
-- [ ] Great Hall of the Citadel
+- [x] Great Hall of the Citadel
 - [ ] The Grey Havens
 - [x] Minas Tirith
 - [x] Mines of Moria

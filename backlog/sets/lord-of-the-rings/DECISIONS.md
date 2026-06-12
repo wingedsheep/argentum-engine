@@ -157,3 +157,19 @@ entries below for the actual decisions.
   pieces individually tested; snapshot covers registration).
 - No new SDK for either; one commit per card.
 
+### Great Hall of the Citadel + Delighted Halfling — Gap 22 partial (legendary-spells-only mana)
+
+- **Decision:** Gap 22's mana-restriction framework (`ManaRestriction` + `ManaSpellRider`) existed but
+  lacked a "legendary spells only" variant. Added `ManaRestriction.LegendarySpellsOnly` + a
+  `SpellPaymentContext.isLegendary` field (populated from `cardComponent.typeLine.isLegendary` at all 5
+  spell-cast context sites: 2 in CastSpellHandler, 3 in CastSpellEnumerator) + the matcher case in
+  `ManaPool.isSatisfiedBy` (`!isAbilityActivation && isLegendary`).
+- **Great Hall** (Land): `{T}: AddColorlessMana(1)`; `{1},{T}: AddManaInAnyCombination(2, restriction =
+  LegendarySpellsOnly)`.
+- **Delighted Halfling** (1/2): `{T}: AddColorlessMana(1)`; `{T}: AddManaOfChoiceEffect(AnyColor,
+  Fixed(1), LegendarySpellsOnly, riders = {MakesSpellUncounterable})`.
+- **Touched:** `ManaRestriction.kt`, `ManaPool.kt` (+field, +matcher), `CastSpellHandler.kt` +
+  `CastSpellEnumerator.kt` (populate isLegendary), 2 cards + `ManaSpendRestrictionLegendaryTest`
+  (matcher unit test: pays legendary, not non-legendary, not abilities), SDK ref. ManaRestriction is
+  server-side only → no client change.
+

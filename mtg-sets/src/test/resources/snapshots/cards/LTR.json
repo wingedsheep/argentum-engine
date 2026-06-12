@@ -2414,6 +2414,58 @@
     ]
 }
 
+// Delighted Halfling
+{
+    "name": "Delighted Halfling",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Halfling Citizen",
+    "oracleText": "{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a legendary spell, and that spell can't be countered.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": "LegendarySpellsOnly",
+                    "riders": [
+                        "MakesSpellUncounterable"
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Inka Schulz",
+        "flavorText": "There were toys the Hobbit-children had never seen before, all beautiful, and some obviously magical.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71384418-173a-4f77-adab-56e52fa23692.jpg?1686969281"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Denethor, Ruling Steward
 {
     "name": "Denethor, Ruling Steward",
@@ -6491,6 +6543,70 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Great Hall of the Citadel
+{
+    "name": "Great Hall of the Citadel",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Add two mana in any combination of colors. Spend this mana only to cast legendary spells.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": "LegendarySpellsOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "artist": "Campbell White",
+        "flavorText": "\"Renewed shall be blade that was broken: The crownless again shall be king.\"\n—Bilbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/219c7b57-b62b-42d1-85d9-4b57624a3f54.jpg?1686970335"
+    }
 }
 
 // Grey Havens Navigator
