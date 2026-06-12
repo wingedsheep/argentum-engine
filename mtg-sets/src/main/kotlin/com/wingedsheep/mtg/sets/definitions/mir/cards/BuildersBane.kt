@@ -4,13 +4,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CaptureControllersEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.ForEachCapturedControllerEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -57,28 +53,29 @@ val BuildersBane = card("Builder's Bane") {
             filter = TargetFilter.Artifact,
             dynamicMaxCount = DynamicAmount.XValue
         )
-        effect = Effects.Composite(
-            GatherCardsEffect(source = CardSource.ChosenTargets, storeAs = "targets"),
-            CaptureControllersEffect(from = "targets", storeAs = "preControllers"),
-            MoveCollectionEffect(
-                from = "targets",
+        effect = Effects.Pipeline {
+            val targets = gather(CardSource.ChosenTargets, name = "targets")
+            val preControllers = captureControllers(targets, name = "preControllers")
+            val destroyed = moveTracked(
+                targets,
                 destination = CardDestination.ToZone(Zone.GRAVEYARD),
                 moveType = MoveType.Destroy,
-                storeMovedAs = "destroyed"
-            ),
-            ForEachCapturedControllerEffect(
-                collection = "destroyed",
-                originalCollection = "targets",
-                controllerSnapshot = "preControllers",
-                countVariable = "killCount",
-                effects = listOf(
+                name = "destroyed"
+            )
+            forEachCaptured(
+                collection = destroyed,
+                original = targets,
+                controllers = preControllers,
+                countName = "killCount"
+            ) { killCount ->
+                run(
                     DealDamageEffect(
                         amount = DynamicAmount.VariableReference("killCount"),
                         target = EffectTarget.Controller
                     )
                 )
-            )
-        )
+            }
+        }
     }
 
     metadata {

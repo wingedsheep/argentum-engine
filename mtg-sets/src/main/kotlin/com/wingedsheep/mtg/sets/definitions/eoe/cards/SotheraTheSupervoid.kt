@@ -77,32 +77,28 @@ val SotheraTheSupervoid = card("Sothera, the Supervoid") {
                 Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Creature, negate = true)
             )
         )
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromLinkedExile(),
-                    storeAs = "exiled_creatures"
-                ),
-                SacrificeSelfEffect,
-                SelectFromCollectionEffect(
-                    from = "exiled_creatures",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Creature,
-                    storeSelected = "chosen_creature",
-                    prompt = "Choose a creature card to put onto the battlefield"
-                ),
-                MoveCollectionEffect(
-                    from = "chosen_creature",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                    storeMovedAs = "returned_creature"
-                ),
+        effect = Effects.Pipeline {
+            val exiledCreatures = gather(CardSource.FromLinkedExile(), name = "exiled_creatures")
+            run(SacrificeSelfEffect)
+            val chosenCreature = chooseExactly(
+                1, from = exiledCreatures,
+                filter = GameObjectFilter.Creature,
+                prompt = "Choose a creature card to put onto the battlefield",
+                name = "chosen_creature"
+            )
+            moveTracked(
+                chosenCreature,
+                destination = CardDestination.ToZone(Zone.BATTLEFIELD),
+                name = "returned_creature"
+            )
+            run(
                 AddCountersToCollectionEffect(
                     collectionName = "returned_creature",
                     counterType = Counters.PLUS_ONE_PLUS_ONE,
                     count = 2
                 )
             )
-        )
+        }
         description = "At the beginning of your end step, if a player controls no creatures, sacrifice Sothera, then put a creature card exiled with it onto the battlefield under your control with two additional +1/+1 counters on it."
     }
 

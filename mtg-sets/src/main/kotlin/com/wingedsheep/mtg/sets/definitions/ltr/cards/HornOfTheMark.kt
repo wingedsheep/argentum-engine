@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -34,33 +30,31 @@ val HornOfTheMark = card("Horn of the Mark") {
 
     triggeredAbility {
         trigger = TriggerSpec(YouAttackEvent(minAttackers = 2), TriggerBinding.ANY)
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Creature,
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Put on bottom",
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-                    order = CardOrder.Random
-                )
+        effect = Effects.Pipeline {
+            val looked = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
+                name = "looked"
             )
-        )
+            val (kept, rest) = chooseUpToSplit(
+                1,
+                from = looked,
+                filter = GameObjectFilter.Creature,
+                selectedLabel = "Put in hand",
+                remainderLabel = "Put on bottom",
+                showAllCards = true,
+                name = "kept",
+                remainderName = "rest"
+            )
+            move(
+                kept,
+                destination = CardDestination.ToZone(Zone.HAND)
+            )
+            move(
+                rest,
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                order = CardOrder.Random
+            )
+        }
     }
 
     metadata {

@@ -14,10 +14,8 @@ import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -71,17 +69,17 @@ val OutpostSiege = card("Outpost Siege") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         triggerCondition = SourceChosenModeIs("khans")
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
-                storeAs = "exiledCard"
-            ),
-            MoveCollectionEffect(
-                from = "exiledCard",
-                destination = CardDestination.ToZone(Zone.EXILE)
-            ),
-            GrantMayPlayFromExileEffect("exiledCard", MayPlayExpiry.EndOfTurn)
-        ))
+        effect = Effects.Pipeline {
+            val exiledCard = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
+                name = "exiledCard"
+            )
+            move(
+                exiledCard,
+                CardDestination.ToZone(Zone.EXILE)
+            )
+            run(GrantMayPlayFromExileEffect("exiledCard", MayPlayExpiry.EndOfTurn))
+        }
     }
 
     // Dragons — Whenever a creature you control leaves the battlefield, deal 1 damage.

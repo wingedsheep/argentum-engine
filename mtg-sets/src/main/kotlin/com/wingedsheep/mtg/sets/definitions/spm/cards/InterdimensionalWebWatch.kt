@@ -9,11 +9,9 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -32,19 +30,17 @@ val InterdimensionalWebWatch = card("Interdimensional Web Watch") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
-                    storeAs = "exiledCards"
-                ),
-                MoveCollectionEffect(
-                    from = "exiledCards",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                GrantMayPlayFromExileEffect(from = "exiledCards", expiry = MayPlayExpiry.UntilEndOfNextTurn)
+        effect = Effects.Pipeline {
+            val exiledCards = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
+                name = "exiledCards"
             )
-        )
+            move(
+                exiledCards,
+                CardDestination.ToZone(Zone.EXILE)
+            )
+            run(GrantMayPlayFromExileEffect(from = "exiledCards", expiry = MayPlayExpiry.UntilEndOfNextTurn))
+        }
     }
 
     activatedAbility {

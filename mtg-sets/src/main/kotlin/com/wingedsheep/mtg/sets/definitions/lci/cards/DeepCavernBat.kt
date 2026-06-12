@@ -11,11 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -48,30 +44,27 @@ val DeepCavernBat = card("Deep-Cavern Bat") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val opponent = target("target opponent", Targets.Opponent)
-        effect = Effects.Composite(
-            listOf(
-                LookAtTargetHandEffect(opponent),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                    storeAs = "opponentHand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "opponentHand",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    filter = GameObjectFilter.Nonland,
-                    storeSelected = "exiledCard",
-                    prompt = "You may exile a nonland card from target opponent's hand",
-                    showAllCards = true,
-                    alwaysPrompt = true
-                ),
-                MoveCollectionEffect(
-                    from = "exiledCard",
-                    destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0)),
-                    linkToSource = true
-                )
+        effect = Effects.Pipeline {
+            run(LookAtTargetHandEffect(opponent))
+            val opponentHand = gather(
+                CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
+                name = "opponentHand"
             )
-        )
+            val exiledCard = chooseUpTo(
+                1, from = opponentHand,
+                chooser = Chooser.Controller,
+                filter = GameObjectFilter.Nonland,
+                prompt = "You may exile a nonland card from target opponent's hand",
+                showAllCards = true,
+                alwaysPrompt = true,
+                name = "exiledCard"
+            )
+            move(
+                exiledCard,
+                CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0)),
+                linkToSource = true
+            )
+        }
     }
 
     triggeredAbility {

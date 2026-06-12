@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 val TownGreeter = card("Town Greeter") {
@@ -28,36 +24,35 @@ val TownGreeter = card("Town Greeter") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "milled"
-                ),
-                MoveCollectionEffect(
-                    from = "milled",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD)
-                ),
-                SelectFromCollectionEffect(
-                    from = "milled",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Land,
-                    storeSelected = "selected",
-                    showAllCards = true,
-                    prompt = "You may put a land card into your hand",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Leave in graveyard"
-                ),
-                MoveCollectionEffect(
-                    from = "selected",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
+        effect = Effects.Pipeline {
+            val milled = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
+                name = "milled"
+            )
+            move(
+                milled,
+                CardDestination.ToZone(Zone.GRAVEYARD)
+            )
+            val selected = chooseUpTo(
+                1, from = milled,
+                filter = GameObjectFilter.Land,
+                showAllCards = true,
+                prompt = "You may put a land card into your hand",
+                selectedLabel = "Put in hand",
+                remainderLabel = "Leave in graveyard",
+                name = "selected"
+            )
+            move(
+                selected,
+                CardDestination.ToZone(Zone.HAND)
+            )
+            run(
                 ConditionalEffect(
                     condition = Conditions.CollectionContainsMatch("selected", townFilter),
                     effect = Effects.GainLife(2)
                 )
             )
-        )
+        }
     }
 
     metadata {

@@ -8,10 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -33,35 +29,34 @@ val ManholeMissile = card("Manhole Missile") {
 
     spell {
         val creature = target("target creature", Targets.Creature)
-        effect = Effects.Composite(
-            listOf(
-                Effects.DealDamage(3, creature),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    storeSelected = "bottomed",
-                    storeRemainder = "kept",
-                    selectedLabel = "Put on bottom of library",
-                    remainderLabel = "Keep in hand",
-                ),
-                MoveCollectionEffect(
-                    from = "bottomed",
-                    destination = CardDestination.ToZone(
-                        Zone.LIBRARY,
-                        placement = ZonePlacement.Bottom
-                    )
-                ),
+        effect = Effects.Pipeline {
+            run(Effects.DealDamage(3, creature))
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.You),
+                name = "hand"
+            )
+            val (bottomed, kept) = chooseUpToSplit(
+                1, from = hand,
+                selectedLabel = "Put on bottom of library",
+                remainderLabel = "Keep in hand",
+                name = "bottomed",
+                remainderName = "kept"
+            )
+            move(
+                bottomed,
+                CardDestination.ToZone(
+                    Zone.LIBRARY,
+                    placement = ZonePlacement.Bottom
+                )
+            )
+            run(
                 ConditionalOnCollectionEffect(
                     collection = "bottomed",
                     ifNotEmpty = Effects.DrawCards(1),
                     ifEmpty = Effects.Composite(listOf())
-                ),
+                )
             )
-        )
+        }
     }
 
     metadata {

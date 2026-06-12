@@ -8,10 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.references.Player.OwnerOf
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -34,31 +30,27 @@ val ChaosWarp = card("Chaos Warp") {
     spell {
         val permanent = target("permanent", Targets.Permanent)
 
-        effect = Effects.Composite(
-            listOf(
-                Effects.ShuffleIntoLibrary(permanent),
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(
-                        count = DynamicAmount.Fixed(1),
-                        player = OwnerOf("target permanent")
-                    ),
-                    storeAs = "revealed",
-                    revealed = true
+        effect = Effects.Pipeline {
+            run(Effects.ShuffleIntoLibrary(permanent))
+            val revealed = gather(
+                CardSource.TopOfLibrary(
+                    count = DynamicAmount.Fixed(1),
+                    player = OwnerOf("target permanent")
                 ),
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.All,
-                    filter = GameObjectFilter.Permanent,
-                    storeSelected = "permanentCard",
-                    storeRemainder = null
-                ),
-                MoveCollectionEffect(
-                    from = "permanentCard",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                    underOwnersControl = true
-                )
+                revealed = true,
+                name = "revealed"
             )
-        )
+            val permanentCard = selectAll(
+                from = revealed,
+                filter = GameObjectFilter.Permanent,
+                name = "permanentCard"
+            )
+            move(
+                permanentCard,
+                CardDestination.ToZone(Zone.BATTLEFIELD),
+                underOwnersControl = true
+            )
+        }
     }
 
     metadata {

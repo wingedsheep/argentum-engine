@@ -7,9 +7,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -61,31 +58,26 @@ val PullThroughTheWeft = card("Pull Through the Weft") {
                 optional = true,
             ),
         )
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.ChosenTargets,
-                    storeAs = "chosen",
-                ),
-                FilterCollectionEffect(
-                    from = "chosen",
-                    filter = CollectionFilter.MatchesFilter(GameObjectFilter.Land),
-                    storeMatching = "chosenLands",
-                    storeNonMatching = "chosenNonlands",
-                ),
-                MoveCollectionEffect(
-                    from = "chosenNonlands",
-                    destination = CardDestination.ToZone(Zone.HAND),
-                ),
-                MoveCollectionEffect(
-                    from = "chosenLands",
-                    destination = CardDestination.ToZone(
-                        Zone.BATTLEFIELD,
-                        placement = ZonePlacement.Tapped,
-                    ),
+        effect = Effects.Pipeline {
+            val chosen = gather(CardSource.ChosenTargets, name = "chosen")
+            val (chosenLands, chosenNonlands) = filterSplit(
+                chosen,
+                CollectionFilter.MatchesFilter(GameObjectFilter.Land),
+                name = "chosenLands",
+                restName = "chosenNonlands",
+            )
+            move(
+                chosenNonlands,
+                destination = CardDestination.ToZone(Zone.HAND),
+            )
+            move(
+                chosenLands,
+                destination = CardDestination.ToZone(
+                    Zone.BATTLEFIELD,
+                    placement = ZonePlacement.Tapped,
                 ),
             )
-        )
+        }
     }
 
     metadata {

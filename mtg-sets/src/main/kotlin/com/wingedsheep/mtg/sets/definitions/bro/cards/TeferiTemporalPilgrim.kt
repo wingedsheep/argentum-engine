@@ -15,10 +15,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -83,43 +79,40 @@ val TeferiTemporalPilgrim = card("Teferi, Temporal Pilgrim") {
     //      hand. Then they shuffle each nonland permanent they control into its owner's library.
     loyaltyAbility(-12) {
         target("opponent", Targets.Opponent)
-        effect = Effects.Composite(
-            listOf(
-                // Target opponent picks a permanent they control; return it to its owner's hand.
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(Player.ContextPlayer(0)),
-                    storeAs = "their_permanents"
+        effect = Effects.Pipeline {
+            // Target opponent picks a permanent they control; return it to its owner's hand.
+            val theirPermanents = gather(
+                CardSource.ControlledPermanents(Player.ContextPlayer(0)),
+                name = "their_permanents"
+            )
+            val chosen = chooseExactly(
+                1, from = theirPermanents,
+                chooser = Chooser.TargetPlayer,
+                prompt = "Choose a permanent you control to return to its owner's hand",
+                useTargetingUI = true,
+                name = "chosen"
+            )
+            move(
+                chosen,
+                CardDestination.ToZone(Zone.HAND, Player.ContextPlayer(0))
+            )
+            // Then shuffle each remaining nonland permanent they control into its owner's library.
+            val theirNonlands = gather(
+                CardSource.ControlledPermanents(
+                    Player.ContextPlayer(0),
+                    GameObjectFilter.NonlandPermanent
                 ),
-                SelectFromCollectionEffect(
-                    from = "their_permanents",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.TargetPlayer,
-                    storeSelected = "chosen",
-                    prompt = "Choose a permanent you control to return to its owner's hand",
-                    useTargetingUI = true
-                ),
-                MoveCollectionEffect(
-                    from = "chosen",
-                    destination = CardDestination.ToZone(Zone.HAND, Player.ContextPlayer(0))
-                ),
-                // Then shuffle each remaining nonland permanent they control into its owner's library.
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(
-                        Player.ContextPlayer(0),
-                        GameObjectFilter.NonlandPermanent
-                    ),
-                    storeAs = "their_nonlands"
-                ),
-                MoveCollectionEffect(
-                    from = "their_nonlands",
-                    destination = CardDestination.ToZone(
-                        Zone.LIBRARY,
-                        Player.ContextPlayer(0),
-                        ZonePlacement.Shuffled
-                    )
+                name = "their_nonlands"
+            )
+            move(
+                theirNonlands,
+                CardDestination.ToZone(
+                    Zone.LIBRARY,
+                    Player.ContextPlayer(0),
+                    ZonePlacement.Shuffled
                 )
             )
-        )
+        }
     }
 
     metadata {

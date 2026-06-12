@@ -8,12 +8,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayXForEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -41,35 +37,31 @@ val HollowSpecter = card("Hollow Specter") {
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
         effect = MayPayXForEffect(
-            effect = Effects.Composite(
-                listOf(
-                    // 1. Gather all cards from damaged player's hand
-                    GatherCardsEffect(
-                        source = CardSource.FromZone(Zone.HAND, Player.TriggeringPlayer),
-                        storeAs = "hand"
-                    ),
-                    // 2. Damaged player chooses X cards to reveal
-                    SelectFromCollectionEffect(
-                        from = "hand",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.XValue),
-                        chooser = Chooser.TriggeringPlayer,
-                        storeSelected = "revealed"
-                    ),
-                    // 3. Controller chooses 1 card to discard
-                    SelectFromCollectionEffect(
-                        from = "revealed",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                        chooser = Chooser.Controller,
-                        storeSelected = "toDiscard"
-                    ),
-                    // 4. Move chosen card to damaged player's graveyard
-                    MoveCollectionEffect(
-                        from = "toDiscard",
-                        destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.TriggeringPlayer),
-                        moveType = MoveType.Discard
-                    )
+            effect = Effects.Pipeline {
+                // 1. Gather all cards from damaged player's hand
+                val hand = gather(
+                    CardSource.FromZone(Zone.HAND, Player.TriggeringPlayer),
+                    name = "hand"
                 )
-            )
+                // 2. Damaged player chooses X cards to reveal
+                val revealed = chooseExactly(
+                    DynamicAmount.XValue, from = hand,
+                    chooser = Chooser.TriggeringPlayer,
+                    name = "revealed"
+                )
+                // 3. Controller chooses 1 card to discard
+                val toDiscard = chooseExactly(
+                    1, from = revealed,
+                    chooser = Chooser.Controller,
+                    name = "toDiscard"
+                )
+                // 4. Move chosen card to damaged player's graveyard
+                move(
+                    toDiscard,
+                    CardDestination.ToZone(Zone.GRAVEYARD, Player.TriggeringPlayer),
+                    moveType = MoveType.Discard
+                )
+            }
         )
     }
 

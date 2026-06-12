@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -27,12 +26,12 @@ val WalkingDesecration = card("Walking Desecration") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap)
-        effect = Effects.Composite(
-            listOf(
-                ChooseOptionEffect(
-                    optionType = OptionType.CREATURE_TYPE,
-                    storeAs = "chosenCreatureType"
-                ),
+        effect = Effects.Pipeline {
+            chooseOption(
+                OptionType.CREATURE_TYPE,
+                name = "chosenCreatureType"
+            )
+            run(
                 Effects.ForEachInGroup(
                     filter = GroupFilter.ChosenSubtypeCreatures("chosenCreatureType"),
                     effect = MarkMustAttackThisTurnEffect(
@@ -40,7 +39,7 @@ val WalkingDesecration = card("Walking Desecration") {
                     )
                 )
             )
-        )
+        }
         description = "Creatures of the creature type of your choice attack this turn if able"
     }
 

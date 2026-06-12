@@ -14,12 +14,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Conditions
 
 /**
@@ -47,35 +42,32 @@ val FellGravship = card("Fell Gravship") {
                 // Mill 3 cards
                 Patterns.Library.mill(3),
                 // Return a creature or Spacecraft card from graveyard to hand
-                Effects.Composite(
-                    listOf(
-                        GatherCardsEffect(
-                            source = CardSource.FromZone(
-                                zone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
-                                player = com.wingedsheep.sdk.scripting.references.Player.You,
-                                filter = GameObjectFilter(
-                                    cardPredicates = listOf(
-                                        CardPredicate.Or(listOf(
-                                            CardPredicate.IsCreature,
-                                            CardPredicate.HasSubtype(Subtype("Spacecraft"))
-                                        ))
-                                    )
+                Effects.Pipeline {
+                    val creatureOrSpacecraftCards = gather(
+                        CardSource.FromZone(
+                            zone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                            player = com.wingedsheep.sdk.scripting.references.Player.You,
+                            filter = GameObjectFilter(
+                                cardPredicates = listOf(
+                                    CardPredicate.Or(listOf(
+                                        CardPredicate.IsCreature,
+                                        CardPredicate.HasSubtype(Subtype("Spacecraft"))
+                                    ))
                                 )
-                            ),
-                            storeAs = "creatureOrSpacecraftCards"
+                            )
                         ),
-                        SelectFromCollectionEffect(
-                            from = "creatureOrSpacecraftCards",
-                            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                            storeSelected = "chosen",
-                            prompt = "Return a creature or Spacecraft card from your graveyard to your hand"
-                        ),
-                        MoveCollectionEffect(
-                            from = "chosen",
-                            destination = CardDestination.ToZone(com.wingedsheep.sdk.core.Zone.HAND)
-                        )
+                        name = "creatureOrSpacecraftCards"
                     )
-                )
+                    val chosen = chooseUpTo(
+                        1, from = creatureOrSpacecraftCards,
+                        prompt = "Return a creature or Spacecraft card from your graveyard to your hand",
+                        name = "chosen"
+                    )
+                    move(
+                        chosen,
+                        destination = CardDestination.ToZone(com.wingedsheep.sdk.core.Zone.HAND)
+                    )
+                }
             )
         )
         description = "When this Spacecraft enters, mill three cards, then return a creature or Spacecraft card from your graveyard to your hand."

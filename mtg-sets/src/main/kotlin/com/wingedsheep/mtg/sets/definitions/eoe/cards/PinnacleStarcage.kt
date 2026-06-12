@@ -10,8 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -62,27 +60,26 @@ val PinnacleStarcage = card("Pinnacle Starcage") {
 
     activatedAbility {
         cost = Costs.Mana("{6}{W}{W}")
-        effect = Effects.Composite(
-            GatherCardsEffect(
-                source = CardSource.FromLinkedExile(),
-                storeAs = "exiled"
-            ),
-            MoveCollectionEffect(
-                from = "exiled",
+        effect = Effects.Pipeline {
+            val exiled = gather(CardSource.FromLinkedExile(), name = "exiled")
+            moveTracked(
+                exiled,
                 destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                storeMovedAs = "moved"
-            ),
-            CreateTokenEffect(
-                count = DynamicAmount.VariableReference("moved_count"),
-                power = 2,
-                toughness = 2,
-                colors = emptySet(),
-                creatureTypes = setOf("Robot"),
-                artifactToken = true,
-                imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130"
-            ),
-            Effects.SacrificeTarget(EffectTarget.Self)
-        )
+                name = "moved"
+            )
+            run(
+                CreateTokenEffect(
+                    count = DynamicAmount.VariableReference("moved_count"),
+                    power = 2,
+                    toughness = 2,
+                    colors = emptySet(),
+                    creatureTypes = setOf("Robot"),
+                    artifactToken = true,
+                    imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130"
+                )
+            )
+            run(Effects.SacrificeTarget(EffectTarget.Self))
+        }
         description = "Put each card exiled with this artifact into its owner's graveyard, then create a 2/2 colorless Robot artifact creature token for each card put into a graveyard this way. Sacrifice this artifact."
     }
 

@@ -10,12 +10,8 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -69,16 +65,11 @@ val EvercoatUrsine = card("Evercoat Ursine") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromLinkedExile(),
-                    storeAs = "hideawayLinked"
-                ),
-                GrantMayPlayFromExileEffect("hideawayLinked"),
-                GrantPlayWithoutPayingCostEffect("hideawayLinked")
-            )
-        )
+        effect = Effects.Pipeline {
+            gather(CardSource.FromLinkedExile(), name = "hideawayLinked")
+            run(GrantMayPlayFromExileEffect("hideawayLinked"))
+            run(GrantPlayWithoutPayingCostEffect("hideawayLinked"))
+        }
     }
 
     metadata {
@@ -101,34 +92,31 @@ val EvercoatUrsine = card("Evercoat Ursine") {
  * order. Collection names are suffixed so two instances on the same card don't collide
  * when both ETB triggers resolve sequentially.
  */
-private fun hideawayThree(suffix: String): Effect = Effects.Composite(
-    listOf(
-        GatherCardsEffect(
-            source = CardSource.TopOfLibrary(
-                count = DynamicAmount.Fixed(3),
-                player = Player.You
-            ),
-            storeAs = "hideawayTop$suffix"
+private fun hideawayThree(suffix: String): Effect = Effects.Pipeline {
+    val top = gather(
+        CardSource.TopOfLibrary(
+            count = DynamicAmount.Fixed(3),
+            player = Player.You
         ),
-        SelectFromCollectionEffect(
-            from = "hideawayTop$suffix",
-            selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-            storeSelected = "hideawayPicked$suffix",
-            storeRemainder = "hideawayRest$suffix",
-            prompt = "Choose a card to exile face down",
-            selectedLabel = "Exile face down",
-            remainderLabel = "Put on bottom of library"
-        ),
-        MoveCollectionEffect(
-            from = "hideawayPicked$suffix",
-            destination = CardDestination.ToZone(Zone.EXILE),
-            faceDown = true,
-            linkToSource = true
-        ),
-        MoveCollectionEffect(
-            from = "hideawayRest$suffix",
-            destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-            order = CardOrder.Random
-        )
+        name = "hideawayTop$suffix"
     )
-)
+    val (picked, rest) = chooseExactlySplit(
+        1, from = top,
+        prompt = "Choose a card to exile face down",
+        selectedLabel = "Exile face down",
+        remainderLabel = "Put on bottom of library",
+        name = "hideawayPicked$suffix",
+        remainderName = "hideawayRest$suffix"
+    )
+    move(
+        picked,
+        CardDestination.ToZone(Zone.EXILE),
+        faceDown = true,
+        linkToSource = true
+    )
+    move(
+        rest,
+        CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+        order = CardOrder.Random
+    )
+}

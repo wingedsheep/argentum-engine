@@ -9,10 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -54,38 +50,35 @@ val OverlordOfTheBalemurk = card("Overlord of the Balemurk") {
     // "Mill four cards, then you may return a non-Avatar creature card or a planeswalker
     // card from your graveyard to your hand." Shared by the enters and attacks triggers.
     val returnableFilter = GameObjectFilter.Creature.notSubtype(Subtype.AVATAR) or GameObjectFilter.Planeswalker
-    val millAndReturn: Effect = Effects.Composite(
-        listOf(
-            // Mill four cards.
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4), Player.You),
-                storeAs = "balemurkMilled"
-            ),
-            MoveCollectionEffect(
-                from = "balemurkMilled",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You)
-            ),
-            // ...then you may return a non-Avatar creature or planeswalker card from your
-            // graveyard to your hand (any eligible card, not just the milled ones).
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, returnableFilter),
-                storeAs = "balemurkReturnable"
-            ),
-            SelectFromCollectionEffect(
-                from = "balemurkReturnable",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                storeSelected = "balemurkToReturn",
-                showAllCards = true,
-                prompt = "You may return a non-Avatar creature or planeswalker card to your hand",
-                selectedLabel = "Return to hand",
-                remainderLabel = "Leave in graveyard"
-            ),
-            MoveCollectionEffect(
-                from = "balemurkToReturn",
-                destination = CardDestination.ToZone(Zone.HAND)
-            )
+    val millAndReturn: Effect = Effects.Pipeline {
+        // Mill four cards.
+        val milled = gather(
+            CardSource.TopOfLibrary(DynamicAmount.Fixed(4), Player.You),
+            name = "balemurkMilled"
         )
-    )
+        move(
+            milled,
+            CardDestination.ToZone(Zone.GRAVEYARD, Player.You)
+        )
+        // ...then you may return a non-Avatar creature or planeswalker card from your
+        // graveyard to your hand (any eligible card, not just the milled ones).
+        val returnable = gather(
+            CardSource.FromZone(Zone.GRAVEYARD, Player.You, returnableFilter),
+            name = "balemurkReturnable"
+        )
+        val toReturn = chooseUpTo(
+            1, from = returnable,
+            showAllCards = true,
+            prompt = "You may return a non-Avatar creature or planeswalker card to your hand",
+            selectedLabel = "Return to hand",
+            remainderLabel = "Leave in graveyard",
+            name = "balemurkToReturn"
+        )
+        move(
+            toReturn,
+            CardDestination.ToZone(Zone.HAND)
+        )
+    }
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

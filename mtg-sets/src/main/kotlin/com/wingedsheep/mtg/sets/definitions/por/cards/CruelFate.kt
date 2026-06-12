@@ -11,10 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
@@ -34,29 +30,28 @@ val CruelFate = card("Cruel Fate") {
     oracleText = "Look at the top five cards of target opponent's library. Put one of those cards into that player's graveyard and the rest on top of their library in any order."
     spell {
         val t = target("target", TargetOpponent())
-        effect = Effects.Composite(
-            GatherCardsEffect(
+        effect = Effects.Pipeline {
+            val looked = gather(
                 CardSource.TopOfLibrary(DynamicAmount.Fixed(5), Player.TargetOpponent),
-                storeAs = "looked"
-            ),
-            SelectFromCollectionEffect(
-                from = "looked",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                storeSelected = "toGraveyard",
-                storeRemainder = "toTop",
+                name = "looked"
+            )
+            val (toGraveyard, toTop) = chooseExactlySplit(
+                1, from = looked,
                 selectedLabel = "Put in graveyard",
-                remainderLabel = "Put on top"
-            ),
-            MoveCollectionEffect(
-                from = "toGraveyard",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.TargetOpponent)
-            ),
-            MoveCollectionEffect(
-                from = "toTop",
-                destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetOpponent, ZonePlacement.Top),
+                remainderLabel = "Put on top",
+                name = "toGraveyard",
+                remainderName = "toTop"
+            )
+            move(
+                toGraveyard,
+                CardDestination.ToZone(Zone.GRAVEYARD, Player.TargetOpponent)
+            )
+            move(
+                toTop,
+                CardDestination.ToZone(Zone.LIBRARY, Player.TargetOpponent, ZonePlacement.Top),
                 order = CardOrder.ControllerChooses
             )
-        )
+        }
     }
     metadata {
         rarity = Rarity.RARE

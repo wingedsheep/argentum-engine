@@ -9,10 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
@@ -41,44 +37,44 @@ val RaphAndMikeyTroublemakers = card("Raph & Mikey, Troublemakers") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.Composite(listOf(
-            GatherUntilMatchEffect(
+        effect = Effects.Pipeline {
+            val (creature, revealed) = gatherUntilMatch(
                 filter = GameObjectFilter.Creature,
-                storeMatch = "raph_creature",
-                storeRevealed = "raph_revealed"
-            ),
-            RevealCollectionEffect(
-                from = "raph_revealed",
+                matchName = "raph_creature",
+                revealedName = "raph_revealed"
+            )
+            reveal(
+                revealed,
                 fromZone = Zone.LIBRARY,
                 toZone = Zone.BATTLEFIELD
-            ),
-            MoveCollectionEffect(
-                from = "raph_creature",
-                destination = CardDestination.ToZone(
+            )
+            move(
+                creature,
+                CardDestination.ToZone(
                     Zone.BATTLEFIELD,
                     Player.You,
                     ZonePlacement.TappedAndAttacking
                 )
-            ),
+            )
             // Everything revealed minus the creature that hit the battlefield goes to
             // the bottom of the library. Without this split, the creature's entity id
             // is still in "raph_revealed" and the next MoveCollection would pull it
             // off the battlefield right after it landed.
-            FilterCollectionEffect(
-                from = "raph_revealed",
-                filter = CollectionFilter.ExcludeOtherCollection("raph_creature"),
-                storeMatching = "raph_rest"
-            ),
-            MoveCollectionEffect(
-                from = "raph_rest",
-                destination = CardDestination.ToZone(
+            val rest = filter(
+                revealed,
+                CollectionFilter.ExcludeOtherCollection("raph_creature"),
+                name = "raph_rest"
+            )
+            move(
+                rest,
+                CardDestination.ToZone(
                     Zone.LIBRARY,
                     Player.You,
                     ZonePlacement.Bottom
                 ),
                 order = CardOrder.Random
             )
-        ))
+        }
     }
 
     metadata {

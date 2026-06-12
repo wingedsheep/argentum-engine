@@ -9,10 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
@@ -44,33 +40,32 @@ val GishathSunsAvatar = card("Gishath, Sun's Avatar") {
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
         val damageDealt = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT)
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.TopOfLibrary(count = damageDealt, player = Player.You),
-                storeAs = "gishath_revealed",
-                revealed = true
-            ),
-            SelectFromCollectionEffect(
-                from = "gishath_revealed",
-                selection = SelectionMode.ChooseAnyNumber,
+        effect = Effects.Pipeline {
+            val revealed = gather(
+                CardSource.TopOfLibrary(count = damageDealt, player = Player.You),
+                revealed = true,
+                name = "gishath_revealed"
+            )
+            val (toBattlefield, toBottom) = chooseAnyNumberSplit(
+                from = revealed,
                 filter = GameObjectFilter.Creature.withSubtype("Dinosaur"),
                 showAllCards = true,
-                storeSelected = "gishath_toBattlefield",
-                storeRemainder = "gishath_toBottom",
                 prompt = "Put any number of Dinosaur creature cards onto the battlefield",
                 selectedLabel = "Put onto the battlefield",
-                remainderLabel = "Put on the bottom of your library"
-            ),
-            MoveCollectionEffect(
-                from = "gishath_toBattlefield",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD, Player.You)
-            ),
-            MoveCollectionEffect(
-                from = "gishath_toBottom",
-                destination = CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Bottom),
+                remainderLabel = "Put on the bottom of your library",
+                name = "gishath_toBattlefield",
+                remainderName = "gishath_toBottom"
+            )
+            move(
+                toBattlefield,
+                CardDestination.ToZone(Zone.BATTLEFIELD, Player.You)
+            )
+            move(
+                toBottom,
+                CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Bottom),
                 order = CardOrder.Random
             )
-        ))
+        }
     }
 
     metadata {

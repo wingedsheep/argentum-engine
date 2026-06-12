@@ -7,10 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -42,26 +38,24 @@ val IsildursFatefulStrike = card("Isildur's Fateful Strike") {
             )
         )
 
-        effect = Effects.Composite(
-            listOf(
-                Effects.Move(creature, Zone.GRAVEYARD, byDestruction = true),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, controller),
-                    storeAs = "controllerHand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "controllerHand",
-                    selection = SelectionMode.ChooseExactly(excess),
-                    chooser = Chooser.TargetPlayer,
-                    storeSelected = "exiled",
-                    prompt = "Choose cards to exile from your hand"
-                ),
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE, controller)
-                )
+        effect = Effects.Pipeline {
+            run(Effects.Move(creature, Zone.GRAVEYARD, byDestruction = true))
+            val controllerHand = gather(
+                CardSource.FromZone(Zone.HAND, controller),
+                name = "controllerHand"
             )
-        )
+            val exiled = chooseExactly(
+                excess,
+                from = controllerHand,
+                chooser = Chooser.TargetPlayer,
+                prompt = "Choose cards to exile from your hand",
+                name = "exiled"
+            )
+            move(
+                exiled,
+                destination = CardDestination.ToZone(Zone.EXILE, controller)
+            )
+        }
     }
 
     metadata {

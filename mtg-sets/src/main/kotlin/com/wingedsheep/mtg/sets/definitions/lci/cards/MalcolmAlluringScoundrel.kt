@@ -13,12 +13,8 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -56,31 +52,30 @@ val MalcolmAlluringScoundrel = card("Malcolm, Alluring Scoundrel") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = Effects.Composite(
-            listOf(
-                // Put a chorus counter on Malcolm.
-                Effects.AddCounters(Counters.CHORUS, 1, EffectTarget.Self),
-                // Draw a card.
-                Effects.DrawCards(1, EffectTarget.Controller),
-                // Discard a card: gather hand → select one → move to graveyard.
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    storeSelected = "discarded",
-                    prompt = "Choose a card to discard"
-                ),
-                MoveCollectionEffect(
-                    from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
-                    moveType = MoveType.Discard
-                ),
-                // If Malcolm has four or more chorus counters, the controller may cast
-                // the discarded card for free. The card stays in the graveyard per oracle
-                // text — we just grant the permission on the graveyard card.
+        effect = Effects.Pipeline {
+            // Put a chorus counter on Malcolm.
+            run(Effects.AddCounters(Counters.CHORUS, 1, EffectTarget.Self))
+            // Draw a card.
+            run(Effects.DrawCards(1, EffectTarget.Controller))
+            // Discard a card: gather hand → select one → move to graveyard.
+            val hand = gather(
+                CardSource.FromZone(Zone.HAND, Player.You),
+                name = "hand"
+            )
+            val discarded = chooseExactly(
+                1, from = hand,
+                prompt = "Choose a card to discard",
+                name = "discarded"
+            )
+            move(
+                discarded,
+                CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                moveType = MoveType.Discard
+            )
+            // If Malcolm has four or more chorus counters, the controller may cast
+            // the discarded card for free. The card stays in the graveyard per oracle
+            // text — we just grant the permission on the graveyard card.
+            run(
                 ConditionalEffect(
                     condition = Compare(
                         DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.CHORUS)),
@@ -92,7 +87,7 @@ val MalcolmAlluringScoundrel = card("Malcolm, Alluring Scoundrel") {
                     )
                 )
             )
-        )
+        }
     }
 
     metadata {

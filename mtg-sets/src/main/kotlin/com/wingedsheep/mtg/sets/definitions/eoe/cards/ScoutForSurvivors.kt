@@ -7,13 +7,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -39,31 +34,28 @@ val ScoutForSurvivors = card("Scout for Survivors") {
     oracleText = "Return up to three target creature cards with total mana value 3 or less from your graveyard to the battlefield. Put a +1/+1 counter on each of them."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(
-                        zone = Zone.GRAVEYARD,
-                        player = Player.You,
-                        filter = GameObjectFilter.Creature
-                    ),
-                    storeAs = "graveyardCreatures"
+        effect = Effects.Pipeline {
+            val graveyardCreatures = gather(
+                CardSource.FromZone(
+                    zone = Zone.GRAVEYARD,
+                    player = Player.You,
+                    filter = GameObjectFilter.Creature
                 ),
-                SelectFromCollectionEffect(
-                    from = "graveyardCreatures",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(3)),
-                    restrictions = listOf(SelectionRestriction.TotalManaValueAtMost(3)),
-                    storeSelected = "chosen",
-                    prompt = "Choose up to three creature cards with total mana value 3 or less",
-                    selectedLabel = "Return to the battlefield with a +1/+1 counter"
-                ),
-                MoveCollectionEffect(
-                    from = "chosen",
-                    destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                    addCounterType = CounterType.PLUS_ONE_PLUS_ONE
-                )
+                name = "graveyardCreatures"
             )
-        )
+            val chosen = chooseUpTo(
+                3, from = graveyardCreatures,
+                restrictions = listOf(SelectionRestriction.TotalManaValueAtMost(3)),
+                prompt = "Choose up to three creature cards with total mana value 3 or less",
+                selectedLabel = "Return to the battlefield with a +1/+1 counter",
+                name = "chosen"
+            )
+            move(
+                chosen,
+                destination = CardDestination.ToZone(Zone.BATTLEFIELD),
+                addCounterType = CounterType.PLUS_ONE_PLUS_ONE
+            )
+        }
     }
 
     metadata {

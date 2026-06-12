@@ -7,10 +7,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -31,21 +29,23 @@ val ShadowOfTheEnemy = card("Shadow of the Enemy") {
 
     spell {
         val player = target("target player", Targets.Player)
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.GRAVEYARD, Player.ContextPlayer(0), GameObjectFilter.Creature),
-                storeAs = "exiledCreatures"
-            ),
-            MoveCollectionEffect(
-                from = "exiledCreatures",
-                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
-            ),
-            GrantMayPlayFromExileEffect(
-                from = "exiledCreatures",
-                expiry = MayPlayExpiry.Permanent,
-                withAnyManaType = true
+        effect = Effects.Pipeline {
+            val exiledCreatures = gather(
+                CardSource.FromZone(Zone.GRAVEYARD, Player.ContextPlayer(0), GameObjectFilter.Creature),
+                name = "exiledCreatures"
             )
-        ))
+            move(
+                exiledCreatures,
+                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
+            )
+            run(
+                GrantMayPlayFromExileEffect(
+                    from = "exiledCreatures",
+                    expiry = MayPlayExpiry.Permanent,
+                    withAnyManaType = true
+                )
+            )
+        }
     }
 
     metadata {

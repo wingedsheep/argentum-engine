@@ -10,11 +10,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -54,35 +51,38 @@ val DyadrineSynthesisAmalgam = card("Dyadrine, Synthesis Amalgam") {
     triggeredAbility {
         trigger = Triggers.YouAttack
         effect = MayEffect(
-            effect = Effects.Composite(
-                listOf(
-                    GatherCardsEffect(
-                        source = CardSource.BattlefieldMatching(
-                            filter = GameObjectFilter.Creature
-                                .youControl()
-                                .withCounter(Counters.PLUS_ONE_PLUS_ONE),
-                            player = Player.You,
-                        ),
-                        storeAs = "candidates",
+            effect = Effects.Pipeline {
+                val candidates = gather(
+                    CardSource.BattlefieldMatching(
+                        filter = GameObjectFilter.Creature
+                            .youControl()
+                            .withCounter(Counters.PLUS_ONE_PLUS_ONE),
+                        player = Player.You,
                     ),
-                    SelectFromCollectionEffect(
-                        from = "candidates",
-                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(2)),
-                        storeSelected = "chosen",
-                        useTargetingUI = true,
-                        prompt = "Choose two creatures you control to remove a +1/+1 counter from",
-                    ),
+                    name = "candidates",
+                )
+                chooseExactly(
+                    2, from = candidates,
+                    useTargetingUI = true,
+                    prompt = "Choose two creatures you control to remove a +1/+1 counter from",
+                    name = "chosen",
+                )
+                run(
                     RemoveCountersEffect(
                         counterType = Counters.PLUS_ONE_PLUS_ONE,
                         count = 1,
                         target = EffectTarget.PipelineTarget("chosen", 0),
-                    ),
+                    )
+                )
+                run(
                     RemoveCountersEffect(
                         counterType = Counters.PLUS_ONE_PLUS_ONE,
                         count = 1,
                         target = EffectTarget.PipelineTarget("chosen", 1),
-                    ),
-                    DrawCardsEffect(1, EffectTarget.Controller),
+                    )
+                )
+                run(DrawCardsEffect(1, EffectTarget.Controller))
+                run(
                     CreateTokenEffect(
                         power = 2,
                         toughness = 2,
@@ -90,9 +90,9 @@ val DyadrineSynthesisAmalgam = card("Dyadrine, Synthesis Amalgam") {
                         creatureTypes = setOf("Robot"),
                         artifactToken = true,
                         imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130",
-                    ),
+                    )
                 )
-            ),
+            },
             descriptionOverride = "You may remove a +1/+1 counter from each of two creatures you " +
                 "control. If you do, draw a card and create a 2/2 colorless Robot artifact creature token.",
         )

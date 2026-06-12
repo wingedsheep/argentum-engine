@@ -9,9 +9,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -26,29 +23,20 @@ val EtaliPrimalStorm = card("Etali, Primal Storm") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(
-                        count = DynamicAmount.Fixed(1),
-                        player = Player.Each
-                    ),
-                    storeAs = "exiledCards"
+        effect = Effects.Pipeline {
+            val exiledCards = gather(
+                CardSource.TopOfLibrary(
+                    count = DynamicAmount.Fixed(1),
+                    player = Player.Each
                 ),
-                MoveCollectionEffect(
-                    from = "exiledCards",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                FilterCollectionEffect(
-                    from = "exiledCards",
-                    filter = CollectionFilter.MatchesFilter(GameObjectFilter.Nonland),
-                    storeMatching = "castable"
-                ),
-                // Cast any number of them for free, during this trigger's resolution (the
-                // controller can't wait until later in the turn — see the 2021-03-19 ruling).
-                CastAnyNumberFromCollectionWithoutPayingCostEffect("castable")
+                name = "exiledCards"
             )
-        )
+            move(exiledCards, CardDestination.ToZone(Zone.EXILE))
+            filter(exiledCards, CollectionFilter.MatchesFilter(GameObjectFilter.Nonland), name = "castable")
+            // Cast any number of them for free, during this trigger's resolution (the
+            // controller can't wait until later in the turn — see the 2021-03-19 ruling).
+            run(CastAnyNumberFromCollectionWithoutPayingCostEffect("castable"))
+        }
     }
 
     metadata {

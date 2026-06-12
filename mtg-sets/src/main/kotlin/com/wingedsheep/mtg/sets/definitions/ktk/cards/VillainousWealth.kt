@@ -9,9 +9,6 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
@@ -32,33 +29,31 @@ val VillainousWealth = card("Villainous Wealth") {
     spell {
         target("opponent", Targets.Opponent)
 
-        effect = Effects.Composite(
-            listOf(
-                // Exile top X cards from target opponent's library
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.XValue, player = Player.TargetOpponent),
-                    storeAs = "exiled"
-                ),
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE, player = Player.TargetOpponent)
-                ),
-                // Filter to nonland cards (spells only) with mana value ≤ X
-                FilterCollectionEffect(
-                    from = "exiled",
-                    filter = CollectionFilter.MatchesFilter(GameObjectFilter.Nonland),
-                    storeMatching = "nonland"
-                ),
-                FilterCollectionEffect(
-                    from = "nonland",
-                    filter = CollectionFilter.ManaValueAtMost(DynamicAmount.XValue),
-                    storeMatching = "castable"
-                ),
-                // Cast any number of them for free, during this spell's resolution (the
-                // controller can't wait until later in the turn — see the 2014-09-20 ruling).
-                CastAnyNumberFromCollectionWithoutPayingCostEffect("castable")
+        effect = Effects.Pipeline {
+            // Exile top X cards from target opponent's library
+            val exiled = gather(
+                CardSource.TopOfLibrary(DynamicAmount.XValue, player = Player.TargetOpponent),
+                name = "exiled"
             )
-        )
+            move(
+                exiled,
+                CardDestination.ToZone(Zone.EXILE, player = Player.TargetOpponent)
+            )
+            // Filter to nonland cards (spells only) with mana value ≤ X
+            val nonland = filter(
+                exiled,
+                CollectionFilter.MatchesFilter(GameObjectFilter.Nonland),
+                name = "nonland"
+            )
+            val castable = filter(
+                nonland,
+                CollectionFilter.ManaValueAtMost(DynamicAmount.XValue),
+                name = "castable"
+            )
+            // Cast any number of them for free, during this spell's resolution (the
+            // controller can't wait until later in the turn — see the 2014-09-20 ruling).
+            run(CastAnyNumberFromCollectionWithoutPayingCostEffect("castable"))
+        }
     }
 
     metadata {

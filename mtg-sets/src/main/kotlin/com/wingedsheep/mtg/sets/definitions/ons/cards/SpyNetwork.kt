@@ -7,11 +7,9 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.FaceDownLookScope
 import com.wingedsheep.sdk.scripting.effects.LookAtFaceDownEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -37,23 +35,21 @@ val SpyNetwork = card("Spy Network") {
         val t = target("target", TargetPlayer())
         effect = LookAtTargetHandEffect(t)
             .then(
-                Effects.Composite(
-                    listOf(
-                        GatherCardsEffect(
-                            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
-                            storeAs = "target_top"
-                        ),
-                        MoveCollectionEffect(
-                            from = "target_top",
-                            destination = CardDestination.ToZone(
-                                Zone.LIBRARY,
-                                Player.ContextPlayer(0),
-                                ZonePlacement.Top
-                            ),
-                            order = CardOrder.ControllerChooses
-                        )
+                Effects.Pipeline {
+                    val targetTop = gather(
+                        CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
+                        name = "target_top"
                     )
-                )
+                    move(
+                        targetTop,
+                        destination = CardDestination.ToZone(
+                            Zone.LIBRARY,
+                            Player.ContextPlayer(0),
+                            ZonePlacement.Top
+                        ),
+                        order = CardOrder.ControllerChooses
+                    )
+                }
             )
             .then(LookAtFaceDownEffect(t, FaceDownLookScope.ALL_CONTROLLED_BY_TARGET_PLAYER))
             .then(Patterns.Library.lookAtTopAndReorder(4))

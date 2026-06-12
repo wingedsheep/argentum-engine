@@ -7,13 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -31,13 +25,13 @@ val CrypticGateway = card("Cryptic Gateway") {
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature)
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(source = CardSource.TappedAsCost, storeAs = "tappedPermanents"),
-            GatherSubtypesEffect(from = "tappedPermanents", storeAs = "tappedSubtypes"),
-            GatherCardsEffect(source = CardSource.FromZone(zone = Zone.HAND, player = Player.You, filter = GameObjectFilter.Creature.withSubtypeInEachStoredGroup("tappedSubtypes")), storeAs = "candidates"),
-            SelectFromCollectionEffect(from = "candidates", selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)), storeSelected = "chosen", prompt = "You may put a creature card from your hand onto the battlefield"),
-            MoveCollectionEffect(from = "chosen", destination = CardDestination.ToZone(Zone.BATTLEFIELD))
-        ))
+        effect = Effects.Pipeline {
+            val tappedPermanents = gather(CardSource.TappedAsCost, name = "tappedPermanents")
+            val tappedSubtypes = gatherSubtypes(tappedPermanents, name = "tappedSubtypes")
+            val candidates = gather(CardSource.FromZone(zone = Zone.HAND, player = Player.You, filter = GameObjectFilter.Creature.withSubtypeInEachStoredGroup("tappedSubtypes")), name = "candidates")
+            val chosen = chooseUpTo(1, from = candidates, prompt = "You may put a creature card from your hand onto the battlefield", name = "chosen")
+            move(chosen, destination = CardDestination.ToZone(Zone.BATTLEFIELD))
+        }
     }
 
     metadata {

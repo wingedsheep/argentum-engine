@@ -15,11 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -45,42 +41,46 @@ val DoorsOfDurin = card("Doors of Durin") {
         trigger = Triggers.YouAttack
         effect = Patterns.Library.scry(2).then(
             MayEffect(
-                effect = Effects.Composite(listOf(
-                    GatherCardsEffect(
-                        source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.You),
-                        storeAs = "top"
-                    ),
-                    RevealCollectionEffect(from = "top"),
-                    FilterCollectionEffect(
-                        from = "top",
-                        filter = CollectionFilter.MatchesFilter(GameObjectFilter.Creature),
-                        storeMatching = "topCreature"
-                    ),
-                    MoveCollectionEffect(
-                        from = "topCreature",
+                effect = Effects.Pipeline {
+                    val top = gather(
+                        CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.You),
+                        name = "top"
+                    )
+                    reveal(top)
+                    val topCreature = filter(
+                        top,
+                        CollectionFilter.MatchesFilter(GameObjectFilter.Creature),
+                        name = "topCreature"
+                    )
+                    move(
+                        topCreature,
                         destination = CardDestination.ToZone(
                             Zone.BATTLEFIELD,
                             Player.You,
                             ZonePlacement.TappedAndAttacking
                         )
-                    ),
-                    ConditionalEffect(
-                        condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.withSubtype("Dwarf")),
-                        effect = Effects.GrantKeyword(
-                            Keyword.TRAMPLE,
-                            EffectTarget.PipelineTarget("topCreature"),
-                            Duration.UntilYourNextTurn
-                        )
-                    ),
-                    ConditionalEffect(
-                        condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.withSubtype("Elf")),
-                        effect = Effects.GrantKeyword(
-                            Keyword.HEXPROOF,
-                            EffectTarget.PipelineTarget("topCreature"),
-                            Duration.UntilYourNextTurn
+                    )
+                    run(
+                        ConditionalEffect(
+                            condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.withSubtype("Dwarf")),
+                            effect = Effects.GrantKeyword(
+                                Keyword.TRAMPLE,
+                                EffectTarget.PipelineTarget("topCreature"),
+                                Duration.UntilYourNextTurn
+                            )
                         )
                     )
-                )),
+                    run(
+                        ConditionalEffect(
+                            condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.withSubtype("Elf")),
+                            effect = Effects.GrantKeyword(
+                                Keyword.HEXPROOF,
+                                EffectTarget.PipelineTarget("topCreature"),
+                                Duration.UntilYourNextTurn
+                            )
+                        )
+                    )
+                },
                 descriptionOverride = "You may reveal the top card of your library. If it's a creature card, put it onto the battlefield tapped and attacking. Until your next turn, it gains trample if you control a Dwarf and hexproof if you control an Elf."
             )
         )

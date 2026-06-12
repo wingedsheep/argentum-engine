@@ -9,12 +9,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -35,30 +31,27 @@ val Duress = card("Duress") {
 
     spell {
         val opponent = target("target opponent", TargetOpponent())
-        effect = Effects.Composite(
-            listOf(
-                RevealHandEffect(opponent),
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
-                    storeAs = "opponentHand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "opponentHand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    filter = GameObjectFilter.Noncreature and GameObjectFilter.Nonland,
-                    storeSelected = "toDiscard",
-                    prompt = "Choose a noncreature, nonland card to discard",
-                    alwaysPrompt = true,
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "toDiscard",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
-                    moveType = MoveType.Discard
-                )
+        effect = Effects.Pipeline {
+            run(RevealHandEffect(opponent))
+            val opponentHand = gather(
+                CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
+                name = "opponentHand"
             )
-        )
+            val toDiscard = chooseExactly(
+                1, from = opponentHand,
+                chooser = Chooser.Controller,
+                filter = GameObjectFilter.Noncreature and GameObjectFilter.Nonland,
+                prompt = "Choose a noncreature, nonland card to discard",
+                alwaysPrompt = true,
+                showAllCards = true,
+                name = "toDiscard"
+            )
+            move(
+                toDiscard,
+                CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
+                moveType = MoveType.Discard
+            )
+        }
     }
 
     metadata {

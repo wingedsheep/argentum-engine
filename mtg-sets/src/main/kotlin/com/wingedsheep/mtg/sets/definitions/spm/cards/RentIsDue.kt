@@ -6,11 +6,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -23,23 +20,22 @@ val RentIsDue = card("Rent Is Due") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        val tapCost = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.ControlledPermanents(
+        val tapCost = Effects.Pipeline {
+            val rentTargets = gather(
+                CardSource.ControlledPermanents(
                     player = Player.You,
                     filter = (GameObjectFilter.Creature or GameObjectFilter.Artifact.withSubtype("Treasure")).untapped()
                 ),
-                storeAs = "rentTargets"
-            ),
-            SelectFromCollectionEffect(
-                from = "rentTargets",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(2)),
-                storeSelected = "toTap",
+                name = "rentTargets"
+            )
+            val toTap = chooseExactly(
+                2, from = rentTargets,
                 prompt = "Tap two untapped creatures and/or Treasures you control",
-                useTargetingUI = true
-            ),
-            TapUntapCollectionEffect("toTap", tap = true)
-        ))
+                useTargetingUI = true,
+                name = "toTap"
+            )
+            run(TapUntapCollectionEffect("toTap", tap = true))
+        }
         effect = OptionalCostEffect(
             cost = tapCost,
             ifPaid = Effects.DrawCards(1),

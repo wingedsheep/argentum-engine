@@ -9,14 +9,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
 /**
@@ -38,25 +33,22 @@ val SupremeInquisitor = card("Supreme Inquisitor") {
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Wizard"))
         target = Targets.Player
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.LIBRARY, Player.ContextPlayer(0), GameObjectFilter.Any),
-                    storeAs = "searchable"
-                ),
-                SelectFromCollectionEffect(
-                    from = "searchable",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(5)),
-                    storeSelected = "exiled",
-                    chooser = Chooser.Controller
-                ),
-                MoveCollectionEffect(
-                    from = "exiled",
-                    destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
-                ),
-                ShuffleLibraryEffect(EffectTarget.ContextTarget(0))
+        effect = Effects.Pipeline {
+            val searchable = gather(
+                CardSource.FromZone(Zone.LIBRARY, Player.ContextPlayer(0), GameObjectFilter.Any),
+                name = "searchable"
             )
-        )
+            val exiled = chooseUpTo(
+                5, from = searchable,
+                chooser = Chooser.Controller,
+                name = "exiled"
+            )
+            move(
+                exiled,
+                destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
+            )
+            run(ShuffleLibraryEffect(EffectTarget.ContextTarget(0)))
+        }
     }
 
     metadata {

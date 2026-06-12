@@ -8,10 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -37,22 +33,21 @@ val GhaltaStampedeTyrant = card("Ghalta, Stampede Tyrant") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(listOf(
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature),
-                storeAs = "ghalta_candidates"
-            ),
-            SelectFromCollectionEffect(
-                from = "ghalta_candidates",
-                selection = SelectionMode.ChooseAnyNumber,
-                storeSelected = "ghalta_putting",
-                prompt = "Choose any number of creature cards to put onto the battlefield"
-            ),
-            MoveCollectionEffect(
-                from = "ghalta_putting",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD, Player.You)
+        effect = Effects.Pipeline {
+            val candidates = gather(
+                CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature),
+                name = "ghalta_candidates"
             )
-        ))
+            val putting = chooseAnyNumber(
+                from = candidates,
+                prompt = "Choose any number of creature cards to put onto the battlefield",
+                name = "ghalta_putting"
+            )
+            move(
+                putting,
+                CardDestination.ToZone(Zone.BATTLEFIELD, Player.You)
+            )
+        }
     }
 
     metadata {

@@ -9,9 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -45,19 +43,17 @@ val MoriaMarauder = card("Moria Marauder") {
             sourceFilter = GameObjectFilter.Creature.withAnySubtype("Goblin", "Orc").youControl(),
             binding = TriggerBinding.ANY,
         )
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
-                    storeAs = "exiledCard"
-                ),
-                MoveCollectionEffect(
-                    from = "exiledCard",
-                    destination = CardDestination.ToZone(Zone.EXILE)
-                ),
-                GrantMayPlayFromExileEffect("exiledCard")
+        effect = Effects.Pipeline {
+            val exiledCard = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
+                name = "exiledCard"
             )
-        )
+            move(
+                exiledCard,
+                destination = CardDestination.ToZone(Zone.EXILE)
+            )
+            run(GrantMayPlayFromExileEffect("exiledCard"))
+        }
     }
 
     metadata {

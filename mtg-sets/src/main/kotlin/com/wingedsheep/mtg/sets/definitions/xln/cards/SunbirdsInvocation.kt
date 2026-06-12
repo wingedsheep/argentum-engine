@@ -11,10 +11,6 @@ import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 
 import com.wingedsheep.sdk.scripting.references.Player
@@ -66,40 +62,37 @@ val SunbirdsInvocation = card("Sunbird's Invocation") {
             EntityReference.Triggering,
             EntityNumericProperty.ManaValue,
         )
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(
-                        count = triggeringSpellManaValue,
-                        player = Player.You,
-                    ),
-                    storeAs = "revealed",
-                    revealed = true,
+        effect = Effects.Pipeline {
+            val revealed = gather(
+                CardSource.TopOfLibrary(
+                    count = triggeringSpellManaValue,
+                    player = Player.You,
                 ),
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    chooser = Chooser.Controller,
-                    filter = GameObjectFilter.Nonland
-                        .manaValueAtMostEntity(EntityReference.Triggering),
-                    storeSelected = "chosen",
-                    storeRemainder = "toBottom",
-                    showAllCards = true,
-                    prompt = "You may cast one of the revealed cards without paying its mana cost.",
-                    selectedLabel = "Cast for free",
-                    remainderLabel = "Put on bottom",
-                ),
-                MoveCollectionEffect(
-                    from = "toBottom",
-                    destination = CardDestination.ToZone(
-                        Zone.LIBRARY,
-                        placement = ZonePlacement.Bottom,
-                    ),
-                    order = CardOrder.Random,
-                ),
-                CastFromCollectionWithoutPayingCostEffect(from = "chosen"),
+                revealed = true,
+                name = "revealed"
             )
-        )
+            val (chosen, toBottom) = chooseUpToSplit(
+                1, from = revealed,
+                chooser = Chooser.Controller,
+                filter = GameObjectFilter.Nonland
+                    .manaValueAtMostEntity(EntityReference.Triggering),
+                showAllCards = true,
+                prompt = "You may cast one of the revealed cards without paying its mana cost.",
+                selectedLabel = "Cast for free",
+                remainderLabel = "Put on bottom",
+                name = "chosen",
+                remainderName = "toBottom"
+            )
+            move(
+                toBottom,
+                CardDestination.ToZone(
+                    Zone.LIBRARY,
+                    placement = ZonePlacement.Bottom,
+                ),
+                order = CardOrder.Random,
+            )
+            run(CastFromCollectionWithoutPayingCostEffect(from = "chosen"))
+        }
     }
 
     metadata {

@@ -7,10 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
-import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -35,29 +32,29 @@ val GoblinMachinist = card("Goblin Machinist") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{R}")
-        effect = Effects.Composite(
-            listOf(
-                GatherUntilMatchEffect(
-                    filter = GameObjectFilter.Nonland,
-                    storeMatch = "nonland",
-                    storeRevealed = "allRevealed"
-                ),
-                RevealCollectionEffect(from = "allRevealed"),
+        effect = Effects.Pipeline {
+            val (nonland, allRevealed) = gatherUntilMatch(
+                filter = GameObjectFilter.Nonland,
+                matchName = "nonland",
+                revealedName = "allRevealed"
+            )
+            reveal(allRevealed)
+            run(
                 ModifyStatsEffect(
                     powerModifier = DynamicAmount.StoredCardManaValue("nonland"),
                     toughnessModifier = DynamicAmount.Fixed(0),
                     target = EffectTarget.Self
-                ),
-                MoveCollectionEffect(
-                    from = "allRevealed",
-                    destination = CardDestination.ToZone(
-                        Zone.LIBRARY,
-                        placement = ZonePlacement.Bottom
-                    ),
-                    order = CardOrder.ControllerChooses
                 )
             )
-        )
+            move(
+                allRevealed,
+                destination = CardDestination.ToZone(
+                    Zone.LIBRARY,
+                    placement = ZonePlacement.Bottom
+                ),
+                order = CardOrder.ControllerChooses
+            )
+        }
     }
 
     metadata {

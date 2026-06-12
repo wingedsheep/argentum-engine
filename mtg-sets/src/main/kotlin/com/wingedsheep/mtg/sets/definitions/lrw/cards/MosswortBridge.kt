@@ -18,12 +18,8 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -64,37 +60,34 @@ val MosswortBridge = card("Mosswort Bridge") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(
-                        count = DynamicAmount.Fixed(4),
-                        player = Player.You
-                    ),
-                    storeAs = "hideawayTop"
+        effect = Effects.Pipeline {
+            val top = gather(
+                CardSource.TopOfLibrary(
+                    count = DynamicAmount.Fixed(4),
+                    player = Player.You
                 ),
-                SelectFromCollectionEffect(
-                    from = "hideawayTop",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    storeSelected = "hideawayPicked",
-                    storeRemainder = "hideawayRest",
-                    prompt = "Choose a card to exile face down",
-                    selectedLabel = "Exile face down",
-                    remainderLabel = "Put on bottom of library"
-                ),
-                MoveCollectionEffect(
-                    from = "hideawayPicked",
-                    destination = CardDestination.ToZone(Zone.EXILE),
-                    faceDown = true,
-                    linkToSource = true
-                ),
-                MoveCollectionEffect(
-                    from = "hideawayRest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-                    order = CardOrder.Random
-                )
+                name = "hideawayTop"
             )
-        )
+            val (picked, rest) = chooseExactlySplit(
+                1, from = top,
+                prompt = "Choose a card to exile face down",
+                selectedLabel = "Exile face down",
+                remainderLabel = "Put on bottom of library",
+                name = "hideawayPicked",
+                remainderName = "hideawayRest"
+            )
+            move(
+                picked,
+                CardDestination.ToZone(Zone.EXILE),
+                faceDown = true,
+                linkToSource = true
+            )
+            move(
+                rest,
+                CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                order = CardOrder.Random
+            )
+        }
     }
 
     activatedAbility {
@@ -106,16 +99,11 @@ val MosswortBridge = card("Mosswort Bridge") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{G}"), Costs.Tap)
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromLinkedExile(),
-                    storeAs = "hideawayLinked"
-                ),
-                GrantMayPlayFromExileEffect("hideawayLinked"),
-                GrantPlayWithoutPayingCostEffect("hideawayLinked")
-            )
-        )
+        effect = Effects.Pipeline {
+            gather(CardSource.FromLinkedExile(), name = "hideawayLinked")
+            run(GrantMayPlayFromExileEffect("hideawayLinked"))
+            run(GrantPlayWithoutPayingCostEffect("hideawayLinked"))
+        }
         restrictions = listOf(
             ActivationRestriction.OnlyIfCondition(
                 Compare(

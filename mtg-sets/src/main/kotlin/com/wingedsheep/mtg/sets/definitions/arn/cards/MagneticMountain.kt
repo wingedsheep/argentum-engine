@@ -10,13 +10,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
-import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -57,39 +53,37 @@ val MagneticMountain = card("Magnetic Mountain") {
     // untap those creatures." — resolution-time choose-any-number + per-creature scaled payment.
     triggeredAbility {
         trigger = Triggers.EachUpkeep
-        effect = Effects.Composite(
-            listOf(
-                // The upkeep player's tapped blue creatures are the eligible pool.
-                GatherCardsEffect(
-                    source = CardSource.ControlledPermanents(
-                        player = Player.TriggeringPlayer,
-                        filter = GameObjectFilter.Creature.withColor(Color.BLUE).tapped()
-                    ),
-                    storeAs = "eligible"
+        effect = Effects.Pipeline {
+            // The upkeep player's tapped blue creatures are the eligible pool.
+            val eligible = gather(
+                CardSource.ControlledPermanents(
+                    player = Player.TriggeringPlayer,
+                    filter = GameObjectFilter.Creature.withColor(Color.BLUE).tapped()
                 ),
-                // The upkeep player chooses any number of them on the battlefield (0 = decline).
-                // MaxAffordablePayment caps the choice at what they can actually pay {4} each for,
-                // so an over-selection can never silently forfeit the whole untap; with no mana
-                // available the prompt is skipped entirely.
-                SelectFromCollectionEffect(
-                    from = "eligible",
-                    selection = SelectionMode.ChooseAnyNumber,
-                    chooser = Chooser.TriggeringPlayer,
-                    storeSelected = "chosen",
-                    useTargetingUI = true,
-                    prompt = "Choose any number of tapped blue creatures to untap (pay {4} for each)",
-                    restrictions = listOf(
-                        SelectionRestriction.MaxAffordablePayment(
-                            manaPerSelected = 4,
-                            payer = Player.TriggeringPlayer
-                        )
+                name = "eligible"
+            )
+            // The upkeep player chooses any number of them on the battlefield (0 = decline).
+            // MaxAffordablePayment caps the choice at what they can actually pay {4} each for,
+            // so an over-selection can never silently forfeit the whole untap; with no mana
+            // available the prompt is skipped entirely.
+            val chosen = chooseAnyNumber(
+                from = eligible,
+                chooser = Chooser.TriggeringPlayer,
+                useTargetingUI = true,
+                prompt = "Choose any number of tapped blue creatures to untap (pay {4} for each)",
+                restrictions = listOf(
+                    SelectionRestriction.MaxAffordablePayment(
+                        manaPerSelected = 4,
+                        payer = Player.TriggeringPlayer
                     )
                 ),
-                // Only prompt for payment when at least one creature was chosen — so a player with no
-                // tapped blue creatures (or who declines) is never asked to "pay {0}".
-                ConditionalOnCollectionEffect(
-                    collection = "chosen",
-                    ifNotEmpty = GatedEffect(
+                name = "chosen"
+            )
+            // Only prompt for payment when at least one creature was chosen — so a player with no
+            // tapped blue creatures (or who declines) is never asked to "pay {0}".
+            ifNotEmpty(chosen) {
+                run(
+                    GatedEffect(
                         gate = Gate.MayPay(
                             Effects.PayDynamicMana(
                                 amount = DynamicAmount.Multiply(
@@ -107,8 +101,8 @@ val MagneticMountain = card("Magnetic Mountain") {
                         descriptionOverride = "Pay {4} for each chosen creature? If you do, untap them."
                     )
                 )
-            )
-        )
+            }
+        }
     }
 
     metadata {

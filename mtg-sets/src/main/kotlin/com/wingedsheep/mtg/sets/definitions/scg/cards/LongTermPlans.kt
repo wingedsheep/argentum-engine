@@ -6,10 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
@@ -23,36 +19,21 @@ val LongTermPlans = card("Long-Term Plans") {
     oracleText = "Search your library for a card, then shuffle and put that card third from the top."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any),
-                    storeAs = "searchable"
-                ),
-                SelectFromCollectionEffect(
-                    from = "searchable",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                    storeSelected = "found"
-                ),
-                ShuffleLibraryEffect(),
-                MoveCollectionEffect(
-                    from = "found",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
-                ),
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
-                    storeAs = "aboveCards"
-                ),
-                MoveCollectionEffect(
-                    from = "found",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
-                ),
-                MoveCollectionEffect(
-                    from = "aboveCards",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
-                )
+        effect = Effects.Pipeline {
+            val searchable = gather(
+                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any),
+                name = "searchable"
             )
-        )
+            val found = chooseExactly(1, from = searchable, name = "found")
+            run(ShuffleLibraryEffect())
+            move(found, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom))
+            val aboveCards = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
+                name = "aboveCards"
+            )
+            move(found, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top))
+            move(aboveCards, CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top))
+        }
     }
 
     metadata {

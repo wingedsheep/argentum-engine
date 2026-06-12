@@ -6,10 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.dsl.Effects
 
@@ -27,33 +23,25 @@ val ScoutTheBorders = card("Scout the Borders") {
     oracleText = "Reveal the top five cards of your library. You may put a creature or land card from among them into your hand. Put the rest into your graveyard."
 
     spell {
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
-                    storeAs = "revealed",
-                    revealed = true
-                ),
-                SelectFromCollectionEffect(
-                    from = "revealed",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Companion.CreatureOrLand,
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Put in graveyard",
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD)
-                )
+        effect = Effects.Pipeline {
+            val revealed = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
+                revealed = true,
+                name = "revealed"
             )
-        )
+            val (kept, rest) = chooseUpToSplit(
+                1,
+                from = revealed,
+                filter = GameObjectFilter.Companion.CreatureOrLand,
+                selectedLabel = "Put in hand",
+                remainderLabel = "Put in graveyard",
+                showAllCards = true,
+                name = "kept",
+                remainderName = "rest"
+            )
+            move(kept, CardDestination.ToZone(Zone.HAND))
+            move(rest, CardDestination.ToZone(Zone.GRAVEYARD))
+        }
     }
 
     metadata {

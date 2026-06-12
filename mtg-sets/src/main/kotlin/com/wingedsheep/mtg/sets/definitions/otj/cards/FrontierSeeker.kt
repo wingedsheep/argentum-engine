@@ -10,10 +10,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -43,47 +39,44 @@ val FrontierSeeker = card("Frontier Seeker") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter(
-                        cardPredicates = listOf(
-                            CardPredicate.Or(
-                                listOf(
-                                    CardPredicate.And(
-                                        listOf(
-                                            CardPredicate.HasSubtype(Subtype("Mount")),
-                                            CardPredicate.IsCreature
-                                        )
-                                    ),
-                                    CardPredicate.HasSubtype(Subtype.PLAINS)
-                                )
+        effect = Effects.Pipeline {
+            val looked = gather(
+                CardSource.TopOfLibrary(DynamicAmount.Fixed(5)),
+                name = "looked"
+            )
+            val (kept, rest) = chooseUpToSplit(
+                1, from = looked,
+                filter = GameObjectFilter(
+                    cardPredicates = listOf(
+                        CardPredicate.Or(
+                            listOf(
+                                CardPredicate.And(
+                                    listOf(
+                                        CardPredicate.HasSubtype(Subtype("Mount")),
+                                        CardPredicate.IsCreature
+                                    )
+                                ),
+                                CardPredicate.HasSubtype(Subtype.PLAINS)
                             )
                         )
-                    ),
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    selectedLabel = "Put in hand",
-                    remainderLabel = "Put on bottom"
+                    )
                 ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND),
-                    revealed = true
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-                    order = CardOrder.Random
-                )
+                selectedLabel = "Put in hand",
+                remainderLabel = "Put on bottom",
+                name = "kept",
+                remainderName = "rest"
             )
-        )
+            move(
+                kept,
+                CardDestination.ToZone(Zone.HAND),
+                revealed = true
+            )
+            move(
+                rest,
+                CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                order = CardOrder.Random
+            )
+        }
     }
 
     metadata {

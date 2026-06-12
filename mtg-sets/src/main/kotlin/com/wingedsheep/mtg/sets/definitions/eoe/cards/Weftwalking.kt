@@ -9,8 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -39,22 +37,22 @@ val Weftwalking = card("Weftwalking") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.WasCast
-        effect = Effects.Composite(
+        effect = Effects.Pipeline {
             // Gather hand + graveyard in a single pass (one combined "shuffle ... into your library"
             // event per oracle text) and shuffle the result into the controller's library.
-            GatherCardsEffect(
-                source = CardSource.FromMultipleZones(
+            val weftwalkingShuffleCards = gather(
+                CardSource.FromMultipleZones(
                     zones = listOf(Zone.HAND, Zone.GRAVEYARD),
                     player = Player.You
                 ),
-                storeAs = "weftwalkingShuffleCards"
-            ),
-            MoveCollectionEffect(
-                from = "weftwalkingShuffleCards",
+                name = "weftwalkingShuffleCards"
+            )
+            move(
+                weftwalkingShuffleCards,
                 destination = CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Shuffled)
-            ),
-            Effects.DrawCards(7)
-        )
+            )
+            run(Effects.DrawCards(7))
+        }
     }
 
     staticAbility {
