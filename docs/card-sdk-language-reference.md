@@ -2843,6 +2843,12 @@ Numbers computed at resolution time.
 - `AggregateZone(player, zone, filter?, aggregation?)` — count cards in a zone.
 - `CountPermanentsOfType(player, subtype)` — count by creature type.
 - `CountCreaturesYouControl` — shorthand for "your creatures".
+- Facades: `DynamicAmounts.cardsInYourGraveyard()` / `creatureCardsInYourGraveyard()`
+  (graveyard counts), and `DynamicAmounts.cardsInYourHand()` — cards in your hand,
+  e.g. Stingerback Terror's "-1/-1 for each card in your hand" (multiply by `-1` and feed
+  both bonuses of a `GrantDynamicStatsEffect(GroupFilter.source(), …)`). Greatest power among
+  creatures you control is `DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).maxPower()`
+  (Tumbleweed Rising's X/X token, paired with `Effects.CreateDynamicToken`).
 
 ### Player & game
 

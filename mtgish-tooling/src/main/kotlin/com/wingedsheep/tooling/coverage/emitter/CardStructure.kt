@@ -726,6 +726,15 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
         val counter = counterNameForFilter(cond) ?: return null
         return "Conditions.Not(Conditions.SourceHasCounter(CounterTypeFilter.Named(\"$counter\")))"
     }
+    // "if a creature died this turn" — ACreatureOrPlaneswalkerDiedThisTurn over a bare creature-cardtype
+    // filter (Rictus Robber). Only the unrestricted "a creature" shape (no controller / subtype / count
+    // clause) maps to Conditions.CreatureDiedThisTurn; anything more specific declines -> SCAFFOLD.
+    if (cond.strField("_Condition") == "ACreatureOrPlaneswalkerDiedThisTurn") {
+        val filter = cond["args"] as? JsonObject
+        val bareCreature = filter?.strField("_Permanents") == "IsCardtype" &&
+            filter.field("args").asStr() == "Creature"
+        return if (bareCreature) "Conditions.CreatureDiedThisTurn" else null
+    }
     // "you control another outlaw" — ControlsA over And(Other(ThatEnteringPermanent), IsAnOutlaw). The
     // entering permanent is itself an outlaw, so this is exactly "two or more outlaws you control".
     youControlAnotherOutlawDsl(cond)?.let { return it }

@@ -205,6 +205,20 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
             return if (jsonContains(node["args"], "_Permanent", "ThisPermanent")) call("DynamicAmounts.sourceToughness") else null
         "PowerOfPermanent" ->
             return if (jsonContains(node["args"], "_Permanent", "ThisPermanent")) call("DynamicAmounts.sourcePower") else null
+        // "the greatest power among creatures you control" (Tumbleweed Rising's X/X token). The args are a
+        // permanent filter — only the exact "creatures you control" (And(IsCardtype Creature,
+        // ControlledByAPlayer You)) shape maps to the battlefield MAX-power facade; any other filter (a
+        // subtype, an opponent's creatures, "on the battlefield") declines -> SCAFFOLD rather than miscount.
+        "TheGreatestPowerAmongPermanents" -> {
+            val filterBlob = compact(node["args"])
+            val creaturesYouControl = node.firstArgWordTagged("IsCardtype") == "Creature" &&
+                "ControlledByAPlayer" in filterBlob && jsonContains(node["args"], "_Player", "You") &&
+                "IsCreatureType" !in filterBlob && "_Color" !in filterBlob && "\"Other\"" !in filterBlob &&
+                "Opponent" !in filterBlob
+            return if (creaturesYouControl) {
+                call("DynamicAmounts.battlefield", arg("Player.You"), arg("GameObjectFilter.Creature")).dot("maxPower")
+            } else null
+        }
         "LifeTotalOfPlayer" -> {
             val player = if (jsonContains(node, "_Player", "Opponent")) "Player.EachOpponent" else "Player.You"
             return call("DynamicAmount.LifeTotal", arg(player))

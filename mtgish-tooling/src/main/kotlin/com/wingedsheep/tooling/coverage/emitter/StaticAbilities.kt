@@ -9,8 +9,10 @@ import com.wingedsheep.tooling.coverage.Lit
 import com.wingedsheep.tooling.coverage.Stmt
 import com.wingedsheep.tooling.coverage.Sub
 import com.wingedsheep.tooling.coverage.arg
+import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asInt
 import com.wingedsheep.tooling.coverage.asStr
+import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.dot
@@ -198,9 +200,31 @@ private fun EmitCtx.selfDynamicStatsBlock(rule: JsonObject): List<Stmt>? {
         if (pt.size != 3) return null
         val powerMult = pt[0].asInt() ?: return null
         val toughnessMult = pt[1].asInt() ?: return null
+        val countNode = pt[2] as? JsonObject ?: return null
+
+        // "This creature gets +powerMult/+toughnessMult for each card in your hand" (Stingerback
+        // Terror: -1/-1 per card). The hand tally is a resolution-time `DynamicAmount.Count` over the
+        // You hand, via the `DynamicAmounts.cardsInYourHand()` facade. Only the You scope renders.
+        if (countNode.strField("_GameNumber") == "TheNumberOfCardsInPlayersHand") {
+            if (!jsonContains(countNode, "_Player", "You")) return null
+            val handCount: Dsl = call("DynamicAmounts.cardsInYourHand")
+            fun handBonus(mult: Int): Dsl =
+                if (mult == 1) handCount else call("DynamicAmount.Multiply", arg(handCount), arg("$mult"))
+            stmts.add(
+                staticAbilityStmt(
+                    call(
+                        "GrantDynamicStatsEffect",
+                        arg("filter", call("GroupFilter.source")),
+                        arg("powerBonus", handBonus(powerMult)),
+                        arg("toughnessBonus", handBonus(toughnessMult)),
+                    )
+                )
+            )
+            continue
+        }
+
         // The count must be a You-controlled battlefield tally; decline anything else (opponent /
         // each-player scope, or a filter the count path widens) so we never misrender the buff.
-        val countNode = pt[2] as? JsonObject ?: return null
         if (countNode.strField("_GameNumber") != "TheNumberOfPermanentsOnTheBattlefield") return null
         if (!jsonContains(countNode, "_Player", "You")) return null
         // Reject the predicates the land/type count filter path can't render faithfully (it silently
@@ -488,7 +512,7 @@ internal fun EmitCtx.cantBeBlockedExceptByFilter(ruleNode: JsonObject): String? 
  * A top-level `PlayerEffect(You, [...])` rule -> one `staticAbility { ability = ... }` per recognised
  * player-static. Only shapes with an exact controller-scoped StaticAbility render; anything else (the
  * top-of-library / cost-reduction player statics) scaffolds rather than guess. Currently: "you have
- * shroud" (True Believer).
+ * shroud" (True Believer); "creature spells you cast cost {N} less to cast" (Honest Rutstein).
  */
 internal fun EmitCtx.playerEffectBlock(rule: JsonObject): List<Stmt>? {
     val args = rule["args"] as? JsonArray
@@ -501,9 +525,38 @@ internal fun EmitCtx.playerEffectBlock(rule: JsonObject): List<Stmt>? {
     for (e in effects) {
         val ability = when (e.strField("_PlayerEffect")) {
             "Shroud" -> Lit("GrantShroudToController")
+            // "[Filtered] spells you cast cost {N} less to cast" (Honest Rutstein: creature spells).
+            // Renders only a single bare generic reduction over a spell filter we can name exactly;
+            // a colored/dynamic reduction or a filter we can't express declines -> SCAFFOLD.
+            "DecreaseSpellCost" -> decreaseSpellCostAbility(e) ?: run { reasons.add("PlayerEffect"); return null }
             else -> { reasons.add("PlayerEffect"); return null }
         }
         stmts.add(staticAbilityStmt(ability))
     }
     return stmts
+}
+
+/**
+ * A `DecreaseSpellCost(<spell filter>, [<reduction symbols>])` player-static -> `ModifySpellCost(
+ * target = SpellCostTarget.YouCast(<filter>), modification = CostModification.ReduceGeneric(N))`. Only a
+ * single bare generic reduction over a spell filter we can name exactly (creature spells / any spell)
+ * renders; any colored symbol, a multi-symbol reduction, or an unrenderable filter returns null. */
+private fun EmitCtx.decreaseSpellCostAbility(effect: JsonObject): Dsl? {
+    val a = effect["args"].asArr ?: return null
+    val spellFilter = when (val spells = a.getOrNull(0) as? JsonObject) {
+        null -> "GameObjectFilter.Any"
+        else -> when {
+            jsonContains(spells, "_Spells", "AnySpell") -> "GameObjectFilter.Any"
+            spells.strField("_Spells") == "IsCardtype" && spells.field("args").asStr() == "Creature" -> "GameObjectFilter.Creature"
+            else -> return null
+        }
+    }
+    val symbols = (a.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+    if (symbols.size != 1 || symbols[0].strField("_CostReductionSymbol") != "CostReduceGeneric") return null
+    val amount = symbols[0]["args"].asInt() ?: return null
+    return call(
+        "ModifySpellCost",
+        arg("target", call("SpellCostTarget.YouCast", arg(spellFilter))),
+        arg("modification", call("CostModification.ReduceGeneric", arg("$amount"))),
+    )
 }

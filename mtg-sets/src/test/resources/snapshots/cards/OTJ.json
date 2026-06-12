@@ -3174,6 +3174,69 @@
     ]
 }
 
+// Honest Rutstein
+{
+    "name": "Honest Rutstein",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "When Honest Rutstein enters, return target creature card from your graveyard to your hand.\nCreature spells you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Javier Charro",
+        "flavorText": "\"No questions. No refunds.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/259ddf66-76af-4857-83c3-c812327a6e23.jpg?1712356107"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Inspiring Vantage
 {
     "name": "Inspiring Vantage",
@@ -5200,6 +5263,62 @@
     ]
 }
 
+// Rictus Robber
+{
+    "name": "Rictus Robber",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Rogue",
+    "oracleText": "When this creature enters, if a creature died this turn, create a 2/2 blue and black Zombie Rogue creature token.\nPlot {2}{B} (You may pay {2}{B} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "PLOT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Plot",
+            "cost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie",
+                        "Rogue"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c7a0bd-6011-495a-b56c-8fa707dd7f12.jpg?1712316777"
+                },
+                "triggerCondition": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Caio Monteiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/252def94-2d89-48f7-8ff7-9c8682ca3ec6.jpg?1712355654"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Riku of Many Paths
 {
     "name": "Riku of Many Paths",
@@ -6811,6 +6930,67 @@
     ]
 }
 
+// Stingerback Terror
+{
+    "name": "Stingerback Terror",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Scorpion Dragon",
+    "oracleText": "Flying, trample\nThis creature gets -1/-1 for each card in your hand.\nPlot {2}{R} (You may pay {2}{R} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE",
+        "PLOT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Plot",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "multiplier": -1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d84d6e52-5c35-47bc-b160-876a3b0fcbe1.jpg?1712355854"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Stoic Sphinx
 {
     "name": "Stoic Sphinx",
@@ -7383,6 +7563,60 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Tumbleweed Rising
+{
+    "name": "Tumbleweed Rising",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create an X/X green Elemental creature token, where X is the greatest power among creatures you control.\nPlot {2}{G} (You may pay {2}{G} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.)",
+    "keywords": [
+        "PLOT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Plot",
+            "cost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 0,
+            "toughness": 0,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Elemental"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/0/0/008695e6-6d6f-4c16-bf05-377e8cc5f5ff.jpg?1712316611",
+            "dynamicPower": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature",
+                "aggregation": "MAX",
+                "property": "POWER"
+            },
+            "dynamicToughness": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature",
+                "aggregation": "MAX",
+                "property": "POWER"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "artist": "Jason Smith",
+        "flavorText": "When weeds tumble against the wind, *run*.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/275d2d2a-ef85-48c9-919d-bc62cdad8a10.jpg?1712356021"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

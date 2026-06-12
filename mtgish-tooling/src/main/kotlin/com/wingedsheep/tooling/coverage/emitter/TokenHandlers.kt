@@ -64,7 +64,16 @@ internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCou
             val a = spec["args"].asArr ?: return null
             val cardtypes = (a.getOrNull(3) as? JsonArray)?.mapNotNull { it.asStr() } ?: emptyList()
             if (cardtypes != listOf("Creature")) return null  // only plain creature tokens
-            val pt = (a.getOrNull(0) as? JsonObject)?.get("args").asArr ?: return null
+            val ptSpec = a.getOrNull(0) as? JsonObject ?: return null
+            // A `PTX` spec is an X/X token whose X is a game number ("Create an X/X … where X is the
+            // greatest power among creatures you control" — Tumbleweed Rising). Render it via
+            // `Effects.CreateDynamicToken(dynamicPower = …, dynamicToughness = …)`; the dynamic-token path
+            // can't carry abilities or a per-token count, so decline (-> SCAFFOLD) if either is present.
+            if (ptSpec.strField("_PT") == "PTX") {
+                if (count != 1 || dynamicCount != null) return null
+                return dynamicPtTokenDsl(ptSpec, a, controller)
+            }
+            val pt = ptSpec["args"].asArr ?: return null
             val power = pt.getOrNull(0).asInt() ?: return null
             val toughness = pt.getOrNull(1).asInt() ?: return null
             val colors = ((a.getOrNull(1) as? JsonObject)?.get("args").asArr ?: JsonArray(emptyList()))
@@ -125,6 +134,34 @@ internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCou
         }
     }
     return null
+}
+
+/**
+ * A `PTX` token spec — "Create an X/X [color] [subtype] creature token, where X is <game number>"
+ * (Tumbleweed Rising) -> `Effects.CreateDynamicToken(dynamicPower = …, dynamicToughness = …, colors = …,
+ * creatureTypes = …)`. `PTX`'s args are `[{_PTXValue}, {_PTXValue}, <countNode>]`: both the power and
+ * toughness X resolve to the SAME [countNode] game number, rendered via [dynamicAmountExpr] (decline ->
+ * SCAFFOLD when it doesn't render exactly). Only the plain-creature, subtyped, no-ability shape renders;
+ * a token carrying granted abilities declines (the dynamic-token facade can't carry them). [outer] is the
+ * `TokenWithPT` arg list (colours at [1], subtypes at [4], abilities at [5]).
+ */
+private fun EmitCtx.dynamicPtTokenDsl(ptSpec: JsonObject, outer: JsonArray, controller: String?): Dsl? {
+    val ptArgs = ptSpec["args"].asArr ?: return null
+    if (ptArgs.size != 3) return null
+    val countNode = ptArgs.getOrNull(2) ?: return null
+    val dynamic = dynamicAmountExpr(countNode) ?: return null
+    val colors = ((outer.getOrNull(1) as? JsonObject)?.get("args").asArr ?: JsonArray(emptyList()))
+        .mapNotNull { it.asStr()?.let(TOKEN_COLOR::get) }
+    val subs = ((outer.getOrNull(4) as? JsonObject)?.get("args").asArr ?: JsonArray(emptyList()))
+        .mapNotNull { it.asStr() }
+    if (subs.isEmpty()) return null
+    // The dynamic-token facade has no ability list; an abilitied X/X token declines rather than drop them.
+    if ((outer.getOrNull(5) as? JsonArray)?.isNotEmpty() == true) return null
+    val parts = mutableListOf(arg("dynamicPower", dynamic), arg("dynamicToughness", dynamic))
+    if (colors.isNotEmpty()) parts.add(arg("colors", "setOf(${colors.joinToString(", ") { "Color.$it" }})"))
+    parts.add(arg("creatureTypes", "setOf(${subs.joinToString(", ") { "\"$it\"" }})"))
+    if (controller != null) parts.add(arg("controller", Lit(controller)))
+    return Call("Effects.CreateDynamicToken", parts)
 }
 
 /**
