@@ -120,7 +120,25 @@ class LandwalkRule : BlockEvasionRule {
                 }
             }
         }
+        // Nonbasic landwalk (CR 702.14 family): unblockable while the defending player controls any
+        // land that isn't a basic land.
+        if (ctx.projected.hasKeyword(ctx.attackerId, Keyword.NONBASIC_LANDWALK) &&
+            playerControlsNonbasicLand(ctx)
+        ) {
+            return "$attackerName has ${Keyword.NONBASIC_LANDWALK.displayName} and cannot be blocked"
+        }
         return null
+    }
+
+    private fun playerControlsNonbasicLand(ctx: BlockCheckContext): Boolean {
+        return ctx.state.getBattlefield().any { entityId ->
+            val container = ctx.state.getEntity(entityId) ?: return@any false
+            val cardComponent = container.get<CardComponent>() ?: return@any false
+            val controller = ctx.projected.getController(entityId)
+            controller == ctx.blockingPlayer &&
+                cardComponent.typeLine.isLand &&
+                !cardComponent.typeLine.isBasicLand
+        }
     }
 
     private fun playerControlsLandWithSubtype(ctx: BlockCheckContext, landSubtype: Subtype): Boolean {

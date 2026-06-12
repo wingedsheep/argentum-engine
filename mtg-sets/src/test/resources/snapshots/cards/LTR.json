@@ -14401,6 +14401,59 @@
     ]
 }
 
+// Trailblazer's Boots
+{
+    "name": "Trailblazer's Boots",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has nonbasic landwalk. (It can't be blocked as long as defending player controls a nonbasic land.)\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "NONBASIC_LANDWALK"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "398",
+        "rarity": "RARE",
+        "artist": "Alexander Gering",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36ee958c-ae8c-49bd-9d85-0128ca19901c.jpg?1778748786"
+    }
+}
+
 // Treason of Isengard
 {
     "name": "Treason of Isengard",

@@ -25,6 +25,7 @@ enum class Keyword(val displayName: String) {
     MOUNTAINWALK("Mountainwalk"),
     PLAINSWALK("Plainswalk"),
     DESERTWALK("Desertwalk"),
+    NONBASIC_LANDWALK("Nonbasic landwalk"),
 
     // ── Combat ───────────────────────────────────────────────
     FIRST_STRIKE("First strike"),

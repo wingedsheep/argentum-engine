@@ -153,6 +153,7 @@ export enum Keyword {
   MOUNTAINWALK = 'MOUNTAINWALK',
   PLAINSWALK = 'PLAINSWALK',
   DESERTWALK = 'DESERTWALK',
+  NONBASIC_LANDWALK = 'NONBASIC_LANDWALK',
   // Combat
   FIRST_STRIKE = 'FIRST_STRIKE',
   DOUBLE_STRIKE = 'DOUBLE_STRIKE',
@@ -223,6 +224,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.MOUNTAINWALK]: 'Mountainwalk',
   [Keyword.PLAINSWALK]: 'Plainswalk',
   [Keyword.DESERTWALK]: 'Desertwalk',
+  [Keyword.NONBASIC_LANDWALK]: 'Nonbasic landwalk',
   [Keyword.FIRST_STRIKE]: 'First strike',
   [Keyword.DOUBLE_STRIKE]: 'Double strike',
   [Keyword.TRAMPLE]: 'Trample',

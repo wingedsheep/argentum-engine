@@ -96,3 +96,15 @@ entries below for the actual decisions.
 - **Reusable for:** any "least power" target/edict (also helps Witch-king of Angmar / Shadowfax power
   comparisons later).
 
+### Trailblazer's Boots (Artifact, Extra) — Gap 24 (nonbasic landwalk)
+
+- **Oracle:** "Equipped creature has nonbasic landwalk. Equip {2}."
+- **Decision:** added `Keyword.NONBASIC_LANDWALK` + an evasion branch in
+  `BlockEvasionRules.LandwalkRule` (`playerControlsNonbasicLand` = a controlled land with
+  `typeLine.isLand && !isBasicLand`). Card grants it via the standard
+  `GrantKeyword(Keyword.NONBASIC_LANDWALK, Filters.EquippedCreature)` static + `equipAbility("{2}")`.
+  Client `enums.ts` Keyword enum + display name updated.
+- **Touched:** `Keyword.kt`, `BlockEvasionRules.kt`, client `enums.ts`, card + scenario test (equips
+  via the equip activated ability, asserts block illegal vs a nonbasic land and legal vs only basics),
+  SDK reference.
+

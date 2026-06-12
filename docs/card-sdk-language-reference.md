@@ -2589,7 +2589,9 @@ activatedAbility {
 **`Keyword` enum (display-level)**
 
 Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Plainswalk … Forestwalk), Desertwalk
-(nonbasic landwalk variant — `Keyword.DESERTWALK`, keyed off `Subtype.DESERT`), First Strike, Double
+(nonbasic landwalk variant — `Keyword.DESERTWALK`, keyed off `Subtype.DESERT`), Nonbasic landwalk
+(`Keyword.NONBASIC_LANDWALK` — unblockable while the defending player controls any non-basic land;
+`LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
 Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Sneak, Impending, Conspire, Hideaway, Cascade, Plot,
 Offspring, Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
