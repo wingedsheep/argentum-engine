@@ -27,15 +27,6 @@ const EMPTY_TAGGED: readonly TaggedAttachment[] = []
 // other UI (turn bar, opposing row). Collapse to a badge + browser overlay instead.
 const ATTACHMENT_COLLAPSE_THRESHOLD = 3
 
-function toSinglesStable(cards: readonly ClientCard[]): GroupedCard[] {
-  return cards.map((card) => ({
-    card,
-    count: 1,
-    cardIds: [card.id],
-    cards: [card],
-  }))
-}
-
 /**
  * Battlefield area with two rows per player, each using a 3-column grid:
  *
@@ -120,14 +111,18 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
   const planeswalkers = isOpponent ? opponentPlaneswalkers : playerPlaneswalkers
   const other = isOpponent ? opponentOther : playerOther
 
-  // Group identical lands, display creatures/planeswalkers/other individually.
+  // Group permanents that share exactly the same projected status (counters, P/T, tapped,
+  // combat assignment, attachments, chosen attributes, …) into a single overlapping stack —
+  // the same treatment lands have always had, now applied to every row. A horde of identical
+  // tokens collapses into one stack instead of sprawling across the row, and any one of them
+  // splits back out the moment it's buffed, tapped, attacks, etc. (see computeCardGroupKey).
   // Memoized so these arrays keep stable identity across unrelated store updates —
   // otherwise every battlefield re-render allocates fresh arrays that cascade
   // into child re-renders and invalidate downstream useMemos.
   const groupedLands = useMemo(() => groupCards(lands), [lands])
-  const groupedCreatures = useMemo(() => toSinglesStable(creatures), [creatures])
-  const groupedPlaneswalkers = useMemo(() => toSinglesStable(planeswalkers), [planeswalkers])
-  const groupedOther = useMemo(() => toSinglesStable(other), [other])
+  const groupedCreatures = useMemo(() => groupCards(creatures), [creatures])
+  const groupedPlaneswalkers = useMemo(() => groupCards(planeswalkers), [planeswalkers])
+  const groupedOther = useMemo(() => groupCards(other), [other])
 
   const hasCreatures = groupedCreatures.length > 0
   const hasPlaneswalkers = groupedPlaneswalkers.length > 0

@@ -510,6 +510,12 @@ export interface GroupedCard {
 /**
  * Computes a grouping key for a card based on properties that make cards "different".
  * Cards with different keys should NOT be grouped together.
+ *
+ * The goal is that two cards share a key only when they have *exactly the same projected
+ * status* — same printed identity AND same battlefield state (counters, P/T, damage,
+ * tapped, combat assignment, summoning sickness, chosen attributes, granted keywords,
+ * designations, …). That way a stack of N identical tokens collapses into one visual
+ * group, but the moment one of them is buffed, tapped, attacks, etc. it splits back out.
  */
 export function computeCardGroupKey(card: ClientCard): string {
   const parts: string[] = [card.name]
@@ -526,8 +532,13 @@ export function computeCardGroupKey(card: ClientCard): string {
     parts.push(`pt:${card.power}/${card.toughness}`)
   }
 
-  // Cards with attachments should never be grouped — use unique ID
+  // Cards with attachments (auras/equipment) should never be grouped — use unique ID
   if (card.attachments.length > 0) {
+    parts.push(`id:${card.id}`)
+  }
+
+  // Cards with linked-exiled cards (e.g. Suspension Field) carry hidden state — never group
+  if (card.linkedExile && card.linkedExile.length > 0) {
     parts.push(`id:${card.id}`)
   }
 
@@ -541,6 +552,25 @@ export function computeCardGroupKey(card: ClientCard): string {
     parts.push('tapped')
   }
 
+  // Combat participants are different from idle permanents, and from each other when they
+  // attack/block different things (drives distinct targeting arrows, so they can't share a slot).
+  if (card.isAttacking) {
+    parts.push(`attacking:${card.attackingTarget ?? ''}`)
+  }
+  if (card.isBlocking) {
+    parts.push(`blocking:${card.blockingTarget ?? ''}`)
+  }
+
+  // Summoning-sick creatures behave differently (can't attack/tap) — keep them visually distinct.
+  if (card.hasSummoningSickness) {
+    parts.push('sick')
+  }
+
+  // Phased-out permanents render translucent and are functionally absent — never mix with present ones.
+  if (card.isPhasedOut) {
+    parts.push('phased')
+  }
+
   // Transformed cards are different
   if (card.isTransformed) {
     parts.push('transformed')
@@ -549,6 +579,38 @@ export function computeCardGroupKey(card: ClientCard): string {
   // Face-down cards are different
   if (card.isFaceDown) {
     parts.push('facedown')
+  }
+
+  // "As enters, choose ..." selections (creature type / color / mode) are rendered as badges.
+  if (card.chosenCreatureType) parts.push(`ct:${card.chosenCreatureType}`)
+  if (card.chosenColor) parts.push(`cc:${card.chosenColor}`)
+  if (card.chosenMode) parts.push(`cm:${card.chosenMode}`)
+
+  // Class/Saga progress is a per-permanent badge, not shared identity.
+  if (card.classLevel != null) parts.push(`class:${card.classLevel}`)
+
+  // Special designations carry prominent badges.
+  if (card.isSuspected) parts.push('suspected')
+  if (card.isRingBearer) parts.push('ringbearer')
+  if (card.isCommander) parts.push('commander')
+
+  // Copy provenance is badged and shown in details, so a token copy doesn't merge with the original.
+  if (card.copyOf) parts.push(`copy:${card.copyOf}`)
+  if (card.nonLegendaryCopy) parts.push('nonleg')
+
+  // Granted/projected keywords, ability flags and protections differ when one copy is
+  // pumped or granted an ability (without an attachment) but its twin isn't.
+  if (card.keywords.length > 0) {
+    parts.push(`kw:${[...card.keywords].sort().join(',')}`)
+  }
+  if (card.abilityFlags && card.abilityFlags.length > 0) {
+    parts.push(`af:${[...card.abilityFlags].sort().join(',')}`)
+  }
+  if (card.protections && card.protections.length > 0) {
+    parts.push(`prot:${[...card.protections].sort().join(',')}`)
+  }
+  if (card.hexproofFromColors && card.hexproofFromColors.length > 0) {
+    parts.push(`hpx:${[...card.hexproofFromColors].sort().join(',')}`)
   }
 
   return parts.join('|')
