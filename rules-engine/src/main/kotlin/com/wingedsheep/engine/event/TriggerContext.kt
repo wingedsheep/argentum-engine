@@ -70,6 +70,13 @@ data class TriggerContext(
      */
     val modesChosenCount: Int? = null,
     /**
+     * For SpellCastEvent triggers — total mana spent to cast the triggering spell. `null` when
+     * the trigger was not driven by a spell cast. Read by
+     * `ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL` so abilities like Aberrant Manawurm
+     * and Expressive Firedancer can scale by "the amount of mana spent to cast that spell."
+     */
+    val manaSpentOnTriggeringSpell: Int? = null,
+    /**
      * Power of the creature the trigger's source (an Aura/Equipment) was attached to, captured
      * when the trigger fired. Carried as last-known information (CR 608.2h) so that an
      * "enchanted creature deals damage equal to its power" ability still uses the right power
@@ -128,7 +135,8 @@ data class TriggerContext(
                 is SpellCastEvent -> TriggerContext(
                     triggeringEntityId = event.spellEntityId,
                     triggeringPlayerId = event.casterId,
-                    modesChosenCount = event.chosenModesCount.takeIf { it > 0 }
+                    modesChosenCount = event.chosenModesCount.takeIf { it > 0 },
+                    manaSpentOnTriggeringSpell = event.totalManaSpent.takeIf { it > 0 }
                 )
                 is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 is com.wingedsheep.engine.core.ScriedEvent -> TriggerContext(

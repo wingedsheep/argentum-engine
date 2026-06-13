@@ -426,7 +426,8 @@ class TriggerProcessor(
                 triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness,
                 triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
                 triggerScryCount = trigger.triggerContext.scryCount,
-                triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount
+                triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
+                triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell
             )
             ability.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
         } catch (_: Exception) {
@@ -472,7 +473,8 @@ class TriggerProcessor(
             triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
             enchantedCreatureLastKnownPower = trigger.triggerContext.enchantedCreatureLastKnownPower,
             triggerScryCount = trigger.triggerContext.scryCount,
-            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount
+            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
+            triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell
         )
 
         // Push the continuation onto the stack
@@ -524,7 +526,8 @@ class TriggerProcessor(
             triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
             enchantedCreatureLastKnownPower = trigger.triggerContext.enchantedCreatureLastKnownPower,
             triggerScryCount = trigger.triggerContext.scryCount,
-            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount
+            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
+            triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell
         )
 
         return stackResolver.putTriggeredAbility(

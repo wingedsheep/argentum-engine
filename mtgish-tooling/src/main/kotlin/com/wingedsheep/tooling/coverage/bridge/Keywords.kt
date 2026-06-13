@@ -29,6 +29,13 @@ internal fun BridgeBuilder.keywords() {
     // the integer case auto-renders, while "firebending X (X = its power)" carries an XValue node and
     // the emitter declines it (-> SCAFFOLD). This entry only marks the capability covered.
     supported("Firebending", "keyword ability: Firebending N -> keywordAbility(KeywordAbility.firebending(N)) (CR 702.189)")
+    // Ward (CR 702.21) — a PARAMETERIZED keyword ability: the cost rides in the rule's args
+    // (`Ward—Discard a card`, `Ward {2}`, `Ward—Pay N life`, `Ward—Sacrifice <filter>`). Like Saddle,
+    // it must be `supported`, not `keyword`: a bare `keywords(Keyword.WARD)` would drop the cost. The
+    // emitter's `rname == "Ward"` branch renders `keywordAbility(KeywordAbility.ward(...)/wardDiscard()/
+    // wardLife(N)/wardSacrifice(filter))` for the cost shapes it can express; richer/compound costs
+    // decline -> SCAFFOLD. This entry only marks the capability covered (never blocking).
+    supported("Ward", "keyword ability: Ward—<cost> (CR 702.21) -> keywordAbility(KeywordAbility.ward(...)/wardDiscard()/wardLife(N)/wardSacrifice(filter))")
 
     composed("Landwalk", "specific *WALK keywords (SWAMPWALK, FORESTWALK, ...)")
     // Equip is a keyword ability, but the engine has no `Keyword.EQUIP` enum member: `equipAbility(cost)`

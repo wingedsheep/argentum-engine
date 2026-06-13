@@ -147,6 +147,34 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
                 arg("effect", edsl),
             )
         }
+        // "If [N] or more mana was spent to cast that spell, [do X]" (Expressive Firedancer) — a
+        // `SpellPassesFilter(Trigger_ThatSpell, AnAmountOfManaWasSpentToCastIt{>= N})` gate on the
+        // triggering spell's mana. Renders a `Compare(ContextProperty(MANA_SPENT_ON_TRIGGERING_SPELL),
+        // >=, Fixed(N))`. Only the triggering spell + a `GreaterThanOrEqualTo` Integer compare render;
+        // any other spell subject / comparator declines -> SCAFFOLD rather than misread the threshold.
+        if (cond.strField("_Condition") == "SpellPassesFilter") {
+            val cargs = cond["args"].asArr ?: return@on null
+            if ((cargs.getOrNull(0) as? JsonObject)?.strField("_Spell") != "Trigger_ThatSpell") return@on null
+            val spellFilter = cargs.getOrNull(1) as? JsonObject ?: return@on null
+            if (spellFilter.strField("_Spells") != "AnAmountOfManaWasSpentToCastIt") return@on null
+            val cmp = spellFilter["args"] as? JsonObject ?: return@on null
+            if (cmp.strField("_Comparison") != "GreaterThanOrEqualTo") return@on null
+            val n = (cmp["args"].asInt()) ?: ((cmp["args"] as? JsonObject)?.get("args").asInt()) ?: return@on null
+            val edsl = renderEffectList(inner, tvar) ?: return@on null
+            return@on call(
+                "ConditionalEffect",
+                arg(
+                    "condition",
+                    call(
+                        "Compare",
+                        arg(call("DynamicAmount.ContextProperty", arg("ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL"))),
+                        arg("ComparisonOperator.GTE"),
+                        arg(call("DynamicAmount.Fixed", arg("$n"))),
+                    ),
+                ),
+                arg("effect", edsl),
+            )
+        }
         if (cond.strField("_Condition") != "PermanentPassesFilter") return@on null
         val condArgs = cond["args"].asArr ?: return@on null
         // Subject must be the first targeted permanent (Ref_TargetPermanent / Ref_TargetPermanent1).

@@ -50,6 +50,8 @@ data class ModifySpellCost(
             is CostModification.ReduceColored -> "cost ${modification.symbols} less to cast"
             is CostModification.ReduceColoredPerUnit ->
                 "cost ${modification.symbols} less to cast for each ${modification.countSource.description}"
+            is CostModification.ReduceColoredIfAnyTargetMatches ->
+                "cost ${modification.symbols} less to cast if it targets ${modification.filter.description}"
             is CostModification.IncreaseGeneric -> "cost {${modification.amount}} more"
             is CostModification.IncreaseColored -> "cost ${modification.symbols} more to cast"
             is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
@@ -209,6 +211,33 @@ sealed interface CostModification {
         val symbols: String,
         val countSource: CostReductionSource,
     ) : CostModification
+
+    /**
+     * Remove specific colored mana [symbols] from the cost if the spell targets any object
+     * matching [filter]. The colored analogue of
+     * [CostReductionSource.FixedIfAnyTargetMatches] (which only reduces generic), and the
+     * reduction counterpart of [IncreaseGenericIfAnyTargetMatches].
+     *
+     * Used for cards like Brush Off ("This spell costs {1}{U} less to cast if it targets an
+     * instant or sorcery spell") — pair this `{U}` reduction with a
+     * `ReduceGenericBy(FixedIfAnyTargetMatches(1, filter))` for the `{1}` so both halves apply
+     * together once a matching target is chosen.
+     *
+     * At cast resolution, the reduction applies if any of the spell's chosen targets match.
+     * Like [CostReductionSource.FixedIfAnyTargetMatches], excess that cannot match is silently
+     * dropped (does NOT overflow to generic).
+     */
+    @SerialName("ReduceColoredIfAnyTargetMatches")
+    @Serializable
+    data class ReduceColoredIfAnyTargetMatches(
+        val symbols: String,
+        val filter: GameObjectFilter,
+    ) : CostModification {
+        override fun applyTextReplacement(replacer: TextReplacer): CostModification {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
 
     /** Increase generic mana by a fixed amount (tax effect). */
     @SerialName("IncreaseGeneric")

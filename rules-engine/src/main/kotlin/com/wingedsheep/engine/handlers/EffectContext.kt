@@ -165,6 +165,12 @@ data class EffectContext(
      */
     val triggerModesChosenCount: Int? = null,
     /**
+     * Total mana spent to cast the spell that fired this trigger. Read by
+     * `ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL` (Aberrant Manawurm, Expressive
+     * Firedancer). Distinct from [totalManaSpent], which is the *resolving object's own* cast.
+     */
+    val triggerManaSpentOnTriggeringSpell: Int? = null,
+    /**
      * Number of cards actually looked at by the scry that fired this trigger. Read by
      * `ContextPropertyKey.TRIGGER_SCRY_COUNT` (Celeborn the Wise, Elrond Master of Healing).
      */

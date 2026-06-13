@@ -175,13 +175,12 @@ object Emitter {
                 // "firebending X (X = its power)" carries an XValue node -> findInteger returns "X" ->
                 // `as? Int` is null -> scaffold, rather than guessing.
                 rname == "Firebending" -> block = (findInteger(rule["args"]) as? Int)?.let { listOf(Eval(call("firebending", arg("$it")))) }
-                // Ward {cost} (CR 702.21) carries a `_Cost` arg. Only the pure-mana shape renders as
-                // `KeywordAbility.Ward(WardCost.Mana("{x}"))`; Ward—Pay life / Ward—Discard / other
-                // costs return null -> scaffold rather than drop the cost. A bare WARD enum keyword
-                // would lose the cost entirely, so this must never fall through to the keyword case.
-                rname == "Ward" -> block = manaKeywordCost(rule)?.let {
-                    listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.Ward", arg(call("WardCost.Mana", arg("\"$it\""))))))))
-                }
+                // Ward—<cost> (CR 702.21) carries a `_Cost` arg. `wardKeywordLine` renders the cost
+                // shapes the SDK exposes — mana (`Ward {x}`), discard-a-card, pay-N-life, sacrifice-a-
+                // <filter>; compound/dynamic costs return null -> scaffold rather than drop the cost. A
+                // bare WARD enum keyword would lose the cost entirely, so this must never fall through
+                // to the keyword case.
+                rname == "Ward" -> block = ctx.wardKeywordLine(rule)
                 // Plot {cost} (CR 718, OTJ) carries a `_Cost: PayMana` arg -> KeywordAbility.plot("{cost}").
                 // Pure-mana only; a non-mana plot cost (none printed) declines -> scaffold.
                 rname == "Plot" -> block = manaKeywordCost(rule)?.let {

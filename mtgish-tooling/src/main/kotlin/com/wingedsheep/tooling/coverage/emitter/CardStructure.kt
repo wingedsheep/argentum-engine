@@ -2,6 +2,8 @@ package com.wingedsheep.tooling.coverage.emitter
 
 import com.wingedsheep.tooling.coverage.Assign
 import com.wingedsheep.tooling.coverage.Block
+import com.wingedsheep.tooling.coverage.Arg
+import com.wingedsheep.tooling.coverage.Call
 import com.wingedsheep.tooling.coverage.Dsl
 import com.wingedsheep.tooling.coverage.Eval
 import com.wingedsheep.tooling.coverage.Lit
@@ -92,8 +94,14 @@ private fun EmitCtx.multiTargetLocals(targets: List<JsonObject>, actions: List<J
     val stmts = mutableListOf<Stmt>()
     val vars = mutableListOf<String>()
     val refsByKind = mutableMapOf<String, MutableList<String>>()
+    // The mtgish IR sometimes drops the "up to one/N target" optionality on a multi-target spell's later
+    // target (Burrog Barrage's "up to one target creature an opponent controls" arrives as a plain
+    // mandatory TargetPermanent). The oracle text is authoritative, so recover per-target optionality
+    // from the ordered "target …" clauses there and inject `optional = true` when the IR omitted it.
+    val optionalByOrdinal = oracleOptionalTargetOrdinals(targets.size)
     targets.forEachIndexed { i, t ->
-        val node = targetExpr(t, actions) ?: run { reasons.add("target:${t.strField("_Target")}"); return null }
+        var node = targetExpr(t, actions) ?: run { reasons.add("target:${t.strField("_Target")}"); return null }
+        if (optionalByOrdinal.getOrNull(i) == true) node = node.withOptionalArg()
         val varName = "t${i + 1}"
         stmts.add(targetLocalNamed(varName, varName, node))
         vars.add(varName)
@@ -103,6 +111,31 @@ private fun EmitCtx.multiTargetLocals(targets: List<JsonObject>, actions: List<J
         if (refVars.size == 1) ref to refVars.single() else null
     }.toMap()
     return MultiTargetLocals(stmts, vars, refVars, refsByKind.mapValues { it.value.toList() })
+}
+
+/**
+ * For a spell whose IR declares [targetCount] targets in oracle order, returns a per-ordinal flag of
+ * which are "up to one/N target …" (optional). Reads the oracle text — the IR occasionally drops the
+ * "up to" qualifier on a later target (Burrog Barrage). Each ordered "(up to one|up to N )?target …"
+ * mention maps to one declared target in order; only the explicit "up to" ones are optional. If the
+ * count of "target" mentions doesn't line up with [targetCount], returns all-false (no over-claiming
+ * optionality — better a mandatory mismatch caught by the gate than a silently wrong optional flag).
+ */
+/** Add `optional = true` to a `Target…(…)` Call (idempotent). Non-Call nodes (or ones already carrying
+ *  the flag) are returned unchanged — recovering optionality only ever ADDS the flag, never overrides. */
+private fun Dsl.withOptionalArg(): Dsl = when {
+    this is Call && this.args.none { it.name == "optional" } ->
+        this.copy(args = this.args + Arg(Lit("true"), "optional"))
+    else -> this
+}
+
+private fun EmitCtx.oracleOptionalTargetOrdinals(targetCount: Int): List<Boolean> {
+    val text = oracleText?.lowercase() ?: return List(targetCount) { false }
+    // Match each "target" mention, capturing an immediately-preceding "up to <word/number> " qualifier.
+    val mentions = Regex("""(up to (?:one|two|three|four|\d+)\s+)?target\b""")
+        .findAll(text).map { it.groupValues[1].isNotBlank() }.toList()
+    if (mentions.size != targetCount) return List(targetCount) { false }
+    return mentions
 }
 
 private fun refKindForTarget(target: JsonObject): String? = when (target.strField("_Target")) {
@@ -125,6 +158,7 @@ internal fun EmitCtx.castEffectHandled(rule: JsonObject): Boolean {
         "CantBeCastUnless" -> castRestrictionLines(listOf(rule)) != null
         "AdditionalCastingCost" -> additionalCostLine(rule) != null
         "ReduceCastingCostIf" -> costReductionStaticLines(rule) != null
+        "ReduceCastingCostIfItTargetsASpell" -> targetSpellCostReductionLines(rule) != null
         else -> false
     }
 }
@@ -137,9 +171,72 @@ internal fun EmitCtx.cardLevelCastEffectLines(card: JsonObject): List<String>? {
         if (line != null) { lines.add(line); continue }
         val reduction = costReductionStaticLines(rule)
         if (reduction != null) { lines.addAll(reduction); continue }
+        val targetReduction = targetSpellCostReductionLines(rule)
+        if (targetReduction != null) { lines.addAll(targetReduction); continue }
         if (!castEffectHandled(rule)) return null
     }
     return lines
+}
+
+/**
+ * `CastEffect(ReduceCastingCostIfItTargetsASpell([<cost symbols>], <spell filter>))` -> one
+ * `staticAbility { ability = ModifySpellCost(SelfCast, …) }` per cost symbol, each gated on the spell
+ * targeting an object matching the filter. Brush Off ("This spell costs {1}{U} less to cast if it
+ * targets an instant or sorcery spell"):
+ *  - `{1}` -> `ReduceGenericBy(FixedIfAnyTargetMatches(1, <filter>))`.
+ *  - `{U}` -> `ReduceColoredIfAnyTargetMatches("{U}", <filter>)`.
+ *
+ * Only the instant-or-sorcery spell filter renders today (the only target-gated colored reduction in
+ * the corpus); any other spell filter, or a cost symbol we don't model (generic-per-unit, life, …),
+ * declines -> SCAFFOLD rather than emit a wrong gate.
+ */
+private fun EmitCtx.targetSpellCostReductionLines(rule: JsonObject): List<String>? {
+    val node = rule["args"] as? JsonObject ?: return null
+    if (node.strField("_CastEffect") != "ReduceCastingCostIfItTargetsASpell") return null
+    val args = node["args"].asArr ?: return null
+    val symbols = (args.getOrNull(0) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+    if (symbols.isEmpty()) return null
+    val spellFilter = args.getOrNull(1) as? JsonObject ?: return null
+    // Only the "instant or sorcery spell" filter (Or(IsCardtype Instant, IsCardtype Sorcery)) is modeled.
+    val filterDsl = if (spellFilter.strField("_Spells") == "Or") {
+        val blob = compact(spellFilter)
+        if (blob.contains("\"Instant\"") && blob.contains("\"Sorcery\"") && "IsCreatureType" !in blob) {
+            "GameObjectFilter.InstantOrSorcery"
+        } else return null
+    } else return null
+
+    val abilities = symbols.map { sym ->
+        when (sym.strField("_CostReductionSymbol")) {
+            "CostReduceGeneric" -> {
+                val amount = sym["args"].asInt() ?: return null
+                call(
+                    "ModifySpellCost",
+                    arg("target", Lit("SpellCostTarget.SelfCast")),
+                    arg("modification", call(
+                        "CostModification.ReduceGenericBy",
+                        arg(call(
+                            "CostReductionSource.FixedIfAnyTargetMatches",
+                            arg("amount", "$amount"), arg("filter", Lit(filterDsl)),
+                        )),
+                    )),
+                )
+            }
+            // A single colored pip (CostReduceW/U/B/R/G) -> the colored target-gated reduction.
+            "CostReduceW", "CostReduceU", "CostReduceB", "CostReduceR", "CostReduceG" -> {
+                val pip = sym.strField("_CostReductionSymbol")!!.removePrefix("CostReduce")
+                call(
+                    "ModifySpellCost",
+                    arg("target", Lit("SpellCostTarget.SelfCast")),
+                    arg("modification", call(
+                        "CostModification.ReduceColoredIfAnyTargetMatches",
+                        arg("symbols", Lit("\"{$pip}\"")), arg("filter", Lit(filterDsl)),
+                    )),
+                )
+            }
+            else -> return null
+        }
+    }
+    return abilities.flatMap { renderBlock(Block("staticAbility", listOf(Assign("ability", it))), "    ") }
 }
 
 /**
@@ -798,7 +895,7 @@ private fun EmitCtx.liftInterveningIfAction(actions: List<JsonObject>): Pair<Str
  *  - `PlayerPassesFilter(You, ControlsA(<filter>))` ("you control a <filter>") ->
  *    `Conditions.YouControl(<filter>)` (Beastbond Outcaster's "a creature with power 4 or greater").
  */
-private fun EmitCtx.interveningIfDsl(cond: JsonObject?): String? {
+internal fun EmitCtx.interveningIfDsl(cond: JsonObject?): String? {
     if (cond == null) return null
     // Top-level And -> Conditions.All(arm, arm, ...); every arm must render or the whole declines.
     if (cond.strField("_Condition") == "And") {
@@ -838,12 +935,47 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
             filter.field("args").asStr() == "Creature"
         return if (bareCreature) "Conditions.CreatureDiedThisTurn" else null
     }
+    // "if you gained life this turn" — PlayerPassesFilter(You, GainedLifeThisTurn) (Foolish Fate's
+    // Infusion clause). No count/amount sub-clause, so the bare "you gained life this turn" maps to
+    // Conditions.YouGainedLifeThisTurn.
+    if (cond.strField("_Condition") == "PlayerPassesFilter" &&
+        jsonContains(cond, "_Player", "You") &&
+        jsonContains(cond, "_Players", "GainedLifeThisTurn")
+    ) {
+        return "Conditions.YouGainedLifeThisTurn"
+    }
+    // "if you've cast another instant or sorcery spell this turn" — PlayerPassesFilter(You,
+    // CastASpellThisTurn(And(Other(ThisSpell), Or(IsCardtype Instant, IsCardtype Sorcery)))) (Burrog
+    // Barrage). The Other(ThisSpell) self-exclusion means "another", and this spell is itself an
+    // instant/sorcery, so "another instant or sorcery" = "two or more instant/sorcery spells this turn"
+    // -> Conditions.YouCastSpellsThisTurn(2, GameObjectFilter.InstantOrSorcery). Only the exact
+    // Other(ThisSpell) + instant-or-sorcery shape renders; anything else declines -> SCAFFOLD.
+    youCastAnotherInstantOrSorceryDsl(cond)?.let { return it }
     // "you control another outlaw" — ControlsA over And(Other(ThatEnteringPermanent), IsAnOutlaw). The
     // entering permanent is itself an outlaw, so this is exactly "two or more outlaws you control".
     youControlAnotherOutlawDsl(cond)?.let { return it }
     // "you control a <filter>" — reuse the static-gate renderer (PlayerPassesFilter(You, ControlsA(filter))).
     youControlConditionDsl(cond)?.let { return it }
     return null
+}
+
+/** `PlayerPassesFilter(You, CastASpellThisTurn(And(Other(ThisSpell), Or(IsCardtype Instant, IsCardtype
+ *  Sorcery))))` ("you've cast another instant or sorcery spell this turn") ->
+ *  `Conditions.YouCastSpellsThisTurn(2, GameObjectFilter.InstantOrSorcery)`, else null. The
+ *  Other(ThisSpell) self-exclusion plus this spell itself being an instant/sorcery is what makes
+ *  "another instant or sorcery" equal "two or more instant/sorcery spells cast this turn" — the spell
+ *  on the stack is already counted in the cast tracker when it resolves (Burrog Barrage). */
+private fun EmitCtx.youCastAnotherInstantOrSorceryDsl(cond: JsonObject): String? {
+    if (cond.strField("_Condition") != "PlayerPassesFilter") return null
+    val args = cond["args"].asArr ?: return null
+    if ((args.getOrNull(0) as? JsonObject)?.strField("_Player") != "You") return null
+    val cast = args.getOrNull(1) as? JsonObject ?: return null
+    if (cast.strField("_Players") != "CastASpellThisTurn") return null
+    val blob = compact(cast)
+    // Must be the "another" (Other ThisSpell) self-exclusion over an instant-or-sorcery filter.
+    if ("\"Other\"" !in blob || "ThisSpell" !in blob) return null
+    if (!(blob.contains("\"Instant\"") && blob.contains("\"Sorcery\""))) return null
+    return "Conditions.YouCastSpellsThisTurn(2, GameObjectFilter.InstantOrSorcery)"
 }
 
 /** The "<counter> counter" name for a `HasNoCountersOfType(<CounterType>)` node, mapped to the engine's
@@ -1025,7 +1157,15 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     if (jsonContains(trig, "_Trigger", "WhenAPlayerCastsASpell")) {
         val argv = trig["args"].asArr
         val scope = castScope(argv?.getOrNull(0) as? JsonObject) ?: return null
-        val category = spellCastCategory(argv?.getOrNull(1) as? JsonObject) ?: return null
+        val spellsNode = argv?.getOrNull(1) as? JsonObject
+        // "an instant or sorcery spell that targets a creature" (Repartee — Forum Necroscribe,
+        // Lecturing Scornmage): an And of the base spell-type filter + a `TargetsAPermanent`
+        // clause. Recover the base category and a `targetsMatching(<filter>)` subfilter; the
+        // whole thing renders only when BOTH render exactly (decline -> SCAFFOLD otherwise).
+        spellCastTargetsMatching(spellsNode)?.let { (category, sub) ->
+            return castTriggerDsl(scope, category, targetsMatching = sub)
+        }
+        val category = spellCastCategory(spellsNode) ?: return null
         return castTriggerDsl(scope, category)
     }
 
@@ -1072,19 +1212,51 @@ private fun spellCastCategory(spells: JsonObject?): String? = when (spells?.strF
     else -> null
 }
 
+/** The base [GameObjectFilter] expression for a cast-trigger category, or null for "any" (no filter). */
+private fun categoryFilter(category: String): String? = when (category) {
+    "any" -> null
+    "creature" -> "GameObjectFilter.Creature"
+    "noncreature" -> "GameObjectFilter.Noncreature"
+    "enchantment" -> "GameObjectFilter.Enchantment"
+    "instantOrSorcery" -> "GameObjectFilter.InstantOrSorcery"
+    "historic" -> "GameObjectFilter.Historic"
+    else -> null
+}
+
+/**
+ * "a [type] spell that targets a [permanent]" (Repartee — Forum Necroscribe, Lecturing Scornmage):
+ * the spell filter is an `And` of a base spell-type filter + a `TargetsAPermanent(<perm filter>)`
+ * clause. Returns `(baseCategory, targetsMatchingFilterExpr)` when BOTH halves render exactly, else
+ * null so the trigger declines -> SCAFFOLD rather than dropping the "targets a creature" clause.
+ */
+private fun EmitCtx.spellCastTargetsMatching(spells: JsonObject?): Pair<String, String>? {
+    if (spells?.strField("_Spells") != "And") return null
+    val parts = spells["args"].asArr.orEmpty().filterIsInstance<JsonObject>()
+    if (parts.size != 2) return null
+    val targetsNode = parts.firstOrNull { it.strField("_Spells") == "TargetsAPermanent" } ?: return null
+    val baseNode = parts.firstOrNull { it !== targetsNode } ?: return null
+    val category = spellCastCategory(baseNode) ?: return null
+    val sub = gameObjectFilterDsl(targetsNode["args"]) ?: return null
+    return category to sub
+}
+
 /** (scope, category) -> the exact `Triggers.*` constant/factory. You has named constants; the
  *  any-player / opponent scopes use the `anyPlayerCasts` / `opponentCasts` factories with a
- *  [GameObjectFilter]. */
-private fun castTriggerDsl(scope: CastScope, category: String): String? {
-    val filter = when (category) {
-        "any" -> null
-        "creature" -> "GameObjectFilter.Creature"
-        "noncreature" -> "GameObjectFilter.Noncreature"
-        "enchantment" -> "GameObjectFilter.Enchantment"
-        "instantOrSorcery" -> "GameObjectFilter.InstantOrSorcery"
-        "historic" -> "GameObjectFilter.Historic"
-        else -> return null
+ *  [GameObjectFilter]. When [targetsMatching] is set ("... that targets a creature"), the base
+ *  filter is narrowed with `.targetsMatching(<filter>)` and the factory form is always used (the
+ *  bare `Triggers.YouCastInstantOrSorcery`-style constants carry no spell filter). */
+private fun castTriggerDsl(scope: CastScope, category: String, targetsMatching: String? = null): String? {
+    val baseFilter = categoryFilter(category)
+    if (targetsMatching != null) {
+        // No bare "any spell that targets …" shape appears in the corpus; require a typed base filter.
+        val composed = (baseFilter ?: return null) + ".targetsMatching($targetsMatching)"
+        return when (scope) {
+            CastScope.YOU -> "Triggers.youCastSpell(spellFilter = $composed)"
+            CastScope.ANY -> "Triggers.anyPlayerCasts($composed)"
+            CastScope.OPPONENT -> "Triggers.opponentCasts($composed)"
+        }
     }
+    val filter = baseFilter
     return when (scope) {
         CastScope.YOU -> when (category) {
             "any" -> "Triggers.YouCastSpell"
@@ -1098,6 +1270,39 @@ private fun castTriggerDsl(scope: CastScope, category: String): String? {
         CastScope.ANY -> if (filter == null) "Triggers.AnyPlayerCastsSpell" else "Triggers.anyPlayerCasts($filter)"
         CastScope.OPPONENT -> if (filter == null) "Triggers.OpponentCastsSpell" else "Triggers.opponentCasts($filter)"
     }
+}
+
+/**
+ * "Ward—<cost>" (CR 702.21) -> `keywordAbility(KeywordAbility.ward(...) / wardDiscard() / wardLife(N)
+ * / wardSacrifice(filter))`. The rule's `args` is the ward cost; only the cost shapes the SDK exposes
+ * render exactly — mana (`Ward {N}`), discard-a-card, pay-N-life, and sacrifice-a-<filter>. Any other
+ * cost (compound `And`, dynamic life, sacrifice-N) declines -> SCAFFOLD rather than approximating the
+ * ward cost. Forum Necroscribe ("Ward—Discard a card") + the broad Ward {N} / Ward—Pay N life corpus.
+ */
+internal fun EmitCtx.wardKeywordLine(rule: JsonObject): List<Stmt>? {
+    val cost = rule["args"] as? JsonObject ?: return null
+    val ability: Dsl = when (cost.strField("_Cost")) {
+        // Pure-mana Ward keeps the existing `KeywordAbility.Ward(WardCost.Mana("{x}"))` rendering so the
+        // large mana-Ward corpus golden stays byte-identical.
+        "PayMana" -> {
+            val mana = renderMana(cost.field("args"))
+            if (mana.isEmpty()) return null
+            call("KeywordAbility.Ward", arg(call("WardCost.Mana", arg("\"$mana\""))))
+        }
+        "DiscardACard" -> call("KeywordAbility.wardDiscard")
+        "DiscardACardAtRandom" -> call("KeywordAbility.wardDiscard", arg("random", "true"))
+        "PayLife" -> {
+            // Only a fixed integer life cost renders; dynamic life (PowerOfPermanent, X) declines.
+            val n = (cost["args"].asInt()) ?: ((cost["args"] as? JsonObject)?.get("args").asInt()) ?: return null
+            call("KeywordAbility.wardLife", arg("$n"))
+        }
+        "SacrificeAPermanent" -> {
+            val filter = gameObjectFilterDsl(cost.field("args")) ?: return null
+            call("KeywordAbility.wardSacrifice", arg(Lit(filter)))
+        }
+        else -> return null  // compound / dynamic ward costs -> SCAFFOLD
+    }
+    return listOf(Eval(call("keywordAbility", arg(ability))))
 }
 
 /** True when a trigger's subject IS this permanent — ThisPermanent present, but NOT merely as the

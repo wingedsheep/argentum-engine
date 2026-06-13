@@ -20,7 +20,11 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("FromHand", "envelope: activated ability used from hand (activateFromZone = Zone.HAND)")
     envelope("FromGraveyard", "envelope: activated ability used from graveyard (activateFromZone = Zone.GRAVEYARD)")
     envelope("And", "envelope: cost/action conjunction")
-    envelope("If", "conditional envelope")
+    // A resolution-time intervening-if (`If[cond, [then]]` inside a spell/ability ActionList) realises as
+    // a `ConditionalEffect` -> `GatedEffect(gate = WhenCondition)` (SerialName "Gated") in our trees, the
+    // same compiled shape as a "you may" gate; so the conditional envelope composes the Gated capability
+    // (Foolish Fate's "if you gained life this turn …", Burrog Barrage's "+1/+0 if you've cast …").
+    envelope("If", "conditional envelope", composes = listOf("Gated"))
 
     // The "you may / unless / if you do" gate cluster (Lesson 1). A "you may [effect]" realises as a
     // `GatedEffect(gate = MayDecide)` (SerialName "Gated") in our trees, so the gate envelope composes it.
@@ -69,7 +73,11 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("CreateEachPermanentRuleEffectUntil", "envelope: continuous rule, each")
     envelope("CreatePlayerEffectUntil", "envelope: player-scoped continuous effect")
     envelope("CreatePermanentLayerEffect", UNIVERSAL)
-    envelope("CreatePermanentRuleEffectUntil", UNIVERSAL)
+    // A continuous rule until end of turn. The nested `_PermanentRule` is the real capability: CantBlock /
+    // CantAttack render to `CantBlockEffect` (SerialName "CantBlockTargetCreatures") / `CantAttackEffect`
+    // (Duel Tactics' "it can't block this turn"), and the can't-be-blocked rules to keyword grants.
+    envelope("CreatePermanentRuleEffectUntil", UNIVERSAL,
+        composes = listOf("CantBlockTargetCreatures", "CantAttack"))
 
     // Cross-set "may" / choice / branch envelopes surfaced by calibration on later sets.
     envelopes("PlayerMayAction", "PlayerMayCost", note = UNIVERSAL, composes = listOf("May"))

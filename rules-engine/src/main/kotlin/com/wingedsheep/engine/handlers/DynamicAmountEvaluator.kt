@@ -463,6 +463,8 @@ class DynamicAmountEvaluator(
 
         ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL -> context.triggerModesChosenCount ?: 0
 
+        ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL -> context.triggerManaSpentOnTriggeringSpell ?: 0
+
         ContextPropertyKey.TRIGGER_SCRY_COUNT -> context.triggerScryCount ?: 0
 
         ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT -> context.triggerExcessDamageAmount ?: 0

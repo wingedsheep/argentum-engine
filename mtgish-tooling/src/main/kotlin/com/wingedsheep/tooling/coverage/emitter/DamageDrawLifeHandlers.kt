@@ -21,7 +21,7 @@ import kotlinx.serialization.json.put
 /** Direct effects on life totals, damage, and the player's own cards (draw / discard / look). */
 internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers {
 
-    on("SpellDealsDamage", "PermanentDealsDamage") { _, args, tvar ->
+    on("SpellDealsDamage", "PermanentDealsDamage") { node, args, tvar ->
         val amt = amountExpr(args) ?: dynamicAmountExpr(amountNode(args)) ?: return@on null
         if (jsonContains(args, "_DamageRecipient", "EachPermanent")) {  // mass: deal N to each creature
             val filter = groupFilterExpr(args) ?: return@on null
@@ -41,6 +41,22 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
             return@on eachPermanent
         }
         val tgt = damageRecipientTarget(args, tvar) ?: return@on null
+        // For `PermanentDealsDamage`, the acting permanent (the first arg's `_Permanent` ref) is the
+        // damage source — when it's a bound target ("target creature you control … deals damage equal to
+        // its power", Burrog Barrage), thread it through `damageSource = …` so the damage is attributed
+        // correctly. `SpellDealsDamage` (the spell itself is the source) needs no source attribution.
+        if (node.strField("_Action") == "PermanentDealsDamage") {
+            val srcRef = (args.asArr?.firstOrNull() as? JsonObject)?.strField("_Permanent")
+            val src = if (srcRef != null) refTargetFromRef(srcRef, tvar) else null
+            // Only thread an EXPLICIT damage source — a BOUND TARGET other than the recipient (Burrog
+            // Barrage's "target creature you control … deals damage equal to its power"). The implicit
+            // `EffectTarget.Self` source (the acting permanent is `ThisPermanent`, the common Fire
+            // Imp / Fire Dragon shape) is the engine default and must NOT be emitted, or it diverges
+            // from golden trees that omit it.
+            if (src != null && src != tgt && src != "EffectTarget.Self") {
+                return@on call("DealDamageEffect", arg(amt), arg(Lit(tgt)), arg("damageSource", Lit(src)))
+            }
+        }
         call("DealDamageEffect", arg(amt), arg(Lit(tgt)))
     }
 

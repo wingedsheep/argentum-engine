@@ -145,11 +145,21 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): Dsl? {
         val spec = createTokens?.get("args").asArr?.firstOrNull() as? JsonObject ?: return null
         return createTokenDsl(spec, controller = "EffectTarget.TargetController")
     }
+    // "that creature's controller loses N life" — ControllerOfPermanent(Ref_TargetPermanent) + LoseLife
+    // (Foolish Fate's Infusion drain). Like the controller-creates-tokens shape above, the destroyed
+    // permanent's controller resolves at resolution time via EffectTarget.TargetController. Only a fixed
+    // life amount renders; a derived/X amount declines -> SCAFFOLD.
+    if (jsonContains(node, "_Player", "ControllerOfPermanent") && jsonContains(node, "_Action", "LoseLife")) {
+        val loseLife = (args as? JsonArray)?.firstOrNull { it is JsonObject && it.containsKey("_Action") } as? JsonObject
+        val amt = amount(loseLife?.get("args")) ?: return null
+        return call("LoseLifeEffect", arg(Lit(amt)), arg("EffectTarget.TargetController"))
+    }
     // A relational player ref — the OWNER/CONTROLLER of the targeted permanent — is only modeled for the
-    // specific shapes handled above (owner-gains-life, controller-creates-tokens). The generic path below
-    // resolves the acting player via refTarget, which mis-maps such a ref to the permanent's OWN bound
-    // target — e.g. aiming "then that player discards a card" at the bounced permanent rather than its
-    // owner (Compelling Deterrence). Decline (-> SCAFFOLD) rather than mis-attribute the action.
+    // specific shapes handled above (owner-gains-life, controller-creates-tokens, controller-loses-life).
+    // The generic path below resolves the acting player via refTarget, which mis-maps such a ref to the
+    // permanent's OWN bound target — e.g. aiming "then that player discards a card" at the bounced
+    // permanent rather than its owner (Compelling Deterrence). Decline (-> SCAFFOLD) rather than
+    // mis-attribute the action.
     if (jsonContains(node, "_Player", "OwnerOfPermanent") || jsonContains(node, "_Player", "ControllerOfPermanent")) return null
     val inner = innerAction(node) ?: return null
     val ptv = refTarget(args, tvar)  // the player the action applies to

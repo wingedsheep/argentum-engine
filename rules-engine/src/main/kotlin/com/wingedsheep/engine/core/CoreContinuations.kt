@@ -68,7 +68,10 @@ data class TriggeredAbilityContinuation(
     /** Cards looked at by the scry that fired this trigger (CR 701.18). Null for non-scry triggers. */
     val triggerScryCount: Int? = null,
     /** Damage past lethal dealt to the trigger's creature recipient (CR 120.4a). Null for non-damage triggers. */
-    val triggerExcessDamageAmount: Int? = null
+    val triggerExcessDamageAmount: Int? = null,
+    /** Total mana spent to cast the spell that fired this trigger (Aberrant Manawurm, Expressive
+     *  Firedancer). Read via `ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL`. Null for non-cast triggers. */
+    val triggerManaSpentOnTriggeringSpell: Int? = null
 ) : ContinuationFrame
 
 /**

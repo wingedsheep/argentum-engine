@@ -44,17 +44,27 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
         val tgt = refTarget(args, tvar) ?: return@on null
         call("Effects.RemoveFromCombat", arg(Lit(tgt)), arg("unblockSoleBlockedAttackers", "true"))
     }
-    on("CreatePermanentRuleEffectUntil") { node, args, tvar ->
-        // "[permanent] can't block / can't attack this turn" (Ydwen Efreet's "it can't block this
-        // turn"). Only the bare CantBlock/CantAttack rule until end of turn maps to the matching
-        // Effects facade; any other rule or a non-EOT duration scaffolds rather than guess.
-        if (firstExpiration(node) !in setOf(null, "UntilEndOfTurn")) return@on null
-        val tgt = refTarget(args, tvar) ?: return@on null
-        when {
-            jsonContains(node, "_PermanentRule", "CantBlock") -> call("Effects.CantBlock", arg(Lit(tgt)))
-            jsonContains(node, "_PermanentRule", "CantAttack") -> call("Effects.CantAttack", arg(Lit(tgt)))
-            else -> null
-        }
+    on("If") { node, args, tvar ->
+        // Resolution-time intervening-if inside a spell/ability ActionList:
+        //   If[<condition>, [<then actions>]]  ->  ConditionalEffect(condition = …, effect = …)
+        // (Foolish Fate's "if you gained life this turn, …", Burrog Barrage's "+1/+0 if you've cast
+        // another instant or sorcery this turn"). An `If` with an else-branch (args[2]) declines —
+        // a resolution ConditionalEffect can carry an else, but no calibrated card needs it yet and a
+        // wrong else is worse than a scaffold. The condition must render exactly via actionConditionDsl
+        // and the then-branch via the normal effect-list path; either declining scaffolds the card.
+        val arr = args.asArr ?: return@on null
+        val cond = arr.getOrNull(0) as? JsonObject ?: return@on null
+        if (arr.getOrNull(2) != null) return@on null
+        val thenActions = (arr.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
+            ?: return@on null
+        if (thenActions.isEmpty()) return@on null
+        val condDsl = actionConditionDsl(cond) ?: return@on null
+        val thenEffect = renderEffectList(thenActions, tvar) ?: return@on null
+        call(
+            "ConditionalEffect",
+            arg("condition", Lit(condDsl)),
+            arg("effect", thenEffect),
+        )
     }
     on("RegeneratePermanent") { _, args, _ ->
         // Self-regeneration ("{cost}: Regenerate this") renders faithfully. A chosen target's
@@ -143,16 +153,19 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
     }
 
     on("CreatePermanentRuleEffectUntil") { node, _, tvar ->
-        // "target <permanent> can't be blocked this turn" (Crafty Pathmage) renders as a CANT_BE_BLOCKED
-        // ability-flag grant; "<permanent> can't be blocked except by creatures with <X> this turn"
-        // (Resilient Roadrunner) renders as a floating GrantCantBeBlockedExceptBy. Only the single rule at
-        // end-of-turn renders; anything else scaffolds.
+        // A permanent rule-effect until end of turn. Several single-rule shapes render to a matching
+        // Effects facade; anything else (multi-rule, non-EOT duration, an unmodeled rule) scaffolds:
+        //  - CantBlock / CantAttack ("it can't block this turn", Duel Tactics / Ydwen Efreet).
+        //  - CantBeBlocked ("can't be blocked this turn", Crafty Pathmage) -> CANT_BE_BLOCKED flag.
+        //  - CantBeBlockedExceptByDefenders ("except by creatures with <X>", Resilient Roadrunner).
         val args = node["args"].asArr ?: return@on null
         val tgt = refTarget(args, tvar) ?: return@on null
         if (!jsonContains(node, "_Expiration", "UntilEndOfTurn")) return@on null
         val rules = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return@on null
         if (rules.size != 1) return@on null
         when (rules[0].strField("_PermanentRule")) {
+            "CantBlock" -> call("Effects.CantBlock", arg(Lit(tgt)))
+            "CantAttack" -> call("Effects.CantAttack", arg(Lit(tgt)))
             "CantBeBlocked" -> call("GrantKeywordEffect", arg("AbilityFlag.CANT_BE_BLOCKED.name"), arg(Lit(tgt)))
             "CantBeBlockedExceptByDefenders" -> {
                 val bf = cantBeBlockedExceptByFilter(rules[0]) ?: return@on null

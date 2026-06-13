@@ -1116,8 +1116,11 @@ can't statically prevent (cross-trigger flows, `Self`-vs-`ContextTarget` inside 
 - `Targets.InstantOrSorcery` — instant-or-sorcery card.
 
 **Chained predicates** — `.youControl()`, `.controlledByOpponent()`, `.opponent()`, `.withSubtype(...)`,
-`.withKeyword(...)`, `.ofColor(...)`, `.tapped()`, `.untapped()`, `.power(n)`, `.minPower(n)`, `.maxPower(n)`; plus
-`TargetFilter.excludeSelf` to exclude the source.
+`.withKeyword(...)`, `.ofColor(...)`, `.tapped()`, `.untapped()`, `.power(n)`, `.minPower(n)`, `.maxPower(n)`,
+`.targetsMatching(subfilter)` (a spell/ability on the stack that targets at least one object matching
+`subfilter` — `CardPredicate.TargetsMatching`; e.g. `GameObjectFilter.InstantOrSorcery.targetsMatching(GameObjectFilter.Creature)`
+for "an instant or sorcery spell that targets a creature" — Forum Necroscribe, Lecturing Scornmage);
+plus `TargetFilter.excludeSelf` to exclude the source.
 
 ### Named multi-target binding
 
@@ -2044,7 +2047,16 @@ staticAbility {
 - `target: SpellCostTarget` — `SelfCast`, `YouCast(filter)`, `AnyCaster(filter)`,
   `OpponentsCastTargeting(GroupFilter)`, `FaceDownYouCast`, `MorphActivation`.
 - `modification: CostModification` — `ReduceGeneric(amount)`, `ReduceGenericBy(source)`,
-  `ReduceColored(symbols)`, `ReduceColoredPerUnit(symbols, source)`, `IncreaseGeneric(amount)`,
+  `ReduceColored(symbols)`, `ReduceColoredPerUnit(symbols, source)`,
+  `ReduceColoredIfAnyTargetMatches(symbols, filter)` (target-gated **colored** reduction — the
+  colored analogue of the `FixedIfAnyTargetMatches` reduction source, which only reduces generic;
+  removes the given colored pips if the spell targets a matching object. Brush Off's "costs
+  {1}{U} less if it targets an instant or sorcery spell" pairs `ReduceColoredIfAnyTargetMatches("{U}",
+  InstantOrSorcery)` for the `{U}` with `ReduceGenericBy(FixedIfAnyTargetMatches(1, InstantOrSorcery))`
+  for the `{1}`, both gated on the same filter so they apply together. Like the generic gated
+  reduction, affordability enumeration only optimistically discounts when a matching *battlefield*
+  permanent exists; a stack-spell target reduction shows at full cost during enumeration and locks
+  in once targets are announced), `IncreaseGeneric(amount)`,
   `IncreaseColored(symbols)` (colored tax — adds colored pips, e.g. the Invasion Leeches'
   "White spells you cast cost {W} more"), `IncreaseGenericPerOtherSpellThisTurn(amountPerSpell)`,
   `IncreaseGenericIfAnyTargetMatches(amount, filter)` (target-gated tax — "{N} more if it targets
@@ -2992,6 +3004,12 @@ sibling effect that reads `DynamicAmount.EntityProperty(EntityReference.AmassedA
   - `MODES_CHOSEN_ON_TRIGGERING_SPELL` — number of mode picks recorded on the cast that fired
     the trigger (Riku of Many Paths). Counts selections, not distinct modes, so Spree with
     the same mode twice reads as `2`.
+  - `MANA_SPENT_ON_TRIGGERING_SPELL` — total mana spent to cast the spell that fired the
+    trigger (Aberrant Manawurm's "+X/+0 ... where X is the amount of mana spent to cast that
+    spell", Expressive Firedancer's "if five or more mana was spent"). Distinct from
+    `DynamicAmount.TotalManaSpent`, which reads the *current resolving object's own* cast — this
+    reads the **triggering** spell's cast (the payoff lives on a separate permanent). Populated
+    from `SpellCastEvent.totalManaSpent`; `0` for non-cast triggers.
   - `TRIGGER_SCRY_COUNT` — cards looked at by the scry that fired the trigger (Celeborn the
     Wise, Elrond Master of Healing). Equals the scry N parameter.
   - `TRIGGER_EXCESS_DAMAGE_AMOUNT` — damage past lethal in the trigger payload (CR 120.4a).

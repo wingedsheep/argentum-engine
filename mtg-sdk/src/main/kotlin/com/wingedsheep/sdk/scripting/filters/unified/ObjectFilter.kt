@@ -208,6 +208,16 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.IsNonartifact
     )
 
+    /**
+     * Restrict to spells/abilities on the stack that target at least one object matching
+     * [subfilter]. Used for "an instant or sorcery spell that targets a creature" (Repartee —
+     * Forum Necroscribe, Lecturing Scornmage) and "target spell that targets a land you control"
+     * (Teferi's Response). Player targets are skipped (CR — they have no game-object filter).
+     */
+    fun targetsMatching(subfilter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.TargetsMatching(subfilter)
+    )
+
     /** Add a keyword requirement */
     fun withKeyword(keyword: Keyword) = copy(
         cardPredicates = cardPredicates + CardPredicate.HasKeyword(keyword)

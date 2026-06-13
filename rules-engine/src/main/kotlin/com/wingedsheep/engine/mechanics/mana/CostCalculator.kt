@@ -314,6 +314,15 @@ class CostCalculator(
                     .filterIsInstance<ManaSymbol.Colored>()
                 repeat(units) { coloredSymbols.forEach(addColoredReductionWithOverflow) }
             }
+            is CostModification.ReduceColoredIfAnyTargetMatches -> {
+                if (chosenTargets.isNotEmpty() &&
+                    anyTargetMatchesFilter(state, casterId, chosenTargets, modification.filter)
+                ) {
+                    ManaCost.parse(modification.symbols).symbols
+                        .filterIsInstance<ManaSymbol.Colored>()
+                        .forEach(addColoredReduction)
+                }
+            }
             is CostModification.IncreaseGeneric -> addGenericIncrease(modification.amount)
             is CostModification.IncreaseColored -> {
                 ManaCost.parse(modification.symbols).symbols

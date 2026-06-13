@@ -491,6 +491,48 @@
     ]
 }
 
+// Conservator
+{
+    "name": "Conservator",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Prevent the next 2 damage that would be dealt to you this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7824e2a-4eff-4f72-9216-0db30a4f4252.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Control Magic
 {
     "name": "Control Magic",
@@ -517,6 +559,45 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Copper Tablet
+{
+    "name": "Copper Tablet",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of each player's upkeep, this artifact deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30935e4a-013e-4c46-ad05-304df8e5dfa4.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Counterspell
@@ -842,6 +923,51 @@
     ]
 }
 
+// Dwarven Warriors
+{
+    "name": "Dwarven Warriors",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "{T}: Target creature with power 2 or less can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow<=2"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d4d87a3-5f8b-4152-9a8b-538ab49d62e8.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Earth Elemental
 {
     "name": "Earth Elemental",
@@ -938,6 +1064,37 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Evil Presence
+{
+    "name": "Evil Presence",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land is a Swamp.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetEnchantedLandType",
+                "landType": "Swamp"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0551d66e-8cd4-48f0-aa17-15f26be9d85f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1562,6 +1719,45 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Howl from Beyond
+{
+    "name": "Howl from Beyond",
+    "manaCost": "{X}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": "XValue",
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 0
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67ec17e1-174b-4d07-a27f-91a333c4b2fb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3956,6 +4152,52 @@
     ]
 }
 
+// Verduran Enchantress
+{
+    "name": "Verduran Enchantress",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Whenever you cast an enchantment spell, you may draw a card.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Kev Brockschmidt",
+        "flavorText": "Some say magic was first practiced by women, who have always felt strong ties to the land.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f87178b-1221-4d7a-a7a5-20d7f01b8089.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wall of Air
 {
     "name": "Wall of Air",
@@ -4520,5 +4762,60 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Zombie Master
+{
+    "name": "Zombie Master",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Other Zombie creatures have swampwalk. (They can't be blocked as long as defending player controls a Swamp.)\nOther Zombies have \"{B}: Regenerate this permanent.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SWAMPWALK",
+                "filter": {
+                    "baseFilter": "creature Zombie",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "ability_1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{B}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Regenerate",
+                        "target": "Self"
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature Zombie",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Jeff A. Menges",
+        "flavorText": "They say the Zombie Master controlled these foul creatures even before his own death, but now that he is one of them, nothing can make them betray him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d4255a0-d445-4c00-b936-bbf07851e1c8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

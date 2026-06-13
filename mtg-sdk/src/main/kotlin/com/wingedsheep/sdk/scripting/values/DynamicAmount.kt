@@ -133,6 +133,15 @@ enum class ContextPropertyKey(val description: String) {
      */
     MODES_CHOSEN_ON_TRIGGERING_SPELL("the number of times you chose a mode for that spell"),
     /**
+     * Total mana spent to cast the spell that fired this trigger. Distinct from
+     * [DynamicAmount.TotalManaSpent], which reads the *current resolving object's* own cast —
+     * this reads the **triggering** spell's cast (a "Whenever you cast an instant or sorcery
+     * spell, …, where X is the amount of mana spent to cast that spell" payoff that lives on a
+     * separate permanent). Populated from `SpellCastEvent.totalManaSpent`. `0` when the trigger
+     * was not driven by a spell cast. Used by Aberrant Manawurm and Expressive Firedancer.
+     */
+    MANA_SPENT_ON_TRIGGERING_SPELL("the amount of mana spent to cast that spell"),
+    /**
      * Number of cards actually looked at by the scry that fired this trigger. Equals the
      * scry N parameter unless the library held fewer cards. Read by "Whenever you scry,
      * ... for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).

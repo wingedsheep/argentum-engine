@@ -97,7 +97,8 @@ class EffectAndTriggerContinuationResumer(
                 lastKnownPower = continuation.lastKnownPower,
                 lastKnownToughness = continuation.lastKnownToughness,
                 triggerScryCount = continuation.triggerScryCount,
-                triggerExcessDamageAmount = continuation.triggerExcessDamageAmount
+                triggerExcessDamageAmount = continuation.triggerExcessDamageAmount,
+                triggerManaSpentOnTriggeringSpell = continuation.triggerManaSpentOnTriggeringSpell
             )
             val stackResult = services.stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
             if (!stackResult.isSuccess) return stackResult
@@ -143,7 +144,8 @@ class EffectAndTriggerContinuationResumer(
             triggerModesChosenCount = continuation.triggerModesChosenCount,
             enchantedCreatureLastKnownPower = continuation.enchantedCreatureLastKnownPower,
             triggerScryCount = continuation.triggerScryCount,
-            triggerExcessDamageAmount = continuation.triggerExcessDamageAmount
+            triggerExcessDamageAmount = continuation.triggerExcessDamageAmount,
+            triggerManaSpentOnTriggeringSpell = continuation.triggerManaSpentOnTriggeringSpell
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(

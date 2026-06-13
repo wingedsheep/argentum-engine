@@ -1790,6 +1790,7 @@ class StackResolver(
             triggerModesChosenCount = abilityComponent.triggerModesChosenCount,
             triggerScryCount = abilityComponent.triggerScryCount,
             triggerExcessDamageAmount = abilityComponent.triggerExcessDamageAmount,
+            triggerManaSpentOnTriggeringSpell = abilityComponent.triggerManaSpentOnTriggeringSpell,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
             chosenModes = abilityComponent.chosenModes,
