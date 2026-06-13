@@ -8,6 +8,7 @@
  * - distributionSlice: Damage distribution, distribute decisions, counter distribution
  * - animationSlice: Card selection, hover, animations, reveals, match intro
  * - pipelineSlice: Action pipeline coordinator (multi-phase action flow)
+ * - boardViewSlice: Multiplayer viewed-opponent board + follow-the-action camera
  */
 import { createTargetingSlice } from './targetingSlice'
 import { createCombatSlice } from './combatSlice'
@@ -15,6 +16,7 @@ import { createSelectionSlice } from './selectionSlice'
 import { createDistributionSlice } from './distributionSlice'
 import { createAnimationSlice } from './animationSlice'
 import { createPipelineSlice } from './pipelineSlice'
+import { createBoardViewSlice } from './boardViewSlice'
 import type { SliceCreator } from '../types'
 
 export interface UISliceState {
@@ -31,8 +33,9 @@ import type { SelectionSlice } from './selectionSlice'
 import type { DistributionSlice } from './distributionSlice'
 import type { AnimationSlice } from './animationSlice'
 import type { PipelineSlice } from './pipelineSlice'
+import type { BoardViewSlice } from './boardViewSlice'
 
-export type UISlice = TargetingSlice & CombatSlice & SelectionSlice & DistributionSlice & AnimationSlice & PipelineSlice
+export type UISlice = TargetingSlice & CombatSlice & SelectionSlice & DistributionSlice & AnimationSlice & PipelineSlice & BoardViewSlice
 
 export const createUISlice: SliceCreator<UISlice> = (...args) => ({
   ...createTargetingSlice(...args),
@@ -41,4 +44,5 @@ export const createUISlice: SliceCreator<UISlice> = (...args) => ({
   ...createDistributionSlice(...args),
   ...createAnimationSlice(...args),
   ...createPipelineSlice(...args),
+  ...createBoardViewSlice(...args),
 })

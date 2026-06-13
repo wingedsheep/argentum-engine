@@ -30,12 +30,14 @@ import com.wingedsheep.sdk.scripting.ProtectionScope
 import org.springframework.stereotype.Service
 import java.util.concurrent.atomic.AtomicLong
 
-/** Result of building a scenario: the injectable state plus both seat ids. */
+/** Result of building a scenario: the injectable state plus the seat ids in turn order. */
 data class ScenarioBuildResult(
     val state: GameState,
-    val player1Id: EntityId,
-    val player2Id: EntityId
-)
+    val playerIds: List<EntityId>,
+) {
+    val player1Id: EntityId get() = playerIds[0]
+    val player2Id: EntityId get() = playerIds[1]
+}
 
 /**
  * Builds an injectable [GameState] from a [ScenarioRequest]. Shared by the dev and
@@ -102,8 +104,14 @@ class ScenarioBuilderService(
             }
         }
 
-        checkPlayer("player1", request.player1)
-        checkPlayer("player2", request.player2)
+        val seats = request.seats()
+        if (seats.size < 2 || seats.size > 4) {
+            errors += "Scenario needs 2-4 seats (got ${seats.size})."
+        }
+        if (seats.size > 2 && request.effectiveMode != ScenarioMode.SELF) {
+            errors += "Pods of more than two seats only support SELF (hotseat) mode."
+        }
+        seats.forEachIndexed { i, (_, config) -> checkPlayer("player${i + 1}", config) }
 
         if (enforceLimits && total > MAX_TOTAL_CARDS) {
             errors += "Scenario has too many cards ($total); max $MAX_TOTAL_CARDS."
@@ -113,11 +121,11 @@ class ScenarioBuilderService(
 
     /** Construct the scenario state. Assumes [validate] has already passed. */
     fun buildScenario(request: ScenarioRequest): ScenarioBuildResult {
+        val seats = request.seats()
         val builder = ScenarioBuilder(cardRegistry)
-        builder.withPlayers(request.player1Name ?: "Player1", request.player2Name ?: "Player2")
+        builder.withPlayers(seats.map { it.first })
 
-        applyPlayer(builder, 1, request.player1)
-        applyPlayer(builder, 2, request.player2)
+        seats.forEachIndexed { i, (_, config) -> applyPlayer(builder, i + 1, config) }
 
         request.phase?.let { phase ->
             val step = request.step ?: phaseToDefaultStep(phase)
@@ -126,8 +134,8 @@ class ScenarioBuilderService(
         request.activePlayer?.let { builder.withActivePlayer(it) }
         request.priorityPlayer?.let { builder.withPriorityPlayer(it) }
 
-        val (state, p1, p2) = builder.build()
-        return ScenarioBuildResult(state, p1, p2)
+        val (state, playerIds) = builder.build()
+        return ScenarioBuildResult(state, playerIds)
     }
 
     private fun applyPlayer(builder: ScenarioBuilder, n: Int, config: PlayerConfig?) {
@@ -169,41 +177,38 @@ class ScenarioBuilderService(
         private val entityIdCounter = AtomicLong(1000)
         private var state = GameState()
 
-        private var player1Id: EntityId? = null
-        private var player2Id: EntityId? = null
+        private val playerIds = mutableListOf<EntityId>()
 
-        fun withPlayers(player1Name: String, player2Name: String): ScenarioBuilder {
-            player1Id = EntityId.of("player-1")
-            player2Id = EntityId.of("player-2")
+        /** Seat number (1-based, turn order) → player entity id. */
+        private fun playerFor(playerNumber: Int): EntityId = playerIds[playerNumber - 1]
 
-            val p1Container = ComponentContainer.of(
-                PlayerComponent(player1Name),
-                LifeTotalComponent(20),
-                ManaPoolComponent(),
-                LandDropsComponent(remaining = 1, maxPerTurn = 1)
-            )
-
-            val p2Container = ComponentContainer.of(
-                PlayerComponent(player2Name),
-                LifeTotalComponent(20),
-                ManaPoolComponent(),
-                LandDropsComponent(remaining = 1, maxPerTurn = 1)
-            )
-
-            state = state
-                .withEntity(player1Id!!, p1Container)
-                .withEntity(player2Id!!, p2Container)
-                .copy(
-                    turnOrder = listOf(player1Id!!, player2Id!!),
-                    activePlayerId = player1Id,
-                    priorityPlayerId = player1Id,
-                    phase = Phase.PRECOMBAT_MAIN,
-                    step = Step.PRECOMBAT_MAIN,
-                    turnNumber = 1
+        fun withPlayers(names: List<String>): ScenarioBuilder {
+            require(names.size >= 2) { "Scenario needs at least two players" }
+            names.forEachIndexed { i, name ->
+                val playerId = EntityId.of("player-${i + 1}")
+                playerIds += playerId
+                state = state.withEntity(
+                    playerId,
+                    ComponentContainer.of(
+                        PlayerComponent(name),
+                        LifeTotalComponent(20),
+                        ManaPoolComponent(),
+                        LandDropsComponent(remaining = 1, maxPerTurn = 1)
+                    )
                 )
+            }
 
-            // Initialize empty zones for both players
-            for (playerId in listOf(player1Id!!, player2Id!!)) {
+            state = state.copy(
+                turnOrder = playerIds.toList(),
+                activePlayerId = playerIds[0],
+                priorityPlayerId = playerIds[0],
+                phase = Phase.PRECOMBAT_MAIN,
+                step = Step.PRECOMBAT_MAIN,
+                turnNumber = 1
+            )
+
+            // Initialize empty zones for every player
+            for (playerId in playerIds) {
                 for (zoneType in listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.BATTLEFIELD, Zone.EXILE, Zone.COMMAND)) {
                     val zoneKey = ZoneKey(playerId, zoneType)
                     state = state.copy(zones = state.zones + (zoneKey to emptyList()))
@@ -214,7 +219,7 @@ class ScenarioBuilderService(
         }
 
         fun withCardInHand(playerNumber: Int, cardName: String): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             val cardId = createCard(cardName, playerId)
             state = state.addToZone(ZoneKey(playerId, Zone.HAND), cardId)
             return this
@@ -232,7 +237,7 @@ class ScenarioBuilderService(
             chosenCreatureType: String? = null,
             chosenColor: String? = null
         ): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             val cardId = createCard(cardName, playerId)
 
             state = state.addToZone(ZoneKey(playerId, Zone.BATTLEFIELD), cardId)
@@ -323,21 +328,21 @@ class ScenarioBuilderService(
         }
 
         fun withCardInGraveyard(playerNumber: Int, cardName: String): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             val cardId = createCard(cardName, playerId)
             state = state.addToZone(ZoneKey(playerId, Zone.GRAVEYARD), cardId)
             return this
         }
 
         fun withCardInLibrary(playerNumber: Int, cardName: String): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             val cardId = createCard(cardName, playerId)
             state = state.addToZone(ZoneKey(playerId, Zone.LIBRARY), cardId)
             return this
         }
 
         fun withCardInExile(playerNumber: Int, cardName: String): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             val cardId = createCard(cardName, playerId)
             state = state.addToZone(ZoneKey(playerId, Zone.EXILE), cardId)
             return this
@@ -349,7 +354,7 @@ class ScenarioBuilderService(
          * Supports multiple calls per player (Partner / Background).
          */
         fun withCommander(playerNumber: Int, cardName: String): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             val cardId = createCard(cardName, playerId)
             state = state.updateEntity(cardId) { it.with(CommanderComponent(ownerId = playerId)) }
             state = state.addToZone(ZoneKey(playerId, Zone.COMMAND), cardId)
@@ -362,7 +367,7 @@ class ScenarioBuilderService(
         }
 
         fun withLifeTotal(playerNumber: Int, life: Int): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             state = state.updateEntity(playerId) { container ->
                 container.with(LifeTotalComponent(life))
             }
@@ -375,19 +380,19 @@ class ScenarioBuilderService(
         }
 
         fun withActivePlayer(playerNumber: Int): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             state = state.copy(activePlayerId = playerId, priorityPlayerId = playerId)
             return this
         }
 
         fun withPriorityPlayer(playerNumber: Int): ScenarioBuilder {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = playerFor(playerNumber)
             state = state.copy(priorityPlayerId = playerId)
             return this
         }
 
-        fun build(): Triple<GameState, EntityId, EntityId> {
-            return Triple(state, player1Id!!, player2Id!!)
+        fun build(): Pair<GameState, List<EntityId>> {
+            return state to playerIds.toList()
         }
 
         private fun createCard(cardName: String, ownerId: EntityId): EntityId {

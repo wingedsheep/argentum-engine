@@ -9,6 +9,7 @@ import type {
   ZoneId,
 } from '@/types'
 import { ZoneType, zoneIdEquals, graveyard, library } from '@/types'
+import { seatColor, type SeatColor } from '@/styles/seatColors'
 
 /**
  * Select the game state (works for both normal play and spectating).
@@ -29,10 +30,13 @@ export const selectIsSpectating = (state: GameStore) => state.spectatingState !=
 
 /**
  * Select the viewing player ID.
- * In spectator mode, returns player1Id as the "viewing" player (bottom of screen).
+ * In spectator mode, returns the seat anchoring the bottom of the screen — the
+ * seat-switcher override when set, else the stream's player1Id.
  */
 export const selectViewingPlayerId = (state: GameStore) =>
-  (state.spectatingState?.player1Id as EntityId | null) ?? state.playerId
+  (state.spectatingState
+    ? ((state.spectatorBottomSeatId ?? state.spectatingState.player1Id) as EntityId | null)
+    : null) ?? state.playerId
 
 /**
  * Select all legal actions.
@@ -183,6 +187,10 @@ export function useViewingPlayer(): ClientPlayer | null {
 
 /**
  * Hook to get the opponent player.
+ *
+ * 2-player shape: returns the sole opponent. In a multiplayer game this returns the
+ * first opponent in turn order — multiplayer-aware components should use
+ * [useOpponents] / [useViewedOpponent] instead.
  */
 export function useOpponent(): ClientPlayer | null {
   const gameState = useGameStore(selectGameState)
@@ -191,6 +199,73 @@ export function useOpponent(): ClientPlayer | null {
     if (!gameState || !playerId) return null
     return gameState.players.find((p) => p.playerId !== playerId) ?? null
   }, [gameState, playerId])
+}
+
+const EMPTY_PLAYERS: readonly ClientPlayer[] = Object.freeze([])
+
+/**
+ * True when the game has more than two seats — the switch that turns on the
+ * multiplayer chrome (opponent rail, board strip, seat colors). A 2-player game
+ * must render exactly as before.
+ */
+export const selectIsMultiplayerGame = (state: GameStore): boolean => {
+  const gameState = state.spectatingState?.gameState ?? state.gameState
+  return (gameState?.players.length ?? 0) > 2
+}
+
+/**
+ * All opponents of the viewing player, rotated to read in play order *after* the
+ * viewing player (server orders `players` by turn order). Includes players who
+ * have lost — they keep their seat for stable ordering and render as tombstones;
+ * filter `hasLost` where only live boards matter.
+ */
+export function useOpponents(): readonly ClientPlayer[] {
+  const gameState = useGameStore(selectGameState)
+  const playerId = useGameStore(selectViewingPlayerId)
+  return useMemo(() => {
+    if (!gameState || !playerId) return EMPTY_PLAYERS
+    const players = gameState.players
+    const selfIndex = players.findIndex((p) => p.playerId === playerId)
+    if (selfIndex === -1) return players.filter((p) => p.playerId !== playerId)
+    return [...players.slice(selfIndex + 1), ...players.slice(0, selfIndex)]
+  }, [gameState, playerId])
+}
+
+/**
+ * The opponent whose board occupies the viewed slot. Resolves the boardView
+ * selection with fallbacks: an eliminated or unknown selection falls back to the
+ * first opponent still in the game (or the first opponent, if all have lost).
+ */
+export function useViewedOpponent(): ClientPlayer | null {
+  const opponents = useOpponents()
+  const viewedOpponentId = useGameStore((state) => state.viewedOpponentId)
+  return useMemo(() => {
+    if (opponents.length === 0) return null
+    const selected = opponents.find((p) => p.playerId === viewedOpponentId)
+    if (selected && !selected.hasLost) return selected
+    return opponents.find((p) => !p.hasLost) ?? opponents[0] ?? null
+  }, [opponents, viewedOpponentId])
+}
+
+/**
+ * Seat index of a player = its index in the turn-ordered roster. Drives stable
+ * seat colors and rail ordering. -1 when unknown.
+ */
+export function useSeatIndex(playerId: EntityId | null): number {
+  const gameState = useGameStore(selectGameState)
+  return useMemo(() => {
+    if (!gameState || !playerId) return -1
+    return gameState.players.findIndex((p) => p.playerId === playerId)
+  }, [gameState, playerId])
+}
+
+/**
+ * The stable seat-identity color for a player (rail chip, combat arrows, stack
+ * borders, log names). Falls back to seat 0's hue for unknown players.
+ */
+export function useSeatColor(playerId: EntityId | null): SeatColor {
+  const seatIndex = useSeatIndex(playerId)
+  return seatColor(Math.max(0, seatIndex))
 }
 
 const EMPTY_ACTIONS: readonly LegalActionInfo[] = Object.freeze([])
@@ -355,8 +430,12 @@ function battlefieldCardsEqual(a: BattlefieldCards, b: BattlefieldCards): boolea
  * change the visible battlefield (hand draws, phase changes, etc.), we return the previous
  * object ref. That lets `Battlefield` and its downstream `useMemo`s bail out entirely —
  * without this, every server message replaces every card ref and forces a re-render.
+ *
+ * `opponentId` scopes the opponent* groups to one seat's permanents (a multiplayer
+ * opponent board). When omitted, the opponent groups hold everything the viewing
+ * player doesn't control — the 2-player shape, unchanged.
  */
-export function useBattlefieldCards(): BattlefieldCards {
+export function useBattlefieldCards(opponentId?: EntityId | null): BattlefieldCards {
   const gameState = useGameStore(selectGameState)
   const playerId = useGameStore(selectViewingPlayerId)
   const previousRef = useRef<BattlefieldCards | null>(null)
@@ -400,7 +479,9 @@ export function useBattlefieldCards(): BattlefieldCards {
 
     const isNotAttached = (c: ClientCard) => !c.attachedTo
     const playerCards = cards.filter((c) => c.controllerId === playerId)
-    const opponentCards = cards.filter((c) => c.controllerId !== playerId)
+    const opponentCards = opponentId
+      ? cards.filter((c) => c.controllerId === opponentId)
+      : cards.filter((c) => c.controllerId !== playerId)
 
     const isLand = (c: ClientCard) => c.cardTypes.includes('LAND')
     const isCreature = (c: ClientCard) => c.cardTypes.includes('CREATURE')
@@ -446,7 +527,7 @@ export function useBattlefieldCards(): BattlefieldCards {
     }
     previousRef.current = result
     return result
-  }, [gameState, playerId])
+  }, [gameState, playerId, opponentId])
 }
 
 /**

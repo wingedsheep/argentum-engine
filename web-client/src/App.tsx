@@ -27,7 +27,7 @@ import { randomBackground } from './utils/background'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
-import type { EntityId } from './types'
+import type { ClientAttacker, EntityId } from './types'
 import { GameOverReason } from './types'
 
 export default function App() {
@@ -178,6 +178,8 @@ export default function App() {
       // Enter combat mode — pre-select mandatory attackers
       startCombat({
         mode: 'declareAttackers',
+        actingSeat: attackersAction?.action.type === 'DeclareAttackers' ? attackersAction.action.playerId : null,
+        stickyDefenderId: null,
         selectedAttackers: [...mandatoryAttackers],
         attackerTargets: {},
         validAttackTargets,
@@ -205,13 +207,24 @@ export default function App() {
       // Attacking creatures come from the server's authoritative combat state rather than
       // "the viewing player's opponent" — in single-client hotseat the seat we control (the
       // defender) can be the top row, so the attackers are the viewer's own creatures.
-      const attackingCreatures: EntityId[] = gameState?.combat?.attackers
-        .map((a) => a.creatureId) ?? []
+      // In multiplayer a defender may only block attackers attacking *them* or their
+      // planeswalkers (CR 509.1b) — scope to the acting defender's slice of the combat.
+      // In a 2-player game every attacker attacks the sole defender, so this keeps all.
+      const defendingSeat = blockersAction?.action.type === 'DeclareBlockers'
+        ? blockersAction.action.playerId
+        : null
+      const attacksSeat = (a: ClientAttacker): boolean => {
+        if (!defendingSeat) return true
+        if (a.attackingTarget.type === 'Player') return a.attackingTarget.playerId === defendingSeat
+        return gameState?.cards[a.attackingTarget.permanentId]?.controllerId === defendingSeat
+      }
+      const relevantAttackers = (gameState?.combat?.attackers ?? []).filter(attacksSeat)
+      const attackingCreatures: EntityId[] = relevantAttackers.map((a) => a.creatureId)
 
       // Find attackers that must be blocked by all (from combat state in game state)
-      const mustBeBlockedAttackers: EntityId[] = gameState?.combat?.attackers
+      const mustBeBlockedAttackers: EntityId[] = relevantAttackers
         .filter((a) => a.mustBeBlockedByAll)
-        .map((a) => a.creatureId) ?? []
+        .map((a) => a.creatureId)
 
       // Use server-provided mandatory blocker assignments (Provoke + MustBeBlockedByAll)
       const blockerAssignments: Record<EntityId, EntityId[]> = {}
@@ -229,6 +242,8 @@ export default function App() {
       // Enter combat mode
       startCombat({
         mode: 'declareBlockers',
+        actingSeat: blockersAction?.action.type === 'DeclareBlockers' ? blockersAction.action.playerId : null,
+        stickyDefenderId: null,
         selectedAttackers: [],
         attackerTargets: {},
         validAttackTargets: [],

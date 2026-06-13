@@ -1,5 +1,7 @@
+import type React from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
-import { useStackCards } from '@/store/selectors.ts'
+import { useStackCards, selectGameState } from '@/store/selectors.ts'
+import { seatColor } from '@/styles/seatColors'
 import type { EntityId } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { ActiveEffectBadges } from '../card/CardOverlays'
@@ -23,6 +25,16 @@ export function StackDisplay() {
   const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const gameState = useGameStore((state) => state.gameState)
+  // Multiplayer: stack items carry their caster's seat color (left border) so
+  // "whose spell is that" reads at a glance. Inactive in 2-player games.
+  const players = useGameStore((state) => selectGameState(state)?.players)
+  const isMulti = (players?.length ?? 0) > 2
+  const seatBorderFor = (controllerId: EntityId): React.CSSProperties => {
+    if (!isMulti || !players) return {}
+    const idx = players.findIndex((p) => p.playerId === controllerId)
+    if (idx < 0) return {}
+    return { borderLeft: `3px solid ${seatColor(idx).base}`, borderRadius: 6 }
+  }
 
   // Trigger YesNo: show source card in stack area when a triggered ability has a triggering entity
   const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
@@ -118,6 +130,7 @@ export function StackDisplay() {
                     ...styles.stackItem,
                     marginTop: index === 0 ? 0 : -stackImageHeight + cardOffset, // Overlap cards, showing cardOffset pixels of each
                     zIndex: index + 1, // Later cards (higher index = cast later) on top
+                    ...seatBorderFor(card.controllerId),
                     ...(isValidTarget && !isSelectedTarget ? {
                       boxShadow: '0 0 12px 4px rgba(255, 200, 0, 0.8)',
                       borderRadius: 6,

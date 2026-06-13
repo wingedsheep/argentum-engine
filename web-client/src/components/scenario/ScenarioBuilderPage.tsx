@@ -21,6 +21,7 @@ import type {
   ScenarioBattlefieldCard,
   ScenarioCreateResponse,
   ScenarioMode,
+  ScenarioSeatSpec,
   ScenarioSpec,
   ScenarioZone,
 } from './types'
@@ -60,7 +61,7 @@ const MODE_HINT: Record<ScenarioMode, string> = {
 
 // --- spec <-> builder conversions ----------------------------------------------------------
 
-function toSpec(p1: BuilderPlayer, p2: BuilderPlayer, opts: {
+function toSpec(p1: BuilderPlayer, p2: BuilderPlayer, extraSeats: ScenarioSeatSpec[], opts: {
   phase: string
   activePlayer: number
   mode: ScenarioMode
@@ -83,7 +84,18 @@ function toSpec(p1: BuilderPlayer, p2: BuilderPlayer, opts: {
     activePlayer: opts.activePlayer,
     mode: opts.mode,
   }
-  if (opts.mode === 'AI') spec.aiPlayer = 2
+  if (extraSeats.length > 0) {
+    // N-player pod: send the full seat list (the server prefers it over the
+    // legacy two-seat fields). Pods only support hotseat.
+    spec.players = [
+      { name: p1.name, config: playerConfig(p1) },
+      { name: p2.name, config: playerConfig(p2) },
+      ...extraSeats,
+    ]
+    spec.mode = 'SELF'
+  } else if (opts.mode === 'AI') {
+    spec.aiPlayer = 2
+  }
   return spec
 }
 
@@ -111,6 +123,9 @@ export function ScenarioBuilderPage() {
 
   const [p1, setP1] = useState<BuilderPlayer>(() => emptyPlayer('Player 1'))
   const [p2, setP2] = useState<BuilderPlayer>(() => emptyPlayer('Player 2'))
+  // Seats 3-4 of an N-player pod. Named here; their boards are edited via the
+  // JSON editor (the visual panels stay two-seat). A pod always starts hotseat.
+  const [extraSeats, setExtraSeats] = useState<ScenarioSeatSpec[]>([])
   const [phase, setPhase] = useState<string>('PRECOMBAT_MAIN')
   const [activePlayer, setActivePlayer] = useState<number>(1)
   const [mode, setMode] = useState<ScenarioMode>('SELF')
@@ -209,8 +224,18 @@ export function ScenarioBuilderPage() {
   }, [searchParams])
 
   const applySpec = useCallback((spec: ScenarioSpec) => {
-    setP1(playerFromSpec(spec.player1Name ?? 'Player 1', spec.player1))
-    setP2(playerFromSpec(spec.player2Name ?? 'Player 2', spec.player2))
+    const seats = spec.players
+    if (seats && seats.length >= 2) {
+      // N-player spec: first two seats land in the editable panels, the rest
+      // ride along as extra pod seats.
+      setP1(playerFromSpec(seats[0]?.name ?? 'Player 1', seats[0]?.config))
+      setP2(playerFromSpec(seats[1]?.name ?? 'Player 2', seats[1]?.config))
+      setExtraSeats(seats.slice(2).map((s) => ({ ...s })))
+    } else {
+      setP1(playerFromSpec(spec.player1Name ?? 'Player 1', spec.player1))
+      setP2(playerFromSpec(spec.player2Name ?? 'Player 2', spec.player2))
+      setExtraSeats([])
+    }
     if (spec.phase) setPhase(spec.phase)
     if (spec.activePlayer) setActivePlayer(spec.activePlayer)
     if (spec.mode) setMode(spec.mode)
@@ -265,8 +290,8 @@ export function ScenarioBuilderPage() {
 
   // --- actions -------------------------------------------------------------
   const currentSpec = useCallback(
-    () => toSpec(p1, p2, { phase, activePlayer, mode }),
-    [p1, p2, phase, activePlayer, mode],
+    () => toSpec(p1, p2, extraSeats, { phase, activePlayer, mode }),
+    [p1, p2, extraSeats, phase, activePlayer, mode],
   )
 
   const handleLoadJson = useCallback(() => {
@@ -493,13 +518,59 @@ export function ScenarioBuilderPage() {
           <div style={S.settingsTitle}>Settings</div>
           <label style={S.field}>
             <span style={S.smallLabel}>Opponent</span>
-            <select value={mode} style={S.select} onChange={(e) => setMode(e.target.value as ScenarioMode)}>
+            <select
+              value={extraSeats.length > 0 ? 'SELF' : mode}
+              style={S.select}
+              disabled={extraSeats.length > 0}
+              onChange={(e) => setMode(e.target.value as ScenarioMode)}
+            >
               <option value="SELF">Yourself (hotseat)</option>
               <option value="AI">AI</option>
               <option value="TWO_PLAYER">Two players</option>
             </select>
-            <span style={S.hint}>{MODE_HINT[mode]}</span>
+            <span style={S.hint}>
+              {extraSeats.length > 0
+                ? 'Pods of 3-4 seats always start as hotseat — you control every seat.'
+                : MODE_HINT[mode]}
+            </span>
           </label>
+          <div style={S.field}>
+            <span style={S.smallLabel}>Pod seats (3-4 player)</span>
+            {extraSeats.map((seat, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input
+                  style={{ ...S.select, flex: 1 }}
+                  value={seat.name ?? ''}
+                  placeholder={`Player ${i + 3}`}
+                  onChange={(e) =>
+                    setExtraSeats((prev) =>
+                      prev.map((s, j) => (j === i ? { ...s, name: e.target.value } : s)),
+                    )
+                  }
+                />
+                <button
+                  style={S.ghostBtn}
+                  title="Remove this seat"
+                  onClick={() => setExtraSeats((prev) => prev.filter((_, j) => j !== i))}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {extraSeats.length < 2 && (
+              <button
+                style={S.ghostBtn}
+                onClick={() =>
+                  setExtraSeats((prev) => [...prev, { name: `Player ${prev.length + 3}` }])
+                }
+              >
+                + Add seat
+              </button>
+            )}
+            <span style={S.hint}>
+              Extra seats start with an empty board (20 life) — give them cards via the JSON editor.
+            </span>
+          </div>
           <label style={S.field}>
             <span style={S.smallLabel}>Phase</span>
             <select value={phase} style={S.select} onChange={(e) => setPhase(e.target.value)}>

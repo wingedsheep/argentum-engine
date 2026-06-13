@@ -326,9 +326,9 @@ The client wire layer (TS message types + `onGameStarted`) was updated in the sa
 UI is untouched and comes out identical. Verified by `MultiplayerSessionTest` (4-player seating,
 per-recipient hand masking, spectator roster, 2-player degenerate parity) + the existing server
 suite. `StopOverrideInfo` kept its singular `opponentTurnStops` semantics (per-opponent stops
-deferred). **Deferred to a follow-up:** the scenario-builder N-seat widening (Phase 1.4) —
-`ScenarioBuilderService` / `POST /api/scenarios` and the engine `ScenarioTestBase` are still
-hardwired to two seats; N-player games are exercised at the `GameSession` level instead.
+deferred). The scenario-builder N-seat widening (Phase 1.4) has since landed with Phase 3
+(`ScenarioRequest.players` → 3-4 seat hotseat sessions); the engine `ScenarioTestBase`
+remains two-seat.
 
 ### 2.1 GameSession generalization
 
@@ -367,6 +367,25 @@ opponent column); the DTO shape leaves room. Commander-damage rows already ride 
 ---
 
 ## Phase 3 — Client UI/UX (the centerpiece)
+
+**Status: landed.** One viewed board + opponent rail, exactly per the design below; the
+2-player layout is untouched (all multiplayer chrome is gated on `players.length > 2` —
+verified by screenshot parity + the existing suites). Shipped: `OpponentBoardArea` strip
+(slide + seat-colored edge flash), `OpponentRail` chips (life/hand/poison/commander-damage,
+active-turn ring, priority dot, deciding spinner via `decisionStatus.playerId`, life/hand
+attention pulses, tombstones), `boardView` store slice + follow-the-action (handler-level
+pending-input guard), keyboard `1-3` + swipe + pin, cross-seat targeting (chip halo +
+crosshair badge; view switches never cancel selections), combat UX (defender pick on first
+selection, sticky assignment, rail-chip/planeswalker-flyout reassign, confirm disabled
+until every attacker has a defender, seat-colored arrows/chevrons, bundled arrow + count
+badge to off-screen defenders' chips, CR 509.1b bystander-attacker dimming scoped by the
+DeclareBlockers action's seat), seat colors on stack borders + log names, spectator
+bottom-seat switcher (replays reuse the same path). Also landed here: the **Phase 1.4
+scenario-builder N-seat widening** (`ScenarioRequest.players` seat list → 3-4 player
+hotseat sessions; builder page grew pod-seat controls), which is the Phase 3 dev loop.
+Deferred: planeswalker-flyout long-press (touch), per-event chip pulses beyond life/hand
+deltas, log-entry click-to-slide, edge arrows (chips/keys/swipe cover switching), and a
+3-player Playwright e2e (rides with Phase 4's ship gate).
 
 ### 3.1 Layout: one viewed board + opponent rail
 

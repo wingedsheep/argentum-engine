@@ -385,6 +385,16 @@ function GameCardImpl({
   const isSelectedAsBlocker = isInBlockerMode && !!(combatState?.blockerAssignments[card.id]?.length)
   const isAttackingInBlockerMode = isInBlockerMode && opponentForCombat && combatState.attackingCreatures.includes(card.id)
   const isMustBeBlocked = isInBlockerMode && opponentForCombat && combatState.mustBeBlockedAttackers.includes(card.id)
+  // Multiplayer: an attacker in this combat that is attacking a *different*
+  // defender — you can't block it (CR 509.1b), so render it dimmed while you
+  // declare blocks. `attackingCreatures` is already scoped to attacks on the
+  // acting defender, so in a 2-player game this is never true.
+  const isBystanderAttacker = useGameStore((state) => {
+    if (!isInBlockerMode || !opponentForCombat) return false
+    if (combatState?.attackingCreatures.includes(card.id)) return false
+    const combat = (state.spectatingState?.gameState ?? state.gameState)?.combat
+    return combat?.attackers.some((a) => a.creatureId === card.id) ?? false
+  })
 
   // For attacker mode: check if this is an opponent's planeswalker that can be attacked
   const isValidPlaneswalkerTarget = isInAttackerMode && opponentForCombat && combatState.validAttackTargets.includes(card.id)
@@ -1150,7 +1160,7 @@ function GameCardImpl({
         boxShadow: card.isCommander && !faceDown
           ? `${boxShadow}, 0 0 6px 2px rgba(212, 175, 55, 0.6), 0 0 14px 4px rgba(212, 175, 55, 0.3)`
           : boxShadow,
-        opacity: isPhasedOut ? 0.4 : isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
+        opacity: isPhasedOut ? 0.4 : isBeingDragged ? 0.6 : isGhost ? 0.55 : isBystanderAttacker ? 0.45 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
         // Phased-out permanents (Rule 702.26) are treated as though they don't exist —
         // desaturate so they read as "not really there" while still showing the board slot.
         ...(isPhasedOut ? { filter: 'grayscale(0.7)' } : {}),

@@ -115,6 +115,20 @@ export interface TargetingState {
  */
 export interface CombatState {
   mode: 'declareAttackers' | 'declareBlockers'
+  /**
+   * The seat this declaration is being made for, from the legal action's
+   * `playerId`. Matters in multiplayer: a hotseat connection declares for the
+   * acting seat, and a defender's blocks are scoped to the attackers attacking
+   * *them* (CR 509.1b). Null when unknown (legacy 2-player fallbacks apply).
+   */
+  actingSeat: EntityId | null
+  /**
+   * Multiplayer declare-attackers: the last defender the player assigned —
+   * newly selected attackers default to it (sticky assignment). Null until the
+   * first defender pick; never set in 2-player games (the sole opponent is the
+   * implicit default).
+   */
+  stickyDefenderId: EntityId | null
   /** Selected attackers (creature IDs) */
   selectedAttackers: readonly EntityId[]
   /** Attack target per attacker: attacker ID -> defender ID (player or planeswalker). If absent, defaults to opponent player. */
@@ -886,6 +900,18 @@ export type GameStore = {
   advancePipeline: (result: PhaseResult) => void
   cancelPipeline: () => void
 
+  // Board view slice (multiplayer viewed-opponent board + follow-the-action camera)
+  viewedOpponentId: EntityId | null
+  viewPinned: boolean
+  followAction: boolean
+  spectatorBottomSeatId: EntityId | null
+  viewOpponent: (playerId: EntityId, opts?: { pin?: boolean }) => void
+  unpinView: () => void
+  toggleFollowAction: () => void
+  followViewTo: (playerId: EntityId) => void
+  setSpectatorBottomSeat: (playerId: EntityId | null) => void
+  resetBoardView: () => void
+
   // UI slice
   selectedCardId: EntityId | null
   targetingState: TargetingState | null
@@ -961,6 +987,7 @@ export type GameStore = {
   startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
   stopDraggingAttacker: () => void
   setAttackTarget: (attackerId: EntityId, targetId: EntityId) => void
+  assignDefenderToSelectedAttackers: (defenderId: EntityId) => void
   startDraggingCard: (cardId: EntityId) => void
   stopDraggingCard: () => void
   confirmCombat: () => void

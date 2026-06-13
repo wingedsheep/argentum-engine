@@ -420,13 +420,14 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
 
     onGameStarted: (msg) => {
       // Derive "the opponent" from the seat roster — the first non-you seat. For 2-player this is
-      // the sole opponent; the N-player opponent rail is Phase 3 client work.
+      // the sole opponent; the N-player UI derives everything from gameState.players directly.
       const opponentName = msg.players.find((p) => !p.isYou)?.name ?? 'Opponent'
-      trackEvent('game_started', { opponent_name: opponentName })
+      trackEvent('game_started', { opponent_name: opponentName, seats: msg.players.length })
       setInGame(true)
 
-      // Clear spectating state — active game takes priority
+      // Clear spectating state — active game takes priority. Fresh game, fresh camera.
       set({ spectatingState: null })
+      get().resetBoardView()
 
       // Load persisted stop overrides and send to server
       try {

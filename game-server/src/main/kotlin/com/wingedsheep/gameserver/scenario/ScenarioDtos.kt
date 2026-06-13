@@ -24,11 +24,24 @@ enum class ScenarioMode {
     TWO_PLAYER
 }
 
+/** One seat of an N-player scenario ([ScenarioRequest.players]). */
+data class ScenarioSeat(
+    val name: String? = null,
+    val config: PlayerConfig? = null,
+)
+
 data class ScenarioRequest(
     val player1Name: String? = "Player1",
     val player2Name: String? = "Player2",
     val player1: PlayerConfig? = null,
     val player2: PlayerConfig? = null,
+    /**
+     * N-player seats (3-4 player Free-for-All pods), in turn order. When set, it
+     * overrides the legacy `player1*`/`player2*` fields. Pods of more than two seats
+     * support [ScenarioMode.SELF] (single-client hotseat) only — AI and TWO_PLAYER
+     * stay two-seat.
+     */
+    val players: List<ScenarioSeat>? = null,
     val phase: Phase? = null,
     val step: Step? = null,
     val activePlayer: Int? = null,
@@ -57,6 +70,17 @@ data class ScenarioRequest(
     /** The effective mode, deriving from [aiPlayer] when [mode] is unset. */
     val effectiveMode: ScenarioMode
         get() = mode ?: if (aiPlayer != null) ScenarioMode.AI else ScenarioMode.TWO_PLAYER
+
+    /**
+     * The effective seat list, name + config per seat in turn order. The legacy
+     * two-seat fields map onto a two-entry list when [players] is unset.
+     */
+    fun seats(): List<Pair<String, PlayerConfig?>> =
+        players?.mapIndexed { i, seat -> (seat.name ?: "Player${i + 1}") to seat.config }
+            ?: listOf(
+                (player1Name ?: "Player1") to player1,
+                (player2Name ?: "Player2") to player2,
+            )
 }
 
 data class PlayerConfig(
@@ -102,7 +126,13 @@ data class ScenarioResponse(
     val player2: PlayerInfo,
     val message: String,
     /** Echoes the resolved mode so the client knows whether it controls one seat or both. */
-    val mode: ScenarioMode? = null
+    val mode: ScenarioMode? = null,
+    /**
+     * Full seat roster in turn order (N-player pods). Present whenever the scenario has
+     * more than two seats; `player1`/`player2` keep mirroring the first two for the
+     * existing 2-player tooling.
+     */
+    val players: List<PlayerInfo>? = null
 )
 
 data class PlayerInfo(

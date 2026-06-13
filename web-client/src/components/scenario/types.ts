@@ -27,12 +27,23 @@ export interface ScenarioPlayerConfig {
   commanders?: string[]
 }
 
+/** One seat of an N-player scenario (matches backend `ScenarioSeat`). */
+export interface ScenarioSeatSpec {
+  name?: string
+  config?: ScenarioPlayerConfig
+}
+
 /** Full scenario request (matches backend `ScenarioRequest`). */
 export interface ScenarioSpec {
   player1Name?: string
   player2Name?: string
   player1?: ScenarioPlayerConfig
   player2?: ScenarioPlayerConfig
+  /**
+   * N-player seats (3-4 player pods), in turn order. Overrides the legacy two-seat
+   * fields when present. Pods of more than two seats start as SELF (hotseat).
+   */
+  players?: ScenarioSeatSpec[]
   phase?: string
   step?: string
   activePlayer?: number
@@ -54,6 +65,8 @@ export interface ScenarioCreateResponse {
   player2: ScenarioPlayerInfo
   message: string
   mode?: ScenarioMode
+  /** Full seat roster in turn order (present for pods of more than two seats). */
+  players?: ScenarioPlayerInfo[]
 }
 
 /** The zones a card can be added to in the builder. */

@@ -175,6 +175,56 @@ App
     └── DeathEffect
 ```
 
+## Multiplayer (3-4 player) board
+
+A game with more than two seats turns on the multiplayer chrome; a 2-player game renders
+exactly the classic layout (no rail, no strip, no seat colors — the multiplayer code paths
+are gated on `players.length > 2`).
+
+- **One viewed opponent + opponent rail.** The opponent half shows exactly one board at
+  full 2-player scale; the other opponents' boards live in a horizontally sliding strip
+  (`OpponentBoardArea`, one cell per living opponent, ordered by turn order after you) and
+  slide into view when selected. The always-visible `OpponentRail` (fixed at the top; its
+  height is added to the board's top offset) carries one chip per opponent: seat color,
+  name, life (also the floating ±delta anchor via `data-life-display`), hand count, poison,
+  commander-damage warning, active-turn ring, priority dot, deciding spinner
+  (`opponentDecisionStatus.playerId`), attention pulses, and a tombstone once a player has
+  left the game. The *viewed* opponent additionally keeps a full-size life orb in the
+  center HUD (seat-tinted to match their chip) — the familiar, biggest click target for
+  targeting and defender assignment. Anchors (`data-player-id` / `data-life-id` /
+  `data-life-display`) are carried by the orb for the viewed opponent and by the rail chip
+  for everyone else — never both, so arrows, damage floats, and player-target clicks
+  resolve unambiguously.
+- **Board switching**: rail-chip click (pins; re-click unpins), keyboard `1`/`2`/`3`,
+  horizontal swipe. Follow-the-action (`useMultiplayerView` + the `boardView` slice:
+  `viewedOpponentId`, `viewPinned`, `followAction`) slides automatically on coarse
+  boundaries — an opponent's turn starting, the attacker's board when you're attacked, the
+  priority seat in hotseat — and is refused inside `followViewTo` while any input is
+  pending (the camera never moves under an in-progress selection).
+- **Seat identity**: `styles/seatColors.ts` (Okabe-Ito, by seat index = turn-order index in
+  `gameState.players`) colors rail chips, combat arrows and chevrons, stack item borders
+  (caster), and log entry names.
+- **Targeting across seats**: a chip gets a halo when the in-progress selection has valid
+  targets on that opponent's board, and a crosshair badge when the player themself is a
+  valid target (badge click targets; chip body click only switches the view — a view
+  change never cancels a selection).
+- **Combat**: with >1 possible defender, the first attacker selection pops a defender pick;
+  assignment is sticky (`CombatState.stickyDefenderId`) and per-creature reassignable via
+  rail-chip clicks, the viewed opponent's life orb, or the chip's planeswalker flyout. Confirm is disabled until every
+  selected attacker has an explicit defender. Arrows against the viewed defender render
+  per-creature in the defender's seat color; attacks on slid-away boards bundle into one
+  arrow to the defender's rail chip with a creature-count badge (`CombatArrows`), and any
+  card anchor on a slid-away board remaps to its controller's chip (also in
+  `TargetingArrows`). While you declare blocks, attackers aimed at other defenders render
+  dimmed (CR 509.1b — `CombatState.actingSeat` scopes `attackingCreatures` to attacks on
+  you).
+- **Spectator/replay** reuse the same layout anchored to a chosen bottom seat
+  (`spectatorBottomSeatId`, cycled from the spectator header); replays render through the
+  same `GameBoard spectatorMode` path.
+
+Dev loop: the scenario builder (`POST /api/scenarios`) accepts an N-player `players` seat
+list (3-4 seats ⇒ hotseat) — see `ScenarioSeat` in `ScenarioDtos.kt`.
+
 ## 3D Layout
 
 ### Coordinate System

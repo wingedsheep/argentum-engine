@@ -40,9 +40,18 @@ const ATTACHMENT_COLLAPSE_THRESHOLD = 3
  * styles.ts) and overrides ResponsiveContext with slot-derived card sizes
  * via useSlotSizedResponsive — so cards never overflow into the center HUD.
  */
-export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent: boolean; spectatorMode?: boolean }) {
+export function Battlefield({ isOpponent, playerId, spectatorMode = false }: {
+  isOpponent: boolean
+  /**
+   * Scope an opponent battlefield to one seat's permanents (multiplayer opponent
+   * boards). Omitted → all non-viewing-player permanents (the 2-player shape; in a
+   * 2-player game the two are identical).
+   */
+  playerId?: EntityId
+  spectatorMode?: boolean
+}) {
   const slotRef = useRef<HTMLDivElement>(null)
-  const cards = useBattlefieldCards()
+  const cards = useBattlefieldCards(isOpponent ? playerId : undefined)
   const lands = isOpponent ? cards.opponentLands : cards.playerLands
   const creatures = isOpponent ? cards.opponentCreatures : cards.playerCreatures
   const planeswalkers = isOpponent ? cards.opponentPlaneswalkers : cards.playerPlaneswalkers

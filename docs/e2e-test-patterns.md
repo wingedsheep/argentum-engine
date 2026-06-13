@@ -93,6 +93,8 @@ test('card does X', async ({ createGame }) => {
 - `step`: Step name (e.g., `'UPKEEP'`, `'DECLARE_ATTACKERS'`)
 - `activePlayer` / `priorityPlayer`: `1` or `2`
 - `player1StopAtSteps` / `player2StopAtSteps`: Step names where auto-pass is disabled (e.g., `['UPKEEP']`)
+- `players`: N-player seat list `[{ name?, config? }, …]` (3-4 player pods, turn order; overrides the
+  two-seat fields). Pods of more than two seats start as `SELF` (single-client hotseat).
 
 ## GamePage Helpers
 

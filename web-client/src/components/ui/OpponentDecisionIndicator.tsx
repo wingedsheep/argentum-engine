@@ -7,6 +7,13 @@ import { useGameStore } from '@/store/gameStore.ts'
 export function OpponentDecisionIndicator() {
   const opponentDecisionStatus = useGameStore((s) => s.opponentDecisionStatus)
   const opponentName = useGameStore((s) => s.opponentName)
+  // The status carries the deciding seat's id — name it directly (with N players
+  // "the opponent" is ambiguous; in 2-player this resolves to the same name).
+  const decidingName = useGameStore((s) => {
+    const id = s.opponentDecisionStatus?.playerId
+    if (!id) return null
+    return s.gameState?.players.find((p) => p.playerId === id)?.name ?? null
+  })
 
   if (!opponentDecisionStatus) return null
 
@@ -15,7 +22,7 @@ export function OpponentDecisionIndicator() {
       <div style={styles.spinner} />
       <div>
         <div style={styles.text}>
-          {opponentName ?? 'Opponent'} is {opponentDecisionStatus.displayText.toLowerCase()}
+          {decidingName ?? opponentName ?? 'Opponent'} is {opponentDecisionStatus.displayText.toLowerCase()}
         </div>
         {opponentDecisionStatus.sourceName && (
           <div style={styles.sourceText}>

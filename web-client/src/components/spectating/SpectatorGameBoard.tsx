@@ -48,9 +48,24 @@ const HEADER_HEIGHT = 55
 export function SpectatorGameBoard() {
   const spectatingState = useGameStore((state) => state.spectatingState)
   const stopSpectating = useGameStore((state) => state.stopSpectating)
+  const spectatorBottomSeatId = useGameStore((state) => state.spectatorBottomSeatId)
+  const setSpectatorBottomSeat = useGameStore((state) => state.setSpectatorBottomSeat)
 
   // Not spectating - render nothing
   if (!spectatingState) return null
+
+  // Multiplayer pods: the header gains a seat-switcher that cycles which seat's
+  // perspective anchors the bottom half (the rail + board strip carry the rest).
+  const players = spectatingState.gameState?.players ?? []
+  const isMultiPod = players.length > 2
+  const bottomSeatId = spectatorBottomSeatId ?? spectatingState.player1Id
+  const bottomSeat = players.find((p) => p.playerId === bottomSeatId) ?? players[0] ?? null
+  const cycleSeat = () => {
+    if (players.length === 0 || !bottomSeat) return
+    const idx = players.findIndex((p) => p.playerId === bottomSeat.playerId)
+    const next = players[(idx + 1) % players.length]
+    if (next) setSpectatorBottomSeat(next.playerId)
+  }
 
   // Loading state - waiting for server to send game state
   if (!spectatingState.gameState) {
@@ -79,6 +94,12 @@ export function SpectatorGameBoard() {
           player1Name={spectatingState.player1Name}
           player2Name={spectatingState.player2Name}
           onBack={stopSpectating}
+          {...(isMultiPod
+            ? {
+                matchupOverride: players.map((p) => p.name).join(' · '),
+                seatSwitcher: { bottomName: bottomSeat?.name ?? '?', onCycle: cycleSeat },
+              }
+            : {})}
         />
         <div style={styles.gameBoardContainer}>
           <GameBoard spectatorMode topOffset={HEADER_HEIGHT} />
@@ -136,10 +157,16 @@ function SpectatorHeader({
   player1Name,
   player2Name,
   onBack,
+  matchupOverride,
+  seatSwitcher,
 }: {
   player1Name: string
   player2Name: string
   onBack: () => void
+  /** Multiplayer pods: full roster text instead of "A vs B". */
+  matchupOverride?: string
+  /** Multiplayer pods: cycle which seat's perspective anchors the bottom half. */
+  seatSwitcher?: { bottomName: string; onCycle: () => void }
 }) {
   return (
     <div style={styles.header}>
@@ -149,11 +176,21 @@ function SpectatorHeader({
       <div style={styles.headerCenter}>
         <div style={styles.spectatingLabel}>Spectating</div>
         <div style={styles.matchupText}>
-          {player1Name} vs {player2Name}
+          {matchupOverride ?? `${player1Name} vs ${player2Name}`}
         </div>
       </div>
-      {/* Spacer to balance the back button */}
-      <div style={styles.headerSpacer} />
+      {seatSwitcher ? (
+        <button
+          onClick={seatSwitcher.onCycle}
+          title="Cycle which player's view anchors the bottom of the board"
+          style={{ ...styles.backButton, whiteSpace: 'nowrap' }}
+        >
+          View: {seatSwitcher.bottomName} ⟳
+        </button>
+      ) : (
+        /* Spacer to balance the back button */
+        <div style={styles.headerSpacer} />
+      )}
     </div>
   )
 }

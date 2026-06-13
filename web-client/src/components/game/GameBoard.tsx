@@ -1,7 +1,10 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { useInteraction } from '@/hooks/useInteraction'
-import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode, useGhostCards, useRevealedLibraryTopCard, useBattlefieldCards } from '@/store/selectors'
+import { useViewingPlayer, useOpponent, useOpponents, useViewedOpponent, useSeatIndex, useStackCards, selectPriorityMode, useGhostCards, useBattlefieldCards } from '@/store/selectors'
+import { seatColor } from '@/styles/seatColors'
+import { useMultiplayerView } from '@/hooks/useMultiplayerView'
+import { OpponentRail, OPPONENT_RAIL_HEIGHT } from './OpponentRail'
 import { hand, getNextStep, StepShortNames } from '@/types'
 import { StepStrip } from '../ui/StepStrip'
 import { ManaPool } from '../ui/ManaPool'
@@ -19,7 +22,7 @@ import { useResponsive } from '@/hooks/useResponsive'
 import { ManaSymbol } from '../ui/ManaSymbols'
 
 // Import extracted components
-import { Battlefield, CardRow, CommandZone, StackDisplay, ZonePile, ResponsiveContext } from './board'
+import { Battlefield, CardRow, CommandZone, OpponentBoardArea, StackDisplay, ZonePile, ResponsiveContext } from './board'
 import { RenderProfiler } from '@/utils/renderProfiler'
 import { CardPreview } from './card'
 import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, ConcedeButton, FullscreenButton, SpectatorCountBadge } from './overlay'
@@ -72,9 +75,33 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const cancelManaSelection = useGameStore((state) => state.cancelManaSelection)
   const { executeAction } = useInteraction()
 
+  // In spectator mode, use spectatingState.gameState
+  const gameState = spectatorMode ? spectatingState?.gameState : playerGameState
+
+  // Multiplayer (3-4 player) view state. In a 2-player game none of this renders —
+  // no rail, no board strip, no extra top offset — so the layout is unchanged.
+  const opponents = useOpponents()
+  const viewedOpponent = useViewedOpponent()
+  const isMulti = (gameState?.players.length ?? 0) > 2
+  const railHeight = isMulti ? OPPONENT_RAIL_HEIGHT : 0
+  // Everything anchored to the viewport top (opponent hand, grid row 1, labels)
+  // shifts down by the rail height in multiplayer.
+  const effectiveTopOffset = topOffset + railHeight
+  useMultiplayerView(isMulti, opponents)
+  const stripOpponents = useMemo(() => opponents.filter((o) => !o.hasLost), [opponents])
+  const viewedStripIndex = Math.max(
+    0,
+    stripOpponents.findIndex((o) => o.playerId === viewedOpponent?.playerId),
+  )
+  const viewedSeatIndex = useSeatIndex(viewedOpponent?.playerId ?? null)
+  const viewedSeatColor = seatColor(Math.max(0, viewedSeatIndex))
+  const stripTouchX = useRef<number | null>(null)
+
   // Card counts per battlefield zone — used by useResponsive to decide when wrapping
-  // will occur and shrink cards so the wrapped rows fit vertically.
-  const battlefieldCards = useBattlefieldCards()
+  // will occur and shrink cards so the wrapped rows fit vertically. In multiplayer
+  // the viewed opponent's board drives the shared sizing (each off-screen
+  // Battlefield measures its own slot independently anyway).
+  const battlefieldCards = useBattlefieldCards(isMulti ? viewedOpponent?.playerId ?? null : null)
   const zoneRowCounts = useMemo(
     () => [
       battlefieldCards.playerCreatures.length + battlefieldCards.playerPlaneswalkers.length,
@@ -85,7 +112,10 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     [battlefieldCards]
   )
 
-  const responsive = useResponsive(topOffset, zoneRowCounts)
+  const responsive = useResponsive(effectiveTopOffset, zoneRowCounts)
+  // Grid row 1: keeps the battlefield clear of the fixed/absolute opponent hand.
+  const oppHandReservation =
+    responsive.smallCardHeight + effectiveTopOffset + responsive.opponentHandBattlefieldGap
 
   // Confirm mana selection: if pipeline is active, advance it; otherwise build
   // modified LegalActionInfo with Explicit payment and route through executeAction
@@ -120,9 +150,6 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     executeAction(modifiedActionInfo)
   }, [manaSelectionState, cancelManaSelection, executeAction])
 
-  // In spectator mode, use spectatingState.gameState
-  const gameState = spectatorMode ? spectatingState?.gameState : playerGameState
-
   const viewingPlayer = useViewingPlayer()
   const opponent = useOpponent()
   const stackCards = useStackCards()
@@ -132,13 +159,21 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const youAreHijacking = !spectatorMode ? (gameState?.youAreHijacking ?? null) : null
   const youAreHijackedBy = !spectatorMode ? (gameState?.youAreHijackedBy ?? null) : null
   // Single-client hotseat (play against yourself): this connection controls every seat.
-  // When the seat currently to act is the opponent (top) row, reuse the hijack rendering to
-  // make that row interactive and dim our own — the board emphasis flips between seats as
-  // priority alternates, like pass-and-play.
+  // When the seat currently to act is an opponent row, reuse the hijack rendering to
+  // make that row interactive and dim our own — the board emphasis flips between seats
+  // as priority alternates, like pass-and-play.
   const hotseat = !spectatorMode && (gameState?.hotseat ?? false)
-  const hotseatControllingOpponent =
-    hotseat && !!opponent && gameState?.priorityPlayerId === opponent.playerId
-  const isHijacking = !!youAreHijacking || hotseatControllingOpponent
+  // The opponent seat (if any) this client is currently driving: the Mindslaver
+  // victim, or — in hotseat — whichever opponent seat holds priority.
+  const hijackControlledOpponentId =
+    youAreHijacking ??
+    (hotseat &&
+    gameState?.priorityPlayerId &&
+    viewingPlayer &&
+    gameState.priorityPlayerId !== viewingPlayer.playerId
+      ? gameState.priorityPlayerId
+      : null)
+  const isHijacking = hijackControlledOpponentId !== null
   const isHijacked = !!youAreHijackedBy
   // Soft purple wash for the battlefield row currently under hijack control. We avoid
   // a hard outline (which clipped at the zone-pile column on the right) — instead a
@@ -150,12 +185,6 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     boxShadow: 'inset 0 0 0 1px rgba(168, 85, 247, 0.28), inset 0 0 24px rgba(168, 85, 247, 0.12)',
     transition: 'background 0.2s, box-shadow 0.2s',
   }
-  const opponentRevealedTopCard = useRevealedLibraryTopCard(opponent?.playerId ?? null)
-  const opponentGhostCards = useMemo(
-    () => opponentRevealedTopCard ? [opponentRevealedTopCard] : [],
-    [opponentRevealedTopCard]
-  )
-
   // For spectator mode, we need to find players differently since playerId won't match
   const spectatorPlayer1 = spectatorMode && gameState
     ? gameState.players.find(p => p.playerId === spectatingState?.player1Id) ?? gameState.players[0]
@@ -164,9 +193,14 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     ? gameState.players.find(p => p.playerId === spectatingState?.player2Id) ?? gameState.players[1]
     : null
 
-  // In spectator mode, use player1 as "bottom" player and player2 as "top" (opponent)
+  // In spectator mode, use player1 as "bottom" player and player2 as "top" (opponent).
+  // In multiplayer the viewed slot holds whichever opponent the camera is on.
   const effectiveViewingPlayer = spectatorMode ? spectatorPlayer1 : viewingPlayer
-  const effectiveOpponent = spectatorMode ? spectatorPlayer2 : opponent
+  const effectiveOpponent = isMulti
+    ? viewedOpponent
+    : spectatorMode
+      ? spectatorPlayer2
+      : opponent
 
   if (!gameState || (!spectatorMode && (!playerId || !viewingPlayer))) {
     return null
@@ -382,9 +416,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       // Hand reservation rows (1 and 5) keep the battlefield rows from sliding
       // under the position:fixed hand overlays. Both 1fr rows then receive
       // identical heights → symmetric card sizes for player and opponent.
-      gridTemplateRows: `${
-        responsive.smallCardHeight + topOffset + responsive.opponentHandBattlefieldGap
-      }px minmax(0, 1fr) auto minmax(0, 1fr) ${
+      gridTemplateRows: `${oppHandReservation}px minmax(0, 1fr) auto minmax(0, 1fr) ${
         (spectatorMode ? responsive.smallCardHeight : responsive.cardHeight) + responsive.handBattlefieldGap
       }px`,
     }}>
@@ -399,64 +431,105 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {!spectatorMode && <ConcedeButton />}
 
 
-      {/* Opponent hand - fixed at top of screen. The face-up promotion during a
-          Mindslaver-style hijack is itself the strongest signal that the controller
-          is driving V's hand — no extra wrapper outline is needed. */}
-      {effectiveOpponent && (
-        <div
-          data-zone="opponent-hand"
-          style={{
-            position: 'fixed',
-            top: topOffset,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 50,
-          }}
-        >
-          <CardRow
-            zoneId={hand(effectiveOpponent.playerId)}
-            faceDown={!isHijacking}
-            small
-            inverted
-            interactive={isHijacking}
-            ghostCards={isHijacking ? [] : opponentGhostCards}
-          />
-        </div>
+      {/* Opponent half. 2-player: today's exact markup (fixed hand at the top +
+          board area on grid row 2), via OpponentBoardArea's grid layout.
+          Multiplayer: an always-visible opponent rail + a horizontally sliding
+          strip of full-size boards, one per living opponent, in turn order. */}
+      {!isMulti && effectiveOpponent && (
+        <OpponentBoardArea
+          opponent={effectiveOpponent}
+          layout="grid"
+          topOffset={effectiveTopOffset}
+          spectatorMode={spectatorMode}
+          isHijacking={isHijacking}
+          hijackedSurfaceStyle={hijackedSurfaceStyle}
+        />
+      )}
+      {isMulti && (
+        <>
+          <OpponentRail topOffset={topOffset} spectatorMode={spectatorMode} />
+          <div
+            data-opponent-strip
+            style={{
+              gridRow: '1 / 3',
+              position: 'relative',
+              overflow: 'hidden',
+              minHeight: 0,
+              minWidth: 0,
+            }}
+            onTouchStart={(e) => {
+              stripTouchX.current = e.touches[0]?.clientX ?? null
+            }}
+            onTouchEnd={(e) => {
+              const start = stripTouchX.current
+              stripTouchX.current = null
+              const end = e.changedTouches[0]?.clientX ?? null
+              if (start == null || end == null) return
+              const store = useGameStore.getState()
+              // A swipe must not fight an in-progress card drag.
+              if (store.draggingCardId || store.draggingAttackerId || store.draggingBlockerId) return
+              const dx = end - start
+              if (Math.abs(dx) < 48) return
+              const next = stripOpponents[viewedStripIndex + (dx < 0 ? 1 : -1)]
+              if (next) store.viewOpponent(next.playerId)
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                height: '100%',
+                transform: `translateX(-${viewedStripIndex * 100}%)`,
+                transition: 'transform 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              {stripOpponents.map((o) => (
+                <OpponentBoardArea
+                  key={o.playerId}
+                  opponent={o}
+                  layout="strip"
+                  topOffset={effectiveTopOffset}
+                  handReservation={oppHandReservation}
+                  spectatorMode={spectatorMode}
+                  isHijacking={hijackControlledOpponentId === o.playerId}
+                  hijackedSurfaceStyle={hijackedSurfaceStyle}
+                />
+              ))}
+            </div>
+            {/* Seat-colored edge flash on board arrival */}
+            {viewedOpponent && (
+              <div
+                key={viewedOpponent.playerId}
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  pointerEvents: 'none',
+                  borderRadius: 10,
+                  boxShadow: `inset 0 0 0 2px ${viewedSeatColor.base}, inset 0 0 26px ${viewedSeatColor.soft}`,
+                  opacity: 0,
+                  animation: 'seatEdgeFlash 700ms ease-out',
+                }}
+              />
+            )}
+          </div>
+        </>
       )}
 
-      {/* Spectator mode: floating player name labels on the left side */}
-      {spectatorMode && effectiveOpponent && (
+      {/* Spectator mode: floating opponent name label (2-player only — the rail
+          carries opponent identity in multiplayer) */}
+      {spectatorMode && !isMulti && effectiveOpponent && (
         <div
           style={{
             ...styles.spectatorNameLabel,
             position: 'fixed',
-            top: topOffset + responsive.smallCardHeight + responsive.opponentHandBattlefieldGap + 8,
+            top: effectiveTopOffset + responsive.smallCardHeight + responsive.opponentHandBattlefieldGap + 8,
             left: 16,
           }}
         >
           {effectiveOpponent.name}
         </div>
       )}
-
-      {/* Opponent area (grid row 2) — opp-hand reservation lives in row 1, so
-          no padding is needed here. Equal-height with row 4 → equal cards. */}
-      <div style={styles.opponentArea}>
-        <div style={{ ...styles.playerRowWithZones, alignItems: 'flex-start' }}>
-          {/* Opponent command zone (left side) — Commander format only; renders nothing otherwise. */}
-          {effectiveOpponent && <CommandZone player={effectiveOpponent} isOpponent />}
-
-          <div style={{
-            ...styles.playerMainArea,
-            ...(isHijacking ? hijackedSurfaceStyle : null),
-          }}>
-            {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
-            <Battlefield isOpponent spectatorMode={spectatorMode} />
-          </div>
-
-          {/* Opponent deck/graveyard (right side) */}
-          {effectiveOpponent && <ZonePile player={effectiveOpponent} isOpponent />}
-        </div>
-      </div>
 
       {/* Center - Life totals, phase indicator, and stack.
           Grid row 2 — a reserved partition that the opponent/player areas
@@ -477,11 +550,22 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         width: 'auto',
         columnGap: responsive.isMobile ? 6 : 16,
       }}>
-        {/* Opponent life (left side) */}
+        {/* Opponent life (left side). In multiplayer this is the *viewed*
+            opponent's orb, seat-tinted to match their rail chip — a full-size
+            targeting click target in the familiar spot (the chip carries the
+            anchors for the other, off-screen opponents). */}
         <div style={{ ...styles.centerLifeSection, ...styles.centerLifeSectionLeft }}>
           {effectiveOpponent && (
             <>
-              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} playerName={effectiveOpponent.name} spectatorMode={spectatorMode} poisonCounters={effectiveOpponent.poisonCounters} commanderDamage={effectiveOpponent.commanderDamage ?? []} />
+              <LifeDisplay
+                life={effectiveOpponent.life}
+                playerId={effectiveOpponent.playerId}
+                playerName={effectiveOpponent.name}
+                spectatorMode={spectatorMode}
+                poisonCounters={effectiveOpponent.poisonCounters}
+                commanderDamage={effectiveOpponent.commanderDamage ?? []}
+                {...(isMulti ? { seatColor: viewedSeatColor.base } : {})}
+              />
               {!responsive.isMobile && <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />}
               {!responsive.isMobile && effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
             </>
@@ -804,6 +888,76 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       )}
 
+      {/* Multiplayer defender pick — pops on the first attacker selection until a
+          defender is chosen; assignment then turns sticky (rail-chip clicks
+          override per attacker). Confirm stays disabled while any selected
+          attacker has no defender, so attacks are never silently misdirected. */}
+      {!spectatorMode && isMulti && combatState?.mode === 'declareAttackers' &&
+        combatState.selectedAttackers.some((id) => !combatState.attackerTargets[id]) && (() => {
+          const unassignedCount = combatState.selectedAttackers.filter((id) => !combatState.attackerTargets[id]).length
+          const living = opponents.filter((o) => !o.hasLost)
+          return (
+            <div style={{
+              position: 'fixed',
+              bottom: 110,
+              right: 16,
+              zIndex: 110,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              alignItems: 'flex-end',
+            }}>
+              <div style={{
+                background: 'rgba(0, 0, 0, 0.9)',
+                border: '1px solid #ef5350',
+                borderRadius: 8,
+                padding: '6px 12px',
+                color: '#ffb3b3',
+                fontSize: responsive.isMobile ? 11 : 12,
+                fontWeight: 600,
+              }}>
+                Attack which player?{combatState.selectedAttackers.length > 1 ? ` (${unassignedCount} unassigned)` : ''}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {living.map((o) => {
+                  const idx = gameState.players.findIndex((p) => p.playerId === o.playerId)
+                  const seat = seatColor(Math.max(0, idx))
+                  return (
+                    <button
+                      key={o.playerId}
+                      onClick={() => useGameStore.getState().assignDefenderToSelectedAttackers(o.playerId)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        height: 30,
+                        padding: '0 12px',
+                        borderRadius: 999,
+                        border: `2px solid ${seat.base}`,
+                        background: 'rgba(10, 12, 20, 0.92)',
+                        color: seat.bright,
+                        fontSize: responsive.isMobile ? 11 : 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <span aria-hidden style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: '50%',
+                        background: seat.base,
+                        boxShadow: `0 0 5px ${seat.base}`,
+                      }} />
+                      {o.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
       {/* Combat buttons (bottom-right) */}
       {isInCombatMode && combatState?.mode === 'declareAttackers' && (
         <div style={styles.combatButtonContainer}>
@@ -834,17 +988,28 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             </>
           ) : (
             <>
-              <button
-                onClick={confirmCombat}
-                style={{
-                  ...styles.floatingBarButton,
-                  ...styles.combatActionButton,
-                  backgroundColor: '#c62828',
-                  border: '1px solid #ef5350',
-                }}
-              >
-                Attack with {combatState.selectedAttackers.length}
-              </button>
+              {(() => {
+                // Multiplayer: every attacker needs an explicit defender first.
+                const awaitingDefender = isMulti &&
+                  combatState.selectedAttackers.some((id) => !combatState.attackerTargets[id])
+                return (
+                  <button
+                    onClick={confirmCombat}
+                    disabled={awaitingDefender}
+                    title={awaitingDefender ? 'Choose a defender for every attacker first' : undefined}
+                    style={{
+                      ...styles.floatingBarButton,
+                      ...styles.combatActionButton,
+                      backgroundColor: '#c62828',
+                      border: '1px solid #ef5350',
+                      opacity: awaitingDefender ? 0.5 : 1,
+                      cursor: awaitingDefender ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Attack with {combatState.selectedAttackers.length}
+                  </button>
+                )
+              })()}
               <button
                 onClick={clearAttackers}
                 style={{
