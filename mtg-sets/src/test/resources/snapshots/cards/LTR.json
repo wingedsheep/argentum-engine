@@ -16356,6 +16356,51 @@
     ]
 }
 
+// You Cannot Pass!
+{
+    "name": "You Cannot Pass!",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature that blocked or was blocked by a legendary creature this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target creature that blocked or was blocked by a legendary creature this turn"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "BlockedOrWasBlockedByLegendaryThisTurn"
+                        ]
+                    }
+                },
+                "id": "target creature that blocked or was blocked by a legendary creature this turn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Leonardo Borazio",
+        "flavorText": "It raised the whip, and the thongs whined and cracked. Fire came from its nostrils. But Gandalf stood firm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/116d4030-acd2-4aa2-8254-aaaff1264459.jpg?1686967987"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Éomer of the Riddermark
 {
     "name": "Éomer of the Riddermark",

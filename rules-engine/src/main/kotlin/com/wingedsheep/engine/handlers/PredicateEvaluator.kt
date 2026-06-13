@@ -764,6 +764,12 @@ class PredicateEvaluator {
                 container.has<PutIntoGraveyardFromBattlefieldThisTurnMarker>()
             }
 
+            // "Blocked or was blocked by a legendary creature this turn" (You Cannot Pass! — LTR).
+            // Reads the marker stamped at block declaration; survives the legendary partner leaving.
+            StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn -> {
+                container.has<com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent>()
+            }
+
             // Face-down state
             StatePredicate.IsFaceDown -> container.has<FaceDownComponent>()
             StatePredicate.IsFaceUp -> !container.has<FaceDownComponent>()

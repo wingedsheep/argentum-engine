@@ -375,6 +375,8 @@ internal class AffectsFilterResolver {
         // has had its from-graveyard marker stripped on battlefield entry — so the
         // projection answer is unconditionally false here.
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
+        StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn ->
+            container.has<com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent>()
         StatePredicate.IsFaceDown -> isFaceDown
         StatePredicate.IsFaceUp -> !isFaceDown
         StatePredicate.HasMorphAbility ->

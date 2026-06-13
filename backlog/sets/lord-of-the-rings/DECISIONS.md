@@ -302,6 +302,29 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### You Cannot Pass! (White) — Gap 36 (combat-history target filter)
+
+- **Oracle:** "Destroy target creature that blocked or was blocked by a legendary creature this turn."
+- **Decision:** added `StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn` (History) +
+  `GameObjectFilter.Creature.blockedOrWasBlockedByLegendaryThisTurn()`, backed by a new
+  per-creature marker `BlockedOrWasBlockedByLegendaryThisTurnComponent`. The marker is stamped in
+  `BlockPhaseManager.commitBlockDeclaration` (the single sync + tax-resume commit point): for each
+  blocker↔attacker pairing, if the partner is `projected.isLegendary(...)` *at declaration time*,
+  the creature is marked. Capturing legendary-ness at pairing time (not at resolution) makes the
+  spell still able to target the creature after the legendary partner leaves the battlefield or
+  loses legendary-ness — matching the card's ruling. Cleared at end-of-turn cleanup
+  (`CleanupPhaseManager`, alongside `WasDealtDamageThisTurnComponent`).
+- **Exhaustive-when fan-out:** PredicateEvaluator (real check), AffectsFilterResolver (real check —
+  a battlefield permanent can carry the marker), TriggerMatcher (`-> true` no-gate group),
+  BeginningPhaseManager `matchesStatePredicateForUntap` (`-> true`). Registered in `Serialization.kt`.
+- **Test gotcha:** after `declareBlockers` in `ScenarioTestBase`, priority sits with the *blocking*
+  (non-active) player, so the active player must `passPriority()` once before casting the instant.
+  `BlockedOrWasBlockedByLegendaryThisTurnScenarioTest` covers both marker directions + a bystander
+  that never fought a legendary (illegal target). Card = `spell { target(...blockedOrWas...) ;
+  Effects.Destroy(t) }`.
+- **Reusable for:** Witch-king of Angmar will need a *different* combat-history filter (dealt combat
+  damage to you this turn), so that gets its own primitive later.
+
 ### Elrond, Lord of Rivendell (Blue) — composable (no engine change)
 
 - **Oracle:** "Whenever Elrond or another creature you control enters, scry 1. If this is the second

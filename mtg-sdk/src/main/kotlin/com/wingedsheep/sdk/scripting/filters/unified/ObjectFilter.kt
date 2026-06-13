@@ -587,6 +587,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.IsRingBearer
     )
 
+    /** Must have blocked, or been blocked by, a legendary creature this turn (You Cannot Pass!). */
+    fun blockedOrWasBlockedByLegendaryThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn
+    )
+
     /** Must have at least one Equipment attached */
     fun equipped() = copy(
         statePredicates = statePredicates + StatePredicate.IsEquipped

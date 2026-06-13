@@ -1553,6 +1553,15 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Stouthearted and Lobelia Sackville-Baggins (LTR) — pair with `GameObjectFilter.Permanent`
   or `Creature` on a graveyard-zone `TargetFilter`. False in battlefield-projection / untap /
   trigger-gating contexts (the marker only lives on graveyard cards).
+- `BlockedOrWasBlockedByLegendaryThisTurn` (filter builder
+  `blockedOrWasBlockedByLegendaryThisTurn()`) — creature that, at some point during the current
+  turn, blocked or was blocked by a legendary creature. Backed by the per-creature
+  `BlockedOrWasBlockedByLegendaryThisTurnComponent` marker stamped in `BlockPhaseManager` at
+  block declaration: the legendary partner's status is captured *at pairing time*, so the
+  predicate keeps matching even after that legendary creature leaves the battlefield or loses
+  legendary-ness (per the card's ruling). Cleared at end-of-turn cleanup. Distinct from the
+  combat-only `IsBlocking`/`IsBlocked`, which only hold during the combat phase. Used by
+  You Cannot Pass! (LTR) on a `TargetCreature` filter.
 
 ### `AffectsFilter` — static-ability target shapes
 

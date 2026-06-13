@@ -154,6 +154,11 @@ internal class BlockPhaseManager(
         }
 
         var newState = state
+        // Capture legendary-ness of every combatant *now* (at block declaration), so the
+        // "blocked or was blocked by a legendary creature this turn" marker (You Cannot Pass!)
+        // reflects the pairing-time status even if a legendary partner later leaves or loses
+        // legendary-ness (CR: the predicate looks at combat history).
+        val projected = state.projectedState
         for ((blockerId, attackerIds) in expandedBlockers) {
             newState = newState.updateEntity(blockerId) { container ->
                 container.with(BlockingComponent(attackerIds))
@@ -164,6 +169,22 @@ internal class BlockPhaseManager(
                 newState = newState.updateEntity(attackerId) { container ->
                     val existing = container.get<BlockedComponent>()?.blockerIds ?: emptyList()
                     container.with(BlockedComponent(existing + blockerId))
+                }
+            }
+
+            // Stamp the "paired with a legendary in combat this turn" marker on each side
+            // whose partner is legendary.
+            val blockerIsLegendary = projected.isLegendary(blockerId)
+            for (attackerId in attackerIds) {
+                if (projected.isLegendary(attackerId)) {
+                    newState = newState.updateEntity(blockerId) { container ->
+                        container.with(com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent)
+                    }
+                }
+                if (blockerIsLegendary) {
+                    newState = newState.updateEntity(attackerId) { container ->
+                        container.with(com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent)
+                    }
                 }
             }
         }

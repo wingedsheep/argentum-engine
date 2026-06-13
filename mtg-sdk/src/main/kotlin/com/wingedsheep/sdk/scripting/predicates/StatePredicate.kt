@@ -176,6 +176,26 @@ sealed interface StatePredicate {
         override val description: String = "put into a graveyard from the battlefield this turn"
     }
 
+    /**
+     * This creature blocked, or was blocked by, a legendary creature at some point during the
+     * current turn. Used as a target predicate:
+     *
+     *  - You Cannot Pass! (LTR): "Destroy target creature that blocked or was blocked by a
+     *    legendary creature this turn."
+     *
+     * Backed by the `BlockedOrWasBlockedByLegendaryThisTurnComponent` marker on the creature
+     * entity. The marker is stamped at block-declaration time (so the legendary partner's
+     * status is captured at pairing time and the predicate keeps matching even if that
+     * legendary creature later leaves the battlefield or stops being legendary, per the card's
+     * ruling), and cleared at end-of-turn cleanup. Distinct from the combat-only
+     * [IsBlocking]/[IsBlocked] predicates, which only hold during the combat phase.
+     */
+    @SerialName("BlockedOrWasBlockedByLegendaryThisTurn")
+    @Serializable
+    data object BlockedOrWasBlockedByLegendaryThisTurn : History {
+        override val description: String = "that blocked or was blocked by a legendary creature this turn"
+    }
+
     // =============================================================================
     // Face-Down State (Entity)
     // =============================================================================

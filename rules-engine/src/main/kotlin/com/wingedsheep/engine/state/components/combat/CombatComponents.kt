@@ -33,6 +33,17 @@ data class BlockedComponent(
 ) : Component
 
 /**
+ * Marks a creature that blocked, or was blocked by, a legendary creature at some point during
+ * the current turn. Stamped at block-declaration time (capturing the partner's legendary status
+ * at the moment of the pairing, so it survives that legendary creature leaving or losing
+ * legendary-ness), and cleared at end-of-turn cleanup. Backs
+ * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn]
+ * (You Cannot Pass!, LTR).
+ */
+@Serializable
+data object BlockedOrWasBlockedByLegendaryThisTurnComponent : Component
+
+/**
  * Combat damage assignment for a creature.
  */
 @Serializable

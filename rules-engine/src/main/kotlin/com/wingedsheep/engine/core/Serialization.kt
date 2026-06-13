@@ -400,6 +400,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AttackingComponent::class)
         subclass(BlockingComponent::class)
         subclass(BlockedComponent::class)
+        subclass(BlockedOrWasBlockedByLegendaryThisTurnComponent::class)
         subclass(DamageAssignmentComponent::class)
         subclass(DamageAssignmentOrderComponent::class)
         subclass(AttackerOrderComponent::class)
