@@ -131,6 +131,14 @@ object Emitter {
                 // renders rather than scaffolds; every other ability on an Aura still scaffolds.
                 if ((rn == "Activated" || rn == "ActivatedWithModifiers") &&
                     "SharesACreatureTypeWithPermanent" in compact(r)) return@forEach
+                // "When this Aura is put into a graveyard from the battlefield, …" (Reach for the Sky):
+                // a SELF leaves-to-graveyard trigger references the Aura itself, NOT its enchanted
+                // creature, so the generic trigger emitter renders it faithfully. Let it through (only
+                // the self put-into-graveyard shape; any other TriggerA on an Aura still scaffolds).
+                if (rn == "TriggerA" &&
+                    jsonContains(r, "_Trigger", "WhenAPermanentIsPutIntoAPlayersGraveyard") &&
+                    ctx.triggerBlock(r as JsonObject) != null
+                ) return@forEach
                 // In partial mode the offending ability becomes a located hole and is skipped in the
                 // main loop below (so the generic activated/trigger emitter doesn't render it wrongly).
                 gap("aura-with-$rn", addReason = "aura-with-$rn")?.let { return it }
@@ -138,8 +146,8 @@ object Emitter {
             }
         }
 
-        val handledRules = setOf("SpellActions", "TriggerA", "PermanentRuleEffect", "Flying", "Haste",
-            "Vigilance", "Reach", "Defender", "Landwalk", "FirstStrike", "Trample", "CastEffect")
+        val handledRules = setOf("SpellActions", "SpellActions_Spree", "TriggerA", "PermanentRuleEffect",
+            "Flying", "Haste", "Vigilance", "Reach", "Defender", "Landwalk", "FirstStrike", "Trample", "CastEffect")
         for (rule in (card["Rules"].asArr ?: JsonArray(emptyList()))) {
             if (rule !is JsonObject) continue
             if (rule in skipRules) continue  // already holed by the aura pre-check (partial mode)
@@ -155,6 +163,7 @@ object Emitter {
                     continue
                 }
                 rname == "SpellActions" -> block = ctx.spellBlock(card)
+                rname == "SpellActions_Spree" -> block = ctx.spreeSpellBlock(rule)
                 rname == "TriggerA" -> block = ctx.triggerBlock(rule)
                 rname == "TriggerI" -> block = ctx.triggerIBlock(rule)
                 rname == "TriggerOnceEachTurn" -> block = ctx.triggerBlock(rule, oncePerTurn = true)
@@ -245,7 +254,18 @@ object Emitter {
             body.addAll(block)
         }
 
-        if (!permanent && !jsonContains(card["Rules"], "_Rule", "SpellActions")) {
+        // Banishing Light / O-Ring: an `ExilePermanentUntil … UntilPermanentLeavesBattlefield` action
+        // (rendered above as `Effects.ExileUntilLeaves`) needs the paired "when this leaves, return the
+        // linked exiled card" trigger, which mtgish leaves implicit in the expiration. Synthesize it once
+        // here so the exile is reversible exactly as the hand-authored card wires it.
+        if (hasLinkedExileUntilLeaves(card)) {
+            body.addAll(linkedExileReturnTrigger())
+            parts++
+        }
+
+        if (!permanent && !jsonContains(card["Rules"], "_Rule", "SpellActions") &&
+            !jsonContains(card["Rules"], "_Rule", "SpellActions_Spree")
+        ) {
             gap("no-renderable-effect", addReason = "no-renderable-effect")?.let { return it }
         }
 

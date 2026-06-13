@@ -46,6 +46,11 @@ internal fun BridgeBuilder.zoneMovement() {
     composed("LookAtTheTopNumberCardsOfPlayersLibrary", "look pipeline on opponent library -> MoveCollection", composes = listOf("MoveCollection"))
 
     composed("ExilePermanent", UNIVERSAL, composes = listOf("MoveToZone"))
+    // "exile target <permanent> until this <permanent> leaves the battlefield" — the Banishing Light
+    // O-Ring shape (Mystical Tether, Lassoed by the Law). Maps to the ExileUntilLeaves effect paired
+    // with a synthesized leaves-battlefield ReturnLinkedExile trigger; only the
+    // `UntilPermanentLeavesBattlefield ThisPermanent` expiration renders exactly (anything else scaffolds).
+    effect("ExilePermanentUntil", "ExileUntilLeaves")
     // "Exile the top card of your library" — the impulse-draw exile half (Irascible Wolverine, Alania's
     // Pathmaker). Gather(top of library) + MoveCollection -> exile; paired with a MayPlayExiledCard grant.
     composed("ExileTopCardOfLibrary", "Gather(top of library) + MoveCollection -> exile (impulse)", composes = listOf("MoveCollection"))

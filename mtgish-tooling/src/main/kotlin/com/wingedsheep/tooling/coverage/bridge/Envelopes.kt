@@ -4,6 +4,11 @@ package com.wingedsheep.tooling.coverage.bridge
  *  their nested nodes. ("ignore" in the legacy JSON.) */
 internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("SpellActions", "envelope: 'this spell does X'")
+    // Spree (CR 702.166, Outlaws of Thunder Junction): "choose one or more additional costs". The rule
+    // is a structural wrapper over its SpreeAction modes (each a PayMana cost + nested actions); the
+    // real capability lives in those nested actions. The emitter renders it as a `ModalEffect` with
+    // per-mode `additionalManaCost`, `minChooseCount = 1` (Explosive Derailment, Caught in the Crossfire).
+    envelope("SpellActions_Spree", "envelope: Spree — choose one or more additional-cost modes")
     envelope("CastEffect", "envelope: on-cast actions")
     envelope("PermanentRuleEffect", "envelope: static ability")
     envelope("TriggerA", "envelope: triggered ability (cond in _Trigger)")

@@ -521,7 +521,24 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         if (types.isEmpty() && args.argWordsTagged("IsNonCardtype") == listOf("Land") && "IsCreatureType" !in blob) {
             val manaValueX = manaValueEqualsXClause(args)
             if ("ManaValueIs" in blob && !manaValueX) return null  // unrendered MV restriction -> SCAFFOLD
-            var f: Dsl = Lit("TargetFilter.NonlandPermanent")
+            // "target nonland permanent AN OPPONENT CONTROLS" (Lassoed by the Law) — the controller
+            // restriction is a ControlledByAPlayer clause. Opponent maps to the named
+            // TargetFilter.NonlandPermanentOpponentControls; You composes
+            // TargetFilter(GameObjectFilter.NonlandPermanent.youControl()) (no named constant exists). A
+            // controller clause we can't render exactly declines (-> SCAFFOLD) rather than silently
+            // widening to any nonland permanent, and a ManaValueIs+controller combo we don't model declines.
+            val controller: Link? = when {
+                "ControlledByAPlayer" !in blob -> null
+                manaValueX -> return null  // .manaValueEqualsX() + controller has no composed shape here
+                "\"You\"" in blob -> Link("youControl")
+                "\"Opponent\"" in blob -> Link("opponentControls")
+                else -> return null
+            }
+            var f: Dsl = when {
+                controller == null -> Lit("TargetFilter.NonlandPermanent")
+                controller.method == "opponentControls" -> Lit("TargetFilter.NonlandPermanentOpponentControls")
+                else -> Call("TargetFilter", listOf(arg(Lit("GameObjectFilter.NonlandPermanent").dot(controller))))
+            }
             if (manaValueX) f = f.dot("manaValueEqualsX")
             val parts = mutableListOf(arg("filter", f))
             if (ttype in setOf("NumberTargetPermanents", "UptoNumberTargetPermanents") && countInt is Int) parts.add(0, arg("count", "$countInt"))
@@ -536,14 +553,36 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             if ("ControlledByAPlayer" in blob || jsonContains(args, "_Permanents", "Other")) return null
             return Call("TargetPermanent")
         }
-        val multiType = mapOf(
+        // A two-cardtype union ("artifact or creature", "creature or enchantment"). The base maps to a
+        // named TargetFilter constant; a controller clause ("...an opponent controls", Mystical Tether)
+        // narrows the underlying GameObjectFilter union via .opponentControls()/.youControl() wrapped in
+        // TargetFilter (no named controller-narrowed union constant exists). A controller clause we can't
+        // render exactly declines (-> SCAFFOLD) rather than silently dropping the "an opponent controls".
+        val multiTypeFilter = mapOf(
+            setOf("Creature", "Land") to "CreatureOrLand",
+            setOf("Creature", "Artifact") to "CreatureOrArtifact",
+            setOf("Creature", "Enchantment") to "CreatureOrEnchantment",
+            setOf("Artifact", "Enchantment") to "ArtifactOrEnchantment",
+        )
+        val namedTargetFilter = mapOf(
             setOf("Creature", "Land") to "TargetFilter.CreatureOrLandPermanent",
             setOf("Creature", "Artifact") to "TargetFilter.CreatureOrArtifact",
             setOf("Creature", "Enchantment") to "TargetFilter.CreatureOrEnchantment",
             setOf("Artifact", "Enchantment") to "TargetFilter.ArtifactOrEnchantment",
         )
-        multiType[types]?.let {
-            return Call("TargetPermanent", listOf(arg("filter", it)))
+        multiTypeFilter[types]?.let { union ->
+            val controller: Link? = when {
+                "ControlledByAPlayer" !in blob -> null
+                "\"You\"" in blob -> Link("youControl")
+                "\"Opponent\"" in blob -> Link("opponentControls")
+                else -> return null
+            }
+            val filter: Dsl = if (controller == null) {
+                Lit(namedTargetFilter.getValue(types))
+            } else {
+                Call("TargetFilter", listOf(arg(Lit("GameObjectFilter.$union").dot(controller))))
+            }
+            return Call("TargetPermanent", listOf(arg("filter", filter)))
         }
         return null  // unusual filters: not rendered yet -> SCAFFOLD
     }
@@ -783,6 +822,11 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     )
     if (types.size > 1 && types !in renderableTypeUnions) return null
     var node: Dsl = when {
+        // "non-outlaw" (IsNonOutlaw): a creature with none of the five outlaw subtypes. Render the
+        // non-outlaw creature group (matches Filters.NonOutlawCreature) — checked BEFORE the positive
+        // cardtype arms so the restriction isn't silently dropped to a bare Creature group
+        // (Caught in the Crossfire's "each non-outlaw creature").
+        "IsNonOutlaw" in blob -> Lit("GameObjectFilter.Creature").dot("notAnyOfSubtypes", arg("Subtype.OUTLAW_TYPES"))
         // "outlaw" (IsAnOutlaw): Assassin/Mercenary/Pirate/Rogue/Warlock. Render the outlaw creature group
         // (matches Filters.OutlawCreature) rather than widening to any permanent (Vial Smasher).
         "IsAnOutlaw" in blob -> Lit("GameObjectFilter.Creature").dot("withAnyOfSubtypes", arg("Subtype.OUTLAW_TYPES"))

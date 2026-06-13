@@ -24,6 +24,10 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // "Whenever one or more cards leave your graveyard, …" — batching leave-graveyard trigger
     // (Triggers.CardsLeaveYourGraveyard — Owlin Historian, Attuned Hunter). You-scoped + unfiltered only.
     supported("WhenAnyNumberOfGraveyardCardsLeave", "trigger: one or more cards leave your graveyard (Triggers.CardsLeaveYourGraveyard)")
+    // "When this Aura/permanent is put into a graveyard from the battlefield, …" — the self LTB-to-
+    // graveyard trigger (Reach for the Sky's "draw a card"). Maps to Triggers.PutIntoGraveyardFromBattlefield;
+    // only the SELF (ThisPermanent), any-player shape renders (anything else scaffolds).
+    supported("WhenAPermanentIsPutIntoAPlayersGraveyard", "trigger: this permanent put into a graveyard from the battlefield (Triggers.PutIntoGraveyardFromBattlefield)")
 
     // Intervening-if conditions (CR 603.4) gating a TriggerI, plus the Mount "while saddled" gate. The
     // emitter renders the recognised shapes to `triggerCondition = Conditions.*`; an unrenderable

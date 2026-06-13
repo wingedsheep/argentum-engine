@@ -4,6 +4,7 @@ import com.wingedsheep.tooling.coverage.Assign
 import com.wingedsheep.tooling.coverage.Block
 import com.wingedsheep.tooling.coverage.Arg
 import com.wingedsheep.tooling.coverage.Call
+import com.wingedsheep.tooling.coverage.Composite
 import com.wingedsheep.tooling.coverage.Dsl
 import com.wingedsheep.tooling.coverage.Eval
 import com.wingedsheep.tooling.coverage.Lit
@@ -212,8 +213,26 @@ internal fun EmitCtx.castEffectHandled(rule: JsonObject): Boolean {
         "AdditionalCastingCost" -> additionalCostLine(rule) != null
         "ReduceCastingCostIf" -> costReductionStaticLines(rule) != null
         "ReduceCastingCostIfItTargetsASpell" -> targetSpellCostReductionLines(rule) != null
+        "MayCastAsThoughItHadFlashForAdditionalCost" -> flashKickerLine(rule) != null
         else -> false
     }
+}
+
+/**
+ * `CastEffect(MayCastAsThoughItHadFlashForAdditionalCost(PayMana([symbols])))` -> a
+ * `keywordAbility(KeywordAbility.flashKicker("{cost}"))` line. "You may cast this spell as though it
+ * had flash if you pay {N} more to cast it." (Mystical Tether) — the Rout / Ghitu Fire rider: paying
+ * the extra mana unlocks instant-speed casting without otherwise changing the spell. Only a pure-mana
+ * additional cost renders; any other cost shape declines (-> SCAFFOLD) rather than approximate it.
+ */
+private fun EmitCtx.flashKickerLine(rule: JsonObject): String? {
+    val node = rule["args"] as? JsonObject ?: return null
+    if (node.strField("_CastEffect") != "MayCastAsThoughItHadFlashForAdditionalCost") return null
+    val cost = node["args"] as? JsonObject ?: return null
+    if (cost.strField("_Cost") != "PayMana") return null
+    val mana = renderMana(cost.field("args"))
+    if (mana.isEmpty()) return null
+    return "    keywordAbility(KeywordAbility.flashKicker(\"$mana\"))"
 }
 
 internal fun EmitCtx.cardLevelCastEffectLines(card: JsonObject): List<String>? {
@@ -226,6 +245,8 @@ internal fun EmitCtx.cardLevelCastEffectLines(card: JsonObject): List<String>? {
         if (reduction != null) { lines.addAll(reduction); continue }
         val targetReduction = targetSpellCostReductionLines(rule)
         if (targetReduction != null) { lines.addAll(targetReduction); continue }
+        val flash = flashKickerLine(rule)
+        if (flash != null) { lines.add(flash); continue }
         if (!castEffectHandled(rule)) return null
     }
     return lines
@@ -782,6 +803,85 @@ internal fun EmitCtx.modalChooseOneSpell(card: JsonObject): List<Stmt>? {
     return listOf(Sub(Block("spell", listOf(Sub(Block("modal(chooseCount = 1)", modeBlocks))))))
 }
 
+/**
+ * Split a Spree spell's oracle text into its per-mode bullet strings. Spree's bullets are introduced
+ * by a leading `+` on each option line (`+ {2} — Explosive Derailment deals 4 damage to target
+ * creature.`), unlike "Choose one —" modal's `•` markers. Drop the "Spree (…)" reminder header, then
+ * take every line whose first non-space character is `+`. Returns null if no bullet lines are found —
+ * the renderer then declines (-> SCAFFOLD) rather than invent labels.
+ */
+private fun EmitCtx.spreeBullets(): List<String>? {
+    val oracle = oracleText ?: return null
+    return oracle.lines()
+        .map { it.trim() }
+        .filter { it.startsWith("+") }
+        .takeIf { it.isNotEmpty() }
+}
+
+/**
+ * `SpellActions_Spree` (CR 702.166, Outlaws of Thunder Junction) -> a `spell { effect = ModalEffect(
+ * modes = listOf(Mode(…, additionalManaCost = "{N}"), …), chooseCount = modes.size, minChooseCount = 1) }`
+ * block — the hand-authored Spree idiom (Jailbreak Scheme). Each `SpreeAction` carries a `_Cost: PayMana`
+ * (-> the mode's `additionalManaCost`) and an `_Actions` arm (Targeted / ActionList). The arm is rendered
+ * by the same machinery a stand-alone spell uses; a targeted arm binds `EffectTarget.ContextTarget(0)`
+ * (the modal target slot) and carries its target requirement under `targetRequirements`.
+ *
+ * Declines (-> SCAFFOLD) unless every arm renders exactly, the per-mode bullet labels are recoverable
+ * and match the arm count, no targeted arm has more than one target, and no arm's effect is a
+ * multi-line `Composite` (which the single-line `Mode(...)` call can't host) — so a Spree card never
+ * emits with a missing mode, a wrong label, or a dropped target.
+ */
+internal fun EmitCtx.spreeSpellBlock(rule: JsonObject): List<Stmt>? {
+    val spreeActions = rule["args"].asArr?.filterIsInstance<JsonObject>()
+        ?.filter { it.strField("_SpreeAction") == "SpreeAction" } ?: return null
+    if (spreeActions.isEmpty()) { reasons.add("Spree"); return null }
+
+    val bullets = spreeBullets() ?: run { reasons.add("Spree"); return null }
+    if (bullets.size != spreeActions.size) { reasons.add("Spree"); return null }
+
+    val modeCalls = spreeActions.mapIndexed { i, spree ->
+        val args = spree["args"].asArr ?: run { reasons.add("Spree"); return null }
+        val costNode = args.firstOrNull { (it as? JsonObject)?.containsKey("_Cost") == true } as? JsonObject
+        if (costNode?.strField("_Cost") != "PayMana") { reasons.add("Spree"); return null }
+        val cost = renderMana(costNode.field("args")).ifEmpty { null } ?: run { reasons.add("Spree"); return null }
+        val actionsNode = args.firstOrNull { (it as? JsonObject)?.containsKey("_Actions") == true } as? JsonObject
+            ?: run { reasons.add("Spree"); return null }
+
+        val modeArgs = mutableListOf<Arg>()
+        when (actionsNode.strField("_Actions")) {
+            "ActionList" -> {
+                val actions = actionsNode["args"].asArr?.filterIsInstance<JsonObject>() ?: run { reasons.add("Spree"); return null }
+                val effect = renderEffectList(actions, null) ?: return null
+                if (effect is Composite) { reasons.add("Spree"); return null }
+                modeArgs.add(arg("effect", effect))
+            }
+            "Targeted" -> {
+                val (targets, actions) = targetedArms(actionsNode) ?: run { reasons.add("Spree"); return null }
+                if (targets == null || actions == null || targets.size != 1) { reasons.add("Spree"); return null }
+                val tnode = targetExpr(targets[0], actions)
+                    ?: run { reasons.add("target:${targets[0].strField("_Target")}"); return null }
+                // The targeted arm spends the modal target slot — bind the effect's target ref to it.
+                val effect = renderEffectList(actions, "EffectTarget.ContextTarget(0)") ?: return null
+                if (effect is Composite) { reasons.add("Spree"); return null }
+                modeArgs.add(arg("effect", effect))
+                modeArgs.add(arg("targetRequirements", call("listOf", arg(tnode))))
+            }
+            else -> { reasons.add("Spree"); return null }
+        }
+        modeArgs.add(arg("description", Lit("\"${ktStr(bullets[i])}\"")))
+        modeArgs.add(arg("additionalManaCost", Lit("\"$cost\"")))
+        Call("Mode", modeArgs)
+    }
+
+    val modal = call(
+        "ModalEffect",
+        arg("modes", call("listOf", *modeCalls.map { arg(it) }.toTypedArray())),
+        arg("chooseCount", "${modeCalls.size}"),
+        arg("minChooseCount", "1"),
+    )
+    return listOf(Sub(Block("spell", listOf(Assign("effect", modal)))))
+}
+
 internal fun EmitCtx.spellBlock(card: JsonObject): List<Stmt>? {
     // "As you cast this spell" cast-time captures arrive as a `Modal_IfElse` envelope; render them
     // (the cast-time form) before the generic modal guard below scaffolds everything `Modal_*`.
@@ -860,6 +960,35 @@ private val KEYWORD_COUNTER_CONSTANT = mapOf(
     "TrampleCounter" to "TRAMPLE",
     "HexproofCounter" to "HEXPROOF",
     "ReachCounter" to "REACH",
+)
+
+/**
+ * True when the card carries an `ExilePermanentUntil … UntilPermanentLeavesBattlefield(ThisPermanent)`
+ * action — the Banishing Light / O-Ring shape (Mystical Tether, Lassoed by the Law). mtgish encodes
+ * only the ETB exile half; the linked return is implicit in the expiration, so the emitter synthesizes
+ * the matching leaves-battlefield trigger (see [linkedExileReturnTrigger]).
+ */
+internal fun hasLinkedExileUntilLeaves(card: JsonObject): Boolean {
+    val nodes = (card as JsonElement?).nodesTagged("ExilePermanentUntil")
+    return nodes.any { node ->
+        val a = node["args"].asArr ?: return@any false
+        val expiration = a.getOrNull(1) as? JsonObject ?: return@any false
+        expiration.strField("_Expiration") == "UntilPermanentLeavesBattlefield" &&
+            jsonContains(expiration, "_Permanent", "ThisPermanent")
+    }
+}
+
+/**
+ * The synthesized "when this leaves the battlefield, return the linked exiled card" trigger that pairs
+ * with an `Effects.ExileUntilLeaves` exile (Banishing Light shape). mtgish carries no explicit rule for
+ * the return — it's implied by the `UntilPermanentLeavesBattlefield` expiration — so the emitter appends
+ * this fixed block once per card (guarded by [hasLinkedExileUntilLeaves]).
+ */
+internal fun linkedExileReturnTrigger(): List<Stmt> = listOf(
+    Sub(Block("triggeredAbility", listOf(
+        Assign("trigger", Lit("Triggers.LeavesBattlefield")),
+        Assign("effect", call("Effects.ReturnLinkedExileUnderOwnersControl")),
+    ))),
 )
 
 private val TRIGGER_SPEC = mapOf(
@@ -1274,6 +1403,16 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
             filter.field("args").strField("_Players") == "Opponent"
         if (selfSubject && opponentControlled) return "Triggers.BecomesTargetByOpponent"
         return null
+    }
+
+    // "When this <permanent> is put into a graveyard from the battlefield, …" — the self
+    // leaves-to-graveyard trigger (Reach for the Sky's "draw a card"). The args are
+    // [subject, players]; only the SELF subject (SinglePermanent(ThisPermanent)) maps to
+    // Triggers.PutIntoGraveyardFromBattlefield. A filtered / other-permanent subject ("whenever
+    // ANOTHER … is put into a graveyard") has no matching self-trigger constant, so it declines
+    // -> SCAFFOLD rather than mis-bind the trigger to the wrong permanent.
+    if (jsonContains(trig, "_Trigger", "WhenAPermanentIsPutIntoAPlayersGraveyard")) {
+        return if (isSelf(trig)) "Triggers.PutIntoGraveyardFromBattlefield" else null
     }
 
     // "Whenever a creature attacks" — only the unrestricted any-creature shape (no subtype / controller /

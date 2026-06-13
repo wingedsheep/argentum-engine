@@ -134,6 +134,7 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     chooseTypeModifyStatsEffect(actions)?.let { return it }
     chooseCreatureTypeRevealTopEffect(actions)?.let { return it }
     impulseExileTopMayPlay(actions)?.let { return it }
+    createValueXDealsDamageEffect(actions, tvar)?.let { return it }
     val rendered = mutableListOf<Dsl>()
     for (act in actions) {
         val r = renderAction(act, tvar)
@@ -306,6 +307,11 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
             val player = spellsCastThisTurnPlayer(playerNode) ?: return null
             return call("DynamicAmount.SpellsCastThisTurn", arg(player), arg(filter))
         }
+        // "the number of other spells you've cast this turn" (Thunder Salvo). The single `_Spells` arg is
+        // an `And` of cast-history clauses: `Other(ThisSpell)` -> excludeSelf, `CastByPlayer(<player>)`
+        // -> the scope, and an optional cardtype/noncreature clause -> the spell filter. Any other clause
+        // (or a non-And single clause we don't model) declines (-> SCAFFOLD) rather than miscount.
+        "NumSpellsCastThisTurn" -> return spellsCastThisTurnAmount(node["args"] as? JsonObject)
         // "twice the number of …" (Pillage the Bog) — a unary doubling wrapper. Render the inner amount
         // multiplied by 2; decline if the inner amount doesn't render exactly rather than dropping the
         // doubling.
@@ -422,6 +428,41 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         return call("DynamicAmount.AggregateBattlefield", arg(player), arg(filter))
     }
     return null
+}
+
+/**
+ * A `DynamicAmount.SpellsCastThisTurn(player, filter, excludeSelf)` for a [NumSpellsCastThisTurn] count
+ * whose single `_Spells` arg is an `And` of cast-history clauses (Thunder Salvo's "other spells you've
+ * cast this turn"). The recognised clauses are:
+ *  - `Other(ThisSpell)`        -> `excludeSelf = true` (the resolving spell isn't itself counted)
+ *  - `CastByPlayer(<player>)`  -> the player scope (You / Opponent)
+ *  - an optional `IsCardtype Creature` / `IsNonCardtype Creature` -> the spell filter
+ * Any other clause, a missing `CastByPlayer`, or a player/filter we don't render declines (-> SCAFFOLD)
+ * rather than miscount.
+ */
+internal fun EmitCtx.spellsCastThisTurnAmount(spells: JsonObject?): Dsl? {
+    if (spells == null) return null
+    val clauses: List<JsonObject> = when (spells.strField("_Spells")) {
+        "And" -> spells["args"].asArr?.filterIsInstance<JsonObject>() ?: return null
+        else -> listOf(spells)
+    }
+    var excludeSelf = false
+    var player: String? = null
+    var filter = "GameObjectFilter.Any"
+    for (clause in clauses) {
+        when (clause.strField("_Spells")) {
+            "Other" -> if (jsonContains(clause["args"], "_Spell", "ThisSpell")) excludeSelf = true else return null
+            "CastByPlayer" -> player = spellsCastThisTurnPlayer(clause["args"] as? JsonObject) ?: return null
+            "IsCardtype" -> filter = if (clause.field("args").asStr() == "Creature") "GameObjectFilter.Creature" else return null
+            "IsNonCardtype" -> filter = if (clause.field("args").asStr() == "Creature") "GameObjectFilter.Noncreature" else return null
+            "AnySpell" -> {}
+            else -> return null
+        }
+    }
+    val scope = player ?: return null
+    val args = mutableListOf(arg(scope), arg(filter))
+    if (excludeSelf) args.add(arg("excludeSelf", "true"))
+    return Call("DynamicAmount.SpellsCastThisTurn", args)
 }
 
 /** The `GameObjectFilter.*` for a [NumSpellsCastByPlayerThisTurn] spell filter, or null for any filter
@@ -689,6 +730,30 @@ internal fun EmitCtx.impulseExileTopMayPlay(actions: List<JsonObject>): Dsl? {
             Lit("GrantMayPlayFromExileEffect(\"exiledCard\", MayPlayExpiry.UntilEndOfNextTurn)")
         )
     )
+}
+
+/**
+ * `[CreateValueX(<amount>), SpellDealsDamage(ThisSpell, ValueX, <recipient>)]` -> a single
+ * `Effects.DealDamage(<amount>, <recipient>)` (Thunder Salvo: "deals X damage to target creature,
+ * where X is 2 plus the number of other spells you've cast this turn").
+ *
+ * mtgish models the X as a separate `CreateValueX` action that binds X, then a `SpellDealsDamage` that
+ * spends `ValueX`. The engine has no separate "set X" step for a one-shot spell — it inlines the
+ * computed [DynamicAmount] straight into the damage. So fold the pair: render the `CreateValueX`
+ * amount via [dynamicAmountExpr] and emit it as the damage amount. The amount must render exactly
+ * (Plus / NumSpellsCastThisTurn / …) and the only spending action must be the single
+ * `SpellDealsDamage` to a recoverable recipient — anything else declines (-> SCAFFOLD) rather than
+ * dropping the X derivation or mis-spending it.
+ */
+internal fun EmitCtx.createValueXDealsDamageEffect(actions: List<JsonObject>, tvar: String?): Dsl? {
+    if (actions.size != 2) return null
+    val (a0, a1) = actions
+    if (a0.strField("_Action") != "CreateValueX" || a1.strField("_Action") != "SpellDealsDamage") return null
+    // The damage must spend ValueX — not a fixed amount that would ignore the X we computed.
+    if (!jsonContains(a1["args"], "_GameNumber", "ValueX")) return null
+    val amount = dynamicAmountExpr(a0["args"]) ?: return null
+    val tgt = damageRecipientTarget(a1["args"], tvar) ?: return null
+    return call("Effects.DealDamage", arg(amount), arg(Lit(tgt)))
 }
 
 /** [MayCost(cost), Unless(CostWasPaid, [Sacrifice...])] -> PayOrSufferEffect (echo / upkeep cost). */

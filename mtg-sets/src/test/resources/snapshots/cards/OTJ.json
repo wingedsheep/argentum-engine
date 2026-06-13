@@ -1463,6 +1463,123 @@
     ]
 }
 
+// Caught in the Crossfire
+{
+    "name": "Caught in the Crossfire",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {1} — Caught in the Crossfire deals 2 damage to each outlaw creature. (Assassins, Mercenaries, Pirates, Rogues, and Warlocks are outlaws.)\n+ {1} — Caught in the Crossfire deals 2 damage to each non-outlaw creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasAnyOfSubtypes",
+                                            "subtypes": [
+                                                "Assassin",
+                                                "Mercenary",
+                                                "Pirate",
+                                                "Rogue",
+                                                "Warlock"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "+ {1} — Caught in the Crossfire deals 2 damage to each outlaw creature. (Assassins, Mercenaries, Pirates, Rogues, and Warlocks are outlaws.)",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "Not",
+                                            "predicate": {
+                                                "type": "HasAnyOfSubtypes",
+                                                "subtypes": [
+                                                    "Assassin",
+                                                    "Mercenary",
+                                                    "Pirate",
+                                                    "Rogue",
+                                                    "Warlock"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "+ {1} — Caught in the Crossfire deals 2 damage to each non-outlaw creature.",
+                    "additionalManaCost": "{1}"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Xabi Gaztelua",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a2fd0c4-509e-49c2-ad57-f772efcbc207.jpg?1712860582",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "You must choose at least one of the listed modes and pay its associated additional cost in order to cast a spell with spree."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You choose the modes as you cast the spell with spree. Once modes are chosen, they can't be changed."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You can't choose the same mode more than once."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "An outlaw is an Assassin, Mercenary, Pirate, Rogue, or Warlock. A creature is an outlaw if it has one or more of those creature types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Colossal Rattlewurm
 {
     "name": "Colossal Rattlewurm",
@@ -2652,6 +2769,94 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "RED"
+    ]
+}
+
+// Explosive Derailment
+{
+    "name": "Explosive Derailment",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {2} — Explosive Derailment deals 4 damage to target creature.\n+ {2} — Destroy target artifact.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "+ {2} — Explosive Derailment deals 4 damage to target creature.",
+                    "additionalManaCost": "{2}"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            }
+                        }
+                    ],
+                    "description": "+ {2} — Destroy target artifact.",
+                    "additionalManaCost": "{2}"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Leon Tukker",
+        "flavorText": "\"BOMBS AND TRAINS AND SABOTAGE!\"\n—Breeches",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0e3df9c-0a86-4e6f-a3c7-84a883328a3d.jpg?1712860585",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "You must choose at least one of the listed modes and pay its associated additional cost in order to cast a spell with spree."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You choose the modes as you cast the spell with spree. Once modes are chosen, they can't be changed."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You can't choose the same mode more than once."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "The mana value of a spell with spree is determined only by its mana cost. It doesn't matter which modes you choose or which additional costs you pay."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -4673,6 +4878,124 @@
     ]
 }
 
+// Lassoed by the Law
+{
+    "name": "Lassoed by the Law",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\nWhen this enchantment enters, create a 1/1 red Mercenary creature token with \"{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "nonland permanent an opponent controls"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "nonland permanent an opponent controls"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Mercenary"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f04607f-eed2-462e-897f-82e41e5f7049.jpg?1712316319",
+                    "activatedAbilities": [
+                        {
+                            "id": "ability_3",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                }
+                            ],
+                            "timing": "SorcerySpeed"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, create a 1/1 red Mercenary creature token with \"{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery.\""
+            },
+            {
+                "id": "ability_4",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Leanna Crossan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea96eeac-c316-4247-a81f-0ddf52675ebf.jpg?1712355295"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lavaspur Boots
 {
     "name": "Lavaspur Boots",
@@ -5329,6 +5652,82 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mystical Tether
+{
+    "name": "Mystical Tether",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may cast this spell as though it had flash if you pay {2} more to cast it.\nWhen this enchantment enters, exile target artifact or creature an opponent controls until this enchantment leaves the battlefield.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}",
+            "branchesEffect": false,
+            "grantsFlashTiming": true
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "artifact or creature an opponent controls"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:opponent"
+                    },
+                    "id": "artifact or creature an opponent controls"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Adam Volker",
+        "flavorText": "Kellan had no plan. He simply poured his focus into the train and willed it to stop.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18344498-952e-489c-8b03-bd1bef4c26ca.jpg?1712355302"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6769,6 +7168,61 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Reach for the Sky
+{
+    "name": "Reach for the Sky",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +3/+2 and has reach.\nWhen this Aura is put into a graveyard from the battlefield, draw a card.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Villarrte",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb871985-a11b-4dfe-b0e3-898888c86277.jpg?1712355983"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -9275,6 +9729,52 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Thunder Salvo
+{
+    "name": "Thunder Salvo",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Thunder Salvo deals X damage to target creature, where X is 2 plus the number of other spells you've cast this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "right": {
+                    "type": "SpellsCastThisTurn",
+                    "excludeSelf": true
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Johann Bodin",
+        "flavorText": "\"You said one weapon in the duel. Ain't my fault you forgot to specify size.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0bf0ea9-0929-4d33-815a-6df29c399e7e.jpg?1712355867"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

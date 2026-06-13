@@ -15,6 +15,13 @@ internal fun BridgeBuilder.damageLifeAndCards() {
     )
     effect("SpellDealsDistributedDamage", "DividedDamage")
 
+    // "where X is …" — mtgish binds the value with a CreateValueX action, then a later action spends
+    // `ValueX`. Argentum has no separate "set X" step for a one-shot spell: the computed DynamicAmount
+    // is inlined into the spending effect (the emitter folds CreateValueX + SpellDealsDamage(ValueX)
+    // into one DealDamage with the dynamic amount). So this carries the DealDamage capability — Thunder
+    // Salvo's "deals X damage … where X is 2 plus the number of other spells you've cast this turn".
+    composed("CreateValueX", "DynamicAmount inlined into the spending effect", composes = listOf("DealDamage"))
+
     effects("DrawNumberCards", "DrawACard", tag = "DrawCards")
     effect("DrawUptoNumberCards", "DrawUpTo")
     // "The next time you would draw a card this turn, [do X] instead" (the Onslaught Words cycle); the
