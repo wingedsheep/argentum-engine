@@ -18,6 +18,9 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     supported("WhenAPermanentBecomesTheTargetOfASpellOrAbility", "trigger: becomes target (Triggers.BecomesTargetByOpponent / BecomesTarget / CreatureYouControlBecomesTargetByOpponent)")
     // OTJ crime (CR 700.10) — "Whenever you commit a crime, …" (Triggers.YouCommitCrime, Marauding Sphinx).
     supported("WhenAPlayerCommitsACrime", "trigger: you commit a crime (Triggers.YouCommitCrime)")
+    // "Whenever one or more cards leave your graveyard, …" — batching leave-graveyard trigger
+    // (Triggers.CardsLeaveYourGraveyard — Owlin Historian, Attuned Hunter). You-scoped + unfiltered only.
+    supported("WhenAnyNumberOfGraveyardCardsLeave", "trigger: one or more cards leave your graveyard (Triggers.CardsLeaveYourGraveyard)")
 
     // Intervening-if conditions (CR 603.4) gating a TriggerI, plus the Mount "while saddled" gate. The
     // emitter renders the recognised shapes to `triggerCondition = Conditions.*`; an unrenderable

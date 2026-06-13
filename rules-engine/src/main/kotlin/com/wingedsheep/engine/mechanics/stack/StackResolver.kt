@@ -270,6 +270,20 @@ class StackResolver(
             }
         )
 
+        // Prepared (Secrets of Strixhaven): casting the prepare-spell copy unprepares its source
+        // creature. Strip the source's PreparedComponent and consume the (permanent) cast-from-exile
+        // permission for this copy so it can't be cast again — the copy itself is on the stack and
+        // ceases to exist on resolution (CopyOfComponent), or the source's leave-battlefield cleanup
+        // removes it if it never resolves.
+        val prepareCopyComp = state.getEntity(cardId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent>()
+        if (prepareCopyComp != null) {
+            newState = newState.updateEntity(prepareCopyComp.sourceId) { c ->
+                c.without<com.wingedsheep.engine.state.components.battlefield.PreparedComponent>()
+            }
+            newState = newState.removeMayPlayPermissionsForCard(cardId)
+        }
+
         // For face-down creatures, use a generic name in the event
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
 
@@ -1331,7 +1345,78 @@ class StackResolver(
             newState = newState.addDelayedTrigger(delayedTrigger)
         }
 
+        // Prepared (Secrets of Strixhaven): a preparation creature enters prepared. Becoming
+        // prepared creates a copy of the card's prepare spell in exile that its controller may
+        // cast (paying that spell's cost); casting it unprepares the creature.
+        if (cardDef != null && cardDef.layout == com.wingedsheep.sdk.model.CardLayout.PREPARE &&
+            !spellComponent.castFaceDown
+        ) {
+            newState = makePrepared(newState, spellId, cardDef, controllerId)
+        }
+
         return newState to counterEvents
+    }
+
+    /**
+     * Make the permanent [permanentId] prepared (Secrets of Strixhaven): create a copy of the
+     * card's prepare spell (`cardFaces[0]`) in [controllerId]'s exile, grant a permanent
+     * cast-from-exile permission for it, and link the two via [PreparedComponent] /
+     * [PreparedSpellCopyComponent]. The copy carries a [CopyOfComponent] (stack-style copy) so it
+     * ceases to exist on resolution, and a [PreparedSpellCopyComponent] so the cast-from-exile
+     * enumerator casts it as face 0 and the phantom-copy state-based action leaves it in exile.
+     */
+    private fun makePrepared(
+        state: GameState,
+        permanentId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        controllerId: EntityId,
+    ): GameState {
+        val sourceCard = state.getEntity(permanentId)?.get<CardComponent>() ?: return state
+        val prepareFace = cardDef.cardFaces.firstOrNull() ?: return state
+
+        var newState = state
+        val (copyId, stateWithCopy) = newState.newEntity()
+        newState = stateWithCopy
+        newState = newState.updateEntity(copyId) { c ->
+            c.with(
+                CardComponent(
+                    cardDefinitionId = sourceCard.cardDefinitionId,
+                    name = sourceCard.name,
+                    manaCost = prepareFace.manaCost,
+                    typeLine = prepareFace.typeLine,
+                    oracleText = prepareFace.oracleText,
+                    colors = prepareFace.manaCost.colors,
+                    ownerId = controllerId,
+                    spellEffect = prepareFace.script.spellEffect,
+                    imageUri = sourceCard.imageUri,
+                )
+            ).with(
+                com.wingedsheep.engine.state.components.identity.CopyOfComponent(
+                    originalCardDefinitionId = sourceCard.cardDefinitionId,
+                    copiedCardDefinitionId = sourceCard.cardDefinitionId,
+                )
+            ).with(
+                com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent(sourceId = permanentId)
+            )
+        }
+        newState = newState.addToZone(ZoneKey(controllerId, Zone.EXILE), copyId)
+
+        val (permId, stateWithPerm) = newState.newEntity()
+        newState = stateWithPerm.addMayPlayPermission(
+            com.wingedsheep.engine.state.permissions.MayPlayPermission(
+                id = permId,
+                cardIds = setOf(copyId),
+                controllerId = controllerId,
+                sourceId = permanentId,
+                permanent = true,
+                timestamp = newState.timestamp,
+            )
+        )
+
+        newState = newState.updateEntity(permanentId) { c ->
+            c.with(com.wingedsheep.engine.state.components.battlefield.PreparedComponent(exileCopyId = copyId))
+        }
+        return newState
     }
 
     /**

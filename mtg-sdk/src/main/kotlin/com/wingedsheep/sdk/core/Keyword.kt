@@ -301,7 +301,17 @@ enum class Keyword(val displayName: String) {
      * tutor up other Spider-related cards. Per CR 207.2c, ability words have no rules
      * meaning; the prefix is metadata only and does not modify resolution.
      */
-    FATEFUL_BITE("Fateful Bite");
+    FATEFUL_BITE("Fateful Bite"),
+
+    /**
+     * Prepared (Secrets of Strixhaven).
+     * Display keyword on a preparation card ([com.wingedsheep.sdk.model.CardLayout.PREPARE]):
+     * "This creature enters prepared." Display-only on the keyword — the behavior is driven by
+     * the PREPARE layout. When the creature becomes prepared (e.g. as it enters), its controller
+     * creates a copy of the card's prepare spell (`cardFaces[0]`) in exile that they may cast
+     * (paying that spell's cost); casting the copy unprepares the creature.
+     */
+    PREPARED("Prepared");
 
     companion object {
         fun fromString(value: String): Keyword? =

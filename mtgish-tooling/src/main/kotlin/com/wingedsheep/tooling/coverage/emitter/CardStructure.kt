@@ -1176,6 +1176,22 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     if (jsonContains(trig, "_Trigger", "WhenAPlayerCommitsACrime") && jsonContains(trig, "_Player", "You"))
         return "Triggers.YouCommitCrime"
 
+    // "Whenever one or more cards leave your graveyard" — WhenAnyNumberOfGraveyardCardsLeave over
+    // InAPlayersGraveyard(SinglePlayer(You)). The batching leave-graveyard trigger fires once per
+    // event batch. Only the You scope maps to Triggers.CardsLeaveYourGraveyard(); any other graveyard
+    // owner has no matching Triggers.* constant yet, so it declines -> SCAFFOLD. The unfiltered shape
+    // (no `_Cards`/`IsCardtype` constraint) renders the filterless any-card form (Owlin Historian,
+    // Attuned Hunter). A constrained leave-graveyard (a typed card) declines rather than widening.
+    if (jsonContains(trig, "_Trigger", "WhenAnyNumberOfGraveyardCardsLeave") &&
+        jsonContains(trig, "_Player", "You")
+    ) {
+        val blob = compact(trig)
+        val unfiltered = "IsCardtype" !in blob && "IsCreatureType" !in blob &&
+            "_Color" !in blob && "IsCardname" !in blob
+        if (unfiltered) return "Triggers.CardsLeaveYourGraveyard()"
+        return null
+    }
+
     return null
 }
 
@@ -1423,6 +1439,27 @@ internal fun EmitCtx.fromAnyZoneBlock(rule: JsonObject): List<Stmt>? {
     if (tvar != null) stmts.add(targetLocal(tnode!!))
     stmts.add(Assign("effect", edsl))
     return listOf(Sub(Block("triggeredAbility", stmts)))
+}
+
+/**
+ * Preparation card (Secrets of Strixhaven). The IR shapes a preparation card as `_OracleCard:
+ * "Preparer"` with a single top-level `AsPermanentEnters[EntersPrepared]` rule and a sibling
+ * `Prepared` object holding the prepare spell (its own Name / Typeline / ManaCost / SpellActions).
+ * Render the `prepare("<spell name>") { manaCost; typeLine; spell { … } }` block by running the
+ * generic spell-action renderer ([spellBlock]) over the nested prepare card. Returns null ->
+ * SCAFFOLD when the nested prepare spell's effect can't be rendered exactly (so we never emit a
+ * preparation creature whose prepare spell silently differs from oracle).
+ */
+internal fun EmitCtx.prepareBlock(card: JsonObject): List<Stmt>? {
+    val prepared = card["Prepared"] as? JsonObject ?: run { reasons.add("Prepared"); return null }
+    val faceName = prepared["Name"].asStr() ?: run { reasons.add("Prepared"); return null }
+    val spellStmts = spellBlock(prepared) ?: run { reasons.add("Prepared"); return null }
+    val faceBody = mutableListOf<Stmt>(
+        RawLine("        manaCost = \"${renderMana(prepared["ManaCost"])}\""),
+        RawLine("        typeLine = \"${renderTypeline(prepared["Typeline"])}\""),
+    )
+    faceBody.addAll(spellStmts)
+    return listOf(Sub(Block("prepare(\"${ktStr(faceName)}\")", faceBody)))
 }
 
 /**

@@ -89,8 +89,16 @@ section; do not let SDK additions land without a corresponding doc update.
   face from hand (front via primary characteristics, back via `CastSpell.faceIndex = 0`), never both. Unlike
   ADVENTURE there is no exile-then-recast linkage — a spell back resolves as an ordinary spell (graveyard, or exile
   when its script sets `selfExileOnResolve` via `spell { selfExile() }`). DSL: `card { modalBack("Name") { spell { … } } }`.
+- `PREPARE` — primary characteristics are the creature face, `cardFaces[0]` is the **prepare spell** (an
+  instant/sorcery) (Secrets of Strixhaven). The card is only ever cast as the creature; the prepare spell is never
+  cast from hand. The creature carries `Keyword.PREPARED` ("This creature enters prepared"). When it enters
+  (becomes prepared), the engine creates a **copy of the prepare spell in exile** that the controller may cast for
+  the face's cost — surfaced by the cast-from-exile enumerator as `CastSpell(..., faceIndex = 0)` from `EXILE`.
+  Casting the copy unprepares the creature; the copy ceases to exist on resolution. The exile copy persists in
+  exile (exempt from the 707.10a phantom-copy SBA) until the source leaves the battlefield or stops being prepared,
+  at which point it is cleaned up. DSL: `card { prepare("Name") { spell { … } } }`.
 
-**`CardFace` (SPLIT / ADVENTURE / OMEN / MODAL_DFC)**
+**`CardFace` (SPLIT / ADVENTURE / OMEN / MODAL_DFC / PREPARE)**
 
 - `name` — face name.
 - `manaCost` — face mana cost.
@@ -3497,6 +3505,18 @@ Card authors rarely reference these directly; they are created/updated by the ma
   `CastSpell.faceIndex = 0`); reuses the Adventure cast/enumeration path (`enumerateSecondaryFace`) but with no
   exile-then-recast linkage at resolution. `StackResolver` reads the cast face's `selfExileOnResolve`, and the back
   art rides on `CardFace.imageUri` → `CardComponent.backFaceImageUri`. First user: Flamescroll Celebrant.
+- **Prepare / Prepared (Secrets of Strixhaven)** — `layout = PREPARE` + `cardFaces[0]` prepare spell + the creature
+  carries `Keyword.PREPARED` ("This creature enters prepared"); DSL: `card { prepare("Name") { spell { … } } }`.
+  The creature is only cast as itself. When it enters (`StackResolver.enterPermanentOnBattlefield` → `makePrepared`),
+  the engine creates a stack-style copy of the prepare spell in the controller's exile carrying
+  `PreparedSpellCopyComponent(sourceId)`, stamps `PreparedComponent(exileCopyId)` on the creature, and grants a
+  permanent `MayPlayPermission` for the copy. `CastFromZoneEnumerator` recognizes the copy and offers it as
+  `CastSpell(..., faceIndex = 0)` from `EXILE` using the prepare face's cost/targets. Casting the copy
+  (`StackResolver.castSpell`) strips the source's `PreparedComponent` and consumes the permission; the copy resolves
+  via the face script and ceases to exist (`CopyOfComponent`). The exiled copy is exempt from the 707.10a
+  phantom-copy SBA (`PhantomCardCopiesCheck`) while linked, and that same check removes it once the source leaves
+  the battlefield or stops being prepared. First users: Adventurous Eater // Have a Bite, Landscape Painter //
+  Vibrant Idea.
 - **Hideaway N** — `KeywordAbility.hideaway(n)` (display, "Hideaway N") + `MoveCollectionEffect(faceDown = true,
   linkToSource = true)` + `CardSource.FromLinkedExile()`; no special engine plumbing needed.
 - **Ascend / City's Blessing** — `Keyword.ASCEND` + `Effects.GainCitysBlessing()` + `Conditions.YouHaveCitysBlessing` /

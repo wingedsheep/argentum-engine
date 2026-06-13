@@ -96,6 +96,23 @@ object Emitter {
         val plainKw = kw.filterNot { it == "PROWESS" }
         if (plainKw.isNotEmpty()) body.add(RawLine("    keywords(${plainKw.joinToString(", ") { "Keyword.$it" }})"))
         if ("PROWESS" in kw) body.add(RawLine("    prowess()"))
+
+        // Preparation card (Secrets of Strixhaven): `_OracleCard: "Preparer"` with a single
+        // AsPermanentEnters[EntersPrepared] rule and a sibling `Prepared` prepare spell. Emit the
+        // PREPARED keyword + a prepare("…") { spell { … } } block from the nested prepare card, and
+        // skip the AsPermanentEnters rule (the PREPARE layout already encodes "enters prepared").
+        // The whole card scaffolds if the prepare spell can't be rendered exactly.
+        val isPreparer = card.strField("_OracleCard") == "Preparer" && card["Prepared"] != null
+        if (isPreparer) {
+            body.add(RawLine("    keywords(Keyword.PREPARED)"))
+            val prepStmts = ctx.prepareBlock(card)
+            if (prepStmts == null) gap("Prepared")?.let { return it }
+            else body.addAll(prepStmts)
+            (card["Rules"].asArr ?: JsonArray(emptyList())).forEach { r ->
+                if ((r as? JsonObject)?.strField("_Rule") == "AsPermanentEnters") skipRules.add(r)
+            }
+            parts++
+        }
         val cardLevelLines = ctx.cardLevelCastEffectLines(card)
         if (cardLevelLines == null) gap("CastEffect")?.let { return it }
         else body.addAll(cardLevelLines.map { RawLine(it) })

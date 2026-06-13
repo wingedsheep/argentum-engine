@@ -25,6 +25,12 @@ import com.wingedsheep.sdk.model.EntityId
  * null. Clone-style copies (Mockingbird, "becomes a copy of") snapshot the pre-copy component
  * and live on the battlefield as real permanents, so they are out of scope. Tokens are left to
  * the dedicated [TokensInWrongZonesCheck] (Rule 704.5s).
+ *
+ * Prepare-spell copies (Secrets of Strixhaven, carrying
+ * [com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent]) are also
+ * exempt: per the official rulings those copies deliberately persist in exile for as long as the
+ * prepared permanent is on the battlefield. They are cleaned up when the source leaves the
+ * battlefield or stops being prepared, not by this check.
  */
 class PhantomCardCopiesCheck : StateBasedActionCheck {
     override val name = "707.10a Phantom Card Copies"
@@ -40,6 +46,21 @@ class PhantomCardCopiesCheck : StateBasedActionCheck {
                 for (entityId in state.getZone(zoneKey)) {
                     val container = state.getEntity(entityId) ?: continue
                     if (container.has<TokenComponent>()) continue
+                    // Prepare-spell copies (Secrets of Strixhaven) persist in exile by design for as
+                    // long as their source creature is on the battlefield and prepared. Remove the
+                    // copy only when that link is broken — the source left the battlefield, stopped
+                    // being prepared, or the prepared link now points at a different copy.
+                    val prepareCopy = container.get<com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent>()
+                    if (prepareCopy != null) {
+                        val sourcePrepared = state.getEntity(prepareCopy.sourceId)
+                            ?.get<com.wingedsheep.engine.state.components.battlefield.PreparedComponent>()
+                        val stillLinked = sourcePrepared?.exileCopyId == entityId &&
+                            prepareCopy.sourceId in state.getBattlefield()
+                        if (!stillLinked) {
+                            copiesToRemove.add(entityId to zoneKey)
+                        }
+                        continue
+                    }
                     val copyOf = container.get<CopyOfComponent>() ?: continue
                     if (copyOf.originalCardComponent == null) {
                         copiesToRemove.add(entityId to zoneKey)

@@ -642,6 +642,23 @@ class CardBuilder(private val name: String) {
         face(name, init)
     }
 
+    /**
+     * Declare the prepare spell of a preparation card (Secrets of Strixhaven). Sets [layout]
+     * to [CardLayout.PREPARE] and registers the named face. Inside the block, declare the
+     * prepare spell's `manaCost`, `typeLine` (e.g. `"Sorcery"`), `oracleText`, and a
+     * `spell { … }` block for its effect / targets.
+     *
+     * The creature face is described by the surrounding [CardBuilder]'s top-level fields
+     * (`manaCost`, `typeLine`, `power`, `toughness`, plus the [com.wingedsheep.sdk.core.Keyword.PREPARED]
+     * keyword and any creature-side abilities). The creature enters prepared, which creates a
+     * copy of this prepare spell in exile that its controller may cast (paying this face's cost);
+     * casting that copy unprepares the creature.
+     */
+    fun prepare(name: String, init: CardFaceBuilder.() -> Unit) {
+        layout = CardLayout.PREPARE
+        face(name, init)
+    }
+
     // =========================================================================
     // Metadata
     // =========================================================================
@@ -709,6 +726,19 @@ class CardBuilder(private val name: String) {
         if (layout == CardLayout.MODAL_DFC) {
             require(cardFaceList.size == 1) {
                 "MODAL_DFC layout requires exactly one back face: $name"
+            }
+        }
+
+        // PREPARE layout (Secrets of Strixhaven): the surrounding CardBuilder fields describe the
+        // creature face; cardFaces[0] is the prepare spell. A copy of that spell is created in
+        // exile when the creature enters prepared.
+        if (layout == CardLayout.PREPARE) {
+            require(cardFaceList.size == 1) {
+                "PREPARE layout requires exactly one face (the prepare spell): $name"
+            }
+            val prepareFace = cardFaceList.first()
+            require(prepareFace.script.spellEffect != null) {
+                "Prepare spell '${prepareFace.name}' must declare a spell { } effect"
             }
         }
 

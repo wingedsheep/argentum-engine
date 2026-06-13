@@ -129,6 +129,40 @@ data class CrewSaddleContributorsComponent(
 data object CastForImpendingComponent : Component
 
 /**
+ * Marks a creature permanent as prepared (Secrets of Strixhaven, [com.wingedsheep.sdk.model.CardLayout.PREPARE]).
+ *
+ * A creature with a prepare spell becomes prepared as it enters (per the "This creature enters
+ * prepared" keyword). When it becomes prepared, its controller creates a copy of the card's
+ * prepare spell ([com.wingedsheep.sdk.model.CardDefinition.cardFaces] index 0) in exile and may
+ * cast that copy (paying its cost). [exileCopyId] links to that exiled copy so it can be removed
+ * if the permanent stops being prepared or leaves the battlefield, and casting the copy removes
+ * this component (the creature stops being prepared).
+ *
+ * Transient engine state, not a copiable value (a copy of a prepared creature is not prepared).
+ * Naturally gone when the permanent leaves the battlefield (a fresh entity has no battlefield
+ * components); the linked exile copy is cleaned up by [com.wingedsheep.engine.core.StateBasedActionChecker]-adjacent
+ * cleanup when the source leaves.
+ */
+@Serializable
+data class PreparedComponent(
+    val exileCopyId: EntityId
+) : Component
+
+/**
+ * Marks an exiled card as the prepare-spell copy of a prepared permanent (Secrets of Strixhaven).
+ *
+ * [sourceId] is the prepared permanent on the battlefield. This copy is cast as the card's prepare
+ * spell — face index 0 of [com.wingedsheep.sdk.model.CardDefinition.cardFaces] — so the cast-from-exile
+ * enumerator emits the cast with `faceIndex = 0` and the prepare spell's cost/targets. Per the
+ * rulings, this copy persists in exile (it is not removed by the "copies in non-stack zones cease to
+ * exist" state-based action) for as long as the source is on the battlefield and prepared.
+ */
+@Serializable
+data class PreparedSpellCopyComponent(
+    val sourceId: EntityId
+) : Component
+
+/**
  * Marks an exiled card as suspended (CR 702.62). The marker — not the card's printed
  * abilities — is what the engine keys on, so an arbitrary card with no printed suspend can
  * be suspended (e.g. Taigam, Master Opportunist exiles the spell you cast and grants it

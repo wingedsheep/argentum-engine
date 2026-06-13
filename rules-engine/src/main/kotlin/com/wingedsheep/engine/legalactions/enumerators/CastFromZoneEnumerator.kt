@@ -383,12 +383,25 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         )
                     )
                 } else {
-                    val isInstant = cardComponent.typeLine.isInstant
-                    val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed
                     val cardDef = context.cardRegistry.getCard(cardComponent.name)
-                    val castRestrictions = cardDef?.script?.castRestrictions ?: emptyList()
+                    // Prepare-spell copy (Secrets of Strixhaven): this exiled copy is cast as the
+                    // card's prepare spell — face index 0. Read the face's script for timing,
+                    // restrictions, cost, and targets, and thread faceIndex onto the CastSpell so
+                    // the handler/resolver use the prepare spell's characteristics.
+                    val prepareCopyFaceIndex: Int? =
+                        if (container.has<com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent>() &&
+                            cardDef?.layout == com.wingedsheep.sdk.model.CardLayout.PREPARE
+                        ) 0 else null
+                    val prepareFace = prepareCopyFaceIndex?.let { cardDef?.cardFaces?.getOrNull(it) }
+                    val effectiveScript = prepareFace?.script ?: cardDef?.script
+                    val effectiveTypeLine = prepareFace?.typeLine ?: cardComponent.typeLine
+                    val isInstant = effectiveTypeLine.isInstant
+                    val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed
+                    val castRestrictions = effectiveScript?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)
-                    val baseEffectiveCost = if (cardDef != null) {
+                    val baseEffectiveCost = if (cardDef != null && prepareFace != null) {
+                        context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, prepareFace.manaCost, playerId)
+                    } else if (cardDef != null) {
                         context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                     } else {
                         cardComponent.manaCost
@@ -425,7 +438,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     // (e.g. Cinder Strike granted via Sanar's "you may cast" permission). If the
                     // card has a payable blight path, emit a second legal action with
                     // costType = "Blight" so the client surfaces both the pay and blight options.
-                    val printedBlightOrPay = cardDef?.script?.additionalCosts
+                    val printedBlightOrPay = effectiveScript?.additionalCosts
                         ?.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
                         ?.filterIsInstance<AdditionalCost.BlightOrPay>()
                         ?.firstOrNull()
@@ -440,8 +453,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
                     if (hasCorrectTiming && meetsRestrictions && canAfford && canPayAdditionalCost) {
                         val targetReqs = buildList {
-                            addAll(cardDef?.script?.targetRequirements ?: emptyList())
-                            cardDef?.script?.auraTarget?.let { add(it) }
+                            addAll(effectiveScript?.targetRequirements ?: emptyList())
+                            effectiveScript?.auraTarget?.let { add(it) }
                         }
 
                         if (targetReqs.isNotEmpty()) {
@@ -455,7 +468,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                     LegalAction(
                                         actionType = "CastSpell",
                                         description = "Cast ${cardComponent.name}",
-                                        action = CastSpell(playerId, cardId),
+                                        action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
                                         validTargets = firstInfo.validTargets,
                                         requiresTargets = true,
                                         targetCount = firstReq.count,
@@ -478,7 +491,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         LegalAction(
                                             actionType = "CastSpell",
                                             description = "Cast ${cardComponent.name} (Blight ${printedBlightOrPay.blightAmount})",
-                                            action = CastSpell(playerId, cardId),
+                                            action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
                                             validTargets = firstInfo.validTargets,
                                             requiresTargets = true,
                                             targetCount = firstReq.count,
@@ -504,7 +517,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                 LegalAction(
                                     actionType = "CastSpell",
                                     description = "Cast ${cardComponent.name}",
-                                    action = CastSpell(playerId, cardId),
+                                    action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
                                     manaCostString = costString,
                                     hasXCost = hasXCost,
                                     maxAffordableX = maxAffordableX,
@@ -517,7 +530,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                     LegalAction(
                                         actionType = "CastSpell",
                                         description = "Cast ${cardComponent.name} (Blight ${printedBlightOrPay.blightAmount})",
-                                        action = CastSpell(playerId, cardId),
+                                        action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
                                         manaCostString = costString,
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
@@ -538,7 +551,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             LegalAction(
                                 actionType = "CastSpell",
                                 description = "Cast ${cardComponent.name}",
-                                action = CastSpell(playerId, cardId),
+                                action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
                                 affordable = false,
                                 manaCostString = costString,
                                 hasXCost = hasXCost,
