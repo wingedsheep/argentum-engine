@@ -91,6 +91,19 @@ data object TriggeringEntityWasCast : Condition {
 }
 
 /**
+ * Condition: "if no mana was spent to cast it" — about the TRIGGERING spell (the triggering-entity
+ * counterpart of [NoManaSpentToCast], which reads the ability source's own cast record). True when
+ * the triggering entity's `CastRecordComponent` shows zero total mana spent (or is absent). Used by
+ * Boromir, Warden of the Tower: "Whenever an opponent casts a spell, if no mana was spent to cast it,
+ * counter that spell."
+ */
+@SerialName("TriggeringSpellCastWithoutPayingMana")
+@Serializable
+data object TriggeringSpellCastWithoutPayingMana : Condition {
+    override val description: String = "if no mana was spent to cast it"
+}
+
+/**
  * Condition: "if it entered or was cast from a graveyard".
  * True when the triggering entity has either EnteredFromGraveyardComponent (reanimated
  * directly from graveyard → battlefield) or CastFromGraveyardComponent (spell was cast

@@ -3013,6 +3013,10 @@ answer it and would silently return `false`.
   capture is vacuously true). Use as a resolution-time `ConditionalEffect` gate on the payoff — **Satoru,
   the Infiltrator**: `ConditionalEffect(Conditions.NoManaSpentToCastEntered, Effects.DrawCards(1))` under a
   `Triggers.OneOrMorePermanentsEnter(GameObjectFilter.Creature.nontoken())` trigger. Resolution-only.
+- `TriggeringSpellCastWithoutPayingMana` — triggering-entity counterpart of `NoManaSpentToCast`: "if no
+  mana was spent to cast it" about the *triggering* spell (reads its `CastRecordComponent`). Used as a
+  triggered-ability intervening-if (Boromir, Warden of the Tower: "Whenever an opponent casts a spell,
+  if no mana was spent to cast it, counter that spell" → pair with `Effects.CounterTriggeringSpell()`).
 - `BlightWasPaid(amount)` — the Blight X additional cost was paid.
 
 ### Source state

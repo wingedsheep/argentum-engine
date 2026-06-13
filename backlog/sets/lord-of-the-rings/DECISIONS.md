@@ -233,4 +233,20 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   landfall tempts only when you control no Ring-bearer.
 - ConditionInterface is a type-alias for `Condition`, so `Conditions.*` values pass into
   `ConditionalStaticAbility(condition = …)` directly.
+- **Frodo debugging note:** the Ring's level-1 temptation already grants "can't be blocked by greater
+  power", so a must-be-blocked test on a 1/1 Ring-bearer needs a power-≤1 blocker (Savannah Lions, not
+  Grizzly Bears). Engine was correct; test was wrong. Also: test-JVM stderr doesn't reach gradle
+  console — use file-based diagnostics.
+
+### Boromir, Warden of the Tower (White) — counter free spells
+
+- **Oracle:** "Vigilance. Whenever an opponent casts a spell, if no mana was spent to cast it, counter
+  that spell. Sacrifice Boromir: Creatures you control gain indestructible until end of turn. The Ring
+  tempts you."
+- **Decision:** the existing `NoManaSpentToCast` is SOURCE-relative; added the triggering-spell
+  counterpart `Conditions.TriggeringSpellCastWithoutPayingMana` (reads `context.triggeringEntityId`'s
+  `CastRecordComponent`, mirror of `evaluateNoManaSpentToCast`). Trigger =
+  `Triggers.OpponentCastsSpell` + that intervening-if + `Effects.CounterTriggeringSpell()`. Sac ability =
+  `Costs.SacrificeSelf` → `ForEachInGroup(AllCreaturesYouControl, GrantKeyword(INDESTRUCTIBLE))` then
+  `TheRingTemptsYou()`. Test: free Mox Ruby ({0}) is countered; paid Grizzly Bears resolves.
 

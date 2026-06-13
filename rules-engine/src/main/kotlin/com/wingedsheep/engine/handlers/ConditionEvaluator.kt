@@ -345,6 +345,8 @@ class ConditionEvaluator(
             is YouSacrificedPermanentThisWay -> ifResolution { evaluateYouSacrificedPermanentThisWay(it) }
             is TriggeringEntityWasHistoric -> ifResolution { evaluateTriggeringEntityWasHistoric(state, it) }
             is TriggeringEntityWasCast -> ifResolution { evaluateTriggeringEntityWasCast(state, it) }
+            is com.wingedsheep.sdk.scripting.conditions.TriggeringSpellCastWithoutPayingMana ->
+                ifResolution { evaluateTriggeringSpellCastWithoutPayingMana(state, it) }
             is TriggeringEntityEnteredOrWasCastFromGraveyard ->
                 ifResolution { evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(state, it) }
             is TriggeringEntityHadMinusOneMinusOneCounter ->
@@ -776,6 +778,21 @@ class ConditionEvaluator(
     private fun evaluateNoManaSpentToCastEntered(state: GameState, context: EffectContext): Boolean {
         val captured = context.pipeline.storedCollections[PipelineState.TRIGGER_CAPTURED_COLLECTION].orEmpty()
         return captured.all { noManaSpentToCast(state, it) }
+    }
+
+    /**
+     * Triggering-entity counterpart of [evaluateNoManaSpentToCast] for a spell still on the stack
+     * (Boromir, Warden of the Tower). The intervening-if runs before the spell resolves, so the
+     * post-resolution `CastRecordComponent` isn't stamped yet — read the cast-time mana-spent totals
+     * recorded on the [SpellOnStackComponent] instead. False (mana was spent) when the spell isn't
+     * found / not a spell on the stack.
+     */
+    private fun evaluateTriggeringSpellCastWithoutPayingMana(state: GameState, context: EffectContext): Boolean {
+        val entityId = context.triggeringEntityId ?: return false
+        val spell = state.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() ?: return false
+        return spell.manaSpentWhite + spell.manaSpentBlue + spell.manaSpentBlack +
+            spell.manaSpentRed + spell.manaSpentGreen + spell.manaSpentColorless == 0
     }
 
     private fun evaluateWasKicked(state: GameState, context: EffectContext): Boolean {

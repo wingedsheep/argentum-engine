@@ -1669,6 +1669,70 @@
     ]
 }
 
+// Boromir, Warden of the Tower
+{
+    "name": "Boromir, Warden of the Tower",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Vigilance\nWhenever an opponent casts a spell, if no mana was spent to cast it, counter that spell.\nSacrifice Boromir: Creatures you control gain indestructible until end of turn. The Ring tempts you.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "targetSource": "CounterTargetSource.TriggeringEntity"
+                },
+                "triggerCondition": "TriggeringSpellCastWithoutPayingMana"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEachInGroup",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "Self"
+                            }
+                        },
+                        "TheRingTemptsYou"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6bc3720-2892-4dda-8f30-079a1ac8e1e2.jpg?1686967669"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Brandywine Farmer
 {
     "name": "Brandywine Farmer",

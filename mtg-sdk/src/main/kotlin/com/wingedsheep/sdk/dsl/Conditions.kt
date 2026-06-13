@@ -1072,6 +1072,13 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasCast
 
     /**
+     * Intervening-if: "if no mana was spent to cast it" about the triggering spell (Boromir, Warden
+     * of the Tower). Triggering-entity counterpart of [NoManaSpentToCast].
+     */
+    val TriggeringSpellCastWithoutPayingMana: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringSpellCastWithoutPayingMana
+
+    /**
      * If the triggering entity entered or was cast from a graveyard.
      * Used by Twilight Diviner: "if they entered or were cast from a graveyard".
      */
