@@ -1346,6 +1346,14 @@ object Effects {
         AddManaOfChoiceEffect(ManaColorSet.AmongPermanents(filter), DynamicAmount.Fixed(1), restriction)
 
     /**
+     * Add one mana of any color among the cards in your graveyard matching [filter] (read from each
+     * card's base colors). "Add one mana of any color among legendary creature cards in your
+     * graveyard." (The Grey Havens)
+     */
+    fun AddManaOfColorAmongGraveyard(filter: GameObjectFilter, restriction: ManaRestriction? = null): Effect =
+        AddManaOfChoiceEffect(ManaColorSet.AmongCardsInGraveyard(filter), DynamicAmount.Fixed(1), restriction)
+
+    /**
      * For each color among permanents matching a filter, add one mana of that color.
      * Used for cards like Bloom Tender — produces one mana of every color present (0–5 total).
      */

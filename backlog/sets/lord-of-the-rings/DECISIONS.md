@@ -250,3 +250,13 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   `Costs.SacrificeSelf` → `ForEachInGroup(AllCreaturesYouControl, GrantKeyword(INDESTRUCTIBLE))` then
   `TheRingTemptsYou()`. Test: free Mox Ruby ({0}) is countered; paid Grizzly Bears resolves.
 
+### The Grey Havens (Land) — Gap 22 (graveyard-derived mana)
+
+- **Oracle:** "ETB scry 1. {T}: Add {C}. {T}: Add one mana of any color among legendary creature cards
+  in your graveyard."
+- **Decision:** added `ManaColorSet.AmongCardsInGraveyard(filter)` + resolver `amongCardsInGraveyard`
+  (iterates `state.getGraveyard(controllerId)`, matches filter, collects each card's base colors) +
+  facade `Effects.AddManaOfColorAmongGraveyard(filter)`. New ManaColorSet variant → also added the
+  branch to `LandManaColorInspector`'s exhaustive when. ETB scry composes via `Patterns.Library.scry(1)`.
+  Test: a mono-green legendary in GY yields green.
+

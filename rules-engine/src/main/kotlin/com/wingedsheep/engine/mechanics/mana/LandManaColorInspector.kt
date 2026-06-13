@@ -131,6 +131,7 @@ object LandManaColorInspector {
             }
             is ManaColorSet.CommanderIdentity,
             is ManaColorSet.AmongPermanents,
+            is ManaColorSet.AmongCardsInGraveyard,
             is ManaColorSet.LandsCouldProduce -> out.addAll(Color.entries)
         }
     }

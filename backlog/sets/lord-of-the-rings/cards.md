@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 228 / 291
+**Implemented:** 229 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -300,7 +300,7 @@ starter-deck/special cards and basic lands.
 
 - [x] Barad-dûr
 - [x] Great Hall of the Citadel
-- [ ] The Grey Havens
+- [x] The Grey Havens
 - [x] Minas Tirith
 - [x] Mines of Moria
 - [ ] Mount Doom

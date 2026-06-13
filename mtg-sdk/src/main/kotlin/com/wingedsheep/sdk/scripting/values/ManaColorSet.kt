@@ -62,6 +62,17 @@ sealed interface ManaColorSet {
     }
 
     /**
+     * The union of colors among the cards in your graveyard matching [filter] (read from each card's
+     * base colors — graveyard cards aren't projected). Used by The Grey Havens: "Add one mana of any
+     * color among legendary creature cards in your graveyard."
+     */
+    @SerialName("ManaColorSet.AmongCardsInGraveyard")
+    @Serializable
+    data class AmongCardsInGraveyard(val filter: GameObjectFilter) : ManaColorSet {
+        override val description: String = "any color among matching cards in your graveyard"
+    }
+
+    /**
      * The union of colors that any land in the given [scope] could produce
      * (CR 106.7 / Fellwar Stone rulings). Tapped state and unpayable activation
      * costs are ignored; colorless production is ignored. Used by Fellwar Stone

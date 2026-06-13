@@ -48,6 +48,7 @@ object ManaColorSetResolver {
         is ManaColorSet.Specific -> colorSet.colors
         is ManaColorSet.CommanderIdentity -> commanderIdentity(state, controllerId, cardRegistry)
         is ManaColorSet.AmongPermanents -> amongPermanents(colorSet, state, projected, controllerId)
+        is ManaColorSet.AmongCardsInGraveyard -> amongCardsInGraveyard(colorSet, state, projected, controllerId)
         is ManaColorSet.LandsCouldProduce -> landsCouldProduce(colorSet, state, projected, controllerId, cardRegistry)
         is ManaColorSet.SourceChosenColor -> sourceChosenColor(state, sourceId)
     }
@@ -90,6 +91,23 @@ object ManaColorSetResolver {
             for (colorName in projected.getColors(entityId)) {
                 Color.entries.find { it.name == colorName }?.let { colors.add(it) }
             }
+        }
+        return colors
+    }
+
+    private fun amongCardsInGraveyard(
+        colorSet: ManaColorSet.AmongCardsInGraveyard,
+        state: GameState,
+        projected: ProjectedState,
+        controllerId: EntityId,
+    ): Set<Color> {
+        val predCtx = PredicateContext(controllerId = controllerId)
+        val colors = mutableSetOf<Color>()
+        for (entityId in state.getGraveyard(controllerId)) {
+            if (!predicateEvaluator.matches(state, projected, entityId, colorSet.filter, predCtx)) continue
+            val cardColors = state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.colors.orEmpty()
+            colors.addAll(cardColors)
         }
         return colors
     }
