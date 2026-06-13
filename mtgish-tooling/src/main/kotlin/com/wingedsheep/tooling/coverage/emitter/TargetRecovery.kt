@@ -747,6 +747,15 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     // silently drop the other half, so decline the compound rather than emit half the filter
     // (Great Divide Guide).
     if (creatureSubs.isNotEmpty() && (types - "Creature").any { it in setOf("Land", "Artifact", "Enchantment", "Planeswalker") }) return null
+    // Several cardtypes that aren't one of the renderable unions (e.g. Or[Creature, Planeswalker] —
+    // Splatter Technique's "each creature and planeswalker") have no single GameObjectFilter; the
+    // single-type branches below would keep only the first and silently drop the rest. Decline
+    // (-> SCAFFOLD) rather than misrender a too-narrow mass filter.
+    val renderableTypeUnions = setOf(
+        setOf("Creature", "Land"), setOf("Creature", "Artifact"),
+        setOf("Creature", "Enchantment"), setOf("Artifact", "Enchantment"),
+    )
+    if (types.size > 1 && types !in renderableTypeUnions) return null
     var node: Dsl = when {
         // "outlaw" (IsAnOutlaw): Assassin/Mercenary/Pirate/Rogue/Warlock. Render the outlaw creature group
         // (matches Filters.OutlawCreature) rather than widening to any permanent (Vial Smasher).
@@ -796,16 +805,25 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     FilterPredicates.attacking(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.nontoken(filterNode)?.let { node = node.dot(it) }
     // The `.youControl()`/`.opponentControls()` suffix is a *controller* predicate — only a
-    // `ControlledByAPlayer` clause carries it. A bare `"You"` elsewhere in the blob (e.g. a graveyard
-    // count's `InAPlayersGraveyard(You)` ownership clause, whose player scope is carried separately by
-    // the enclosing DynamicAmount.Count) must NOT be misread as control of a battlefield permanent.
-    val hasControllerClause = "ControlledByAPlayer" in blob
-    if (hasControllerClause && "\"You\"" in blob) node = node.dot("youControl")
-    if (hasControllerClause && "\"Opponent\"" in blob) node = node.dot("opponentControls")
-    // A ControlledByAPlayer clause naming a player we can't render (e.g. Ref_TargetPlayer — "creatures
-    // target opponent controls") must decline rather than silently widen to every creature on the
-    // battlefield (Neutralize the Guards).
-    if (hasControllerClause && "\"You\"" !in blob && "\"Opponent\"" !in blob) return null
+    // `ControlledByAPlayer` clause carries it. Inspect that clause's player scope directly rather than
+    // scanning the whole blob, so a bare `"You"` elsewhere (e.g. a graveyard count's
+    // `InAPlayersGraveyard(You)` ownership clause) isn't misread as control of a battlefield permanent,
+    // and `Other(You)` ("a player other than you" = opponents — Artistic Process's "each creature you
+    // don't control") inverts to `opponentControls` instead of being mistaken for `youControl`.
+    val controllerClause = filterNode.nodesTagged("ControlledByAPlayer").firstOrNull()
+    if (controllerClause != null) {
+        val players = controllerClause.field("args")
+        val playersKind = players.strField("_Players")
+        val playerRef = players.field("args").strField("_Player")
+        node = when {
+            playersKind == "Opponent" -> node.dot("opponentControls")
+            playersKind == "Other" && playerRef == "You" -> node.dot("opponentControls")
+            playersKind == "SinglePlayer" && playerRef == "You" -> node.dot("youControl")
+            // Any other player scope (Ref_TargetPlayer, Trigger_ThatPlayer, YourTeam, …) has no
+            // rendering here; widening to every permanent would be confidently wrong, so decline.
+            else -> return null
+        }
+    }
     return node
 }
 

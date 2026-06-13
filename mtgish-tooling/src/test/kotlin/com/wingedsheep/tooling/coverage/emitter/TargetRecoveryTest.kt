@@ -257,4 +257,25 @@ class TargetRecoveryTest : StringSpec({
         )
         ctx.gameObjectFilterDsl(targetPlayersCreatures).shouldBeNull()
     }
+
+    "gameObjectFilterDsl renders 'a player other than you' as opponentControls (Artistic Process)" {
+        // "each creature you DON'T control" — ControlledByAPlayer wrapping Other(You). The Other inverts
+        // the controller, so this must render opponentControls, NOT youControl (which would damage your
+        // own board instead of the opponent's).
+        val youDontControl = obj(
+            """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"Other","args":{"_Player":"You"}}}]}""",
+        )
+        ctx.gameObjectFilterDsl(youDontControl) shouldBe "GameObjectFilter.Creature.opponentControls()"
+    }
+
+    "gameObjectFilterDsl declines a cardtype union it can't express (Splatter Technique's creature+planeswalker)" {
+        // "each creature and planeswalker" — Or[Creature, Planeswalker]. There is no CreatureOrPlaneswalker
+        // GroupFilter, so keeping only the Creature half would silently drop planeswalkers. Decline instead.
+        val creatureOrPlaneswalker = obj(
+            """{"_Permanents":"Or","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"IsCardtype","args":"Planeswalker"}]}""",
+        )
+        ctx.gameObjectFilterDsl(creatureOrPlaneswalker).shouldBeNull()
+    }
 })

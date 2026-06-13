@@ -70,6 +70,11 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         if (!jsonContains(node, "_CardInExile", "TheCardExiledThisWay")) return@on null
         val flagBlob = compact(node)
         if ("EntersUnderPlayersControl" in flagBlob || "EntersUnderYourControl" in flagBlob) return@on null
+        // We render only the bare "return under its owner's control". Any extra enter flag — a +1/+1
+        // counter (Daydream), entering tapped, etc. — would be silently dropped, producing a
+        // confidently-wrong card, so decline (-> SCAFFOLD) when one is present.
+        if ("EntersWithACounter" in flagBlob || "EntersWithNumberCounters" in flagBlob ||
+            "EntersTapped" in flagBlob) return@on null
         call("Effects.Move", arg(Lit(tvar)), arg("Zone.BATTLEFIELD"))
     }
 

@@ -186,6 +186,104 @@
     ]
 }
 
+// Artistic Process
+{
+    "name": "Artistic Process",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Artistic Process deals 6 damage to target creature.\n• Artistic Process deals 2 damage to each creature you don't control.\n• Create a 3/3 blue and red Elemental creature token with flying. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Artistic Process deals 6 damage to target creature"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Artistic Process deals 2 damage to each creature you don't control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "BLUE",
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ]
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Create a 3/3 blue and red Elemental creature token with flying. It gains haste until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Mariah Tekulve",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Banishing Betrayal
 {
     "name": "Banishing Betrayal",
@@ -1095,6 +1193,88 @@
     ]
 }
 
+// Efflorescence
+{
+    "name": "Efflorescence",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put two +1/+1 counters on target creature.\nInfusion — If you gained life this turn, that creature also gains trample and indestructible until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "LIFE_GAINED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Tuan Duong Chu",
+        "flavorText": "\"Wherever your foot falls, life blossoms in its wake.\"\n—Lisette, dean of the root",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Embrace the Paradox
 {
     "name": "Embrace the Paradox",
@@ -1810,6 +1990,216 @@
     ]
 }
 
+// Garrison Excavator
+{
+    "name": "Garrison Excavator",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Orc Sorcerer",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever one or more cards leave your graveyard, create a 2/2 red and white Spirit creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"I don't care that they're 'off-limits,' the Lost Barracks hold too many war relics to not pay them a visit!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Glorious Decay
+{
+    "name": "Glorious Decay",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Destroy target artifact.\n• Glorious Decay deals 4 damage to target creature with flying.\n• Exile target card from a graveyard. Draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature kw:flying"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Glorious Decay deals 4 damage to target creature with flying"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Exile target card from a graveyard. Draw a card"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Camille Alquier",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Graduation Day
+{
+    "name": "Graduation Day",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on target creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "Not a journey's end but its beginning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db1cea01-123e-4b23-8b98-f94cabce3912.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Grapple with Death
 {
     "name": "Grapple with Death",
@@ -1857,6 +2247,72 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Hardened Academic
+{
+    "name": "Hardened Academic",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Bird Cleric",
+    "oracleText": "Flying, haste\nDiscard a card: This creature gains lifelink until end of turn.\nWhenever one or more cards leave your graveyard, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Vincent Christiaens",
+        "flavorText": "\"Do you think I've spent a lifetime studying war and learned nothing?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06c9e8a7-2840-4cff-90af-c6636e598f78.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
     ]
 }
 
@@ -2136,6 +2592,272 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Informed Inkwright
+{
+    "name": "Informed Inkwright",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Vigilance\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, create a 1/1 white and black Inkling creature token with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Inkling"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Nia Kovalevski",
+        "flavorText": "\"My inklings are ideal for gathering information. There's no place on Arcavios they can't reach.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Inkling Mascot
+{
+    "name": "Inkling Mascot",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Inkling Cat",
+    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gains flying until end of turn. Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "surveiled"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "surveiled",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "toGraveyard",
+                                    "storeRemainder": "toTop",
+                                    "selectedLabel": "Put in graveyard",
+                                    "remainderLabel": "Put on top"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toGraveyard",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toTop",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Inkognit",
+        "flavorText": "At the ready when words fail.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Inkshape Demonstrator
+{
+    "name": "Inkshape Demonstrator",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Elephant Cleric",
+    "oracleText": "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+0 and gains lifelink until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2479,6 +3201,80 @@
     ]
 }
 
+// Melancholic Poet
+{
+    "name": "Melancholic Poet",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Elf Bard",
+    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "artist": "Elizabeth Peiró",
+        "flavorText": "\"We celebrate our sadness because it reminds us of the true value of being alive.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8309815-7035-47a5-acf2-2b2ac1e65037.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Muse's Encouragement
 {
     "name": "Muse's Encouragement",
@@ -2601,6 +3397,63 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Old-Growth Educator
+{
+    "name": "Old-Growth Educator",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Treefolk Druid",
+    "oracleText": "Vigilance, reach\nInfusion — When this creature enters, put two +1/+1 counters on it if you gained life this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE",
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Christiaens",
+        "flavorText": "\"Here is my most important lesson: Within all life dwells a living essence. You must decide for yourselves how you'll use that knowledge.\"\n—Professor Longbranch",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "GREEN"
     ]
 }
@@ -2874,6 +3727,74 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Poisoner's Apprentice
+{
+    "name": "Poisoner's Apprentice",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Orc Warlock",
+    "oracleText": "Infusion — When this creature enters, target creature an opponent controls gets -4/-4 until end of turn if you gained life this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "target"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Does this taste like hemlock to you?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3276,6 +4197,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Rehearsed Debater
+{
+    "name": "Rehearsed Debater",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Djinn Bard",
+    "oracleText": "Vigilance\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Kim Sokol",
+        "flavorText": "\"Of course I talk to myself. Who wouldn't want to hear me speak?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc6a1425-6733-42a2-94d9-605966398092.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3726,6 +4713,43 @@
     ]
 }
 
+// Spirit Mascot
+{
+    "name": "Spirit Mascot",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Spirit Ox",
+    "oracleText": "Whenever one or more cards leave your graveyard, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "artist": "Edgar Sánchez Hidalgo",
+        "flavorText": "Unflagging, unafraid, and undaunted.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
 // Stand Up for Yourself
 {
     "name": "Stand Up for Yourself",
@@ -3975,6 +4999,137 @@
     "colorIdentityOverride": []
 }
 
+// Textbook Tabulator
+{
+    "name": "Textbook Tabulator",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Frog Wizard",
+    "oracleText": "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\nWhen this creature enters, surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "INCREMENT"
+    ],
+    "keywordAbilities": [
+        "Increment"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerCondition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Triggering",
+                                "numericProperty": "ManaSpent"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Triggering",
+                                "numericProperty": "ManaSpent"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "surveiled"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "surveiled",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "toGraveyard",
+                            "storeRemainder": "toTop",
+                            "selectedLabel": "Put in graveyard",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toGraveyard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Josiah \"Jo\" Cameron",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56f54fee-b48d-4582-8982-ca4c7b8ef553.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Titan's Grave
 {
     "name": "Titan's Grave",
@@ -4127,6 +5282,100 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Topiary Lecturer
+{
+    "name": "Topiary Lecturer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\n{T}: Add an amount of {G} equal to this creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "INCREMENT"
+    ],
+    "keywordAbilities": [
+        "Increment"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerCondition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Triggering",
+                                "numericProperty": "ManaSpent"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Triggering",
+                                "numericProperty": "ManaSpent"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": "Power"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Josiah \"Jo\" Cameron",
+        "flavorText": "\"Before we can understand nature, we must learn to nurture it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4393,6 +5642,81 @@
         "artist": "Elliot Lang",
         "flavorText": "\"This place may be the Titan's Grave, but if you aren't careful it can be yours as well.\"\n—Professor Dellian Fel",
         "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d409512-50b9-4a38-91b0-19ba25227992.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Withering Curse
+{
+    "name": "Withering Curse",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -2/-2 until end of turn.\nInfusion — If you gained life this turn, destroy all creatures instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            "then": {
+                "type": "ForEach",
+                "space": {
+                    "type": "IterationSpace.Group",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "body": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            },
+            "otherwise": {
+                "type": "ForEach",
+                "space": {
+                    "type": "IterationSpace.Group",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "body": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": "Self"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "MYTHIC",
+        "artist": "Tuan Duong Chu",
+        "flavorText": "Although lumarets are small magical creatures, they can gather to eliminate larger threats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"
