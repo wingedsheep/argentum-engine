@@ -302,3 +302,12 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Elrond, Lord of Rivendell (Blue) — composable (no engine change)
+
+- **Oracle:** "Whenever Elrond or another creature you control enters, scry 1. If this is the second
+  time this ability has resolved this turn, the Ring tempts you."
+- **Decision:** `Triggers.entersBattlefield(Creature.youControl(), binding = ANY)` →
+  `Patterns.Library.scry(1).then(ConditionalEffect(Conditions.SourceAbilityResolvedNTimes(2),
+  TheRingTemptsYou()))`. `SourceAbilityResolvedNTimes` already exists (Tannuk Memorial Ensign). No new
+  SDK; snapshot only (the "Nth-resolution" gap the triage flagged was already obsolete).
+
