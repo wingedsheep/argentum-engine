@@ -22,6 +22,10 @@ object OutlawsOfThunderJunctionSet : MtgSet {
         CardDiscovery.findIn(CARDS_PACKAGE)
     }
 
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
+    }
+
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
