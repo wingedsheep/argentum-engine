@@ -377,7 +377,8 @@ class TriggerMatcher(
             }
             is EventPattern.RingTemptedEvent -> {
                 event is com.wingedsheep.engine.core.RingTemptedEvent &&
-                    matchesPlayer(trigger.player, event.playerId, controllerId)
+                    matchesPlayer(trigger.player, event.playerId, controllerId) &&
+                    (!trigger.requireBearerChosen || event.bearerId != null)
             }
             is EventPattern.ScriedEvent -> {
                 event is com.wingedsheep.engine.core.ScriedEvent &&

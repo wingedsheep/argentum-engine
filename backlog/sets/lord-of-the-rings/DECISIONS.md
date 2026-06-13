@@ -302,6 +302,21 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Call of the Ring (Black) — Gap 38 (choose-a-Ring-bearer trigger)
+
+- **Oracle:** "At the beginning of your upkeep, the Ring tempts you. Whenever you choose a creature
+  as your Ring-bearer, you may pay 2 life. If you do, draw a card."
+- **Decision:** the engine already emits `RingTemptedEvent(playerId, temptCount, bearerId, source)`
+  from `RingTemptContinuationResumer`. Added a `requireBearerChosen` flag to the
+  `EventPattern.RingTemptedEvent` (TriggerMatcher checks `event.bearerId != null` when set) + a new
+  `Triggers.WheneverYouChooseRingBearer` facade. So the second ability fires only when a creature is
+  actually designated (not when you control none). Upkeep half = `Triggers.YourUpkeep` +
+  `TheRingTemptsYou()`. "May pay 2 life, if you do draw" = `MayEffect(Composite(LoseLife(2), Draw(1)))`
+  (the established Raiders' Spoils pattern). No serialization/registration churn (EventPattern is
+  `@Serializable`).
+- **Test:** upkeep tempt with Grizzly Bears present → choose it → pay 2 life → draw (life 18, hand 1,
+  temptCount 1); upkeep tempt with no creatures → temptCount 1 but no trigger (no decision, life 20).
+
 ### Ringsight (Multicolor) — shares-color-with-controlled-permanent tutor filter
 
 - **Oracle:** "The Ring tempts you. Search your library for a card that shares a color with a

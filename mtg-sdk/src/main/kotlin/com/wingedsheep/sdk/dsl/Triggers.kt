@@ -1528,6 +1528,16 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever you choose a creature as your Ring-bearer. Fires only when a temptation actually
+     * results in a chosen creature (CR 701.54a–b) — not when you control no creatures to choose.
+     * Used by Call of the Ring.
+     */
+    val WheneverYouChooseRingBearer: TriggerSpec = TriggerSpec(
+        event = RingTemptedEvent(Player.You, requireBearerChosen = true),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Scry Triggers (CR 701.18)
     // =========================================================================

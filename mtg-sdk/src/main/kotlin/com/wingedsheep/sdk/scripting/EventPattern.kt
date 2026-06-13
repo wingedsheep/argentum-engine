@@ -311,9 +311,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("RingTemptedEvent")
     @Serializable
     data class RingTemptedEvent(
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        /**
+         * When true, only match temptations in which the player actually *chose* a creature as
+         * their Ring-bearer (the event's `bearerId` is non-null). Models "Whenever you choose a
+         * creature as your Ring-bearer" (Call of the Ring) as distinct from the plain
+         * "Whenever the Ring tempts you" (which fires even when no creature could be chosen).
+         */
+        val requireBearerChosen: Boolean = false
     ) : EventPattern {
-        override val description: String = "the Ring tempts ${player.description}"
+        override val description: String =
+            if (requireBearerChosen) "${player.description} choose a creature as your Ring-bearer"
+            else "the Ring tempts ${player.description}"
     }
 
     /**

@@ -2011,6 +2011,10 @@ Triggers.youCastSpell(
 ### The Ring
 
 - `RingTemptsYou` — whenever the Ring tempts you (CR 701.54d). Paired with `Effects.TheRingTemptsYou()`.
+- `WheneverYouChooseRingBearer` — whenever you choose a creature as your Ring-bearer (CR 701.54a–b).
+  A `RingTemptedEvent` pattern with `requireBearerChosen = true`, so it fires only when the temptation
+  actually designates a creature (the event's `bearerId` is non-null) — not when you control none to
+  choose. Used by Call of the Ring.
 
 ### Scry
 
