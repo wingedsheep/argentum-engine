@@ -11633,6 +11633,85 @@
     ]
 }
 
+// Riders of the Mark
+{
+    "name": "Riders of the Mark",
+    "manaCost": "{6}{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Affinity for Humans (This spell costs {1} less to cast for each Human you control.)\nTrample, haste\nAt the beginning of your end step, if this creature attacked this turn, return it to its owner's hand. If you do, create a number of 1/1 white Human Soldier creature tokens equal to its toughness.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE",
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "AffinityForSubtype",
+            "forSubtype": "Human"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": "Toughness"
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Soldier"
+                            ]
+                        }
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "SourceMatches",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "827",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de77686e-c4c1-4d38-a05c-03eb7363fc0b.jpg?1719684208"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ringwraiths
 {
     "name": "Ringwraiths",

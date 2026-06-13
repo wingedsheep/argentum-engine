@@ -280,3 +280,13 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   → `MoveCollection(Destroy)`; cost = `Composite(Mana, Tap, SacrificeSelf, Sacrifice(Artifact.legendary()))`,
   sorcery-speed. No new SDK; snapshot only.
 
+### Riders of the Mark (Red, Extra) — composable (no engine change)
+
+- **Oracle:** Affinity for Humans; trample, haste; "At your end step, if it attacked this turn, return
+  it to hand. If you do, create 1/1 white Human Soldier tokens equal to its toughness."
+- **Decision:** `keywordAbility(KeywordAbility.AffinityForSubtype(Subtype.HUMAN))` + trample/haste;
+  `YourEndStep` trigger with intervening-if `Conditions.SourceAttackedThisTurn` →
+  `ReturnToHand(Self).then(CreateToken(count = DynamicAmounts.sourceToughness(), 1/1 white Human Soldier))`.
+  `sourceToughness()` reads last-known toughness post-bounce (same mechanism as Heartfire Hero's
+  source-power-on-death). Test: attacking Riders bounces + makes 4 tokens; non-attacking stays.
+
