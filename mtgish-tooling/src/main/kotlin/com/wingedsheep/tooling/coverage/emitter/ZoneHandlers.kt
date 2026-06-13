@@ -61,6 +61,21 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         call("Effects.Exile", arg(Lit(tgt)))
     }
 
+    // "exile target <permanent> until this <permanent> leaves the battlefield" — the Banishing Light /
+    // O-Ring shape (Mystical Tether, Lassoed by the Law). The action renders `Effects.ExileUntilLeaves`;
+    // the matching leaves-battlefield ReturnLinkedExile trigger is synthesized once at card assembly
+    // (see [linkedExileReturnTrigger] in Emitter). Only the `UntilPermanentLeavesBattlefield ThisPermanent`
+    // expiration — the only one the linked-exile return models — renders; any other expiration declines
+    // (-> SCAFFOLD) rather than emit an exile with the wrong / no return.
+    on("ExilePermanentUntil") { _, args, tvar ->
+        val a = args.asArr ?: return@on null
+        val tgt = refTarget(a.getOrNull(0), tvar) ?: refTarget(args, tvar) ?: return@on null
+        val expiration = a.getOrNull(1) as? JsonObject ?: return@on null
+        if (expiration.strField("_Expiration") != "UntilPermanentLeavesBattlefield") return@on null
+        if (!jsonContains(expiration, "_Permanent", "ThisPermanent")) return@on null
+        call("Effects.ExileUntilLeaves", arg(Lit(tgt)))
+    }
+
     // "Exile the top card of your library." (the first half of the impulse-draw idiom — Irascible
     // Wolverine, Alania's Pathmaker). The exiled card is stored under the shared "exiledCard" key that
     // the paired `CreatePlayerEffectUntil{MayPlayExiledCard(TheCardExiledThisWay)}` action reads to grant

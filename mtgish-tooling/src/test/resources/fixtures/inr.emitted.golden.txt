@@ -4806,7 +4806,7 @@ val Helvault = card("Helvault") {
         val t = target("target", TargetCreature(filter = TargetFilter.Creature.youControl()))
         effect = Effects.Exile(t)
     }
-    // STRUCTURE needs human wiring: trigger-shape
+    // STRUCTURE needs human wiring: PutEachExiledCardOntoTheBattlefield
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "266"

@@ -131,6 +131,14 @@ object Emitter {
                 // renders rather than scaffolds; every other ability on an Aura still scaffolds.
                 if ((rn == "Activated" || rn == "ActivatedWithModifiers") &&
                     "SharesACreatureTypeWithPermanent" in compact(r)) return@forEach
+                // "When this Aura is put into a graveyard from the battlefield, …" (Reach for the Sky):
+                // a SELF leaves-to-graveyard trigger references the Aura itself, NOT its enchanted
+                // creature, so the generic trigger emitter renders it faithfully. Let it through (only
+                // the self put-into-graveyard shape; any other TriggerA on an Aura still scaffolds).
+                if (rn == "TriggerA" &&
+                    jsonContains(r, "_Trigger", "WhenAPermanentIsPutIntoAPlayersGraveyard") &&
+                    ctx.triggerBlock(r as JsonObject) != null
+                ) return@forEach
                 // In partial mode the offending ability becomes a located hole and is skipped in the
                 // main loop below (so the generic activated/trigger emitter doesn't render it wrongly).
                 gap("aura-with-$rn", addReason = "aura-with-$rn")?.let { return it }
@@ -244,6 +252,15 @@ object Emitter {
             if (block == null) { gap(rname ?: "ability")?.let { return it }; continue }
             parts++
             body.addAll(block)
+        }
+
+        // Banishing Light / O-Ring: an `ExilePermanentUntil … UntilPermanentLeavesBattlefield` action
+        // (rendered above as `Effects.ExileUntilLeaves`) needs the paired "when this leaves, return the
+        // linked exiled card" trigger, which mtgish leaves implicit in the expiration. Synthesize it once
+        // here so the exile is reversible exactly as the hand-authored card wires it.
+        if (hasLinkedExileUntilLeaves(card)) {
+            body.addAll(linkedExileReturnTrigger())
+            parts++
         }
 
         if (!permanent && !jsonContains(card["Rules"], "_Rule", "SpellActions") &&

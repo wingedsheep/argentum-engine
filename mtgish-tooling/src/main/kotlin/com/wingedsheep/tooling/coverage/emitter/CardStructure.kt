@@ -213,8 +213,26 @@ internal fun EmitCtx.castEffectHandled(rule: JsonObject): Boolean {
         "AdditionalCastingCost" -> additionalCostLine(rule) != null
         "ReduceCastingCostIf" -> costReductionStaticLines(rule) != null
         "ReduceCastingCostIfItTargetsASpell" -> targetSpellCostReductionLines(rule) != null
+        "MayCastAsThoughItHadFlashForAdditionalCost" -> flashKickerLine(rule) != null
         else -> false
     }
+}
+
+/**
+ * `CastEffect(MayCastAsThoughItHadFlashForAdditionalCost(PayMana([symbols])))` -> a
+ * `keywordAbility(KeywordAbility.flashKicker("{cost}"))` line. "You may cast this spell as though it
+ * had flash if you pay {N} more to cast it." (Mystical Tether) — the Rout / Ghitu Fire rider: paying
+ * the extra mana unlocks instant-speed casting without otherwise changing the spell. Only a pure-mana
+ * additional cost renders; any other cost shape declines (-> SCAFFOLD) rather than approximate it.
+ */
+private fun EmitCtx.flashKickerLine(rule: JsonObject): String? {
+    val node = rule["args"] as? JsonObject ?: return null
+    if (node.strField("_CastEffect") != "MayCastAsThoughItHadFlashForAdditionalCost") return null
+    val cost = node["args"] as? JsonObject ?: return null
+    if (cost.strField("_Cost") != "PayMana") return null
+    val mana = renderMana(cost.field("args"))
+    if (mana.isEmpty()) return null
+    return "    keywordAbility(KeywordAbility.flashKicker(\"$mana\"))"
 }
 
 internal fun EmitCtx.cardLevelCastEffectLines(card: JsonObject): List<String>? {
@@ -227,6 +245,8 @@ internal fun EmitCtx.cardLevelCastEffectLines(card: JsonObject): List<String>? {
         if (reduction != null) { lines.addAll(reduction); continue }
         val targetReduction = targetSpellCostReductionLines(rule)
         if (targetReduction != null) { lines.addAll(targetReduction); continue }
+        val flash = flashKickerLine(rule)
+        if (flash != null) { lines.add(flash); continue }
         if (!castEffectHandled(rule)) return null
     }
     return lines
@@ -889,6 +909,35 @@ private fun spellOf(effect: Dsl): List<Stmt> = listOf(Sub(Block("spell", listOf(
  *  MayAction must NOT also set the ability's `optional = true`). */
 private val SELF_OPTIONAL_ACTIONS = setOf("PutACardFromHandOnBattlefield")
 
+/**
+ * True when the card carries an `ExilePermanentUntil … UntilPermanentLeavesBattlefield(ThisPermanent)`
+ * action — the Banishing Light / O-Ring shape (Mystical Tether, Lassoed by the Law). mtgish encodes
+ * only the ETB exile half; the linked return is implicit in the expiration, so the emitter synthesizes
+ * the matching leaves-battlefield trigger (see [linkedExileReturnTrigger]).
+ */
+internal fun hasLinkedExileUntilLeaves(card: JsonObject): Boolean {
+    val nodes = (card as JsonElement?).nodesTagged("ExilePermanentUntil")
+    return nodes.any { node ->
+        val a = node["args"].asArr ?: return@any false
+        val expiration = a.getOrNull(1) as? JsonObject ?: return@any false
+        expiration.strField("_Expiration") == "UntilPermanentLeavesBattlefield" &&
+            jsonContains(expiration, "_Permanent", "ThisPermanent")
+    }
+}
+
+/**
+ * The synthesized "when this leaves the battlefield, return the linked exiled card" trigger that pairs
+ * with an `Effects.ExileUntilLeaves` exile (Banishing Light shape). mtgish carries no explicit rule for
+ * the return — it's implied by the `UntilPermanentLeavesBattlefield` expiration — so the emitter appends
+ * this fixed block once per card (guarded by [hasLinkedExileUntilLeaves]).
+ */
+internal fun linkedExileReturnTrigger(): List<Stmt> = listOf(
+    Sub(Block("triggeredAbility", listOf(
+        Assign("trigger", Lit("Triggers.LeavesBattlefield")),
+        Assign("effect", call("Effects.ReturnLinkedExileUnderOwnersControl")),
+    ))),
+)
+
 private val TRIGGER_SPEC = mapOf(
     "WhenAPermanentEntersTheBattlefield" to "Triggers.EntersBattlefield",
     "WhenACreatureOrPlaneswalkerDies" to "Triggers.Dies",
@@ -1294,6 +1343,16 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
             filter.field("args").strField("_Players") == "Opponent"
         if (selfSubject && opponentControlled) return "Triggers.BecomesTargetByOpponent"
         return null
+    }
+
+    // "When this <permanent> is put into a graveyard from the battlefield, …" — the self
+    // leaves-to-graveyard trigger (Reach for the Sky's "draw a card"). The args are
+    // [subject, players]; only the SELF subject (SinglePermanent(ThisPermanent)) maps to
+    // Triggers.PutIntoGraveyardFromBattlefield. A filtered / other-permanent subject ("whenever
+    // ANOTHER … is put into a graveyard") has no matching self-trigger constant, so it declines
+    // -> SCAFFOLD rather than mis-bind the trigger to the wrong permanent.
+    if (jsonContains(trig, "_Trigger", "WhenAPermanentIsPutIntoAPlayersGraveyard")) {
+        return if (isSelf(trig)) "Triggers.PutIntoGraveyardFromBattlefield" else null
     }
 
     // "Whenever a creature attacks" — only the unrestricted any-creature shape (no subtype / controller /
