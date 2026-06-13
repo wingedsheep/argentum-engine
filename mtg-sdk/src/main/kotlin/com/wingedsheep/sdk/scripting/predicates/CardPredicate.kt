@@ -623,6 +623,23 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "that shares a color with it"
     }
 
+    /**
+     * Matches objects that share a color with at least one permanent the evaluating player
+     * controls matching [filter]. Used by Ringsight ("a card that shares a color with a legendary
+     * creature you control") with `filter = GameObjectFilter.Creature.legendary()`. The colors of
+     * the controlled permanents are read from projected state (so anthem/devotion-style color
+     * grants are honored). Colorless candidates never match.
+     */
+    @SerialName("SharesColorWithPermanentYouControl")
+    @Serializable
+    data class SharesColorWithPermanentYouControl(val filter: GameObjectFilter) : CardPredicate {
+        override val description: String = "that shares a color with ${filter.description} you control"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     // =============================================================================
     // Stack Item Type Predicates
     // =============================================================================

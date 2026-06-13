@@ -1403,6 +1403,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   Colorless entities share no color (never match). Used by Spreading Plague ("destroy all other creatures
   that share a color with it") — pair with `Effects.DestroyAll(filter, excludeTriggering = true)` so the
   triggering creature itself is spared.
+- `.sharingColorWithPermanentYouControl(filter)` — `CardPredicate.SharesColorWithPermanentYouControl`:
+  shares ≥1 (projected) color with at least one permanent the evaluating player controls matching
+  `filter`. Used by Ringsight ("search your library for a card that shares a color with a legendary
+  creature you control") with `filter = GameObjectFilter.Creature.legendary()`. Colorless candidates
+  never match. Evaluated for real in targeting/search/count contexts; inert (false) in
+  static-projection / trigger-gating, permissive (true) in cost-calculation.
 - `.named(name)` — `CardPredicate.NameEquals`: matches a fixed card name.
 - `.namedFromVariable(variableName)` — `CardPredicate.NameEqualsChosen`: matches the card name stored in
   `chosenValues[variableName]` (case-insensitive). Set the name with `Effects.ChooseCardName` (player names it)

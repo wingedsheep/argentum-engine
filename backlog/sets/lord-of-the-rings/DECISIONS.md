@@ -302,6 +302,21 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Ringsight (Multicolor) — shares-color-with-controlled-permanent tutor filter
+
+- **Oracle:** "The Ring tempts you. Search your library for a card that shares a color with a
+  legendary creature you control, reveal it, put it into your hand, then shuffle."
+- **Decision:** added `CardPredicate.SharesColorWithPermanentYouControl(filter)` + filter builder
+  `sharingColorWithPermanentYouControl(filter)`. Eval: candidate shares ≥1 projected color with any
+  battlefield permanent the evaluating controller controls matching the inner filter. Card composes
+  `TheRingTemptsYou() then Patterns.Library.searchLibrary(Any.sharingColorWithPermanentYouControl(
+  Creature.legendary()), reveal=true, dest=HAND)`. CardPredicate fan-out (exhaustive whens):
+  PredicateEvaluator main (real eval) + projection-list (false), AffectsFilterResolver (false),
+  TriggerMatcher (false), CostCalculator (true/permissive). `applyTextReplacement` propagates to the
+  inner filter.
+- **Test:** mono-blue legendary Naban → only the mono-blue library card (Glorious Gale) is eligible,
+  not the mono-green Grizzly Bears; Ring temptation picks the Ring-bearer first, then the search runs.
+
 ### Gwaihir the Windlord (Multicolor) — Gap 30 (cost reduction on game history)
 
 - **Oracle:** "Costs {2} less to cast as long as you've drawn two or more cards this turn. Flying,

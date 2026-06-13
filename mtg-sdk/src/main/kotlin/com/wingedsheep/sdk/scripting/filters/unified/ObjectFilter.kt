@@ -440,6 +440,14 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.SharesColorWithRecipient
     )
 
+    /**
+     * Must share a color with at least one permanent the evaluating player controls matching
+     * [filter] (Ringsight: "a card that shares a color with a legendary creature you control").
+     */
+    fun sharingColorWithPermanentYouControl(filter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.SharesColorWithPermanentYouControl(filter)
+    )
+
     // =============================================================================
     // Fluent Builder Methods - State Predicates
     // =============================================================================
