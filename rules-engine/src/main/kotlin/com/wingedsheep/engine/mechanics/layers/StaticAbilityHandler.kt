@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -467,6 +468,8 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            // Enforced directly by BlockPhaseManager (scans attackers' statics); no continuous effect.
+            is MustBeBlocked -> null
             is CanBlockAdditionalForCreatureGroup -> {
                 ContinuousEffectData(
                     modification = Modification.CanBlockAdditional(ability.count),

@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 225 / 291
+**Implemented:** 227 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -195,7 +195,7 @@ starter-deck/special cards and basic lands.
 - [x] Celeborn the Wise
 - [x] Chance-Met Elves
 - [x] Delighted Halfling
-- [ ] Dúnedain Rangers
+- [x] Dúnedain Rangers
 - [x] Elven Chorus
 - [x] Elven Farsight
 - [x] Enraged Huorn
@@ -244,7 +244,7 @@ starter-deck/special cards and basic lands.
 - [ ] Faramir, Prince of Ithilien
 - [ ] Flame of Anor
 - [x] Friendly Rivalry
-- [ ] Frodo Baggins
+- [x] Frodo Baggins
 - [ ] Galadriel of Lothlórien
 - [ ] Gandalf the Grey
 - [ ] Gandalf's Sanction

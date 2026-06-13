@@ -215,3 +215,22 @@ These were checked against the real SDK this session. Each needs the **small** n
 Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T facade), 14 (flicker),
 21 (graveyard-triggered), 25 ({X} in activated cost), 22-partial (added LegendarySpellsOnly).
 
+### Dúnedain Rangers + Frodo Baggins (Gap 18 — Ring-bearer player-state)
+
+- **Dúnedain Rangers:** added `StatePredicate.IsRingBearer` (checks `RingBearerComponent` + controller
+  == ownerId) + `GameObjectFilter.Creature.ringBearer()`. Landfall trigger with intervening-if
+  `Conditions.YouControl(Creature.ringBearer(), negate = true)` → `Effects.TheRingTemptsYou()`.
+  Exhaustive-when fan-out: PredicateEvaluator + AffectsFilterResolver (real check), BeginningPhaseManager
+  + TriggerMatcher (no-constraint lists).
+- **Frodo Baggins:** ETB-on-legendary tempt via `Triggers.entersBattlefield(Creature.legendary().youControl(),
+  binding = ANY)`. "Must be blocked if able while your Ring-bearer" → new `MustBeBlocked` static ability
+  (counterpart of `MustBeBlockedEffect`), wrapped in `ConditionalStaticAbility(_, SourceIsRingBearer)`.
+  `BlockPhaseManager.attackersWithMustBeBlockedStatic` scans attackers' card statics (unwrapping
+  ConditionalStaticAbility, evaluating the gate with the attacker as source) and merges into both
+  `findMustBeBlockedAttackers` (allCreatures) and `findMustBeBlockedIfAbleAttackers`.
+- Tests: GameTestDriver, designating the Ring-bearer by tempting via Birthday Escape. Frodo test proves
+  declare-no-blockers is illegal while Frodo is the Ring-bearer (legal otherwise). Dúnedain test proves
+  landfall tempts only when you control no Ring-bearer.
+- ConditionInterface is a type-alias for `Condition`, so `Conditions.*` values pass into
+  `ConditionalStaticAbility(condition = …)` directly.
+

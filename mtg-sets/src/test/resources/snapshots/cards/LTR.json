@@ -2898,6 +2898,56 @@
     ]
 }
 
+// Dúnedain Rangers
+{
+    "name": "Dúnedain Rangers",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Ranger",
+    "oracleText": "Landfall — Whenever a land you control enters, if you don't control a Ring-bearer, the Ring tempts you.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": "TheRingTemptsYou",
+                "triggerCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsRingBearer"
+                        ]
+                    },
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Wilkerson",
+        "flavorText": "\"Aragorn has need of his kindred. Let the Dúnedain go to him in Rohan!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/630e1e36-2f5d-44d4-9ff2-19ae75295016.jpg?1687694686"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Eagle of Deliverance
 {
     "name": "Eagle of Deliverance",
@@ -5033,6 +5083,56 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Frodo Baggins
+{
+    "name": "Frodo Baggins",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Creature — Halfling Scout",
+    "oracleText": "Whenever Frodo Baggins or another legendary creature you control enters, the Ring tempts you.\nAs long as Frodo Baggins is your Ring-bearer, it must be blocked if able.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": "TheRingTemptsYou"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "MustBeBlockedStatic",
+                "condition": "SourceIsRingBearer"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"Few have ever come hither through greater peril or on an errand more urgent.\"\n—Elrond",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de1c0399-9db8-4901-b72e-0010eb9b92b0.jpg?1686969787"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 

@@ -27,6 +27,8 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.scripting.BlockTax
 import com.wingedsheep.sdk.scripting.BlockerCountLimit
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockUnless
@@ -708,14 +710,43 @@ internal class BlockPhaseManager(
     private fun findMustBeBlockedAttackers(state: GameState): List<EntityId> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }.toSet()
 
-        return state.floatingEffects
+        val fromFloating = state.floatingEffects
             .filter { floatingEffect ->
                 floatingEffect.effect.modification is SerializableModification.MustBeBlockedByAll
             }
             .flatMap { floatingEffect ->
                 floatingEffect.effect.affectedEntities.filter { it in attackers }
             }
-            .distinct()
+        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = true)).distinct()
+    }
+
+    /**
+     * Attackers that carry a [MustBeBlocked] static ability (matching [allCreatures]), including the
+     * conditional form (e.g. Frodo Baggins: gated on `SourceIsRingBearer`). The gating condition is
+     * evaluated with the attacker as the source.
+     */
+    private fun attackersWithMustBeBlockedStatic(state: GameState, allCreatures: Boolean): List<EntityId> {
+        val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
+        return attackers.filter { attackerId ->
+            val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.cardDefinitionId ?: return@filter false
+            val statics = cardRegistry.getCard(cardName)?.staticAbilities.orEmpty()
+            statics.any { ability ->
+                val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
+                if (unwrapped !is MustBeBlocked || unwrapped.allCreatures != allCreatures) return@any false
+                if (ability is ConditionalStaticAbility) {
+                    val controller = state.projectedState.getController(attackerId) ?: return@any false
+                    conditionEvaluator.evaluate(
+                        state,
+                        ability.condition,
+                        EffectContext(
+                            sourceId = attackerId,
+                            controllerId = controller,
+                            opponentId = state.turnOrder.firstOrNull { it != controller }
+                        )
+                    )
+                } else true
+            }
+        }
     }
 
     /**
@@ -725,14 +756,14 @@ internal class BlockPhaseManager(
     private fun findMustBeBlockedIfAbleAttackers(state: GameState): List<EntityId> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }.toSet()
 
-        return state.floatingEffects
+        val fromFloating = state.floatingEffects
             .filter { floatingEffect ->
                 floatingEffect.effect.modification is SerializableModification.MustBeBlockedIfAble
             }
             .flatMap { floatingEffect ->
                 floatingEffect.effect.affectedEntities.filter { it in attackers }
             }
-            .distinct()
+        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = false)).distinct()
     }
 
     /**

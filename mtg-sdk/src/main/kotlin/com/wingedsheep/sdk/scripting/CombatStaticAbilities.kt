@@ -76,6 +76,23 @@ data class MustBlock(
 }
 
 /**
+ * Static counterpart of [com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect]: the source
+ * creature must be blocked while this ability is active. With [allCreatures] = false (default), at
+ * least one creature able to block it must do so ("must be blocked if able" — Frodo Baggins); with
+ * true, every creature able to block it must (Lure-style). Typically wrapped in a
+ * [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] (e.g. gated on `SourceIsRingBearer`).
+ */
+@SerialName("MustBeBlockedStatic")
+@Serializable
+data class MustBeBlocked(
+    val allCreatures: Boolean = false
+) : StaticAbility {
+    override val description: String =
+        if (allCreatures) "This creature must be blocked by all creatures able to block it"
+        else "This creature must be blocked each combat if able"
+}
+
+/**
  * Creature assigns combat damage equal to its toughness rather than its power.
  * Conditional variant: only when toughness is greater than power.
  * Used for cards like Bark of Doran, Doran the Siege Tower, etc.
