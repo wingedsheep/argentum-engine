@@ -764,6 +764,13 @@ class PredicateEvaluator {
                 container.has<MorphDataComponent>() ||
                 container.has<HasMorphAbilityComponent>()
 
+            // Ring-bearer designation (CR 701.54e): only while it has the component AND is controlled
+            // by the player who designated it.
+            StatePredicate.IsRingBearer -> {
+                val bearer = container.get<com.wingedsheep.engine.state.components.identity.RingBearerComponent>()
+                bearer != null && state.projectedState.getController(entityId) == bearer.ownerId
+            }
+
             // Counter state
             is StatePredicate.HasCounter -> {
                 val countersComponent = container.get<CountersComponent>()

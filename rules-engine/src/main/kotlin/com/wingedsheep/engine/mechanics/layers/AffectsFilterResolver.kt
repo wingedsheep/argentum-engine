@@ -379,6 +379,10 @@ internal class AffectsFilterResolver {
         StatePredicate.IsFaceUp -> !isFaceDown
         StatePredicate.HasMorphAbility ->
             container.has<MorphDataComponent>() || container.has<HasMorphAbilityComponent>()
+        StatePredicate.IsRingBearer -> {
+            val bearer = container.get<com.wingedsheep.engine.state.components.identity.RingBearerComponent>()
+            bearer != null && projectedController(state, entityId, projectedValues) == bearer.ownerId
+        }
         StatePredicate.IsEquipped -> {
             val attachments = container.get<AttachmentsComponent>()
             attachments != null && attachments.attachedIds.any { attachId ->

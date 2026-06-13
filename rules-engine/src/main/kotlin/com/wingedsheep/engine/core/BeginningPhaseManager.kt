@@ -402,6 +402,7 @@ class BeginningPhaseManager(
         StatePredicate.IsFaceDown,
         StatePredicate.IsFaceUp,
         StatePredicate.HasMorphAbility,
+        StatePredicate.IsRingBearer,
         StatePredicate.HasAnyCounter,
         StatePredicate.HasGreatestPower,
         StatePredicate.HasLeastPowerAmongAllCreatures,

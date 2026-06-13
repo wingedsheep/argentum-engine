@@ -249,6 +249,13 @@ sealed interface StatePredicate {
         override val description: String = "with the least power"
     }
 
+    /** Is its controller's Ring-bearer (CR 701.54). Used for "you control a Ring-bearer" conditions. */
+    @SerialName("IsRingBearer")
+    @Serializable
+    data object IsRingBearer : Entity {
+        override val description: String = "that's a Ring-bearer"
+    }
+
     // =============================================================================
     // Equipment (Entity)
     // =============================================================================

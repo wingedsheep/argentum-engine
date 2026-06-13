@@ -1517,6 +1517,11 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `hasLeastPower()`) — has the greatest / least projected power among creatures *its controller*
   controls (ties all qualify). Used for "creature with the greatest/least power" target and edict
   filters, e.g. Witch-king, Bringer of Ruin: `Effects.Sacrifice(Creature.hasLeastPower(), 1, EachOpponent)`.
+- `IsRingBearer` (filter builder `ringBearer()`) — the creature is its controller's Ring-bearer
+  (CR 701.54: has `RingBearerComponent` and is controlled by its designating owner). Used for
+  player-level Ring-bearer conditions via `Conditions.YouControl(Creature.ringBearer(), negate = …)`
+  (Dúnedain Rangers: "if you don't control a Ring-bearer"). For the source-relative "this creature is
+  your Ring-bearer" use the existing `Conditions.SourceIsRingBearer`.
 - `IsFaceDown` — currently face-down.
 - `HasCounter(type)` — has at least one counter of `type`.
 - `AttachedToCardType(cardType)` — Aura/Equipment whose `AttachedToComponent` points to a
@@ -2242,6 +2247,12 @@ staticAbility {
   toughness rather than its power"), grant the `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` flag via
   `Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS, target, duration)`; the same combat
   util reads it from projected keywords (unconditional — no toughness > power gate).
+- `MustBlock(filter = source())` — matching creatures must block each combat if able (Grand Melee).
+- `MustBeBlocked(allCreatures = false)` — static: the source creature must be blocked while active —
+  "if able" (≥1 blocker, default) or by **all** able blockers (`allCreatures = true`, Lure-style).
+  Static counterpart of `MustBeBlockedEffect`; `BlockPhaseManager` honors it alongside the floating
+  must-be-blocked modifications. Wrap in `ConditionalStaticAbility(_, condition)` for the gated form
+  (Frodo Baggins: `ConditionalStaticAbility(MustBeBlocked(), Conditions.SourceIsRingBearer)`).
 - `CantBlockCreaturesWithGreaterPower(filter = source())` — blocker-side evasion (Spitfire Handler): this
   creature can't block creatures whose projected power exceeds its own.
 - `CantBeBlockedByCreaturesWithLessPower(filter = source())` — attacker-side dual (Formation Breaker): this

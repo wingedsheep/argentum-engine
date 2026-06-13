@@ -578,6 +578,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.HasLeastPower
     )
 
+    /** Must be its controller's Ring-bearer (CR 701.54). */
+    fun ringBearer() = copy(
+        statePredicates = statePredicates + StatePredicate.IsRingBearer
+    )
+
     /** Must have at least one Equipment attached */
     fun equipped() = copy(
         statePredicates = statePredicates + StatePredicate.IsEquipped

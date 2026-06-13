@@ -1408,6 +1408,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceUp,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasMorphAbility,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsRingBearer,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasAnyCounter,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasGreatestPower,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasLeastPowerAmongAllCreatures,
