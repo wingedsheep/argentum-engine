@@ -260,3 +260,13 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   branch to `LandManaColorInspector`'s exhaustive when. ETB scry composes via `Patterns.Library.scry(1)`.
   Test: a mono-green legendary in GY yields green.
 
+### Glorious Gale (Blue) — composable (no engine change)
+
+- **Oracle:** "Counter target creature spell. If it was a legendary spell, the Ring tempts you."
+- **Decision:** `spell { target("creature spell", Targets.CreatureSpell); effect =
+  ConditionalEffect(TargetMatchesFilter(GameObjectFilter.Any.legendary(), 0), TheRingTemptsYou())
+  .then(CounterSpell()) }`. The legendary check runs while the spell is still on the stack (legendary
+  is intrinsic, so evaluating it before the counter is functionally identical to printed order).
+  Test (ScenarioTestBase + castSpellTargetingStackSpell): legendary Naban → countered + temptCount 1;
+  nonlegendary Grizzly Bears → countered + temptCount 0.
+
