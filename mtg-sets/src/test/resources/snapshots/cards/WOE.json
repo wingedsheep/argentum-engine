@@ -1,3 +1,29 @@
+// Quick Study
+{
+    "name": "Quick Study",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Iris Compiet",
+        "flavorText": "At first, Johann was annoyed that the library had decided to reorganize itself. But he had to admit that storing the cookbooks in the cauldron made a certain kind of sense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b78e2bca-bc93-464a-8911-8361abff2ac6.jpg?1692937231"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sleep-Cursed Faerie
 {
     "name": "Sleep-Cursed Faerie",

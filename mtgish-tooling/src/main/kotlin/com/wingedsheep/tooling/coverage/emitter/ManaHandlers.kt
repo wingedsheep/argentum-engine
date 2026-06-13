@@ -18,6 +18,17 @@ import kotlinx.serialization.json.JsonObject
  */
 internal val manaHandlers: Map<String, ActionHandler> = actionHandlers {
     on("AddMana") { _, args, _ -> manaProduceDsl(args) }
+    on("AddManaWithModifiers") { _, args, _ ->
+        // "{T}: Add {U}. Spend this mana only to cast an instant or sorcery spell." (Hydro-Channeler,
+        // Vodalian Arcanist): a produced mana plus a use-restriction modifier. args = [<ManaProduce>,
+        // <ManaUseModifier>…]. Render only the one restriction we can express exactly —
+        // CanOnlySpendOnSpells over an Or of {Instant, Sorcery} -> ManaRestriction.InstantOrSorceryOnly;
+        // any other modifier scaffolds (return null) rather than drop the restriction silently.
+        val arr = args.asArr ?: return@on null
+        val produce = arr.getOrNull(0) as? JsonObject ?: return@on null
+        val restriction = manaUseModifierRestriction(arr.drop(1)) ?: return@on null
+        manaProduceWithRestrictionDsl(produce, restriction)
+    }
     on("AddManaRepeated") { _, args, _ ->
         // "Add {R} for each Goblin on the battlefield" (Brightstone Ritual): a single mana symbol produced
         // a dynamic number of times -> Effects.AddMana(color, <count>). Only one colour/colourless symbol
@@ -46,6 +57,39 @@ internal fun manaProduceDsl(node: JsonElement?): Dsl? =
         else -> MANA_PRODUCE_COLOR[produce]?.let { call("Effects.AddMana", arg(it)) }
     }
 
+/**
+ * Recover the single use-restriction we can render exactly from the `_ManaUseModifier` list of an
+ * `AddManaWithModifiers` action. Returns the Argentum `ManaRestriction.*` token, or null to scaffold
+ * for any modifier we don't render (so a restriction is never silently dropped). Today only
+ * `CanOnlySpendOnSpells` over an `Or` of `{Instant, Sorcery}` maps cleanly.
+ */
+private fun manaUseModifierRestriction(modifiers: List<JsonElement>): String? {
+    val modifier = modifiers.singleOrNull() as? JsonObject ?: return null
+    if (modifier.strField("_ManaUseModifier") != "CanOnlySpendOnSpells") return null
+    val spells = modifier["args"] as? JsonObject ?: return null
+    if (spells.strField("_Spells") != "Or") return null
+    val branches = spells["args"] as? JsonArray ?: return null
+    val cardtypes = branches.mapNotNull { b ->
+        (b as? JsonObject)?.takeIf { it.strField("_Spells") == "IsCardtype" }?.get("args")
+    }.mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }.toSet()
+    return if (cardtypes == setOf("Instant", "Sorcery")) "ManaRestriction.InstantOrSorceryOnly" else null
+}
+
+/**
+ * `{_ManaProduce}` + a recovered restriction token -> the matching restricted mana Effect. Mirrors
+ * [manaProduceDsl] but threads the `restriction = …` named argument; declines (null) for produce shapes
+ * the restricted facades don't cover (And pools, etc.).
+ */
+private fun manaProduceWithRestrictionDsl(node: JsonObject, restriction: String): Dsl? =
+    when (val produce = node.strField("_ManaProduce")) {
+        null -> null
+        "ManaProduceC" -> call("Effects.AddColorlessMana", arg("1"), arg("restriction", restriction))
+        "AnyManaColor" -> call("Effects.AddManaOfChoice", arg("restriction", restriction))
+        else -> MANA_PRODUCE_COLOR[produce]?.let {
+            call("Effects.AddMana", arg(it), arg("1"), arg("restriction", restriction))
+        }
+    }
+
 /** `And[<produce>…]` -> one `Effects.Add*Mana(color, count)` per distinct mana, composited (inline) when
  *  the pool mixes colors. Null (-> SCAFFOLD) if any child is itself a non-leaf produce (nested And /
  *  choice), so we never emit a partial pool. */
@@ -66,4 +110,6 @@ private fun manaAndDsl(node: JsonObject): Dsl? {
 
 /** True when this ability is a mana ability: no target, and at least one action adds mana. */
 internal fun isManaAbility(tvar: String?, actions: List<JsonObject>): Boolean =
-    tvar == null && actions.any { it.strField("_Action") in setOf("AddMana", "AddManaRepeated") }
+    tvar == null && actions.any {
+        it.strField("_Action") in setOf("AddMana", "AddManaRepeated", "AddManaWithModifiers")
+    }

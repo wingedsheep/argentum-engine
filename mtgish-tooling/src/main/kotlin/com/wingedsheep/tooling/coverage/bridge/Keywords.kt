@@ -29,6 +29,17 @@ internal fun BridgeBuilder.keywords() {
     // the integer case auto-renders, while "firebending X (X = its power)" carries an XValue node and
     // the emitter declines it (-> SCAFFOLD). This entry only marks the capability covered.
     supported("Firebending", "keyword ability: Firebending N -> keywordAbility(KeywordAbility.firebending(N)) (CR 702.189)")
+    // Increment (Secrets of Strixhaven) — a keyword whose whole mechanic is composed by the
+    // `increment()` CardBuilder helper: the display keyword plus a "whenever you cast a spell, if the
+    // mana you spent exceeds this creature's power or toughness, put a +1/+1 counter on it" triggered
+    // ability (intervening-if on EntityNumericProperty.ManaSpent). `composed`, not a bare keyword: a
+    // plain Keyword.INCREMENT stamp would drop the cast-spell trigger. The emitter's `rname ==
+    // "Increment"` branch renders the no-arg `increment()` builder call (the rule carries no args).
+    composed(
+        "Increment",
+        "keyword: increment() -> Keyword.INCREMENT + 'whenever you cast a spell, if mana spent > power or toughness, +1/+1 counter' trigger",
+        composes = listOf("AddCounters"),
+    )
     // Ward (CR 702.21) — a PARAMETERIZED keyword ability: the cost rides in the rule's args
     // (`Ward—Discard a card`, `Ward {2}`, `Ward—Pay N life`, `Ward—Sacrifice <filter>`). Like Saddle,
     // it must be `supported`, not `keyword`: a bare `keywords(Keyword.WARD)` would drop the cost. The

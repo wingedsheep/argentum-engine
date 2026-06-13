@@ -584,6 +584,27 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Increment
+    // =========================================================================
+
+    /**
+     * Increment (Secrets of Strixhaven).
+     * "Whenever you cast a spell, if the amount of mana you spent is greater than this
+     * creature's power or toughness, put a +1/+1 counter on this creature."
+     *
+     * This [KeywordAbility] entry is display-only (it prints the keyword + reminder text
+     * and surfaces [Keyword.INCREMENT] in the base keyword set). The mechanical wiring —
+     * the "whenever you cast a spell" triggered ability gated on the mana-spent intervening-if —
+     * is composed by the `increment()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    @SerialName("Increment")
+    @Serializable
+    data object Increment : KeywordAbility {
+        override val keyword: Keyword = Keyword.INCREMENT
+        override val description: String = "Increment"
+    }
+
+    // =========================================================================
     // Companion Methods
     // =========================================================================
 

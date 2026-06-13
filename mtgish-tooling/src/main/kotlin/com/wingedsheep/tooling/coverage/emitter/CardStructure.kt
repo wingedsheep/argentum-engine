@@ -935,6 +935,19 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
             filter.field("args").asStr() == "Creature"
         return if (bareCreature) "Conditions.CreatureDiedThisTurn" else null
     }
+    // "if you put a counter on this creature this turn" — PlayerPassesFilter(You,
+    // HasPutACounterOnAPermanentThisTurn(SinglePermanent(ThisPermanent))) (Fractal Tender's end-step
+    // gate). Only the exact ThisPermanent subject maps to Conditions.SourceReceivedCounterThisTurn;
+    // a wider permanent filter (any permanent, a group) declines -> SCAFFOLD rather than over-fire.
+    if (cond.strField("_Condition") == "PlayerPassesFilter" &&
+        jsonContains(cond, "_Player", "You") &&
+        jsonContains(cond, "_Players", "HasPutACounterOnAPermanentThisTurn")
+    ) {
+        val perms = ((cond["args"].asArr?.getOrNull(1)) as? JsonObject)?.get("args") as? JsonObject
+        val isThisPermanent = perms?.strField("_Permanents") == "SinglePermanent" &&
+            perms.field("args").strField("_Permanent") == "ThisPermanent"
+        return if (isThisPermanent) "Conditions.SourceReceivedCounterThisTurn" else null
+    }
     // "if you gained life this turn" — PlayerPassesFilter(You, GainedLifeThisTurn) (Foolish Fate's
     // Infusion clause). No count/amount sub-clause, so the bare "you gained life this turn" maps to
     // Conditions.YouGainedLifeThisTurn.

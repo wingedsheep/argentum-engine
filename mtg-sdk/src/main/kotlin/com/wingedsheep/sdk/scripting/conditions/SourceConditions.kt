@@ -118,6 +118,22 @@ data object SourceIsModified : Condition {
 }
 
 /**
+ * Condition: "if you put a counter on this creature this turn".
+ *
+ * True iff one or more counters have been placed on the source permanent during the
+ * current turn — tracked by the per-permanent `ReceivedCountersThisTurnComponent`, which
+ * the counter-placement path stamps and the cleanup step clears each turn. Used by
+ * Secrets of Strixhaven's Fractal Tender end-step trigger ("if you put a counter on this
+ * creature this turn, …"), and reusable by any "if a counter was put on this permanent
+ * this turn" intervening-if.
+ */
+@SerialName("SourceReceivedCounterThisTurn")
+@Serializable
+data object SourceReceivedCounterThisTurn : Condition {
+    override val description: String = "you put a counter on this creature this turn"
+}
+
+/**
  * Condition: "If you cast this spell from your hand"
  * Used for Phage the Untouchable's ETB trigger condition.
  * Checks whether the source permanent was cast from the hand (as opposed to

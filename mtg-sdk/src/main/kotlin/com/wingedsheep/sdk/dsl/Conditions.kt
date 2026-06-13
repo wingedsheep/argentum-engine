@@ -70,6 +70,14 @@ object Conditions {
      */
     val YouChoseOtherCreatureAsRingBearer: ConditionInterface = YouChoseOtherCreatureAsRingBearerCondition
 
+    /**
+     * If you put a counter on this creature this turn (Secrets of Strixhaven — Fractal
+     * Tender). True while the source permanent carries the per-turn "received counters"
+     * marker, which the counter-placement path stamps and cleanup clears each turn.
+     */
+    val SourceReceivedCounterThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceReceivedCounterThisTurn
+
     // =========================================================================
     // Battlefield Conditions (via Exists / Compare)
     // =========================================================================

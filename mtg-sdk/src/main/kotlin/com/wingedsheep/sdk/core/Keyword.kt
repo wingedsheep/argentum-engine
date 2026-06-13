@@ -322,7 +322,16 @@ enum class Keyword(val displayName: String) {
      * paradigm marker so the engine synthesizes the recurring free-recast ability
      * ([com.wingedsheep.sdk.scripting.Paradigm.recastAbility]).
      */
-    PARADIGM("Paradigm");
+    PARADIGM("Paradigm"),
+
+    /**
+     * Increment (Secrets of Strixhaven).
+     * "Whenever you cast a spell, if the amount of mana you spent is greater than this
+     * creature's power or toughness, put a +1/+1 counter on this creature."
+     * Wired via the `increment()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder],
+     * which attaches this display-only keyword plus the cast-spell triggered ability.
+     */
+    INCREMENT("Increment");
 
     companion object {
         fun fromString(value: String): Keyword? =

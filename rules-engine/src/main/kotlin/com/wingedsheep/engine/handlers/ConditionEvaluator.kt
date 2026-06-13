@@ -65,6 +65,7 @@ import com.wingedsheep.sdk.scripting.conditions.OpponentSpellOnStack
 import com.wingedsheep.sdk.scripting.conditions.ControllerTurnsTakenAtMost
 import com.wingedsheep.sdk.scripting.conditions.SourceCastForImpending
 import com.wingedsheep.sdk.scripting.conditions.SourceIsModified
+import com.wingedsheep.sdk.scripting.conditions.SourceReceivedCounterThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceIs
@@ -198,6 +199,13 @@ class ConditionEvaluator(
             is SourceCastForImpending -> {
                 val sourceId = ctx.sourceId
                 sourceId != null && state.getEntity(sourceId)?.has<CastForImpendingComponent>() == true
+            }
+
+            is SourceReceivedCounterThisTurn -> {
+                val sourceId = ctx.sourceId
+                sourceId != null &&
+                    state.getEntity(sourceId)
+                        ?.has<com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent>() == true
             }
 
             // The unified "an entity matches a filter" primitive. Dispatches on the entity role:

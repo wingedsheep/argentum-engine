@@ -8,6 +8,11 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // scorer can't see the symbol arg, so name the whole mana family the action can lower to.
     composed("AddMana", UNIVERSAL, composes = listOf("AddMana", "AddColorlessMana", "AddManaOfChoice"))
     composed("AddManaRepeated", UNIVERSAL, composes = listOf("AddMana", "AddColorlessMana", "AddManaOfChoice"))
+    // "Add {U}/{C}/any color. Spend this mana only to cast an instant or sorcery spell."
+    // (Hydro-Channeler, Vodalian Arcanist): same mana family as AddMana, carrying a
+    // ManaRestriction.InstantOrSorceryOnly — the emitter renders only that one CanOnlySpendOnSpells
+    // shape and scaffolds any other modifier.
+    composed("AddManaWithModifiers", UNIVERSAL, composes = listOf("AddMana", "AddColorlessMana", "AddManaOfChoice"))
     effect("AddColorlessMana", "AddColorlessMana", UNIVERSAL)
 
     // CreateTokens lowers to either the generic CreateToken (creature tokens) or a predefined-token

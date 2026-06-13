@@ -436,6 +436,11 @@ internal fun EmitCtx.refTargetFromRef(ref: String?, tvar: String?): String? {
         return targetRefVars[ref] ?: targetRefVarsByKind[ref]?.firstOrNull()
     }
     if (ref in SELF_REFS) return "EffectTarget.Self"
+    // "the created token" — the token a preceding CreateTokens action in this same action list just
+    // made (Fractal Tender: "create a 0/0 Fractal … and put three +1/+1 counters on it"). The token
+    // executor publishes its ids under the CREATED_TOKENS pipeline collection, so the follow-up effect
+    // addresses it via PipelineTarget(CREATED_TOKENS, 0).
+    if (ref == "TheCreatedToken") return "EffectTarget.PipelineTarget(CREATED_TOKENS, 0)"
     // "that player" in a trigger ("the player ~ dealt combat damage to") -> the triggering player.
     if (ref == "Trigger_ThatPlayer") return "EffectTarget.PlayerRef(Player.TriggeringPlayer)"
     // A plain player reference (no target) — the controller / "you" or an opponent. The pain-land idiom

@@ -148,6 +148,10 @@ internal fun keywordLines(card: JsonObject, keywords: Set<String>): Set<String> 
         // Protection always carries a "from X" scope, so it renders as a scoped `keywordAbility(...)`
         // (see Emitter.protectionScopeDsl), never a bare `keywords(Keyword.PROTECTION)`.
         if (rname == "Protection") continue
+        // Increment's whole mechanic is composed by the `increment()` builder (Emitter `rname ==
+        // "Increment"`), which itself surfaces Keyword.INCREMENT. A bare `keywords(Keyword.INCREMENT)`
+        // here would both duplicate the keyword and drop the cast-spell trigger, so skip it.
+        if (rname == "Increment") continue
         val entry = Bridge.entry("_Rule", rname)
         val auto = pascalToUpperSnake(rname)
         if (entry is MappingEntry.Keyword) out.add(entry.tag)
