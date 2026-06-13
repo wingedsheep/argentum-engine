@@ -173,6 +173,48 @@ entries below for the actual decisions.
   (matcher unit test: pays legendary, not non-legendary, not abilities), SDK ref. ManaRestriction is
   server-side only → no client change.
 
+## Session checkpoint (2026-06-13) — resumption notes
+
+This session landed 7 cards (each one commit, each fully tested + snapshot-blessed + SDK-ref
+updated), taking LTR from 234→241/291: **You Cannot Pass!, Gwaihir the Windlord, Ringsight,
+Call of the Ring, Gandalf's Sanction, Troll of Khazad-dûm, Phial of Galadriel.**
+
+The remaining 44 each need a *non-trivial* engine feature (the easy/contained ones are now done).
+Triaged difficulty for whoever resumes:
+
+- **Needs a "controller of context target N" Player reference** (usable in group filters / edicts —
+  one feature unblocks two cards): **Fear, Fire, Foes!** ("1 damage to each other creature with the
+  same controller" as the target) and **Breaking of the Fellowship** ("…another target creature that
+  player controls"). No `ControllerOfTarget` player ref exists today.
+- **Needs spell-copy extensions:** **Display of Power** (multi-target copy via ForEachTargetEffect over
+  the existing `CopyTargetSpell` + a brand-new "this spell can't be copied" static — no uncopiable
+  concept exists yet), **Gandalf the Grey** (modal "choose one not yet chosen" + copy).
+- **Needs a reveal-until-N-of-type engine** (place matched, rest to bottom random; dynamic N): **The
+  Ring Goes South**, **Sméagol, Helpful Guide** (opponent variant, put under your control), **Radagast
+  the Brown** (look at top X, reveal-if-no-shared-type), **Sauron, the Necromancer** (copy GY creature
+  as a token). Each varies in placement; a parameterized reveal-until effect would unlock several.
+- **Needs a card-type-choice decision + client UI:** **Pippin, Guard of the Citadel** (protection from
+  chosen card type — `ProtectionScope.CardType` exists; the *choice* decision does not).
+- **Needs counter-type-choice + keyword counters (Gap 7):** **Aragorn, Company Leader**.
+- **Player protection from everything (Gap 8):** **The One Ring** (rest composes).
+- **Big bespoke / standalone systems:** **Grond** (Vehicles/Crew), **King of the Oathbreakers**
+  (phasing), **Shelob** / **Sauron, the Dark Lord** / **Saruman of Many Colors** / **Tom Bombadil** /
+  **Sharkey** / **Goldberry** / **Bewitching Leechcraft** / **Sauron's Ransom** / **Faramir, Prince of
+  Ithilien** (delayed "choose an opponent" trigger) / **One Ring to Rule Them All** (Saga, mill =
+  Ring-bearer power) / **Lost Isle Calling** (extra-turn + last-known source counters) / **Hew the
+  Entwood** / **Ent-Draught Basin** & **Grishnákh** (target filter referencing the paid X / amassed
+  power, during targeting) / **Glamdring** (cast-without-paying gated on combat damage) / **Press the
+  Enemy** / **Flame of Anor** (conditional modal count) / **Galadriel of Lothlórien** (scry → reveal
+  top, land → bf tapped) / **Frodo, Sauron's Bane** (type/ability morph + win condition) / **Éowyn,
+  Lady of Rohan** (equip-cost reduction + begin-combat modal) / **Witch-king of Angmar** ("dealt combat
+  damage to you this turn" combat-history filter + discard→indestructible) / **Barrow-Blade**
+  (blocks/blocked-by → strip abilities of the *other* creature) / **Shadowfax** (put-from-hand tapped &
+  attacking, power comparator) / **Sting** (Gap 29 conditional keyword from combat subtype) / **Peregrin
+  Took** (token-creation rider) / **Palantír of Orthanc** (opponent-makes-may + MV-sum mill) / **Fires
+  of Mount Doom** (impulse-play + destroy attached equipment) / **The Balrog, Durin's Bane** (cost
+  reduction per permanent sacrificed this turn + can't-be-blocked-except-by-legendary + death trigger) /
+  **Gollum, Scheming Guide** (opponent guesses land/nonland).
+
 ## Verified gap-status of remaining cards (probed, NOT yet implemented)
 
 These were checked against the real SDK this session. Each needs the **small** new primitive noted
