@@ -19,6 +19,7 @@ import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.findRef
 import com.wingedsheep.tooling.coverage.findRefIn
 import com.wingedsheep.tooling.coverage.argWordsTagged
+import com.wingedsheep.tooling.coverage.firstArgStringTagged
 import com.wingedsheep.tooling.coverage.firstArgWordTagged
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.pascalToUpperSnake
@@ -198,6 +199,25 @@ internal fun gainForEachAmount(args: JsonElement?): JsonElement? {
 /** A DynamicAmount DSL for a dynamic mtgish _GameNumber, or null if unrecognised. */
 internal fun EmitCtx.dynamicAmount(node: JsonElement?): String? = dynamicAmountExpr(node)?.let(::render)
 
+/**
+ * The card name behind a "cards named ~ in your graveyard" count filter, or null if the filter
+ * carries any constraint beyond the name + You-graveyard scope (so the caller declines rather than
+ * over-count). The expected shape is `And(IsNamed(NamedCard "<name>"), InAPlayersGraveyard(You))`:
+ * exactly two `_CardsInGraveyard` clauses, one an `IsNamed`, the other an `InAPlayersGraveyard`. Any
+ * extra cardtype/subtype/colour clause means the bare-name `GameObjectFilter.Any.named(...)` would be
+ * wrong, so we return null.
+ */
+internal fun namedCardInGraveyardOnly(filterNode: JsonElement?): String? {
+    val and = filterNode as? JsonObject ?: return null
+    if (and.strField("_CardsInGraveyard") != "And") return null
+    val arms = and["args"].asArr?.filterIsInstance<JsonObject>() ?: return null
+    if (arms.size != 2) return null
+    val namedArm = arms.firstOrNull { it.strField("_CardsInGraveyard") == "IsNamed" } ?: return null
+    val scopeArm = arms.firstOrNull { it.strField("_CardsInGraveyard") == "InAPlayersGraveyard" } ?: return null
+    if (!jsonContains(scopeArm, "_Player", "You")) return null
+    return namedArm.firstArgStringTagged("NamedCard")
+}
+
 /** The [Dsl] node behind [dynamicAmount]. Filters it embeds are still carried as [Lit] text (they are
  *  migrated in the filter layer); the structure around them is typed. */
 internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
@@ -226,10 +246,19 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // scope (an opponent's graveyard, "each player's") declines -> SCAFFOLD rather than miscount.
         "TheNumberOfGraveyardCards" -> {
             if (!jsonContains(node["args"], "_Player", "You")) return null
-            // "the number of cards named ~ in your graveyard" (Ancestral Anger): an IsNamed clause
-            // gameObjectFilterDsl can't render — it would fall through to the `?: GameObjectFilter.Any`
-            // below and count EVERY graveyard card. Decline rather than over-count.
-            if ("IsNamed" in compact(node["args"])) return null
+            // "the number of cards named ~ in your graveyard" (Ancestral Anger): the only constraint
+            // beyond the You-graveyard scope is an `IsNamed(NamedCard "<name>")` clause. Render the
+            // name as a `CardPredicate.NameEquals` filter. Only this bare named-card shape renders; a
+            // named clause combined with any other cardtype/subtype/colour constraint declines, since
+            // gameObjectFilterDsl can't carry the name and the combination would silently over-count.
+            if ("IsNamed" in compact(node["args"])) {
+                val name = namedCardInGraveyardOnly(node["args"]) ?: return null
+                return call(
+                    "DynamicAmount.Count",
+                    arg("Player.You"), arg("Zone.GRAVEYARD"),
+                    arg(Lit("GameObjectFilter.Any.named(\"$name\")")),
+                )
+            }
             val filter = gameObjectFilterDsl(node["args"]) ?: "GameObjectFilter.Any"
             return call(
                 "DynamicAmount.Count",

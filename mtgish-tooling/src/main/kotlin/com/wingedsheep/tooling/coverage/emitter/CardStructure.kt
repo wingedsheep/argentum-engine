@@ -1019,6 +1019,15 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
     ) {
         return "Conditions.IsYourTurn"
     }
+    // "if it's your turn" — PlayerPassesFilter(You, IsTheirTurn): the player "you" passes the
+    // "it's their turn" filter, i.e. it's your turn (Rapier Wit's "If it's your turn, put a stun
+    // counter on it"). Only the You scope renders; an opponent scope has no calibrated DSL constant.
+    if (cond.strField("_Condition") == "PlayerPassesFilter" &&
+        jsonContains(cond, "_Player", "You") &&
+        jsonContains(cond, "_Players", "IsTheirTurn")
+    ) {
+        return "Conditions.IsYourTurn"
+    }
     if (cond.strField("_Condition") == "PlayerPassesFilter" &&
         jsonContains(cond, "_Player", "You") &&
         jsonContains(cond, "_Players", "HasntCastASpellThisTurn") &&

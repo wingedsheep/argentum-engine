@@ -230,9 +230,9 @@ internal fun counterTypeDsl(counterNode: JsonElement?): String? {
         // Keyword counters (CR 122.1c) that grant their keyword via the engine's keyword-counter
         // projection. Only the ones we can name render; anything else scaffolds.
         "FlyingCounter" -> "Counters.FLYING"
-        // Stun counter (CR 122.1b): the engine models the "instead of untapping, remove a stun
-        // counter" replacement wherever a permanent carries one, so adding a stun counter renders
-        // faithfully via AddCountersEffect (Fractal Mascot).
+        // Stun counter (CR 122.1d): a built-in replacement ("if a permanent with a stun counter would
+        // become untapped, instead remove a stun counter from it"), engine-wired via `untapOrConsumeStun`.
+        // Adding one is a plain AddCounters(Counters.STUN, …) (Rapier Wit, Fractal Mascot).
         "StunCounter" -> "Counters.STUN"
         else -> null
     }
