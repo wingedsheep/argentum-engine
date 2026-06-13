@@ -1730,6 +1730,11 @@ class TriggerDetector(
         }
     }
 
+    private data class CreatureDeathInfo(
+        val entityId: EntityId,
+        val typeLine: com.wingedsheep.sdk.core.TypeLine?
+    )
+
     /**
      * Detect "whenever one or more [other] creatures you control die" batching triggers
      * (e.g., Vengeful Townsfolk).
@@ -1744,6 +1749,11 @@ class TriggerDetector(
      * since the creature has already left the battlefield. The creature's type line comes from
      * [ZoneChangeEvent.lastKnownTypeLine] so it survives the 704.5s token cleanup that can remove
      * a dead token from the graveyard in the same pass.
+     *
+     * Two source populations are considered: permanents that survived the batch (taken from the
+     * post-batch battlefield index) and — for Rule 603.10 "look back in time" — a source that
+     * itself died in this same batch, recovered from its last-known card definition since it is no
+     * longer on the battlefield (mirrors [DeathAndLeaveTriggerDetector.detectSimultaneousDeathTriggers]).
      */
     private fun detectCreaturesDiedBatchTriggers(
         state: GameState,
@@ -1751,11 +1761,8 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>,
         index: TriggerIndex
     ) {
-        if (index.getEntitiesForCategory(TriggerCategory.CREATURES_DIED_BATCH).isEmpty()) return
-
         // Collect creature deaths (battlefield → graveyard), grouped by last-known controller.
-        data class DeathInfo(val entityId: EntityId, val typeLine: com.wingedsheep.sdk.core.TypeLine?)
-        val deathsByController = mutableMapOf<EntityId, MutableList<DeathInfo>>()
+        val deathsByController = mutableMapOf<EntityId, MutableList<CreatureDeathInfo>>()
         for (event in events) {
             if (event !is ZoneChangeEvent) continue
             if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
@@ -1764,51 +1771,105 @@ class TriggerDetector(
             if (typeLine?.isCreature != true) continue
             val controllerId = event.lastKnownController ?: event.ownerId
             deathsByController.getOrPut(controllerId) { mutableListOf() }
-                .add(DeathInfo(event.entityId, typeLine))
+                .add(CreatureDeathInfo(event.entityId, typeLine))
         }
         if (deathsByController.isEmpty()) return
 
+        // (1) Sources that survived the batch — taken from the (post-batch) battlefield index.
         for (entry in index.getEntitiesForCategory(TriggerCategory.CREATURES_DIED_BATCH)) {
             for (ability in entry.abilities) {
-                val trigger = ability.trigger
-                if (trigger !is EventPattern.CreaturesYouControlDiedEvent) continue
+                fireCreaturesDiedBatchTrigger(
+                    ability = ability,
+                    sourceId = entry.entityId,
+                    sourceName = entry.cardComponent.name,
+                    controllerId = entry.controllerId,
+                    deathsByController = deathsByController,
+                    triggers = triggers
+                )
+            }
+        }
 
-                val controllerId = entry.controllerId
-                val controllerDeaths = deathsByController[controllerId] ?: continue
+        // (2) Rule 603.10 "look back in time": a source that itself died in this same batch must
+        // still see the *other* creatures that died alongside it. The index is built from the
+        // current (post-batch) battlefield, so such a source is absent from it — recover its
+        // abilities from its last-known card definition, exactly as detectSimultaneousDeathTriggers
+        // does for the per-creature path. (For Vengeful Townsfolk the on-self +1/+1 is a harmless
+        // no-op once it is in the graveyard, but a non-self payoff — draw a card, make a token,
+        // deal damage — would otherwise be silently dropped on a board wipe that also kills it.)
+        for (event in events) {
+            if (event !is ZoneChangeEvent) continue
+            if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
+            // Still on the battlefield → already covered by the index path above.
+            if (event.entityId in state.getBattlefield()) continue
+            val container = state.getEntity(event.entityId)
+            // Face-down permanents have no abilities (Rule 708.2).
+            if (container?.has<FaceDownComponent>() == true) continue
+            val cardDefId = container?.get<CardComponent>()?.cardDefinitionId
+                ?: event.lastKnownCardDefinitionId ?: continue
+            val controllerId = event.lastKnownController ?: event.ownerId
+            val sourceName = container?.get<CardComponent>()?.name ?: event.entityName
+            for (ability in abilityResolver.getTriggeredAbilities(event.entityId, cardDefId, state)) {
+                if (ability.trigger !is EventPattern.CreaturesYouControlDiedEvent) continue
+                fireCreaturesDiedBatchTrigger(
+                    ability = ability,
+                    sourceId = event.entityId,
+                    sourceName = sourceName,
+                    controllerId = controllerId,
+                    deathsByController = deathsByController,
+                    triggers = triggers
+                )
+            }
+        }
+    }
 
-                // "one or more *other* creatures you control die" excludes the source's own death.
-                val relevantDeaths = if (trigger.excludeSelf) {
-                    controllerDeaths.filter { it.entityId != entry.entityId }
-                } else {
-                    controllerDeaths
-                }
-                if (relevantDeaths.isEmpty()) continue
+    /**
+     * Evaluate a single "whenever one or more [filtered] creatures you control die" ability
+     * against the batch of deaths grouped by controller, firing it at most once. Shared by the
+     * surviving-source (battlefield index) and dead-source (Rule 603.10 look-back) paths.
+     */
+    private fun fireCreaturesDiedBatchTrigger(
+        ability: TriggeredAbility,
+        sourceId: EntityId,
+        sourceName: String,
+        controllerId: EntityId,
+        deathsByController: Map<EntityId, List<CreatureDeathInfo>>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val trigger = ability.trigger
+        if (trigger !is EventPattern.CreaturesYouControlDiedEvent) return
 
-                val hasMatch = relevantDeaths.any { info ->
-                    trigger.filter.cardPredicates.all { predicate ->
-                        when (predicate) {
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                                info.typeLine?.isCreature == true
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                                info.typeLine?.hasSubtype(predicate.subtype) == true
-                            else -> true
-                        }
-                    }
-                }
+        val controllerDeaths = deathsByController[controllerId] ?: return
 
-                if (hasMatch) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext()
-                        )
-                    )
+        // "one or more *other* creatures you control die" excludes the source's own death.
+        val relevantDeaths = if (trigger.excludeSelf) {
+            controllerDeaths.filter { it.entityId != sourceId }
+        } else {
+            controllerDeaths
+        }
+        if (relevantDeaths.isEmpty()) return
+
+        val hasMatch = relevantDeaths.any { info ->
+            trigger.filter.cardPredicates.all { predicate ->
+                when (predicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                        info.typeLine?.isCreature == true
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                        info.typeLine?.hasSubtype(predicate.subtype) == true
+                    else -> true
                 }
             }
         }
+        if (!hasMatch) return
+
+        triggers.add(
+            PendingTrigger(
+                ability = ability,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                triggerContext = TriggerContext()
+            )
+        )
     }
 
     /**

@@ -314,6 +314,17 @@ enum class Keyword(val displayName: String) {
     PREPARED("Prepared"),
 
     /**
+     * Paradigm (Secrets of Strixhaven).
+     * Appears on Lesson spells. "Then exile this spell. After you first resolve a spell with this
+     * name, you may cast a copy of it from exile without paying its mana cost at the beginning of
+     * each of your first main phases." Display-only on the keyword — the behavior is driven by the
+     * spell's `paradigm` flag, which routes the spell to exile on resolution and tags it with the
+     * paradigm marker so the engine synthesizes the recurring free-recast ability
+     * ([com.wingedsheep.sdk.scripting.Paradigm.recastAbility]).
+     */
+    PARADIGM("Paradigm"),
+
+    /**
      * Increment (Secrets of Strixhaven).
      * "Whenever you cast a spell, if the amount of mana you spent is greater than this
      * creature's power or toughness, put a +1/+1 counter on this creature."

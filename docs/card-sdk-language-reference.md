@@ -1451,6 +1451,12 @@ for any other (filter, binding, to/excludeTo) combination.
   die, …" (Vengeful Townsfolk) — a per-creature `YourCreatureDies` would over-count on mass removal.
   Set `excludeSelf = true` for the "*other* creatures" wording (the source's own death is excluded).
   Detected specially by `TriggerDetector` (grouped by each dying creature's last-known controller).
+  Rule 603.10 "look back in time": if the source itself dies in the *same* batch as another
+  qualifying creature, it still sees that death and fires (recovered from its last-known card
+  definition, since it has already left the battlefield). For `excludeSelf = true` payoffs that
+  target the source (Vengeful Townsfolk's own +1/+1) this is a harmless no-op, but a *non-self*
+  payoff — draw a card, make a token, gain life — correctly still resolves on a board wipe that
+  also kills the source.
 - `PutIntoGraveyardFromBattlefield` — SELF, same event shape as `Dies`; rename
   clarifies non-creature intent (artifact / enchantment going to yard).
 - `leavesBattlefield(filter, to?, excludeTo?, binding)` — factory. `to = GRAVEYARD`
@@ -2417,6 +2423,20 @@ composite abilities).
     off the stack with a zone-move); a printed `suspend N—[cost]` exiles from hand as its cast cost.
   - **Taigam, Master Opportunist** is the first user: `Composite(CopyTargetSpell(TriggeringEntity),
     CounterEffect(TriggeringEntity → Exile), Suspend(TriggeringEntity, 4))`.
+- `Paradigm` (Secrets of Strixhaven) — `spell { effect = …; paradigm() }` on a Lesson spell. An **exile-zone
+  recurrence** mechanic, modelled exactly like Suspend (a marker the engine reads off an exiled card), differing
+  only in that it casts a **copy** rather than the card itself, so the original recurs forever. Oracle: "[effect]
+  Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile
+  without paying its mana cost at the beginning of each of your first main phases." `paradigm()` implies
+  `selfExile()`: the spell exiles itself on resolution (reusing the `selfExileOnResolve` → `StackResolver` exile
+  path) and is tagged with the `ParadigmComponent` marker as it lands in exile; the `Keyword.PARADIGM` display
+  keyword is added automatically. The engine then grants `Paradigm.recastAbility` — a synthesized
+  `activeZone = EXILE`, `StepEvent(PRECOMBAT_MAIN, You)` trigger whose `MayEffect` copies the card via
+  `CopyCardIntoCollectionEffect(Self)` and casts it with `CastFromCollectionWithoutPayingCostEffect` — to **any**
+  exiled card carrying the marker (the marker is the gate: a Lesson exiled by some other path never recurs). The
+  original stays in exile; each cast copy is a phantom that ceases to exist (CR 707.10a / 112.3b), so there is no
+  exponential growth. The `Lesson` spell subtype (`Subtype.LESSON`) is a plain, non-functional subtype (no Learn
+  mechanic in the set), but the type line must parse it.
 - `Craft(filter, cost)` — `card { craft(filter, cost) }` builder helper (CR 702.167, The Lost Caverns of
   Ixalan). On the front face of a transforming DFC: "Craft with [filter] [cost] ([cost], Exile this permanent,
   Exile [filter] you control and/or [filter] cards from your graveyard: Return this card to the battlefield

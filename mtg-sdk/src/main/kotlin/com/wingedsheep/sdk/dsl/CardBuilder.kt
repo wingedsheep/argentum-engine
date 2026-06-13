@@ -785,6 +785,7 @@ class CardBuilder(private val name: String) {
             classLevels = classLevelsList.toList(),
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
+            paradigm = spellBuilder?.isParadigm ?: false,
             selfAlternativeCost = selfAlternativeCost,
             xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
             mayStartOnBattlefield = mayStartOnBattlefield,
@@ -807,7 +808,9 @@ class CardBuilder(private val name: String) {
 
         // Derive simple keywords from parameterized keyword abilities
         val derivedKeywords = finalKeywordAbilities.mapNotNull { it.keyword }.toSet()
-        val finalKeywords = keywordSet + derivedKeywords
+        // Paradigm is a display keyword whose behavior is driven by the spell's `paradigm` flag.
+        val paradigmKeyword = if (spellBuilder?.isParadigm == true) setOf(Keyword.PARADIGM) else emptySet()
+        val finalKeywords = keywordSet + derivedKeywords + paradigmKeyword
 
         val parsedColorIdentity: Set<Color>? = colorIdentity?.let { raw ->
             raw.mapNotNullTo(mutableSetOf()) { Color.fromSymbol(it.uppercaseChar()) }
@@ -880,6 +883,23 @@ class SpellBuilder {
     }
 
     internal val exilesOnResolve: Boolean get() = selfExileOnResolve
+
+    private var paradigm: Boolean = false
+
+    /**
+     * Paradigm (Secrets of Strixhaven). The spell exiles itself on resolution and is tagged with
+     * the paradigm marker, so the engine synthesizes the recurring "at the beginning of each of
+     * your first main phases, you may cast a copy of this card from exile without paying its mana
+     * cost" ability ([com.wingedsheep.sdk.scripting.Paradigm.recastAbility]). Implies
+     * [selfExile]; the [com.wingedsheep.sdk.core.Keyword.PARADIGM] display keyword is added
+     * automatically.
+     */
+    fun paradigm() {
+        paradigm = true
+        selfExileOnResolve = true
+    }
+
+    internal val isParadigm: Boolean get() = paradigm
 
     /**
      * Alternate effect used when kicker is paid. When set along with [kickerTarget],
@@ -1548,6 +1568,7 @@ class CardFaceBuilder(private val name: String) {
             staticAbilities = staticAbilities.toList(),
             additionalCosts = additionalCostsList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
+            paradigm = spellBuilder?.isParadigm ?: false,
         )
         return CardFace(
             name = name,

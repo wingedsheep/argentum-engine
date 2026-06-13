@@ -216,6 +216,16 @@ data class CardScript(
     val selfExileOnResolve: Boolean = false,
 
     /**
+     * Paradigm (Secrets of Strixhaven). When true, this spell exiles itself on resolution
+     * (implies [selfExileOnResolve]) and is tagged with the paradigm marker as it lands in
+     * exile, so the engine synthesizes the recurring free-recast triggered ability
+     * ([com.wingedsheep.sdk.scripting.Paradigm.recastAbility]): "At the beginning of each of
+     * your first main phases, you may cast a copy of this card from exile without paying its
+     * mana cost." The original stays in exile; each recast is a phantom copy (CR 707.10a).
+     */
+    val paradigm: Boolean = false,
+
+    /**
      * An alternative cost that the caster may pay instead of the spell's mana cost.
      * Used for cards like Zahid, Djinn of the Lamp: "You may pay {3}{U} and tap an
      * untapped artifact you control rather than pay this spell's mana cost."

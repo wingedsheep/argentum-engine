@@ -176,6 +176,19 @@ data class PreparedSpellCopyComponent(
 data object SuspendedComponent : Component
 
 /**
+ * Marks an exiled card as a Paradigm spell (Secrets of Strixhaven). Attached as a Paradigm spell
+ * lands in exile on its own resolution. While present on an exiled card,
+ * [com.wingedsheep.engine.event.TriggerAbilityResolver] grants it
+ * [com.wingedsheep.sdk.scripting.Paradigm.recastAbility] — the precombat-main trigger that lets the
+ * owner cast a free *copy* of the card each turn. The marker's presence is the gate: a Lesson exiled
+ * by some other effect (graveyard hate, opponent removal) carries no marker and so never recurs.
+ *
+ * Stripped when the card leaves exile by a non-cast path and when it leaves the battlefield.
+ */
+@Serializable
+data object ParadigmComponent : Component
+
+/**
  * Records the mana colors spent to cast this permanent.
  * Used by mana-spent-gated trigger conditions (e.g., "if {W}{W} was spent to cast it").
  * Stripped when the permanent leaves the battlefield.

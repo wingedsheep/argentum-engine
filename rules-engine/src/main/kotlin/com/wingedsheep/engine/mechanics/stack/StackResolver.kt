@@ -1549,6 +1549,13 @@ class StackResolver(
                 }
                 pausedState = pausedState.addToZone(pausedDestZoneKey, spellId)
 
+                // Paradigm: tag the just-exiled spell even when its effect paused mid-resolution.
+                if (pausedDestZone == Zone.EXILE && pausedResolvedScript?.paradigm == true) {
+                    pausedState = pausedState.updateEntity(spellId) { c ->
+                        c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
+                    }
+                }
+
                 // CR 715.3d — Adventure exiled by its own resolution: re-grant cast-from-exile.
                 if (pausedAdventureFaceExile && pausedDestZone == Zone.EXILE) {
                     val (permId, stateWithPerm) = pausedState.newEntity()
@@ -1658,6 +1665,15 @@ class StackResolver(
         }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = newState.addToZone(destZoneKey, spellId)
+
+        // Paradigm (Secrets of Strixhaven): tag the just-exiled spell so the engine synthesizes its
+        // recurring precombat-main free-recast ability (Paradigm.recastAbility). The marker is the
+        // gate — a Lesson exiled by any other path carries no marker and so never recurs.
+        if (destinationZone == Zone.EXILE && resolvedScript?.paradigm == true) {
+            newState = newState.updateEntity(spellId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
+            }
+        }
 
         // CR 715.3d — an Adventure card exiled by its own resolution may be cast as the creature
         // by the spell's controller while it remains in exile. Re-add the permission after

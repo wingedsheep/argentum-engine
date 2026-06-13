@@ -174,7 +174,28 @@ the narrower "cast, but for free" sense. Tests: `FreestriderCommandoScenarioTest
   batch "Satoru and/or one or more other nontoken creatures enter" once-per-turn trigger before it's
   buildable.
 
-### 6b. "Whenever one or more creatures you control die" batch trigger (once per batch)
+### 6b. "Whenever one or more creatures you control die" batch trigger (once per batch) — ✅ DONE
+
+**Implemented:** `EventPattern.CreaturesYouControlDiedEvent(filter, excludeSelf)` +
+`Triggers.OneOrMoreCreaturesYouControlDie(...)` facade, detected by
+`TriggerDetector.detectCreaturesDiedBatchTriggers` (a new `TriggerCategory.CREATURES_DIED_BATCH`):
+it groups battlefield→graveyard zone-change events by each dying creature's **last-known**
+controller (so dead tokens survive the 704.5s cleanup) and fires **once per controller per batch**
+— a board wipe that kills several of your creatures fires it once, not once per creature.
+`excludeSelf = true` models the "*other* creatures" wording. Per-event matching declines the event
+in `TriggerMatcher` (batch-handled separately). The detector also honours CR 603.10 "look back in
+time": a source that itself dies in the **same** batch as another qualifying creature still sees
+that death and fires (recovered from its last-known card definition), so a *non-self* payoff
+(draw / token / gain life) survives a board wipe that also kills the source — a per-self payoff like
+Vengeful Townsfolk's own +1/+1 is just a harmless no-op once it is in the graveyard. Tests:
+`VengefulTownsfolkScenarioTest` (board-wipe = one counter; single death; opponent's deaths; +
+source-dies-in-batch look-back, fires & does-not-fire-alone). Docs: card-sdk-language-reference §8.
+
+→ **Vengeful Townsfolk** built. Also the right home for other "one or more … die" payoffs (cf.
+  Scavenger's Talent / Spiteful Banditry, which lean on the `oncePerTurn` approximation because
+  their printed text *does* say "only once each turn").
+
+<details><summary>Original gap description</summary>
 
 The engine has per-creature dies triggers (`Triggers.YourCreatureDies`, ANY/OTHER binding, fires once
 **per dying creature**) and a once-per-*turn* gate (`oncePerTurn = true`), plus batch detectors for
@@ -196,6 +217,8 @@ with an OTHER-binding variant for "another creature(s)." Mirrors the existing
   on this creature"). Also the right home for other "one or more … die" payoffs (cf. Scavenger's
   Talent / Spiteful Banditry, which currently lean on the `oncePerTurn` approximation because their
   printed text *does* say "only once each turn").
+
+</details>
 
 ### 6. `CARDS_DRAWN` turn-tracker + characteristic-defining P/T from it
 
