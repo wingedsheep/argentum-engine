@@ -10109,6 +10109,148 @@
     ]
 }
 
+// Mount Doom
+{
+    "name": "Mount Doom",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}, Pay 1 life: Add {B} or {R}.\n{1}{B}{R}, {T}: Mount Doom deals 1 damage to each opponent.\n{5}{B}{R}, {T}, Sacrifice Mount Doom and a legendary artifact: Choose up to two creatures, then destroy the rest. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.Specific",
+                        "colors": [
+                            "BLACK",
+                            "RED"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{B}{R}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsArtifact",
+                                        "IsLegendary"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "all_creatures"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "all_creatures",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "saved",
+                            "storeRemainder": "to_destroy",
+                            "prompt": "Choose up to two creatures to save",
+                            "selectedLabel": "Save",
+                            "remainderLabel": "Destroy",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "to_destroy",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "MYTHIC",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5bc71a1-2344-4bc6-aa60-658cec19d0d6.jpg?1686970382"
+    }
+}
+
 // Mushroom Watchdogs
 {
     "name": "Mushroom Watchdogs",

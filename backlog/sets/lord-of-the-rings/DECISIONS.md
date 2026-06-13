@@ -270,3 +270,13 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Test (ScenarioTestBase + castSpellTargetingStackSpell): legendary Naban → countered + temptCount 1;
   nonlegendary Grizzly Bears → countered + temptCount 0.
 
+### Mount Doom (Land) — composable (no engine change)
+
+- **Oracle:** "{T}, Pay 1 life: Add {B} or {R}. {1}{B}{R}, {T}: deal 1 to each opponent. {5}{B}{R}, {T},
+  Sacrifice Mount Doom and a legendary artifact: Choose up to two creatures, then destroy the rest."
+- **Decision:** all composable. Mana ability = `Composite(Tap, PayLife(1))` →
+  `AddManaOfChoice(ManaColorSet.Specific({B,R}))`. Damage = `DealDamage(1, PlayerRef(EachOpponent))`
+  (Erebor Flamesmith pattern). Wrath = the Duneblast pipeline with `ChooseUpTo(2)` + `storeRemainder`
+  → `MoveCollection(Destroy)`; cost = `Composite(Mana, Tap, SacrificeSelf, Sacrifice(Artifact.legendary()))`,
+  sorcery-speed. No new SDK; snapshot only.
+
