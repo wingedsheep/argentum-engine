@@ -36,7 +36,12 @@ data class DealDamageEffect(
      * last-known-information, so leaving this null on a token's LTB damage clause works
      * (e.g. Munitions' "When this token leaves the battlefield, it deals 2 damage to any target").
      */
-    val damageSource: EffectTarget? = null
+    val damageSource: EffectTarget? = null,
+    /**
+     * When true and the target is a creature, damage in excess of lethal (CR 120.4a) is dealt to
+     * that creature's controller instead (Gandalf's Sanction).
+     */
+    val excessToController: Boolean = false
 ) : Effect {
     /** Convenience constructor for fixed amounts */
     constructor(amount: Int, target: EffectTarget, cantBePrevented: Boolean = false, damageSource: EffectTarget? = null)

@@ -219,6 +219,13 @@ object Effects {
         DealDamageEffect(amount, target, damageSource = damageSource)
 
     /**
+     * Deal damage to a creature, dealing any excess (CR 120.4a — damage beyond lethal) to that
+     * creature's controller instead. Used by Gandalf's Sanction.
+     */
+    fun DealDamageExcessToController(amount: DynamicAmount, target: EffectTarget): Effect =
+        DealDamageEffect(amount, target, excessToController = true)
+
+    /**
      * Deal X damage to a target, where X is the spell's X value.
      * Used for X spells like Blaze.
      */

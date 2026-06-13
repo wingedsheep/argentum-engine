@@ -110,7 +110,13 @@ object DamageUtils {
         sourceId: EntityId?,
         cantBePrevented: Boolean = false,
         isCombatDamage: Boolean = false,
-        appliedRedirects: Set<EntityId> = emptySet()
+        appliedRedirects: Set<EntityId> = emptySet(),
+        /**
+         * When true and [targetId] is a creature, any damage in excess of what was needed to be
+         * lethal (CR 120.4a) is dealt to that creature's controller instead (Gandalf's Sanction:
+         * "Excess damage is dealt to that creature's controller instead.").
+         */
+        excessToController: Boolean = false
     ): EffectResult {
         if (amount <= 0) return EffectResult.success(state)
 
@@ -268,12 +274,6 @@ object DamageUtils {
                 val existingDamage = newState.getEntity(targetId)?.get<DamageComponent>()
                 val currentDamage = existingDamage?.amount ?: 0
                 val hasDeathtouch = sourceId != null && projected.hasKeyword(sourceId, Keyword.DEATHTOUCH)
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(DamageComponent(
-                        amount = currentDamage + effectiveAmount,
-                        deathtouchDamageReceived = hasDeathtouch || (existingDamage?.deathtouchDamageReceived == true)
-                    ))
-                }
                 // Excess damage (CR 120.4a) — damage in excess of what was needed to be
                 // lethal. With deathtouch, any amount of damage greater than 1 is excess —
                 // lethal collapses to a flat 1 regardless of marked damage (CR 120.4a refs
@@ -282,6 +282,17 @@ object DamageUtils {
                 val lethalNeeded = if (hasDeathtouch) 1
                 else (toughness - currentDamage).coerceAtLeast(0)
                 creatureExcessDamage = (effectiveAmount - lethalNeeded).coerceAtLeast(0)
+                // "Excess damage is dealt to that creature's controller instead" (Gandalf's
+                // Sanction): the creature is marked only with the lethal portion; the excess is
+                // dealt to its controller below.
+                val markedOnCreature = if (excessToController) effectiveAmount - creatureExcessDamage
+                else effectiveAmount
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(DamageComponent(
+                        amount = currentDamage + markedOnCreature,
+                        deathtouchDamageReceived = hasDeathtouch || (existingDamage?.deathtouchDamageReceived == true)
+                    ))
+                }
             }
             // Mark creature as having been dealt damage this turn
             newState = newState.updateEntity(targetId) { container ->
@@ -333,6 +344,19 @@ object DamageUtils {
                     if (gainEvent != null) events.add(gainEvent)
                 }
             }
+        }
+
+        // "Excess damage is dealt to that creature's controller instead" (CR-style redirect for
+        // Gandalf's Sanction). Deal the computed excess to the creature's controller, attributed
+        // to the same source. excessToController is not propagated to this player-damage call.
+        if (excessToController && targetWasCreature && creatureExcessDamage > 0 && targetControllerId != null) {
+            val excessResult = dealDamageToTarget(
+                newState, targetControllerId, creatureExcessDamage, sourceId,
+                cantBePrevented = cantBePrevented, isCombatDamage = isCombatDamage,
+                appliedRedirects = appliedRedirects, excessToController = false
+            )
+            newState = excessResult.state
+            events.addAll(excessResult.events)
         }
 
         return EffectResult.success(newState, events)

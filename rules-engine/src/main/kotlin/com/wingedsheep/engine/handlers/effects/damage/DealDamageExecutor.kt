@@ -68,6 +68,9 @@ class DealDamageExecutor(
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for damage")
 
-        return dealDamageToTarget(state, targetId, amount, sourceId, effect.cantBePrevented)
+        return dealDamageToTarget(
+            state, targetId, amount, sourceId, effect.cantBePrevented,
+            excessToController = effect.excessToController
+        )
     }
 }

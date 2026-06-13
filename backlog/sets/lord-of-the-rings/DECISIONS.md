@@ -302,6 +302,19 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Gandalf's Sanction (Multicolor) — Gap 34 (excess damage redirected to controller)
+
+- **Oracle:** "Deals X damage to target creature, where X is the number of instant and sorcery cards
+  in your graveyard. Excess damage is dealt to that creature's controller instead."
+- **Decision:** added `DealDamageEffect.excessToController` + facade `Effects.DealDamageExcessToController`.
+  The engine already computes `creatureExcessDamage` (CR 120.4a) in `DamageUtils.dealDamageToTarget`;
+  the new flag (a) marks the creature with only the lethal portion (`effectiveAmount - excess`) and
+  (b) deals the excess to the creature's controller (a recursive player-damage call, same source,
+  flag off). X = `DynamicAmounts.zone(You, GRAVEYARD, InstantOrSorcery).count()`. Threaded through
+  `DealDamageExecutor`. Regression-checked CombatLethalDamageTest (trample/excess paths unaffected).
+- **Test:** 4 I/S in GY → 4 damage to a 2/2 → creature dies (lethal 2) and its controller loses 2
+  life (excess).
+
 ### Call of the Ring (Black) — Gap 38 (choose-a-Ring-bearer trigger)
 
 - **Oracle:** "At the beginning of your upkeep, the Ring tempts you. Whenever you choose a creature

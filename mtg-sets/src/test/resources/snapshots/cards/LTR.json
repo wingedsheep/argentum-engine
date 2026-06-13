@@ -5796,6 +5796,50 @@
     ]
 }
 
+// Gandalf's Sanction
+{
+    "name": "Gandalf's Sanction",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gandalf's Sanction deals X damage to target creature, where X is the number of instant and sorcery cards in your graveyard. Excess damage is dealt to that creature's controller instead.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "instant|sorcery"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target creature"
+            },
+            "excessToController": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Tatiana Veryayskaya",
+        "flavorText": "There was a crack, and the staff split asunder in Saruman's hand, and the head of it fell down at Gandalf's feet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ebf2a25-9bee-4146-af83-f22aab6db2a8.jpg?1688134626"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Gandalf, Friend of the Shire
 {
     "name": "Gandalf, Friend of the Shire",

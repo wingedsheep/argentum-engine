@@ -277,6 +277,9 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Damage
 
 - `DealDamage(amount, target)` — deal fixed/dynamic damage.
+- `DealDamageExcessToController(amount, target)` — deal damage to a creature; any amount beyond
+  lethal (CR 120.4a) is dealt to that creature's controller instead (the creature is marked only with
+  the lethal portion). Backed by `DealDamageEffect.excessToController`. Used by Gandalf's Sanction.
 - `DealXDamage(target)` — deal X damage (spell's X).
 - `AmplifyNoncombatDamageThisTurn(bonus)` — install an until-end-of-turn replacement (CR 616): every
   source you control deals `bonus` *additional* noncombat damage to any permanent or player this turn.
