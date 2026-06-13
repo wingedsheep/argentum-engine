@@ -7092,6 +7092,60 @@
     ]
 }
 
+// Gwaihir the Windlord
+{
+    "name": "Gwaihir the Windlord",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Legendary Creature — Bird Noble",
+    "oracleText": "This spell costs {2} less to cast as long as you've drawn two or more cards this turn.\nFlying, vigilance\nOther Birds you control have vigilance.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "PlayerDrewCardsThisTurn",
+                        "atLeast": 2
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature Bird ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "UNCOMMON",
+        "artist": "Axel Sauerwald",
+        "flavorText": "There came Gwaihir the Windlord, greatest of all the Eagles of the North, mightiest of the descendants of old Thorondor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a42c951-1146-4f49-a690-7d385962b191.jpg?1686969841"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Haradrim Spearmaster
 {
     "name": "Haradrim Spearmaster",

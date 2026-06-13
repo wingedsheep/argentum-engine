@@ -3102,6 +3102,11 @@ default to "you" so card authors don't need to pass it explicitly.
   Emergent Haunting, Wrangler of the Damned). The origin zone is captured on each `CastSpellRecord`
   (`castFromZone`) at cast time, so flashback/forage (GRAVEYARD), plot/foretell (EXILE), and commander
   (COMMAND) casts are all distinguished from hand casts.
+- `YouDrewCardsThisTurn(atLeast = 1)` — "as long as you've drawn N or more cards this turn".
+  Backed by `PlayerDrewCardsThisTurn(Player.You, atLeast)`, which reads the per-player
+  `CardsDrawnThisTurnComponent` (reset for all players at turn start). Works in resolution and
+  cost-reduction (projection) contexts. Used by Gwaihir the Windlord ("costs {2} less … as long as
+  you've drawn two or more cards this turn") via `ModifySpellCost(..., gating = CostGating.OnlyIf(...))`.
 - `TriggeringSpellMatches(filter)` — intervening-if guard: the spell that triggered this ability
   matches `filter`. Reads the triggering entity's static card characteristics (so it stays correct
   after the spell leaves the stack). General "whenever you cast a spell, if it's a/an X ..." gate.

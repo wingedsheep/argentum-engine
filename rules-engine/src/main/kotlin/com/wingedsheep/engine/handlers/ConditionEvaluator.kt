@@ -261,6 +261,18 @@ class ConditionEvaluator(
             // Player-relative trackers (resolve [Player] against the current context).
             is PlayerAttackedWithCreaturesThisTurn -> evaluateAttackedWithCreaturesCtx(state, condition, ctx)
             is PlayerCastSpellsThisTurn -> evaluateCastSpellsThisTurnCtx(state, condition, ctx)
+            is com.wingedsheep.sdk.scripting.conditions.PlayerDrewCardsThisTurn -> {
+                if (condition.atLeast <= 0) true
+                else {
+                    val playerId = resolvePlayer(state, condition.player, ctx)
+                    val drawn = playerId?.let {
+                        state.getEntity(it)
+                            ?.get<com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent>()
+                            ?.count
+                    } ?: 0
+                    drawn >= condition.atLeast
+                }
+            }
             is PlayerCommittedCrimeThisTurn -> {
                 val playerId = resolvePlayer(state, condition.player, ctx)
                 playerId != null && playerId in state.playersWhoCommittedCrimeThisTurn

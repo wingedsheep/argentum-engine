@@ -817,6 +817,13 @@ object Conditions {
         PlayerCastSpellsThisTurn(Player.You, filter, atLeast, fromZone)
 
     /**
+     * As long as you've drawn [atLeast] or more cards this turn (backed by the per-player
+     * `CardsDrawnThisTurnComponent`). Used by Gwaihir the Windlord's conditional cost reduction.
+     */
+    fun YouDrewCardsThisTurn(atLeast: Int = 1): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerDrewCardsThisTurn(Player.You, atLeast)
+
+    /**
      * If you've committed a crime this turn (CR Outlaws of Thunder Junction). A crime is committed
      * when you cast a spell, activate an ability, or put a triggered ability on the stack that
      * targets an opponent, anything an opponent controls, and/or a card in an opponent's graveyard.

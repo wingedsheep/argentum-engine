@@ -302,6 +302,21 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Gwaihir the Windlord (Multicolor) — Gap 30 (cost reduction on game history)
+
+- **Oracle:** "Costs {2} less to cast as long as you've drawn two or more cards this turn. Flying,
+  vigilance. Other Birds you control have vigilance."
+- **Decision:** the cost-reduction machinery (`ModifySpellCost(SelfCast, ReduceGeneric(2),
+  gating = CostGating.OnlyIf(condition))`) already existed; the only gap was a "you've drawn N+
+  cards this turn" condition. Added `PlayerDrewCardsThisTurn(player, atLeast)` (facade
+  `Conditions.YouDrewCardsThisTurn(atLeast)`), reading the existing per-player
+  `CardsDrawnThisTurnComponent` (Gap-2 infra, reset for all players at turn start). One new
+  `ConditionEvaluator` branch — conditions are `@Serializable`/`@SerialName` sealed, so no manual
+  serialization registration. Anthem "Other Birds you control have vigilance" composes via
+  `GrantKeyword(VIGILANCE, GroupFilter(Creature.youControl().withSubtype("Bird"), excludeSelf=true))`.
+- **Test infra:** added a reusable `ScenarioBuilder.withCardsDrawnThisTurn(player, count)` fixture
+  helper. `GwaihirTheWindlordScenarioTest` proves castable on 4 mana after 2 draws, not after 1.
+
 ### You Cannot Pass! (White) — Gap 36 (combat-history target filter)
 
 - **Oracle:** "Destroy target creature that blocked or was blocked by a legendary creature this turn."

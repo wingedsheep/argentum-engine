@@ -320,6 +320,21 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Pretend a player has already drawn [count] cards this turn (sets
+         * `CardsDrawnThisTurnComponent`). Used to exercise "as long as you've drawn N cards this
+         * turn" conditions (Gwaihir the Windlord) without scripting the draws.
+         */
+        fun withCardsDrawnThisTurn(playerNumber: Int, count: Int): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            state = state.updateEntity(playerId) { container ->
+                container.with(
+                    com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent(count)
+                )
+            }
+            return this
+        }
+
+        /**
          * Set the current phase and step.
          */
         fun inPhase(phase: Phase, step: Step): ScenarioBuilder {

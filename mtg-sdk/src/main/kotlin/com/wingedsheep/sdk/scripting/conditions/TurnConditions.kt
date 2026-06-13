@@ -159,6 +159,25 @@ data class PlayerCastSpellsThisTurn(
 }
 
 /**
+ * Condition: "as long as [player] has drawn [atLeast] or more cards this turn".
+ *
+ * Backed by the per-player `CardsDrawnThisTurnComponent` (reset for all players at the start of
+ * each turn), so it counts every draw this turn regardless of how it happened. Used by Gwaihir the
+ * Windlord ("This spell costs {2} less to cast as long as you've drawn two or more cards this
+ * turn"). Works in both resolution and cost-reduction (projection) contexts. The
+ * `Conditions.YouDrewCardsThisTurn` DSL helper passes [Player.You].
+ */
+@SerialName("PlayerDrewCardsThisTurn")
+@Serializable
+data class PlayerDrewCardsThisTurn(
+    val player: Player = Player.You,
+    val atLeast: Int = 1
+) : Condition {
+    override val description: String =
+        "if ${player.description} drew $atLeast or more cards this turn"
+}
+
+/**
  * Condition: "If [player] has committed a crime this turn" (CR Outlaws of Thunder Junction —
  * a player commits a crime as they cast a spell, activate an ability, or put a triggered ability
  * on the stack that targets one or more opponents, permanents/spells/abilities an opponent controls,

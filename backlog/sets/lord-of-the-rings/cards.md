@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 235 / 291
+**Implemented:** 236 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -249,7 +249,7 @@ starter-deck/special cards and basic lands.
 - [ ] Gandalf the Grey
 - [ ] Gandalf's Sanction
 - [x] Gimli, Mournful Avenger
-- [ ] Gwaihir the Windlord
+- [x] Gwaihir the Windlord
 - [ ] King of the Oathbreakers
 - [x] Legolas, Counter of Kills
 - [x] Lotho, Corrupt Shirriff
