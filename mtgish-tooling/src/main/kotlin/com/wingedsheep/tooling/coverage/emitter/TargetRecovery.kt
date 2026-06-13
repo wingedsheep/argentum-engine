@@ -830,6 +830,13 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     FilterPredicates.untapped(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.attacking(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.nontoken(filterNode)?.let { node = node.dot(it) }
+    // "creatures that saddled/crewed it this turn" (SaddledPermanentThisTurn / CrewedPermanentThisTurn,
+    // bound to the trigger's permanent — Rambling Possum's "return any number of creatures that saddled
+    // it this turn"). Source-relative; composes via .crewedOrSaddledSourceThisTurn() onto the creature
+    // group. Dropping it would widen the group to every creature, so it's a real predicate here.
+    if ("SaddledPermanentThisTurn" in blob || "CrewedPermanentThisTurn" in blob) {
+        node = node.dot("crewedOrSaddledSourceThisTurn")
+    }
     // The `.youControl()`/`.opponentControls()` suffix is a *controller* predicate — only a
     // `ControlledByAPlayer` clause carries it. Inspect that clause's player scope directly rather than
     // scanning the whole blob, so a bare `"You"` elsewhere (e.g. a graveyard count's

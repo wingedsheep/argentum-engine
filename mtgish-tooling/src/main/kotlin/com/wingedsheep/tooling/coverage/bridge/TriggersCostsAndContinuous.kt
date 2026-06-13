@@ -16,6 +16,9 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // OTJ Plot (CR 718) — "When this card becomes plotted, …" (Triggers.BecomesPlotted, Aloe Alchemist).
     supported("WhenACardBecomesPlotted", "trigger: this card becomes plotted (Triggers.BecomesPlotted)")
     supported("WhenAPermanentBecomesTheTargetOfASpellOrAbility", "trigger: becomes target (Triggers.BecomesTargetByOpponent / BecomesTarget / CreatureYouControlBecomesTargetByOpponent)")
+    // OTJ Saddle (CR 702.171b) — "Whenever this creature becomes saddled for the first time each turn, …"
+    // (Triggers.becomesSaddled(firstTimeEachTurn = true), Stubborn Burrowfiend).
+    supported("WhenAPermanentBecomesSaddledForTheFirstTimeInATurn", "trigger: this permanent becomes saddled for the first time each turn (Triggers.becomesSaddled(firstTimeEachTurn = true))")
     // OTJ crime (CR 700.10) — "Whenever you commit a crime, …" (Triggers.YouCommitCrime, Marauding Sphinx).
     supported("WhenAPlayerCommitsACrime", "trigger: you commit a crime (Triggers.YouCommitCrime)")
     // "Whenever one or more cards leave your graveyard, …" — batching leave-graveyard trigger

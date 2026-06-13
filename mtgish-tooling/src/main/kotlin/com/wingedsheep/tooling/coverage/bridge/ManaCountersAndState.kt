@@ -67,5 +67,10 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // variants beyond a single fixed +1/+1 (EntersWithNumberCounters, EntersWithACounterOfChoice, …) stay
     // unmapped so they keep blocking until their scoping/rendering is verified.
     composed("EntersTapped", "enters tapped (EntersTapped replacement)")
-    composed("EntersWithACounter", "enters with one +1/+1 counter (EntersWithCounters replacement)")
+    // "enters with a +1/+1 counter" or a keyword counter (e.g. a lifelink counter, Dust Animus) ->
+    // EntersWithCounters (default PlusOnePlusOne, or a Named CounterTypeFilter for keyword counters).
+    composed("EntersWithACounter", "enters with one counter — +1/+1 or a keyword counter (EntersWithCounters replacement)")
+    // "enters with N +1/+1 counters" — a fixed count renders EntersWithCounters(count = N), a dynamic
+    // count (Stag Beetle) renders EntersWithDynamicCounters.
+    composed("EntersWithNumberCounters", "enters with N +1/+1 counters (EntersWithCounters / EntersWithDynamicCounters)")
 }

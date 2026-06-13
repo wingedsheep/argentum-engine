@@ -286,6 +286,31 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         else call("Patterns.Library.mill", arg(amt))
     }
 
+    // "You may return any number of [filter] to their owner's hand" (Rambling Possum: "any number of
+    // creatures that saddled it this turn"). Modeled as the Gather → ChooseAnyNumber → toHand pipeline:
+    // gather the matching battlefield permanents into a collection, let the controller select any subset
+    // on the battlefield (useTargetingUI), and move them — a battlefield→HAND move routes each permanent
+    // to its owner's hand. Emitted as the raw pipeline-step trio with the deterministic `gathered0` /
+    // `selected1` slot keys the inline `Effects.Pipeline { }` builder produces, so the serialized tree
+    // matches the hand-authored card. The filter must render exactly (gameObjectFilterExpr declines an
+    // unrenderable one -> SCAFFOLD) rather than widen the group to every permanent.
+    on("ReturnAnyNumberOfPermanentsToTheirOwnersHands") { _, args, _ ->
+        val filter = gameObjectFilterDsl(args) ?: return@on null
+        // Wrap the three steps in an explicit `Effects.Composite(...)` call (not a `Composite` Dsl node,
+        // which `renderEffectList` would splice flat into the surrounding effect list). The inline
+        // `Effects.Pipeline { }` builder the hand-authored card uses produces exactly this nested
+        // Composite of the same three steps with the `gathered0` / `selected1` slot keys.
+        call(
+            "Effects.Composite",
+            arg(Lit("GatherCardsEffect(CardSource.BattlefieldMatching($filter), storeAs = \"gathered0\")")),
+            arg(Lit(
+                "SelectFromCollectionEffect(from = \"gathered0\", selection = SelectionMode.ChooseAnyNumber, " +
+                    "storeSelected = \"selected1\", useTargetingUI = true)"
+            )),
+            arg(Lit("MoveCollectionEffect(from = \"selected1\", destination = CardDestination.ToZone(Zone.HAND))")),
+        )
+    }
+
     on("ReturnGraveyardCardToHand") { _, args, _ ->
         // "Return this card from your graveyard to your hand" (Gangrenous Goliath's graveyard ability). Only
         // the self (this graveyard card) form renders; a chosen graveyard-card target scaffolds.

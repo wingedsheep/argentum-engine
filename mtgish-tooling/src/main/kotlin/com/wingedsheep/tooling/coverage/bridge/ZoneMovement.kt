@@ -37,6 +37,9 @@ internal fun BridgeBuilder.zoneMovement() {
 
     composed("PutPermanentIntoItsOwnersHand", "bounce: MoveToZone / Gather-Select-MoveCollection pipeline", composes = listOf("MoveToZone"))
     composed("PutEachPermanentIntoItsOwnersHand", "EachPlayerReturnsPermanentToHand", composes = listOf("MoveCollection", "MoveToZone"))
+    // "Return any number of [filter] to their owner's hand" (Rambling Possum) — Gather -> ChooseAnyNumber
+    // -> MoveCollection (battlefield->hand routes to owner).
+    composed("ReturnAnyNumberOfPermanentsToTheirOwnersHands", "Gather->ChooseAnyNumber->MoveCollection (battlefield->owner hand)", composes = listOf("MoveCollection", "MoveToZone"))
     composed("PutPermanentOnTopOfOwnersLibrary", "PutOnLibraryPositionOfChoice", composes = listOf("MoveToZone"))
 
     composed("LookAtTheTopNumberCardsOfLibrary", "Patterns.Library.lookAtTopAndKeep/Reorder -> Gather/Select/MoveCollection", composes = listOf("MoveCollection"))

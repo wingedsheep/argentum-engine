@@ -419,6 +419,30 @@ private fun EmitCtx.youControlConditionDsl(condNode: JsonElement?): String? {
 }
 
 /**
+ * "you control N or more [filter]" condition (`PlayerPassesFilter(You, ControlsNum([Comparison
+ * GreaterThanOrEqualTo Integer N], <filter>))`) -> `Conditions.YouControlAtLeast(N, <filter>)`, or null
+ * when the player isn't You, the comparison isn't `>= N` (a fixed integer), or the filter doesn't render
+ * exactly. Used by Dust Animus's "if you control five or more untapped lands" enters-with-counters gate.
+ * Only the `GreaterThanOrEqualTo` comparison maps to the at-least facade; any other comparator declines
+ * -> SCAFFOLD rather than miscount.
+ */
+private fun EmitCtx.youControlAtLeastConditionDsl(condNode: JsonElement?): String? {
+    val cond = condNode as? JsonObject ?: return null
+    if (cond.strField("_Condition") != "PlayerPassesFilter") return null
+    val args = cond["args"].asArr ?: return null
+    if ((args.getOrNull(0) as? JsonObject)?.strField("_Player") != "You") return null
+    val controls = args.getOrNull(1) as? JsonObject ?: return null
+    if (controls.strField("_Players") != "ControlsNum") return null
+    val cArgs = controls["args"].asArr ?: return null
+    val comparison = cArgs.getOrNull(0) as? JsonObject ?: return null
+    if (comparison.strField("_Comparison") != "GreaterThanOrEqualTo") return null
+    val n = (comparison["args"] as? JsonObject)?.takeIf { it.strField("_GameNumber") == "Integer" }
+        ?.get("args").asInt() ?: return null
+    val filter = gameObjectFilterDsl(cArgs.getOrNull(1)) ?: return null
+    return render(call("Conditions.YouControlAtLeast", arg("$n"), arg(Lit(filter))))
+}
+
+/**
  * A `FlashForCasters { Condition }` rule -> the card-level `conditionalFlash = <condition>`
  * assignment ("<this> has flash as long as <condition>", CR 702.8 / Colossal Rattlewurm). Only the
  * "you control a [filter]" condition the shared [youControlConditionDsl] renders exactly produces a
@@ -555,6 +579,20 @@ internal fun EmitCtx.ifRuleBlock(rule: JsonObject): List<Stmt>? {
             arg("ability", call("GrantKeyword", arg("Keyword.$kw"), arg("Filters.Self"))),
             arg("condition", Lit(condDsl)),
         )))
+    }
+
+    // Dust Animus: "If you control five or more untapped lands, this creature enters with two +1/+1
+    // counters and a lifelink counter on it."
+    //   If(PlayerPassesFilter(You, ControlsNum(>= 5, And(IsUntapped, IsCardtype Land))))
+    //     [ AsPermanentEnters(ThisPermanent, [ EntersWithNumberCounters, EntersWithACounter ]) ]
+    // -> the EntersWithCounters replacement(s) each carry a `condition = Conditions.YouControlAtLeast(N,
+    // <filter>)` evaluated as the permanent enters. Only the "you control N or more [filter]" gate the
+    // shared youControlAtLeastConditionDsl renders exactly produces a block; the enters-with rendering
+    // (asEntersBlock) still declines any replacement it can't reproduce, so the whole card scaffolds
+    // rather than dropping the condition or a counter.
+    if (innerRule.strField("_Rule") == "AsPermanentEnters") {
+        val condDsl = youControlAtLeastConditionDsl(cond) ?: run { reasons.add("If"); return null }
+        return asEntersBlock(innerRule, condition = condDsl)
     }
 
     reasons.add("If"); return null
@@ -808,6 +846,21 @@ private fun spellOf(effect: Dsl): List<Stmt> = listOf(Sub(Block("spell", listOf(
 /** mtgish actions whose Argentum rendering already embeds the "you may" choice (so a wrapping
  *  MayAction must NOT also set the ability's `optional = true`). */
 private val SELF_OPTIONAL_ACTIONS = setOf("PutACardFromHandOnBattlefield")
+
+/** The IR "<Keyword>Counter" kinds the emitter renders as a Named CounterTypeFilter, each mapped to its
+ *  `Counters` string constant. Restricted to the keyword counters the engine grants as a keyword
+ *  (mirrors StateProjector.KEYWORD_COUNTER_MAP), which all have a known constant. Any other counter kind
+ *  declines -> SCAFFOLD rather than emit a non-compiling `Counters.X`. */
+private val KEYWORD_COUNTER_CONSTANT = mapOf(
+    "FlyingCounter" to "FLYING",
+    "FirstStrikeCounter" to "FIRST_STRIKE",
+    "LifelinkCounter" to "LIFELINK",
+    "IndestructibleCounter" to "INDESTRUCTIBLE",
+    "DeathtouchCounter" to "DEATHTOUCH",
+    "TrampleCounter" to "TRAMPLE",
+    "HexproofCounter" to "HEXPROOF",
+    "ReachCounter" to "REACH",
+)
 
 private val TRIGGER_SPEC = mapOf(
     "WhenAPermanentEntersTheBattlefield" to "Triggers.EntersBattlefield",
@@ -1170,6 +1223,13 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     // them is a human call (the add-card scenario test is the real gate).
     if (jsonContains(trig, "_Trigger", "WhenACreatureOrPlaneswalkerDies") && !isSelf(trig)) return null
 
+    // "Whenever this creature becomes saddled for the first time each turn" (CR 702.171b — Stubborn
+    // Burrowfiend). The IR tag bakes in the once-per-turn semantics, so it always renders the
+    // first-time-each-turn trigger over the SELF (ThisPermanent) subject; a non-self subject has no
+    // calibrated ANY-binding card yet, so it declines -> SCAFFOLD rather than guess a filter.
+    if (jsonContains(trig, "_Trigger", "WhenAPermanentBecomesSaddledForTheFirstTimeInATurn") && isSelf(trig))
+        return "Triggers.becomesSaddled(firstTimeEachTurn = true)"
+
     // "Whenever ~ deals damage" / "Whenever ~ is dealt damage" (SELF) — paired with a "that much"
     // gain/lose-life or token effect.
     if (jsonContains(trig, "_Trigger", "WhenAPermanentDealsDamage") && isSelf(trig))
@@ -1498,7 +1558,7 @@ internal fun EmitCtx.cdaStatsBlock(card: JsonObject, rule: JsonObject): List<Stm
  * `_ReplacementActionWouldEnter` nodes (enters tapped, choose a creature type as it enters, ...).
  * Any replacement we can't render exactly downgrades the card to SCAFFOLD rather than guess.
  */
-internal fun EmitCtx.asEntersBlock(rule: JsonObject): List<Stmt>? {
+internal fun EmitCtx.asEntersBlock(rule: JsonObject, condition: String? = null): List<Stmt>? {
     val replacements = (rule["args"].asArr?.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
     if (replacements.isNullOrEmpty()) { reasons.add("AsPermanentEnters"); return null }
     // The rule's first arg is the permanent the replacement scopes to. We only render the self case
@@ -1511,29 +1571,58 @@ internal fun EmitCtx.asEntersBlock(rule: JsonObject): List<Stmt>? {
             "EntersTapped" -> call("EntersTapped")
             "ChooseACreatureType" -> call("EntersWithChoice", arg("ChoiceType.CREATURE_TYPE"))
             "EntersWithACounter" -> {
-                // "~ enters with a +1/+1 counter on it" — a single fixed counter on this permanent.
-                // Only the self-scoped ±1/±1 counter renders; other counter kinds need a CounterTypeFilter
-                // we don't map here, and a group scope is unsupported, so both scaffold.
+                // "~ enters with a [counter] on it" — a single fixed counter on this permanent. The
+                // self-scoped ±1/±1 counter renders as the default-filter EntersWithCounters; a keyword
+                // counter (e.g. a lifelink counter, Dust Animus) renders with an explicit Named filter.
+                // A group scope is unsupported and any unmappable counter kind scaffolds.
                 if (!onSelf) { reasons.add("AsPermanentEnters"); return null }
                 val counter = rep["args"] as? JsonObject
-                val pt = counter?.get("args").asArr
-                if (counter?.strField("_CounterType") != "PTCounter" || pt?.getOrNull(0).asInt() != 1 || pt?.getOrNull(1).asInt() != 1) {
-                    reasons.add("AsPermanentEnters"); return null
+                val kind = counter?.strField("_CounterType")
+                val ewArgs = mutableListOf<Arg>()
+                when {
+                    // ±1/±1 counter -> default-filter EntersWithCounters (the PlusOnePlusOne default).
+                    kind == "PTCounter" -> {
+                        val pt = counter["args"].asArr
+                        if (pt?.getOrNull(0).asInt() != 1 || pt?.getOrNull(1).asInt() != 1) { reasons.add("AsPermanentEnters"); return null }
+                    }
+                    // A keyword counter (e.g. a lifelink counter, Dust Animus). The IR names it
+                    // "<Keyword>Counter"; map to a Named CounterTypeFilter via the Counters string constant.
+                    // Restricted to the keyword counters the engine grants as a keyword
+                    // (StateProjector.KEYWORD_COUNTER_MAP) — these have a known `Counters` constant. Any
+                    // other "*Counter" kind (a ShieldCounter, a homebrew marker) has no validated constant,
+                    // so it declines -> SCAFFOLD rather than emit a non-compiling `Counters.X`.
+                    kind in KEYWORD_COUNTER_CONSTANT -> {
+                        ewArgs.add(arg("counterType", "CounterTypeFilter.Named(Counters.${KEYWORD_COUNTER_CONSTANT[kind]})"))
+                    }
+                    else -> { reasons.add("AsPermanentEnters"); return null }
                 }
-                call("EntersWithCounters", arg("count", "1"), arg("selfOnly", "true"))
+                ewArgs.add(arg("count", "1"))
+                ewArgs.add(arg("selfOnly", "true"))
+                if (condition != null) ewArgs.add(arg("condition", condition))
+                Call("EntersWithCounters", ewArgs)
             }
             "EntersWithNumberCounters" -> {
-                // "enters with X +1/+1 counters" where X is a dynamic count (Stag Beetle: number of other
-                // creatures — as it enters, self isn't on the battlefield, so the plain count IS "other").
-                // Only the ±1/±1 counter with a recoverable dynamic amount renders; anything else scaffolds.
+                // "enters with N +1/+1 counters". A FIXED count (Integer) renders the static
+                // EntersWithCounters(count = N); a dynamic count (Stag Beetle: number of other creatures —
+                // as it enters, self isn't on the battlefield, so the plain count IS "other") renders
+                // EntersWithDynamicCounters. Only the ±1/±1 counter with a recoverable amount renders.
                 val a = rep["args"].asArr ?: run { reasons.add("AsPermanentEnters"); return null }
                 val counter = a.getOrNull(1) as? JsonObject
                 val pt = counter?.get("args").asArr
                 if (counter?.strField("_CounterType") != "PTCounter" || pt?.getOrNull(0).asInt() != 1 || pt?.getOrNull(1).asInt() != 1) {
                     reasons.add("AsPermanentEnters"); return null
                 }
-                val amt = dynamicAmountExpr(a.getOrNull(0)) ?: run { reasons.add("AsPermanentEnters"); return null }
-                call("EntersWithDynamicCounters", arg("count", amt))
+                val countNode = a.getOrNull(0) as? JsonObject
+                if (countNode?.strField("_GameNumber") == "Integer") {
+                    val n = countNode["args"].asInt() ?: run { reasons.add("AsPermanentEnters"); return null }
+                    val ewArgs = mutableListOf(arg("count", "$n"), arg("selfOnly", "true"))
+                    if (condition != null) ewArgs.add(arg("condition", condition))
+                    Call("EntersWithCounters", ewArgs)
+                } else {
+                    if (condition != null) { reasons.add("AsPermanentEnters"); return null } // no condition param on dynamic form
+                    val amt = dynamicAmountExpr(a.getOrNull(0)) ?: run { reasons.add("AsPermanentEnters"); return null }
+                    call("EntersWithDynamicCounters", arg("count", amt))
+                }
             }
             else -> { reasons.add("AsPermanentEnters"); return null }
         }
