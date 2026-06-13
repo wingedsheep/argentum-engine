@@ -290,3 +290,15 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   `sourceToughness()` reads last-known toughness post-bounce (same mechanism as Heartfire Hero's
   source-power-on-death). Test: attacking Riders bounces + makes 4 tokens; non-attacking stays.
 
+### Rangers of Ithilien (Blue) — power-comparison target filter
+
+- **Oracle:** "Vigilance. When this creature enters, gain control of up to one target creature with
+  lesser power for as long as you control this creature. Then the Ring tempts you."
+- **Decision:** added strict `CardPredicate.PowerLessThanEntity(reference)` +
+  `ObjectFilter/TargetFilter.powerLessThanEntity()` (the engine had ≤ via `powerAtMostEntity`; "lesser"
+  is strict <). Real eval in PredicateEvaluator; no-op `-> false` in the other exhaustive CardPredicate
+  whens (PredicateEvaluator projection list, TriggerMatcher, AffectsFilterResolver, CostCalculator).
+  Card = ETB `target(powerLessThanEntity(Source))` + `GainControl(_, WhileYouControlSource("Rangers of
+  Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
+  power-comparison cards.
+

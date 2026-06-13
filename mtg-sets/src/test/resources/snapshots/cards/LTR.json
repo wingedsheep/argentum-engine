@@ -11511,6 +11511,74 @@
     ]
 }
 
+// Rangers of Ithilien
+{
+    "name": "Rangers of Ithilien",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Ranger",
+    "oracleText": "Vigilance\nWhen this creature enters, gain control of up to one target creature with lesser power for as long as you control this creature. Then the Ring tempts you.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target creature with lesser power"
+                            },
+                            "duration": {
+                                "type": "WhileYouControlSource",
+                                "sourceDescription": "Rangers of Ithilien"
+                            }
+                        },
+                        "TheRingTemptsYou"
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Source"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "up to one target creature with lesser power"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Torgeir Fjereide",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/819b4208-7a29-41fa-947f-614bf669b300.jpg?1686968256"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Relentless Rohirrim
 {
     "name": "Relentless Rohirrim",

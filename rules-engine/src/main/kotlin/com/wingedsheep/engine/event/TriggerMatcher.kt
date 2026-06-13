@@ -814,6 +814,7 @@ class TriggerMatcher(
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMostEntityManaSpent -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerGreaterThanEntity -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtMostEntity -> false
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerLessThanEntity -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEquals -> {
                 val cmc = if (isFaceDown) 0 else cardComponent.manaValue
                 cmc == predicate.value

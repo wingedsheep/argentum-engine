@@ -565,6 +565,7 @@ internal class AffectsFilterResolver {
         is CardPredicate.ManaValueAtMostColorsSpent -> false
         is CardPredicate.PowerGreaterThanEntity -> false
         is CardPredicate.PowerAtMostEntity -> false
+        is CardPredicate.PowerLessThanEntity -> false
         CardPredicate.ManaValueIsEven -> card.manaValue % 2 == 0
         CardPredicate.ManaValueIsOdd -> card.manaValue % 2 != 0
         is CardPredicate.NameEquals -> card.name == predicate.name

@@ -490,6 +490,17 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /**
+     * Power strictly less than the projected power of [reference] (e.g. "a creature with lesser
+     * power" than the source — Rangers of Ithilien). Strict counterpart of [PowerAtMostEntity].
+     */
+    @SerialName("PowerLessThanEntity")
+    @Serializable
+    data class PowerLessThanEntity(val reference: EntityReference) : CardPredicate {
+        override val description: String = "with power less than ${reference.description}"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Context-relative Predicates (Pipeline Variable References)
     // =============================================================================

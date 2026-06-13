@@ -397,6 +397,16 @@ class PredicateEvaluator {
                 candidatePower <= refPower
             }
 
+            is CardPredicate.PowerLessThanEntity -> {
+                val refEntityId = resolveEntityReference(predicate.reference, context) ?: return false
+                val refContainer = state.getEntity(refEntityId) ?: return false
+                val refPower = state.projectedState.getPower(refEntityId)
+                    ?: refContainer.get<CardComponent>()?.baseStats?.basePower
+                    ?: return false
+                val candidatePower = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                candidatePower < refPower
+            }
+
             // Source-relative predicates
             CardPredicate.NotOfSourceChosenType -> {
                 val sourceId = context?.sourceId ?: return true
@@ -968,6 +978,7 @@ class PredicateEvaluator {
             is CardPredicate.TotalPowerAndToughnessAtMost,
             is CardPredicate.PowerGreaterThanEntity,
             is CardPredicate.PowerAtMostEntity,
+            is CardPredicate.PowerLessThanEntity,
             CardPredicate.ToughnessGreaterThanPower -> false
 
             // Name predicates — not stored in record

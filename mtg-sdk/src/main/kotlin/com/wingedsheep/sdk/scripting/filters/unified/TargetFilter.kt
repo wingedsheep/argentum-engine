@@ -292,6 +292,10 @@ data class TargetFilter(
     fun powerGreaterThanEntity(reference: com.wingedsheep.sdk.scripting.values.EntityReference) =
         copy(baseFilter = baseFilter.powerGreaterThanEntity(reference))
 
+    /** Power strictly less than the projected power of a referenced entity (source, triggering, etc.) */
+    fun powerLessThanEntity(reference: com.wingedsheep.sdk.scripting.values.EntityReference) =
+        copy(baseFilter = baseFilter.powerLessThanEntity(reference))
+
     /** Power less than or equal to the projected power of a referenced entity (source, triggering, etc.) */
     fun powerAtMostEntity(reference: com.wingedsheep.sdk.scripting.values.EntityReference) =
         copy(baseFilter = baseFilter.powerAtMostEntity(reference))

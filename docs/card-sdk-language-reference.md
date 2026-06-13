@@ -1419,9 +1419,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EntityReference.Source` to express "greater power than the ability's source".
-- `.powerAtMostEntity(ref)` — power ≤ a referenced entity's projected power. Inverse of
-  `.powerGreaterThanEntity`; used by Old Man of the Sea ("target creature with power less than or equal
-  to this creature's power") with `EntityReference.Source`.
+- `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
+  entity's projected power; inverses of `.powerGreaterThanEntity`. `powerAtMostEntity` backs Old Man of
+  the Sea ("power less than or equal to this creature's power"); `powerLessThanEntity` backs "a creature
+  with lesser power" (Rangers of Ithilien). Pair with `EntityReference.Source` for "than the source".
 - `.manaValueAtMostEntityManaSpent(ref)` — mana value ≤ the mana **actually spent** to cast a referenced
   entity. Reads the live `SpellOnStackComponent` buckets while the entity is still a spell, or the
   `CastRecordComponent` snapshot once it has resolved onto the battlefield (0 if it was never cast).

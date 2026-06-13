@@ -314,6 +314,10 @@ data class GameObjectFilter(
     )
 
     /** Power less than or equal to the projected power of a referenced entity (source, triggering, etc.) */
+    fun powerLessThanEntity(reference: EntityReference) = copy(
+        cardPredicates = cardPredicates + CardPredicate.PowerLessThanEntity(reference)
+    )
+
     fun powerAtMostEntity(reference: EntityReference) = copy(
         cardPredicates = cardPredicates + CardPredicate.PowerAtMostEntity(reference)
     )
