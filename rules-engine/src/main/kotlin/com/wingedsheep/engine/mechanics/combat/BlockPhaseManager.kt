@@ -79,6 +79,12 @@ internal class BlockPhaseManager(
             return ExecutionResult.error(state, menaceValidation)
         }
 
+        // Check "can't be blocked except by N or more creatures" (Troll of Khazad-dûm)
+        val minBlockersValidation = validateMinBlockersRequirements(state, blockers)
+        if (minBlockersValidation != null) {
+            return ExecutionResult.error(state, minBlockersValidation)
+        }
+
         // Check max-blocker restrictions on attackers (CantBeBlockedByMoreThan)
         val maxBlockersValidation = validateMaxBlockersRequirements(state, blockers)
         if (maxBlockersValidation != null) {
@@ -499,6 +505,42 @@ internal class BlockPhaseManager(
                 if (blockerList.size < 2) {
                     return "${attackerCard.name} has menace and must be blocked by 2 or more creatures"
                 }
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Validate "can't be blocked except by N or more creatures" ([CantBeBlockedByFewerThan]).
+     * Generalizes menace: an attacker carrying the static may be left unblocked, but if blocked it
+     * must have at least [CantBeBlockedByFewerThan.minBlockers] blockers.
+     */
+    private fun validateMinBlockersRequirements(
+        state: GameState,
+        blockers: Map<EntityId, List<EntityId>>
+    ): String? {
+        val attackerToBlockers = mutableMapOf<EntityId, MutableList<EntityId>>()
+        for ((blockerId, attackerIds) in blockers) {
+            for (attackerId in attackerIds) {
+                attackerToBlockers.getOrPut(attackerId) { mutableListOf() }.add(blockerId)
+            }
+        }
+
+        for ((attackerId, blockerList) in attackerToBlockers) {
+            if (blockerList.isEmpty()) continue
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            if (attackerContainer.has<FaceDownComponent>()) continue
+            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
+
+            val minBlockers = cardDef.staticAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan>()
+                .filter { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self }
+                .maxOfOrNull { it.minBlockers } ?: continue
+
+            if (blockerList.size < minBlockers) {
+                return "${attackerCard.name} can't be blocked except by $minBlockers or more creatures"
             }
         }
 

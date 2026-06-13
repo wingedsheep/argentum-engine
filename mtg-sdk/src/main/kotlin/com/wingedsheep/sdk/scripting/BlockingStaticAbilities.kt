@@ -59,6 +59,26 @@ data class CantBeBlockedExceptBy(
 }
 
 /**
+ * This creature can't be blocked except by [minBlockers] or more creatures — a generalization of
+ * menace (which is the [minBlockers] = 2 case). It may still be left unblocked; the restriction only
+ * applies once at least one creature blocks it. Enforced at block declaration, like menace.
+ *
+ * Example: Troll of Khazad-dûm — `CantBeBlockedByFewerThan(3)` ("can't be blocked except by three or
+ * more creatures").
+ *
+ * @property minBlockers The minimum number of creatures required to block (if blocked at all).
+ * @property filter What this ability applies to (default: the source creature).
+ */
+@SerialName("CantBeBlockedByFewerThan")
+@Serializable
+data class CantBeBlockedByFewerThan(
+    val minBlockers: Int,
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "can't be blocked except by $minBlockers or more creatures"
+}
+
+/**
  * This creature can only block creatures matching a filter.
  * Generalized "can block only X creatures" — used for the Spirit token from Realm of Koh
  * ("can't block or be blocked by non-Spirit creatures") and any analogous restriction.

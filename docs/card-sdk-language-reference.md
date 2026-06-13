@@ -688,6 +688,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   the static ability uses, so the existing `CantBeBlockedExceptByRule` enforces it. Used by **Resilient Roadrunner**:
   `{3}: This creature can't be blocked this turn except by creatures with haste` —
   `Effects.GrantCantBeBlockedExceptBy(EffectTarget.Self, GameObjectFilter.Creature.withKeyword(Keyword.HASTE))`.
+- `CantBeBlockedByFewerThan(minBlockers, filter = source())` (static ability) — "can't be blocked
+  except by N or more creatures," a generalization of menace (the N = 2 case). May be left unblocked;
+  the restriction only applies once at least one creature blocks it. Enforced at block declaration in
+  `BlockPhaseManager.validateMinBlockersRequirements`, mirroring the menace check. Used by Troll of
+  Khazad-dûm (`CantBeBlockedByFewerThan(3)`).
 - `CantCastSpellsEffect(target, until?)` — target can't cast spells. Facade: `Effects.CantCastSpells(target, duration)`.
 - `Effects.CantPlayLandsThisTurn(target = Controller)` (`PreventLandPlaysThisTurnEffect`) — the target player can't
   play lands for the rest of this turn (sets remaining land drops to 0). Defaults to the controller (Rock Jockey);

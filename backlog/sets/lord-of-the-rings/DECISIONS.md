@@ -302,6 +302,18 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Troll of Khazad-dûm (Black) — Gap 23 (typecycling) + min-blocker static
+
+- **Oracle:** "Can't be blocked except by three or more creatures. Swampcycling {1}."
+- **Decision:** Gap 23 (typecycling) was already landed — `KeywordAbility.typecycling("Swamp", "{1}")`
+  expresses swampcycling (searches for a card with the Swamp type). The block restriction needed a
+  new static: added `CantBeBlockedByFewerThan(minBlockers, filter)` — a generalization of menace
+  (the minBlockers = 2 case). Enforced in `BlockPhaseManager.validateMinBlockersRequirements`
+  (mirrors `validateMenaceRequirements`): an attacker carrying it may be unblocked, but if blocked
+  needs ≥ minBlockers blockers. Added to the `-> null` group in `StaticAbilityHandler` (enforced at
+  declaration, not as a continuous projection). Card = `CantBeBlockedByFewerThan(3)` + swampcycling.
+- **Test:** Troll blocked by 2 → illegal; by 3 → legal; unblocked → legal.
+
 ### Gandalf's Sanction (Multicolor) — Gap 34 (excess damage redirected to controller)
 
 - **Oracle:** "Deals X damage to target creature, where X is the number of instant and sorcery cards

@@ -15869,6 +15869,50 @@
     ]
 }
 
+// Troll of Khazad-dûm
+{
+    "name": "Troll of Khazad-dûm",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "This creature can't be blocked except by three or more creatures.\nSwampcycling {1} ({1}, Discard this card: Search your library for a Swamp card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Swamp"
+                    }
+                ]
+            },
+            "displayPrefix": "Swampcycling"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByFewerThan",
+                "minBlockers": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Simon Dominic",
+        "flavorText": "\"A great cave-troll, I think. There is no hope of escape that way.\"\n—Gandalf",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6539e26-b63b-4725-9407-caaf451de084.jpg?1743419034"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Uglúk of the White Hand
 {
     "name": "Uglúk of the White Hand",
