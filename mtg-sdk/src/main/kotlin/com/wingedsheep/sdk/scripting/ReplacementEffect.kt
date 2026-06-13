@@ -630,10 +630,22 @@ data class DamageCantBePrevented(
 data class ModifyLifeGain(
     val multiplier: Int = 2,
     val modifier: Int = 0,
-    override val appliesTo: EventPattern = EventPattern.LifeGainEvent()
+    override val appliesTo: EventPattern = EventPattern.LifeGainEvent(),
+    /**
+     * Additional [Condition]s gating when this modification applies, evaluated against the
+     * gaining player as controller; ALL must hold. Used by Phial of Galadriel
+     * (`restrictions = listOf(Conditions.LifeAtMost(5))` — "while you have 5 or less life").
+     */
+    val restrictions: List<Condition> = emptyList()
 ) : ReplacementEffect {
     override val description: String = buildString {
-        append("If ")
+        val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
+        if (restrictionDesc.isNotEmpty()) {
+            append(restrictionDesc.replaceFirstChar { it.uppercase() })
+            append(", if ")
+        } else {
+            append("If ")
+        }
         append(appliesTo.description)
         append(", gain ")
         when {
@@ -657,7 +669,10 @@ data class ModifyLifeGain(
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
+        val anyChanged = newAppliesTo !== appliesTo ||
+            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
     }
 }
 

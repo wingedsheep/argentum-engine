@@ -11384,6 +11384,70 @@
     ]
 }
 
+// Phial of Galadriel
+{
+    "name": "Phial of Galadriel",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "If you would draw a card while you have no cards in hand, draw two cards instead.\nIf you would gain life while you have 5 or less life, you gain twice that much life instead.\n{T}: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyDrawAmount",
+                "modifier": 1,
+                "restrictions": [
+                    {
+                        "type": "Compare",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 0
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "ModifyLifeGain",
+                "restrictions": [
+                    {
+                        "type": "Compare",
+                        "left": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "RARE",
+        "artist": "Andrea Piparo",
+        "flavorText": "\"May it be a light to you in dark places, when all other lights go out.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac6d60fe-681b-495e-813c-c8418f3f29e5.jpg?1686970260"
+    }
+}
+
 // Pippin's Bravery
 {
     "name": "Pippin's Bravery",

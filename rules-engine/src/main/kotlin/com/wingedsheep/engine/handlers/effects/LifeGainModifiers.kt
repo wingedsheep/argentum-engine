@@ -35,6 +35,7 @@ object LifeGainModifiers {
     fun apply(state: GameState, recipientId: EntityId, originalAmount: Int): Int {
         if (originalAmount <= 0) return originalAmount
 
+        val conditionEvaluator = com.wingedsheep.engine.handlers.ConditionEvaluator()
         var multiplier = 1
         var modifier = 0
 
@@ -61,6 +62,21 @@ object LifeGainModifiers {
                     else -> recipientId == sourceControllerId
                 }
                 if (!recipientMatches) continue
+
+                // Gate by any restrictions (e.g. Phial of Galadriel's "while you have 5 or less
+                // life"), evaluated against the gaining player as controller. Mirrors the
+                // ModifyDrawAmount restriction path in DrawReplacementDispatcher.
+                if (effect.restrictions.isNotEmpty()) {
+                    val effectContext = com.wingedsheep.engine.handlers.EffectContext(
+                        sourceId = entityId,
+                        controllerId = recipientId,
+                        opponentId = state.getOpponent(recipientId),
+                    )
+                    val restrictionsHold = effect.restrictions.all { restriction ->
+                        conditionEvaluator.evaluate(state, restriction, effectContext)
+                    }
+                    if (!restrictionsHold) continue
+                }
 
                 // Multiple Leylines of Hope: each adds 1, so stack the modifiers additively.
                 // Multiple Archives stack multiplicatively (×2 × ×2 = ×4).

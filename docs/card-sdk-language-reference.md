@@ -3849,11 +3849,13 @@ replacementEffect {
   use a source-relative condition instead. Use for "if you would draw one or more cards, you draw
   that many cards plus N instead" (Quantum Riddler:
   `ModifyDrawAmount(modifier = 1, restrictions = listOf(Conditions.CardsInHandAtMost(1)), appliesTo = DrawEvent(player = Player.You))`).
-- `ModifyLifeGain(multiplier, modifier, appliesTo)` — modify life gain by a multiplicative *and/or* additive
-  factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent` whose
-  `player` filter (default `Player.Each`) gates which players the replacement applies to. Used by Alhammarret's
-  Archive (`multiplier = 2`), Leyline of Hope (`multiplier = 1, modifier = 1, player = Player.You`). Multiple
-  instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to every life-gain event.
+- `ModifyLifeGain(multiplier, modifier, appliesTo, restrictions)` — modify life gain by a multiplicative *and/or*
+  additive factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent`
+  whose `player` filter (default `Player.Each`) gates which players the replacement applies to. `restrictions`
+  (a `List<Condition>`, ALL must hold, evaluated against the gaining player as controller) gates *when* it applies
+  — e.g. Phial of Galadriel `restrictions = listOf(Conditions.LifeAtMost(5))` ("while you have 5 or less life").
+  Used by Alhammarret's Archive (`multiplier = 2`), Leyline of Hope (`multiplier = 1, modifier = 1, player =
+  Player.You`). Multiple instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to every life-gain event.
 - `ModifyLifeLoss(multiplier, modifier, restrictions, appliesTo)` — same shape as `ModifyLifeGain` for life loss
   events (`LifeLossEvent`), plus a `restrictions: List<Condition>` list that further gates the replacement.
 - `LifeLossFloor(floor, restrictions, appliesTo)` — cap damage-induced life loss so the resulting life total

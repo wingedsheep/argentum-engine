@@ -302,6 +302,21 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   Ithilien"))` then `TheRingTemptsYou()`. Test: 3/3 Rangers takes a 2/2. Also helps Grishnákh / other
   power-comparison cards.
 
+### Phial of Galadriel (Artifact) — Gap 38 (conditional draw + life-gain replacements)
+
+- **Oracle:** "If you would draw a card while you have no cards in hand, draw two instead. If you
+  would gain life while you have 5 or less life, gain twice that much instead. {T}: Add one mana of
+  any color."
+- **Decision:** both replacements compose. Draw half = existing `ModifyDrawAmount(modifier=1,
+  restrictions=[CardsInHandAtMost(0)], appliesTo=DrawEvent(You))`. Life half needed a condition gate:
+  added `restrictions: List<Condition>` to `ModifyLifeGain` (mirrors `ModifyDrawAmount.restrictions`),
+  evaluated in `LifeGainModifiers.apply` via a per-recipient `EffectContext` + `ConditionEvaluator`
+  (same pattern as `DrawReplacementDispatcher`). `restrictions=[LifeAtMost(5)]`. Mana ability =
+  `AddManaOfChoiceEffect(AnyColor, 1)`. Empty `restrictions` → no behavior change (Leyline of Hope /
+  Alhammarret's Archive unaffected).
+- **Test:** draw with empty hand → 2; with a card in hand → 1 (not doubled); gain 3 at life 5 → +6;
+  gain 3 at life 10 → +3.
+
 ### Troll of Khazad-dûm (Black) — Gap 23 (typecycling) + min-blocker static
 
 - **Oracle:** "Can't be blocked except by three or more creatures. Swampcycling {1}."
