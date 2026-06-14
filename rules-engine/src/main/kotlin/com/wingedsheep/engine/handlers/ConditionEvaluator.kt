@@ -115,6 +115,7 @@ import com.wingedsheep.sdk.scripting.conditions.PermanentTypeEnteredBattlefieldT
 import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerCommittedCrimeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasCitysBlessing
+import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
@@ -123,6 +124,7 @@ import com.wingedsheep.engine.state.components.identity.PlottedComponent
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.conditions.VoidCondition
 import com.wingedsheep.engine.state.components.player.PlayerCitysBlessingComponent
+import com.wingedsheep.engine.state.components.player.TheRingComponent
 
 /**
  * Evaluates conditions from the SDK against the game state.
@@ -283,6 +285,14 @@ class ConditionEvaluator(
                 playerId != null && playerId in state.playersWhoCommittedCrimeThisTurn
             }
             is PlayerHasCitysBlessing -> evaluateHasCitysBlessingCtx(state, condition, ctx)
+
+            is RingHasTemptedPlayerAtLeast -> {
+                val playerId = resolvePlayer(state, condition.player, ctx)
+                val tempted = playerId?.let {
+                    state.getEntity(it)?.get<TheRingComponent>()?.temptCount
+                } ?: 0
+                tempted >= condition.times
+            }
             is PermanentTypeEnteredBattlefieldThisTurn ->
                 evaluatePermanentTypeEnteredBattlefieldThisTurnCtx(state, condition, ctx)
             is PermanentLeftBattlefieldThisTurn ->

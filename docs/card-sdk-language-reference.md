@@ -3032,6 +3032,11 @@ answer it and would silently return `false`.
   both when the source itself was chosen and when the controller had no creature to choose. Used by
   Aragorn (Company Leader), Faramir (Field Commander), Gandalf (Friend of the Shire), and Galadriel
   of Lothlórien.
+- `RingHasTemptedYouAtLeast(times)` — the Ring has tempted you `times` or more times this game
+  (CR 701.54). Reads the cumulative `temptCount` on your The Ring emblem; a player never tempted
+  counts as 0. Works at resolution and as an intervening-if. Used by Frodo, Sauron's Bane's granted
+  Rogue ability ("that player loses the game if the Ring has tempted you four or more times this
+  game"). Backed by `RingHasTemptedPlayerAtLeast(times, Player.You)`.
 
 ### Life & damage
 

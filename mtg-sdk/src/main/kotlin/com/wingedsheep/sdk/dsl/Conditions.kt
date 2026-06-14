@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerAttackedWithCreaturesThisT
 import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerCommittedCrimeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasCitysBlessing
+import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -78,6 +79,13 @@ object Conditions {
      */
     val SourceReceivedCounterThisTurn: ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.SourceReceivedCounterThisTurn
+
+    /**
+     * If the Ring has tempted you [times] or more times this game (CR 701.54). Reads the cumulative
+     * tempt count on your The Ring emblem; a player never tempted counts as 0.
+     */
+    fun RingHasTemptedYouAtLeast(times: Int): ConditionInterface =
+        RingHasTemptedPlayerAtLeast(times, Player.You)
 
     // =========================================================================
     // Battlefield Conditions (via Exists / Compare)

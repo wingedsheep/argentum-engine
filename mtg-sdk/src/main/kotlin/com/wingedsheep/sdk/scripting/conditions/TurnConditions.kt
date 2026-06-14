@@ -400,3 +400,26 @@ data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
     override val description: String = "if ${player.description} has the city's blessing"
 }
 
+/**
+ * Intervening-if / resolution condition: "if the Ring has tempted [player] [times] or more times
+ * this game" (CR 701.54).
+ *
+ * Reads the cumulative `temptCount` the engine tracks on the player's The Ring emblem
+ * (`TheRingComponent`), which only ever increases as the Ring tempts that player. A player who has
+ * never been tempted has no emblem, so the count is treated as 0. The `Conditions.RingHasTemptedYouAtLeast`
+ * DSL helper passes [Player.You], resolved to the source's controller. Used by Frodo, Sauron's Bane's
+ * granted Rogue ability ("that player loses the game if the Ring has tempted you four or more times
+ * this game").
+ *
+ * @property times The minimum cumulative tempt count required for the condition to hold.
+ */
+@SerialName("RingHasTemptedPlayerAtLeast")
+@Serializable
+data class RingHasTemptedPlayerAtLeast(
+    val times: Int,
+    val player: Player = Player.You
+) : Condition {
+    override val description: String =
+        "if the Ring has tempted ${player.description} $times or more times this game"
+}
+

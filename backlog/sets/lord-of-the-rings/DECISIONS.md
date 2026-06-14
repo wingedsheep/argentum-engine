@@ -694,3 +694,33 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   begin-combat trigger untaps a tapped equipped creature; (3) the equipped creature gains projected
   FIRST_STRIKE when blocked by a Goblin (Goblin Guide); (4) it does NOT gain first strike when blocked
   by a non-Goblin/Orc (Savannah Lions).
+
+### Frodo, Sauron's Bane — class-up Citizen → Scout → Rogue + Ring-tempt-count condition
+
+- **Oracle:** {W} Legendary Creature — Halfling Citizen, 1/2.
+  "{W/B}{W/B}: If Frodo is a Citizen, it becomes a Halfling Scout with base power and toughness 2/3
+  and lifelink. {B}{B}{B}: If Frodo is a Scout, it becomes a Halfling Rogue with 'Whenever this
+  creature deals combat damage to a player, that player loses the game if the Ring has tempted you
+  four or more times this game. Otherwise, the Ring tempts you.'"
+- **Composed pieces (mostly existing):** modelled like Figure of Fable — each ability checks Frodo's
+  current subtype on resolution (per the Figure of Fable ruling), so the intervening-if is an
+  in-effect `ConditionalEffect(Conditions.SourceHasSubtype(...), then)`, NOT an activation
+  restriction; the ability is always legal but no-ops when the type is wrong.
+  - **Scout step:** `Effects.BecomeCreature(power=2, toughness=3, keywords={LIFELINK},
+    creatureTypes={"Halfling","Scout"}, duration=Permanent)`. Setting subtypes to {Halfling, Scout}
+    swaps the Citizen class while keeping Halfling.
+  - **Rogue step:** `Effects.SetCreatureSubtypes({"Halfling","Rogue"}, Permanent)` **then**
+    `GrantTriggeredAbilityEffect(rogueAbility, Self, Permanent)`. Deliberately does NOT use
+    `BecomeCreature` — "becomes a Halfling Rogue" prints no new P/T, so the Rogue step must leave the
+    2/3 base-P/T continuous effect from the Scout step in place. The granted trigger is
+    `DealsCombatDamageToPlayer → ConditionalEffect(RingHasTemptedYouAtLeast(4),
+    then=LoseGame(TriggeringPlayer), else=TheRingTemptsYou)`.
+- **New condition `RingHasTemptedPlayerAtLeast(times, player)`** (in `TurnConditions.kt`, facade
+  `Conditions.RingHasTemptedYouAtLeast(times)`): reads the cumulative `temptCount` on the player's
+  `TheRingComponent` (treats no emblem as 0), evaluated in `ConditionEvaluator` next to the existing
+  Ring-bearer conditions. Reusable for any "the Ring has tempted you N+ times this game" payoff.
+- **Hybrid mana:** `Costs.Mana("{W/B}{W/B}")` parses hybrid; payable with either white or black.
+- **Test:** `FrodoSauronsBaneScenarioTest` — (1) {W/B}{W/B} makes a 2/3 Halfling Scout with lifelink;
+  (2) the ability no-ops once he's no longer a Citizen; (3) {B}{B}{B} makes a Halfling Rogue keeping
+  2/3 (and no-ops before he's a Scout); (4) Rogue combat damage with tempt count 4 makes the defender
+  lose the game; (5) with tempt count 3 it tempts the attacker instead (count → 4, defender survives).

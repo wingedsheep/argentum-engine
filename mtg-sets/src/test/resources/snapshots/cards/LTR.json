@@ -5825,6 +5825,130 @@
     ]
 }
 
+// Frodo, Sauron's Bane
+{
+    "name": "Frodo, Sauron's Bane",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Creature — Halfling Citizen",
+    "oracleText": "{W/B}{W/B}: If Frodo is a Citizen, it becomes a Halfling Scout with base power and toughness 2/3 and lifelink.\n{B}{B}{B}: If Frodo is a Scout, it becomes a Halfling Rogue with \"Whenever this creature deals combat damage to a player, that player loses the game if the Ring has tempted you four or more times this game. Otherwise, the Ring tempts you.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W/B}{W/B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceMatches",
+                            "filter": "Citizen"
+                        }
+                    },
+                    "then": {
+                        "type": "BecomeCreature",
+                        "power": 2,
+                        "toughness": 3,
+                        "keywords": [
+                            "LIFELINK"
+                        ],
+                        "creatureTypes": [
+                            "Halfling",
+                            "Scout"
+                        ],
+                        "duration": "Permanent"
+                    }
+                }
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceMatches",
+                            "filter": "Scout"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Halfling",
+                                    "Rogue"
+                                ]
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "ability_3",
+                                    "trigger": {
+                                        "type": "DealsDamageEvent",
+                                        "damageType": "DamageCombat",
+                                        "recipient": "AnyPlayer"
+                                    },
+                                    "effect": {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "RingHasTemptedPlayerAtLeast",
+                                                "times": 4
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "LoseGame",
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "TriggeringPlayer"
+                                            },
+                                            "message": "Frodo, Sauron's Bane dealt combat damage (Ring tempted you 4+ times)"
+                                        },
+                                        "otherwise": "TheRingTemptsYou"
+                                    },
+                                    "descriptionOverride": "Whenever this creature deals combat damage to a player, that player loses the game if the Ring has tempted you four or more times this game. Otherwise, the Ring tempts you."
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d86dc2e-6f0c-4714-9d30-5d099d3b895c.jpg?1686967812"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Galadhrim Bow
 {
     "name": "Galadhrim Bow",
