@@ -108,7 +108,7 @@ class DrawReplacementContinuationResumer(
                                 ?.playerId ?: playerId
                             events.add(TappedEvent(sourceId, sourceName))
                             val preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                                .trackFoodSacrifice(newState, listOf(sourceId), sourceController)
+                                .trackPermanentSacrifice(newState, listOf(sourceId), sourceController)
                             val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                                 .moveToZone(preState, sourceId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
                             newState = transition.state

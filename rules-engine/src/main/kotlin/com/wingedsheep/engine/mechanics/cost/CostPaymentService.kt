@@ -392,7 +392,7 @@ class CostPaymentService(private val services: EngineServices) {
         if (selected.isNotEmpty()) {
             val names = selected.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Unknown" }
             events.add(PermanentsSacrificedEvent(payerId, selected, names))
-            newState = ZoneTransitionService.trackFoodSacrifice(newState, selected, payerId)
+            newState = ZoneTransitionService.trackPermanentSacrifice(newState, selected, payerId)
         }
         for (permanentId in selected) {
             val transition = ZoneTransitionService.moveToZone(newState, permanentId, Zone.GRAVEYARD)

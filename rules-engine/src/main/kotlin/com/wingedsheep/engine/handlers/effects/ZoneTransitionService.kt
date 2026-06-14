@@ -620,11 +620,21 @@ object ZoneTransitionService {
     }
 
     /**
-     * Track Food sacrifice for the given permanents.
-     * Call this when permanents are sacrificed to mark if any were Food artifacts.
+     * Central per-turn sacrifice bookkeeping. Call this at every sacrifice site (alongside
+     * emitting [PermanentsSacrificedEvent], before moving the permanents to the graveyard).
+     *
+     * Two effects:
+     *  - Increments the turn-scoped [GameState.permanentsSacrificedThisTurn] counter by the
+     *    number of permanents sacrificed (feeds [CostReductionSource.PermanentsSacrificedThisTurn]
+     *    on The Balrog, Durin's Bane). Not controller-scoped: it counts every sacrifice this turn.
+     *  - Marks the controller with [SacrificedFoodThisTurnComponent] if any sacrificed permanent
+     *    was a Food (Food-sacrifice triggers, e.g. Ygra).
      */
-    fun trackFoodSacrifice(state: GameState, permanentIds: List<EntityId>, controllerId: EntityId): GameState {
-        var newState = state
+    fun trackPermanentSacrifice(state: GameState, permanentIds: List<EntityId>, controllerId: EntityId): GameState {
+        if (permanentIds.isEmpty()) return state
+        var newState = state.copy(
+            permanentsSacrificedThisTurn = state.permanentsSacrificedThisTurn + permanentIds.size,
+        )
         val projected = state.projectedState
         for (permId in permanentIds) {
             newState.getEntity(permId)?.get<CardComponent>() ?: continue

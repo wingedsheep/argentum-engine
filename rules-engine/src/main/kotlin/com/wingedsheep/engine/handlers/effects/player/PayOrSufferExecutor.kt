@@ -786,7 +786,9 @@ class PayOrSufferExecutor(
 
         val permanentName = state.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
 
-        var newState = state.removeFromZone(battlefieldZone, permanentId)
+        var newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .trackPermanentSacrifice(state, listOf(permanentId), playerId)
+        newState = newState.removeFromZone(battlefieldZone, permanentId)
         newState = newState.addToZone(graveyardZone, permanentId)
 
         val events = listOf(

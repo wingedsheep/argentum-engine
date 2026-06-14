@@ -204,7 +204,7 @@ class ForceSacrificeExecutor(
                 newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
             }
             events.add(PermanentsSacrificedEvent(playerId, permanentIds, permanentNames))
-            newState = ZoneTransitionService.trackFoodSacrifice(newState, permanentIds, playerId)
+            newState = ZoneTransitionService.trackPermanentSacrifice(newState, permanentIds, playerId)
         }
 
         for (permanentId in permanentIds) {

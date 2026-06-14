@@ -39,7 +39,7 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
-        var newState = ZoneTransitionService.trackFoodSacrifice(state, listOf(sourceId), controllerId)
+        var newState = ZoneTransitionService.trackPermanentSacrifice(state, listOf(sourceId), controllerId)
 
         val transitionResult = ZoneTransitionService.moveToZone(
             newState, sourceId, Zone.GRAVEYARD, fromZoneKey = battlefieldZone

@@ -1700,6 +1700,8 @@ class CastSpellHandler(
                                 val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                                 val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
+                                currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                                    .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
                                 currentState = currentState.removeFromZone(battlefieldZone, permId)
                                 currentState = currentState.addToZone(graveyardZone, permId)
 
@@ -1809,6 +1811,8 @@ class CastSpellHandler(
                             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                             val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
+                            currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                                .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
 
@@ -2128,7 +2132,7 @@ class CastSpellHandler(
                 val foodName = foodContainer?.get<CardComponent>()?.name ?: "Food"
                 val foodController = foodContainer?.get<ControllerComponent>()?.playerId ?: action.playerId
                 currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                    .trackFoodSacrifice(currentState, listOf(foodId), foodController)
+                    .trackPermanentSacrifice(currentState, listOf(foodId), foodController)
                 val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                     .moveToZone(currentState, foodId, Zone.GRAVEYARD)
                 currentState = transition.state

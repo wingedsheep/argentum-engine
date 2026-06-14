@@ -625,6 +625,25 @@ sealed interface CostReductionSource {
         override val description: String =
             "the number of ${filter.description} on the battlefield"
     }
+
+    /**
+     * Reduces cost by [amountPerPermanent] for each permanent sacrificed this turn —
+     * by ANY player, not just the caster (the wording is "for each permanent sacrificed
+     * this turn", which is not controller-scoped). Reads the turn-scoped
+     * `GameState.permanentsSacrificedThisTurn` counter, which the central sacrifice hook
+     * (`ZoneTransitionService.trackPermanentSacrifice`) increments on every sacrifice and
+     * `TurnManager.startTurn` resets to 0 at each new turn.
+     *
+     * Used for The Balrog, Durin's Bane ("This spell costs {1} less to cast for each
+     * permanent sacrificed this turn") via `PermanentsSacrificedThisTurn()`.
+     */
+    @SerialName("PermanentsSacrificedThisTurn")
+    @Serializable
+    data class PermanentsSacrificedThisTurn(
+        val amountPerPermanent: Int = 1
+    ) : CostReductionSource {
+        override val description: String = "the number of permanents sacrificed this turn"
+    }
 }
 
 /**

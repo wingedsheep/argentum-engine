@@ -356,7 +356,7 @@ class ManaPaymentContinuationResumer(
             newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
         }
         events.add(PermanentsSacrificedEvent(continuation.payingPlayerId, selectedPermanents, permanentNames))
-        newState = ZoneTransitionService.trackFoodSacrifice(newState, selectedPermanents, continuation.payingPlayerId)
+        newState = ZoneTransitionService.trackPermanentSacrifice(newState, selectedPermanents, continuation.payingPlayerId)
 
         for (permanentId in selectedPermanents) {
             val transitionResult = ZoneTransitionService.moveToZone(newState, permanentId, Zone.GRAVEYARD)
@@ -1208,7 +1208,7 @@ class ManaPaymentContinuationResumer(
                 // TappedComponent on it.
                 events.add(TappedEvent(sourceId, source.name))
                 val preState = ZoneTransitionService
-                    .trackFoodSacrifice(currentState, listOf(sourceId), sourceController)
+                    .trackPermanentSacrifice(currentState, listOf(sourceId), sourceController)
                 val transition = ZoneTransitionService.moveToZone(
                     preState, sourceId, Zone.GRAVEYARD
                 )

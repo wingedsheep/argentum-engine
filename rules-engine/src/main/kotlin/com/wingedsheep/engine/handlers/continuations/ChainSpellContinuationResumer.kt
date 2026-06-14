@@ -432,6 +432,8 @@ class ChainSpellContinuationResumer(
                         ?: controllerId
                     val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
+                    newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                        .trackPermanentSacrifice(newState, listOf(cardId), controllerId)
                     newState = newState.removeFromZone(currentZone, cardId)
                     newState = newState.addToZone(graveyardZone, cardId)
 

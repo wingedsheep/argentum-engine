@@ -1088,7 +1088,7 @@ class ModalAndCloneContinuationResumer(
                 )
             )
             newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                .trackFoodSacrifice(newState, sacrificed, controllerId)
+                .trackPermanentSacrifice(newState, sacrificed, controllerId)
             for (permanentId in sacrificed) {
                 val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                     .moveToZone(newState, permanentId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)

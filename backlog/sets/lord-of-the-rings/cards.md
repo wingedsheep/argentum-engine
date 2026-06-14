@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 262 / 291
+**Implemented:** 263 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -234,7 +234,7 @@ starter-deck/special cards and basic lands.
 - [x] Aragorn, the Uniter
 - [x] Arwen, Mortal Queen
 - [x] Arwen Undómiel
-- [ ] The Balrog, Durin's Bane
+- [x] The Balrog, Durin's Bane
 - [x] Bilbo, Retired Burglar
 - [x] Butterbur, Bree Innkeeper
 - [x] Denethor, Ruling Steward

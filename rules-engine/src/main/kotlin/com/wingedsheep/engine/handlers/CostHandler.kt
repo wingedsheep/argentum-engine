@@ -316,7 +316,7 @@ class CostHandler(
                 val attachedTo = sourceContainer.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
 
                 // Track Food sacrifice before zone transition
-                var preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackFoodSacrifice(state, listOf(sourceId), sourceController)
+                var preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackPermanentSacrifice(state, listOf(sourceId), sourceController)
 
                 // Delegate zone movement to ZoneTransitionService for full cleanup
                 val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
@@ -446,7 +446,7 @@ class CostHandler(
                     val foodName = state.getEntity(foodId)?.get<CardComponent>()?.name ?: "Food"
                     val foodController = state.getEntity(foodId)?.get<ControllerComponent>()?.playerId ?: controllerId
 
-                    var newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackFoodSacrifice(state, listOf(foodId), foodController)
+                    var newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackPermanentSacrifice(state, listOf(foodId), foodController)
                     val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
                         newState, foodId, Zone.GRAVEYARD
                     )
@@ -703,7 +703,7 @@ class CostHandler(
             val attachedTo = sacrificeContainer.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
 
             // Track Food sacrifice before zone transition
-            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackFoodSacrifice(newState, listOf(toSacrifice), sacrificeController)
+            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackPermanentSacrifice(newState, listOf(toSacrifice), sacrificeController)
 
             // Delegate zone movement to ZoneTransitionService for full cleanup
             val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(

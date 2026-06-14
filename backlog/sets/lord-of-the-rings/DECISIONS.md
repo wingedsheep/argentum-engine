@@ -927,3 +927,36 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   to another Spider you control; a Bear dealt deathtouch combat damage by a granted-deathtouch Spider
   dies and becomes a Player-1-controlled Food **artifact** token copy that is no longer a creature and
   carries a granted activated ability.
+
+## The Balrog, Durin's Bane (LTR #195) — {5}{B}{R} Legendary Avatar Demon, 7/5 (Gap 30 — cost reduction by per-turn game history)
+
+- **Cost reduction by permanents sacrificed this turn.** "This spell costs {1} less to cast for each
+  permanent sacrificed this turn" is the first cost reduction that reads *per-turn game history*
+  rather than a current zone/board count. Modeled as a new reusable
+  `CostReductionSource.PermanentsSacrificedThisTurn(amountPerPermanent = 1)`, wired into the existing
+  `ModifySpellCost(SelfCast, ReduceGenericBy(...))` shape (no card-specific code in the engine).
+  - **New turn-scoped counter.** `GameState.permanentsSacrificedThisTurn: Int` — modeled exactly like
+    the existing `nonlandPermanentLeftBattlefieldThisTurn` / `spellWarpedThisTurn` per-turn flags.
+    Reset to 0 in `TurnManager.startTurn`. Plain `Int`, so no serialization registration needed.
+  - **NOT controller-scoped.** The wording is "each permanent sacrificed this turn", not "you
+    sacrificed", so the counter is global (every sacrifice by any player this turn counts).
+  - **Central sacrifice hook.** The existing `ZoneTransitionService.trackFoodSacrifice` (already called
+    at every sacrifice site alongside emitting `PermanentsSacrificedEvent`) was generalized to
+    `trackPermanentSacrifice`: it now increments the per-turn counter by the number of sacrificed
+    permanents *in addition to* the Food-sacrifice marking. Five emission sites that emitted the event
+    without calling the helper (DamageUtils sacrifice-threshold, MoveCollectionExecutor sacrifice move,
+    PayOrSufferExecutor, ChainSpellContinuationResumer, plus the extra-event branches in CastSpellHandler
+    and SacrificeAndPayContinuationResumer) were wired to call it, so the counter (and the previously-
+    leaky Food tracking) is now accurate at all 15 sacrifice sites.
+  - The reduction floors the mana component at the colored {B}{R} requirement (CR 601.2f), so the
+    cheapest possible cast is {B}{R}.
+- **Haste** — `keyword(Keyword.HASTE)`.
+- **Can't be blocked except by legendary creatures** — the existing `CantBeBlockedExceptBy` evasion
+  static with `GameObjectFilter.Creature.legendary()`.
+- **Dies trigger** — `Triggers.Dies` + `Effects.Destroy(ContextTarget(0))` targeting
+  `TargetPermanent(TargetFilter(GameObjectFilter.CreatureOrArtifact.opponentControls()))` ("target
+  artifact or creature an opponent controls").
+- **Test:** `TheBalrogDurinsBaneScenarioTest` — base {5}{B}{R}; {1}-less per sacrifice (counter set
+  directly); floor at {B}{R}; a real in-engine sacrifice (Nasty End sac of Grizzly Bears) bumps the
+  counter to 1 and discounts the cast to {4}{B}{R}; haste via projected keywords; nonlegendary can't
+  block but legendary (Bill the Pony) can; dies trigger Murders → destroys an opponent's creature.

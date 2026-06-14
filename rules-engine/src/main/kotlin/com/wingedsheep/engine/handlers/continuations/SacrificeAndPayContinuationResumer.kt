@@ -70,7 +70,7 @@ class SacrificeAndPayContinuationResumer(
                 newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
             }
             events.add(PermanentsSacrificedEvent(playerId, selectedPermanents, permanentNames))
-            newState = ZoneTransitionService.trackFoodSacrifice(newState, selectedPermanents, playerId)
+            newState = ZoneTransitionService.trackPermanentSacrifice(newState, selectedPermanents, playerId)
         }
 
         for (permanentId in selectedPermanents) {
@@ -330,6 +330,7 @@ class SacrificeAndPayContinuationResumer(
             newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
         }
         events.add(PermanentsSacrificedEvent(playerId, selectedPermanents, permanentNames))
+        newState = ZoneTransitionService.trackPermanentSacrifice(newState, selectedPermanents, playerId)
 
         for (permanentId in selectedPermanents) {
             val transitionResult = ZoneTransitionService.moveToZone(
@@ -607,6 +608,7 @@ class SacrificeAndPayContinuationResumer(
                 var newState = state
                 val events = mutableListOf<GameEvent>()
                 events.add(PermanentsSacrificedEvent(playerId, selectedPermanents))
+                newState = ZoneTransitionService.trackPermanentSacrifice(newState, selectedPermanents, playerId)
                 for (permanentId in selectedPermanents) {
                     val transitionResult = ZoneTransitionService.moveToZone(newState, permanentId, Zone.GRAVEYARD)
                     newState = transitionResult.state

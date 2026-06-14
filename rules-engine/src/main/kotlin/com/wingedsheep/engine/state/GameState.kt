@@ -135,6 +135,14 @@ data class GameState(
     val activeCounterPlacementModifiers: List<ActiveCounterPlacementModifier> = emptyList(),
 
     /**
+     * Number of permanents sacrificed this turn by all players (not controller-scoped),
+     * for cost reductions like The Balrog, Durin's Bane ("costs {1} less for each permanent
+     * sacrificed this turn"). Incremented by the central sacrifice hook
+     * (`ZoneTransitionService.trackPermanentSacrifice`) and reset to 0 each turn.
+     */
+    val permanentsSacrificedThisTurn: Int = 0,
+
+    /**
      * Players (by entity id) who have committed a crime this turn (CR 700-level Outlaws of Thunder
      * Junction rule). Populated wherever a [com.wingedsheep.engine.core.CommitCrimeEvent] is emitted
      * (spell cast, activated ability, triggered ability), and cleared at every turn boundary. Read by

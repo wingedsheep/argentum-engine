@@ -416,6 +416,8 @@ class CostCalculator(
                 countDifferentlyNamedPermanents(state, playerId, source.filter)
             is CostReductionSource.PermanentsOnBattlefieldMatching ->
                 countBattlefieldPermanentsMatching(state, playerId, source.filter)
+            is CostReductionSource.PermanentsSacrificedThisTurn ->
+                state.permanentsSacrificedThisTurn * source.amountPerPermanent
         }
     }
 

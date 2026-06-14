@@ -2442,7 +2442,10 @@ staticAbility {
   `ArtifactsYouControl`, `PermanentsYouControlMatching(filter)` (the filtered "you control" count —
   Temur Battlecrier's "creature you control with power 4 or greater" via
   `GameObjectFilter.Creature.powerAtLeast(4)`), `PermanentsOnBattlefieldMatching(filter)` (the
-  same, all players), `CardsInGraveyardMatchingFilter`, `FixedIfAnyTargetMatches`, … — see
+  same, all players), `PermanentsSacrificedThisTurn(amountPerPermanent = 1)` (the count of
+  permanents sacrificed this turn by *any* player — not controller-scoped — reading the
+  turn-scoped `GameState.permanentsSacrificedThisTurn` counter; The Balrog, Durin's Bane),
+  `CardsInGraveyardMatchingFilter`, `FixedIfAnyTargetMatches`, … — see
   `CostStaticAbilities.kt` for the full list.
 - `gating: CostGating` — gates whether/how often the modifier fires:
   - `None` (default) — applies to every matching cast.

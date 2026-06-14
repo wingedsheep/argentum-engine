@@ -1577,6 +1577,9 @@ object DamageUtils {
                 val totalCounters = updatedCounters.getCount(counterType)
                 val threshold = effect.sacrificeThreshold
                 if (threshold != null && totalCounters >= threshold) {
+                    newState = ZoneTransitionService.trackPermanentSacrifice(
+                        newState, listOf(entityId), sourceControllerId
+                    )
                     // Delegate zone movement to ZoneTransitionService for full cleanup
                     val transitionResult = ZoneTransitionService.moveToZone(
                         newState, entityId, Zone.GRAVEYARD

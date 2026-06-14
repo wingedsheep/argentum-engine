@@ -81,7 +81,7 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         val snapshot = capturePermanentSnapshots(listOf(targetId), state.projectedState)
 
         // Track Food sacrifice before zone transition
-        var newState = ZoneTransitionService.trackFoodSacrifice(state, listOf(targetId), controllerId)
+        var newState = ZoneTransitionService.trackPermanentSacrifice(state, listOf(targetId), controllerId)
 
         // Delegate zone movement to ZoneTransitionService
         val transitionResult = ZoneTransitionService.moveToZone(
