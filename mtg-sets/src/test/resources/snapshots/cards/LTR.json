@@ -6834,6 +6834,91 @@
     ]
 }
 
+// Glorfindel, Dauntless Rescuer
+{
+    "name": "Glorfindel, Dauntless Rescuer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "Whenever you scry, choose one and Glorfindel gets +1/+1 until end of turn.\n• Glorfindel must be blocked this turn if able.\n• Glorfindel can't be blocked by more than one creature each combat this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "ScriedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "MustBeBlocked",
+                                        "target": "Self",
+                                        "allCreatures": false
+                                    }
+                                ]
+                            },
+                            "description": "Glorfindel gets +1/+1 until end of turn and must be blocked this turn if able"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "CANT_BE_BLOCKED_BY_MORE_THAN_ONE",
+                                        "target": "Self"
+                                    }
+                                ]
+                            },
+                            "description": "Glorfindel gets +1/+1 until end of turn and can't be blocked by more than one creature each combat this turn"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/baf7a546-8a8b-4396-ab64-9a5b9abffe79.jpg?1686969418"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glorious Gale
 {
     "name": "Glorious Gale",

@@ -2308,6 +2308,12 @@ staticAbility {
   Static counterpart of `MustBeBlockedEffect`; `BlockPhaseManager` honors it alongside the floating
   must-be-blocked modifications. Wrap in `ConditionalStaticAbility(_, condition)` for the gated form
   (Frodo Baggins: `ConditionalStaticAbility(MustBeBlocked(), Conditions.SourceIsRingBearer)`).
+- `CantBeBlockedByMoreThan(maxBlockers)` — static cap on how many creatures may block the source (CR
+  509.1b). For the **turn-scoped, granted** form (Glorfindel, Dauntless Rescuer: "can't be blocked by
+  more than one creature each combat this turn"), grant `AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE`
+  via `Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE, target, duration)`;
+  `BlockPhaseManager.validateMaxBlockersRequirements` reads the projected flag (cap = 1) alongside the
+  printed `CantBeBlockedByMoreThan` static, taking the smaller cap.
 - `CantBlockCreaturesWithGreaterPower(filter = source())` — blocker-side evasion (Spitfire Handler): this
   creature can't block creatures whose projected power exceeds its own.
 - `CantBeBlockedByCreaturesWithLessPower(filter = source())` — attacker-side dual (Formation Breaker): this

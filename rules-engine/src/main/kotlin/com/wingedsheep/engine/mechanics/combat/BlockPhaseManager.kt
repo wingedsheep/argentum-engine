@@ -566,17 +566,31 @@ internal class BlockPhaseManager(
             val attackerContainer = state.getEntity(attackerId) ?: continue
             if (attackerContainer.has<FaceDownComponent>()) continue
             val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
+            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId)
 
-            // Printed "can't be blocked by more than N" plus any granted temporarily
-            // (e.g. Full Steam Ahead grants CantBeBlockedByMoreThan(1) until end of turn).
-            val grantedAbilities = state.grantedStaticAbilities
+            // Printed "can't be blocked by more than N". cardDef may be null for tokens/copies
+            // without a registered definition — the granted forms below still apply.
+            val staticLimit = cardDef?.staticAbilities
+                ?.filterIsInstance<CantBeBlockedByMoreThan>()
+                ?.filter { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self }
+                ?.minOfOrNull { it.maxBlockers }
+            // Granted static-ability form: e.g. Full Steam Ahead grants CantBeBlockedByMoreThan(1)
+            // until end of turn via grantedStaticAbilities.
+            val grantedLimit = state.grantedStaticAbilities
                 .filter { it.entityId == attackerId }
                 .map { it.ability }
-            val limit = (cardDef.staticAbilities + grantedAbilities)
                 .filterIsInstance<CantBeBlockedByMoreThan>()
                 .filter { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self }
-                .minOfOrNull { it.maxBlockers } ?: continue
+                .minOfOrNull { it.maxBlockers }
+            // Granted (floating) flag form (CR 509.1b): a temporary "can't be blocked by more than one
+            // creature" via Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE) caps at 1.
+            val flagLimit = if (
+                state.projectedState.hasKeyword(
+                    attackerId,
+                    com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE
+                )
+            ) 1 else null
+            val limit = listOfNotNull(staticLimit, grantedLimit, flagLimit).minOrNull() ?: continue
 
             if (count > limit) {
                 val countText = if (limit == 1) "more than one creature" else "more than $limit creatures"

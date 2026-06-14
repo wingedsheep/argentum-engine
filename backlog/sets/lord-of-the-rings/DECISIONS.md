@@ -588,3 +588,22 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   `Costs.Composite(Costs.Mana("{1}"), Costs.Tap)`. No new engine work — Gap 8 protection already landed.
 - **Test:** `AOneRingScenarioTest` — `{1},{T}` adds a burden + draws when a land is available, and
   fails to activate with no mana.
+
+### Glorfindel, Dauntless Rescuer (Green) — Gap 39, granted "can't be blocked by more than one"
+
+- **Oracle:** "Whenever you scry, choose one and Glorfindel gets +1/+1 until end of turn.
+  • Glorfindel must be blocked this turn if able. • Glorfindel can't be blocked by more than one
+  creature each combat this turn."
+- **Engine gap (Gap 39):** `AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE` was defined but enforced
+  nowhere. Wired it into `BlockPhaseManager.validateMaxBlockersRequirements`: a projected grant of the
+  flag now caps blockers at one, taking the smaller of {printed `CantBeBlockedByMoreThan` static, the
+  granted flag}. (Also made the static lookup tolerate token attackers with no `cardDef`.)
+- **Card shape:** the +1/+1 always happens (it sits before the bullets), so it is folded into each
+  mode of `ModalEffect.chooseOne(...)` — exactly one mode is chosen, so the pump fires once. Modeling
+  it as the **top-level** modal effect (not `Composite(pump, modal)`) is what reaches the engine's
+  resolution-time modal-decision path (`ModalEffectExecutor` → `ChooseOptionDecision`). Mode 1 =
+  `MustBeBlockedEffect(Self, allCreatures = false)`; mode 2 =
+  `GrantKeyword(CANT_BE_BLOCKED_BY_MORE_THAN_ONE, Self, EndOfTurn)`.
+- **Test:** `GlorfindelDauntlessRescuerScenarioTest` — Temple of Mystery's ETB scry triggers the
+  ability; choosing mode 2 grants +1/+1 (3/2→4/3) and the flag, and the opponent can't assign two
+  blockers to attacking Glorfindel.
