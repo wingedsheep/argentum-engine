@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -79,7 +78,7 @@ val AragornCompanyLeader = card("Aragorn, Company Leader") {
     triggeredAbility {
         trigger = Triggers.CountersPlacedOnThis
         target("up to one other target creature", TargetOther(TargetCreature(count = 1, minCount = 0, optional = true)))
-        effect = CompositeEffect(
+        effect = Effects.Composite(
             listOf(
                 Effects.AddCounters(Counters.FIRST_STRIKE, 1, EffectTarget.ContextTarget(0)),
                 Effects.AddCounters(Counters.VIGILANCE, 1, EffectTarget.ContextTarget(0)),
