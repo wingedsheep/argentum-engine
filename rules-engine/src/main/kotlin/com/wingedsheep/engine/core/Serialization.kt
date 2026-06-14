@@ -452,6 +452,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayerDescendedThisTurnComponent::class)
         subclass(PlayerCitysBlessingComponent::class)
         subclass(PlayerHexproofComponent::class)
+        subclass(PlayerProtectionComponent::class)
         subclass(PlayerShroudComponent::class)
         subclass(SacrificedFoodThisTurnComponent::class)
         subclass(PermanentTypesEnteredBattlefieldThisTurnComponent::class)

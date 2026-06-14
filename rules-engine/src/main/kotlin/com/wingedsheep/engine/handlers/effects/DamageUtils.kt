@@ -184,6 +184,14 @@ object DamageUtils {
                     return EffectResult.success(state)
                 }
             }
+
+            // Player-level protection, e.g. The One Ring's "protection from everything" (Rule 702.16).
+            // Damage from a source matching one of the player's protection scopes is prevented.
+            if (com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules
+                    .isProtectedFromSource(state, targetId, sourceId, casterId = null)
+            ) {
+                return EffectResult.success(state)
+            }
         }
 
         // Apply damage amplification (e.g., Gratuitous Violence - DoubleDamage)

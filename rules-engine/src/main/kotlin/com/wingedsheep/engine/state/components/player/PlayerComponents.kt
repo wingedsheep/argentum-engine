@@ -416,6 +416,29 @@ data class PlayerHexproofComponent(
 ) : Component
 
 /**
+ * Marks a player as having protection from each quality in [scopes] (CR 702.16).
+ *
+ * Player-level protection (The One Ring's "you gain protection from everything until
+ * your next turn"). Unlike hexproof/shroud, protection from a quality also prevents
+ * damage from sources of that quality (CR 702.16e, the "D" of DEBT), not just targeting.
+ * For a player only the **D**amage and **T**argeting parts of DEBT apply — players can't
+ * be blocked, enchanted (outside Auras), or equipped in the common case.
+ *
+ * Multiple grants stack additively — each grant appends to [scopes]; the player is
+ * protected from a source if it matches **any** scope. The whole component is removed in
+ * one shot when the duration elapses ([removeOn]).
+ *
+ * @property scopes The qualities the player is protected from (e.g.
+ *   [com.wingedsheep.sdk.scripting.ProtectionScope.Everything]).
+ * @property removeOn When this component is removed.
+ */
+@Serializable
+data class PlayerProtectionComponent(
+    val scopes: List<com.wingedsheep.sdk.scripting.ProtectionScope> = emptyList(),
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.UntilYourNextTurn
+) : Component
+
+/**
  * Marks a player as having the city's blessing (CR 702.131 / 700.5).
  *
  * Granted by Ascend triggers when their controller controls 10+ permanents on
@@ -453,6 +476,13 @@ data class TheRingComponent(
 enum class PlayerEffectRemoval {
     /** Removed at end of turn during cleanup (e.g., Gilded Light) */
     EndOfTurn,
+    /**
+     * Removed after the untap step of the owning player's next turn — the
+     * player-component analogue of [com.wingedsheep.sdk.scripting.Duration.UntilYourNextTurn]
+     * (The One Ring). Cleared in the same post-untap hook as floating
+     * `UntilYourNextTurn` effects.
+     */
+    UntilYourNextTurn,
     /** Never removed automatically — must be explicitly cleared */
     Permanent
 }

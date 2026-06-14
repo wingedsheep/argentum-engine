@@ -15793,6 +15793,90 @@
     ]
 }
 
+// The One Ring
+{
+    "name": "The One Ring",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Indestructible\nWhen The One Ring enters, if you cast it, you gain protection from everything until your next turn.\nAt the beginning of your upkeep, you lose 1 life for each burden counter on The One Ring.\n{T}: Put a burden counter on The One Ring, then draw a card for each burden counter on The One Ring.",
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "GrantPlayerProtection",
+                "triggerCondition": "WasCast"
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": {
+                                "type": "Named",
+                                "name": "burden"
+                            }
+                        }
+                    },
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "burden",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "EntityProperty",
+                                "entity": "Source",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": {
+                                        "type": "Named",
+                                        "name": "burden"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "MYTHIC",
+        "artist": "Veli Nyström",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg?1763472900"
+    }
+}
+
 // The Ring Goes South
 {
     "name": "The Ring Goes South",

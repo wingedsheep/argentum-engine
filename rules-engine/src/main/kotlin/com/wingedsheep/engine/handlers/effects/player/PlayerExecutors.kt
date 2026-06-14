@@ -55,6 +55,7 @@ class PlayerExecutors(
         GrantSpellsCantBeCounteredExecutor(),
         GrantDamageBonusExecutor(),
         GrantHexproofExecutor(),
+        GrantPlayerProtectionExecutor(),
         GrantShroudExecutor(),
         HijackNextTurnExecutor(),
         openLifeBidExecutor,

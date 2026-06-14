@@ -185,6 +185,14 @@ class TargetValidator {
         }
         if (error != null) return error
 
+        // Check player-level protection, e.g. The One Ring's "protection from everything" (Rule 702.16).
+        // A protected player can't be the target of a source matching one of its protection scopes.
+        if (target is ChosenTarget.Player &&
+            PlayerProtectionRules.isProtectedFromSource(state, target.playerId, sourceId, casterId)
+        ) {
+            return "Target player has protection from this source"
+        }
+
         // Check hexproof and shroud on permanent targets (Rule 702.11, 702.18)
         val hexproofShroudError = checkHexproofAndShroud(state, target, casterId)
         if (hexproofShroudError != null) return hexproofShroudError

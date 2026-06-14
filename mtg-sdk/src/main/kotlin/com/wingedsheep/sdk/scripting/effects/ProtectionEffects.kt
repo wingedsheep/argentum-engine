@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -66,4 +67,46 @@ data class GrantProtectionFromChosenColorEffect(
         append("${target.description} gains protection from the chosen color")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
+}
+
+/**
+ * Grant a **player** protection from [scope] (CR 702.16) for [duration].
+ *
+ * The player-level counterpart of the creature protection statics — used by
+ * The One Ring ("you gain protection from everything until your next turn").
+ * The executor adds/merges a
+ * [com.wingedsheep.engine.state.components.player.PlayerProtectionComponent] on the
+ * target player; the targeting and damage systems consult it so the player can't be
+ * targeted by, or dealt damage from, sources matching [scope].
+ *
+ * [scope] is any [ProtectionScope] — `Everything` (The One Ring), a single color,
+ * `EachOpponent`, etc. Multiple grants stack (each appends to the player's scope list).
+ *
+ * @property target The player to protect (defaults to the controller).
+ * @property scope The quality protected from.
+ * @property duration How long the protection lasts; `UntilYourNextTurn` for The One Ring.
+ */
+@SerialName("GrantPlayerProtection")
+@Serializable
+data class GrantPlayerProtectionEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val scope: ProtectionScope = ProtectionScope.Everything,
+    val duration: Duration = Duration.UntilYourNextTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains protection from ")
+        append(scope.protectionDescription())
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/** Human-readable "from X" phrase for a [ProtectionScope], reused in effect descriptions. */
+fun ProtectionScope.protectionDescription(): String = when (this) {
+    is ProtectionScope.Color -> color.name.lowercase()
+    is ProtectionScope.Colors -> colors.joinToString(" and ") { it.name.lowercase() }
+    is ProtectionScope.CardType -> cardType.lowercase() + "s"
+    is ProtectionScope.Subtype -> subtype + "s"
+    is ProtectionScope.Supertype -> supertype.lowercase() + " permanents"
+    ProtectionScope.Everything -> "everything"
+    ProtectionScope.EachOpponent -> "each opponent"
 }

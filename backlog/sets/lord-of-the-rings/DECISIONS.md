@@ -553,3 +553,30 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **The Ring Goes South** — `TheRingTemptsYou().then(GatherUntilMatch(Land, count = legendary
   creatures you control) → Reveal → lands → battlefield tapped → rest → library bottom random)`.
   Confirms a Ring tempt can chain into later effects (siblings resume after the Ring-bearer choice).
+
+### The One Ring (Artifact) — Gap 8, player-level protection from everything
+
+- **Oracle:** "Indestructible. When The One Ring enters, if you cast it, you gain protection from
+  everything until your next turn. At the beginning of your upkeep, you lose 1 life for each burden
+  counter on The One Ring. {T}: Put a burden counter on The One Ring, then draw a card for each
+  burden counter on The One Ring."
+- **Engine gap (Gap 8):** there was no *player-level* protection. Added `Effects.GrantPlayerProtection(
+  scope = ProtectionScope.Everything, duration = UntilYourNextTurn, target = Controller)` →
+  `GrantPlayerProtectionEffect` + `GrantPlayerProtectionExecutor`, which adds/merges a
+  `PlayerProtectionComponent(scopes, removeOn)` on the player. Reuses the existing SDK
+  `ProtectionScope` sealed type (so `Everything`/`Color`/`EachOpponent`/… all compose).
+- **Enforcement:** new `PlayerProtectionRules.isProtectedFromSource(state, player, source, caster)`
+  is the single source of truth consulted by (1) `TargetValidator` (reject a `ChosenTarget.Player`
+  the source is protected from), (2) `TargetEnumerationUtils` (drop the player from `TargetPlayer`/
+  `TargetOpponent`/`AnyTarget`/… enumeration), and (3) `DamageUtils` (prevent damage from a matching
+  source). For a player only the **D**amage and **T**argeting parts of DEBT are meaningful.
+- **Duration:** new `PlayerEffectRemoval.UntilYourNextTurn` — `CleanupPhaseManager` clears the
+  component on the same post-untap hook as floating `Duration.UntilYourNextTurn` effects (the active
+  player's next untap). `PlayerProtectionComponent` registered in `engineSerializersModule`.
+- **ETB gate:** "if you cast it" = `triggerCondition = Conditions.WasCast` (CR 603.4 intervening-if).
+- **Composition:** burden upkeep loss = `LoseLife(countersOnSelf(burden), Controller)` on
+  `YourUpkeep`; `{T}` = `Composite(AddCounters(BURDEN,1,Self), DrawCards(countersOnSelf(burden)))`
+  (sequential resolution reads the post-increment count). `Indestructible` is a plain keyword.
+- **Test:** `TheOneRingScenarioTest` — (1) casting it grants the controller protection so an
+  opponent's Lightning Bolt can't target them; (2) `{T}` adds a burden + draws, and the controller's
+  next upkeep loses 1 life for that counter.

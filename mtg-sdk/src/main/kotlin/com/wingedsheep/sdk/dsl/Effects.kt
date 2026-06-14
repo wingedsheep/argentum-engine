@@ -40,6 +40,8 @@ import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantPlayerProtectionEffect
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.effects.ForEachColorOfEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByEffect
@@ -1798,6 +1800,17 @@ object Effects {
         target: EffectTarget = EffectTarget.ContextTarget(0),
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantProtectionFromChosenColorEffect(target, duration)
+
+    /**
+     * Grant a **player** protection from [scope] for [duration] (CR 702.16) — the
+     * player-level counterpart of the creature protection statics. Defaults model
+     * The One Ring: the controller gains protection from everything until their next turn.
+     */
+    fun GrantPlayerProtection(
+        scope: ProtectionScope = ProtectionScope.Everything,
+        duration: Duration = Duration.UntilYourNextTurn,
+        target: EffectTarget = EffectTarget.Controller
+    ): Effect = GrantPlayerProtectionEffect(target = target, scope = scope, duration = duration)
 
     /**
      * Run [effect] once per color of [source], with that color set as the context's chosen
