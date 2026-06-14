@@ -36,4 +36,10 @@ val MomirVigSimicVisionary = card("Momir Vig, Simic Visionary") {
         restrictions = listOf(ActivationRestriction.OncePerTurn)
         activateFromZone = Zone.COMMAND
     }
+
+    // Vanguard avatars aren't in any Scryfall set we generate URLs for, so point directly at the
+    // official avatar art (used wherever the card renders — command zone and on the stack).
+    metadata {
+        imageUri = "https://cards.scryfall.io/large/front/3/8/3831df29-83d4-48d6-a3d6-a5fbd5ddf30d.jpg?1562908207"
+    }
 }
