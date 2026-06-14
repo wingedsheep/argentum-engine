@@ -8,6 +8,7 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.abilityIdentityOf
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.model.EntityId
@@ -216,7 +217,8 @@ class TriggerProcessor(
             sourceId = trigger.sourceId,
             sourceName = sourceName,
             prompt = ability.effect.description,
-            phase = DecisionPhase.RESOLUTION
+            phase = DecisionPhase.RESOLUTION,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id)
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
@@ -298,7 +300,8 @@ class TriggerProcessor(
             prompt = "Pay $manaCost?",
             yesText = "Pay $manaCost",
             noText = "Don't pay",
-            phase = DecisionPhase.RESOLUTION
+            phase = DecisionPhase.RESOLUTION,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id)
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
@@ -456,6 +459,7 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = ability.effect,
             description = ability.description,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id),
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
@@ -508,6 +512,7 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = effectOverride ?: ability.effect,
             description = ability.description,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id),
             descriptionOverride = ability.descriptionOverride,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,

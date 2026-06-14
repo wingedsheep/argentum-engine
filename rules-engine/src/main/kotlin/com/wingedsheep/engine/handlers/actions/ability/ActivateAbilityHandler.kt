@@ -1143,7 +1143,10 @@ class ActivateAbilityHandler(
             xValue = action.xValue,
             tappedPermanents = firstTapSlice,
             tappedPermanentSnapshots = tappedSnapshots,
-            descriptionOverride = ability.descriptionOverride
+            descriptionOverride = ability.descriptionOverride,
+            abilityIdentity = com.wingedsheep.sdk.scripting.AbilityIdentity(
+                cardComponent.cardDefinitionId, ability.id
+            )
         )
 
         // Apply text-changing effects to the target requirements for resolution-time re-validation
@@ -1224,7 +1227,10 @@ class ActivateAbilityHandler(
                     xValue = action.xValue,
                     tappedPermanents = repeatTapSlice,
                     tappedPermanentSnapshots = repeatTapSnapshots,
-                    descriptionOverride = ability.descriptionOverride
+                    descriptionOverride = ability.descriptionOverride,
+                    abilityIdentity = com.wingedsheep.sdk.scripting.AbilityIdentity(
+                        cardComponent.cardDefinitionId, ability.id
+                    )
                 )
                 val repeatStackResult = stackResolver.putActivatedAbility(
                     currentState, repeatAbilityOnStack, action.targets,

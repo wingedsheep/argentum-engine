@@ -95,6 +95,13 @@ data class TriggeredAbilityOnStackComponent(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /**
+     * Definition-scoped identity of the ability that put this object on the stack, shared by every
+     * copy of the same card and every future instance of it. Drives batch decisions and persistent
+     * yields (see [com.wingedsheep.sdk.scripting.AbilityIdentity]). Null for synthesized sources
+     * (e.g. spell copies on a fresh entity) that have no card definition behind them.
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     /** Optional human-readable description from `TriggeredAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
     val descriptionOverride: String? = null,
@@ -156,7 +163,14 @@ data class ActivatedAbilityOnStackComponent(
     val tappedPermanentSnapshots: List<PermanentSnapshot> = emptyList(),
     /** Optional human-readable description from `ActivatedAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
-    val descriptionOverride: String? = null
+    val descriptionOverride: String? = null,
+    /**
+     * Definition-scoped identity of the activated ability, shared by every copy of the same card
+     * and every future instance of it. Drives batch decisions and persistent yields (see
+     * [com.wingedsheep.sdk.scripting.AbilityIdentity]). Null for synthesized abilities with no
+     * stable [com.wingedsheep.sdk.scripting.AbilityId] behind them (e.g. crew/saddle).
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

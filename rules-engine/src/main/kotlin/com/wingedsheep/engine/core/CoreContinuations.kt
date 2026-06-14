@@ -49,6 +49,10 @@ data class TriggeredAbilityContinuation(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /** Definition-scoped identity of the triggered ability (see
+     *  [com.wingedsheep.sdk.scripting.AbilityIdentity]); preserved across target selection so the
+     *  stack object built on resume carries it. Null for sources with no card definition. */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,
@@ -99,6 +103,10 @@ data class TriggerDamageDistributionContinuation(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /** Definition-scoped identity of the triggered ability (see
+     *  [com.wingedsheep.sdk.scripting.AbilityIdentity]); preserved across damage distribution so
+     *  the stack object built on resume carries it. Null for sources with no card definition. */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,

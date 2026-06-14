@@ -3692,6 +3692,18 @@ Card authors rarely reference these directly; they are created/updated by the ma
 - Server is authoritative; never compute legal actions in the client. Every state change emits a `GameEvent` so triggers
   and animations can react.
 
+### Ability identity (engine-internal, not authored)
+
+`AbilityIdentity(cardDefinitionId, abilityId)` (`mtg-sdk` `scripting/AbilityIdentity.kt`) is the stable, **definition-scoped**
+identity of a *kind* of ability — independent of the stack object or source entity instance. Two permanents printed from the
+same card (and every future instance) share one identity for a given ability, because both halves are definition-scoped:
+`cardDefinitionId` is the source's `CardComponent.cardDefinitionId`, and `abilityId` is the ability's `AbilityId` (generated
+once when the card definition is built). Cards never author it: the engine threads it onto `TriggeredAbilityOnStackComponent`
+/ `ActivatedAbilityOnStackComponent` (via `GameState.abilityIdentityOf(sourceId, abilityId)`) and onto `DecisionContext`, so
+batch decisions can group structurally identical triggers and persistent yields can remember a per-ability answer across all
+copies. Null for synthesized sources with no card definition (e.g. spell copies). See
+`backlog/stack-collapse-and-batch-decisions.md` §C.2.
+
 ## 21. Structural lint (`CardLinter`)
 
 Every registered card is structurally validated at build time: `CardValidator.validate` runs

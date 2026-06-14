@@ -50,7 +50,17 @@ data class DecisionContext(
     val inlineOnTrigger: Boolean = false,
 
     /** Resolved effect description for display (e.g., "-6/-6 until end of turn") */
-    val effectHint: String? = null
+    val effectHint: String? = null,
+
+    /**
+     * Definition-scoped identity of the ability that raised this decision, when it was raised by a
+     * triggered or activated ability of a card. Lets the client offer "always yes/no to this
+     * ability" and the engine match the answer against every current and future instance of the
+     * same ability (persistent yields / batch decisions — see
+     * [com.wingedsheep.sdk.scripting.AbilityIdentity]). Null for decisions not tied to a single
+     * card ability.
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null
 )
 
 /**
