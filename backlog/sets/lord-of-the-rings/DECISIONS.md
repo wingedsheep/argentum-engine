@@ -863,3 +863,39 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GlamdringScenarioTest` — (a) first strike + dynamic +X/+0 from instants/sorceries in
   the graveyard (creature card does not count); (b) dealing 3 first-strike combat damage offers a
   free cast of a MV-1 hand sorcery, which resolves; (c) a MV-5 hand sorcery is NOT offered.
+
+## Sauron, the Necromancer (LTR #106)
+
+- **Card:** {3}{B}{B} Legendary Creature — Avatar Horror, 4/4. Menace. Whenever Sauron attacks,
+  exile target creature card from your graveyard. Create a tapped and attacking token that's a copy
+  of that card, except it's a 3/3 black Wraith with menace. At the beginning of the next end step,
+  exile that token unless Sauron is your Ring-bearer.
+- **Reuse:** Almost entirely existing primitives — `Triggers.Attacks`,
+  `Targets.CreatureCardInYourGraveyard`, `Effects.Exile`, and `Effects.CreateTokenCopyOfTarget`
+  (which already supports `tapped`/`attacking` + the override fields `overridePower/Toughness`,
+  `overrideColors`, `overrideSubtypes`, `addedKeywords`). The token copies the exiled card's copiable
+  values (read from its `CardComponent`, which survives the move to exile), then applies 3/3 / black /
+  Wraith / +menace. Composite order is exile-then-copy; verified the copy source still resolves after
+  the move (the executor copies from the target's `CardComponent` regardless of zone).
+- **New SDK (Gap 33 — token-copy-of-a-card with overrides + delayed conditional exile):** the only
+  gap was the third clause. `CreateTokenCopyOfTargetEffect` already had `sacrificeAtStep`, but Sauron
+  needs *exile* (not sacrifice) and *unless source is Ring-bearer* (a state gate, not unconditional).
+  Added two fields mirroring the existing `sacrificeAtStep` machinery:
+  - `exileAtStep: Step?` — schedules one delayed `MoveToZoneEffect(token, EXILE)` per created token at
+    that step. No `fireOnPlayerId` gate, so it fires at the *next* end step of any player's turn
+    ("the next end step", not "your next end step").
+  - `exileUnlessSourceIsRingBearer: Boolean` — wraps the delayed exile in
+    `Gate.WhenCondition(SourceIsRingBearer)` (then = no-op, otherwise = exile). The delayed trigger
+    bakes Sauron's id as `sourceId`, so `SourceIsRingBearer` (CR 701.54e) re-evaluates against Sauron
+    when the trigger fires. Facade params added to `Effects.CreateTokenCopyOfTarget`; description
+    builder updated; no new `@Serializable` types or stored Components (reuses `MoveToZoneEffect`,
+    `GatedEffect`, `SourceIsRingBearer`, `DelayedTriggeredAbility`).
+- **Reusable for Shelob, Child of Ungoliant:** the token-copy-with-overrides path
+  (`CreateTokenCopyOfTarget` with `overrideColors`/`overrideSubtypes`/`overridePower/Toughness`/
+  `addedKeywords`), and now the `exileAtStep`/`exileUnlessSourceIsRingBearer` delayed-exile sibling,
+  are general — any "create a token copy that's a 3/3 black Wraith … exile it at end step unless
+  Ring-bearer" card reuses them directly.
+- **Test:** `SauronTheNecromancerScenarioTest` — menace; attack exiles the graveyard creature card and
+  makes a tapped+attacking 3/3 black Wraith with menace (and inherits the copied card's flying);
+  exiled at the next end step when Sauron is NOT the Ring-bearer; survives when Sauron IS the
+  Ring-bearer.

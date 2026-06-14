@@ -14561,6 +14561,81 @@
     ]
 }
 
+// Sauron, the Necromancer
+{
+    "name": "Sauron, the Necromancer",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Avatar Horror",
+    "oracleText": "Menace\nWhenever Sauron attacks, exile target creature card from your graveyard. Create a tapped and attacking token that's a copy of that card, except it's a 3/3 black Wraith with menace. At the beginning of the next end step, exile that token unless Sauron is your Ring-bearer.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature card from your graveyard"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "overridePower": 3,
+                            "overrideToughness": 3,
+                            "tapped": true,
+                            "attacking": true,
+                            "addedKeywords": [
+                                "MENACE"
+                            ],
+                            "overrideColors": [
+                                "BLACK"
+                            ],
+                            "overrideSubtypes": [
+                                "Wraith"
+                            ],
+                            "exileAtStep": "END",
+                            "exileUnlessSourceIsRingBearer": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target creature card from your graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/377d65d8-21c8-4292-97db-610e0173ba59.jpg?1686968699"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Scroll of Isildur
 {
     "name": "Scroll of Isildur",

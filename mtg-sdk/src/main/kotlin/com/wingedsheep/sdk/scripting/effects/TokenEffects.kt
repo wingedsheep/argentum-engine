@@ -368,7 +368,21 @@ data class CreateTokenCopyOfTargetEffect(
      * controller's turn — i.e. "at the beginning of *your* next end step" rather than the
      * very next end step of any player.
      */
-    val sacrificeOnlyOnControllersTurn: Boolean = false
+    val sacrificeOnlyOnControllersTurn: Boolean = false,
+    /**
+     * If set, create delayed triggers to exile each created token copy at this step. The exile
+     * sibling of [sacrificeAtStep], used for "create a token copy ... at the beginning of the
+     * next end step, exile that token" (Sauron, the Necromancer). Unlike [sacrificeAtStep] the
+     * token is *exiled* rather than sacrificed, and the firing step is the next matching step of
+     * any player's turn ("the next end step", not "your next end step").
+     */
+    val exileAtStep: Step? = null,
+    /**
+     * When [exileAtStep] is set, the delayed exile is skipped if the source permanent is the
+     * controller's Ring-bearer at the time the trigger fires (CR 701.54e) — i.e. "exile that
+     * token unless [source] is your Ring-bearer" (Sauron, the Necromancer).
+     */
+    val exileUnlessSourceIsRingBearer: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Create ${count.description} token copies of target permanent")
@@ -400,6 +414,11 @@ data class CreateTokenCopyOfTargetEffect(
         }
         if (addedKeywords.isNotEmpty()) {
             append(" with ${addedKeywords.joinToString(", ") { it.displayName.lowercase() }}")
+        }
+        if (exileAtStep != null) {
+            val pronoun = if (count == DynamicAmount.Fixed(1)) "that token" else "those tokens"
+            append(". At the beginning of the next ${exileAtStep.name.lowercase()} step, exile $pronoun")
+            if (exileUnlessSourceIsRingBearer) append(" unless this creature is your Ring-bearer")
         }
     }
 }

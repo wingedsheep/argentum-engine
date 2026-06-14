@@ -585,7 +585,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `CreateChosenTokenEffect`; under the hood it sets `CreateTokenEffect.colorsFromChoice` /
   `creatureTypesFromChoice`.)
 - `CreateTokenCopyOfSelf(count?, tapped?)` — token copies of source.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, exileAtStep?, exileUnlessSourceIsRingBearer?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works). `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
   outright for "a token that's a copy … except it's a 5/5 black Demon" wording (Ardyn, the Usurper).
@@ -594,6 +594,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   per created copy at that step (the sacrifice sibling of `CreateTokenEffect.sacrificeAtStep`);
   `sacrificeOnlyOnControllersTurn = true` restricts it to "at the beginning of *your* next end step"
   (Mardu Siegebreaker: a tapped+attacking copy of the linked-exiled card, sacrificed at your next end step).
+  `exileAtStep` is the *exile* sibling — it schedules one delayed `MoveToZoneEffect(token, EXILE)` per copy
+  at that step (the next matching step of any player's turn, "the next end step"). When
+  `exileUnlessSourceIsRingBearer = true` that exile is wrapped in `Gate.WhenCondition(SourceIsRingBearer)`
+  so it is skipped while the source is the controller's Ring-bearer at fire time (CR 701.54e) — "create a
+  tapped and attacking token that's a copy of that card … at the beginning of the next end step, exile that
+  token unless ~ is your Ring-bearer" (Sauron, the Necromancer).
 - `CreateTokenCopyOfEquippedCreature(count?, tapped?)` — equipment-specific copy.
 - `CreateRandomCreatureTokenWithManaValue(manaValue)` — create a token that's a copy of a *randomly
   chosen* creature card whose mana value equals `manaValue` (the Momir Basic Vanguard avatar's payoff —
