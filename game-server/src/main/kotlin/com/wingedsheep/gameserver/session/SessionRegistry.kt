@@ -27,8 +27,19 @@ class SessionRegistry : DisposableBean {
     /** Per-session locks for thread-safe WebSocket writes */
     private val sessionLocks = ConcurrentHashMap<String, Any>()
 
-    /** Scheduler for disconnect grace period timers */
-    val disconnectScheduler: ScheduledExecutorService = Executors.newScheduledThreadPool(2)
+    /**
+     * Scheduler for disconnect grace period timers.
+     *
+     * Uses **daemon** threads so a lingering scheduler can never keep a JVM alive. Under a normal
+     * Spring lifecycle [destroy] shuts it down, but `@SpringBootTest` contexts are cached and closed
+     * by a JVM shutdown hook — and a shutdown hook only fires once the JVM is already exiting. With
+     * non-daemon threads the scheduler would itself block that exit, so the hook that would stop it
+     * never runs and the (Gradle test-worker) JVM hangs forever. Daemon threads break that deadlock.
+     */
+    val disconnectScheduler: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(2) { runnable ->
+            Thread(runnable, "session-disconnect-scheduler").apply { isDaemon = true }
+        }
 
     /** Grace period before treating a disconnect as abandonment */
     val disconnectGracePeriodMinutes = 5L

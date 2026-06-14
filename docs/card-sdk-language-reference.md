@@ -569,6 +569,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `sacrificeOnlyOnControllersTurn = true` restricts it to "at the beginning of *your* next end step"
   (Mardu Siegebreaker: a tapped+attacking copy of the linked-exiled card, sacrificed at your next end step).
 - `CreateTokenCopyOfEquippedCreature(count?, tapped?)` — equipment-specific copy.
+- `CreateRandomCreatureTokenWithManaValue(manaValue)` — create a token that's a copy of a *randomly
+  chosen* creature card whose mana value equals `manaValue` (the Momir Basic Vanguard avatar's payoff).
+  The candidate pool is the active `Format.MomirBasic.eligibleCreatureNames` (the set-scoped creature
+  list, stored pre-sorted for replay-stable RNG); the executor filters it to `cmc == manaValue`, picks
+  one with the game's seeded `GameRng`, and mints a token copy via `TokenFromDefinition` (the minting
+  path for a bare `CardDefinition`, sibling to the in-zone token-copy path). If no creature has that
+  mana value, nothing is created (the cost was still paid). The minted token's own `{X}` reads 0 — it
+  never went on the stack. Pass `DynamicAmount.XValue` for "mana value X".
 - `CreateTreasure(count?, tapped?)` — Treasure tokens. `count` accepts an `Int` or a `DynamicAmount`
   (the latter evaluated at resolution, e.g. `CreateTreasure(DynamicAmounts.sourcePower(), tapped = true)`
   for Goldvein Hydra's "create a number of tapped Treasure tokens equal to its power").
@@ -1169,7 +1177,11 @@ Every `TargetRequirement` carries count semantics (defaults shown):
 
 - `count = 1` — maximum number of targets.
 - `minCount = count` — minimum; set below `count` for "one or two target creatures".
-- `optional = false` — when `true`, minimum becomes 0 ("up to N target ...").
+- `optional = false` — when `true`, minimum becomes 0 ("up to N target ..."). An activated ability
+  whose controller-chosen requirements are **all** optional (e.g. Boom Box's "Destroy up to one target
+  artifact, up to one target creature, and up to one target land") is legal to activate with an *empty*
+  target list — choosing no targets for every slot — and still resolves; the engine only requires a
+  target when at least one controller requirement has a non-zero effective minimum.
 - `unlimited = false` — when `true`, **"any number of target ..."** — no upper cap. The practical
   maximum is the number of legal targets, which the engine sends to the client; validation imposes
   no limit and the minimum is 0. Use this instead of a large placeholder `count` (Phyrexian Purge,
@@ -3713,6 +3725,23 @@ once when the card definition is built). Cards never author it: the engine threa
 batch decisions can group structurally identical triggers and persistent yields can remember a per-ability answer across all
 copies. Null for synthesized sources with no card definition (e.g. spell copies). See
 `backlog/stack-collapse-and-batch-decisions.md` §C.2.
+
+### Batched may-question (engine-internal, not authored)
+
+When a run of structurally identical **optional, targeted** triggers ("Whenever …, you may … *target* …") fires off one
+event, the engine asks the controller a single `BatchYesNoDecision` instead of one `YesNoDecision` per trigger — Magic
+Online's "auto-stack identical triggers" affordance (`backlog/stack-collapse-and-batch-decisions.md` §B). Cards author
+nothing: `TriggerProcessor` groups contiguous `liveTriggers` sharing one (controller, `AbilityIdentity`) key (and that would
+actually raise the may-question rather than fizzle for lack of targets) into one decision carrying a `count`. The reply,
+`BatchYesNoResponse(choice, applyToAll)`, is fanned back out by `BatchMayTriggerContinuation`:
+
+- `applyToAll = true` resolves the whole run (`no` drops it; `yes` unwraps each may-gate and routes every instance through
+  ordinary per-trigger target selection — only the yes/no is shared, never the target).
+- `applyToAll = false` peels one instance off (answered with `choice`) and re-raises the batch for the remainder.
+
+Only same-controller, same-identity, targeted-may triggers batch; targetless "may" triggers still decide at resolution, and a
+lone trigger uses the plain per-trigger yes/no. The guard guarantees the engine never makes a meaningful target/ordering
+choice on the player's behalf.
 
 ## 21. Structural lint (`CardLinter`)
 

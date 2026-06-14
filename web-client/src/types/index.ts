@@ -186,6 +186,7 @@ export type {
   OpponentDecisionStatus,
   SelectCardsDecision,
   YesNoDecision,
+  BatchYesNoDecision,
   ChooseTargetsDecision,
   TargetRequirementInfo,
   SearchLibraryDecision,

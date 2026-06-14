@@ -392,7 +392,13 @@ class ActivateAbilityHandler(
                 return targetError
             }
         } else if (controllerTargetReqs.isNotEmpty() && action.targets.isEmpty()) {
-            return "This ability requires a target"
+            // An empty target list is only illegal when at least one controller-chosen
+            // requirement is mandatory. For an ability whose controller targets are all
+            // optional ("up to one target …", e.g. Boom Box), choosing no targets is a
+            // legal activation, so don't reject it here.
+            if (controllerTargetReqs.any { it.effectiveMinCount > 0 }) {
+                return "This ability requires a target"
+            }
         }
 
         return null

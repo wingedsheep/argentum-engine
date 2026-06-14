@@ -61,6 +61,7 @@ export interface GameplaySliceActions {
   submitTargetsDecision: (selectedTargets: Record<number, readonly EntityId[]>) => void
   submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
   submitYesNoDecision: (choice: boolean) => void
+  submitBatchYesNoDecision: (choice: boolean, applyToAll: boolean) => void
   submitNumberDecision: (number: number) => void
   submitOptionDecision: (optionIndex: number) => void
   submitReplacementDecision: (fromIndex: number, toIndex: number) => void
@@ -229,6 +230,26 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         type: 'YesNoResponse' as const,
         decisionId: pendingDecision.id,
         choice,
+      },
+    }
+    getWebSocket()?.send(createSubmitActionMessage(action))
+  },
+
+  submitBatchYesNoDecision: (choice, applyToAll) => {
+    const { pendingDecision, playerId } = get()
+    if (!pendingDecision || !playerId) return
+
+    const action = {
+      type: 'SubmitDecision' as const,
+      // Stamp the decision's owner, not the connection's own seat. Equal in normal play;
+      // in hotseat / Mindslaver control the one connection answers the other seat's
+      // decisions, and the engine requires SubmitDecision.playerId == pendingDecision.playerId.
+      playerId: pendingDecision.playerId,
+      response: {
+        type: 'BatchYesNoResponse' as const,
+        decisionId: pendingDecision.id,
+        choice,
+        applyToAll,
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))

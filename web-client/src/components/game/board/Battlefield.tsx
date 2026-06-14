@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useBattlefieldCards, groupCards, selectViewingPlayerId } from '@/store/selectors.ts'
+import { useBattlefieldCards, groupCards, visibleStackDepth, useSplitOutTargetIds, selectViewingPlayerId } from '@/store/selectors.ts'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
 import { ResponsiveContext, useResponsiveContext, useSlotSizedResponsive, handleImageError } from './shared'
@@ -67,10 +67,14 @@ export function Battlefield({ isOpponent, playerId, spectatorMode = false }: {
   // into child re-renders and invalidate downstream useMemos.
   // Grouped here rather than in BattlefieldContent because the fit constraints
   // below must count rendered stacks, not raw cards.
-  const groupedLands = useMemo(() => groupCards(lands), [lands])
-  const groupedCreatures = useMemo(() => groupCards(creatures), [creatures])
-  const groupedPlaneswalkers = useMemo(() => groupCards(planeswalkers), [planeswalkers])
-  const groupedOther = useMemo(() => groupCards(other), [other])
+  // Permanents that are chosen targets / triggering sources keep their own card so
+  // their targeting arrows can anchor (a member hidden behind the stack render cap
+  // would drop its arrow) — see useSplitOutTargetIds / groupCards.
+  const splitOutIds = useSplitOutTargetIds()
+  const groupedLands = useMemo(() => groupCards(lands, splitOutIds), [lands, splitOutIds])
+  const groupedCreatures = useMemo(() => groupCards(creatures, splitOutIds), [creatures, splitOutIds])
+  const groupedPlaneswalkers = useMemo(() => groupCards(planeswalkers, splitOutIds), [planeswalkers, splitOutIds])
+  const groupedOther = useMemo(() => groupCards(other, splitOutIds), [other, splitOutIds])
 
   // Per-row footprint stats drive the fit constraints in useSlotSizedResponsive
   // — it picks card sizes plus how many wrap lines each row gets, trading
@@ -90,8 +94,13 @@ export function Battlefield({ isOpponent, playerId, spectatorMode = false }: {
     for (const groups of groupLists) {
       for (const group of groups) {
         count++
-        if (group.cards.some((c) => c.isTapped)) tapped++
-        stackedExtra += group.count - 1
+        // Every member of a group shares its tapped state (it's part of the
+        // group key), so the representative answers for the whole stack.
+        if (group.card.isTapped) tapped++
+        // Only the *rendered* peek layers occupy horizontal space — a collapsed
+        // horde paints at most MAX_VISUAL_STACK_DEPTH cards, so the footprint
+        // (and thus the fit search) must use the capped depth, not the raw count.
+        stackedExtra += visibleStackDepth(group.count) - 1
       }
     }
     return { count, tapped, stackedExtra }

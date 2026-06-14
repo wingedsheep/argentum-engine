@@ -1505,6 +1505,12 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         return if (isSelf(trig)) "Triggers.PutIntoGraveyardFromBattlefield" else null
     }
 
+    // "Whenever equipped creature attacks" — an Equipment/Aura whose attack trigger is bound to the
+    // permanent it's attached to (subject SinglePermanent(HostPermanent)). Maps to the ATTACHED binding
+    // (Thunder Lasso, Heart-Piercer Bow). Only the bare host subject renders.
+    if (jsonContains(trig, "_Trigger", "WhenACreatureAttacks") && isHost(trig))
+        return "Triggers.attacks(binding = TriggerBinding.ATTACHED)"
+
     // "Whenever a creature attacks" — only the unrestricted any-creature shape (no subtype / controller /
     // count clause), which maps to a filterless ANY-binding attacks trigger (Righteous Cause).
     if (jsonContains(trig, "_Trigger", "WhenACreatureAttacks") && isPlainCreatureFilter(trig))
@@ -1756,6 +1762,15 @@ private fun isSelf(trig: JsonObject): Boolean {
     val subject = (trig["args"] as? JsonArray)?.firstOrNull() ?: trig["args"]
     return subject.strField("_Permanents") == "SinglePermanent" &&
         subject.field("args").strField("_Permanent") == "ThisPermanent"
+}
+
+/** True when a trigger's subject is the *host* permanent — a direct SinglePermanent(HostPermanent)
+ *  reference. This is the "equipped/enchanted creature" of an Equipment/Aura, mapped to the ATTACHED
+ *  trigger binding. Mirrors [isSelf] but for the attached-to permanent. */
+private fun isHost(trig: JsonObject): Boolean {
+    val subject = (trig["args"] as? JsonArray)?.firstOrNull() ?: trig["args"]
+    return subject.strField("_Permanents") == "SinglePermanent" &&
+        subject.field("args").strField("_Permanent") == "HostPermanent"
 }
 
 /** True when a trigger's permanent filter is a plain "creature" with no subtype / controller / count

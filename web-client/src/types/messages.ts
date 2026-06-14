@@ -659,11 +659,26 @@ export interface BudgetModalDecision extends PendingDecisionBase {
 }
 
 /**
+ * One yes/no raised for a run of N identical optional ("you may …") triggers, answered once
+ * instead of N times. The response carries both the yes/no `choice` and `applyToAll`:
+ * apply-to-all resolves the whole run; otherwise it peels one instance and the batch re-raises for
+ * the rest. See `backlog/stack-collapse-and-batch-decisions.md` §B.
+ */
+export interface BatchYesNoDecision extends PendingDecisionBase {
+  readonly type: 'BatchYesNoDecision'
+  /** How many identical instances one "to all" answer covers (≥ 2). */
+  readonly count: number
+  readonly yesText: string
+  readonly noText: string
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
   | SelectCardsDecision
   | YesNoDecision
+  | BatchYesNoDecision
   | ChooseTargetsDecision
   | SearchLibraryDecision
   | ReorderLibraryDecision

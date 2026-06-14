@@ -1,10 +1,11 @@
 # Stack collapse + batch decisions — taming high-volume stacks
 
-_Drafted 2026-06-14. Status: spec only, nothing implemented. Covers three independent but related
-features — **A. visual stack collapse** (client-only), **B. batch decision answering**
-(engine + client), **C. persistent per-ability yields** (engine + server + client). A is
-shippable on its own; B and C share an "ability identity key" and a yes/no batch path, and C
-builds on B's machinery._
+_Drafted 2026-06-14. Status: C.2 (the shared `AbilityIdentity` key, PR #720) and **B (batch
+may-question, PR #725)** implemented; A (visual collapse) and C (persistent yields) still
+spec-only. Covers three independent but related features — **A. visual stack collapse**
+(client-only), **B. batch decision answering** (engine + client), **C. persistent per-ability
+yields** (engine + server + client). A is shippable on its own; B and C share an "ability identity
+key" and a yes/no batch path, and C builds on B's machinery._
 
 ## 0. The problem
 

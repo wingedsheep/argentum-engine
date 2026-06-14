@@ -300,6 +300,26 @@ data class MayTriggerContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller answers a [com.wingedsheep.engine.core.BatchYesNoDecision] raised on
+ * behalf of a run of structurally identical optional ("you may … target …") triggers.
+ *
+ * The run shares one may-question; on resume the answer is fanned back out:
+ *  - "yes to all" unwraps the may-gate on every trigger in [triggers] and processes them as ordinary
+ *    targeted triggers (each then chooses its own target via the existing per-trigger machinery);
+ *  - "no to all" drops the whole run;
+ *  - a peel-off answer ("yes/no to this one") resolves [triggers].first() that way and re-runs the
+ *    rest (which re-batch if still ≥ 2), so the player can change their mind partway.
+ *
+ * Triggers after the run are queued separately as a [PendingTriggersContinuation] beneath this frame
+ * when the batch is raised, so they resume in APNAP order regardless of the answer.
+ */
+@Serializable
+data class BatchMayTriggerContinuation(
+    override val decisionId: String,
+    val triggers: List<PendingTrigger>,
+) : ContinuationFrame
+
+/**
  * One snapshotted iteration item of a [com.wingedsheep.sdk.scripting.effects.ForEachEffect].
  * The variant corresponds to (but is deliberately decoupled from) the effect's
  * [com.wingedsheep.sdk.scripting.effects.IterationSpace]: targets iterate [OfTarget],

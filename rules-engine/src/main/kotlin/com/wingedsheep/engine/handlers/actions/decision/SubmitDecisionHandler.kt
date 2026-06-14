@@ -268,6 +268,12 @@ class SubmitDecisionHandler(
                 "${sourcePrefix}Chose $choice"
             }
 
+            pending is BatchYesNoDecision && response is BatchYesNoResponse -> {
+                val choice = if (response.choice) "Yes" else "No"
+                val scope = if (response.applyToAll) " to all ${pending.count}" else ""
+                "${sourcePrefix}Chose $choice$scope"
+            }
+
             pending is ChooseNumberDecision && response is NumberChosenResponse -> {
                 "${sourcePrefix}Chose X = ${response.number}"
             }

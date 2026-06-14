@@ -25,6 +25,8 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.SplitPilesDecision
 import com.wingedsheep.engine.core.SubmitDecision
+import com.wingedsheep.engine.core.BatchYesNoDecision
+import com.wingedsheep.engine.core.BatchYesNoResponse
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.gym.GameEnvironment
@@ -261,6 +263,12 @@ class AlphaZeroSearch<T>(
      */
     private fun foldSimpleDecision(d: PendingDecision): List<DecisionResponse>? = when (d) {
         is YesNoDecision -> listOf(YesNoResponse(d.id, true), YesNoResponse(d.id, false))
+        // The batched may-question folds to two whole-run actions; per-instance peel-off isn't an
+        // MCTS action (the search treats the run as one decision, matching the AI heuristic).
+        is BatchYesNoDecision -> listOf(
+            BatchYesNoResponse(d.id, choice = true, applyToAll = true),
+            BatchYesNoResponse(d.id, choice = false, applyToAll = true),
+        )
         is ChooseNumberDecision -> (d.minValue..d.maxValue).map { NumberChosenResponse(d.id, it) }
         is ChooseColorDecision -> d.availableColors.map { ColorChosenResponse(d.id, it) }
         is ChooseOptionDecision -> d.options.indices.map { OptionChosenResponse(d.id, it) }

@@ -403,3 +403,28 @@ data class CreateTokenCopyOfTargetEffect(
         }
     }
 }
+
+/**
+ * Create a token that's a copy of a *randomly chosen* creature card whose mana value equals
+ * [manaValue]. The Momir Basic avatar's payoff
+ * (<https://mtg.fandom.com/wiki/Momir>): "Create a token that's a copy of a randomly chosen
+ * creature card with mana value X."
+ *
+ * The candidate pool is the set-scoped creature list carried on the active
+ * [com.wingedsheep.sdk.core.Format.MomirBasic.eligibleCreatureNames] — the executor filters it to
+ * the cards whose mana value equals the resolved [manaValue], then picks one with the game's
+ * seeded RNG (replay-stable). If no creature has that mana value, nothing happens (the cost was
+ * still paid). The minted token's own `{X}` reads 0 (it never went on the stack).
+ *
+ * Parameterized over [manaValue] (a [DynamicAmount]) rather than baking in "X" so the same
+ * primitive serves any "random creature of mana value N" effect; the avatar passes
+ * [DynamicAmount.XValue].
+ */
+@SerialName("CreateRandomCreatureTokenWithManaValue")
+@Serializable
+data class CreateRandomCreatureTokenWithManaValueEffect(
+    val manaValue: DynamicAmount,
+) : Effect {
+    override val description: String =
+        "Create a token that's a copy of a randomly chosen creature card with mana value ${manaValue.description}"
+}

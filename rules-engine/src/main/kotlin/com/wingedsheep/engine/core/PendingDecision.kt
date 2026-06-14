@@ -201,6 +201,36 @@ data class YesNoDecision(
 ) : PendingDecision
 
 /**
+ * A single yes/no decision raised once on behalf of N simultaneous, structurally identical
+ * optional triggers (same controller + same [DecisionContext.abilityIdentity]) so the controller
+ * answers the repeated "you may …" once instead of N times — Magic Online's "auto-stack identical
+ * triggers" affordance (see `backlog/stack-collapse-and-batch-decisions.md` §B).
+ *
+ * The answer is a [BatchYesNoResponse] carrying both `choice` (yes/no) and `applyToAll`:
+ *  - `applyToAll = true` resolves the whole run of [count] instances with `choice`.
+ *  - `applyToAll = false` peels one instance off (answered with `choice`) and re-raises the batch
+ *    for the remaining `count - 1` — "this one, then ask me about the rest".
+ *
+ * Only the *yes/no* is batched. Per-instance target selection still happens individually after a
+ * "yes" (a swarm of identical pingers shares the may-question but each still picks its own target),
+ * so this never makes a meaningful target/ordering choice on the player's behalf.
+ */
+@Serializable
+@SerialName("BatchYesNoDecision")
+data class BatchYesNoDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    /** How many identical instances this one answer can cover. Always ≥ 2 when raised. */
+    val count: Int,
+    /** What "yes" means (for UI button text) */
+    val yesText: String = "Yes",
+    /** What "no" means (for UI button text) */
+    val noText: String = "No",
+) : PendingDecision
+
+/**
  * Player must choose from multiple modes (modal spells like Cryptic Command).
  *
  * @property modes Available modes with descriptions
@@ -547,6 +577,21 @@ data class CardsSelectedResponse(
 data class YesNoResponse(
     override val decisionId: String,
     val choice: Boolean
+) : DecisionResponse
+
+/**
+ * Response to [BatchYesNoDecision].
+ *
+ * @property choice the yes/no answer applied to the peeled instance (or whole run).
+ * @property applyToAll when true, [choice] resolves every instance the batch covers; when false,
+ *   it resolves a single instance and the batch re-raises for the rest.
+ */
+@Serializable
+@SerialName("BatchYesNoResponse")
+data class BatchYesNoResponse(
+    override val decisionId: String,
+    val choice: Boolean,
+    val applyToAll: Boolean,
 ) : DecisionResponse
 
 /**

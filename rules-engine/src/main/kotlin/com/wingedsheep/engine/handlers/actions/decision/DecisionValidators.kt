@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.actions.decision
 
 import com.wingedsheep.engine.core.AssignDamageDecision
+import com.wingedsheep.engine.core.BatchYesNoDecision
+import com.wingedsheep.engine.core.BatchYesNoResponse
 import com.wingedsheep.engine.core.BudgetModalDecision
 import com.wingedsheep.engine.core.BudgetModalResponse
 import com.wingedsheep.engine.core.CancelDecisionResponse
@@ -75,6 +77,7 @@ object DecisionValidators {
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
             is SelectManaSourcesDecision -> validateManaSourcesSelection(response)
+            is BatchYesNoDecision -> validateBatchYesNo(response)
         }
     }
 
@@ -229,6 +232,13 @@ object DecisionValidators {
     private fun validateYesNo(response: DecisionResponse): String? {
         if (response !is YesNoResponse) {
             return "Expected yes/no response"
+        }
+        return null
+    }
+
+    private fun validateBatchYesNo(response: DecisionResponse): String? {
+        if (response !is BatchYesNoResponse) {
+            return "Expected batch yes/no response"
         }
         return null
     }

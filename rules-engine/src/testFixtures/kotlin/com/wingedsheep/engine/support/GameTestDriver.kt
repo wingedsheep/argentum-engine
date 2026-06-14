@@ -1248,6 +1248,19 @@ class GameTestDriver {
     }
 
     /**
+     * Submit a response to a batched may-question ([BatchYesNoDecision]). [applyToAll] resolves the
+     * whole run with [choice]; otherwise it peels one instance and the batch re-raises for the rest.
+     */
+    fun submitBatchYesNo(playerId: EntityId, choice: Boolean, applyToAll: Boolean): ExecutionResult {
+        val decision = pendingDecision as? BatchYesNoDecision
+            ?: throw IllegalStateException("No pending BatchYesNoDecision")
+        return submitDecision(
+            playerId,
+            BatchYesNoResponse(decision.id, choice = choice, applyToAll = applyToAll)
+        )
+    }
+
+    /**
      * Submit a target selection response (for targeted spells/abilities).
      */
     fun submitTargetSelection(playerId: EntityId, targets: List<EntityId>): ExecutionResult {

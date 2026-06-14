@@ -7,8 +7,11 @@ before any rule stops it. This doc captures the failure modes, what other engine
 do, and a tiered plan to fix it.
 
 **Status:** Option A implemented (see [`GameLimits`](../rules-engine/src/main/kotlin/com/wingedsheep/engine/core/GameLimits.kt),
-`GameLimitsTest`, `NumberExplosionSafetyTest`, and architecture-principles §2.8). Options B and C
-remain open. Items ordered by impact ÷ effort.
+`GameLimitsTest`, `NumberExplosionSafetyTest`, and architecture-principles §2.8). **Option B
+implemented as display-layer aggregation** (see the note under Option B below) — the engine stays
+strictly one entity per permanent; the client collapses identical permanents into one bounded stack
+so a legitimately huge board (up to Option A's cap) renders cheaply. Option C remains open. Items
+ordered by impact ÷ effort.
 
 ## Failure modes (current state)
 
@@ -114,6 +117,37 @@ stack), SBAs, server DTO, the client board renderer (already renders "stacks" vi
 battlefield slot sizing notes), and serialization all need to understand quantity. Significant; do
 only after Option A proves insufficient.
 
+#### Implemented as display-layer aggregation (not engine-level)
+
+Investigation found that, **after Option A's entity cap, the only thing that still made a huge board
+non-functional was the client rendering thousands of DOM nodes.** The engine never holds more than
+the cap; `StateDelta` already ships only changed cards, so steady-state wire traffic is fine. The
+freeze came purely from the renderer: `groupCards` *split* an N-token group into `ceil(N/4)` visual
+stacks and rendered all of them (10k tokens → 10k card elements).
+
+So Option B was delivered where aggregation actually belongs — the presentation layer — rather than
+as the engine-level "one entity, quantity N, split on divergence" rewrite. That rewrite would break
+the engine's load-bearing `1 entity = 1 permanent` invariant and require split-on-divergence guards
+at every mutation site (combat, SBAs, targeting, damage, counters, attachments…) with no single
+chokepoint — high correctness risk for a rare scenario. The implemented version:
+
+- **`web-client/src/store/cardGrouping.ts`** — pure module: `computeCardGroupKey` (two cards share a
+  key only when their whole projected status matches — counters, P/T, tap, damage, combat, chosen
+  attributes, badges, …, so any divergence splits a token back out) and `groupCards` (one
+  `GroupedCard` per key, *however large*, carrying `count` + every member `cardIds`).
+- **Bounded render depth** — `CardStack` paints at most `MAX_VISUAL_STACK_DEPTH` (4) layers plus a
+  `×N` badge; `Battlefield.tsx` slot-sizing counts the capped depth (`visibleStackDepth`). A
+  10k-token horde now renders ~4 nodes + a badge. Every member keeps its server-sent legal action via
+  `cardIds`, so interactivity is unchanged.
+- See `docs/web-client-architecture.md` § "Battlefield card grouping (token quantity aggregation)".
+
+**Deliberate non-goals:** the engine and the `ClientCard`/wire contract are unchanged — no `quantity`
+field was added (it would couple a presentation concern to the engine and add `StateDelta` churn),
+and the engine still holds one entity per token. If a future need arises to shrink the *initial
+full-state* payload of a huge board (deltas already handle the steady state), a server-side
+representative-with-`quantity` could be layered on, but it reintroduces delta-reconstruction
+fragility and was judged not worth it now.
+
 ### Option C — Full loop-shortcut detection (research-grade; likely out of scope)
 
 Detect a repeating game-state delta and resolve the whole loop as a draw (mandatory) or a
@@ -125,3 +159,8 @@ probably not worth it for the current player base. Listed for completeness.
 Do **Option A** now — cheap, removes the crash and the silent-corruption risk entirely. Reach for
 **B** only if massive boards must actually play out, and treat **C** as out of scope unless a
 tournament-correctness need appears.
+
+**Update:** Option A and Option B (as display-layer aggregation — see above) are both implemented.
+Together they make a huge board both safe (no crash/overflow) and functional (renders cheaply).
+Option C (full loop-shortcut detection) remains the only principled answer to genuinely *unbounded*
+growth and stays out of scope until a tournament-correctness need appears.

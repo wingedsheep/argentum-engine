@@ -8379,7 +8379,7 @@ val StitchersGraft = card("Stitcher's Graft") {
     staticAbility {
         ability = ModifyStats(3, 3)
     }
-    // STRUCTURE needs human wiring: trigger-shape
+    // STRUCTURE needs human wiring: PermanentDoesntUntapDuringControllersNextUntap
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "271"

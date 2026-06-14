@@ -52,6 +52,8 @@ class GameBeansConfig(
         // Easter egg card — injected into Rick's deck at game start
         register(LegalityData.stamp(SekshaasEarlySleeper))
         register(LegalityData.stamp(JustOneGlassToken))
+        // Momir Basic Vanguard avatar — placed in the command zone when the format is active.
+        register(LegalityData.stamp(com.wingedsheep.mtg.sets.definitions.custom.MomirVigSimicVisionary))
     }
 
     /**

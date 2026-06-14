@@ -52,6 +52,11 @@ internal fun BridgeBuilder.manaCountersAndState() {
         composes = listOf("AnimateLand", "GrantKeyword", "AddCounters", "GrantTriggeredAbility", "MoveToZone"))
 
     effect("RegeneratePermanent", "Regenerate", UNIVERSAL)
+    // "attach it to target …" — an Equipment/Aura attaching ITSELF (the source) to a chosen permanent
+    // (Thunder Lasso's ETB "attach it to target creature you control"). The engine idiom is
+    // AttachEquipment, which always attaches the source. The emitter only renders the self-attach shape
+    // (args[0] a self-ref) and declines anything else -> SCAFFOLD.
+    effect("AttachPermanentToPermanent", "AttachEquipment", "self-attach an Equipment/Aura to a chosen permanent")
     effects("GainControlOfPermanent", "GainControlOfPermanentUntil", tag = "GainControl", note = UNIVERSAL)
     effect("RemoveCreatureFromCombat", "RemoveFromCombat", UNIVERSAL)
     // Ydwen Efreet's "remove from combat and creatures it solely blocked become unblocked" — the same

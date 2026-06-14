@@ -76,6 +76,7 @@ class DecisionEnricher(private val cardRegistry: CardRegistry) {
             is SelectCardsDecision -> "Selecting cards"
             is ChooseTargetsDecision -> "Choosing targets"
             is YesNoDecision -> "Making a choice"
+            is BatchYesNoDecision -> "Making a choice"
             is ChooseModeDecision -> "Choosing mode"
             is ChooseColorDecision -> "Choosing a color"
             is ChooseNumberDecision -> "Choosing a number"

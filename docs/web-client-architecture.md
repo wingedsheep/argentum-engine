@@ -175,6 +175,50 @@ App
     └── DeathEffect
 ```
 
+## Battlefield card grouping (token quantity aggregation)
+
+Identical permanents on one player's board collapse into a single visual **stack**
+instead of one card each — the display-layer half of "token quantity aggregation"
+(`backlog/number-explosion-safety.md`, Option B). The engine stays strictly *one
+entity per permanent* (the crash/overflow ceiling is enforced separately by
+`GameLimits`, Option A); aggregation is purely a rendering concern and lives in
+the client, where the divergence axes (counters, P/T, tap, damage, combat,
+chosen mode, class level, badges, …) are already client state.
+
+- **`store/cardGrouping.ts`** — pure, store-free module. `computeCardGroupKey(card)`
+  produces a key that two cards share *only* when their entire projected status is
+  identical; the instant one is buffed, tapped, attacks, gains a counter or an
+  attachment, its key changes and it splits back into its own group.
+  `groupCards(cards)` returns one `GroupedCard` per key — **however large** —
+  carrying `count`, every member `cardIds` (for action handling), and the member
+  `cards`. (Re-exported from `store/selectors.ts` for existing call sites.)
+- **Bounded render depth** — `CardStack` paints at most `MAX_VISUAL_STACK_DEPTH`
+  (4) overlapping layers and shows a `×N` count badge on the front card when
+  members are hidden behind the cap. So a horde of 10,000 identical tokens renders
+  ~4 DOM nodes plus a badge instead of 10,000 — what previously made huge boards
+  freeze the client (groups used to be *split* into `ceil(N/4)` stacks, all
+  rendered). `Battlefield.tsx`'s slot-sizing footprint math counts the capped depth
+  (`visibleStackDepth`), not the raw count, so a horde can't drive cards to the
+  absolute-minimum size.
+- **Interactivity is preserved** — every member still has a server-sent legal
+  action and lives in `GroupedCard.cardIds`; only the *rendering* is capped. The
+  members hidden behind the cap are identical, so targeting/sacrificing "one of
+  them" via a rendered layer is equivalent.
+- **Targets split out** — `groupCards(cards, splitOutIds)` forces a permanent that
+  is a chosen target / triggering source of a stack object (or a mid-cast selected
+  target — `useSplitOutTargetIds`) to render on its own card, so its
+  `data-card-id` anchor exists for `TargetingArrows`. Without this, a targeted token
+  hidden behind the cap would silently drop its arrow. This mirrors why attackers /
+  blockers already split out of a group (they too drive distinct arrows). Eligible-
+  but-unchosen targets stay collapsed — identical tokens are interchangeable, so
+  clicking the representative picks one.
+
+Deliberate non-goals (see the backlog): the wire still carries one DTO per entity
+(`StateDelta` already sends only changed cards, so steady-state traffic is fine),
+and no `quantity` field is added to the `ClientCard` contract — that would couple a
+presentation concern to the engine and add delta churn. Aggregation belongs in the
+layer that renders.
+
 ## Multiplayer (3-4 player) board
 
 A game with more than two seats turns on the multiplayer chrome; a 2-player game renders

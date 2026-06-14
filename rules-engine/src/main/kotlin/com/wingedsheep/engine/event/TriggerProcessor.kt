@@ -74,7 +74,19 @@ class TriggerProcessor(
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
-        for ((index, trigger) in liveTriggers.withIndex()) {
+        var index = 0
+        while (index < liveTriggers.size) {
+            // Batch the may-question for a run of structurally identical optional ("you may …
+            // target …") triggers (MTGO's auto-stack-identical-triggers affordance). A run of ≥ 2
+            // is answered once with a BatchYesNoDecision instead of one yes/no per trigger; the
+            // remainder of the list resumes (and re-batches) after the answer.
+            val run = batchRunAt(currentState, liveTriggers, index)
+            if (run != null) {
+                val remainingTriggers = liveTriggers.drop(index + run.size)
+                return raiseBatchMayDecision(currentState, run, remainingTriggers, allEvents)
+            }
+
+            val trigger = liveTriggers[index]
             val result = processSingleTrigger(currentState, trigger)
 
             if (!result.isSuccess && !result.isPaused) {
@@ -116,9 +128,120 @@ class TriggerProcessor(
 
             currentState = result.newState
             allEvents.addAll(result.events)
+            index++
         }
 
         return ExecutionResult.success(currentState, allEvents)
+    }
+
+    /**
+     * Stable key for "the same batchable may-question": same controller + same definition-scoped
+     * [com.wingedsheep.sdk.scripting.AbilityIdentity]. Two such triggers share an identical "you may
+     * …" prompt (the prompt is the ability's static effect description, identical per identity), so
+     * one answer can cover both.
+     */
+    private data class BatchKey(
+        val controllerId: EntityId,
+        val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity,
+    )
+
+    /**
+     * The [BatchKey] for a trigger that would raise a put-on-stack may-question, or null if it is
+     * not batchable. A trigger is batchable iff it is an optional ("may") trigger that *also* targets
+     * (so the may-question is asked at put-on-stack time, the only point all simultaneous instances
+     * are in hand before priority — see backlog §B.4), it has a definition-scoped ability identity
+     * (synthesized sources like spell copies have none and are never grouped), and it would actually
+     * raise the question rather than fizzle for lack of legal targets.
+     */
+    private fun batchKeyOf(state: GameState, trigger: PendingTrigger): BatchKey? {
+        val ability = trigger.ability
+        val targetRequirement = ability.targetRequirement ?: return null
+        if (ability.effect.asMayDecide() == null) return null
+        val identity = state.abilityIdentityOf(trigger.sourceId, ability.id) ?: return null
+        // Mirror processMayThenTargetTrigger's fizzle guard: a trigger with no legal targets (for a
+        // mandatory-target requirement) fizzles without asking, so it must not join a batch.
+        val legalTargets = targetFinder.findLegalTargets(
+            state = state,
+            requirement = targetRequirement,
+            controllerId = trigger.controllerId,
+            sourceId = trigger.sourceId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId
+        )
+        if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) return null
+        return BatchKey(trigger.controllerId, identity)
+    }
+
+    /**
+     * The maximal contiguous run of batchable triggers starting at [index] that all share one
+     * [BatchKey], or null if fewer than two such triggers start there. Contiguous-only (matching the
+     * stack's LIFO order); a later identical run is re-batched when the remainder resumes.
+     */
+    private fun batchRunAt(
+        state: GameState,
+        triggers: List<PendingTrigger>,
+        index: Int
+    ): List<PendingTrigger>? {
+        val key = batchKeyOf(state, triggers[index]) ?: return null
+        var end = index + 1
+        while (end < triggers.size && batchKeyOf(state, triggers[end]) == key) {
+            end++
+        }
+        return if (end - index >= 2) triggers.subList(index, end).toList() else null
+    }
+
+    /**
+     * Raise one [BatchYesNoDecision] for a [run] of identical optional triggers, queueing
+     * [remainingTriggers] (the triggers after the run) beneath it so they resume in order once the
+     * batch is answered. The [BatchMayTriggerContinuation] carries the whole run; the resumer fans
+     * the single answer back out (see [BatchMayTriggerContinuation]).
+     */
+    private fun raiseBatchMayDecision(
+        state: GameState,
+        run: List<PendingTrigger>,
+        remainingTriggers: List<PendingTrigger>,
+        priorEvents: List<GameEvent>
+    ): ExecutionResult {
+        val first = run.first()
+        val ability = first.ability
+        val decisionId = "batch-may-${java.util.UUID.randomUUID()}"
+        val decision = BatchYesNoDecision(
+            id = decisionId,
+            playerId = first.controllerId,
+            prompt = ability.effect.description,
+            context = DecisionContext(
+                sourceId = first.sourceId,
+                sourceName = first.sourceName,
+                phase = DecisionPhase.RESOLUTION,
+                abilityIdentity = state.abilityIdentityOf(first.sourceId, ability.id)
+            ),
+            count = run.size
+        )
+
+        // Queue the triggers after the run first (deepest), then the batch frame on top, so the
+        // batch resolves before the trailing triggers (APNAP order preserved).
+        var stateWithContinuations = state.withPendingDecision(decision)
+        if (remainingTriggers.isNotEmpty()) {
+            stateWithContinuations = stateWithContinuations.pushContinuation(
+                PendingTriggersContinuation(
+                    decisionId = "pending-triggers-${java.util.UUID.randomUUID()}",
+                    remainingTriggers = remainingTriggers
+                )
+            )
+        }
+        stateWithContinuations = stateWithContinuations.pushContinuation(
+            BatchMayTriggerContinuation(decisionId = decisionId, triggers = run)
+        )
+
+        return ExecutionResult.paused(
+            stateWithContinuations,
+            decision,
+            priorEvents + DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = first.controllerId,
+                decisionType = "BATCH_YES_NO",
+                prompt = decision.prompt
+            )
+        )
     }
 
     /**

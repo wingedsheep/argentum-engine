@@ -805,6 +805,7 @@ export type GameStore = {
   submitTargetsDecision: (selectedTargets: Record<number, readonly EntityId[]>) => void
   submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
   submitYesNoDecision: (choice: boolean) => void
+  submitBatchYesNoDecision: (choice: boolean, applyToAll: boolean) => void
   submitNumberDecision: (number: number) => void
   submitOptionDecision: (optionIndex: number) => void
   submitReplacementDecision: (fromIndex: number, toIndex: number) => void

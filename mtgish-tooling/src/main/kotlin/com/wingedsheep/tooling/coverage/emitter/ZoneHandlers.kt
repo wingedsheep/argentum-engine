@@ -15,6 +15,7 @@ import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.findInteger
+import com.wingedsheep.tooling.coverage.findRef
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.nodesTagged
 import com.wingedsheep.tooling.coverage.strField
@@ -30,6 +31,19 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         if (jsonContains(node, "_Permanents", "Ref_TargetPermanents")) {
             call("ForEachTargetEffect", arg(call("listOf", arg(call("Effects.Move", arg("EffectTarget.ContextTarget(0)"), arg("Zone.HAND"))))))
         } else null
+    }
+
+    on("AttachPermanentToPermanent") { _, args, tvar ->
+        // "attach it to target …" — an Equipment/Aura attaching ITSELF to a chosen permanent. The
+        // engine idiom is `Effects.AttachEquipment(target)`, which always attaches the source. So this
+        // renders ONLY the self-attach shape: args[0] (the permanent being attached) must be a self-ref
+        // (`ThatEnteringPermanent` for an ETB "attach it to target creature you control", Thunder Lasso).
+        // Anything else (attaching a different permanent) declines -> SCAFFOLD.
+        val arr = args.asArr ?: return@on null
+        val subjectRef = findRef(arr.getOrNull(0)) ?: return@on null
+        if (subjectRef !in SELF_REFS) return@on null
+        val tgt = refTargetFromRef(findRef(arr.getOrNull(1)), tvar) ?: return@on null
+        call("Effects.AttachEquipment", arg(Lit(tgt)))
     }
 
     on("DestroyPermanent") { _, args, tvar ->

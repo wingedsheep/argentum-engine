@@ -126,6 +126,7 @@ import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.scripting.effects.CreateRandomCreatureTokenWithManaValueEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfEquippedCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
@@ -1393,6 +1394,14 @@ object Effects {
         overrideToughness: Int? = null
     ): Effect =
         CreateTokenCopyOfSourceEffect(count, overridePower, overrideToughness)
+
+    /**
+     * Create a token that's a copy of a randomly chosen creature card with mana value [manaValue]
+     * (the Momir Basic avatar payoff). Pool is the active [com.wingedsheep.sdk.core.Format.MomirBasic]'s
+     * eligible creatures; see [CreateRandomCreatureTokenWithManaValueEffect].
+     */
+    fun CreateRandomCreatureTokenWithManaValue(manaValue: DynamicAmount): Effect =
+        CreateRandomCreatureTokenWithManaValueEffect(manaValue)
 
     /**
      * Create a token that's a copy of a targeted permanent.
