@@ -24,6 +24,7 @@ import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TransformedEvent
 import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
+import com.wingedsheep.engine.core.PhasedInEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -366,6 +367,21 @@ class TriggerMatcher(
             }
             is EventPattern.UntapEvent -> {
                 event is UntappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
+            }
+            is EventPattern.PhasesInEvent -> {
+                if (event !is PhasedInEvent) return false
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.entityId == sourceId) return false
+                val filter = trigger.filter
+                if (filter != null) {
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    predicateEvaluator.matches(
+                        state, state.projectedState, event.entityId, filter, predicateContext
+                    )
+                } else true
             }
             is EventPattern.LandTappedForMana -> {
                 if (event !is LandTappedForManaEvent) return false
@@ -1013,6 +1029,9 @@ class TriggerMatcher(
         // e.g. Surrak). Permanent-only wording ("a creature you control" — Pawpatch Recruit, Daru
         // Spiritualist) must not react to a creature spell on the stack being targeted.
         if (event.targetIsSpell && !trigger.includeSpellTargets) return false
+
+        // "Becomes the target of a spell" (King of the Oathbreakers) ignores abilities.
+        if (trigger.spellsOnly && !event.sourceIsSpell) return false
 
         // Valiant: check if the targeting spell/ability is controlled by "you" (the trigger's controller)
         if (trigger.byYou && event.controllerId != controllerId) return false

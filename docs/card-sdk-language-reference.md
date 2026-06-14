@@ -777,7 +777,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `Effects.UntapEachTarget()` — the untap twin of `TapEachTarget`: untaps every object chosen as a
   target ("untap each of those creatures"). Composes `ForEachTargetEffect` over
   `Effects.Untap(ContextTarget(0))`, with the count owned by the spell's target requirement.
-- `PhaseOutEffect(target = Self)` — phase the target permanent out (Rule 702.26); facade `Effects.PhaseOut(target)`. While phased out it's treated as though it doesn't exist (excluded from `getBattlefield`, so from projection, triggers, combat, targeting, and SBAs) and phases back in before its controller's next untap step. Indirect phasing (attached Auras/Equipment) is handled automatically. Used as the `suffer` branch of a pay-or-phase trigger (Vaporous Djinn: "phases out unless you pay {U}{U}" = `PayOrSufferEffect(Costs.pay.Mana(...), Effects.PhaseOut())`).
+- `PhaseOutEffect(target = Self)` — phase the target permanent out (Rule 702.26); facade `Effects.PhaseOut(target)`. While phased out it's treated as though it doesn't exist (excluded from `getBattlefield`, so from projection, triggers, combat, targeting, and SBAs) and phases back in before its controller's next untap step. Indirect phasing (attached Auras/Equipment) is handled automatically. Used as the `suffer` branch of a pay-or-phase trigger (Vaporous Djinn: "phases out unless you pay {U}{U}" = `PayOrSufferEffect(Costs.pay.Mana(...), Effects.PhaseOut())`), or as the reaction of a "becomes the target of a spell, it phases out" trigger (King of the Oathbreakers = `Triggers.BecomesTargetOfSpell(...)` + `Effects.PhaseOut(EffectTarget.TriggeringEntity)`). The matching phase-in moment is the `Triggers.PhasesIn(filter?)` trigger (see Triggers below).
 - `PhaseOutUntilLeavesEffect(target, tapOnPhaseIn)` / `Effects.PhaseOutUntilLeaves(target, tapOnPhaseIn)` — phase the target out **indefinitely, linked to the effect's source** (the phasing analogue of `ExileUntilLeaves`): it skips its untap-step phase-in and stays out until the source leaves the battlefield. Pair with `Effects.PhaseInLinkedToSource()` on the source's `LeavesBattlefield` trigger, which phases everything the source phased out this way back in (tapping those flagged `tapOnPhaseIn`). The link lives on the phased-out permanent (`PhasedOutComponent.phaseInOnSourceLeaves`); indirect phasing carries Auras/Equipment out with the creature. This is Oubliette (ETB phase-out + leaves-trigger phase-in, tapped).
 - `MarkExileOnDeathEffect(target)` — replace next "to graveyard" with "to exile".
 - `Effects.AddAdditionalUpkeepSteps(amount)` (`amount: DynamicAmount` or `Int`) — give the
@@ -1992,6 +1992,17 @@ Triggers.youCastSpell(
 - `BecomesTargetByOpponent` — the self-bound counterpart of the above: source becomes the target of a
   spell or ability **an opponent controls** (Cactarantula's "Whenever this creature becomes the target
   of a spell or ability an opponent controls, you may draw a card").
+- `BecomesTargetOfSpell(filter)` — a permanent matching `filter` becomes the target of a **spell**
+  only (not an ability). Sets `BecomesTargetEvent(spellsOnly = true)`, which matches only when the
+  targeting source is a spell on the stack (`sourceIsSpell`). ANY-bound; a filter like "a Spirit you
+  control" covers both halves of "King of the Oathbreakers or another Spirit you control becomes the
+  target of a spell" because the source itself matches the filter. Pair with
+  `Effects.PhaseOut(EffectTarget.TriggeringEntity)` to phase out the targeted permanent.
+- `PhasesIn(filter?)` — a permanent matching `filter` phases in (Rule 702.26). Matches the engine's
+  `PhasedInEvent`, which `BeginningPhaseManager.performUntapStep` emits when a phased-out permanent
+  returns during its controller's untap step. ANY-bound (use the filter, e.g. "a Spirit you control",
+  for "King of the Oathbreakers or another Spirit you control phases in"); `TriggeringEntity` resolves
+  to the phased-in permanent. King of the Oathbreakers makes a tapped token on each phase-in.
 - `Transforms` — source transforms (either direction).
 - `TransformsToFront` — to front face.
 - `TransformsToBack` — to back face.

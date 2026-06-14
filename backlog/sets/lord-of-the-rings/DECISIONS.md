@@ -724,3 +724,27 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   (2) the ability no-ops once he's no longer a Citizen; (3) {B}{B}{B} makes a Halfling Rogue keeping
   2/3 (and no-ops before he's a Scout); (4) Rogue combat damage with tempt count 4 makes the defender
   lose the game; (5) with tempt count 3 it tempts the attacker instead (count → 4, defender survives).
+
+## King of the Oathbreakers (Gap 32 — phasing, CR 702.26)
+
+- **Phasing already existed in the engine** (`Effects.PhaseOut` → `PhasedOutComponent`,
+  `GameState.getBattlefield` hides phased-out permanents from projection/combat/targeting/SBAs,
+  `BeginningPhaseManager.performUntapStep` phases them back in and emits `PhasedInEvent`). No new
+  phasing core was needed — only the two missing trigger shapes.
+- **"Becomes the target of a spell" (not abilities):** added `spellsOnly` to
+  `EventPattern.BecomesTargetEvent` and `sourceIsSpell` to the engine `BecomesTargetEvent` (set true
+  at the spell-cast and copy-of-spell emit sites in `StackResolver`, left false for activated/triggered
+  abilities). New facade `Triggers.BecomesTargetOfSpell(filter)`. The ANY binding + filter "a Spirit
+  you control" covers both "King … or another Spirit you control" halves (King is itself a Spirit you
+  control). `Effects.PhaseOut(EffectTarget.TriggeringEntity)` phases out exactly the targeted permanent;
+  the targeting spell then has no legal target and fizzles.
+- **"Phases in" trigger:** new `EventPattern.PhasesInEvent(filter?)` + matcher branch (mirrors the
+  TapEvent matcher) + `TriggerContext` mapping (`triggeringEntityId = event.entityId`) + facade
+  `Triggers.PhasesIn(filter?)`. King makes a **tapped** 1/1 white flying Spirit token on each phase-in
+  (added a `tapped` param to the int-count `Effects.CreateToken` facade).
+- **No anthem/ward:** the real oracle is only Flying + the two triggers — the prompt's "Spirit anthem
+  / ward {2}" paraphrase was wrong and was discarded after reading the JSON oracle text.
+- **Test:** `KingOfTheOathbreakersScenarioTest` — Giant Growth targeting our own King phases it out
+  (gone from `getBattlefield`, `PhasedOutComponent` stamped with the controller), the spell fizzles,
+  King phases back in on its controller's next untap step, and the phase-in trigger makes one tapped
+  1/1 white Spirit token.

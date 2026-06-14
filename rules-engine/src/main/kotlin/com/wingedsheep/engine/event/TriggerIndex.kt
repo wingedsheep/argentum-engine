@@ -52,6 +52,7 @@ enum class TriggerCategory {
     CARD_CYCLED,
     TAPPED,
     UNTAPPED,
+    PHASES_IN,
     LIFE_GAIN,
     LIFE_LOSS,
     BECOMES_TARGET,
@@ -193,6 +194,7 @@ class TriggerIndex(
                 is SdkGameEvent.CycleEvent -> listOf(TriggerCategory.CARD_CYCLED)
                 is SdkGameEvent.TapEvent -> listOf(TriggerCategory.TAPPED)
                 is SdkGameEvent.UntapEvent -> listOf(TriggerCategory.UNTAPPED)
+                is SdkGameEvent.PhasesInEvent -> listOf(TriggerCategory.PHASES_IN)
                 is SdkGameEvent.LifeGainEvent -> listOf(TriggerCategory.LIFE_GAIN)
                 is SdkGameEvent.LifeLossEvent -> listOf(TriggerCategory.LIFE_LOSS)
                 is SdkGameEvent.LifeGainOrLossEvent -> listOf(TriggerCategory.LIFE_GAIN, TriggerCategory.LIFE_LOSS)
@@ -239,6 +241,7 @@ class TriggerIndex(
             is CardCycledEvent -> CARD_CYCLED_LIST
             is TappedEvent -> TAPPED_LIST
             is UntappedEvent -> UNTAPPED_LIST
+            is com.wingedsheep.engine.core.PhasedInEvent -> PHASES_IN_LIST
             is LifeChangedEvent -> when (event.reason) {
                 LifeChangeReason.LIFE_GAIN -> LIFE_GAIN_LIST
                 LifeChangeReason.DAMAGE, LifeChangeReason.LIFE_LOSS, LifeChangeReason.PAYMENT -> LIFE_LOSS_LIST
@@ -270,6 +273,7 @@ class TriggerIndex(
         private val CARD_CYCLED_LIST = listOf(TriggerCategory.CARD_CYCLED)
         private val TAPPED_LIST = listOf(TriggerCategory.TAPPED)
         private val UNTAPPED_LIST = listOf(TriggerCategory.UNTAPPED)
+        private val PHASES_IN_LIST = listOf(TriggerCategory.PHASES_IN)
         private val LIFE_GAIN_LIST = listOf(TriggerCategory.LIFE_GAIN)
         private val LIFE_LOSS_LIST = listOf(TriggerCategory.LIFE_LOSS)
         private val BECOMES_TARGET_LIST = listOf(TriggerCategory.BECOMES_TARGET)

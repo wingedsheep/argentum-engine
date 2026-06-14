@@ -304,8 +304,12 @@ class TurnManager(
                 }
                 newState = untapResult.newState
                 events.addAll(untapResult.events)
-                // Immediately advance past untap (no priority)
-                return advanceStep(newState.copy(step = Step.UNTAP))
+                // Immediately advance past untap (no priority). Carry the untap-step events
+                // (untaps, and phase-ins from Rule 702.26) forward on the result so the caller's
+                // trigger detection sees them — e.g. King of the Oathbreakers' "phases in" trigger,
+                // which fires when its controller's untap step phases it back in.
+                val afterUntap = advanceStep(newState.copy(step = Step.UNTAP))
+                return afterUntap.copy(events = events + afterUntap.events)
             }
 
             Step.UPKEEP -> {

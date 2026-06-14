@@ -1115,6 +1115,17 @@ object Triggers {
     )
 
     /**
+     * Whenever a permanent matching [filter] phases in (Rule 702.26) — King of the
+     * Oathbreakers: "Whenever King of the Oathbreakers or another Spirit you control
+     * phases in …". Because the source matches "a Spirit you control", the ANY binding
+     * covers both halves of the wording.
+     */
+    fun PhasesIn(filter: GameObjectFilter? = null): TriggerSpec = TriggerSpec(
+        event = PhasesInEvent(filter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Generic "becomes tapped" factory — use [BecomesTapped] for SELF;
      * reach for this factory for ATTACHED ("enchanted permanent becomes
      * tapped", Uncontrolled Infestation) or other bindings. Pass [filter] with
@@ -1324,6 +1335,17 @@ object Triggers {
      */
     fun BecomesTarget(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
         event = BecomesTargetEvent(targetFilter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever a permanent matching [filter] becomes the target of a **spell** (not an
+     * ability) — King of the Oathbreakers: "Whenever King of the Oathbreakers or another
+     * Spirit you control becomes the target of a spell …". Because the source itself
+     * matches "a Spirit you control", the ANY binding covers both halves of the wording.
+     */
+    fun BecomesTargetOfSpell(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = BecomesTargetEvent(targetFilter = filter, spellsOnly = true),
         binding = TriggerBinding.ANY
     )
 

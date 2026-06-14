@@ -349,7 +349,7 @@ class StackResolver(
         // Emit BecomesTargetEvent for each permanent or spell target (Rule 601.2c)
         // Also track targeting for Valiant ("first time each turn")
         for (target in effectiveTargets) {
-            newState = emitBecomesTarget(newState, target, cardId, casterId, events)
+            newState = emitBecomesTarget(newState, target, cardId, casterId, events, sourceIsSpell = true)
         }
 
         return ExecutionResult.success(
@@ -381,7 +381,8 @@ class StackResolver(
         target: ChosenTarget,
         sourceEntityId: EntityId,
         controllerId: EntityId,
-        events: MutableList<GameEvent>
+        events: MutableList<GameEvent>,
+        sourceIsSpell: Boolean = false
     ): GameState {
         val isSpell = target is ChosenTarget.Spell
         val targetEntityId = when (target) {
@@ -398,7 +399,8 @@ class StackResolver(
                 sourceEntityId,
                 controllerId,
                 firstTime,
-                targetIsSpell = isSpell
+                targetIsSpell = isSpell,
+                sourceIsSpell = sourceIsSpell
             )
         )
         return if (isSpell) state else markTargetedByController(state, targetEntityId, controllerId)
@@ -560,7 +562,7 @@ class StackResolver(
         // Emit BecomesTargetEvent for each permanent or spell target — the copy is its own
         // source on the stack (ward on the target can counter the copy independently).
         for (target in effectiveTargets) {
-            newState = emitBecomesTarget(newState, target, copyId, copyController, events)
+            newState = emitBecomesTarget(newState, target, copyId, copyController, events, sourceIsSpell = true)
         }
 
         return ExecutionResult.success(newState.tick(), events)

@@ -1187,7 +1187,9 @@ data class BecomesTargetEvent(
     val sourceEntityId: EntityId,
     val controllerId: EntityId,
     val firstTimeByThisController: Boolean = true,
-    val targetIsSpell: Boolean = false
+    val targetIsSpell: Boolean = false,
+    /** True when the targeting source is a spell on the stack (vs. an activated/triggered ability). */
+    val sourceIsSpell: Boolean = false
 ) : GameEvent
 
 // =============================================================================

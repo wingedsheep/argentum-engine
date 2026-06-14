@@ -1048,6 +1048,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * [byYou] restricts to spells or abilities controlled by the trigger's controller.
      * [firstTimeEachTurn] restricts to the first time each turn (used by Valiant).
+     * [spellsOnly] restricts to "becomes the target of a **spell**" wording (King of the
+     * Oathbreakers), ignoring abilities; the default matches both spells and abilities.
      */
     @SerialName("BecomesTargetEvent")
     @Serializable
@@ -1056,11 +1058,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val byYou: Boolean = false,
         val byOpponent: Boolean = false,
         val firstTimeEachTurn: Boolean = false,
-        val includeSpellTargets: Boolean = false
+        val includeSpellTargets: Boolean = false,
+        val spellsOnly: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append(describeObjectForEvent(targetFilter))
-            append(" becomes the target of a spell or ability")
+            append(" becomes the target of a spell")
+            if (!spellsOnly) append(" or ability")
             if (byYou) append(" you control")
             if (byOpponent) append(" an opponent controls")
             if (firstTimeEachTurn) append(" for the first time each turn")
@@ -1135,6 +1139,31 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @Serializable
     data object UntapEvent : EventPattern {
         override val description: String = "this permanent becomes untapped"
+    }
+
+    /**
+     * When a permanent phases in (Rule 702.26).
+     * Binding SELF = "whenever this permanent phases in",
+     * ANY = "whenever a permanent matching [filter] phases in".
+     *
+     * [filter] optionally restricts which permanents count (e.g. "a Spirit you control" —
+     * King of the Oathbreakers). Null = any permanent. A permanent phases in during its
+     * controller's untap step; the phase-in trigger then fires with the permanent back on
+     * the battlefield (same object, with its counters and attachments preserved).
+     */
+    @SerialName("PhasesInEvent")
+    @Serializable
+    data class PhasesInEvent(
+        val filter: GameObjectFilter? = null
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(filter?.let { describeObjectForEvent(it) } ?: "a permanent")
+            append(" phases in")
+        }
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter?.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**

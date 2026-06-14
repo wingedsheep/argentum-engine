@@ -1408,8 +1408,13 @@ object Effects {
         count: Int = 1,
         controller: EffectTarget? = null,
         imageUri: String? = null,
-        legendary: Boolean = false
-    ): Effect = CreateTokenEffect(count, power, toughness, colors, creatureTypes, keywords, controller = controller, imageUri = imageUri, legendary = legendary)
+        legendary: Boolean = false,
+        tapped: Boolean = false
+    ): Effect = CreateTokenEffect(
+        count = DynamicAmount.Fixed(count), power = power, toughness = toughness,
+        colors = colors, creatureTypes = creatureTypes, keywords = keywords,
+        controller = controller, imageUri = imageUri, legendary = legendary, tapped = tapped
+    )
 
     /**
      * Create a dynamic number of creature tokens — the count is evaluated at resolution
