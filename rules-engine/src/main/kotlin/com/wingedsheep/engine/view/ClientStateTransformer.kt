@@ -995,8 +995,20 @@ class ClientStateTransformer(
             ?.flatMap { it.subtypes }?.toSet()
             ?.takeIf { it.isNotEmpty() }
 
+        // A spell cast as a non-permanent secondary face (an Omen, an Adventure, or a split half) is
+        // — while it sits on the stack — that face, not the card's default permanent characteristics.
+        // Per [com.wingedsheep.sdk.model.CardLayout.OMEN]: "from every zone other than the stack the
+        // card is just the Dragon"; on the stack it's the Omen spell (e.g. Petty Revenge). Without
+        // this, casting the Omen showed the Dragon's name/type/text/P-T on the stack. We only swap in
+        // spell faces (instant/sorcery) — a modal-DFC permanent back keeps its own handling.
+        val castFace = if (zoneKey.zoneType == Zone.STACK) {
+            spellOnStack?.faceIndex
+                ?.let { cardDef?.cardFaces?.getOrNull(it) }
+                ?.takeIf { !it.typeLine.isPermanent }
+        } else null
+
         // Build type line string from TypeLine, using projected types/subtypes if available
-        val typeLine = cardComponent.typeLine
+        val typeLine = castFace?.typeLine ?: cardComponent.typeLine
         val projectedSubtypes = projectedValues?.subtypes?.toList()
         val displaySubtypes = projectedSubtypes ?: typeLine.subtypes.map { it.value }
         // When the projected subtypes contain every creature type — either via CHANGELING
@@ -1068,16 +1080,17 @@ class ClientStateTransformer(
 
         return ClientCard(
             id = entityId,
-            name = cardComponent.name,
-            manaCost = cardComponent.manaCost.toString(),
-            manaValue = cardComponent.manaCost.cmc,
+            name = castFace?.name ?: cardComponent.name,
+            manaCost = (castFace?.manaCost ?: cardComponent.manaCost).toString(),
+            manaValue = (castFace?.manaCost ?: cardComponent.manaCost).cmc,
             typeLine = typeLineString,
             cardTypes = displayCardTypes.map { it.name }.toSet(),
             subtypes = displaySubtypes.toSet(),
-            colors = colors,
-            oracleText = cardComponent.oracleText,
-            power = power,
-            toughness = toughness,
+            colors = if (castFace != null) castFace.manaCost.colors else colors,
+            oracleText = castFace?.oracleText ?: cardComponent.oracleText,
+            // A non-permanent cast face (Omen/Adventure/split half) has no power/toughness.
+            power = if (castFace != null) null else power,
+            toughness = if (castFace != null) null else toughness,
             basePower = cardComponent.baseStats?.basePower,
             baseToughness = cardComponent.baseStats?.baseToughness,
             damage = damage,
