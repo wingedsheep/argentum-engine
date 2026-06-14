@@ -1021,13 +1021,29 @@ object Triggers {
         filter: GameObjectFilter = GameObjectFilter.Creature.youControl(),
         counterType: String = Counters.ANY,
         firstTimeEachTurn: Boolean = true,
+        binding: TriggerBinding = TriggerBinding.ANY,
     ): TriggerSpec = TriggerSpec(
         event = CountersPlacedEvent(
             counterType = counterType,
             filter = filter,
             firstTimeEachTurn = firstTimeEachTurn,
         ),
-        binding = TriggerBinding.ANY
+        binding = binding
+    )
+
+    /**
+     * Whenever you put one or more counters of any kind on this permanent (CR-style
+     * "whenever you put one or more counters on ~"). Binds to the source via
+     * [TriggerBinding.SELF], so only counters landing on the ability's own permanent
+     * fire it. Used by Aragorn, Company Leader.
+     */
+    val CountersPlacedOnThis: TriggerSpec = TriggerSpec(
+        event = CountersPlacedEvent(
+            counterType = Counters.ANY,
+            filter = GameObjectFilter.Any,
+            firstTimeEachTurn = false,
+        ),
+        binding = TriggerBinding.SELF
     )
 
     // =========================================================================

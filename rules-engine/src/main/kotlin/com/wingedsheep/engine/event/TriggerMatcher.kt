@@ -467,6 +467,10 @@ class TriggerMatcher(
             is EventPattern.PermanentsEnteredEvent -> false
             is EventPattern.CountersPlacedEvent -> {
                 if (event !is CountersAddedEvent) return false
+                // SELF binding: only counters landing on this permanent ("counters on Aragorn"
+                // / "whenever you put counters on ~"). OTHER restricts to any *other* permanent.
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.entityId == sourceId) return false
                 // Counters.ANY is the wildcard "counters of any type" sentinel.
                 if (trigger.counterType != com.wingedsheep.sdk.core.Counters.ANY &&
                     !counterTypesMatch(trigger.counterType, event.counterType)) return false

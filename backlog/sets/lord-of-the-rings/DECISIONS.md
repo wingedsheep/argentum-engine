@@ -639,3 +639,32 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `PippinGuardOfTheCitadelScenarioTest` — activating `{T}` on a Grizzly Bears and choosing
   Creature grants `PROTECTION_FROM_CARDTYPE_CREATURE`, then (1) a Hill Giant's combat damage is
   prevented when the Bears block it, and (2) the protected Bears can't be blocked by the Giant.
+
+### Aragorn, Company Leader (Selesnya) — Gap 7: keyword counters + "choose a kind of counter"
+
+- **Oracle:** "Whenever the Ring tempts you, if you chose a creature other than Aragorn as your
+  Ring-bearer, put your choice of a counter from among first strike, vigilance, deathtouch, and
+  lifelink on Aragorn. Whenever you put one or more counters on Aragorn, put one of each of those
+  kinds of counters on up to one other target creature."
+- **Keyword counters:** first strike / deathtouch / lifelink were already wired in
+  `KEYWORD_COUNTER_MAP` (StateProjector); only **vigilance** was missing — added the `VIGILANCE`
+  `CounterType` enum value + `Counters.VIGILANCE` constant, the map entry, and the full frontend
+  counter wiring (`enums.ts` enum + display name, `counterManaClass: ability-vigilance`, plus
+  `getVigilanceCounters`/`getDeathtouchCounters` helpers, badge styles, and GameCard.tsx badge
+  blocks — deathtouch had no badge either, added both). A counter of these kinds grants the keyword
+  via the projection (CR 122.1d), no static ability needed.
+- **"Put your choice of a counter from among …":** reused `Effects.ChooseAction` (the existing
+  `ChooseActionEffect`) — a resolution-time `ChooseOptionDecision` over four `EffectChoice`s, each
+  `AddCounters(<kind>, 1, Self)`. No new effect type needed; the choice-of-counter-kind reads as a
+  choice-of-action over the fixed four kinds, which composes cleanly and is reusable.
+- **"Whenever you put one or more counters on Aragorn":** added `Triggers.CountersPlacedOnThis`
+  (SELF-bound `CountersPlacedEvent`, `Counters.ANY`). The `TriggerMatcher.CountersPlacedEvent` branch
+  previously ignored `binding`; added `SELF`/`OTHER` entity restriction there (general fix) and a
+  `binding` parameter on `Triggers.countersPlacedOn`. The payoff is a `CompositeEffect` of one
+  `AddCounters` per named kind onto `TargetOther(TargetCreature(optional))` — "up to one OTHER target
+  creature" (excludes Aragorn, declinable). "Those kinds" = the four fixed kinds, not whatever was
+  just placed, so all four are always added.
+- **Test:** `AragornCompanyLeaderScenarioTest` — (a) a Ring tempt with a different Ring-bearer lets
+  you choose a counter kind and put it on Aragorn (verifies the first strike counter + projected
+  FIRST_STRIKE keyword); (b) the resulting counter triggers the second ability, putting one of each
+  of the four kinds on a targeted Bear (verifies all four counters + projected first strike/deathtouch).

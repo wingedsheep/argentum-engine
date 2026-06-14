@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 private val KEYWORD_COUNTER_MAP = mapOf(
     CounterType.FLYING to Keyword.FLYING.name,
     CounterType.FIRST_STRIKE to Keyword.FIRST_STRIKE.name,
+    CounterType.VIGILANCE to Keyword.VIGILANCE.name,
     CounterType.LIFELINK to Keyword.LIFELINK.name,
     CounterType.INDESTRUCTIBLE to Keyword.INDESTRUCTIBLE.name,
     CounterType.DEATHTOUCH to Keyword.DEATHTOUCH.name,

@@ -26,6 +26,7 @@ enum class CounterType {
     SUPPLY,
     FLYING,
     FIRST_STRIKE,
+    VIGILANCE,
     LIFELINK,
     INDESTRUCTIBLE,
     DEATHTOUCH,
@@ -76,6 +77,7 @@ object Counters {
     const val SUPPLY = "supply"
     const val FLYING = "flying"
     const val FIRST_STRIKE = "first strike"
+    const val VIGILANCE = "vigilance"
     const val LIFELINK = "lifelink"
     const val INDESTRUCTIBLE = "indestructible"
     const val DEATHTOUCH = "deathtouch"

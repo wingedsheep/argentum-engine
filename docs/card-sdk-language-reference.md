@@ -2061,11 +2061,14 @@ Triggers.youCastSpell(
 - `YouSacrificeOneOrMore(filter?)` — you sac ≥1 matching.
 - `Sacrificed` — source is sacrificed.
 - `PlusOneCountersPlacedOnYourCreature` — Hardened Scales shape (+1/+1 only).
-- `countersPlacedOn(filter = Creature.youControl(), counterType = Counters.ANY, firstTimeEachTurn = true)`
+- `countersPlacedOn(filter = Creature.youControl(), counterType = Counters.ANY, firstTimeEachTurn = true, binding = ANY)`
   — fires when counters of any type (`Counters.ANY` wildcard) land on a matching permanent;
   `firstTimeEachTurn` gates it to the first counter placement on *that* permanent this turn
-  (engine-tracked via `ReceivedCountersThisTurnComponent`). Triggering permanent is
-  `EffectTarget.TriggeringEntity`. Stalwart Successor shape.
+  (engine-tracked via `ReceivedCountersThisTurnComponent`). `binding = SELF` restricts it to the
+  source permanent (the `TriggerMatcher.CountersPlacedEvent` branch honors `SELF`/`OTHER`).
+  Triggering permanent is `EffectTarget.TriggeringEntity`. Stalwart Successor shape.
+- `CountersPlacedOnThis` — "whenever you put one or more counters on ~" (any kind, SELF-bound).
+  Aragorn, Company Leader.
 - `OneOrMorePermanentsEnter(filter?)` — batched ETB trigger; fires at most once per event batch
   (CR 603.3b). The `filter`'s controller predicate scopes which players' permanents count: no
   predicate means "you control" (default), `.opponentControls()` scopes to your opponents. The
@@ -3928,11 +3931,11 @@ substitution.
   instead remove a stun counter from it." Engine-wired through `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`),
   which is invoked from the untap step (`BeginningPhaseManager`), from `TapUntapExecutor`'s untap branch, and from the
   sacrifice/pay continuation resumer. Adding stun counters is done by `AddCounters(Counters.STUN, n, target)`.
-- **Keyword counters** (Rule 122.1b) — `flying`, `first strike`, `lifelink`, `indestructible`, `deathtouch`,
-  `trample`, `hexproof`, `reach`. `StateProjector` grants the matching `Keyword` to any permanent carrying one (mapped in
-  `KEYWORD_COUNTER_MAP`, re-applied after Layer 6 so "loses all abilities" can't wipe a counter-granted keyword).
-  Add via `AddCounters(Counters.DEATHTOUCH, ...)` etc.; no static ability needed. (`reach`: Sagu Pummeler's renew
-  payoff puts a reach counter on a creature.)
+- **Keyword counters** (Rule 122.1b) — `flying`, `first strike`, `vigilance`, `lifelink`, `indestructible`,
+  `deathtouch`, `trample`, `hexproof`, `reach`. `StateProjector` grants the matching `Keyword` to any permanent
+  carrying one (mapped in `KEYWORD_COUNTER_MAP`, re-applied after Layer 6 so "loses all abilities" can't wipe a
+  counter-granted keyword). Add via `AddCounters(Counters.DEATHTOUCH, ...)` etc.; no static ability needed.
+  (`reach`: Sagu Pummeler's renew payoff puts a reach counter on a creature. `vigilance`: Aragorn, Company Leader.)
 - **Ability counters beyond single keywords** — `decayed` (`Counters.DECAYED`, CR 702.147a, Tarkir: Dragonstorm) grants
   the whole **Decayed** ability (a "can't block" static **and** an attack-triggered end-of-combat sacrifice) to any
   creature that bears one. `StateProjector` projects the `DECAYED` keyword + `cantBlock = true` (initial pass and the

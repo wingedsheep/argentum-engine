@@ -31,6 +31,8 @@ import {
   getStashCounters,
   getFlyingCounters,
   getFirstStrikeCounters,
+  getVigilanceCounters,
+  getDeathtouchCounters,
   getLifelinkCounters,
   getReachCounters,
   getBlightCounters,
@@ -1812,6 +1814,34 @@ function GameCardImpl({
           <i className={`ms ms-${counterManaClass.LIFELINK}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getLifelinkCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Vigilance counter badge */}
+      {battlefield && getVigilanceCounters(card) > 0 && (
+        <div style={{
+          ...styles.vigilanceCounterBadge,
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
+        }}>
+          <i className={`ms ms-${counterManaClass.VIGILANCE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+          <span style={{ fontWeight: 700 }}>
+            {getVigilanceCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Deathtouch counter badge */}
+      {battlefield && getDeathtouchCounters(card) > 0 && (
+        <div style={{
+          ...styles.deathtouchCounterBadge,
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
+        }}>
+          <i className={`ms ms-${counterManaClass.DEATHTOUCH}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+          <span style={{ fontWeight: 700 }}>
+            {getDeathtouchCounters(card)}
           </span>
         </div>
       )}

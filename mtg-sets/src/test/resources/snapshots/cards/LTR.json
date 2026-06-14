@@ -366,6 +366,141 @@
     ]
 }
 
+// Aragorn, Company Leader
+{
+    "name": "Aragorn, Company Leader",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Ranger",
+    "oracleText": "Whenever the Ring tempts you, if you chose a creature other than Aragorn as your Ring-bearer, put your choice of a counter from among first strike, vigilance, deathtouch, and lifelink on Aragorn.\nWhenever you put one or more counters on Aragorn, put one of each of those kinds of counters on up to one other target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "RingTemptedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "First strike counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "first strike",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Vigilance counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "vigilance",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Deathtouch counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "deathtouch",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Lifelink counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "lifelink",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "triggerCondition": "YouChoseOtherCreatureAsRingBearer",
+                "descriptionOverride": "Whenever the Ring tempts you, if you chose a creature other than Aragorn as your Ring-bearer, put your choice of a counter from among first strike, vigilance, deathtouch, and lifelink on Aragorn."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "any"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "first strike",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "vigilance",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "deathtouch",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "lifelink",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetObject",
+                        "minCount": 0,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "id": "up to one other target creature"
+                },
+                "descriptionOverride": "Whenever you put one or more counters on Aragorn, put one of each of those kinds of counters on up to one other target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73ca5f48-0117-49d6-8b00-b8482e3545b3.jpg?1686969633"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Aragorn, the Uniter
 {
     "name": "Aragorn, the Uniter",

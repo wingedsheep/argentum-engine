@@ -534,6 +534,20 @@ export function getFirstStrikeCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of vigilance counters on a card.
+ */
+export function getVigilanceCounters(card: ClientCard): number {
+  return card.counters[CounterType.VIGILANCE] ?? 0
+}
+
+/**
+ * Get the number of deathtouch counters on a card.
+ */
+export function getDeathtouchCounters(card: ClientCard): number {
+  return card.counters[CounterType.DEATHTOUCH] ?? 0
+}
+
+/**
  * Get the number of lifelink counters on a card.
  */
 export function getLifelinkCounters(card: ClientCard): number {
