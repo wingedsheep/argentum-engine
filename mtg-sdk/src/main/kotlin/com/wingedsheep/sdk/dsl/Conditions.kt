@@ -692,6 +692,20 @@ object Conditions {
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.withSubtype(subtype))
 
     /**
+     * As long as this creature is blocking or blocked by a creature of one of [subtypes].
+     *
+     * Source-relative combat condition resolved through the source: on an Equipment/Aura it reads
+     * the attached creature, so it gates a static ability granted to the equipped creature. True iff
+     * that creature is currently blocking, or being blocked by, a creature with any of the given
+     * subtypes (matched any-of against projected state). Used by Sting, the Glinting Dagger:
+     * "Equipped creature has first strike as long as it's blocking or blocked by a Goblin or Orc."
+     */
+    fun SourceIsBlockingOrBlockedBySubtype(subtypes: List<Subtype>): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceIsBlockingOrBlockedBySubtype(
+            subtypes.map { it.value }
+        )
+
+    /**
      * As long as this creature has a specific keyword.
      * Used for conditional effects like "If this creature has flying, it gets +1/+1."
      */

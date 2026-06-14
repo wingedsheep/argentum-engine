@@ -417,6 +417,40 @@ data object SacrificedPermanentWasLegendary : Condition {
 }
 
 /**
+ * Condition: "as long as it's blocking or blocked by a creature of one of [subtypes]".
+ *
+ * Source-relative combat condition. The "it" is resolved through the source: when the source
+ * is an Equipment/Aura the condition reads the attached creature (so it gates a
+ * [com.wingedsheep.sdk.scripting.StaticAbility] granted to the equipped creature); otherwise it
+ * reads the source permanent directly. The condition is true iff that creature is currently in a
+ * combat pairing — i.e. it is blocking, or being blocked by, at least one creature whose projected
+ * subtypes include any of [subtypes].
+ *
+ * Dual-direction by design ("blocking OR blocked by"): it checks both the creature's blockers (when
+ * it is an attacker) and the attackers it is blocking (when it is a blocker). Subtypes are matched
+ * against projected state, so type-changing effects on the partner are respected. Works under
+ * static-ability projection (the typical use) — combat pairings are recorded on the entities by the
+ * time projected state is computed for the combat-damage step, so a conditionally-granted keyword
+ * (e.g. first strike) is honored when first-strike damage is assigned.
+ *
+ * Used by Sting, the Glinting Dagger (LTR): "Equipped creature has first strike as long as it's
+ * blocking or blocked by a Goblin or Orc."
+ *
+ * @property subtypes The partner creature subtypes that satisfy the condition (matched any-of).
+ */
+@SerialName("SourceIsBlockingOrBlockedBySubtype")
+@Serializable
+data class SourceIsBlockingOrBlockedBySubtype(val subtypes: List<String>) : Condition {
+    override val description: String =
+        "it's blocking or blocked by a ${subtypes.joinToString(" or ")}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val replaced = subtypes.map { replacer.replaceSubtype(Subtype(it)).value }
+        return if (replaced == subtypes) this else copy(subtypes = replaced)
+    }
+}
+
+/**
  * Condition: "If you sacrificed a permanent this way."
  *
  * Reads `EffectContext.sacrificedPermanents` and matches when at least one snapshot

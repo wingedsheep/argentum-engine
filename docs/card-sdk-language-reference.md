@@ -3094,6 +3094,15 @@ that works in both resolution and static-ability (projection) contexts.
   (`EntityMatches(EffectTarget.Self, filter)`).
 - `SourceIsAttacking` — source is attacking.
 - `SourceIsBlocking` — source is blocking.
+- `SourceIsBlockingOrBlockedBySubtype(listOf(subtype, …))` — the source is currently in a combat
+  pairing with a creature of one of the given subtypes — i.e. it is blocking, or being blocked by,
+  at least one creature whose projected subtypes match any of them. "It" is resolved through the
+  source: an Equipment/Aura reads its attached creature (so the condition gates a static ability
+  granted to the equipped creature); a creature source uses itself. Checks both combat directions
+  (`BlockingComponent` + `BlockedComponent`); partner subtypes use projected state. Works under
+  static-ability projection, so a conditionally-granted keyword (e.g. first strike) is honored when
+  combat damage is assigned. Used by Sting, the Glinting Dagger (LTR): "Equipped creature has first
+  strike as long as it's blocking or blocked by a Goblin or Orc."
 - `SourceIsTapped` — source is tapped.
 - `SourceIsUntapped` — source is untapped.
 - `SourceEnteredThisTurn` — source entered the battlefield this turn.

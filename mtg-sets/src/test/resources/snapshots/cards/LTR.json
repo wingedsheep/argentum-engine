@@ -15227,6 +15227,95 @@
     ]
 }
 
+// Sting, the Glinting Dagger
+{
+    "name": "Sting, the Glinting Dagger",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 and has haste.\nAt the beginning of each combat, untap equipped creature.\nEquipped creature has first strike as long as it's blocking or blocked by a Goblin or Orc.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EquippedCreature",
+                    "tap": false
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": {
+                    "type": "SourceIsBlockingOrBlockedBySubtype",
+                    "subtypes": [
+                        "Goblin",
+                        "Orc"
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Nino Is",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afbec7e7-f5b9-407e-bf96-2e088710e791.jpg?1686970284"
+    },
+    "colorIdentityOverride": []
+}
+
 // Stone of Erech
 {
     "name": "Stone of Erech",

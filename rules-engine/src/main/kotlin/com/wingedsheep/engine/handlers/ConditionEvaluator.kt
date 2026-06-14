@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.battlefield.chosenLandType
 import com.wingedsheep.engine.state.components.battlefield.chosenModeId
 import com.wingedsheep.engine.state.components.battlefield.wasKickedChoice
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
@@ -51,6 +52,8 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.SourceIsBlockingOrBlockedBySubtype
+import com.wingedsheep.sdk.scripting.conditions.EnchantedPermanentMatches
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -254,6 +257,8 @@ class ConditionEvaluator(
             // Aura-controller-aware modified check (CR 700.4) — distinct enough from the
             // generic StatePredicate.IsModified to warrant its own branch.
             is SourceIsModified -> evaluateSourceIsModifiedCtx(state, ctx)
+
+            is SourceIsBlockingOrBlockedBySubtype -> evaluateSourceIsBlockingOrBlockedBySubtypeCtx(state, condition, ctx)
 
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtypeCtx(state, condition, ctx)
             is EnchantedCreatureIsLegendary -> evaluateEnchantedCreatureIsLegendaryCtx(state, ctx)
@@ -554,6 +559,41 @@ class ConditionEvaluator(
             }
         }
         return false
+    }
+
+    /**
+     * "as long as it's blocking or blocked by a creature of one of [subtypes]".
+     *
+     * Resolves "it" through the source: an Equipment/Aura points at its attached creature (so the
+     * static is gated for the equipped creature); a creature source uses itself. Then checks both
+     * combat directions on that creature — the attackers it is blocking ([BlockingComponent]) and
+     * the creatures blocking it ([BlockedComponent]) — and matches any partner whose projected
+     * subtypes include one of [subtypes]. Subtypes use projected state so type-changing effects on
+     * the partner are respected.
+     */
+    private fun evaluateSourceIsBlockingOrBlockedBySubtypeCtx(
+        state: GameState,
+        condition: SourceIsBlockingOrBlockedBySubtype,
+        ctx: ConditionEvaluationContext
+    ): Boolean {
+        val sourceId = ctx.sourceId ?: return false
+        val attached = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
+        val creatureId = attached ?: when (ctx) {
+            is Resolution -> sourceId  // granted-ability / creature-source scope
+            is Projection -> sourceId
+        }
+        val creature = state.getEntity(creatureId) ?: return false
+
+        val partners = buildSet {
+            creature.get<BlockingComponent>()?.blockedAttackerIds?.let { addAll(it) }
+            creature.get<BlockedComponent>()?.blockerIds?.let { addAll(it) }
+        }
+        if (partners.isEmpty()) return false
+
+        val projected = ctx.projectedStateFor(state)
+        return partners.any { partnerId ->
+            condition.subtypes.any { projected.hasSubtype(partnerId, it) }
+        }
     }
 
     private fun evaluateEnchantedCreatureHasSubtypeCtx(

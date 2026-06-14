@@ -668,3 +668,29 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   you choose a counter kind and put it on Aragorn (verifies the first strike counter + projected
   FIRST_STRIKE keyword); (b) the resulting counter triggers the second ability, putting one of each
   of the four kinds on a targeted Bear (verifies all four counters + projected first strike/deathtouch).
+
+### Sting, the Glinting Dagger — Gap 29: conditional keyword grant gated on combat partner's subtype
+
+- **Oracle:** "Equipped creature gets +1/+1 and has haste. At the beginning of each combat, untap
+  equipped creature. Equipped creature has first strike as long as it's blocking or blocked by a
+  Goblin or Orc. Equip {2}." ({2} Legendary Artifact — Equipment.)
+- **Composed pieces (no new types):** `ModifyStats(+1, +1, Filters.EquippedCreature)` +
+  `GrantKeyword(Keyword.HASTE, Filters.EquippedCreature)` for "+1/+1 and has haste"; a
+  `Triggers.EachCombat` triggered ability with `Effects.Untap(EffectTarget.EquippedCreature)` for the
+  begin-of-each-combat untap; `equipAbility("{2}")` for Equip {2}.
+- **Gap 29 — new condition `SourceIsBlockingOrBlockedBySubtype(subtypes)`** (in `SourceConditions.kt`,
+  facade `Conditions.SourceIsBlockingOrBlockedBySubtype(listOf(...))`): a reusable source-relative
+  combat condition. "It" resolves through the source — an Equipment/Aura reads its attached creature
+  (so it gates a static granted to the equipped creature), a creature source uses itself. True iff
+  that creature is currently in a combat pairing with a creature of one of the given subtypes,
+  checking **both** directions (`BlockingComponent.blockedAttackerIds` + `BlockedComponent.blockerIds`)
+  and matching partner subtypes via **projected** state. Wrapped in `ConditionalStaticAbility` around
+  `GrantKeyword(FIRST_STRIKE, EquippedCreature)`. Evaluated under projection, so the keyword is present
+  in `ProjectedState.hasKeyword(...)` that `CombatDamageManager` reads when assigning first-strike
+  damage — no combat-damage-path change needed.
+- **DSL note:** the facade takes `List<Subtype>` rather than `vararg Subtype` because `Subtype` is an
+  inline value class (varargs of value classes are prohibited by the Kotlin compiler).
+- **Test:** `StingTheGlintingDaggerScenarioTest` — (1) equip grants +1/+1 and haste; (2) the
+  begin-combat trigger untaps a tapped equipped creature; (3) the equipped creature gains projected
+  FIRST_STRIKE when blocked by a Goblin (Goblin Guide); (4) it does NOT gain first strike when blocked
+  by a non-Goblin/Orc (Savannah Lions).
