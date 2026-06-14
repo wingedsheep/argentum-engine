@@ -492,6 +492,15 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.InSameBandAsSource
     )
 
+    /**
+     * Must have dealt combat damage *this turn* to the player who controls the effect's source.
+     * Source-relative; cleared at end-of-turn cleanup. Used by "each opponent sacrifices a
+     * creature ... that dealt combat damage to you this turn" (Witch-king of Angmar).
+     */
+    fun dealtCombatDamageToSourceControllerThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.DealtCombatDamageToSourceControllerThisTurn
+    )
+
     /** Must be blocking */
     fun blocking() = copy(
         statePredicates = statePredicates + StatePredicate.IsBlocking

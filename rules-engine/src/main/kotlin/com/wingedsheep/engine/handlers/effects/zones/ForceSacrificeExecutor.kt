@@ -81,7 +81,7 @@ class ForceSacrificeExecutor(
         val allSnapshots = mutableListOf<PermanentSnapshot>()
 
         for ((index, playerId) in playerIds.withIndex()) {
-            val validPermanents = findValidPermanents(currentState, playerId, filter)
+            val validPermanents = findValidPermanents(currentState, playerId, filter, sourceId)
 
             if (validPermanents.isEmpty()) {
                 continue
@@ -113,10 +113,14 @@ class ForceSacrificeExecutor(
     private fun findValidPermanents(
         state: GameState,
         playerId: EntityId,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        sourceId: EntityId?
     ): List<EntityId> {
+        // Pass sourceId so source-relative filter predicates (e.g.
+        // DealtCombatDamageToSourceControllerThisTurn — Witch-king of Angmar) resolve against
+        // the edict's source rather than the sacrificing player.
         return BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state, filter.youControl(), PredicateContext(controllerId = playerId)
+            state, filter.youControl(), PredicateContext(controllerId = playerId, sourceId = sourceId)
         )
     }
 

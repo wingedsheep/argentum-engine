@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
@@ -749,6 +750,19 @@ class PredicateEvaluator {
             }
             StatePredicate.HasDealtCombatDamageToPlayer -> {
                 container.has<HasDealtCombatDamageToPlayerComponent>()
+            }
+
+            // Dealt combat damage this turn to the player who controls the effect's source.
+            // Source-relative: resolves context.sourceId's controller and checks the candidate's
+            // per-turn recipient marker. "...a creature that dealt combat damage to you this turn"
+            // (Witch-king of Angmar). Inert with no source context.
+            StatePredicate.DealtCombatDamageToSourceControllerThisTurn -> {
+                val sourceId = context?.sourceId
+                val sourceController = sourceId
+                    ?.let { state.getEntity(it)?.get<ControllerComponent>()?.playerId }
+                sourceController != null &&
+                    container.get<DealtCombatDamageToPlayersThisTurnComponent>()
+                        ?.playerIds?.contains(sourceController) == true
             }
 
             // Whether this creature has been declared as an attacker this turn — derived

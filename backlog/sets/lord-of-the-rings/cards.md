@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 263 / 291
+**Implemented:** 264 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -144,7 +144,7 @@ starter-deck/special cards and basic lands.
 - [x] Troll of Khazad-dûm
 - [x] Uruk-hai Berserker
 - [x] Voracious Fell Beast
-- [ ] Witch-king of Angmar
+- [x] Witch-king of Angmar
 
 ### Red
 

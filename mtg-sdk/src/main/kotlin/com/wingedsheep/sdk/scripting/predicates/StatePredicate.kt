@@ -138,6 +138,20 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Dealt combat damage *this turn* to the player who controls the effect's source.
+     * Source-relative: resolves `context.sourceId`'s controller and checks whether this
+     * creature is recorded as having dealt combat damage to that player this turn. Used for
+     * "...a creature that dealt combat damage to you this turn" edicts (Witch-king of Angmar).
+     * Backed by a per-turn marker that records, per attacker, which players it connected with;
+     * cleared at end-of-turn cleanup. Inert with no source context.
+     */
+    @SerialName("DealtCombatDamageToSourceControllerThisTurn")
+    @Serializable
+    data object DealtCombatDamageToSourceControllerThisTurn : History {
+        override val description: String = "dealt combat damage to you this turn"
+    }
+
+    /**
      * Was declared as an attacker at least once during the current turn (set during the
      * declare-attackers step, CR 508.1). Backed by the controller's
      * [com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent] (which

@@ -960,3 +960,42 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   directly); floor at {B}{R}; a real in-engine sacrifice (Nasty End sac of Grizzly Bears) bumps the
   counter to 1 and discounts the cast to {4}{B}{R}; haste via projected keywords; nonlegendary can't
   block but legendary (Bill the Pony) can; dies trigger Murders → destroys an opponent's creature.
+
+## Witch-king of Angmar (LTR #114) — {3}{B}{B} Legendary Wraith Noble, 5/3 (Gap 36 — combat-history edict filter)
+
+- **Flying** — `keyword(Keyword.FLYING)`.
+- **"Whenever one or more creatures deal combat damage to you, each opponent sacrifices a creature of
+  their choice that dealt combat damage to you this turn. The Ring tempts you."** — composed from two
+  new reusable primitives plus the existing edict + Ring facades:
+  - **Defensive combat-damage batch trigger** (new): `Triggers.OneOrMoreCreaturesDealCombatDamageToYou()`
+    → SDK `EventPattern.OneOrMoreDealCombatDamageToYouEvent`. The existing per-source
+    `dealsDamage(recipient = You, …)` fires once **per connecting creature**, which would over-edict;
+    the oracle wants one trigger per combat. Mirrors the offensive `OneOrMoreDealCombatDamageToPlayerEvent`
+    but groups the combat-damage batch by the **damaged player** (the observer's controller) instead of
+    the source controller. Wired in `TriggerDetector.detectCombatDamageBatchTriggers` (added a
+    `combatDamageByDamagedPlayer` grouping + a defensive branch), `TriggerMatcher`, and `TriggerIndex`
+    (COMBAT_DAMAGE_BATCH category).
+  - **"dealt combat damage to you this turn" filter** (new, Gap 36): the existing
+    `HasDealtCombatDamageToPlayerComponent` only records "dealt to *a* player *ever*". Added a per-turn
+    `DealtCombatDamageToPlayersThisTurnComponent(playerIds: Set<EntityId>)` set in both player-combat-
+    damage paths of `CombatDamageManager`, cleared in `CleanupPhaseManager`, registered in `Serialization`.
+    Exposed as source-relative `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` /
+    `GameObjectFilter.…dealtCombatDamageToSourceControllerThisTurn()`: it resolves `context.sourceId`'s
+    controller, so as an edict filter it reads "...that dealt combat damage to **you** this turn".
+    `ForceSacrificeExecutor.findValidPermanents` now threads `sourceId` into the predicate context so the
+    source-relative predicate resolves (and the same source flows through `SacrificeContinuation` to
+    remaining opponents).
+  - **Edict + Ring** — `Effects.Sacrifice(filter = Creature.dealtCombatDamageToSourceControllerThisTurn(),
+    target = PlayerRef(Player.EachOpponent)).then(Effects.TheRingTemptsYou())` — reuses the existing
+    `ForceSacrificeEffect` (each opponent, their choice, filter-restricted) and the Ring facade.
+- **"Discard a card: gains indestructible until end of turn. Tap it."** — activated ability with
+  `cost = Costs.DiscardCard`; effect `Effects.GrantKeyword(INDESTRUCTIBLE, Self, EndOfTurn).then(Effects.Tap(Self))`.
+  Tapping is an effect, not part of the cost (no `{T}` symbol on the printed cost).
+- **Reuse note:** the defensive batch trigger and the "dealt combat damage to you this turn" filter are
+  general — they also serve **Witch-king, Bringer of Ruin** and **You Cannot Pass!** (both phrase effects
+  off "creatures that dealt combat damage to you this turn").
+- **Test:** `WitchKingOfAngmarScenarioTest` — an attacker connects with one creature (Grizzly Bears) while
+  a second (Hill Giant) stays home; the trigger fires once, the edict forces the attacker to sacrifice
+  only the creature that dealt combat damage this turn (Bears sacrificed, Giant survives — proving the
+  filter excludes non-damagers), and the controller's Ring tempt count becomes 1; plus discard-for-
+  indestructible taps the Witch-king and grants indestructible (projected keyword).

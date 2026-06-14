@@ -1546,6 +1546,21 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever one or more creatures matching [filter] deal combat damage to *you* (the
+     * trigger's controller). Defensive batching trigger — fires at most once per combat-damage
+     * batch regardless of how many creatures connected.
+     *
+     * Example: "Whenever one or more creatures deal combat damage to you" (Witch-king of Angmar)
+     * → OneOrMoreCreaturesDealCombatDamageToYou()
+     */
+    fun OneOrMoreCreaturesDealCombatDamageToYou(
+        filter: GameObjectFilter = GameObjectFilter.Creature
+    ): TriggerSpec = TriggerSpec(
+        event = OneOrMoreDealCombatDamageToYouEvent(sourceFilter = filter),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Nth Spell Cast Triggers
     // =========================================================================

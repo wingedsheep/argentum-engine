@@ -356,6 +356,7 @@ val engineSerializersModule = SerializersModule {
         subclass(WasDealtDamageThisTurnComponent::class)
         subclass(HasDealtDamageComponent::class)
         subclass(HasDealtCombatDamageToPlayerComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent::class)
         subclass(TimestampComponent::class)
         subclass(AbilityActivatedEverComponent::class)
         subclass(com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent::class)

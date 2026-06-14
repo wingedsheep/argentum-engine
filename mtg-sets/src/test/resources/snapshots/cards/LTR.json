@@ -18443,6 +18443,83 @@
     ]
 }
 
+// Witch-king of Angmar
+{
+    "name": "Witch-king of Angmar",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Wraith Noble",
+    "oracleText": "Flying\nWhenever one or more creatures deal combat damage to you, each opponent sacrifices a creature of their choice that dealt combat damage to you this turn. The Ring tempts you.\nDiscard a card: Witch-king of Angmar gains indestructible until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "OneOrMoreDealCombatDamageToYouEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "DealtCombatDamageToSourceControllerThisTurn"
+                                ]
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        "TheRingTemptsYou"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "MYTHIC",
+        "artist": "Anato Finnstark",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a55e6508-0b59-4573-bc4e-67b27279cfed.jpg?1686968786"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Witch-king, Bringer of Ruin
 {
     "name": "Witch-king, Bringer of Ruin",

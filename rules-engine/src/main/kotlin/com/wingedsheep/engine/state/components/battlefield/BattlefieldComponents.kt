@@ -748,6 +748,17 @@ data object HasDealtDamageComponent : Component
 data object HasDealtCombatDamageToPlayerComponent : Component
 
 /**
+ * Records which players this creature dealt combat damage to *this turn*.
+ * Cleared at end of turn by CleanupPhaseManager. Used by
+ * StatePredicate.DealtCombatDamageToSourceControllerThisTurn — i.e. "a creature that
+ * dealt combat damage to you this turn" edicts (Witch-king of Angmar).
+ */
+@Serializable
+data class DealtCombatDamageToPlayersThisTurnComponent(
+    val playerIds: Set<EntityId> = emptySet()
+) : Component
+
+/**
  * Tracks the turn number when a card was put into the graveyard.
  * Used by effects like Garna, the Bloodflame to return creature cards
  * that were put into the graveyard this turn.

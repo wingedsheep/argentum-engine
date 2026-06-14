@@ -1628,16 +1628,19 @@ class TriggerDetector(
         projected: ProjectedState,
         index: TriggerIndex
     ) {
-        // Collect all combat damage-to-player events, grouped by the controller of the damage source
+        // Collect all combat damage-to-player events, grouped by the controller of the damage
+        // source (offensive batch) and, separately, by the damaged player (defensive batch).
         data class CombatDamageInfo(val sourceId: EntityId, val targetPlayerId: EntityId)
         val combatDamageByController = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
+        val combatDamageByDamagedPlayer = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         for (event in events) {
             if (event is DamageDealtEvent && event.isCombatDamage && event.sourceId != null &&
                 event.targetId in state.turnOrder) {
                 val sourceContainer = state.getEntity(event.sourceId) ?: continue
                 val controller = sourceContainer.get<ControllerComponent>()?.playerId ?: continue
-                combatDamageByController.getOrPut(controller) { mutableListOf() }
-                    .add(CombatDamageInfo(event.sourceId, event.targetId))
+                val info = CombatDamageInfo(event.sourceId, event.targetId)
+                combatDamageByController.getOrPut(controller) { mutableListOf() }.add(info)
+                combatDamageByDamagedPlayer.getOrPut(event.targetId) { mutableListOf() }.add(info)
             }
         }
         if (combatDamageByController.isEmpty()) return
@@ -1645,6 +1648,36 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.COMBAT_DAMAGE_BATCH)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
+
+                // Defensive variant: "one or more creatures deal combat damage to you" — group by
+                // the damaged player (the observer's controller) instead of the source controller.
+                if (trigger is EventPattern.OneOrMoreDealCombatDamageToYouEvent) {
+                    val controllerId = entry.controllerId
+                    val damageEvents = combatDamageByDamagedPlayer[controllerId] ?: continue
+                    val firstMatchingInfo = damageEvents.firstOrNull { info ->
+                        val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
+                        sourceContainer.get<CardComponent>() ?: return@firstOrNull false
+                        if (!projected.isCreature(info.sourceId)) return@firstOrNull false
+                        if (sourceContainer.has<FaceDownComponent>()) return@firstOrNull false
+                        predicateEvaluator.matches(
+                            state, projected, info.sourceId, trigger.sourceFilter,
+                            PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
+                        )
+                    }
+                    if (firstMatchingInfo != null) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entry.entityId,
+                                sourceName = entry.cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext(triggeringEntityId = firstMatchingInfo.sourceId)
+                            )
+                        )
+                    }
+                    continue
+                }
+
                 if (trigger !is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent) continue
 
                 val controllerId = entry.controllerId

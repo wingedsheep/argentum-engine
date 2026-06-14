@@ -1485,6 +1485,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   damage); backed by `StatePredicate.WasDealtDamageThisTurn`. Survives damage removal / leaving combat;
   cleared at end-of-turn cleanup. For "...that was dealt damage this turn" (Rooftop Assassin, Unsparing
   Boltcaster). Also available on `TargetFilter` (`TargetFilter.Creature.dealtDamageThisTurn()`).
+- `.dealtCombatDamageToSourceControllerThisTurn()` — source-relative: creature dealt combat damage
+  *this turn* to the player who controls the effect's source; backed by
+  `StatePredicate.DealtCombatDamageToSourceControllerThisTurn`. Resolves `context.sourceId`'s
+  controller, so as an edict filter it means "...a creature that dealt combat damage to *you* this
+  turn" (Witch-king of Angmar). Per-turn marker, cleared at end-of-turn cleanup; inert with no source
+  context (group-static projection returns false).
 - `.saddled()` — permanent is saddled (CR 702.171b); backed by `StatePredicate.IsSaddled`.
 - `.crewedOrSaddledSourceThisTurn()` — source-relative: creature crewed (CR 702.122) or saddled
   (CR 702.171) the effect's source permanent this turn; backed by
@@ -1769,6 +1775,7 @@ Named sugar for the common cases; reach for the factories for any other combinat
 - `DealsDamage` — source deals any damage (SELF binding).
 - `DealsCombatDamageToPlayer` — source deals combat damage to a player (SELF binding).
 - `DealsCombatDamageToCreature` — source deals combat damage to a creature (SELF binding).
+- `OneOrMoreCreaturesDealCombatDamageToYou(filter = Creature)` — **defensive combat-damage batch trigger** (ANY binding): "whenever one or more creatures deal combat damage to *you*" (Witch-king of Angmar). Fires at most once per combat-damage batch regardless of how many creatures connected with the trigger's controller (the damaged player), unlike per-source `dealsDamage(recipient = You, …)` which fires once per connecting creature. The triggering entity is an arbitrary matching damager. Pair with the `dealtCombatDamageToSourceControllerThisTurn()` filter for "...each opponent sacrifices a creature that dealt combat damage to you this turn".
 - `TakesDamage` — source is dealt damage by any source (SELF binding).
 - `CreatureDealtDamageByThisDies` — Etali / Sengir / Soul Collector shape (SELF binding): "whenever a creature dealt damage by *this* permanent this turn dies". Uses `CreatureDealtDamageBySourceDiesEvent(sourceFilter = null)`.
 - `creatureDealtDamageBySourceDies(sourceFilter)` — observer variant (ANY binding): "whenever another creature dealt damage this turn by [a source matching the filter] dies" (Shelob, Child of Ungoliant: `GameObjectFilter.Creature.youControl().withSubtype("Spider")`). The damaging source is matched against the filter using last-known info from when it dealt the damage (a `DamagedBySourcesThisTurnComponent` snapshot of the source's controller + subtypes), so a source that died in the same combat still qualifies (CR 608.2h). Only the filter's controller predicate, required subtype, and creature requirement are evaluated against the snapshot.

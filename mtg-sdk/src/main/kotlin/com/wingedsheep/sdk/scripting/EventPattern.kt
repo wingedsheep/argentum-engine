@@ -1532,6 +1532,33 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
     }
 
+    /**
+     * Whenever one or more creatures matching [sourceFilter] deal combat damage to *you* (the
+     * trigger's controller). Defensive batching counterpart of
+     * [OneOrMoreDealCombatDamageToPlayerEvent] — fires at most once per combat-damage batch
+     * regardless of how many creatures connected with you.
+     *
+     * Examples:
+     *   → OneOrMoreDealCombatDamageToYouEvent()
+     *     "Whenever one or more creatures deal combat damage to you" (Witch-king of Angmar)
+     */
+    @SerialName("OneOrMoreDealCombatDamageToYouEvent")
+    @Serializable
+    data class OneOrMoreDealCombatDamageToYouEvent(
+        val sourceFilter: GameObjectFilter = GameObjectFilter.Companion.Creature
+    ) : EventPattern {
+        override val description: String = buildString {
+            append("one or more ")
+            append(describeObjectForEvent(sourceFilter))
+            append(" deal combat damage to you")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = sourceFilter.applyTextReplacement(replacer)
+            return if (newFilter !== sourceFilter) copy(sourceFilter = newFilter) else this
+        }
+    }
+
     // =========================================================================
     // Leave Battlefield Without Dying Batch Triggers
     // =========================================================================

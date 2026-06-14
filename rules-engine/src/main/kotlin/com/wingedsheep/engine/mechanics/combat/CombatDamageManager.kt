@@ -11,6 +11,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
@@ -877,7 +878,11 @@ internal class CombatDamageManager(
         // Track combat damage: source dealt damage + dealt combat damage to player
         if (sourceId in newState.getBattlefield()) {
             newState = newState.updateEntity(sourceId) { container ->
-                container.with(HasDealtDamageComponent).with(HasDealtCombatDamageToPlayerComponent)
+                val priorRecipients = container.get<DealtCombatDamageToPlayersThisTurnComponent>()
+                    ?.playerIds ?: emptySet()
+                container.with(HasDealtDamageComponent)
+                    .with(HasDealtCombatDamageToPlayerComponent)
+                    .with(DealtCombatDamageToPlayersThisTurnComponent(priorRecipients + targetId))
             }
         }
         // Track that player was dealt combat damage this turn
@@ -1017,7 +1022,11 @@ internal class CombatDamageManager(
             // Track combat damage: source dealt damage + dealt combat damage to player
             if (sourceId in newState.getBattlefield()) {
                 newState = newState.updateEntity(sourceId) { container ->
-                    container.with(HasDealtDamageComponent).with(HasDealtCombatDamageToPlayerComponent)
+                    val priorRecipients = container.get<DealtCombatDamageToPlayersThisTurnComponent>()
+                        ?.playerIds ?: emptySet()
+                    container.with(HasDealtDamageComponent)
+                        .with(HasDealtCombatDamageToPlayerComponent)
+                        .with(DealtCombatDamageToPlayersThisTurnComponent(priorRecipients + targetId))
                 }
             }
             // Track that player was dealt combat damage this turn

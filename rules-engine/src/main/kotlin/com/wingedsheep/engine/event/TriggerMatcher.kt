@@ -475,6 +475,7 @@ class TriggerMatcher(
             is EventPattern.PermanentsSacrificedEvent -> false
             // Combat damage batch triggers are handled by detectCombatDamageBatchTriggers
             is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent -> false
+            is EventPattern.OneOrMoreDealCombatDamageToYouEvent -> false
             // Leave battlefield without dying batch triggers are handled by detectLeaveBattlefieldWithoutDyingBatchTriggers
             is EventPattern.LeaveBattlefieldWithoutDyingEvent -> false
             // Creatures-you-control-die batch triggers are handled by detectCreaturesDiedBatchTriggers
@@ -1476,6 +1477,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasDealtDamage,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasDealtCombatDamageToPlayer,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.DealtCombatDamageToSourceControllerThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceUp,
