@@ -377,4 +377,50 @@ class MoonshadowTest : FunSpec({
 
         triggers.none { it.sourceId == moon } shouldBe true
     }
+
+    test("creature token dying to your graveyard does not trigger Moonshadow (tokens aren't cards)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Swamp" to 20, "Mountain" to 20),
+            startingLife = 20
+        )
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val activePlayer = driver.activePlayer!!
+
+        val moon = driver.putCreatureOnBattlefield(activePlayer, "Moonshadow")
+        addMinusOneMinusOne(driver, moon, 6)
+
+        // A creature *token* (not a card) dying to the graveyard. CR 111.6: a token isn't a card,
+        // so Moonshadow's "one or more permanent cards are put into your graveyard" must not fire.
+        // CR 111.7: the token still occupies the graveyard at trigger-detection time (it ceases to
+        // exist via a later state-based action), which is exactly what previously mismatched.
+        val token = driver.putCreatureOnBattlefield(activePlayer, "Savannah Lions")
+        driver.replaceState(
+            driver.state.updateEntity(token) { it.with(com.wingedsheep.engine.state.components.identity.TokenComponent) }
+        )
+
+        val battlefieldZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+        driver.replaceState(
+            driver.state.removeFromZone(battlefieldZone, token).addToZone(graveyardZone, token)
+        )
+
+        val events = listOf(
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = token,
+                entityName = "Savannah Lions",
+                fromZone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = activePlayer,
+                lastKnownWasToken = true
+            )
+        )
+
+        val detector = com.wingedsheep.engine.event.TriggerDetector(driver.cardRegistry)
+        val triggers = detector.detectTriggers(driver.state, events)
+
+        triggers.none { it.sourceId == moon } shouldBe true
+        getMinusOneMinusOne(driver, moon) shouldBe 6
+    }
 })

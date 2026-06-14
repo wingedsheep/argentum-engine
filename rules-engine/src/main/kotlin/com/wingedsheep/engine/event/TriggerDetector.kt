@@ -1448,8 +1448,14 @@ class TriggerDetector(
         entityId: EntityId,
         filter: GameObjectFilter
     ): Boolean {
+        // Tokens aren't cards (CR 111.6), so a token put into a graveyard never satisfies a
+        // "one or more [permanent] cards are put into your graveyard" trigger — even though it
+        // momentarily occupies the graveyard zone before CR 704.5s/111.7 sweeps it away (which
+        // is also why it can still be present here at trigger-detection time).
+        val entity = state.getEntity(entityId) ?: return false
+        if (entity.has<TokenComponent>()) return false
         if (filter == GameObjectFilter.Any) return true
-        val cardComponent = state.getEntity(entityId)?.get<CardComponent>() ?: return false
+        val cardComponent = entity.get<CardComponent>() ?: return false
         return filter.cardPredicates.all { predicate ->
             when (predicate) {
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
