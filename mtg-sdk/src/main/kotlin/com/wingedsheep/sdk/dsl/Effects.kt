@@ -2262,6 +2262,25 @@ object Effects {
     fun PhaseOut(target: EffectTarget = EffectTarget.Self): Effect =
         com.wingedsheep.sdk.scripting.effects.PhaseOutEffect(target)
 
+    /**
+     * Phase a target permanent out indefinitely, linked to the effect's source — it stays phased
+     * out until the source leaves the battlefield (paired with [PhaseInLinkedToSource] on the
+     * source's leaves trigger). The phasing analogue of `ExileUntilLeaves` (Oubliette). Set
+     * [tapOnPhaseIn] to tap the permanent as it phases back in.
+     */
+    fun PhaseOutUntilLeaves(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        tapOnPhaseIn: Boolean = false
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.PhaseOutUntilLeavesEffect(target, tapOnPhaseIn)
+
+    /**
+     * Phase in everything the effect's source phased out via [PhaseOutUntilLeaves]. Use on the
+     * source's leaves-battlefield trigger (Oubliette).
+     */
+    fun PhaseInLinkedToSource(): Effect =
+        com.wingedsheep.sdk.scripting.effects.PhaseInLinkedToSourceEffect
+
     // =========================================================================
     // Group Effects (atomic effect classes)
     // =========================================================================

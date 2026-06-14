@@ -55,3 +55,35 @@ data class PhaseOutEffect(
 ) : Effect {
     override val description: String = "${target.description} phases out"
 }
+
+/**
+ * Phase a target permanent out **indefinitely**, linked to the effect's source: it stays phased
+ * out (it does not phase in at its controller's untap step) until the source leaves the
+ * battlefield, at which point a [PhaseInLinkedToSourceEffect] on the source's leaves trigger phases
+ * it back in. The structural analogue of `ExileUntilLeavesEffect`, but with phasing (Oubliette).
+ *
+ * @property tapOnPhaseIn Tap the permanent when it phases back in (Oubliette: "Tap that creature as
+ *   it phases in this way").
+ */
+@SerialName("PhaseOutUntilLeaves")
+@Serializable
+data class PhaseOutUntilLeavesEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val tapOnPhaseIn: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} phases out until this leaves the battlefield")
+        if (tapOnPhaseIn) append(" (tapped on phase-in)")
+    }
+}
+
+/**
+ * Phase in every permanent that was phased out "until source leaves" by the effect's source
+ * (matched on the stored source link). Paired with [PhaseOutUntilLeavesEffect] on the source's
+ * leaves-battlefield trigger (Oubliette).
+ */
+@SerialName("PhaseInLinkedToSource")
+@Serializable
+data object PhaseInLinkedToSourceEffect : Effect {
+    override val description: String = "phase in the permanents this phased out"
+}

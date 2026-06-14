@@ -36,7 +36,16 @@ data object SummoningSicknessComponent : Component
  */
 @Serializable
 data class PhasedOutComponent(
-    val phasedOutByController: EntityId
+    val phasedOutByController: EntityId,
+    /**
+     * When non-null, this permanent was phased out "until [phaseInOnSourceLeaves] leaves the
+     * battlefield" (Oubliette). It does NOT phase in at its controller's untap step; instead the
+     * source's leaves-battlefield trigger ([com.wingedsheep.sdk.scripting.effects.PhaseInLinkedToSourceEffect])
+     * phases it back in. Null for ordinary phasing (phases in at the next untap, Rule 702.26a).
+     */
+    val phaseInOnSourceLeaves: EntityId? = null,
+    /** Tap this permanent when it phases back in (Oubliette: "Tap that creature as it phases in"). */
+    val tapOnPhaseIn: Boolean = false
 ) : Component
 
 /**

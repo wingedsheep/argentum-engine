@@ -2,7 +2,7 @@
 
 **Set Size:** 78 cards
 **Release Date:** December 17, 1993
-**Implemented:** 73 / 78
+**Implemented:** 74 / 78
 | Color | Count |
 |-------|-------|
 | White | 11 |
@@ -45,7 +45,7 @@
 - [x] Junún Efreet
 - [x] Juzám Djinn
 - [x] Khabál Ghoul
-- [ ] Oubliette
+- [x] Oubliette
 - [x] Sorceress Queen
 - [x] Stone-Throwing Devils
 - [x] Aladdin

@@ -46,6 +46,8 @@ import com.wingedsheep.engine.handlers.effects.permanent.stats.ModifyStatsExecut
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerToughnessExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseOutExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseOutUntilLeavesExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseInLinkedToSourceExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapUntapCollectionExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapUntapExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.AddCardTypeExecutor
@@ -165,6 +167,8 @@ class PermanentExecutors(
         TapUntapCollectionExecutor(),
         // phasing
         PhaseOutExecutor(),
+        PhaseOutUntilLeavesExecutor(),
+        PhaseInLinkedToSourceExecutor(),
         // protection
         ChooseColorThenExecutor(decisionHandler),
         GrantHexproofFromChosenColorExecutor(),

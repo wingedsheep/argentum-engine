@@ -10,38 +10,37 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
+import com.wingedsheep.sdk.scripting.effects.PhaseOutUntilLeavesEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for [PhaseOutEffect] (Rule 702.26).
+ * Executor for [PhaseOutUntilLeavesEffect] — the phasing analogue of `ExileUntilLeavesEffect`
+ * (Oubliette). Phases the target permanent out (with indirect phasing of its attachments,
+ * Rule 702.26g) and links each phased-out permanent to the effect's source via
+ * [PhasedOutComponent.phaseInOnSourceLeaves], so the untap step leaves them out and the source's
+ * leaves-battlefield trigger ([PhaseInLinkedToSourceExecutor]) phases them back in.
  *
- * Marks the target permanent — and, by indirect phasing (Rule 702.26g), everything
- * attached to it — with [PhasedOutComponent]. The phased-out permanents are then
- * hidden by [GameState.getBattlefield], so they stop existing for projection, combat,
- * targeting, triggers, and state-based actions until `BeginningPhaseManager` phases
- * them back in before their controller's next untap step.
- *
- * Phasing is not a zone change, so no leaves-the-battlefield triggers fire and the
- * permanents keep their tapped state, counters, and attachments.
+ * The targeted creature itself carries [PhasedOutComponent.tapOnPhaseIn] (when requested) so it
+ * phases in tapped — its attachments do not tap.
  */
-class PhaseOutExecutor : EffectExecutor<PhaseOutEffect> {
+class PhaseOutUntilLeavesExecutor : EffectExecutor<PhaseOutUntilLeavesEffect> {
 
-    override val effectType: KClass<PhaseOutEffect> = PhaseOutEffect::class
+    override val effectType: KClass<PhaseOutUntilLeavesEffect> = PhaseOutUntilLeavesEffect::class
 
     override fun execute(
         state: GameState,
-        effect: PhaseOutEffect,
+        effect: PhaseOutUntilLeavesEffect,
         context: EffectContext
     ): EffectResult {
+        val sourceId = context.sourceId ?: return EffectResult.success(state)
+        // Modern template: if the source already left the battlefield, do nothing.
+        if (sourceId !in state.getBattlefield()) return EffectResult.success(state)
+
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
+        if (targetId !in state.getBattlefield()) return EffectResult.success(state)
 
-        // Record who controls the permanent now; while phased out it has no projected
-        // controller, and it phases in during this player's next untap step.
         val controllerId = state.projectedState.getController(targetId) ?: context.controllerId
-
-        // Indirect phasing: the permanent and everything attached to it phase out together.
         val toPhaseOut = collectWithAttachments(state, targetId)
 
         var newState = state
@@ -49,14 +48,23 @@ class PhaseOutExecutor : EffectExecutor<PhaseOutEffect> {
         for (entityId in toPhaseOut) {
             if (newState.getEntity(entityId)?.has<PhasedOutComponent>() == true) continue
             val name = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-            newState = newState.updateEntity(entityId) { it.with(PhasedOutComponent(controllerId)) }
+            newState = newState.updateEntity(entityId) {
+                it.with(
+                    PhasedOutComponent(
+                        phasedOutByController = controllerId,
+                        phaseInOnSourceLeaves = sourceId,
+                        // Only the targeted permanent taps as it phases in; attachments don't.
+                        tapOnPhaseIn = effect.tapOnPhaseIn && entityId == targetId
+                    )
+                )
+            }
             events.add(PhasedOutEvent(entityId, name))
         }
 
         return EffectResult.success(newState, events)
     }
 
-    /** The entity plus the transitive set of permanents attached to it. */
+    /** The entity plus the transitive set of permanents attached to it (indirect phasing). */
     private fun collectWithAttachments(state: GameState, rootId: EntityId): List<EntityId> {
         val result = mutableListOf<EntityId>()
         val seen = mutableSetOf<EntityId>()
