@@ -25,6 +25,7 @@ class MiscContinuationResumer(
         resumer(RepeatWhileContinuation::class, ::resumeRepeatWhile),
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
+        resumer(CopyEachSpellContinuation::class, ::resumeCopyEachSpell),
         resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
         resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
@@ -191,6 +192,56 @@ class MiscContinuationResumer(
                 return checkForMore(result.state, result.events.toList())
             }
         }
+    }
+
+    private fun resumeCopyEachSpell(
+        state: GameState,
+        continuation: CopyEachSpellContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for spell copy")
+        }
+
+        val selectedTargets = response.selectedTargets.entries
+            .sortedBy { it.key }
+            .flatMap { (_, targetIds) ->
+                targetIds.map { entityId -> entityIdToChosenTarget(state, entityId) }
+            }
+
+        // Copy the head spell (the one just retargeted) with its new targets.
+        val headSpellId = continuation.remainingSpellIds.first()
+        val copyResult = services.stackResolver.putSpellCopy(
+            state = state,
+            sourceSpellId = headSpellId,
+            targets = selectedTargets,
+            targetRequirements = continuation.targetRequirements,
+            controllerId = continuation.controllerId
+        )
+        if (!copyResult.isSuccess) return copyResult
+        val mutated = com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor
+            .applyCopyMutations(
+                copyResult.newState, copyResult.events,
+                continuation.keywordsForCopy, continuation.removeLegendary
+            )
+
+        // Process the remaining spells in the queue.
+        val result = com.wingedsheep.engine.handlers.effects.stack.CopyEachTargetSpellExecutor
+            .driveCopyEachSpell(
+                state = mutated,
+                stackResolver = services.stackResolver,
+                targetFinder = services.targetFinder,
+                controllerId = continuation.controllerId,
+                remainingSpellIds = continuation.remainingSpellIds.drop(1),
+                keywordsForCopy = continuation.keywordsForCopy,
+                removeLegendary = continuation.removeLegendary,
+                priorEvents = copyResult.events
+            )
+        // Propagate a further pause (another copy needs retargeting) or an error as-is;
+        // otherwise let the engine continue resolving the stack.
+        if (result.isPaused || result.error != null) return result
+        return checkForMore(result.newState, result.events)
     }
 
     private fun resumeStormCopyTarget(

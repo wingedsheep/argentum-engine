@@ -414,6 +414,10 @@ abstract class ScenarioTestBase : FunSpec() {
                 container = container.with(CantBeCounteredComponent)
             }
 
+            if (cardDef.script.cantBeCopied) {
+                container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent)
+            }
+
             // Attach ProtectionComponent for cards with static protection from color/subtype
             val protections = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Protection>()
             val protectionColors = protections.flatMap { p ->

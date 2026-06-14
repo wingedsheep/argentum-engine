@@ -483,6 +483,10 @@ class StackResolver(
     ): ExecutionResult {
         val sourceContainer = state.getEntity(sourceSpellId)
             ?: return ExecutionResult.error(state, "Source spell not found: $sourceSpellId")
+        // CR 707.10: a spell that can't be copied yields no copy. Succeed without change.
+        if (sourceContainer.has<com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent>()) {
+            return ExecutionResult.success(state)
+        }
         val sourceCard = sourceContainer.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Source is not a card: $sourceSpellId")
         val sourceSpell = sourceContainer.get<SpellOnStackComponent>()

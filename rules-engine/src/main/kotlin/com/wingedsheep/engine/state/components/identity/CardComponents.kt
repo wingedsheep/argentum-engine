@@ -109,6 +109,14 @@ data class CopyWhileAttachedComponent(
 data object CantBeCounteredComponent : Component
 
 /**
+ * Marks a spell as uncopiable (CR 707.10).
+ * Applied to entities whose card definition has cantBeCopied = true. Any effect that
+ * would copy this spell on the stack creates no copy (e.g., Display of Power).
+ */
+@Serializable
+data object CantBeCopiedComponent : Component
+
+/**
  * Marker: this card entered a graveyard *from the battlefield* during the current turn.
  *
  * "Current turn" follows MTG turn boundaries — a new turn begins whenever a player starts

@@ -280,6 +280,12 @@ object Targets {
     val InstantOrSorcerySpell: TargetRequirement = TargetSpell(filter = TargetFilter.InstantOrSorcerySpellOnStack)
 
     /**
+     * Any number of target instant and/or sorcery spells (e.g., Display of Power).
+     */
+    val AnyNumberOfInstantOrSorcerySpells: TargetRequirement =
+        TargetSpell(filter = TargetFilter.InstantOrSorcerySpellOnStack, unlimited = true)
+
+    /**
      * Target instant or sorcery spell you control.
      */
     val InstantOrSorcerySpellYouControl: TargetRequirement = TargetSpell(filter = TargetFilter.InstantOrSorcerySpellOnStack.youControl())

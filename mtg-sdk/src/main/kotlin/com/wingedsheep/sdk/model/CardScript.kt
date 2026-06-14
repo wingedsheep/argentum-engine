@@ -171,6 +171,12 @@ data class CardScript(
     val cantBeCountered: Boolean = false,
 
     /**
+     * Whether this spell can't be copied (CR 707.10). When true, any effect that would
+     * copy this spell on the stack creates no copy.
+     */
+    val cantBeCopied: Boolean = false,
+
+    /**
      * A condition under which this spell can be cast as though it had flash.
      * Used for Ferocious-style "if you control a creature with power 4 or greater,
      * you may cast this spell as though it had flash" abilities.

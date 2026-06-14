@@ -258,6 +258,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AmassContinuation::class)
         subclass(StormCopyTargetContinuation::class)
         subclass(StormCopyModalTargetContinuation::class)
+        subclass(CopyEachSpellContinuation::class)
         subclass(CopyTriggeredAbilityTargetContinuation::class)
         subclass(CopyActivatedAbilityTargetContinuation::class)
         subclass(DeflectDamageSourceChoiceContinuation::class)

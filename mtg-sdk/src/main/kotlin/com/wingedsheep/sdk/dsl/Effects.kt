@@ -2251,6 +2251,19 @@ object Effects {
         CopyTargetSpellEffect(target, keywordsForCopy.map { it.name }, removeLegendary)
 
     /**
+     * Copy each spell targeted by this effect — one copy per targeted spell, with
+     * optional retargeting per copy (CR 707.10). Models "Copy any number of target
+     * instant and/or sorcery spells. You may choose new targets for the copies."
+     */
+    fun CopyEachTargetSpell(
+        keywordsForCopy: List<com.wingedsheep.sdk.core.Keyword> = emptyList(),
+        removeLegendary: Boolean = false
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect(
+            keywordsForCopy.map { it.name }, removeLegendary
+        )
+
+    /**
      * Grant a keyword to a spell or ability on the stack (e.g., wither, lifelink).
      * Lasts while the spell remains on the stack. Used for "that spell gains X"
      * effects on triggered abilities like Spinerock Tyrant.

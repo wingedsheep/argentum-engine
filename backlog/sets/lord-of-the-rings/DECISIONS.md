@@ -461,3 +461,32 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   TheRingTemptsYou()))`. `SourceAbilityResolvedNTimes` already exists (Tannuk Memorial Ensign). No new
   SDK; snapshot only (the "Nth-resolution" gap the triage flagged was already obsolete).
 
+
+---
+
+## Session: ltr-all-cards sweep (continued 2026-06)
+
+> Goal: implement every remaining unchecked LTR card, one commit per card, building
+> whatever engine primitives are required. Decisions for each card below.
+
+### Display of Power (Red) — Gap 9 (copy a spell on the stack)
+
+- **Oracle:** "This spell can't be copied. Copy any number of target instant and/or sorcery
+  spells. You may choose new targets for the copies."
+- **`cantBeCopied` flag:** added a card-level `cantBeCopied: Boolean` (CardBuilder → CardScript),
+  mirroring the existing `cantBeCountered`. `GameInitializer` (and the `ScenarioTestBase`
+  test-card builder) attach a new `CantBeCopiedComponent` marker. The single chokepoint
+  `StackResolver.putSpellCopy` short-circuits to success-with-no-copy when the source carries
+  the marker (CR 707.10 — "if a spell can't be copied, no copy is created"), so *every* copy
+  path (Storm, CopyTargetSpell, CopyEachTargetSpell, CopyNextSpellCast) honours it for free.
+- **CopyEachTargetSpellEffect:** new stack effect (+ `Effects.CopyEachTargetSpell` facade) that
+  reads **every** `ChosenTarget.Spell` chosen for the resolving spell and copies each in turn.
+  Per copy that has its own targets it pauses with a `ChooseTargetsDecision` (new
+  `CopyEachSpellContinuation`, resumed in `MiscContinuationResumer`); untargeted spells and
+  modal spells are copied verbatim (inheriting modes/targets — a legal "decline to retarget").
+  Reuses `StackResolver.putSpellCopy` + `StormCopyEffectExecutor.applyCopyMutations`.
+- **Targeting:** added `unlimited` param to the `TargetSpell` factory and a
+  `Targets.AnyNumberOfInstantOrSorcerySpells` requirement ("any number of target instant and/or
+  sorcery spells").
+- **Tests:** `DisplayOfPowerScenarioTest` — copy one targeted Bolt and retarget the copy; the
+  spell carries `CantBeCopiedComponent`; copy two Bolts at once (4 Bolts → 12 damage).

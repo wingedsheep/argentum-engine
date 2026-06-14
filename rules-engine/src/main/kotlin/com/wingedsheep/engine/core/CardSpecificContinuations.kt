@@ -300,6 +300,28 @@ data class StormCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume copying a list of targeted spells one at a time (CR 707.10).
+ *
+ * Used by [com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect] (Display of
+ * Power). [remainingSpellIds] holds every spell still to be copied, head first; the head
+ * is the spell whose copy's targets are being chosen by the paused decision. On resume the
+ * head is copied with the selected targets, then the tail is processed.
+ *
+ * @property remainingSpellIds Spells still to copy (head = the one being retargeted now)
+ * @property controllerId Player who controls the copies and picks targets
+ * @property targetRequirements Target requirements of the head spell (for the copy)
+ */
+@Serializable
+data class CopyEachSpellContinuation(
+    override val decisionId: String,
+    val remainingSpellIds: List<EntityId>,
+    val controllerId: EntityId,
+    val targetRequirements: List<TargetRequirement>,
+    val keywordsForCopy: Set<String> = emptySet(),
+    val removeLegendary: Boolean = false
+) : ContinuationFrame
+
+/**
  * Resume Storm modal target selection (rule 702.40a + 707.10).
  *
  * Modal Storm spells keep their chosen modes on every copy (700.2g — modes are

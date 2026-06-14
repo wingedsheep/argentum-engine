@@ -261,6 +261,13 @@ class CardBuilder(private val name: String) {
     var cantBeCountered: Boolean = false
 
     /**
+     * Whether this spell can't be copied (CR 707.10). When true, any effect that would
+     * copy this spell on the stack creates no copy (e.g., Display of Power's "This spell
+     * can't be copied.").
+     */
+    var cantBeCopied: Boolean = false
+
+    /**
      * A condition under which this spell can be cast as though it had flash.
      * Used for Ferocious-style conditional flash abilities.
      */
@@ -779,6 +786,7 @@ class CardBuilder(private val name: String) {
             castRestrictions = spellBuilder?.restrictions ?: emptyList(),
             castTimeCreatureTypeChoice = castTimeCreatureTypeChoice,
             cantBeCountered = cantBeCountered,
+            cantBeCopied = cantBeCopied,
             conditionalFlash = conditionalFlash,
             kickerTargetRequirements = spellBuilder?.kickerTargetRequirements ?: emptyList(),
             kickerSpellEffect = spellBuilder?.kickerEffect,

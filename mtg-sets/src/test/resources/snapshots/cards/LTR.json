@@ -2690,6 +2690,38 @@
     ]
 }
 
+// Display of Power
+{
+    "name": "Display of Power",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell can't be copied.\nCopy any number of target instant and/or sorcery spells. You may choose new targets for the copies.",
+    "script": {
+        "spellEffect": "CopyEachTargetSpell",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "any number of target instant and/or sorcery spells"
+            }
+        ],
+        "cantBeCopied": true
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Shahab Alizadeh",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/295b8595-5b4e-4fc8-8249-486d36e15f67.jpg?1686968845"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Doors of Durin
 {
     "name": "Doors of Durin",

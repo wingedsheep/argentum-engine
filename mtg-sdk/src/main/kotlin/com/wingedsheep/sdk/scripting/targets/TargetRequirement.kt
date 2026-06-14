@@ -323,8 +323,11 @@ fun TargetSpell(
     count: Int = 1,
     optional: Boolean = false,
     filter: TargetFilter = TargetFilter.SpellOnStack,
-    id: String? = null
-): TargetObject = TargetObject(count = count, optional = optional, filter = filter, id = id)
+    id: String? = null,
+    unlimited: Boolean = false
+): TargetObject = TargetObject(
+    count = count, optional = optional, filter = filter, id = id, unlimited = unlimited
+)
 
 // =============================================================================
 // Generic Object Targeting

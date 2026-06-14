@@ -571,6 +571,30 @@ data class CopyTargetSpellEffect(
 }
 
 /**
+ * Copy each spell targeted by this effect (CR 707.10). One copy is created per
+ * targeted spell on the stack; for each copy the controller may choose new targets.
+ *
+ * Models "Copy any number of target instant and/or sorcery spells. You may choose new
+ * targets for the copies." (Display of Power). Unlike [CopyTargetSpellEffect], which
+ * copies a single referenced target, this reads **every** spell target chosen for the
+ * spell/ability (all [com.wingedsheep.sdk.scripting.targets.ChosenTarget.Spell] entries in
+ * the resolution context) and copies them in turn, pausing per copy that has targets so
+ * the controller can retarget it.
+ *
+ * Spells flagged "can't be copied" are skipped (no copy is created for them).
+ */
+@SerialName("CopyEachTargetSpell")
+@Serializable
+data class CopyEachTargetSpellEffect(
+    /** Keywords (by enum name) granted to each copy while it remains a spell on the stack. */
+    val keywordsForCopy: List<String> = emptyList(),
+    /** When true, the Legendary supertype is stripped from each resulting copy (CR 707.10f). */
+    val removeLegendary: Boolean = false
+) : Effect {
+    override val description: String = "Copy each target spell"
+}
+
+/**
  * Copy target triggered ability on the stack.
  * "Copy target triggered ability. You may choose new targets for the copy."
  *

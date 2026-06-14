@@ -97,6 +97,10 @@ object CardEntityFactory {
             container = container.with(CantBeCounteredComponent)
         }
 
+        if (cardDef.script.cantBeCopied) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent)
+        }
+
         if (cardDef.keywordAbilities.any { it is KeywordAbility.Morph }) {
             container = container.with(HasMorphAbilityComponent)
         }
