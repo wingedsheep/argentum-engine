@@ -830,3 +830,36 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `PressTheEnemyScenarioTest` — (a) bounce an opponent's creature then free-cast a MV-1
   sorcery (MV <= 3); (b) a MV-5 sorcery is NOT offered (no pending decision, stays in hand);
   (c) bounce a spell on the stack so it returns to hand without resolving.
+
+## Glamdring (Artifact, Equipment)
+
+- **Card:** `{2}` Legendary Artifact — Equipment. "Equipped creature has first strike and gets
+  +1/+0 for each instant and sorcery card in your graveyard. Whenever equipped creature deals combat
+  damage to a player, you may cast an instant or sorcery spell from your hand with mana value less
+  than or equal to that damage without paying its mana cost. Equip {3}."
+- **No engine or SDK change — composes existing primitives.** Static half:
+  `GrantKeyword(FIRST_STRIKE)` + `GrantDynamicStatsEffect(powerBonus = DynamicAmounts.zone(You,
+  GRAVEYARD, InstantOrSorcery).count())` on `Filters.EquippedCreature`. Trigger half: an
+  `ATTACHED`-bound `Triggers.dealsDamage(DamageType.Combat, RecipientFilter.AnyPlayer)` whose effect
+  is the same Press-the-Enemy free-cast pipeline — `StoreNumber("combatDamage",
+  ContextProperty(TRIGGER_DAMAGE_AMOUNT))` → `GatherCards(FromZone(HAND, You, InstantOrSorcery))` →
+  `FilterCollection(ManaValueAtMost(VariableReference("combatDamage")))` →
+  `ConditionalOnCollection(ifNotEmpty = MayEffect(CastFromCollectionWithoutPayingCost))`.
+- **Root cause of the "free cast never offered" failure (test-only bug, not card/engine):** Glamdring
+  grants the equipped creature **first strike**, so a first-striking attacker deals its combat damage
+  in the **`FIRST_STRIKE_COMBAT_DAMAGE` step**, not the regular `COMBAT_DAMAGE` step (CR 510.4 /
+  702.7b — first strike creates a first combat damage step before the regular one; Step ordering:
+  DECLARE_BLOCKERS → FIRST_STRIKE_COMBAT_DAMAGE → COMBAT_DAMAGE). The trigger fired
+  correctly there, but the test advanced with `passUntilPhase(COMBAT, COMBAT_DAMAGE)`, which passes
+  priority *through* the first-strike step — and the test harness auto-declines any "may" decision
+  that arises mid-advance (`ScenarioTestBase.autoResolveDecision`). So the optional free-cast prompt
+  was auto-declined during step advancement and there was no pending decision left by the time the
+  test stopped at `COMBAT_DAMAGE`. The ATTACHED deals-combat-damage detection path
+  (`AttachmentTriggerDetector.detectAttachmentTriggers` via `aurasByTarget`, threaded through
+  `TriggerProcessor`/`StackResolver` `triggerDamageAmount`) was correct all along.
+- **Fix:** the two combat tests now advance to `Step.FIRST_STRIKE_COMBAT_DAMAGE` (where the
+  first-striker's damage and the trigger land) before passing priority / resolving. Mirrors
+  `FirstStrikeCombatTest`.
+- **Test:** `GlamdringScenarioTest` — (a) first strike + dynamic +X/+0 from instants/sorceries in
+  the graveyard (creature card does not count); (b) dealing 3 first-strike combat damage offers a
+  free cast of a MV-1 hand sorcery, which resolves; (c) a MV-5 hand sorcery is NOT offered.

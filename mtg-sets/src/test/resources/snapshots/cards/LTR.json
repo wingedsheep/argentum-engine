@@ -7339,6 +7339,134 @@
     ]
 }
 
+// Glamdring
+{
+    "name": "Glamdring",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature has first strike and gets +1/+0 for each instant and sorcery card in your graveyard.\nWhenever equipped creature deals combat damage to a player, you may cast an instant or sorcery spell from your hand with mana value less than or equal to that damage without paying its mana cost.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "combatDamage",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "handSpells"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "handSpells",
+                            "filter": {
+                                "type": "ManaValueAtMost",
+                                "max": {
+                                    "type": "VariableReference",
+                                    "variableName": "combatDamage"
+                                }
+                            },
+                            "storeMatching": "castable"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "castable",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "castable"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            },
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "instant|sorcery"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "MYTHIC",
+        "artist": "Andrea Piparo",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8296ebf7-45ed-4b38-acf2-b48d9fb3e706.jpg?1686970159"
+    },
+    "colorIdentityOverride": []
+}
+
 // Glorfindel, Dauntless Rescuer
 {
     "name": "Glorfindel, Dauntless Rescuer",
