@@ -15033,6 +15033,110 @@
     ]
 }
 
+// Shelob, Child of Ungoliant
+{
+    "name": "Shelob, Child of Ungoliant",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Legendary Creature — Spider Demon",
+    "oracleText": "Deathtouch, ward {2}\nOther Spiders you control have deathtouch and ward {2}.\nWhenever another creature dealt damage this turn by a Spider you controlled dies, create a token that's a copy of that creature, except it's a Food artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life,\" and it loses all other card types.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "CreatureDealtDamageBySourceDiesEvent",
+                    "sourceFilter": "creature Spider ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "addedSubtypes": [
+                        "Food"
+                    ],
+                    "overrideCardTypes": [
+                        "ARTIFACT"
+                    ],
+                    "activatedAbilities": [
+                        {
+                            "id": "ability_2",
+                            "cost": {
+                                "type": "CostComposite",
+                                "costs": [
+                                    {
+                                        "type": "CostAtomWrapper",
+                                        "atom": {
+                                            "type": "AtomMana",
+                                            "cost": "{2}"
+                                        }
+                                    },
+                                    "CostTap",
+                                    "CostSacrificeSelf"
+                                ]
+                            },
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature Spider ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                },
+                "filter": {
+                    "baseFilter": "creature Spider ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a14c4b29-3363-45ce-9190-0f79e1a0ef7f.jpg?1686970060"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Shire Scarecrow
 {
     "name": "Shire Scarecrow",

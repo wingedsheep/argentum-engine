@@ -21,6 +21,8 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtByPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
+import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
@@ -315,6 +317,7 @@ object DamageUtils {
             // Track damage source for "creature dealt damage by this dies" triggers
             if (sourceId != null) {
                 newState = trackDamageDealtToCreature(newState, sourceId, targetId)
+                newState = trackDamageSourceLki(newState, sourceId, targetId)
             }
             // Track per-player damage dealt to this entity this turn (Grothama LTB).
             if (sourceId != null) {
@@ -579,6 +582,35 @@ object DamageUtils {
             val existing = container.get<DamageDealtToCreaturesThisTurnComponent>()
                 ?: DamageDealtToCreaturesThisTurnComponent()
             container.with(existing.withCreature(targetCreatureId))
+        }
+    }
+
+    /**
+     * Record a last-known snapshot of [sourceId] (its controller and creature-subtypes as projected
+     * right now) on [targetCreatureId]'s [DamagedBySourcesThisTurnComponent]. Read at death time by
+     * observer triggers of the form "whenever another creature dealt damage this turn by [a source
+     * matching a filter] dies" (Shelob). Snapshotting on the *damaged* creature means a source that
+     * died in the same combat is still evaluated against its damage-time state (CR 608.2h).
+     */
+    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetCreatureId: EntityId): GameState {
+        if (targetCreatureId !in state.getBattlefield()) return state
+        val projected = state.projectedState
+        val controllerId = projected.getController(sourceId)
+            ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            ?: state.getEntity(sourceId)?.get<CardComponent>()?.ownerId
+            ?: return state
+        val subtypes = projected.getSubtypes(sourceId)
+            .map { com.wingedsheep.sdk.core.Subtype(it) }
+            .toSet()
+        val snapshot = DamageSourceLki(
+            sourceControllerId = controllerId,
+            sourceSubtypes = subtypes,
+            sourceWasCreature = projected.isCreature(sourceId),
+        )
+        return state.updateEntity(targetCreatureId) { container ->
+            val existing = container.get<DamagedBySourcesThisTurnComponent>()
+                ?: DamagedBySourcesThisTurnComponent()
+            container.with(existing.adding(snapshot))
         }
     }
 

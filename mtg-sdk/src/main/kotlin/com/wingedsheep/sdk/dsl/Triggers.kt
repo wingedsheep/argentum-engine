@@ -415,11 +415,24 @@ object Triggers {
 
     /**
      * Whenever a creature dealt damage by this permanent this turn dies (Soul Collector shape).
-     * Only consumer of [CreatureDealtDamageBySourceDiesEvent].
+     * Binding SELF — the damaging source must be the permanent bearing the trigger.
      */
     val CreatureDealtDamageByThisDies: TriggerSpec = TriggerSpec(
-        event = CreatureDealtDamageBySourceDiesEvent,
+        event = CreatureDealtDamageBySourceDiesEvent(),
         binding = TriggerBinding.SELF
+    )
+
+    /**
+     * Whenever a creature dealt damage this turn by a source matching [sourceFilter] dies
+     * (Shelob, Child of Ungoliant: "by a Spider you controlled"). Binding ANY — any creature on the
+     * battlefield can be the dying creature; the damaging source is matched against [sourceFilter]
+     * using last-known information from when it dealt the damage, so a source that died in the same
+     * combat still qualifies. The filter's "you control" predicate resolves to the controller of the
+     * permanent bearing this trigger.
+     */
+    fun creatureDealtDamageBySourceDies(sourceFilter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = CreatureDealtDamageBySourceDiesEvent(sourceFilter = sourceFilter),
+        binding = TriggerBinding.ANY
     )
 
     /**

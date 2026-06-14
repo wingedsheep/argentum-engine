@@ -899,3 +899,31 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   makes a tapped+attacking 3/3 black Wraith with menace (and inherits the copied card's flying);
   exiled at the next end step when Sauron is NOT the Ring-bearer; survives when Sauron IS the
   Ring-bearer.
+
+## Shelob, Child of Ungoliant (#230) — {4}{B}{G} Legendary Spider Demon, 8/8
+
+- **Keywords:** intrinsic deathtouch + `KeywordAbility.ward("{2}")`.
+- **Spider anthem:** "Other Spiders you control have deathtouch and ward {2}" → two static grants over
+  `GroupFilter.AllCreaturesYouControl.withSubtype("Spider").other()`: `GrantKeyword(DEATHTOUCH, …)`
+  and `GrantWard(WardCost.Mana("{2}"), …)` — reuses the existing anthem-static pattern (Ardyn /
+  King of the Oathbreakers).
+- **Death-tracking token copy:** "Whenever another creature dealt damage this turn by a Spider you
+  controlled dies, create a token that's a copy of that creature, except it's a Food artifact with
+  '{2}, {T}, Sacrifice this token: You gain 3 life,' and it loses all other card types."
+  - **New observer trigger.** `CreatureDealtDamageBySourceDiesEvent` was extended from a `data object`
+    (SELF-only, Soul Collector) to a `data class(sourceFilter: GameObjectFilter? = null)`. `null` keeps
+    the SELF shape; a filter makes it an observer (`Triggers.creatureDealtDamageBySourceDies(filter)`,
+    binding ANY). The damaging source is matched by **last-known info** captured when it dealt the
+    damage — a new `DamagedBySourcesThisTurnComponent` snapshots each source's controller + subtypes +
+    creature-ness onto the *damaged* creature, so a Spider that died in the same combat still qualifies
+    (CR 608.2h). The snapshot is recorded in both damage paths (`DamageUtils.dealDamageToTarget` and
+    `CombatDamageManager.dealFinalDamage`), captured as `ZoneChangeEvent.lastKnownDamageSources` on
+    leave, cleared at end of turn, and serialized.
+  - **New token-copy overrides.** `CreateTokenCopyOfTargetEffect` gained `overrideCardTypes`
+    (replace card types → `{ARTIFACT}` = "loses all other card types"), `addedSubtypes` (union, adds
+    "Food"), and `activatedAbilities` (grants the Food sacrifice ability). The copy reads the dying
+    creature via `EffectTarget.TriggeringEntity`.
+- **Test:** `ShelobChildOfUngoliantScenarioTest` — deathtouch + ward; anthem grants deathtouch + ward
+  to another Spider you control; a Bear dealt deathtouch combat damage by a granted-deathtouch Spider
+  dies and becomes a Player-1-controlled Food **artifact** token copy that is no longer a creature and
+  carries a granted activated ability.

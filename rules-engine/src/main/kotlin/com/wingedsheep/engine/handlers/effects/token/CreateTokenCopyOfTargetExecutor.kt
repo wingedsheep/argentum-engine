@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
@@ -90,7 +91,8 @@ class CreateTokenCopyOfTargetExecutor(
             } else null
             val tokenTypeLine = targetCard.typeLine.copy(
                 supertypes = targetCard.typeLine.supertypes + effect.addedSupertypes - effect.removedSupertypes,
-                subtypes = effect.overrideSubtypes ?: targetCard.typeLine.subtypes
+                cardTypes = effect.overrideCardTypes ?: targetCard.typeLine.cardTypes,
+                subtypes = (effect.overrideSubtypes ?: targetCard.typeLine.subtypes) + effect.addedSubtypes
             )
             val tokenCard = targetCard.copy(
                 ownerId = controllerId,
@@ -156,6 +158,20 @@ class CreateTokenCopyOfTargetExecutor(
                 )
                 newState = newState.copy(
                     grantedTriggeredAbilities = newState.grantedTriggeredAbilities + grant
+                )
+            }
+
+            // Activated abilities granted to the copy (e.g. Shelob's Food sacrifice ability). Tokens
+            // have no CardDefinition, so granted abilities live in GameState.grantedActivatedAbilities,
+            // which the legal-action enumerator and ActivateAbilityHandler consult for any entity.
+            for (ability in effect.activatedAbilities) {
+                val grant = GrantedActivatedAbility(
+                    entityId = tokenId,
+                    ability = ability,
+                    duration = Duration.Permanent
+                )
+                newState = newState.copy(
+                    grantedActivatedAbilities = newState.grantedActivatedAbilities + grant
                 )
             }
 

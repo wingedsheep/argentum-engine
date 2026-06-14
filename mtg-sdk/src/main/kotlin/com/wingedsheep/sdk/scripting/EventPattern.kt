@@ -679,16 +679,26 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever a creature dealt damage by this permanent this turn dies.
-     * Binding SELF = "whenever a creature dealt damage by Soul Collector this turn dies".
+     * Whenever a creature dealt damage this turn by a matching source dies.
      *
-     * Detection uses DamageDealtToCreaturesThisTurnComponent on the source entity
-     * to check if it dealt damage to the dying creature this turn.
+     * - [sourceFilter] == null → the Soul Collector shape, bound SELF: "whenever a creature dealt
+     *   damage by this creature this turn dies". Detection uses the
+     *   DamageDealtToCreaturesThisTurnComponent on the source (this) entity.
+     * - [sourceFilter] != null → an observer shape (binding ANY): "whenever a creature dealt damage
+     *   this turn by [a source matching the filter] dies" (Shelob, Child of Ungoliant: "by a Spider
+     *   you controlled"). The damaging sources are evaluated against the filter using last-known
+     *   information from when the damage was dealt (CR 603.10e / 608.2h), so a Spider that died in
+     *   the same combat still qualifies. The filter's controller predicate is resolved relative to
+     *   the controller of the permanent bearing the trigger.
      */
     @SerialName("CreatureDealtDamageBySourceDiesEvent")
     @Serializable
-    data object CreatureDealtDamageBySourceDiesEvent : EventPattern {
-        override val description: String = "whenever a creature dealt damage by this creature this turn dies"
+    data class CreatureDealtDamageBySourceDiesEvent(
+        val sourceFilter: GameObjectFilter? = null
+    ) : EventPattern {
+        override val description: String =
+            if (sourceFilter == null) "whenever a creature dealt damage by this creature this turn dies"
+            else "whenever a creature dealt damage this turn by ${sourceFilter.description} dies"
     }
 
     /**

@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCoun
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtByPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent
@@ -553,6 +554,9 @@ class CleanupPhaseManager(
             if (container.has<DamageDealtByPlayersThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<DamagedBySourcesThisTurnComponent>()) {
+                needsUpdate = true
+            }
             // Saddled lasts "until end of turn" (CR 702.171b)
             if (container.has<SaddledComponent>()) {
                 needsUpdate = true
@@ -576,6 +580,7 @@ class CleanupPhaseManager(
                         .without<WasDealtDamageThisTurnComponent>()
                         .without<BlockedOrWasBlockedByLegendaryThisTurnComponent>()
                         .without<DamageDealtByPlayersThisTurnComponent>()
+                        .without<DamagedBySourcesThisTurnComponent>()
                         .without<SaddledComponent>()
                         .without<CrewSaddleContributorsComponent>()
                 }

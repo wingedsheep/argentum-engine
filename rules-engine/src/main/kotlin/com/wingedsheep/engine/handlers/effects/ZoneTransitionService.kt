@@ -153,6 +153,7 @@ object ZoneTransitionService {
         var lastKnownBlockingOrBlockedByIds: List<EntityId> = emptyList()
         var lastKnownWasToken = false
         var lastKnownDamageDealtByPlayers: Map<EntityId, Int> = emptyMap()
+        var lastKnownDamageSources: Set<com.wingedsheep.engine.state.components.battlefield.DamageSourceLki> = emptySet()
         // The {X} this permanent was cast with (DynamicAmount.CastX), captured before the
         // CastChoicesComponent is stripped so dies/leaves triggers reading CastX still see it
         // as last-known information (CR 603.10a).
@@ -198,6 +199,9 @@ object ZoneTransitionService {
             lastKnownWasToken = container.has<TokenComponent>()
             lastKnownDamageDealtByPlayers =
                 container.get<DamageDealtByPlayersThisTurnComponent>()?.perPlayer ?: emptyMap()
+            lastKnownDamageSources =
+                container.get<com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent>()
+                    ?.sources ?: emptySet()
             lastKnownCastX = container
                 .get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()?.x
         }
@@ -414,6 +418,7 @@ object ZoneTransitionService {
                 lastKnownBlockingOrBlockedByIds = if (leavingBattlefield) lastKnownBlockingOrBlockedByIds else emptyList(),
                 lastKnownCardDefinitionId = if (leavingBattlefield) cardComponent.cardDefinitionId else null,
                 lastKnownDamageDealtByPlayers = lastKnownDamageDealtByPlayers,
+                lastKnownDamageSources = lastKnownDamageSources,
                 xValue = lastKnownCastX
             )
         )

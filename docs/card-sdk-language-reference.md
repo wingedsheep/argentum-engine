@@ -585,10 +585,15 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `CreateChosenTokenEffect`; under the hood it sets `CreateTokenEffect.colorsFromChoice` /
   `creatureTypesFromChoice`.)
 - `CreateTokenCopyOfSelf(count?, tapped?)` — token copies of source.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, exileAtStep?, exileUnlessSourceIsRingBearer?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, exileAtStep?, exileUnlessSourceIsRingBearer?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works). `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
   outright for "a token that's a copy … except it's a 5/5 black Demon" wording (Ardyn, the Usurper).
+  `overrideCardTypes` replaces the copy's card types outright — "it's a Food artifact … and it loses all
+  other card types" → `setOf(CardType.ARTIFACT)`; `addedSubtypes` *adds* a subtype on top of the copied
+  types ("Food"); `activatedAbilities` grants extra activated abilities to the copy (the Food
+  "{2}, {T}, Sacrifice this token: You gain 3 life") — together model Shelob, Child of Ungoliant's
+  death-trigger Food token.
   `attacking` only applies to copies whose printed type line is a creature (a copy of a non-creature card
   still enters tapped but never attacking). `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
   per created copy at that step (the sacrifice sibling of `CreateTokenEffect.sacrificeAtStep`);
@@ -1765,7 +1770,8 @@ Named sugar for the common cases; reach for the factories for any other combinat
 - `DealsCombatDamageToPlayer` — source deals combat damage to a player (SELF binding).
 - `DealsCombatDamageToCreature` — source deals combat damage to a creature (SELF binding).
 - `TakesDamage` — source is dealt damage by any source (SELF binding).
-- `CreatureDealtDamageByThisDies` — Etali / Sengir / Soul Collector shape; only consumer of `CreatureDealtDamageBySourceDiesEvent`.
+- `CreatureDealtDamageByThisDies` — Etali / Sengir / Soul Collector shape (SELF binding): "whenever a creature dealt damage by *this* permanent this turn dies". Uses `CreatureDealtDamageBySourceDiesEvent(sourceFilter = null)`.
+- `creatureDealtDamageBySourceDies(sourceFilter)` — observer variant (ANY binding): "whenever another creature dealt damage this turn by [a source matching the filter] dies" (Shelob, Child of Ungoliant: `GameObjectFilter.Creature.youControl().withSubtype("Spider")`). The damaging source is matched against the filter using last-known info from when it dealt the damage (a `DamagedBySourcesThisTurnComponent` snapshot of the source's controller + subtypes), so a source that died in the same combat still qualifies (CR 608.2h). Only the filter's controller predicate, required subtype, and creature requirement are evaluated against the snapshot.
 
 **Factories** (axes: `damageType` × `recipient` × `sourceFilter` × `binding` for outgoing; `source` × `binding` for incoming):
 

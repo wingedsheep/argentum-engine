@@ -100,7 +100,14 @@ data class ZoneChangeEvent(
      * captured at the moment of leaving the battlefield. Read by LTB triggers like Grothama:
      * "each player draws cards equal to the damage dealt to ~ this turn by sources they controlled."
      */
-    val lastKnownDamageDealtByPlayers: Map<EntityId, Int> = emptyMap()
+    val lastKnownDamageDealtByPlayers: Map<EntityId, Int> = emptyMap(),
+    /**
+     * Last-known snapshots of the sources that dealt damage to this entity this turn, captured at
+     * the moment of leaving the battlefield. Read by observer death triggers of the form "whenever
+     * another creature dealt damage this turn by [a source matching a filter] dies" (Shelob, Child
+     * of Ungoliant) so a source that died in the same combat is still evaluated against the filter.
+     */
+    val lastKnownDamageSources: Set<com.wingedsheep.engine.state.components.battlefield.DamageSourceLki> = emptySet()
 ) : GameEvent
 
 // =============================================================================

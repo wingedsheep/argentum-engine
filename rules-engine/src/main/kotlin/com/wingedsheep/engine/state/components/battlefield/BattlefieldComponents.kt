@@ -546,6 +546,35 @@ data class DamageDealtToCreaturesThisTurnComponent(
 }
 
 /**
+ * Last-known snapshot of a source that dealt damage to the bearer this turn — captured at the
+ * moment the damage was dealt (CR 608.2h / 603.10e). Holds just what observer-style death triggers
+ * need to evaluate a source filter ("dealt damage by a Spider you controlled"): the source's
+ * controller and creature-subtypes as they were when it dealt the damage. Stored on the *damaged*
+ * creature so it survives a source that died in the same combat.
+ */
+@Serializable
+data class DamageSourceLki(
+    val sourceControllerId: EntityId,
+    val sourceSubtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
+    val sourceWasCreature: Boolean = true,
+)
+
+/**
+ * Tracks the last-known snapshots of all sources that dealt damage to this creature this turn.
+ * Read by observer death triggers of the form "whenever another creature dealt damage this turn by
+ * [a source matching a filter] dies" (Shelob, Child of Ungoliant). Captured as last-known info on
+ * the [com.wingedsheep.engine.core.ZoneChangeEvent] when the bearer leaves the battlefield, and
+ * cleared at end of turn by [com.wingedsheep.engine.core.CleanupPhaseManager].
+ */
+@Serializable
+data class DamagedBySourcesThisTurnComponent(
+    val sources: Set<DamageSourceLki> = emptySet()
+) : Component {
+    fun adding(source: DamageSourceLki): DamagedBySourcesThisTurnComponent =
+        copy(sources = sources + source)
+}
+
+/**
  * Tracks damage dealt to this entity this turn, summed per source-controller player.
  * Used by Grothama-style LTB triggers: "each player draws cards equal to the damage
  * dealt to ~ this turn by sources they controlled." Captured as last-known info on
