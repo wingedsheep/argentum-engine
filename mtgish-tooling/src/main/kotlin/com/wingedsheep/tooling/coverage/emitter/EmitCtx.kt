@@ -130,6 +130,7 @@ internal fun EmitCtx.renderAction(node: JsonObject, tvar: String?): Dsl? =
 /** Render a list of mtgish actions to one Effect ([Composite] if >1). Null if any can't render. */
 internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?): Dsl? {
     echoEffect(actions)?.let { return it }
+    counterUnlessPaysEffect(actions)?.let { return it }
     becomeCreatureTypeEffect(actions, tvar)?.let { return it }
     chooseTypeModifyStatsEffect(actions)?.let { return it }
     chooseCreatureTypeRevealTopEffect(actions)?.let { return it }
@@ -791,4 +792,30 @@ internal fun EmitCtx.echoEffect(actions: List<JsonObject>): Dsl? {
     if (!jsonContains(a1, "_Condition", "CostWasPaid") || !jsonContains(a1, "_Action", "SacrificePermanent")) return null
     val cost = paycostDsl(a0["args"]) ?: return null
     return call("PayOrSufferEffect", arg("cost", Lit(cost)), arg("suffer", "SacrificeSelfEffect"))
+}
+
+/**
+ * `[PlayerMayCost(ControllerOfSpell, PayMana {N}), Unless(CostWasPaid, [CounterSpell])]`
+ * -> `CounterEffect(condition = CounterCondition.UnlessPaysMana(ManaCost.parse("{N}")))`
+ * — "counter target spell unless its controller pays {N}" (Phantom Interference mode 2). The target
+ * (`TargetSpell`) is recovered by the enclosing `Targeted` envelope; the `CounterEffect`'s default
+ * `CounterTarget.Spell` reads that `ContextTarget(0)`. Only a *generic* mana cost ({N}) is rendered;
+ * any other cost shape declines (-> SCAFFOLD) rather than approximate.
+ */
+internal fun EmitCtx.counterUnlessPaysEffect(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val (a0, a1) = actions
+    if (a0.strField("_Action") != "PlayerMayCost" || a1.strField("_Action") != "Unless") return null
+    if (!jsonContains(a1, "_Condition", "CostWasPaid") || !jsonContains(a1, "_Action", "CounterSpell")) return null
+    // The payer must be the controller of the targeted spell (the only shape CounterUnlessPays models).
+    if (!jsonContains(a0["args"], "_Player", "ControllerOfSpell")) return null
+    // Recover the mana cost from the PayMana sub-node. Only a plain generic-or-coloured printed mana
+    // cost is modeled (CounterUnlessPays takes a mana string); decline for anything else (-> SCAFFOLD).
+    val payMana = (a0["args"].asArr ?: return null).firstOrNull { it.strField("_Cost") == "PayMana" } ?: return null
+    val cost = renderMana(payMana.field("args"))
+    if (cost.isEmpty() || "{?}" in cost || "{X}" in cost) return null
+    return call(
+        "CounterEffect",
+        arg("condition", Lit("CounterCondition.UnlessPaysMana(ManaCost.parse(\"$cost\"))"))
+    )
 }

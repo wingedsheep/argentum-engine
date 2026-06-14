@@ -52,6 +52,10 @@ internal fun BridgeBuilder.damageLifeAndCards() {
 
     effect("SacrificePermanent", "Sacrifice")
     effect("CounterSpell", "Counter")
+    // Copy / retarget a spell or ability on the stack (Return the Favor). The unified copy effect
+    // dispatches at resolution on the chosen stack-object kind (spell / activated / triggered ability).
+    effect("CopySpellOrAbilityAndMayChooseNewTargets", "CopyTargetSpellOrAbility")
+    effect("ChangeTargetsOfSpellOrAbility", "ChangeTarget")
     effect("TakeAnExtraTurn", "TakeExtraTurn")
     effect("LoseTheGame", "LoseGame")
     effect("Shuffle", "ShuffleLibrary")

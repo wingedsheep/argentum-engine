@@ -136,6 +136,21 @@ class PredicateEvaluator {
         if (predicate is CardPredicate.IsActivatedAbility) {
             return container.has<ActivatedAbilityOnStackComponent>()
         }
+        // Composite predicates must recurse per-branch *before* the CardComponent null-check below,
+        // so a heterogeneous Or/And/Not whose branches mix spell predicates (need a CardComponent)
+        // with ability predicates (no CardComponent) evaluates each branch on its own terms. Without
+        // this, `Or(IsInstant, IsSorcery, IsActivatedOrTriggeredAbility)` would short-circuit to
+        // false for an ability on the stack (the whole composite bails at the missing CardComponent)
+        // — breaking "copy/counter target spell or ability" (Return the Favor, Stifle).
+        if (predicate is CardPredicate.Or) {
+            return predicate.predicates.any { matchesCardPredicate(state, projected, entityId, it, context) }
+        }
+        if (predicate is CardPredicate.And) {
+            return predicate.predicates.all { matchesCardPredicate(state, projected, entityId, it, context) }
+        }
+        if (predicate is CardPredicate.Not) {
+            return !matchesCardPredicate(state, projected, entityId, predicate.predicate, context)
+        }
         // Stack-relative targeting predicate: read the stack entity's TargetsComponent
         // and match each chosen target against the subfilter. Works for both spells and
         // activated/triggered abilities (none of which have CardComponent for the

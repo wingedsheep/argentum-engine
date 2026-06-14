@@ -132,6 +132,13 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
     }
 
     simple("CounterSpell", dsl = "CounterEffect()")
+    // "Copy target instant/sorcery spell, activated ability, or triggered ability. You may choose new
+    // targets for the copy." (Return the Favor mode 1). The four-way target is recovered by
+    // `Targets.InstantSorcerySpellOrAbility`; the effect copies whichever stack-object kind was chosen.
+    simple("CopySpellOrAbilityAndMayChooseNewTargets", dsl = "Effects.CopyTargetSpellOrAbility()")
+    // "Change the target of target spell or ability with a single target." (Return the Favor mode 2 /
+    // Willbender). Pairs with `Targets.SpellOrAbilityWithSingleTarget`.
+    simple("ChangeTargetsOfSpellOrAbility", dsl = "Effects.ChangeTarget()")
     simple("Shuffle", dsl = "ShuffleLibraryEffect()")
     simple("TakeAnExtraTurn", dsl = "TakeExtraTurnEffect()")
     simple("DiscardACardAtRandom", dsl = "Patterns.Hand.discardRandom(1)")

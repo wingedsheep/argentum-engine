@@ -232,11 +232,13 @@ this turn" can't be expressed. Add the tracker (engine accumulates on draw event
 
 ## Tier 3 — One-off complex cards (each needs unique new functionality)
 
-7. **Copy an activated/triggered ability already on the stack.** Only `CopyTargetSpell` (+ a
-   triggered-ability copy) exists — no effect to copy a target **activated** ability, and no trigger
-   predicate for "an ability that targets a creature or player." Needs a `CopyTargetAbility` effect +
-   a targets-something trigger filter.
-   → **Ertha Jo, Frontier Mentor**; also the copy-activated-ability mode of **Return the Favor**.
+7. **Copy an activated/triggered ability already on the stack.** *(partly done)* The unified
+   `CopyTargetSpellOrAbilityEffect` (facade `Effects.CopyTargetSpellOrAbility`) now copies whichever
+   stack-object kind the single target resolved to — instant/sorcery spell, **activated ability**, or
+   triggered ability — via `Targets.InstantSorcerySpellOrAbility`; STACK targeting enumeration was
+   widened so an ability becomes a legal target when the filter names an ability predicate. This
+   closed the **Return the Favor** copy mode. Still open for **Ertha Jo, Frontier Mentor**: a trigger
+   predicate for "an ability that targets a creature or player."
 
 8. **Aura "becomes attached" trigger + control-for-as-long-as-attached + MV-on-attach condition.**
    No "becomes attached" trigger event, no MV-comparison-on-attachment condition, and no control

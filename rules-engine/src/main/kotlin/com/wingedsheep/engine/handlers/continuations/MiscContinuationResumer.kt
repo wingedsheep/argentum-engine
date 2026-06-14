@@ -26,6 +26,7 @@ class MiscContinuationResumer(
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
+        resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
@@ -60,6 +61,41 @@ class MiscContinuationResumer(
             .cloneAbility(sourceAbility, continuation.controllerId)
 
         val stackResult = services.stackResolver.putTriggeredAbility(
+            state = state,
+            ability = copy,
+            targets = selectedTargets,
+            targetRequirements = continuation.targetRequirements
+        )
+        if (!stackResult.isSuccess) return stackResult
+
+        return checkForMore(stackResult.newState, stackResult.events)
+    }
+
+    private fun resumeCopyActivatedAbilityTarget(
+        state: GameState,
+        continuation: CopyActivatedAbilityTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for activated ability copy")
+        }
+
+        val selectedTargets = response.selectedTargets.entries
+            .sortedBy { it.key }
+            .flatMap { (_, targetIds) ->
+                targetIds.map { entityId -> entityIdToChosenTarget(state, entityId) }
+            }
+
+        val sourceAbility = state.getEntity(continuation.abilityEntityId)
+            ?.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Source activated ability no longer on stack")
+
+        // CR 707.10: the copy inherits every cast-time value (X, sacrificed/tapped permanents) and
+        // is controlled by the copier.
+        val copy = sourceAbility.copy(controllerId = continuation.controllerId)
+
+        val stackResult = services.stackResolver.putActivatedAbility(
             state = state,
             ability = copy,
             targets = selectedTargets,

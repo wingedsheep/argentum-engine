@@ -420,10 +420,11 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
 
 internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     val blob = compact(args)
-    // A destination CHOICE ("put it into your hand or graveyard") or a destination we don't model
-    // (graveyard) can't be rendered as a single fixed SearchDestination — scaffold rather than silently
-    // pick one arm (Dina's Guidance).
-    if ("ChooseAnAction" in blob || "PutFoundCardsIntoGraveyard" in blob) return null
+    // A destination CHOICE ("put it into your hand or graveyard") can't be rendered as a single fixed
+    // SearchDestination — scaffold rather than silently pick one arm (Dina's Guidance). The fixed
+    // "...into your graveyard" destination (Lively Dirge mode 1) IS modeled — `SearchDestination.GRAVEYARD`
+    // below — and only reaches here when it's *not* wrapped in a ChooseAnAction choice.
+    if ("ChooseAnAction" in blob) return null
     // A CONDITIONAL destination ("If a creature died this turn, you may put that card onto the
     // battlefield instead" — Caravan Vigil's morbid rider): an `If`/`MayPutFoundCardsOntoBattlefield`
     // search action. The fixed-destination render would silently pick one arm (and the May-substring
@@ -453,8 +454,19 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     // search filter drops, widening the tutor to any artifact. Decline (-> SCAFFOLD) for either rather
     // than emit a too-broad search.
     if ("IsArtifactType" in blob || "ManaValueIs" in blob) return null
+    // A graveyard destination renders as `SearchDestination.GRAVEYARD` only for a *pure* search-to-
+    // graveyard (Lively Dirge: find → put into graveyard → shuffle). When the graveyard arm is one half
+    // of a split — a player chooses some found cards (`APlayerChoosesAFoundCard`) and those go to hand
+    // (`PutChosenFoundCardsIntoHand`) while the *rest* go to the graveyard (Intuition) — a single fixed
+    // destination would silently drop the choice and the hand split, emitting a strictly different card.
+    // Decline -> SCAFFOLD rather than approximate.
+    if ("PutFoundCardsIntoGraveyard" in blob &&
+        ("APlayerChoosesAFoundCard" in blob || "PutChosenFoundCardsIntoHand" in blob ||
+            "PutFoundCardsIntoHand" in blob || "SetAside" in blob)
+    ) return null
     val dest = when {
         "PutFoundCardsOntoBattlefield" in blob -> "BATTLEFIELD"
+        "PutFoundCardsIntoGraveyard" in blob -> "GRAVEYARD"
         "PutFoundCardsIntoHand" in blob -> "HAND"
         "PutSetAsideCardsOnTopOfLibrary" in blob || "OnTopOfLibrary" in blob -> "TOP_OF_LIBRARY"
         else -> "HAND"

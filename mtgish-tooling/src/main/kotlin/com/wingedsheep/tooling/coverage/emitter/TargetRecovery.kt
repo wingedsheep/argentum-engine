@@ -658,6 +658,22 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         if (types.isEmpty()) return Call("TargetSpell")
         return null
     }
+    if (ttype == "TargetSpellOrAbility") {
+        val blob = compact(args)
+        // "...with a single target" (Return the Favor mode 2 / Willbender) -> the single-target
+        // spell-or-ability requirement that the change-target effect consumes.
+        if ("HasASingleTarget" in blob) return Lit("Targets.SpellOrAbilityWithSingleTarget")
+        // "instant spell, sorcery spell, activated ability, or triggered ability" — the four-way Or
+        // (Return the Favor mode 1). Match it exactly; any other spell/ability union declines.
+        val isInstant = jsonContains(args, "_Spells", "IsCardtype") && "\"Instant\"" in blob
+        val isSorcery = "\"Sorcery\"" in blob
+        val hasActivated = "ActivatedAbility" in blob
+        val hasTriggered = "TriggeredAbility" in blob
+        if ("\"Or\"" in blob && isInstant && isSorcery && hasActivated && hasTriggered) {
+            return Lit("Targets.InstantSorcerySpellOrAbility")
+        }
+        return null
+    }
     if (ttype == "TargetGraveyardCard" || ttype == "UptoOneTargetGraveyardCard") {
         val blob = compact(args)
         // "target BASIC land card from your graveyard" (Groundskeeper): a supertype restriction none of the

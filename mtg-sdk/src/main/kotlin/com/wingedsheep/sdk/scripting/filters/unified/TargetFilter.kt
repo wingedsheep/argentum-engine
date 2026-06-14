@@ -213,6 +213,27 @@ data class TargetFilter(
 
         /** Target any spell or ability on the stack (spells and activated/triggered abilities) */
         val SpellOrAbilityOnStack = TargetFilter(GameObjectFilter.Companion.Any, zone = Zone.STACK)
+
+        /**
+         * Target an instant spell, sorcery spell, activated ability, or triggered ability on the
+         * stack — the four-way "copy target spell or ability" clause (Return the Favor, the
+         * Fork/Twincast family generalized to abilities). Expressed as a single [CardPredicate.Or]
+         * so the targeting enumeration matches whichever stack-object kind the chosen entity is.
+         */
+        val InstantSorcerySpellOrAbilityOnStack = TargetFilter(
+            GameObjectFilter(
+                cardPredicates = listOf(
+                    CardPredicate.Or(
+                        listOf(
+                            CardPredicate.IsInstant,
+                            CardPredicate.IsSorcery,
+                            CardPredicate.IsActivatedOrTriggeredAbility
+                        )
+                    )
+                )
+            ),
+            zone = Zone.STACK
+        )
     }
 
     // =============================================================================

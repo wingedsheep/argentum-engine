@@ -249,6 +249,24 @@ data class CopyTriggeredAbilityTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume creating a copy of an *activated* ability after the copier selects new targets
+ * (CR 707.10c). The mirror of [CopyTriggeredAbilityTargetContinuation] for the activated-ability
+ * branch of "copy target spell or ability" (Return the Favor). The copy is cloned from the source
+ * ability's ActivatedAbilityOnStackComponent and pushed onto the stack under [controllerId].
+ *
+ * @property abilityEntityId The activated ability being copied (on the stack)
+ * @property controllerId The player controlling the copy (also the target-chooser)
+ * @property targetRequirements Target requirements inherited from the source ability
+ */
+@Serializable
+data class CopyActivatedAbilityTargetContinuation(
+    override val decisionId: String,
+    val abilityEntityId: EntityId,
+    val controllerId: EntityId,
+    val targetRequirements: List<TargetRequirement>
+) : ContinuationFrame
+
+/**
  * Resume creating Storm copies after the player selects targets for a copy.
  *
  * When a Storm spell has targets, we pause to ask for target selection for each copy.

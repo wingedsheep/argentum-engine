@@ -2114,6 +2114,17 @@ object Effects {
         CopyTargetTriggeredAbilityEffect(target)
 
     /**
+     * Copy target spell **or** ability. You may choose new targets for the copy. Dispatches at
+     * resolution on the chosen object: an instant/sorcery spell copies via the spell-copy path, an
+     * activated/triggered ability copies its ability-on-stack component. Pair with a target that
+     * permits both (e.g. [com.wingedsheep.sdk.dsl.Targets.InstantSorcerySpellOrAbility]) — the
+     * "copy target instant/sorcery spell, activated ability, or triggered ability" clause
+     * (Return the Favor).
+     */
+    fun CopyTargetSpellOrAbility(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect(target)
+
+    /**
      * When you next cast a spell matching [spellFilter] this turn, copy that spell.
      * You may choose new targets for the copies. Defaults to instant or sorcery.
      */

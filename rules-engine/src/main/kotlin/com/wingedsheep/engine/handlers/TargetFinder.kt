@@ -15,7 +15,9 @@ import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.*
 
 /**
@@ -397,15 +399,39 @@ class TargetFinder(
     ): List<EntityId> {
         val filter = requirement.filter
         val predicateContext = PredicateContext(controllerId = controllerId)
-        return state.stack.filter { spellId ->
-            // "Target spell" only matches actual spells — never triggered/activated abilities
-            // on the stack. A spell is a card on the stack (CR 112.1); an ability on the stack
-            // is an ability, not a spell (CR 113.3b/c, 113.7a). The base filter is `Any`
-            // (zone = STACK), which would otherwise pass ability entities too — so an
-            // empty-targets counterspell could be offered while only an ability is on the stack.
-            state.isSpellOnStack(spellId) &&
-                predicateEvaluator.matches(state, state.projectedState, spellId, filter.baseFilter, predicateContext)
+        // Whether this requirement is allowed to target *abilities* on the stack, not just spells.
+        // "Target spell" (the common case, base filter `Any`) must never reach an ability — a spell
+        // is a card on the stack (CR 112.1) while an ability on the stack is a separate object kind
+        // (CR 113.3b/c, 113.7a). So an ability entity is offered only when the filter *explicitly*
+        // names an ability predicate (Stifle's "counter target ability", Willbender's "spell or
+        // ability", Return the Favor's "spell or ability"). For spells the predicate decides as
+        // before. This is the single seam where both spells and abilities become legal targets.
+        val abilitiesAllowed = filterPermitsAbilitiesOnStack(filter.baseFilter)
+        return state.stack.filter { stackId ->
+            val isAbility = !state.isSpellOnStack(stackId)
+            if (isAbility && !abilitiesAllowed) return@filter false
+            predicateEvaluator.matches(state, state.projectedState, stackId, filter.baseFilter, predicateContext)
         }
+    }
+
+    /**
+     * Does this filter explicitly permit *abilities* on the stack (as opposed to only spells)?
+     * True iff any [CardPredicate] in the filter — including inside [CardPredicate.Or] / `And`
+     * branches and [GameObjectFilter.anyOf] sub-filters — names an ability predicate. Keeps the
+     * default "target spell" filters (base `Any`, with no ability predicate) spell-only.
+     */
+    private fun filterPermitsAbilitiesOnStack(filter: GameObjectFilter): Boolean {
+        fun predicateNamesAbility(p: CardPredicate): Boolean = when (p) {
+            CardPredicate.IsActivatedOrTriggeredAbility,
+            CardPredicate.IsTriggeredAbility,
+            CardPredicate.IsActivatedAbility -> true
+            is CardPredicate.Or -> p.predicates.any(::predicateNamesAbility)
+            is CardPredicate.And -> p.predicates.any(::predicateNamesAbility)
+            is CardPredicate.Not -> predicateNamesAbility(p.predicate)
+            else -> false
+        }
+        return filter.cardPredicates.any(::predicateNamesAbility) ||
+            filter.anyOf.any { filterPermitsAbilitiesOnStack(it) }
     }
 
     /**

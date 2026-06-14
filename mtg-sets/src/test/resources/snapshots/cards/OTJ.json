@@ -7233,6 +7233,117 @@
     "colorIdentityOverride": []
 }
 
+// Lively Dirge
+{
+    "name": "Lively Dirge",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {1} — Search your library for a card, put it into your graveyard, then shuffle.\n+ {2} — Return up to two creature cards with total mana value 4 or less from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library"
+                                },
+                                "storeAs": "searchable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            "ShuffleLibrary"
+                        ]
+                    },
+                    "description": "+ {1} — Search your library for a card, put it into your graveyard, then shuffle.",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "dirgeGraveyardCreatures"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "dirgeGraveyardCreatures",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "dirgeChosen",
+                                "prompt": "Choose up to two creature cards with total mana value 4 or less",
+                                "selectedLabel": "Return to the battlefield",
+                                "restrictions": [
+                                    {
+                                        "type": "TotalManaValueAtMost",
+                                        "max": 4
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "dirgeChosen",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "+ {2} — Return up to two creature cards with total mana value 4 or less from your graveyard to the battlefield.",
+                    "additionalManaCost": "{2}"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Warren Mahy",
+        "flavorText": "\"Now rip your partner from the grave, and form an undead killing wave!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c35a0d3-12f7-46f3-a6b3-02a490d45ca0.jpg?1712860594"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Loan Shark
 {
     "name": "Loan Shark",
@@ -9251,6 +9362,71 @@
     ]
 }
 
+// Phantom Interference
+{
+    "name": "Phantom Interference",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {3} — Create a 2/2 white Spirit creature token with flying.\n+ {1} — Counter target spell unless its controller pays {2}.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c15b18b-1ab1-44e9-b96f-c36d52f11ea0.jpg?1712316119"
+                    },
+                    "description": "+ {3} — Create a 2/2 white Spirit creature token with flying.",
+                    "additionalManaCost": "{3}"
+                },
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "condition": {
+                            "type": "CounterCondition.UnlessPaysMana",
+                            "cost": "{2}"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Counter target spell unless its controller pays {2}.",
+                    "additionalManaCost": "{1}"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Ruxing Gao",
+        "flavorText": "To his enemies' chagrin, Winston was every bit as meddlesome dead as he had been alive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00bf4dd1-5468-4594-9c7b-0737610f19d4.jpg?1712860598"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pillage the Bog
 {
     "name": "Pillage the Bog",
@@ -10693,6 +10869,72 @@
         "artist": "David Auden Nash",
         "flavorText": "\"Chasing the roadrunner\"\n—Omenport slang for wasting energy on impossible pursuits",
         "imageUri": "https://cards.scryfall.io/normal/front/e/0/e07d3ee9-d3c4-4f07-839e-ec81c2587ae0.jpg?1712355827"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Return the Favor
+{
+    "name": "Return the Favor",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "CopyTargetSpellOrAbility",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsInstant",
+                                                "IsSorcery",
+                                                "IsActivatedOrTriggeredAbility"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "zone": "Stack"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": "ChangeTarget",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Change the target of target spell or ability with a single target.",
+                    "additionalManaCost": "{1}"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Eli Minaya",
+        "flavorText": "\"Don't you know it's rude not to share?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9cc02d1-799d-42aa-9bc2-4c05452b63b4.jpg?1712860602"
     },
     "colorIdentityOverride": [
         "RED"

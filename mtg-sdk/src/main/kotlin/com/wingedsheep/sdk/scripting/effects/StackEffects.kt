@@ -547,6 +547,26 @@ data class CopyTargetTriggeredAbilityEffect(
 }
 
 /**
+ * Copy target spell **or** ability on the stack, dispatching at resolution on the chosen
+ * object's kind: an instant/sorcery spell copies via the spell-copy path; an activated or
+ * triggered ability copies its ability-on-stack component. You may choose new targets for the
+ * copy (CR 707.10c). Generalizes [CopyTargetSpellEffect] and [CopyTargetTriggeredAbilityEffect]
+ * into the single "copy target spell or ability" clause (Return the Favor; the Fork/Twincast
+ * family extended to abilities). The target requirement decides which stack-object kinds are
+ * legal (e.g. [com.wingedsheep.sdk.dsl.Targets.InstantSorcerySpellOrAbility]); this effect copies
+ * whichever one the player chose.
+ *
+ * @property target The effect target referencing the spell or ability to copy (typically ContextTarget(0))
+ */
+@SerialName("CopyTargetSpellOrAbility")
+@Serializable
+data class CopyTargetSpellOrAbilityEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Copy target spell or ability"
+}
+
+/**
  * When you next cast a spell matching [spellFilter] this turn, copy that spell.
  * You may choose new targets for the copies.
  *
