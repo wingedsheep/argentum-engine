@@ -32,6 +32,7 @@ import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -265,7 +266,7 @@ class CastSpellHandler(
         if (cardDef != null && action.chosenModes.isNotEmpty()) {
             val modalEffect = cardDef.script.spellEffect as? ModalEffect
             if (modalEffect != null) {
-                val modalError = validateChosenModeShape(modalEffect, action)
+                val modalError = validateChosenModeShape(state, modalEffect, action)
                 if (modalError != null) return modalError
             }
         }
@@ -907,14 +908,14 @@ class CastSpellHandler(
      * `[minChooseCount, chooseCount]`, duplicates only appear when `allowRepeat`, and
      * `modeTargetsOrdered` (if provided) is aligned 1:1 with `chosenModes`.
      */
-    private fun validateChosenModeShape(modalEffect: ModalEffect, action: CastSpell): String? {
+    private fun validateChosenModeShape(state: GameState, modalEffect: ModalEffect, action: CastSpell): String? {
         val chosen = action.chosenModes
         for (idx in chosen) {
             if (idx < 0 || idx >= modalEffect.modes.size) {
                 return "Invalid mode index: $idx"
             }
         }
-        val (effectiveMin, effectiveMax) = effectiveModalChooseCounts(modalEffect, action)
+        val (effectiveMin, effectiveMax) = effectiveModalChooseCounts(state, modalEffect, action)
         if (chosen.size < effectiveMin) {
             return "Too few modes chosen: ${chosen.size} (minimum $effectiveMin)"
         }
@@ -932,20 +933,46 @@ class CastSpellHandler(
 
     /**
      * Compute the effective `[minChooseCount, chooseCount]` range for a modal spell,
-     * accounting for `ModalEffect.chooseAllIfBlightPaid`. When the flag is set and
-     * the player paid the spell's optional `BlightOrPay` cost via blight, the player
-     * must choose all modes; otherwise the regular range applies.
+     * accounting for `ModalEffect.chooseAllIfBlightPaid` and `ModalEffect.dynamicChooseCount`.
+     *
+     * - `chooseAllIfBlightPaid`: when the flag is set and the player paid the spell's optional
+     *   `BlightOrPay` cost via blight, the player must choose all modes; otherwise the regular
+     *   range applies.
+     * - `dynamicChooseCount`: evaluated against cast-time battlefield state to produce the upper
+     *   bound (clamped to `[minChooseCount, modes.size]`). Models the printed "Choose one. If you
+     *   control a Wizard as you cast this spell, you may choose two instead." pattern (Flame of
+     *   Anor) — `minChooseCount` stays the mandatory floor, unlike the resolution-time
+     *   `chooseUpToDynamic` shape which always allows declining to 0.
      */
-    private fun effectiveModalChooseCounts(modalEffect: ModalEffect, action: CastSpell): Pair<Int, Int> {
-        if (!modalEffect.chooseAllIfBlightPaid) {
-            return modalEffect.minChooseCount to modalEffect.chooseCount
+    private fun effectiveModalChooseCounts(
+        state: GameState,
+        modalEffect: ModalEffect,
+        action: CastSpell
+    ): Pair<Int, Int> {
+        if (modalEffect.chooseAllIfBlightPaid) {
+            val blightPaid = action.additionalCostPayment?.blightTargets?.isNotEmpty() == true
+            return if (blightPaid) {
+                modalEffect.modes.size to modalEffect.modes.size
+            } else {
+                modalEffect.minChooseCount to modalEffect.minChooseCount
+            }
         }
-        val blightPaid = action.additionalCostPayment?.blightTargets?.isNotEmpty() == true
-        return if (blightPaid) {
-            modalEffect.modes.size to modalEffect.modes.size
-        } else {
-            modalEffect.minChooseCount to modalEffect.minChooseCount
+        val dynamic = modalEffect.dynamicChooseCount
+        if (dynamic != null) {
+            val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
+            val context = EffectContext(
+                sourceId = action.cardId,
+                controllerId = action.playerId,
+                opponentId = opponentId,
+                targets = emptyList(),
+                xValue = 0
+            )
+            val evaluated = DynamicAmountEvaluator(conditionEvaluator = conditionEvaluator)
+                .evaluate(state, dynamic, context)
+            val max = evaluated.coerceIn(modalEffect.minChooseCount, modalEffect.modes.size)
+            return modalEffect.minChooseCount to max
         }
+        return modalEffect.minChooseCount to modalEffect.chooseCount
     }
 
     /**
@@ -2687,7 +2714,7 @@ class CastSpellHandler(
     ): ExecutionResult {
         // Apply chooseAllIfBlightPaid: if the player paid blight, force choosing all
         // modes; otherwise the regular [minChooseCount, chooseCount] range applies.
-        val (effectiveMin, effectiveMax) = effectiveModalChooseCounts(modalEffect, action)
+        val (effectiveMin, effectiveMax) = effectiveModalChooseCounts(currentState, modalEffect, action)
         val effectiveModalEffect = if (effectiveMin == modalEffect.minChooseCount &&
             effectiveMax == modalEffect.chooseCount) {
             modalEffect

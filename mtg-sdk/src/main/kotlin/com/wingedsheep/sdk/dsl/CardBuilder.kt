@@ -1053,9 +1053,10 @@ class SpellBuilder {
         minChooseCount: Int = chooseCount,
         allowRepeat: Boolean = false,
         chooseAllIfBlightPaid: Boolean = false,
+        dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
         init: ModalBuilder.() -> Unit
     ) {
-        val builder = ModalBuilder(chooseCount, minChooseCount, allowRepeat, chooseAllIfBlightPaid)
+        val builder = ModalBuilder(chooseCount, minChooseCount, allowRepeat, chooseAllIfBlightPaid, dynamicChooseCount)
         builder.init()
         effect = builder.build()
     }
@@ -1073,7 +1074,8 @@ class ModalBuilder(
     private val chooseCount: Int,
     private val minChooseCount: Int = chooseCount,
     private val allowRepeat: Boolean = false,
-    private val chooseAllIfBlightPaid: Boolean = false
+    private val chooseAllIfBlightPaid: Boolean = false,
+    private val dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null
 ) {
     private val modes: MutableList<Mode> = mutableListOf()
 
@@ -1094,7 +1096,14 @@ class ModalBuilder(
     }
 
     internal fun build(): ModalEffect =
-        ModalEffect(modes.toList(), chooseCount, minChooseCount, allowRepeat, chooseAllIfBlightPaid)
+        ModalEffect(
+            modes = modes.toList(),
+            chooseCount = chooseCount,
+            minChooseCount = minChooseCount,
+            allowRepeat = allowRepeat,
+            chooseAllIfBlightPaid = chooseAllIfBlightPaid,
+            dynamicChooseCount = dynamicChooseCount
+        )
 }
 
 /**

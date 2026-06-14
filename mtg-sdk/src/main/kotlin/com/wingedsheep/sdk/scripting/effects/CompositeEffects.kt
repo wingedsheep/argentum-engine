@@ -145,12 +145,21 @@ data class ModalEffect(
     val chooseAllIfBlightPaid: Boolean = false,
     /**
      * Optional runtime-evaluated upper bound on the number of modes that may be chosen.
-     * When non-null, the engine's modal executor evaluates this against the current
-     * resolution context and uses the result as the effective maximum, clamped to
-     * `modes.size`. Used for "choose up to X" triggered abilities where X depends on
-     * resolution-time data (Riku of Many Paths — X is the number of modes the cast
-     * modal spell chose). [minChooseCount] is treated as `0` when this is set
-     * (i.e. always "choose up to"); [chooseCount] is ignored.
+     * When non-null, the engine evaluates this against the current game state and uses the
+     * result as the effective maximum, clamped to `modes.size`. Two evaluation sites with
+     * different floor semantics:
+     *
+     * - **Resolution-time** (modal triggered/activated abilities, `ModalEffectExecutor`):
+     *   [minChooseCount] is treated as `0` (always "choose up to"); [chooseCount] is ignored.
+     *   Used for "choose up to X" where X depends on resolution-time data (Riku of Many
+     *   Paths — X is the number of modes the cast modal spell chose). See
+     *   [chooseUpToDynamic].
+     * - **Cast-time** (modal *spells*, `CastSpellHandler.effectiveModalChooseCounts`): the
+     *   [minChooseCount] floor is preserved, so the effective range is
+     *   `[minChooseCount, eval.coerceIn(minChooseCount, modes.size)]`. Models "Choose one. If
+     *   [condition] as you cast this spell, you may choose two instead." (Flame of Anor):
+     *   `chooseCount = 2, minChooseCount = 1` with a [DynamicAmount.Conditional] that yields
+     *   2 when the condition holds, else 1.
      */
     val dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
     /**

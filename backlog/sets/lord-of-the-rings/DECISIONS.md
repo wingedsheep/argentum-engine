@@ -748,3 +748,28 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   (gone from `getBattlefield`, `PhasedOutComponent` stamped with the controller), the spell fizzles,
   King phases back in on its controller's next untap step, and the phase-in trigger makes one tapped
   1/1 white Spirit token.
+
+## Flame of Anor ({1}{U}{R} Instant)
+
+- **Conditional modal count "Choose one. If you control a Wizard as you cast this spell, you may
+  choose two instead."** — modeled as a *cast-time* `dynamicChooseCount` on `ModalEffect`, not a new
+  effect type. Authored via `modal(chooseCount = 2, minChooseCount = 1, dynamicChooseCount = …)` with
+  `DynamicAmount.Conditional(Conditions.YouControlAtLeast(1, GameObjectFilter.Creature.withSubtype("Wizard")),
+  ifTrue = Fixed(2), ifFalse = Fixed(1))`. All three pieces (Conditional, YouControlAtLeast, withSubtype)
+  already existed — no new SDK primitive needed for the card itself.
+- **Engine change (reused field, new evaluation site):** `dynamicChooseCount` previously only fed the
+  *resolution-time* path (`ModalEffectExecutor`, where it forces `minChooseCount = 0` — the
+  `chooseUpToDynamic` / Riku shape). For modal *spells* the count is locked at cast time, so I extended
+  `CastSpellHandler.effectiveModalChooseCounts` to evaluate `dynamicChooseCount` against the cast-time
+  battlefield and return `minChooseCount to eval.coerceIn(minChooseCount, modes.size)` — keeping the
+  mandatory floor (choose at least one) instead of allowing decline-to-zero. This drives both the
+  cast-time mode picker and `validateChosenModeShape`, so submitting two modes with no Wizard is
+  rejected ("too many"), and with a Wizard both modes are legal. "As you cast" timing is honored
+  because mode selection happens at cast time (CR 601.2b).
+- **DSL plumbing:** added a `dynamicChooseCount` param to the `modal { }` builder + `ModalBuilder`
+  (previously only the raw `ModalEffect` constructor / `chooseUpToDynamic` factory exposed it).
+- **Modes** compose existing facades: `Effects.DrawCards(2, targetPlayer)`, `Effects.Destroy(targetArtifact)`,
+  `Effects.DealDamage(5, targetCreature)`.
+- **Test:** `FlameOfAnorScenarioTest` — no-Wizard: two modes illegal, one mode resolves (5 damage kills
+  a Centaur), cast-time picker offers no second pick; with-Wizard: two modes legal (draw 2 + 5 damage
+  both resolve), cast-time picker offers a second pick with "Done".

@@ -3758,6 +3758,27 @@ mode-selection pause; choose-1 modal spells remain client-local `CastSpellMode` 
 change is needed to author a Spree card — it is a plain `ModalEffect` with per-mode
 `additionalManaCost` (see Trash the Town).
 
+**Cast-time conditional choose count** — for modal *spells* the same `dynamicChooseCount`
+field is evaluated against the battlefield **at cast time** (in `CastSpellHandler`,
+`effectiveModalChooseCounts`), and — unlike `chooseUpToDynamic` — it keeps the `minChooseCount`
+floor instead of forcing `0`. The effective upper bound is `eval.coerceIn(minChooseCount,
+modes.size)`. This models "Choose one. If [condition] as you cast this spell, you may choose
+two instead." (Flame of Anor): pass it via the DSL with
+`modal(chooseCount = 2, minChooseCount = 1, dynamicChooseCount = …) { … }`. Combine a
+`DynamicAmount.Conditional` with a control condition, e.g.
+
+```kotlin
+modal(
+    chooseCount = 2,
+    minChooseCount = 1,
+    dynamicChooseCount = DynamicAmount.Conditional(
+        condition = Conditions.YouControlAtLeast(1, GameObjectFilter.Creature.withSubtype("Wizard")),
+        ifTrue = DynamicAmount.Fixed(2),
+        ifFalse = DynamicAmount.Fixed(1)
+    )
+) { /* modes */ }
+```
+
 ### Permanent enters-with-choice (Sieges)
 
 ```kotlin
