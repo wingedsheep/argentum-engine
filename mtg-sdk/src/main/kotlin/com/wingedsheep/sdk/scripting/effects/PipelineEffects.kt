@@ -897,7 +897,13 @@ data class MoveCollectionEffect(
      * anti-loop guards (Kodama of the East Tree). Ignored when the destination is
      * not the battlefield.
      */
-    val markEnteredViaSourceAbility: Boolean = false
+    val markEnteredViaSourceAbility: Boolean = false,
+    /**
+     * When non-null, only cards in the [from] collection matching this filter are moved;
+     * the rest stay where they are. Lets a single gathered/revealed pile be split by type —
+     * e.g. revealed lands → battlefield, the rest → graveyard (Sméagol, The Ring Goes South).
+     */
+    val filter: GameObjectFilter? = null
 ) : Effect {
     override val description: String = buildString {
         if (revealed) append("Reveal and put ") else append("Put ")

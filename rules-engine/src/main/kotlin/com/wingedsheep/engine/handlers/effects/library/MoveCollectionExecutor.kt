@@ -50,8 +50,23 @@ class MoveCollectionExecutor(
         effect: MoveCollectionEffect,
         context: EffectContext
     ): EffectResult {
-        val cards = context.pipeline.storedCollections[effect.from]
+        val allCards = context.pipeline.storedCollections[effect.from]
             ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
+
+        // Optional per-card filter: only move cards matching it; the rest stay put. Lets a single
+        // gathered pile be split by type across multiple MoveCollection steps.
+        val cards = if (effect.filter != null) {
+            val predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator()
+            val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                controllerId = context.controllerId,
+                sourceId = context.sourceId
+            )
+            allCards.filter { cardId ->
+                predicateEvaluator.matches(state, state.projectedState, cardId, effect.filter!!, predicateContext)
+            }
+        } else {
+            allCards
+        }
 
         val destination = effect.destination
         if (cards.isEmpty()) {

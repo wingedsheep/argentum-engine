@@ -534,3 +534,22 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   is the `TriggeringEntity`, so the card is just `RemoveAllAbilities(TriggeringEntity, EndOfTurn)`.
 - **Test:** `BarrowBladeScenarioTest` — equip, attack, opponent blocks with a Wind Drake; after
   the trigger resolves the Drake has lost flying.
+
+### Reveal-to-battlefield family — `MoveCollection.filter` + `ZonePlacement.Tapped`
+
+These three share one small pipeline addition: an optional `filter` on `MoveCollectionEffect`
+(move only the matching cards from a gathered pile; the rest stay), composed with the existing
+`ZonePlacement.Tapped` (battlefield-tapped entry) and `ToZone.player` (controller override).
+`GatherUntilMatchEffect` already supported a dynamic `count` and a `player` (incl. `TargetOpponent`).
+(Equivalent to a `FilterCollection` partition; the inline filter just avoids an intermediate name.)
+
+- **Galadriel of Lothlórien** — Ring-tempt→scry 3 (`YouChoseOtherCreatureAsRingBearer` + `scry(3)`);
+  `WheneverYouScry` → `MayEffect(GatherTop(1) → Reveal → MoveCollection(filter=Land → battlefield
+  tapped))`. Test triggers the scry via Temple of Mystery's ETB scry.
+- **Sméagol, Helpful Guide** — end-step Ring tempt (`ControlledCreatureDiedThisTurn`); `RingTemptsYou`
+  → target opponent, `GatherUntilMatch(Land, player=TargetOpponent)` → Reveal → land → your
+  battlefield tapped (`ToZone(BATTLEFIELD, You, Tapped)` = control override), rest → their graveyard.
+  Test triggers the tempt via Birthday Escape.
+- **The Ring Goes South** — `TheRingTemptsYou().then(GatherUntilMatch(Land, count = legendary
+  creatures you control) → Reveal → lands → battlefield tapped → rest → library bottom random)`.
+  Confirms a Ring tempt can chain into later effects (siblings resume after the Ring-bearer choice).

@@ -15590,6 +15590,72 @@
     ]
 }
 
+// The Ring Goes South
+{
+    "name": "The Ring Goes South",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "The Ring tempts you. Then reveal cards from the top of your library until you reveal X land cards, where X is the number of legendary creatures you control. Put those land cards onto the battlefield tapped and the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "TheRingTemptsYou",
+                {
+                    "type": "GatherUntilMatch",
+                    "filter": "land",
+                    "storeMatch": "lands",
+                    "storeRevealed": "allRevealed",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "allRevealed"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "allRevealed",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "filter": "land"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "allRevealed",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random",
+                    "filter": "nonland"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Wangjie Li",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c8a4c7d-527c-49ea-a115-a9e747c0fd03.jpg?1686969579"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // The Shire
 {
     "name": "The Shire",
