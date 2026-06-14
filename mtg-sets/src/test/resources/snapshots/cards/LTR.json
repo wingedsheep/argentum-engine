@@ -1780,6 +1780,57 @@
     ]
 }
 
+// Breaking of the Fellowship
+{
+    "name": "Breaking of the Fellowship",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature an opponent controls deals damage equal to its power to another target creature that player controls. The Ring tempts you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 1
+                    },
+                    "damageSource": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "TheRingTemptsYou"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "creatures an opponent controls",
+                "sameController": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/130f60d0-4fac-4e4e-a938-58f3b96e5335.jpg?1686968821"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Butterbur, Bree Innkeeper
 {
     "name": "Butterbur, Bree Innkeeper",

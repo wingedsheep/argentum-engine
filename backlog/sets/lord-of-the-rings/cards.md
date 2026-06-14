@@ -150,7 +150,7 @@ starter-deck/special cards and basic lands.
 
 - [x] Battle-Scarred Goblin
 - [x] Book of Mazarbul
-- [ ] Breaking of the Fellowship
+- [x] Breaking of the Fellowship
 - [x] Cast into the Fire
 - [x] Display of Power
 - [x] Éomer, Marshal of Rohan
