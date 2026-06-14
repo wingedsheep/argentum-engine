@@ -319,6 +319,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TheRingComponent::class)
         subclass(CommanderZoneChoiceAskedComponent::class)
         subclass(CommanderRegistryComponent::class)
+        subclass(VanguardAvatarComponent::class)
         subclass(ExileAfterResolveComponent::class)
         subclass(HasMorphAbilityComponent::class)
         subclass(PlayWithAdditionalCostComponent::class)

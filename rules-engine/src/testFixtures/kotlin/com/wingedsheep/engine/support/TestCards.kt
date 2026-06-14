@@ -715,6 +715,8 @@ object TestCards {
         DoomBlade,
         CarefulStudy,
         GoadSpell,
+        // Vanguard avatar (Momir Basic) — registered so engine scenario tests can run the format.
+        com.wingedsheep.mtg.sets.definitions.custom.MomirVigSimicVisionary,
     )
 
     val all: List<CardDefinition> =

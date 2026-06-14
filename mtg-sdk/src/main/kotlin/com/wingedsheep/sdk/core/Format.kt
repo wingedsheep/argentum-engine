@@ -42,6 +42,33 @@ sealed interface Format {
         val startingHandSize: Int = 7,
         val alwaysDivertToCommand: Boolean = false,
     ) : Format
+
+    /**
+     * Momir Basic — the classic Vanguard format (<https://mtg.fandom.com/wiki/Momir>).
+     *
+     * Each player's deck is 60 basic lands and every player begins the game with the avatar
+     * [avatarCardName] in the command zone. The avatar grants the activated ability
+     * "{X}{X}{X}, Discard a card: Create a token that's a copy of a randomly chosen creature card
+     * with mana value X. Activate only as a sorcery and only once each turn."
+     *
+     * Like [Commander], this is runtime config, not a code path: the engine reads it at game
+     * init to set life / hand size and to place the avatar in the command zone, and the
+     * random-creature-token effect reads [eligibleCreatureNames] as its candidate pool.
+     *
+     * @property eligibleCreatureNames The pool the random copy is drawn from — creature card names
+     *   scoped to the sets selected for the match (the lobby's set selector). **Stored pre-sorted**
+     *   so the engine's seeded `GameRng.pick` is replay-stable: the effect filters this list by
+     *   mana value and picks, never re-collecting from the card registry (whose map order is
+     *   unspecified). The engine treats it as opaque, deterministic data; the server computes it
+     *   from the selected sets at match start.
+     */
+    @Serializable
+    data class MomirBasic(
+        val startingLife: Int = 20,
+        val startingHandSize: Int = 7,
+        val avatarCardName: String = "Momir Vig, Simic Visionary",
+        val eligibleCreatureNames: List<String> = emptyList(),
+    ) : Format
 }
 
 /**

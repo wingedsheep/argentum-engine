@@ -42,7 +42,8 @@ class LegalActionEnumerator(
         ActivatedAbilityEnumerator(),
         CrewEnumerator(),
         SaddleEnumerator(),
-        GraveyardAbilityEnumerator()
+        GraveyardAbilityEnumerator(),
+        CommandZoneAbilityEnumerator()
     )
 
     /**

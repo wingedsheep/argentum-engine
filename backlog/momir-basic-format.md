@@ -25,6 +25,12 @@ avatar itself is content authored as a `CardDefinition`.
 proven via Kotest scenario tests using `Format.MomirBasic` set up directly. Phases 2–4 (server,
 client, AI) build on this and are scoped at the bottom of this doc.
 
+**Status (2026-06-14): ✅ DONE.** All work items below landed; `MomirBasicScenarioTest` (7 cases)
+green, plus snapshot / lint / executor-coverage / full `rules-engine` suites. Notable finds vs. the
+plan: `ActivateAbilityHandler` *already* handles non-battlefield `activateFromZone` generically
+(owner + zone check), so item 1.6 needed **no handler change** — only the new enumerator; and
+`calculateMaxAffordableX` had a latent `{X}{X}{X}` bug (it ignored `xCount`), now fixed.
+
 ### Ground truth (verified during planning — treat as starting facts, re-confirm before editing)
 
 - Formats are a sealed interface `Format` in `mtg-sdk/.../sdk/core/Format.kt` (`Standard`,
@@ -60,7 +66,7 @@ client, AI) build on this and are scoped at the bottom of this doc.
 
 ### Work items
 
-- [ ] **1.1 — `Format.MomirBasic` SDK variant.** In `mtg-sdk/.../sdk/core/Format.kt`:
+- [x] **1.1 — `Format.MomirBasic` SDK variant.** In `mtg-sdk/.../sdk/core/Format.kt`:
   ```kotlin
   @Serializable
   data class MomirBasic(
@@ -75,13 +81,13 @@ client, AI) build on this and are scoped at the bottom of this doc.
   from the selected sets, sorts them, and passes them in. The engine treats the list as opaque,
   pre-sorted, deterministic data — keeping the engine a pure function of `GameState`.
 
-- [ ] **1.2 — `CreateRandomCreatureTokenWithManaValueEffect` SDK type.** Add to
+- [x] **1.2 — `CreateRandomCreatureTokenWithManaValueEffect` SDK type.** Add to
   `mtg-sdk/.../sdk/scripting/effects/TokenEffects.kt` (`@Serializable`, `@SerialName`,
   `description`) with field `manaValue: DynamicAmount`. Add the `Effects.*` facade. **Update
   `docs/card-sdk-language-reference.md` in the same change** (load-bearing rule). If the effect
   reads/writes a named pipeline variable, classify it in `CardLinter.dataflowFields`.
 
-- [ ] **1.3 — Mint-token-from-`CardDefinition` helper.** New `TokenFromDefinition.kt` in the token
+- [x] **1.3 — Mint-token-from-`CardDefinition` helper.** New `TokenFromDefinition.kt` in the token
   package. Extract the `CardComponent`-building block out of `GameInitializer.createCardEntity` into
   a shared function used by both call sites, then reuse `createTokenCopy`'s battlefield tail
   (`TokenComponent`, `ControllerComponent`, `SummoningSicknessComponent`, static-ability components,
@@ -90,7 +96,7 @@ client, AI) build on this and are scoped at the bottom of this doc.
   enters-with-counters (graft / modular / Hangarback-style) and ETB triggers fire correctly — not a
   bare zone insert.
 
-- [ ] **1.4 — `CreateRandomCreatureTokenWithManaValueExecutor`.** New executor
+- [x] **1.4 — `CreateRandomCreatureTokenWithManaValueExecutor`.** New executor
   `(cardRegistry, staticAbilityHandler, amountEvaluator)`, registered in
   `TokenExecutors.executors()`. Internally sequences three atomic steps (gather → select → mint):
   1. `mv = evaluate(effect.manaValue, context)` (= chosen X).
@@ -101,7 +107,7 @@ client, AI) build on this and are scoped at the bottom of this doc.
      `val (name, rng2) = state.rng.pick(filtered)`, thread `state.copy(rng = rng2)`, delegate to
      `TokenFromDefinition.mint(...)`.
 
-- [ ] **1.5 — `CommandZoneAbilityEnumerator`.** New enumerator modeled line-for-line on
+- [x] **1.5 — `CommandZoneAbilityEnumerator`.** New enumerator modeled line-for-line on
   `GraveyardAbilityEnumerator`: scan `ZoneKey(playerId, Zone.COMMAND)`, resolve each entity's
   `CardDefinition` via `context.cardRegistry`, take abilities with
   `activateFromZone == Zone.COMMAND`, gate `TimingRule.SorcerySpeed` on `canPlaySorcerySpeed`, run
@@ -109,14 +115,14 @@ client, AI) build on this and are scoped at the bottom of this doc.
   discard) including `abilityHasXCost` / `maxAffordableX`. Register in `LegalActionEnumerator`
   alongside `GraveyardAbilityEnumerator`.
 
-- [ ] **1.6 — `ActivateAbilityHandler` command-zone support (HIGHEST RISK — read first).**
+- [x] **1.6 — `ActivateAbilityHandler` command-zone support (HIGHEST RISK — read first).**
   Confirm/extend the handler to resolve a command-zone-sourced ability from the entity's
   `CardDefinition`, build `EffectContext` with a non-battlefield source, and thread the chosen X
   through the `ActivateAbilityChooseX` continuation. The enumerator gap is confirmed and easy to
   fill; if the handler assumes a battlefield source, activation fails even with a correct
   enumerator. **Read this file before committing to the rest of the phase.**
 
-- [ ] **1.7 — Avatar `CardDefinition` content.** Author **Momir Vig, Simic Visionary** as a Vanguard
+- [x] **1.7 — Avatar `CardDefinition` content.** Author **Momir Vig, Simic Visionary** as a Vanguard
   avatar in `mtg-sets` (Vanguard/promo package; confirm set code with maintainer), carrying one
   `ActivatedAbility`:
   ```
@@ -129,14 +135,14 @@ client, AI) build on this and are scoped at the bottom of this doc.
   Register it in the set file. Re-bless `CardDefinitionSnapshotTest` / `CardLintTest` if the corpus
   changes.
 
-- [ ] **1.8 — GameInitializer wiring.** Add a `Format.MomirBasic` branch (mirror the commander block
+- [x] **1.8 — GameInitializer wiring.** Add a `Format.MomirBasic` branch (mirror the commander block
   ≈ lines 157-277): set starting life (20) in `formatStartingLife`, instantiate the avatar via
   `createCardEntity` (resolved from `avatarCardName`), attach a marker component (reuse
   `CommanderComponent` or add a tiny `VanguardAvatarComponent`), and place it into
   `ZoneKey(playerId, Zone.COMMAND)` per player. The 60-basic deck flows through the existing library
   path unchanged.
 
-- [ ] **1.9 — Scenario tests (the real gate).** Kotest in `rules-engine` (set up `Format.MomirBasic`
+- [x] **1.9 — Scenario tests (the real gate).** Kotest in `rules-engine` (set up `Format.MomirBasic`
   directly):
   - **Determinism / replay:** same `seed` + same `eligibleCreatureNames` ⇒ identical chosen creature.
   - **MV filter:** X = N picks a creature with `cmc == N`; **empty pool at that MV ⇒ no token, cost

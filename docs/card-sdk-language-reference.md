@@ -568,6 +568,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `sacrificeOnlyOnControllersTurn = true` restricts it to "at the beginning of *your* next end step"
   (Mardu Siegebreaker: a tapped+attacking copy of the linked-exiled card, sacrificed at your next end step).
 - `CreateTokenCopyOfEquippedCreature(count?, tapped?)` — equipment-specific copy.
+- `CreateRandomCreatureTokenWithManaValue(manaValue)` — create a token that's a copy of a *randomly
+  chosen* creature card whose mana value equals `manaValue` (the Momir Basic Vanguard avatar's payoff).
+  The candidate pool is the active `Format.MomirBasic.eligibleCreatureNames` (the set-scoped creature
+  list, stored pre-sorted for replay-stable RNG); the executor filters it to `cmc == manaValue`, picks
+  one with the game's seeded `GameRng`, and mints a token copy via `TokenFromDefinition` (the minting
+  path for a bare `CardDefinition`, sibling to the in-zone token-copy path). If no creature has that
+  mana value, nothing is created (the cost was still paid). The minted token's own `{X}` reads 0 — it
+  never went on the stack. Pass `DynamicAmount.XValue` for "mana value X".
 - `CreateTreasure(count?, tapped?)` — Treasure tokens. `count` accepts an `Int` or a `DynamicAmount`
   (the latter evaluated at resolution, e.g. `CreateTreasure(DynamicAmounts.sourcePower(), tapped = true)`
   for Goldvein Hydra's "create a number of tapped Treasure tokens equal to its power").

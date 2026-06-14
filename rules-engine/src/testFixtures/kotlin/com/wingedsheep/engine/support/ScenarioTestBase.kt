@@ -273,6 +273,42 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Add a card to a player's command zone (e.g. a commander or a Momir Basic Vanguard
+         * avatar). The card gets a [VanguardAvatarComponent] when its type line is Vanguard so
+         * the command-zone activated-ability path treats it as an avatar.
+         */
+        fun withCardInCommandZone(playerNumber: Int, cardName: String): ScenarioBuilder {
+            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val cardId = createCard(cardName, playerId)
+            val cardDef = cardRegistry.getCard(cardName)
+            if (cardDef?.typeLine?.cardTypes?.contains(com.wingedsheep.sdk.core.CardType.VANGUARD) == true) {
+                state = state.updateEntity(cardId) { c ->
+                    c.with(com.wingedsheep.engine.state.components.identity.VanguardAvatarComponent(ownerId = playerId))
+                }
+            }
+            state = state.addToZone(ZoneKey(playerId, Zone.COMMAND), cardId)
+            return this
+        }
+
+        /**
+         * Set the game [com.wingedsheep.sdk.core.Format] (e.g. [com.wingedsheep.sdk.core.Format.MomirBasic]
+         * so the random-creature-token effect can read its eligible-creature pool).
+         */
+        fun withFormat(format: com.wingedsheep.sdk.core.Format): ScenarioBuilder {
+            state = state.copy(format = format)
+            return this
+        }
+
+        /**
+         * Pin the deterministic RNG seed (overriding the per-build entropy seed). Use when a test
+         * must reproduce an "at random" outcome exactly — e.g. Momir's random-creature pick.
+         */
+        fun withRngSeed(seed: Long): ScenarioBuilder {
+            state = state.copy(rng = com.wingedsheep.sdk.model.GameRng.seeded(seed))
+            return this
+        }
+
+        /**
          * Set a player's life total.
          */
         fun withLifeTotal(playerNumber: Int, life: Int): ScenarioBuilder {
