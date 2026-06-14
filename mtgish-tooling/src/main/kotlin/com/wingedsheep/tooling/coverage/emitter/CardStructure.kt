@@ -579,8 +579,14 @@ internal fun EmitCtx.ifRuleBlock(rule: JsonObject): List<Stmt>? {
     // -> ConditionalStaticAbility(GrantKeyword(Keyword.X, Filters.Self), Not(YouCastSpellsThisTurn(1))).
     // Omenport Vigilante: "This creature has double strike as long as you've committed a crime this
     //   turn." — same shape with a `CommitedACrimeThisTurn` gate.
-    // Only the SELF "grant a single keyword to this permanent" inner shape renders; any other layer
-    // effect (stat change, multi-keyword, group filter) declines -> SCAFFOLD.
+    // Slickshot Vault-Buster: "This creature gets +2/+0 as long as you've committed a crime this
+    //   turn." — same SELF gated-static shape, but the layer effect is a fixed stat buff:
+    //   If(PlayerPassesFilter(You, CommitedACrimeThisTurn))
+    //     [ PermanentLayerEffect(ThisPermanent, [ AdjustPT(p, t) ]) ]
+    // -> ConditionalStaticAbility(ModifyStats(p, t, Filters.Self), Conditions.YouCommittedCrimeThisTurn).
+    // Only the SELF "grant a single keyword to this permanent" or "fixed +p/+t to this permanent"
+    // inner shape renders; any other layer effect (dynamic P/T, multi-keyword, group filter) declines
+    // -> SCAFFOLD.
     if (innerRule.strField("_Rule") == "PermanentLayerEffect" &&
         jsonContains(innerRule, "_Permanent", "ThisPermanent")
     ) {
@@ -589,17 +595,34 @@ internal fun EmitCtx.ifRuleBlock(rule: JsonObject): List<Stmt>? {
             ?: run { reasons.add("If"); return null }
         val layerEffects = (innerRule["args"].asArr?.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
         val le = layerEffects?.singleOrNull()
-        if (le == null || le.strField("_StaticLayerEffect") != "AddAbility") { reasons.add("If"); return null }
-        // An AddAbility whose granted rule is anything richer than a plain keyword (an activated ability,
-        // landwalk, protection-from-color) isn't a bare keyword grant — decline rather than mis-render.
-        val granted = (le["args"] as? JsonArray)?.singleOrNull() as? JsonObject
-        if (granted?.strField("_Rule") != null && granted.size > 1) { reasons.add("If"); return null }
-        val kw = keywordOf(le) ?: run { reasons.add("If"); return null }
-        return listOf(staticAbilityStmt(call(
-            "ConditionalStaticAbility",
-            arg("ability", call("GrantKeyword", arg("Keyword.$kw"), arg("Filters.Self"))),
-            arg("condition", Lit(condDsl)),
-        )))
+        when (le?.strField("_StaticLayerEffect")) {
+            "AddAbility" -> {
+                // An AddAbility whose granted rule is anything richer than a plain keyword (an activated
+                // ability, landwalk, protection-from-color) isn't a bare keyword grant — decline.
+                val granted = (le["args"] as? JsonArray)?.singleOrNull() as? JsonObject
+                if (granted?.strField("_Rule") != null && granted.size > 1) { reasons.add("If"); return null }
+                val kw = keywordOf(le) ?: run { reasons.add("If"); return null }
+                return listOf(staticAbilityStmt(call(
+                    "ConditionalStaticAbility",
+                    arg("ability", call("GrantKeyword", arg("Keyword.$kw"), arg("Filters.Self"))),
+                    arg("condition", Lit(condDsl)),
+                )))
+            }
+            "AdjustPT" -> {
+                // A fixed +p/+t buff: `args` is the [p, t] pair. Anything else (a dynamic AdjustPTX /
+                // AdjustPTForEach) declines rather than dropping the variable count.
+                val pt = le["args"].asArr
+                val p = pt?.getOrNull(0).asInt()
+                val t = pt?.getOrNull(1).asInt()
+                if (pt == null || pt.size != 2 || p == null || t == null) { reasons.add("If"); return null }
+                return listOf(staticAbilityStmt(call(
+                    "ConditionalStaticAbility",
+                    arg("ability", call("ModifyStats", arg("$p"), arg("$t"), arg("Filters.Self"))),
+                    arg("condition", Lit(condDsl)),
+                )))
+            }
+            else -> { reasons.add("If"); return null }
+        }
     }
 
     // Dust Animus: "If you control five or more untapped lands, this creature enters with two +1/+1

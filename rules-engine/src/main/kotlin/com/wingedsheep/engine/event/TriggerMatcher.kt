@@ -614,6 +614,19 @@ class TriggerMatcher(
                             if (!typeLine.hasSubtype(predicate.subtype)) return false
                         }
                     }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasAnyOfSubtypes -> {
+                        // Same LKI handling as HasSubtype, for the "any one of these subtypes"
+                        // (OR) form used by the Outlaw subtype group. For dying/leaving creatures
+                        // the entity (and its CardComponent) may already be gone, so read the
+                        // last-known type line rather than the generic cardComponent path.
+                        if (event.toZone == Zone.BATTLEFIELD) {
+                            if (predicate.subtypes.none { projected.hasSubtype(event.entityId, it.value) }) return false
+                        } else {
+                            if (isFaceDown) return false
+                            if (typeLine == null) return false
+                            if (predicate.subtypes.none { typeLine.hasSubtype(it) }) return false
+                        }
+                    }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasKeyword -> {
                         // For entering creatures: use projected state (they're on battlefield)
                         // For dying/leaving creatures: use lastKnownKeywords from the event since

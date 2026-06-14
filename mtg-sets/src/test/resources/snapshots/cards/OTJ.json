@@ -1349,6 +1349,89 @@
     ]
 }
 
+// Cactusfolk Sureshot
+{
+    "name": "Cactusfolk Sureshot",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Plant Mercenary",
+    "oracleText": "Reach\nWard {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nAt the beginning of combat on your turn, other creatures you control with power 4 or greater gain trample and haste until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature pow>=4 ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature pow>=4 ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "other creatures you control with power 4 or greater gain trample and haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/318b8c5d-9fb0-488f-9b32-c2e29d1f1dbb.jpg?1712356071"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Canyon Crab
 {
     "name": "Canyon Crab",
@@ -7575,6 +7658,126 @@
     ]
 }
 
+// Rakish Crew
+{
+    "name": "Rakish Crew",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 1/1 red Mercenary creature token with \"{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery.\"\nWhenever an outlaw you control dies, each opponent loses 1 life and you gain 1 life. (Assassins, Mercenaries, Pirates, Rogues, and Warlocks are outlaws.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Mercenary"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f04607f-eed2-462e-897f-82e41e5f7049.jpg?1712316319",
+                    "activatedAbilities": [
+                        {
+                            "id": "ability_2",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                }
+                            ],
+                            "timing": "SorcerySpeed"
+                        }
+                    ]
+                },
+                "descriptionOverride": "create a 1/1 red Mercenary creature token with \"{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery.\""
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Assassin",
+                                    "Mercenary",
+                                    "Pirate",
+                                    "Rogue",
+                                    "Warlock"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an outlaw you control dies, each opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70f64358-58db-40ab-90e8-6137c3bd0a29.jpg?1712355636"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rambling Possum
 {
     "name": "Rambling Possum",
@@ -9181,6 +9384,47 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Slickshot Vault-Buster
+{
+    "name": "Slickshot Vault-Buster",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Vigilance\nThis creature gets +2/+0 as long as you've committed a crime this turn. (Targeting opponents, anything they control, and/or cards in their graveyards is a crime.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "PlayerCommittedCrimeThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Julia Metzger",
+        "flavorText": "\"Sure it's risky, but that's what makes it fun! That and the money. And the bankers' faces.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/592ccc36-3d10-4a12-8743-9b300b80cb4d.jpg?1712355501"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -10947,6 +11191,53 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Visage Bandit
+{
+    "name": "Visage Bandit",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Shapeshifter Rogue",
+    "oracleText": "You may have this creature enter as a copy of a creature you control, except it's a Shapeshifter Rogue in addition to its other types.\nPlot {2}{U} (You may pay {2}{U} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "PLOT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Plot",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "additionalSubtypes": [
+                    "Shapeshifter",
+                    "Rogue"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/685ec4c6-3332-498f-8b56-d7ad8fc5230c.jpg?1712355536"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
