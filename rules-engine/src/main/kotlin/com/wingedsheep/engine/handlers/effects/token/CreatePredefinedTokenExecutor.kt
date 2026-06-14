@@ -71,15 +71,62 @@ class CreatePredefinedTokenExecutor(
 
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
+        val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
         repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens")) {
-            val (tokenId, stateWithId) = newState.newEntity()
-            newState = stateWithId
+            val (placed, tokenId, placeEvents) = placePredefinedToken(
+                newState, cardDef, effect.tokenType, tokenControllerId, effect.tapped, staticAbilityHandler
+            )
+            newState = placed
             createdTokenIds.add(tokenId)
+            events.addAll(placeEvents)
+        }
+
+        // Apply "create an additional token" replacements (Peregrin Took): if the controller
+        // has any matching CreateAdditionalToken effects, create those extra predefined tokens
+        // directly (no recursive replacement pass — CR 614.5 self-limiting).
+        if (createdTokenIds.isNotEmpty()) {
+            val (afterAdditional, additionalEvents) = TokenCreationReplacementHelper.createAdditionalTokens(
+                newState, tokenControllerId, cardRegistry, staticAbilityHandler
+            )
+            newState = afterAdditional
+            events.addAll(additionalEvents)
+        }
+
+        // Publish the freshly-created token entity IDs to the pipeline so
+        // sibling effects in a CompositeEffect can address them via
+        // EffectTarget.PipelineTarget(CREATED_TOKENS, index). This is how
+        // Effects.Incubate(N) puts +1/+1 counters on the token it just
+        // produced without threading an entity reference through a custom executor.
+        return EffectResult(
+            state = newState,
+            events = events,
+            updatedCollections = mapOf(CREATED_TOKENS to createdTokenIds)
+        )
+    }
+
+    companion object {
+        /**
+         * Create and place a single predefined token on the battlefield, returning the new
+         * state, the token's entity id, and the entry [ZoneChangeEvent]. Shared by the
+         * normal predefined-token resolution path and the "create an additional token"
+         * replacement path ([TokenCreationReplacementHelper.createAdditionalTokens]) so both
+         * build the token identically.
+         */
+        fun placePredefinedToken(
+            state: GameState,
+            cardDef: com.wingedsheep.sdk.model.CardDefinition,
+            tokenType: String,
+            tokenControllerId: EntityId,
+            tapped: Boolean,
+            staticAbilityHandler: StaticAbilityHandler?
+        ): Triple<GameState, EntityId, List<com.wingedsheep.engine.core.GameEvent>> {
+            val (tokenId, stateWithId) = state.newEntity()
+            var newState = stateWithId
 
             val tokenComponent = CardComponent(
-                cardDefinitionId = effect.tokenType,
-                name = effect.tokenType,
+                cardDefinitionId = tokenType,
+                name = tokenType,
                 manaCost = ManaCost.ZERO,
                 typeLine = cardDef.typeLine,
                 baseStats = cardDef.creatureStats,
@@ -97,7 +144,7 @@ class CreatePredefinedTokenExecutor(
                 EnteredThisTurnComponent
             )
 
-            if (effect.tapped) {
+            if (tapped) {
                 container = container.with(TappedComponent)
             }
 
@@ -123,30 +170,17 @@ class CreatePredefinedTokenExecutor(
             }
 
             newState = newState.withEntity(tokenId, container)
-
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, tokenControllerId, tokenId)
-        }
 
-        val events = createdTokenIds.map { tokenId ->
-            ZoneChangeEvent(
+            val event = ZoneChangeEvent(
                 entityId = tokenId,
-                entityName = effect.tokenType,
+                entityName = tokenType,
                 fromZone = null,
                 toZone = Zone.BATTLEFIELD,
                 ownerId = tokenControllerId
             )
+            return Triple(newState, tokenId, listOf(event))
         }
-
-        // Publish the freshly-created token entity IDs to the pipeline so
-        // sibling effects in a CompositeEffect can address them via
-        // EffectTarget.PipelineTarget(CREATED_TOKENS, index). This is how
-        // Effects.Incubate(N) puts +1/+1 counters on the token it just
-        // produced without threading an entity reference through a custom executor.
-        return EffectResult(
-            state = newState,
-            events = events,
-            updatedCollections = mapOf(CREATED_TOKENS to createdTokenIds)
-        )
     }
 }

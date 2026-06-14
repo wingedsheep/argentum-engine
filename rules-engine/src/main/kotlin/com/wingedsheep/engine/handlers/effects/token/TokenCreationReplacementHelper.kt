@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CreateAdditionalToken
 import com.wingedsheep.sdk.scripting.DoubleTokenCreation
 import com.wingedsheep.sdk.scripting.EventPattern as SdkGameEvent
 import com.wingedsheep.sdk.scripting.ModifyTokenCount
@@ -103,6 +104,66 @@ object TokenCreationReplacementHelper {
         if (count <= 0) return 0
         repeat(doublings) { count = com.wingedsheep.engine.core.GameLimits.mulClamped(count, 2) }
         return count
+    }
+
+    /**
+     * Create the extra predefined tokens demanded by any [CreateAdditionalToken] replacement
+     * effects whose [SdkGameEvent.TokenCreationEvent] filter matches [tokenControllerId]
+     * (Peregrin Took: "those tokens plus an additional Food token are created instead").
+     *
+     * Called by the token executors AFTER the primary tokens have been created (so the
+     * replacement only fires when one or more tokens were actually made). The additional
+     * tokens are placed directly via [CreatePredefinedTokenExecutor.placePredefinedToken],
+     * deliberately NOT re-entering the replacement pipeline — CR 614.5: a replacement effect
+     * gets only one opportunity to affect an event, so the added Food doesn't itself trigger
+     * another Food (no runaway loop). Each matching effect fires once per creation event
+     * regardless of how many primary tokens were made (CR ruling 2023-06-16).
+     *
+     * Dispatch mirrors [applyCountReplacements]: `You` matches when the replacement source's
+     * controller is the player receiving the tokens, `Opponent` when it isn't, `Any` always.
+     *
+     * @return the new state and the entry events for the additional tokens.
+     */
+    fun createAdditionalTokens(
+        state: GameState,
+        tokenControllerId: EntityId,
+        cardRegistry: CardRegistry?,
+        staticAbilityHandler: StaticAbilityHandler?
+    ): Pair<GameState, List<com.wingedsheep.engine.core.GameEvent>> {
+        if (cardRegistry == null) return state to emptyList()
+
+        var newState = state
+        val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val sourceController = state.projectedState.getController(entityId)
+                ?: container.get<ControllerComponent>()?.playerId
+                ?: continue
+            val repl = container.get<ReplacementEffectSourceComponent>() ?: continue
+            for (effect in repl.replacementEffects) {
+                if (effect !is CreateAdditionalToken) continue
+                val event = effect.appliesTo
+                if (event !is SdkGameEvent.TokenCreationEvent) continue
+                if (event.tokenFilter != null) continue
+                val controllerMatches = when (event.controller) {
+                    is ControllerFilter.You -> sourceController == tokenControllerId
+                    is ControllerFilter.Opponent -> sourceController != tokenControllerId
+                    is ControllerFilter.Any -> true
+                }
+                if (!controllerMatches) continue
+
+                val cardDef = cardRegistry.getCard(effect.tokenType) ?: continue
+                repeat(effect.count) {
+                    val (placed, _, placeEvents) = CreatePredefinedTokenExecutor.placePredefinedToken(
+                        newState, cardDef, effect.tokenType, tokenControllerId, false, staticAbilityHandler
+                    )
+                    newState = placed
+                    events.addAll(placeEvents)
+                }
+            }
+        }
+        return newState to events
     }
 
     /**

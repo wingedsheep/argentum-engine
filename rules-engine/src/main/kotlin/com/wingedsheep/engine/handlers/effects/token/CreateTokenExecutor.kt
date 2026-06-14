@@ -231,6 +231,17 @@ class CreateTokenExecutor(
             counterEvents.addAll(events)
         }
 
+        // Apply "create an additional token" replacements (Peregrin Took): if the controller
+        // has any matching CreateAdditionalToken effects, create those extra predefined tokens
+        // directly (no recursive replacement pass — CR 614.5 self-limiting).
+        if (createdTokens.isNotEmpty()) {
+            val (afterAdditional, additionalEvents) = TokenCreationReplacementHelper.createAdditionalTokens(
+                newState, tokenControllerId, cardRegistry, staticAbilityHandler
+            )
+            newState = afterAdditional
+            counterEvents.addAll(additionalEvents)
+        }
+
         // If exileAtStep is set, create delayed triggers to exile each created token
         val exileStep = effect.exileAtStep
         if (exileStep != null) {

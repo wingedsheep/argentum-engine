@@ -1300,6 +1300,44 @@ data class ReplaceTokenCreationWithAttachedCopy(
     }
 }
 
+/**
+ * If one or more tokens would be created matching [appliesTo], an additional batch of
+ * predefined tokens is created alongside them.
+ *
+ * Models Peregrin Took ("If one or more tokens would be created under your control, those
+ * tokens plus an additional Food token are created instead.") — the replacement fires once
+ * per token-creation event (not per token), regardless of how many or what kind of tokens
+ * the event makes (CR rulings 2023-06-16: "applies to all kinds of tokens", "those tokens
+ * plus an additional Food").
+ *
+ * Self-limiting (CR 614.5): the additional [tokenType] tokens are created directly by the
+ * engine without re-entering the token-creation replacement pipeline, so this effect never
+ * recurses on its own added tokens.
+ *
+ * @param tokenType Predefined token to add (must match a registered PredefinedTokens entry,
+ *        e.g. "Food", "Treasure"). The added tokens are plain predefined tokens — per the
+ *        printed ruling they don't inherit the original tokens' granted abilities.
+ * @param count How many additional tokens to add per matching event (default 1).
+ */
+@SerialName("CreateAdditionalToken")
+@Serializable
+data class CreateAdditionalToken(
+    val tokenType: String,
+    val count: Int = 1,
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, those tokens plus ")
+        append(if (count == 1) "an additional $tokenType token" else "$count additional $tokenType tokens")
+        append(" are created instead")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
 // =============================================================================
 // Generic Replacement Effect
 // =============================================================================

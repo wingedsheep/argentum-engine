@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 265 / 291
+**Implemented:** 266 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -217,7 +217,7 @@ starter-deck/special cards and basic lands.
 - [x] Mirkwood Spider
 - [x] Mirrormere Guardian
 - [x] Mushroom Watchdogs
-- [ ] Peregrin Took
+- [x] Peregrin Took
 - [x] Pippin's Bravery
 - [x] Quickbeam, Upstart Ent
 - [ ] Radagast the Brown

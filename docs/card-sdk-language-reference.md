@@ -3961,6 +3961,15 @@ replacementEffect {
   attachment-type validation already happens at cast/attach time via `equipmentTarget` /
   `auraTarget`. Token copies are summoning-sick only when the copy is a creature (CR 302.6).
   Mirrormind Crown: `attachmentVerb = "equipped"`; Moonlit Meditation: `attachmentVerb = "enchanted"`.
+- `CreateAdditionalToken(tokenType, count, appliesTo)` — "If one or more tokens would be created
+  matching `appliesTo`, those tokens plus `count` additional `tokenType` token(s) are created
+  instead." Fires **once per token-creation event** (not per token) and regardless of what kind of
+  tokens the event makes. The additional predefined tokens (e.g. `"Food"`, `"Treasure"`) are placed
+  directly by the engine after the primary tokens — they do **not** re-enter the token-creation
+  replacement pipeline, so the effect is self-limiting (CR 614.5) and never recurses on its own
+  added tokens. `appliesTo` defaults to `TokenCreationEvent(controller = You)` ("under your
+  control"). The added tokens are plain predefined tokens and don't inherit the original tokens'
+  granted abilities (printed ruling). Peregrin Took: `CreateAdditionalToken(tokenType = "Food")`.
 - `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard)` —
   "enter as a copy of …". As the permanent resolves, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides

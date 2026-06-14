@@ -848,7 +848,8 @@ class StaticAbilityHandler(
             // Token creation:
             is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy,
             is com.wingedsheep.sdk.scripting.DoubleTokenCreation,
-            is com.wingedsheep.sdk.scripting.ModifyTokenCount -> true
+            is com.wingedsheep.sdk.scripting.ModifyTokenCount,
+            is com.wingedsheep.sdk.scripting.CreateAdditionalToken -> true
 
             // Entry-time replacements, consumed once as the permanent enters
             // (StackResolver / PlayLandHandler / ModalAndCloneContinuations):

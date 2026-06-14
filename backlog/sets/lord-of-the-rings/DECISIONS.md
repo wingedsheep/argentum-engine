@@ -1024,3 +1024,30 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   first strike OR vigilance (controller's choice, both options proven); an equipped target gains BOTH
   with no modal decision; and an inline Equip {3} blade resolves while only {2} mana is available,
   proving the {1} reduction.
+
+## Peregrin Took (LTR #181)
+
+- **New reusable replacement effect `CreateAdditionalToken(tokenType, count, appliesTo)`**
+  (`mtg-sdk/.../scripting/ReplacementEffect.kt`) — "If one or more tokens would be created matching
+  `appliesTo`, those tokens plus `count` additional `tokenType` token(s) are created instead."
+  Models Peregrin Took's `CreateAdditionalToken(tokenType = "Food")`. Fires **once per
+  token-creation event** (not per token) and for any kind of token (rulings 2023-06-16).
+- **Self-limiting (CR 614.5).** The added predefined tokens are placed by the engine *directly*
+  after the primary tokens and deliberately do **not** re-enter the token-creation replacement
+  pipeline, so the added Food never triggers another Food — no runaway loop. This is the rules-
+  faithful reading of CR 614.5 ("a replacement effect gets only one opportunity to affect an event").
+- **Engine wiring (no new executor).** Added `TokenCreationReplacementHelper.createAdditionalTokens(...)`,
+  called by both `CreateTokenExecutor` and `CreatePredefinedTokenExecutor` after they create their
+  primary tokens (guarded on `createdTokens.isNotEmpty()`). Extracted a shared
+  `CreatePredefinedTokenExecutor.placePredefinedToken(...)` companion so both the normal predefined-token
+  path and the additional-token path build identical tokens. Classified as runtime in
+  `StaticAbilityHandler.isRuntimeReplacementEffect` alongside `DoubleTokenCreation` / `ModifyTokenCount`.
+- **Per ruling, the added Food is a plain predefined token** — it doesn't inherit the original tokens'
+  granted abilities. (Edge case not modeled: the added token inheriting the original effect's
+  `tapped` / "exile at end of combat" flags — uncommon; left as a documented limitation.)
+- **Second ability** "Sacrifice three Foods: Draw a card" is pure composition:
+  `Costs.SacrificeMultiple(3, GameObjectFilter.Artifact.withSubtype("Food"))` + `Effects.DrawCards(1)`.
+- **Test:** `PeregrinTookScenarioTest` — Rally at the Hornburg's two Human Soldiers yield exactly
+  one extra Food (fires once per event, not per token); Brandywine Farmer's single ETB Food yields
+  exactly two Foods (no loop); and the sacrifice-three-Foods ability (paid via
+  `AdditionalCostPayment(sacrificedPermanents = …)`) draws a card and removes all three Foods.

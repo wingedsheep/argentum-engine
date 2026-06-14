@@ -12617,6 +12617,56 @@
     ]
 }
 
+// Peregrin Took
+{
+    "name": "Peregrin Took",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Halfling Citizen",
+    "oracleText": "If one or more tokens would be created under your control, those tokens plus an additional Food token are created instead. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nSacrifice three Foods: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Food",
+                        "count": 3
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "CreateAdditionalToken",
+                "tokenType": "Food"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "\"Sam! Get breakfast ready for half-past nine!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5baee8d-88e7-4468-94a9-66ca8e2caf15.jpg?1686969525"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Phial of Galadriel
 {
     "name": "Phial of Galadriel",
