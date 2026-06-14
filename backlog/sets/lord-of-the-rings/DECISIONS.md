@@ -580,3 +580,11 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `TheOneRingScenarioTest` — (1) casting it grants the controller protection so an
   opponent's Lightning Bolt can't target them; (2) `{T}` adds a burden + draws, and the controller's
   next upkeep loses 1 life for that counter.
+
+### A-The One Ring (Extra, Alchemy) — reuses Gap 8
+
+- **Oracle:** identical to [The One Ring] except the draw ability costs `{1}, {T}` (the Alchemy nerf).
+- **Decision:** straight copy of `TheOneRing` with the activated-ability cost changed to
+  `Costs.Composite(Costs.Mana("{1}"), Costs.Tap)`. No new engine work — Gap 8 protection already landed.
+- **Test:** `AOneRingScenarioTest` — `{1},{T}` adds a burden + draws when a land is available, and
+  fails to activate with no mana.
