@@ -193,7 +193,7 @@ class TriggerMatcher(
                 event is SpellCastEvent &&
                     matchesPlayer(trigger.player, event.casterId, controllerId) &&
                     matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
-                    trigger.requires.all { matchesSpellCastPredicate(it, event, state) }
+                    trigger.requires.all { matchesSpellCastPredicate(it, event, state, sourceId, controllerId) }
             }
             is EventPattern.NthSpellCastEvent -> {
                 // Fires on SpellCastEvent when the casting player's per-turn spell count
@@ -1248,7 +1248,9 @@ class TriggerMatcher(
     private fun matchesSpellCastPredicate(
         predicate: SpellCastPredicate,
         event: SpellCastEvent,
-        state: GameState
+        state: GameState,
+        sourceId: com.wingedsheep.sdk.model.EntityId,
+        controllerId: com.wingedsheep.sdk.model.EntityId
     ): Boolean = when (predicate) {
         is SpellCastPredicate.CastFromZone -> {
             val spellComponent = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>()
@@ -1267,6 +1269,36 @@ class TriggerMatcher(
         SpellCastPredicate.IsModal -> event.chosenModesCount > 0
         SpellCastPredicate.HasXInCost ->
             state.getEntity(event.spellEntityId)?.get<CardComponent>()?.manaCost?.hasX == true
+        SpellCastPredicate.TargetsSource -> castTargetEntities(event, state).contains(sourceId)
+        is SpellCastPredicate.TargetsMatching -> {
+            val predicateEvaluator = PredicateEvaluator()
+            val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                controllerId = controllerId,
+                sourceId = sourceId
+            )
+            castTargetEntities(event, state).any { targetId ->
+                predicateEvaluator.matches(
+                    state, state.projectedState, targetId, predicate.filter, predicateContext
+                )
+            }
+        }
+    }
+
+    /** Permanent/spell entity ids chosen as targets by the just-cast spell. */
+    private fun castTargetEntities(
+        event: SpellCastEvent,
+        state: GameState
+    ): List<com.wingedsheep.sdk.model.EntityId> {
+        val targets = state.getEntity(event.spellEntityId)
+            ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+            ?.targets ?: return emptyList()
+        return targets.mapNotNull { t ->
+            when (t) {
+                is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> t.entityId
+                is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> t.spellEntityId
+                else -> null
+            }
+        }
     }
 
     /**

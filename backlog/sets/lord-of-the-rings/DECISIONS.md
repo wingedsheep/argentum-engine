@@ -490,3 +490,31 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   sorcery spells").
 - **Tests:** `DisplayOfPowerScenarioTest` — copy one targeted Bolt and retarget the copy; the
   spell carries `CantBeCopiedComponent`; copy two Bolts at once (4 Bolts → 12 damage).
+
+### Legolas, Master Archer (Green) — Gap 15 + cast-targeting triggers
+
+- **Oracle:** "Reach. Whenever you cast a spell that targets Legolas, put a +1/+1 counter on
+  Legolas. Whenever you cast a spell that targets a creature you don't control, Legolas deals
+  damage equal to its power to up to one target creature."
+- **New cast-time predicates:** added `SpellCastPredicate.TargetsSource` ("targets this") and
+  `SpellCastPredicate.TargetsMatching(filter)` ("targets a [filter]"), matched in
+  `TriggerMatcher.matchesSpellCastPredicate` (now passed the trigger `sourceId`/`controllerId`):
+  it reads the just-cast spell's `TargetsComponent` and checks the chosen permanent/spell targets
+  against the source id or the `GameObjectFilter` (via `PredicateEvaluator` + projected state).
+  Facades `Triggers.youCastSpellTargetingSource()` / `Triggers.youCastSpellTargeting(filter)`.
+- **Damage clause:** composes existing `DealDamage(DynamicAmounts.sourcePower(), upToOneTargetCreature)`
+  — the damage source defaults to Legolas (the trigger source), so no new effect was needed
+  (the Gap-15 "creature deals its power" infra already exists via `DealDamageEffect.damageSource`).
+- **Test:** `LegolasMasterArcherScenarioTest` — Giant Growth on Legolas adds a counter; Giant Growth
+  on an opponent's creature fires the damage trigger, killing a 1/1.
+
+### Breaking of the Fellowship (Red) — Gap 15 (composable, no engine change)
+
+- **Oracle:** "Target creature an opponent controls deals damage equal to its power to another
+  target creature that player controls. The Ring tempts you."
+- **Decision:** rather than build relational cross-target filters, modeled as a single two-target
+  requirement `TargetCreature(count = 2, filter = CreatureOpponentControls, sameController = true)`
+  — `sameController` enforces "that player controls" and count=2 enforces "another" (distinct
+  targets). Effect: `DealDamage(targetPower(0), ContextTarget(1), damageSource = ContextTarget(0))`
+  then `TheRingTemptsYou()`. The damage-source/dynamic-power infra (Gap 15) already existed.
+- **Test:** `BreakingOfTheFellowshipScenarioTest` — a 3/3 deals 3 to a 2/2 (dies), dealer survives.

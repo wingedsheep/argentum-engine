@@ -415,6 +415,28 @@ sealed interface SpellCastPredicate {
     data object HasXInCost : SpellCastPredicate {
         override val description = "with {X} in its mana cost"
     }
+
+    /**
+     * The spell was cast targeting the trigger's own source permanent
+     * ("a spell that targets [this creature]" — Legolas, Master Archer).
+     */
+    @SerialName("SpellTargetsSource")
+    @Serializable
+    data object TargetsSource : SpellCastPredicate {
+        override val description = "that targets this"
+    }
+
+    /**
+     * The spell was cast with at least one chosen target matching [filter]
+     * ("a spell that targets a creature you don't control" — Legolas, Master Archer).
+     * The filter is evaluated against each chosen target relative to the trigger
+     * controller (so `youControl()` / opponent-controlled predicates resolve correctly).
+     */
+    @SerialName("SpellTargetsMatching")
+    @Serializable
+    data class TargetsMatching(val filter: GameObjectFilter) : SpellCastPredicate {
+        override val description = "that targets ${filter.description}"
+    }
 }
 
 // =============================================================================

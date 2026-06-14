@@ -873,6 +873,26 @@ object Triggers {
     )
 
     /**
+     * Whenever you cast a spell that targets this permanent (the trigger's source).
+     * Example: Legolas, Master Archer — "Whenever you cast a spell that targets Legolas,
+     * put a +1/+1 counter on Legolas."
+     */
+    fun youCastSpellTargetingSource(): TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(player = Player.You, requires = setOf(SpellCastPredicate.TargetsSource)),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you cast a spell that targets at least one object matching [filter].
+     * Example: Legolas, Master Archer — "Whenever you cast a spell that targets a creature
+     * you don't control, …" → `youCastSpellTargeting(GameObjectFilter.Creature.opponentControls())`.
+     */
+    fun youCastSpellTargeting(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(player = Player.You, requires = setOf(SpellCastPredicate.TargetsMatching(filter))),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever an opponent casts a spell matching [spellFilter].
      * Example: "Whenever an opponent casts a multicolored spell" →
      * `opponentCasts(GameObjectFilter.Multicolored)`.

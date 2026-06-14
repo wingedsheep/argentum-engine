@@ -209,7 +209,7 @@ starter-deck/special cards and basic lands.
 - [x] Gift of Strands
 - [ ] Glorfindel, Dauntless Rescuer
 - [x] Last March of the Ents
-- [ ] Legolas, Master Archer
+- [x] Legolas, Master Archer
 - [x] Long List of the Ents
 - [x] Lothlórien Lookout
 - [x] Many Partings

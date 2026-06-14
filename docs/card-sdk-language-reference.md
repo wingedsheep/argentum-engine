@@ -1882,6 +1882,11 @@ caster with `EffectTarget.PlayerRef(Player.TriggeringPlayer)`.
   for "whenever a player casts a creature spell" (Pure Reflection).
 - `opponentCasts(spellFilter?, requires?)` — factory; e.g. `opponentCasts(GameObjectFilter.Multicolored)`
   for "whenever an opponent casts a multicolored spell" (Rewards of Diversity).
+- `youCastSpellTargetingSource()` — "whenever you cast a spell that targets [this permanent]"
+  (Legolas, Master Archer). Sugar for `youCastSpell(requires = setOf(SpellCastPredicate.TargetsSource))`.
+- `youCastSpellTargeting(filter)` — "whenever you cast a spell that targets a [filter]" (Legolas,
+  Master Archer's `Creature.opponentControls()`). Sugar for
+  `youCastSpell(requires = setOf(SpellCastPredicate.TargetsMatching(filter)))`.
 
 **Factory** — `youCastSpell(spellFilter?, requires: Set<SpellCastPredicate>)`. The
 `requires` set is conjunctive — every predicate must hold for the trigger to fire.
@@ -1916,6 +1921,11 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
   `DynamicAmounts.xValueOfTriggeringSpell()` (→ `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL`).
   Used by Geometer's Arthropod: "Whenever you cast a spell with {X} in its mana cost, look
   at the top X cards of your library, …".
+- `SpellCastPredicate.TargetsSource` — the cast spell targets the trigger's own source
+  permanent. Used by Legolas, Master Archer ("a spell that targets Legolas").
+- `SpellCastPredicate.TargetsMatching(filter)` — the cast spell has ≥1 chosen target matching
+  `filter` (evaluated relative to the trigger controller). Used by Legolas, Master Archer
+  ("a spell that targets a creature you don't control").
 
 Examples:
 
