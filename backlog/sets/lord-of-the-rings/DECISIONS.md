@@ -773,3 +773,26 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `FlameOfAnorScenarioTest` — no-Wizard: two modes illegal, one mode resolves (5 damage kills
   a Centaur), cast-time picker offers no second pick; with-Wizard: two modes legal (draw 2 + 5 damage
   both resolve), cast-time picker offers a second pick with "Done".
+
+## Gandalf the Grey
+
+- **Card:** `{3}{U}{R}` Legendary Creature — Avatar Wizard, 3/4. "Whenever you cast an instant or
+  sorcery spell, choose one that hasn't been chosen —" with four modes (tap/untap a permanent; 3
+  damage to each opponent; copy a controlled instant/sorcery; put Gandalf on top of its library).
+- **New SDK primitive — modal "choose one that hasn't been chosen":** added
+  `ModalEffect.excludePreviouslyChosenModes` (+ `chooseOneNotYetChosen(*modes)` factory). When set,
+  the engine remembers which mode indices the *source permanent* has chosen across the game in a new
+  per-source `ChosenModesEverComponent` (battlefield component, NOT cleared at end of turn) and
+  excludes them from every later presentation. When all modes are used the ability resolves as a
+  no-op. The memory rides on object identity (CR 700.4), so the fourth mode (Gandalf → library)
+  resets it by remaking Gandalf as a new object. `ModalEffectExecutor.execute` filters
+  `availableIndices`; `ModalAndCloneContinuationResumer.resumeModal` records the chosen index via a
+  new `recordChosenModesOnSource` flag threaded through `ModalContinuation`.
+- **Modes compose existing facades:** `MayEffect(ChooseAction([Tap, Untap]))` for "you may tap or
+  untap target permanent"; `DealDamage(3, PlayerRef(EachOpponent), damageSource = Self)`;
+  `Effects.CopyTargetSpell()` (Gap 9 — same copy-with-retarget infra as Display of Power) targeting
+  `Targets.InstantOrSorcerySpellYouControl`; `PutOnTopOfLibrary(EffectTarget.Self)`.
+- **P/T correction:** the card is 3/4 (Scryfall), not 4/4.
+- **Test:** `GandalfTheGreyScenarioTest` — casting an instant triggers the modal; the damage mode hits
+  the opponent (3 + Bolt 3 = 6); the damage mode is absent from a later trigger's options
+  ("hasn't been chosen", 4 → 3 modes); the copy mode copies the Bolt still on the stack for +3.

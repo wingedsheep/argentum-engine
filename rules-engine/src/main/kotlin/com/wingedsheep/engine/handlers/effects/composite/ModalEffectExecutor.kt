@@ -87,8 +87,20 @@ class ModalEffectExecutor(
             return EffectResult.success(state, emptyList())
         }
 
-        val baseOptions = effect.modes.map { it.description }
-        val availableIndices = effect.modes.indices.toList()
+        // "Choose one that hasn't been chosen" (Gandalf the Grey): exclude any mode this
+        // source has already chosen, recorded in a per-source memory component. If every
+        // mode has been chosen, the ability has no legal mode and does nothing.
+        val alreadyChosen: Set<Int> = if (effect.excludePreviouslyChosenModes) {
+            context.sourceId
+                ?.let { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent>() }
+                ?.modeIndices ?: emptySet()
+        } else emptySet()
+
+        val availableIndices = effect.modes.indices.filter { it !in alreadyChosen }
+        if (availableIndices.isEmpty()) {
+            return EffectResult.success(state, emptyList())
+        }
+        val baseOptions = availableIndices.map { effect.modes[it].description }
         // "Choose up to N" — allow declining a mode pick when minChooseCount has
         // already been satisfied (here, before any picks, when minChooseCount = 0).
         val canDecline = effectiveMinChooseCount < effectiveChooseCount
@@ -127,7 +139,8 @@ class ModalEffectExecutor(
             selectedModeIndices = emptyList(),
             availableIndices = availableIndices,
             outerTargets = context.targets,
-            outerNamedTargets = context.pipeline.namedTargets
+            outerNamedTargets = context.pipeline.namedTargets,
+            recordChosenModesOnSource = effect.excludePreviouslyChosenModes
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

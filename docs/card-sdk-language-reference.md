@@ -950,6 +950,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Modal & choice
 
 - `ModalEffect.chooseOne { mode(...) }` / `ModalEffect.chooseN(n) { ... }` — modal effect block.
+- `ModalEffect.chooseOneNotYetChosen(*modes)` — "choose one that hasn't been chosen"; source remembers used modes across the game (Gandalf the Grey).
 - `ChooseActionEffect(choices)` — player picks from a list of effects.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `GrantPlayerProtection(scope = ProtectionScope.Everything, duration = Duration.UntilYourNextTurn, target = Controller)` — grant a **player** protection from a `ProtectionScope` (CR 702.16); the player-level counterpart of the creature protection statics. For a player only the **D**amage and **T**argeting parts of DEBT apply: a protected player can't be the target of, nor be dealt damage by, a source matching the scope. Adds/merges a `PlayerProtectionComponent` (multiple grants stack their scopes); the targeting validator, target enumerator, and `DamageUtils` all consult the shared `PlayerProtectionRules`. `Duration.UntilYourNextTurn` clears it after the untap step of the player's next turn. "You gain protection from everything until your next turn." (The One Ring).
@@ -3777,6 +3778,29 @@ modal(
         ifFalse = DynamicAmount.Fixed(1)
     )
 ) { /* modes */ }
+```
+
+**"Choose one that hasn't been chosen"** — `ModalEffect.chooseOneNotYetChosen(*modes)` for a
+repeatable modal *ability* whose source remembers which modes it has already chosen across the
+game and never offers them again (Gandalf the Grey). Equivalent raw shape:
+`ModalEffect(modes, chooseCount = 1, excludePreviouslyChosenModes = true, countsAsModalSpell =
+false)`. The engine records each chosen mode index in a per-source
+`ChosenModesEverComponent` and excludes it from every later presentation of the effect; once all
+modes have been chosen the ability has no legal mode and resolves as a no-op. The memory is keyed
+to the source object and persists while it remains the same object on the battlefield (CR 700.4) —
+it resets if the permanent leaves and returns as a new object. Intended for triggered/activated
+abilities on a persistent source, not one-shot modal spells.
+
+```kotlin
+triggeredAbility {
+    trigger = Triggers.YouCastInstantOrSorcery
+    effect = ModalEffect.chooseOneNotYetChosen(
+        Mode.withTarget(/* tap or untap */, Targets.Permanent, "You may tap or untap target permanent"),
+        Mode.noTarget(Effects.DealDamage(3, EffectTarget.PlayerRef(Player.EachOpponent)), "…"),
+        Mode.withTarget(Effects.CopyTargetSpell(), Targets.InstantOrSorcerySpellYouControl, "…"),
+        Mode.noTarget(Effects.PutOnTopOfLibrary(EffectTarget.Self), "…"),
+    )
+}
 ```
 
 ### Permanent enters-with-choice (Sieges)

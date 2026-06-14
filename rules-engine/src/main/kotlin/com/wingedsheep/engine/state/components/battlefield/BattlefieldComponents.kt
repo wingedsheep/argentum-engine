@@ -426,6 +426,25 @@ data class AbilityActivatedEverComponent(
 }
 
 /**
+ * Tracks which modes of a modal effect this permanent has already chosen, for
+ * "choose one that hasn't been chosen" effects (e.g., Gandalf the Grey). Keyed by
+ * the original mode index in the source's [com.wingedsheep.sdk.scripting.effects.ModalEffect].
+ *
+ * NOT cleared at end of turn — the memory persists for as long as the permanent
+ * remains the same object on the battlefield (it resets when the permanent leaves
+ * and returns as a new object, per CR 700.4 / object identity).
+ */
+@Serializable
+data class ChosenModesEverComponent(
+    val modeIndices: Set<Int> = emptySet()
+) : Component {
+    fun withChosen(modeIndex: Int): ChosenModesEverComponent =
+        copy(modeIndices = modeIndices + modeIndex)
+
+    fun hasChosen(modeIndex: Int): Boolean = modeIndex in modeIndices
+}
+
+/**
  * Tracks which triggered abilities have fired this turn for "once each turn" restrictions.
  * Used for cards like Scavenger's Talent: "This ability triggers only once each turn."
  * Cleared at end of turn by CleanupPhaseManager.

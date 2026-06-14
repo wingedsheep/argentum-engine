@@ -6481,6 +6481,136 @@
     ]
 }
 
+// Gandalf the Grey
+{
+    "name": "Gandalf the Grey",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Legendary Creature — Avatar Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, choose one that hasn't been chosen —\n• You may tap or untap target permanent.\n• Gandalf deals 3 damage to each opponent.\n• Copy target instant or sorcery spell you control. You may choose new targets for the copy.\n• Put Gandalf on top of its owner's library.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "ChooseAction",
+                                    "choices": [
+                                        {
+                                            "label": "Tap it",
+                                            "effect": {
+                                                "type": "TapUntap",
+                                                "target": {
+                                                    "type": "ContextTarget",
+                                                    "index": 0
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "label": "Untap it",
+                                            "effect": {
+                                                "type": "TapUntap",
+                                                "target": {
+                                                    "type": "ContextTarget",
+                                                    "index": 0
+                                                },
+                                                "tap": false
+                                            }
+                                        }
+                                    ]
+                                },
+                                "descriptionOverride": "You may tap or untap that permanent"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent"
+                                    }
+                                }
+                            ],
+                            "description": "You may tap or untap target permanent"
+                        },
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                },
+                                "damageSource": "Self"
+                            },
+                            "description": "Gandalf deals 3 damage to each opponent"
+                        },
+                        {
+                            "effect": "CopyTargetSpell",
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "instant|sorcery ctrl:you",
+                                        "zone": "Stack"
+                                    }
+                                }
+                            ],
+                            "description": "Copy target instant or sorcery spell you control. You may choose new targets for the copy"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Library",
+                                "placement": "Top"
+                            },
+                            "description": "Put Gandalf on top of its owner's library"
+                        }
+                    ],
+                    "excludePreviouslyChosenModes": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2b975e6-e709-481f-bfbc-41a832508283.jpg?1686969808"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Gandalf the White
 {
     "name": "Gandalf the White",

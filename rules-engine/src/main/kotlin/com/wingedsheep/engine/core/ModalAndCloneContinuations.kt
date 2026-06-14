@@ -57,7 +57,14 @@ data class ModalContinuation(
     val selectedModeIndices: List<Int> = emptyList(),
     val availableIndices: List<Int>? = null,
     val outerTargets: List<ChosenTarget> = emptyList(),
-    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap()
+    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+    /**
+     * "Choose one that hasn't been chosen" (Gandalf the Grey): when true, each chosen
+     * mode index is recorded in the source's
+     * [com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent] so
+     * later triggers exclude it.
+     */
+    val recordChosenModesOnSource: Boolean = false
 ) : ContinuationFrame
 
 /**

@@ -65,6 +65,12 @@ class ModalAndCloneContinuationResumer(
         val newSelectedIndices = continuation.selectedModeIndices + originalModeIndex
         val newAvailableIndices = availableIndices.toMutableList().also { it.removeAt(optionIndex) }
 
+        // "Choose one that hasn't been chosen" (Gandalf the Grey): record the chosen mode
+        // on the source so later triggers exclude it. Persists for the source's lifetime.
+        val stateAfterRecord = if (continuation.recordChosenModesOnSource && continuation.sourceId != null) {
+            recordChosenMode(state, continuation.sourceId, originalModeIndex)
+        } else state
+
         // More modes still need to be picked — present the next ChooseOptionDecision.
         if (newSelectedIndices.size < continuation.chooseCount && newAvailableIndices.isNotEmpty()) {
             val sourceName = continuation.sourceName ?: "modal spell"
@@ -91,7 +97,7 @@ class ModalAndCloneContinuationResumer(
                 selectedModeIndices = newSelectedIndices,
                 availableIndices = newAvailableIndices
             )
-            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithDecision = stateAfterRecord.withPendingDecision(decision)
             val stateWithContinuation = stateWithDecision.pushContinuation(nextContinuation)
             return ExecutionResult.paused(
                 stateWithContinuation,
@@ -107,7 +113,21 @@ class ModalAndCloneContinuationResumer(
             )
         }
 
-        return resolveChosenModes(state, continuation, newSelectedIndices, checkForMore)
+        return resolveChosenModes(stateAfterRecord, continuation, newSelectedIndices, checkForMore)
+    }
+
+    /**
+     * Record a chosen mode index on the source's
+     * [com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent]
+     * for "choose one that hasn't been chosen" effects (Gandalf the Grey).
+     */
+    private fun recordChosenMode(state: GameState, sourceId: EntityId, modeIndex: Int): GameState {
+        if (state.getEntity(sourceId) == null) return state
+        return state.updateEntity(sourceId) { c ->
+            val existing = c.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent>()
+                ?: com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent()
+            c.with(existing.withChosen(modeIndex))
+        }
     }
 
     /**
