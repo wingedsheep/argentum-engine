@@ -5776,6 +5776,128 @@
     ]
 }
 
+// Galadriel of Lothlórien
+{
+    "name": "Galadriel of Lothlórien",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "Whenever the Ring tempts you, if you chose a creature other than Galadriel as your Ring-bearer, scry 3.\nWhenever you scry, you may reveal the top card of your library. If a land card is revealed this way, put it onto the battlefield tapped.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "RingTemptedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "scried"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "scried",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "toBottom",
+                            "storeRemainder": "toTop",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        "EmitScriedEvent"
+                    ]
+                },
+                "triggerCondition": "YouChoseOtherCreatureAsRingBearer"
+            },
+            {
+                "id": "ability_2",
+                "trigger": "ScriedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "revealedTop"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "revealedTop"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "revealedTop",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                },
+                                "filter": "land"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6e5c3b3-9a70-4a1c-bfb3-db27e51c4b8d.jpg?1686969798"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Galadriel, Gift-Giver
 {
     "name": "Galadriel, Gift-Giver",
