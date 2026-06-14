@@ -14423,6 +14423,87 @@
     ]
 }
 
+// Sméagol, Helpful Guide
+{
+    "name": "Sméagol, Helpful Guide",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Halfling Horror",
+    "oracleText": "At the beginning of your end step, if a creature died under your control this turn, the Ring tempts you.\nWhenever the Ring tempts you, target opponent reveals cards from the top of their library until they reveal a land card. Put that card onto the battlefield tapped under your control and the rest into their graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "TheRingTemptsYou",
+                "triggerCondition": "ControlledCreatureDiedThisTurn"
+            },
+            {
+                "id": "ability_2",
+                "trigger": "RingTemptedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "TargetOpponent",
+                            "filter": "land",
+                            "storeMatch": "revealedLand",
+                            "storeRevealed": "allRevealed"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "allRevealed"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "allRevealed",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            },
+                            "filter": "land"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "allRevealed",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetOpponent"
+                            },
+                            "filter": "nonland"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13253f8d-1897-41e8-a904-9e57ac7eff0a.jpg?1686970071"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Snarling Warg
 {
     "name": "Snarling Warg",
