@@ -2569,6 +2569,15 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   cost (colored pips included) of the turn's first equip while the per-player
   `EquipActivationsThisTurnComponent.count == 0`, and increments that counter on every equip
   activation (reset at turn start by `TurnManager`).
+- `ReduceEquipCost(amount)` — the controller's equip abilities cost `{amount}` generic mana less to
+  activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost {1} less to activate"). The
+  engine reduces only the generic portion of the equip cost (floored at {0}); colored pips are
+  untouched, and multiple sources stack additively. Controller-scoped — it applies to every equip
+  ability the controller activates, regardless of which permanent bears the equip ability. Consulted
+  by `CastPermissionUtils.applyEquipCostReduction` from both the enumerator (displayed cost) and
+  `ActivateAbilityHandler` (paid cost), keyed on `ActivatedAbility.isEquipAbility` and applied before
+  the `FreeFirstEquipEachTurn` discount. Wrap in a `ConditionalStaticAbility` for a "during your
+  turn"-style gate.
 - `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false)` — cast spells matching
   `filter` from your graveyard following normal timing, optionally paying `lifeCost` life. Free for
   Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1, duringYourTurnOnly = true` for

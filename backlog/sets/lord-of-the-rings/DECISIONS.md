@@ -999,3 +999,28 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   only the creature that dealt combat damage this turn (Bears sacrificed, Giant survives — proving the
   filter excludes non-damagers), and the controller's Ring tempt count becomes 1; plus discard-for-
   indestructible taps the Witch-king and grants indestructible (projected keyword).
+
+## Éowyn, Lady of Rohan
+
+- **Combat trigger (modal with equipped override)** — `Triggers.BeginCombat` (already "on your turn"),
+  `target("target creature", Targets.Creature)`, then a `ConditionalEffect` gated on
+  `Conditions.TargetMatchesFilter(GameObjectFilter.Creature.equipped(), targetIndex = 0)`:
+  - **equipped branch** → `Effects.GrantKeyword(FIRST_STRIKE, creature, EndOfTurn).then(GrantKeyword(VIGILANCE, …))`
+    — both keywords, no choice.
+  - **else branch** → `ModalEffect.chooseOne(Mode.noTarget(GrantKeyword(FIRST_STRIKE, …), "First strike"),
+    Mode.noTarget(GrantKeyword(VIGILANCE, …), "Vigilance"))` — the controller picks one.
+  - Pure composition of existing primitives; the `ManifoldMouse` (BeginCombat + target + ModalEffect)
+    pattern is the precedent.
+- **Gap 28 — generic equip-cost reduction** — added a reusable controller-scoped static
+  `ReduceEquipCost(amount: Int)` in `MiscStaticAbilities.kt`. The engine reduces only the generic
+  portion of the equip cost (floored at {0}; colored pips untouched; multiple sources stack additively),
+  keyed off `ActivatedAbility.isEquipAbility`. Wired via `CastPermissionUtils.applyEquipCostReduction`
+  (new) into both `ActivateAbilityHandler` (paid cost, two sites) and `ActivatedAbilityEnumerator`
+  (displayed cost), applied *before* the `FreeFirstEquipEachTurn` discount. Listed in
+  `StaticAbilityHandler`'s equip-permission `when` group (consulted directly, not a continuous effect).
+  This is the missing general-purpose static that Forge Anew's `FreeFirstEquipEachTurn` /
+  `EquipAbilitiesAtInstantSpeed` left open.
+- **Test:** `EowynLadyOfRohanScenarioTest` — at begin of combat on your turn an unequipped target gains
+  first strike OR vigilance (controller's choice, both options proven); an equipped target gains BOTH
+  with no modal decision; and an inline Equip {3} blade resolves while only {2} mana is available,
+  proving the {1} reduction.

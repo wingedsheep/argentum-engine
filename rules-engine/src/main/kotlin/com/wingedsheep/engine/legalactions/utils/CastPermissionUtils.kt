@@ -467,6 +467,46 @@ class CastPermissionUtils(
         hasActiveEquipPermission(state, playerId) { it is FreeFirstEquipEachTurn }
 
     /**
+     * Total generic-mana reduction [playerId] has for activating equip abilities, summed across
+     * every controlled [ReduceEquipCost] grant whose condition (if any) currently holds
+     * (Éowyn, Lady of Rohan). Multiple sources stack additively. Returns 0 when none apply.
+     */
+    fun equipCostReduction(state: GameState, playerId: EntityId): Int =
+        sumActiveEquipReductions(state, playerId)
+
+    /**
+     * Reduce the generic portion of [cost] when [ability] is an equip ability and [playerId] has
+     * one or more active [ReduceEquipCost] grants. Floors at {0} and leaves colored pips intact.
+     * Shared by the enumerator (offered/displayed cost) and [ActivateAbilityHandler] (paid cost)
+     * so the two always agree. Applied before [applyFreeFirstEquipDiscount].
+     */
+    fun applyEquipCostReduction(
+        cost: AbilityCost,
+        ability: ActivatedAbility,
+        state: GameState,
+        playerId: EntityId
+    ): AbilityCost {
+        if (!ability.isEquipAbility) return cost
+        val reduction = equipCostReduction(state, playerId)
+        if (reduction <= 0) return cost
+        return when (cost) {
+            is AbilityCost.Atom -> cost.manaCostOrNull
+                ?.let { AbilityCost.Atom(CostAtom.Mana(it.reduceGeneric(reduction))) } ?: cost
+            is AbilityCost.Composite -> {
+                var applied = false
+                AbilityCost.Composite(cost.costs.map { sub ->
+                    val subMana = sub.manaCostOrNull
+                    if (!applied && subMana != null) {
+                        applied = true
+                        AbilityCost.Atom(CostAtom.Mana(subMana.reduceGeneric(reduction)))
+                    } else sub
+                })
+            }
+            else -> cost
+        }
+    }
+
+    /**
      * Zero the mana cost of [cost] when [ability] is an equip ability, [playerId] has an active
      * [FreeFirstEquipEachTurn] grant (Forge Anew), and this is their first equip this turn
      * (`EquipActivationsThisTurnComponent.count == 0`). Shared by the enumerator (offered/displayed
@@ -523,6 +563,38 @@ class CastPermissionUtils(
             }
         }
         return false
+    }
+
+    /**
+     * Sum the [ReduceEquipCost] amounts across [playerId]'s battlefield, unwrapping a
+     * [ConditionalStaticAbility] and evaluating its condition against the granting permanent.
+     * Mirrors [hasActiveEquipPermission] but accumulates an amount instead of short-circuiting.
+     */
+    private fun sumActiveEquipReductions(state: GameState, playerId: EntityId): Int {
+        var total = 0
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                when (ability) {
+                    is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
+                        val inner = ability.ability as? com.wingedsheep.sdk.scripting.ReduceEquipCost ?: continue
+                        val opponentId = state.turnOrder.firstOrNull { it != playerId }
+                        val context = com.wingedsheep.engine.handlers.EffectContext(
+                            sourceId = entityId,
+                            controllerId = playerId,
+                            opponentId = opponentId
+                        )
+                        if (conditionEvaluator.evaluate(state, ability.condition, context)) total += inner.amount
+                    }
+                    is com.wingedsheep.sdk.scripting.ReduceEquipCost -> total += ability.amount
+                    else -> {}
+                }
+            }
+        }
+        return total
     }
 
     fun isCyclingPrevented(state: GameState): Boolean {

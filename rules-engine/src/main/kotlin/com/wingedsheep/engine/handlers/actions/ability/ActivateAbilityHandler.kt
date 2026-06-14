@@ -202,9 +202,13 @@ class ActivateAbilityHandler(
         }
         // Apply ability-specific generic cost reduction (e.g., The Dominion Bracelet's
         // "{X} less, where X is this creature's power"). Per Scryfall ruling, the reduced
-        // cost is locked in here, before costs are paid. Then apply Forge Anew's free-first-equip.
+        // cost is locked in here, before costs are paid. Then apply generic equip-cost reduction
+        // (Éowyn) and finally Forge Anew's free-first-equip.
         val effectiveCost = castPermissionUtils.applyFreeFirstEquipDiscount(
-            applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+            castPermissionUtils.applyEquipCostReduction(
+                applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+                ability, state, action.playerId
+            ),
             ability, state, action.playerId
         )
         val effectiveTargetReqs = if (textReplacement != null) {
@@ -439,9 +443,12 @@ class ActivateAbilityHandler(
         }
         // Apply ability-specific generic cost reduction (e.g., The Dominion Bracelet's
         // "{X} less, where X is this creature's power"). Locked in before payment. Then apply
-        // Forge Anew's free-first-equip discount (zeroes the first equip's cost each turn).
+        // generic equip-cost reduction (Éowyn) and Forge Anew's free-first-equip discount.
         val effectiveCost = castPermissionUtils.applyFreeFirstEquipDiscount(
-            applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+            castPermissionUtils.applyEquipCostReduction(
+                applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+                ability, state, action.playerId
+            ),
             ability, state, action.playerId
         )
 

@@ -149,7 +149,10 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 // creature's power"). Then apply Forge Anew's free-first-equip discount, so the
                 // displayed cost and affordability reflect the {0} the player will actually pay.
                 val effectiveCost = context.castPermissionUtils.applyFreeFirstEquipDiscount(
-                    applyAbilityGenericCostReduction(rawCost, ability, state, entityId, playerId, context),
+                    context.castPermissionUtils.applyEquipCostReduction(
+                        applyAbilityGenericCostReduction(rawCost, ability, state, entityId, playerId, context),
+                        ability, state, playerId
+                    ),
                     ability, state, playerId
                 )
 

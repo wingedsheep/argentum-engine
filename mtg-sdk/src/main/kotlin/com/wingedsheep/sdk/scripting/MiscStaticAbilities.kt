@@ -728,3 +728,19 @@ data object EquipAbilitiesAtInstantSpeed : StaticAbility {
 data object FreeFirstEquipEachTurn : StaticAbility {
     override val description: String = "You may pay {0} rather than pay the equip cost of the first equip ability you activate during each of your turns"
 }
+
+/**
+ * The controller's equip abilities cost [amount] generic mana less to activate (Éowyn, Lady of
+ * Rohan: "Equip abilities you activate cost {1} less to activate"). The engine keys this off
+ * `ActivatedAbility.isEquipAbility` and reduces only the generic portion of the equip cost,
+ * floored at {0}; colored pips are unaffected. Multiple sources stack additively.
+ *
+ * Controller-scoped: it applies to every equip ability the controller of the granting permanent
+ * activates, regardless of which permanent bears the equip ability. Gate it with a
+ * [ConditionalStaticAbility] for a "during your turn"-style restriction.
+ */
+@SerialName("ReduceEquipCost")
+@Serializable
+data class ReduceEquipCost(val amount: Int) : StaticAbility {
+    override val description: String = "Equip abilities you activate cost {$amount} less to activate"
+}
