@@ -371,6 +371,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `PutOntoBattlefield(target, tapped?)` — put target on the battlefield.
 - `PutOntoBattlefieldUnderYourControl(target)` — under controller's control.
 - `PutOntoBattlefieldFaceDown(count, target?)` — enter face-down (2/2 morph shape).
+- `PutOntoBattlefieldAttachedToChosen(target, hostFilter?)` — put a targeted Aura or Equipment onto the
+  battlefield attached to a permanent the controller chooses at resolution (default host filter: a creature
+  you control). Works for both Auras and Equipment; the host is chosen, not targeted. If no legal host exists,
+  an Equipment enters unattached while an Aura can't enter (Rule 303.4g). (One Last Job.)
 - `ReturnSelfToBattlefieldAttached(target)` — return source attached to target (Aura recursion).
 - `ReturnSelfFromExileTransformed` — Craft resolution (CR 702.167a). Returns the source from exile to the
   battlefield as its back face, under its owner's control, and re-attaches the source's

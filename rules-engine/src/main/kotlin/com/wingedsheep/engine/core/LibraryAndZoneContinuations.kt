@@ -192,6 +192,25 @@ data class MoveCollectionAuraTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller chooses a host for a card put onto the battlefield attached to a
+ * chosen permanent (PutOntoBattlefieldAttachedToChosenEffect — One Last Job mode 3).
+ *
+ * The card ([cardId], an Aura or Equipment) is moved to the battlefield under [controllerId]'s
+ * control and attached to the chosen host. Reuses
+ * [com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor.moveAuraToBattlefield],
+ * which is permanent-agnostic (works for both Auras and Equipment).
+ *
+ * @property cardId The Aura/Equipment card being put onto the battlefield
+ * @property controllerId The player putting it onto the battlefield (chooses the host)
+ */
+@Serializable
+data class PutOntoBattlefieldAttachedToChosenContinuation(
+    override val decisionId: String,
+    val cardId: EntityId,
+    val controllerId: EntityId
+) : ContinuationFrame
+
+/**
  * Resume after player reorders revealed cards to put on the bottom of their library.
  *
  * Used for effects like Erratic Explosion that reveal cards and then put them

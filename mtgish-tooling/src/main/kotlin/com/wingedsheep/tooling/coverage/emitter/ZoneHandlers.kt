@@ -166,6 +166,17 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         }
     }
 
+    on("ExchangeControl") { _, args, _ ->
+        // "Exchange control of two target permanents" (Shifting Grift). The IR carries two permanent
+        // refs (Ref_TargetPermanent1 / Ref_TargetPermanent2) — resolve each to its bound target. Both
+        // must resolve (the two-target context, e.g. a Spree mode), else decline -> SCAFFOLD.
+        val arr = args.asArr?.filterIsInstance<JsonObject>() ?: return@on null
+        if (arr.size != 2) return@on null
+        val t1 = refTargetFromRef(arr[0].strField("_Permanent"), null) ?: return@on null
+        val t2 = refTargetFromRef(arr[1].strField("_Permanent"), null) ?: return@on null
+        call("Effects.ExchangeControl", arg(Lit(t1)), arg(Lit(t2)))
+    }
+
     on("SacrificePermanent") { _, args, _ ->  // "sacrifice ~" (Blistering Firecat's end-step sacrifice)
         if (jsonContains(args, "_Permanent", "ThisPermanent")) Lit("SacrificeSelfEffect") else null
     }
@@ -397,6 +408,23 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
             // grab isn't expressible by either facade, so scaffold that pairing.
             val flagBlob = compact(args)
             val entersTapped = "EntersTapped" in flagBlob
+            // "…to the battlefield attached to a creature you control" (One Last Job mode 3): an
+            // EntersAttachedToAPermanent flag whose host filter is Creature + ControlledByAPlayer You.
+            // Render the PutOntoBattlefieldAttachedToChosen facade (host chosen at resolution, default
+            // filter "a creature you control"). Only that exact host shape renders; any other host
+            // (tapped pairing, a different filter) declines -> SCAFFOLD.
+            if ("EntersAttachedToAPermanent" in flagBlob) {
+                // The host filter must be exactly "a creature you control" (the facade's default host).
+                // A companion EntersUnderPlayersControl(You) flag is redundant here — attaching to a
+                // creature you control already enters the card under your control — so it's allowed; any
+                // OTHER control grant or a tapped pairing declines -> SCAFFOLD.
+                val attachesToOwnCreature = "\"Creature\"" in flagBlob &&
+                    "ControlledByAPlayer" in flagBlob && "\"You\"" in flagBlob
+                val controlOk = "EntersUnderPlayersControl" !in flagBlob || "\"You\"" in flagBlob
+                return@on if (attachesToOwnCreature && controlOk && !entersTapped)
+                    call("Effects.PutOntoBattlefieldAttachedToChosen", arg(Lit(tgt)))
+                else null
+            }
             return@on when {
                 "EntersUnderPlayersControl" !in flagBlob ->
                     if (entersTapped) call("Effects.PutOntoBattlefield", arg(Lit(tgt)), arg("tapped", "true"))

@@ -37,6 +37,7 @@ class LibraryAndZoneContinuationResumer(
         resumer(ChoosePileContinuation::class, ::resumeChoosePile),
         resumer(SelectTargetPipelineContinuation::class, ::resumeSelectTargetPipeline),
         resumer(MoveCollectionAuraTargetContinuation::class, ::resumeMoveCollectionAuraTarget),
+        resumer(PutOntoBattlefieldAttachedToChosenContinuation::class, ::resumePutOntoBattlefieldAttachedToChosen),
         resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom),
         resumer(CascadeMayCastContinuation::class, ::resumeCascadeMayCast),
         resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
@@ -364,6 +365,45 @@ class LibraryAndZoneContinuationResumer(
         }
 
         return checkForMore(newState, moveEvents)
+    }
+
+    /**
+     * Resume after the controller chooses a host for a card put onto the battlefield attached to
+     * a chosen permanent (One Last Job mode 3). Moves the Aura/Equipment to the battlefield under
+     * the controller's control and attaches it to the chosen host, reusing the permanent-agnostic
+     * [com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor.moveAuraToBattlefield].
+     */
+    fun resumePutOntoBattlefieldAttachedToChosen(
+        state: GameState,
+        continuation: PutOntoBattlefieldAttachedToChosenContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for attach-host selection")
+        }
+
+        val hostIds = response.selectedTargets[0] ?: emptyList()
+        if (hostIds.isEmpty()) {
+            // No host chosen — leave the card where it is (mode does nothing).
+            return checkForMore(state, emptyList())
+        }
+        val hostId = hostIds.first()
+
+        // Host must still be on the battlefield.
+        if (!state.getBattlefield().contains(hostId)) {
+            return checkForMore(state, emptyList())
+        }
+
+        val executor = com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor(
+            cardRegistry = services.cardRegistry,
+            targetFinder = services.targetFinder
+        )
+        val (newState, events) = executor.moveAuraToBattlefield(
+            state, continuation.cardId, hostId, continuation.controllerId
+        )
+
+        return checkForMore(newState, events)
     }
 
     fun resumeSelectFromCollection(

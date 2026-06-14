@@ -738,6 +738,26 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         // widen the target to any artifact in the graveyard. Decline (-> SCAFFOLD) rather than drop it.
         if ("ManaValueIs" in blob) return null
         val types = targetTypes(args)
+        // "target Mount or Vehicle card" / "target Aura or Equipment card" from a graveyard (One Last
+        // Job modes 2 & 3): an `Or` of subtype clauses drawn from MORE THAN ONE type category
+        // (IsCreatureType Mount + IsArtifactType Vehicle; IsEnchantmentType Aura + IsArtifactType
+        // Equipment). The single-category `graveyardSubs` branch below only sees the creature subtypes
+        // and would silently drop the others, so handle the cross-category `Or` here as
+        // `GameObjectFilter.Any.withAnySubtype(…)`. Only the plain Or-of-subtypes shape (no IsCardtype,
+        // no mana-value cap) renders; anything else falls through.
+        run {
+            val anySubs = listOf("IsCreatureType", "IsArtifactType", "IsEnchantmentType", "IsLandType")
+                .flatMap { args.argWordsTagged(it) }
+            if (anySubs.size >= 2 && "\"Or\"" in blob && "IsCardtype" !in blob && "ManaValueIs" !in blob) {
+                // withAnySubtype takes vararg String (not Subtype), so emit quoted subtype names.
+                val subtypeArgs = anySubs.map { arg(Lit("\"${ktStr(it)}\"")) }.toTypedArray()
+                val base = Lit("GameObjectFilter.Any").dot("withAnySubtype", *subtypeArgs)
+                val filt = graveyardFilter(base, blob)
+                val parts = mutableListOf(arg("filter", filt))
+                if (ttype == "UptoOneTargetGraveyardCard") parts.add(0, arg("optional", "true"))
+                return Call("TargetObject", parts)
+            }
+        }
         // "target Spirit card from your graveyard" (Angel of Flight Alabaster): a creature-subtype
         // restriction, usually with an ownership clause. The bare CardInGraveyard constant used to
         // swallow this shape, silently dropping BOTH constraints (any card, any graveyard).

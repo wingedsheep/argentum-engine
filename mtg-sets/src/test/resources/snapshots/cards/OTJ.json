@@ -9849,6 +9849,110 @@
     ]
 }
 
+// One Last Job
+{
+    "name": "One Last Job",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {2} — Return target creature card from your graveyard to the battlefield.\n+ {1} — Return target Mount or Vehicle card from your graveyard to the battlefield.\n+ {1} — Return target Aura or Equipment card from your graveyard to the battlefield attached to a creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Battlefield"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "description": "+ {2} — Return target creature card from your graveyard to the battlefield.",
+                    "additionalManaCost": "{2}"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Battlefield"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "Mount|Vehicle own:you",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Return target Mount or Vehicle card from your graveyard to the battlefield.",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": "PutOntoBattlefieldAttachedToChosen",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "Aura|Equipment own:you",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Return target Aura or Equipment card from your graveyard to the battlefield attached to a creature you control.",
+                    "additionalManaCost": "{1}"
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Caroline Gariba",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71bfbfae-e7eb-4f80-81c6-9ab6a1bbd39d.jpg?1712860542",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "The creature that the Aura or Equipment card returned by the third mode will enter attached to isn't a target of that mode and is chosen as One Last Job resolves."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "The Aura or Equipment must be able to be legally attached to the creature you choose. You can't return an Aura card to the battlefield if there's nothing to enchant. However, if you control no creatures, you could return an Equipment card to the battlefield unattached to anything."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You must choose at least one of the listed modes and pay its associated additional cost in order to cast a spell with spree."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You can't choose the same mode more than once."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "No matter which modes you choose, you always follow the instructions in the order they are written."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ornery Tumblewagg
 {
     "name": "Ornery Tumblewagg",
@@ -13262,6 +13366,111 @@
     ]
 }
 
+// Shifting Grift
+{
+    "name": "Shifting Grift",
+    "manaCost": "{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spree (Choose one or more additional costs.)\n+ {2} — Exchange control of two target creatures.\n+ {1} — Exchange control of two target artifacts.\n+ {1} — Exchange control of two target enchantments.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "ExchangeControl",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "+ {2} — Exchange control of two target creatures.",
+                    "additionalManaCost": "{2}"
+                },
+                {
+                    "effect": "ExchangeControl",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            }
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Exchange control of two target artifacts.",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": "ExchangeControl",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            }
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            }
+                        }
+                    ],
+                    "description": "+ {1} — Exchange control of two target enchantments.",
+                    "additionalManaCost": "{1}"
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Nereida",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20b8313b-a680-4dca-959a-1a7fa5cb4b1b.jpg?1712860608",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "Gaining control of a permanent doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "If one of the target permanents is an illegal target when Shifting Grift resolves, the exchange that permanent is involved in won't happen."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "The effects of Shifting Grift's modes last indefinitely. They don't wear off during the cleanup step, and they don't expire if one of the target permanents stops having that permanent type after Shifting Grift has resolved."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "You don't have to control any of the target permanents."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "If the same player controls both permanents involved in a single exchange when that exchange occurs, nothing happens to those permanents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Shoot the Sheriff
 {
     "name": "Shoot the Sheriff",
@@ -15077,6 +15286,138 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// The Key to the Vault
+{
+    "name": "The Key to the Vault",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Whenever equipped creature deals combat damage to a player, look at that many cards from the top of your library. You may exile a nonland card from among them. Put the rest on the bottom of your library in a random order. You may cast the exiled card without paying its mana cost.\nEquip {2}{U}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "storeAs": "keyLooked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "keyLooked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "keyChosen",
+                            "storeRemainder": "keyToBottom",
+                            "prompt": "You may exile a nonland card to cast for free.",
+                            "selectedLabel": "Exile",
+                            "remainderLabel": "Put on the bottom of your library",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "keyChosen",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "keyExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "keyToBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "keyExiled"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{2}{U}",
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Leon Tukker",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/166814af-a444-4a62-937e-7491673d9387.jpg?1712355445",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "You choose whether to cast the exiled card as The Key to the Vault's triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's types are ignored."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the spell has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2024-04-12",
+                "text": "If the spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

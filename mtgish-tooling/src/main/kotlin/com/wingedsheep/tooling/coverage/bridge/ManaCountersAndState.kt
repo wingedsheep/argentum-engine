@@ -58,6 +58,9 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // (args[0] a self-ref) and declines anything else -> SCAFFOLD.
     effect("AttachPermanentToPermanent", "AttachEquipment", "self-attach an Equipment/Aura to a chosen permanent")
     effects("GainControlOfPermanent", "GainControlOfPermanentUntil", tag = "GainControl", note = UNIVERSAL)
+    // "Exchange control of two target permanents" (Shifting Grift, Chromeshell Crab) — the two-target
+    // ExchangeControlEffect, modeled as a pair of permanent Layer.CONTROL floating effects.
+    effect("ExchangeControl", "ExchangeControl", "exchange control of two target permanents")
     effect("RemoveCreatureFromCombat", "RemoveFromCombat", UNIVERSAL)
     // Ydwen Efreet's "remove from combat and creatures it solely blocked become unblocked" — the same
     // RemoveFromCombat effect (the emitter sets its unblockSoleBlockedAttackers flag).

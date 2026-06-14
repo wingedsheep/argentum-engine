@@ -62,6 +62,10 @@ internal fun BridgeBuilder.zoneMovement() {
     // "Return the exiled card to the battlefield" — the delayed return half of exile-then-return
     // (Conciliator's Duelist). A plain MoveToZone back to the battlefield under its owner's control.
     composed("PutExiledCardOntoBattlefield", UNIVERSAL, composes = listOf("MoveToZone"))
+    // "You may cast the exiled card without paying its mana cost" (The Key to the Vault) — the
+    // mid-resolution CastFromCollectionWithoutPayingCostEffect over a card just exiled by the look
+    // pipeline (Sunbird's Invocation / Goliath Daydreamer shape).
+    composed("CastExiledCardWithoutPaying", "CastFromCollectionWithoutPayingCost over the exiled card", composes = listOf("CastFromCollectionWithoutPayingCost"))
     composed("ExileEachPermanent", UNIVERSAL, composes = listOf("MoveCollection", "MoveToZone"))
     composed("MillNumberCards", UNIVERSAL, composes = listOf("MoveCollection"))
     composed("MillCards", UNIVERSAL, composes = listOf("MoveCollection"))

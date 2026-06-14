@@ -780,6 +780,33 @@ private fun EmitCtx.youHaventCastASpellConditionDsl(cond: JsonObject?): String? 
  * The (target list, inner action list) of a mtgish `Targeted` action node, or null if it isn't a
  * Targeted envelope. Mirrors [extractEnvelope]'s Targeted unpacking for a single known node.
  */
+/**
+ * Strip a sibling-distinctness `Other(<ref>)` predicate from a target node's filter. mtgish models
+ * "two target creatures" as a first plain target plus a second whose filter is `And[Other(ref1),
+ * <same type>]` — the `Other` only enforces that the two chosen objects differ, which the engine does
+ * automatically (CR 115.1b). Drop the `Other` arm so the second target's filter renders to the same
+ * type filter as the first. Returns the original node when there's no such clause.
+ */
+private fun JsonObject.stripSiblingOther(): JsonObject {
+    val args = this["args"] as? JsonObject ?: return this
+    if (args.strField("_Permanents") != "And") return this
+    val arms = args["args"].asArr?.filterIsInstance<JsonObject>() ?: return this
+    val kept = arms.filterNot { it.strField("_Permanents") == "Other" }
+    if (kept.size == arms.size) return this // no Other arm
+    val newFilter: JsonElement = when (kept.size) {
+        0 -> return this // nothing left to filter on — keep original rather than widen to "any"
+        1 -> kept[0]
+        else -> buildJsonObject {
+            put("_Permanents", JsonPrimitive("And"))
+            put("args", JsonArray(kept))
+        }
+    }
+    return buildJsonObject {
+        this@stripSiblingOther.forEach { (k, v) -> if (k != "args") put(k, v) }
+        put("args", newFilter)
+    }
+}
+
 private fun targetedArms(node: JsonObject): Pair<List<JsonObject>?, List<JsonObject>>? {
     if (node.strField("_Actions") != "Targeted") return null
     val args = node["args"].asArr ?: return null
@@ -1051,14 +1078,50 @@ internal fun EmitCtx.spreeSpellBlock(rule: JsonObject): List<Stmt>? {
             }
             "Targeted" -> {
                 val (targets, actions) = targetedArms(actionsNode) ?: run { reasons.add("Spree"); return null }
-                if (targets == null || actions == null || targets.size != 1) { reasons.add("Spree"); return null }
-                val tnode = targetExpr(targets[0], actions)
-                    ?: run { reasons.add("target:${targets[0].strField("_Target")}"); return null }
-                // The targeted arm spends the modal target slot — bind the effect's target ref to it.
-                val effect = renderEffectList(actions, "EffectTarget.ContextTarget(0)") ?: return null
-                if (effect is Composite) { reasons.add("Spree"); return null }
-                modeArgs.add(arg("effect", effect))
-                modeArgs.add(arg("targetRequirements", call("listOf", arg(tnode))))
+                if (targets == null || actions == null || targets.isEmpty()) { reasons.add("Spree"); return null }
+                when (targets.size) {
+                    1 -> {
+                        val tnode = targetExpr(targets[0], actions)
+                            ?: run { reasons.add("target:${targets[0].strField("_Target")}"); return null }
+                        // The targeted arm spends the modal target slot — bind the effect's target ref to it.
+                        val effect = renderEffectList(actions, "EffectTarget.ContextTarget(0)") ?: return null
+                        if (effect is Composite) { reasons.add("Spree"); return null }
+                        modeArgs.add(arg("effect", effect))
+                        modeArgs.add(arg("targetRequirements", call("listOf", arg(tnode))))
+                    }
+                    2 -> {
+                        // A two-target mode (Shifting Grift: "exchange control of two target …"). Render
+                        // both target requirements and bind the per-kind refs (Ref_TargetPermanentN) to
+                        // the mode-local ContextTarget(0)/(1) so the effect resolves against them. Restore
+                        // the ref-var state afterwards so other modes/cards are unaffected.
+                        val tnodes = targets.map { t ->
+                            // "two target creatures" — the second slot carries an `Other(<sibling ref>)`
+                            // distinctness clause. Distinct targets are automatic (CR 115.1b: a spell
+                            // can't choose the same object for two of its targets), so strip the sibling
+                            // `Other` before rendering the filter rather than declining on it.
+                            val cleaned = t.stripSiblingOther()
+                            targetExpr(cleaned, actions) ?: run { reasons.add("target:${t.strField("_Target")}"); return null }
+                        }
+                        val kinds = targets.map { refKindForTarget(it) }
+                        if (kinds.any { it == null } || kinds.toSet().size != 1) { reasons.add("Spree"); return null }
+                        val kind = kinds.first()!!
+                        val ctxRefs = listOf("EffectTarget.ContextTarget(0)", "EffectTarget.ContextTarget(1)")
+                        val savedByKind = targetRefVarsByKind
+                        val savedVars = targetVars
+                        targetRefVarsByKind = mapOf(kind to ctxRefs)
+                        targetVars = ctxRefs
+                        val effect = try {
+                            renderEffectList(actions, ctxRefs.first())
+                        } finally {
+                            targetRefVarsByKind = savedByKind
+                            targetVars = savedVars
+                        } ?: return null
+                        if (effect is Composite) { reasons.add("Spree"); return null }
+                        modeArgs.add(arg("effect", effect))
+                        modeArgs.add(arg("targetRequirements", call("listOf", *tnodes.map { arg(it) }.toTypedArray())))
+                    }
+                    else -> { reasons.add("Spree"); return null }
+                }
             }
             else -> { reasons.add("Spree"); return null }
         }
@@ -1737,6 +1800,16 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         val binding = if (jsonContains(trig, "_Permanents", "Other")) "TriggerBinding.OTHER" else "TriggerBinding.ANY"
         val filter = gameObjectFilterDsl(trig) ?: return null
         return "Triggers.entersBattlefield(filter = $filter, binding = $binding)"
+    }
+
+    // "Whenever equipped creature deals combat damage to a player" — an Equipment/Aura combat-damage
+    // trigger bound to the host permanent (subject SinglePermanent(HostPermanent)). Maps to the
+    // ATTACHED binding (The Key to the Vault). Only the bare host subject to any player renders.
+    if (jsonContains(trig, "_Trigger", "WhenACreatureDealsCombatDamageToAPlayer") && isHost(trig) &&
+        jsonContains(trig, "_Players", "AnyPlayer")
+    ) {
+        return "Triggers.dealsDamage(DamageType.Combat, RecipientFilter.AnyPlayer, " +
+            "binding = TriggerBinding.ATTACHED)"
     }
 
     // "Whenever a [creature type] deals combat damage to a player, …" — non-self

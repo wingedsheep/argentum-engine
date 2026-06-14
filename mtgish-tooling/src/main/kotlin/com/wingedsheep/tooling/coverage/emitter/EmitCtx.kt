@@ -6,6 +6,7 @@ import com.wingedsheep.tooling.coverage.bridge.Bridge
 import com.wingedsheep.tooling.coverage.bridge.MappingEntry
 import com.wingedsheep.tooling.coverage.Dsl
 import com.wingedsheep.tooling.coverage.Lit
+import com.wingedsheep.tooling.coverage.Raw
 import com.wingedsheep.tooling.coverage.arg
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.amountNode
@@ -136,6 +137,7 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     chooseTypeModifyStatsEffect(actions)?.let { return it }
     chooseCreatureTypeRevealTopEffect(actions)?.let { return it }
     impulseExileTopMayPlay(actions)?.let { return it }
+    lookExileCastFree(actions)?.let { return it }
     createValueXDealsDamageEffect(actions, tvar)?.let { return it }
     val rendered = mutableListOf<Dsl>()
     for (act in actions) {
@@ -856,6 +858,64 @@ internal fun EmitCtx.impulseExileTopMayPlay(actions: List<JsonObject>): Dsl? {
             Lit("GrantMayPlayFromExileEffect(\"exiledCard\", MayPlayExpiry.UntilEndOfNextTurn)")
         )
     )
+}
+
+/**
+ * `[LookAtTheTopNumberCardsOfLibrary(<count>, [MayExileACardOfType(nonland),
+ * PutTheRemainingCardsOnTheBottomOfLibraryInARandomOrder]), MayAction(CastExiledCardWithoutPaying(
+ * TheCardExiledThisWay))]` -> the "look at N, may exile a nonland, bottom the rest at random, then
+ * cast the exiled card for free" pipeline (The Key to the Vault). Spans two actions — the look (which
+ * names the exiled card collection) and the free cast — so it's recognised here as a whole action list
+ * rather than per-action.
+ *
+ * Renders the Sunbird's-Invocation pipeline: Gather(top N, private) -> SelectFromCollection(up to 1,
+ * nonland) -> MoveCollection(chosen -> exile, storeMovedAs) -> MoveCollection(rest -> library bottom,
+ * random) -> CastFromCollectionWithoutPayingCost(exiled). Only this exact two-action shape with a
+ * nonland exile filter and the random-bottom remainder renders; any other filter, remainder
+ * destination, or exiled-card rider declines (-> SCAFFOLD) rather than dropping a constraint.
+ */
+internal fun EmitCtx.lookExileCastFree(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val look = actions[0]
+    if (look.strField("_Action") != "LookAtTheTopNumberCardsOfLibrary") return null
+    val cast = actions[1]
+    // The free cast is wrapped in a `MayAction` envelope ("you may cast …").
+    val castInner = (cast["args"] as? JsonObject)?.takeIf { cast.strField("_Action") == "MayAction" } ?: return null
+    if (castInner.strField("_Action") != "CastExiledCardWithoutPaying") return null
+    if (!jsonContains(castInner["args"], "_CardInExile", "TheCardExiledThisWay")) return null
+
+    val lookArgs = look["args"].asArr ?: return null
+    val countExpr = render(dynamicAmountExpr(lookArgs.getOrNull(0)) ?: return null)
+    val subActions = lookArgs.getOrNull(1).asArr?.filterIsInstance<JsonObject>() ?: return null
+    // Exactly the may-exile-nonland + bottom-the-rest-at-random sub-actions, nothing else.
+    val exileNode = subActions.firstOrNull { it.strField("_LookAtTopOfLibraryAction") == "MayExileACardOfType" } ?: return null
+    val hasBottomRandom = subActions.any {
+        it.strField("_LookAtTopOfLibraryAction") == "PutTheRemainingCardsOnTheBottomOfLibraryInARandomOrder"
+    }
+    if (!hasBottomRandom || subActions.size != 2) return null
+    val exileFilter = exileNode["args"] as? JsonObject ?: return null
+    val filterExpr = when {
+        exileFilter.strField("_Cards") == "IsNonCardtype" && exileFilter.field("args").asStr() == "Land" -> "GameObjectFilter.Nonland"
+        else -> return null
+    }
+    return Composite(listOf(
+        Lit("GatherCardsEffect(source = CardSource.TopOfLibrary($countExpr), storeAs = \"looked\", revealed = false)"),
+        Raw(
+            "SelectFromCollectionEffect(\n" +
+                "                from = \"looked\",\n" +
+                "                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),\n" +
+                "                filter = $filterExpr,\n" +
+                "                showAllCards = true,\n" +
+                "                storeSelected = \"exiledChosen\",\n" +
+                "                storeRemainder = \"toBottom\",\n" +
+                "                selectedLabel = \"Exile\",\n" +
+                "                remainderLabel = \"Put on the bottom of your library\"\n" +
+                "            )",
+        ),
+        Lit("MoveCollectionEffect(from = \"exiledChosen\", destination = CardDestination.ToZone(Zone.EXILE), storeMovedAs = \"exiledCard\")"),
+        Lit("MoveCollectionEffect(from = \"toBottom\", destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom), order = CardOrder.Random)"),
+        Lit("CastFromCollectionWithoutPayingCostEffect(from = \"exiledCard\")"),
+    ))
 }
 
 /**

@@ -2586,6 +2586,19 @@ object Effects {
         equipmentTarget, creatureTarget
     )
 
+    /**
+     * Put a targeted Aura or Equipment card onto the battlefield attached to a permanent the
+     * controller chooses at resolution (default: a creature you control). Works for both
+     * Auras and Equipment; the host is chosen, not targeted (One Last Job).
+     */
+    fun PutOntoBattlefieldAttachedToChosen(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        hostFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.youControl()
+    ): Effect = com.wingedsheep.sdk.scripting.effects.PutOntoBattlefieldAttachedToChosenEffect(
+        target, hostFilter
+    )
+
     // =========================================================================
     // Animate Effects
     // =========================================================================

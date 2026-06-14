@@ -7987,7 +7987,7 @@ val NomadMythmaker = card("Nomad Mythmaker") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{W}"), Costs.Tap)
         val t = target("target", TargetObject(filter = TargetFilter.CardInGraveyard))
-        effect = Effects.PutOntoBattlefieldUnderYourControl(t)
+        effect = Effects.PutOntoBattlefieldAttachedToChosen(t)
     }
     metadata {
         rarity = Rarity.RARE
