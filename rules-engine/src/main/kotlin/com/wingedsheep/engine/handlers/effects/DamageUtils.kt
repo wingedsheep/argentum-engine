@@ -174,6 +174,12 @@ object DamageUtils {
                     return EffectResult.success(state)
                 }
             }
+            // Protection from card type, e.g. "protection from creatures" (Pippin, Guard of the Citadel)
+            for (cardType in projected.getTypes(sourceId)) {
+                if (projected.hasKeyword(targetId, "PROTECTION_FROM_CARDTYPE_${cardType.uppercase()}")) {
+                    return EffectResult.success(state)
+                }
+            }
 
             // Protection from each opponent (Rule 702.16e)
             if (projected.hasKeyword(targetId, "PROTECTION_FROM_EACH_OPPONENT")) {

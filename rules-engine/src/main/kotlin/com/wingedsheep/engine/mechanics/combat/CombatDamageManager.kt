@@ -1260,6 +1260,7 @@ internal class CombatDamageManager(
                         val damageCantBePrevented = DamageUtils.isDamagePreventionDisabled(state)
                         val attackerColors = projected.getColors(attackerId)
                         val attackerSubtypes = projected.getSubtypes(attackerId)
+                        val attackerTypes = projected.getTypes(attackerId)
                         val protectedFromOpponent = !damageCantBePrevented &&
                             projected.hasKeyword(targetId, "PROTECTION_FROM_EACH_OPPONENT") &&
                             run {
@@ -1271,6 +1272,8 @@ internal class CombatDamageManager(
                             projected.hasKeyword(targetId, "PROTECTION_FROM_$it")
                         } || attackerSubtypes.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}")
+                        } || attackerTypes.any {
+                            projected.hasKeyword(targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}")
                         }) || protectedFromOpponent
                         if (!blockerProtected) {
                             incomingDamage.getOrPut(targetId) { mutableMapOf() }

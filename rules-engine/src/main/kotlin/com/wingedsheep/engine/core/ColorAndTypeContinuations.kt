@@ -152,6 +152,30 @@ data class BecomeCreatureTypeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller chooses a card type for
+ * [com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenCardTypeEffect]
+ * (Pippin, Guard of the Citadel). The resumer grants the target a floating
+ * `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword for [duration].
+ *
+ * @property controllerId The player who controls the ability
+ * @property sourceId The ability source (for event messages)
+ * @property sourceName Name of the source for event messages
+ * @property targetId The creature gaining protection
+ * @property cardTypes The card-type options (indexed by OptionChosenResponse.optionIndex)
+ * @property duration How long the protection lasts
+ */
+@Serializable
+data class ChooseCardTypeForProtectionContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetId: EntityId,
+    val cardTypes: List<String>,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Resume after a player chose a creature type for "each player chooses a creature type" effects.
  *
  * Each player (in APNAP order) chooses a creature type. After all players have chosen,

@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayerProtectionEffect
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.effects.ForEachColorOfEffect
@@ -1800,6 +1801,18 @@ object Effects {
         target: EffectTarget = EffectTarget.ContextTarget(0),
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantProtectionFromChosenColorEffect(target, duration)
+
+    /**
+     * Grant "protection from the card type of your choice" to a target (CR 702.16). The
+     * executor presents the fixed protectable card-type choice and grants a floating
+     * `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword. Self-contained — unlike [GrantProtectionFromChosenColor]
+     * it owns its choice, so it is not nested under a "choose X then" combinator. Used by
+     * Pippin, Guard of the Citadel.
+     */
+    fun GrantProtectionFromChosenCardType(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantProtectionFromChosenCardTypeEffect(target, duration)
 
     /**
      * Grant a **player** protection from [scope] for [duration] (CR 702.16) — the

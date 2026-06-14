@@ -379,6 +379,15 @@ sealed interface Modification {
     }
 
     /**
+     * Grants protection from a card type (e.g. "protection from creatures"). [cardType] is the
+     * uppercase card-type name; realized as a `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword.
+     */
+    @Serializable
+    data class GrantProtectionFromCardType(val cardType: String) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
+    /**
      * Grants protection from the chosen color (resolved dynamically from source's CastChoicesComponent).
      * Used for Ward Sliver: "All Slivers have protection from the chosen color."
      */

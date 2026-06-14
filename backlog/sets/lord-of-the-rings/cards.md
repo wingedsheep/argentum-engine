@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 251 / 291
+**Implemented:** 252 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -257,7 +257,7 @@ starter-deck/special cards and basic lands.
 - [x] Merry, Esquire of Rohan
 - [x] The Mouth of Sauron
 - [x] Old Man Willow
-- [ ] Pippin, Guard of the Citadel
+- [x] Pippin, Guard of the Citadel
 - [x] Prince Imrahil the Fair
 - [x] Ringsight
 - [x] Rise of the Witch-king

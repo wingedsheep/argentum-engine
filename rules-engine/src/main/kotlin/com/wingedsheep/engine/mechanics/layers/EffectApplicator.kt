@@ -190,6 +190,9 @@ internal class EffectApplicator(
                 is Modification.GrantProtectionFromColor -> {
                     values.keywords.add("PROTECTION_FROM_${mod.color}")
                 }
+                is Modification.GrantProtectionFromCardType -> {
+                    values.keywords.add("PROTECTION_FROM_CARDTYPE_${mod.cardType.uppercase()}")
+                }
                 is Modification.GrantProtectionFromChosenColor -> {
                     val chosenColor = state.getEntity(effect.sourceId)
                         ?.chosenColor()

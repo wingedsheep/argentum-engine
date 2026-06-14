@@ -2491,6 +2491,23 @@ class StackResolver(
                             return@filterIndexed false
                         }
                     }
+                    // Check protection from the source's card type, e.g. "protection from creatures"
+                    // (Rule 702.16). Prefer projected types (permanent sources); fall back to the
+                    // card's printed card types for spell/ability sources not in the projection.
+                    if (sourceId != null) {
+                        val projectedTypes = projected.getTypes(sourceId)
+                        val sourceCardTypes = if (projectedTypes.isNotEmpty()) {
+                            projectedTypes
+                        } else {
+                            state.getEntity(sourceId)?.get<CardComponent>()
+                                ?.typeLine?.cardTypes?.map { it.name }?.toSet() ?: emptySet()
+                        }
+                        for (cardType in sourceCardTypes) {
+                            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_CARDTYPE_${cardType.uppercase()}")) {
+                                return@filterIndexed false
+                            }
+                        }
+                    }
 
                     // Check protection from each opponent (Rule 702.16e)
                     if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_EACH_OPPONENT") &&

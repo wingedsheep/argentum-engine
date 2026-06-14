@@ -376,6 +376,24 @@ class ProtectionFromSupertypeRule : BlockEvasionRule {
 }
 
 /**
+ * Protection from card type: Attacker can't be blocked by creatures whose card type it has
+ * protection from (e.g. "protection from creatures"). Used by Pippin, Guard of the Citadel.
+ */
+class ProtectionFromCardTypeRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+        val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
+
+        for (cardType in ctx.projected.getTypes(ctx.blockerId)) {
+            if (ctx.projected.hasKeyword(ctx.attackerId, "PROTECTION_FROM_CARDTYPE_${cardType.uppercase()}")) {
+                return "$attackerName has protection from ${cardType.lowercase()}s and can't be blocked by $blockerName"
+            }
+        }
+        return null
+    }
+}
+
+/**
  * CanOnlyBlockCreaturesWith: Blocker can only block creatures matching a filter
  * (e.g. Realm of Koh's Spirit token: "can't block ... non-Spirit creatures").
  *
@@ -561,6 +579,7 @@ fun defaultBlockEvasionRules(
     ProtectionFromColorRule(),
     ProtectionFromSubtypeRule(),
     ProtectionFromSupertypeRule(),
+    ProtectionFromCardTypeRule(),
     ProtectionFromEachOpponentRule(),
     CanOnlyBlockCreaturesWithRule(predicateEvaluator),
     CantBlockCreaturesWithGreaterPowerRule(),

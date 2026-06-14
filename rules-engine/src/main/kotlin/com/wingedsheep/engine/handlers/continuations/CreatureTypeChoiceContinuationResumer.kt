@@ -18,8 +18,62 @@ class CreatureTypeChoiceContinuationResumer(
         resumer(ChooseOptionPipelineContinuation::class, ::resumeChooseOptionPipeline),
         resumer(NoteCreatureTypePipelineContinuation::class, ::resumeNoteCreatureType),
         resumer(BecomeCreatureTypeContinuation::class, ::resumeBecomeCreatureType),
+        resumer(ChooseCardTypeForProtectionContinuation::class, ::resumeChooseCardTypeForProtection),
         resumer(EachPlayerChoosesCreatureTypeContinuation::class, ::resumeEachPlayerChoosesCreatureType)
     )
+
+    /**
+     * Resume after the controller chose a card type for
+     * [com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenCardTypeEffect]
+     * (Pippin, Guard of the Citadel). Grants the target a floating
+     * `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword for the chosen duration.
+     */
+    fun resumeChooseCardTypeForProtection(
+        state: GameState,
+        continuation: ChooseCardTypeForProtectionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for card type selection")
+        }
+
+        val chosenType = continuation.cardTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid card type index: ${response.optionIndex}")
+
+        val targetId = continuation.targetId
+
+        // Target may have left the battlefield between pause and resume.
+        if (targetId !in state.getBattlefield()) {
+            return checkForMore(state, emptyList())
+        }
+
+        val targetName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "creature"
+
+        val context = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            opponentId = null
+        )
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantProtectionFromCardType(chosenType.uppercase()),
+            affectedEntities = setOf(targetId),
+            duration = continuation.duration,
+            context = context
+        )
+
+        val events = listOf(
+            KeywordGrantedEvent(
+                targetId = targetId,
+                targetName = targetName,
+                keyword = "Protection from ${chosenType.lowercase()}s",
+                sourceName = continuation.sourceName ?: "Unknown"
+            )
+        )
+
+        return checkForMore(newState, events)
+    }
 
     /**
      * Resume after player chose a generic option in a pipeline context.

@@ -213,6 +213,9 @@ class TargetValidator {
         // CANT_BE_ENCHANTED restriction (Guardian Beast). Only applies when the source is an Aura.
         val cantBeEnchantedError = checkCantBeEnchanted(state, target, sourceId)
         if (cantBeEnchantedError != null) return cantBeEnchantedError
+        // Check protection from card type, e.g. "protection from creatures" (Rule 702.16)
+        val protectionFromCardTypeError = checkProtectionFromCardType(state, target, sourceId)
+        if (protectionFromCardTypeError != null) return protectionFromCardTypeError
 
         // Check protection from color and creature subtype (Rule 702.16)
         return checkProtection(state, target, sourceColors, sourceSubtypes)
@@ -265,6 +268,32 @@ class TargetValidator {
             if (projected.hasKeyword(entityId, "PROTECTION_FROM_SUPERTYPE_${supertype.uppercase()}")) {
                 val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
                 return "$cardName has protection from ${supertype.lowercase()} permanents"
+            }
+        }
+        return null
+    }
+
+    /**
+     * Check if a target has protection from one of the source's card types
+     * (e.g. "protection from creatures"). Format: PROTECTION_FROM_CARDTYPE_<TYPE>.
+     */
+    private fun checkProtectionFromCardType(
+        state: GameState,
+        target: ChosenTarget,
+        sourceId: EntityId?
+    ): String? {
+        if (sourceId == null) return null
+        val entityId = when (target) {
+            is ChosenTarget.Permanent -> target.entityId
+            else -> return null
+        }
+        if (entityId !in state.getBattlefield()) return null
+
+        val projected = state.projectedState
+        for (cardType in projected.getTypes(sourceId)) {
+            if (projected.hasKeyword(entityId, "PROTECTION_FROM_CARDTYPE_${cardType.uppercase()}")) {
+                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+                return "$cardName has protection from ${cardType.lowercase()}s"
             }
         }
         return null

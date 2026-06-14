@@ -70,6 +70,42 @@ data class GrantProtectionFromChosenColorEffect(
 }
 
 /**
+ * Grant "protection from the card type of your choice" to a target (CR 702.16).
+ *
+ * The executor presents a [com.wingedsheep.sdk.scripting] choose-option decision over the
+ * meaningfully-protectable card types (Artifact, Creature, Enchantment, Instant, Land,
+ * Planeswalker, Sorcery, Battle) and, on response, grants a floating
+ * `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword for [duration]. This is the card-type analogue of
+ * [GrantProtectionFromChosenColorEffect] — used by Pippin, Guard of the Citadel.
+ *
+ * Unlike the chosen-color family this effect is self-contained (it owns its choice), because
+ * the card-type option set is fixed and shared, so there is no general "choose card type, then
+ * run X" combinator to compose under.
+ *
+ * @property target The creature to protect (defaults to the ability's first target).
+ * @property duration How long the protection lasts (defaults to end of turn).
+ */
+@SerialName("GrantProtectionFromChosenCardType")
+@Serializable
+data class GrantProtectionFromChosenCardTypeEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains protection from the card type of your choice")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    companion object {
+        /** Meaningfully-protectable card types presented as the fixed choice set (CR 205.2a). */
+        val PROTECTABLE_CARD_TYPES: List<String> = listOf(
+            "Artifact", "Creature", "Enchantment", "Instant",
+            "Land", "Planeswalker", "Sorcery", "Battle"
+        )
+    }
+}
+
+/**
  * Grant a **player** protection from [scope] (CR 702.16) for [duration].
  *
  * The player-level counterpart of the creature protection statics — used by

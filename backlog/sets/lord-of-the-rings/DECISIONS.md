@@ -607,3 +607,35 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GlorfindelDauntlessRescuerScenarioTest` — Temple of Mystery's ETB scry triggers the
   ability; choosing mode 2 grants +1/+1 (3/2→4/3) and the flag, and the opponent can't assign two
   blockers to attacking Glorfindel.
+
+### Pippin, Guard of the Citadel (Azorius) — Gap 8 extended: protection from a chosen card type
+
+- **Oracle:** "Vigilance, ward {1}. {T}: Another target creature you control gains protection from
+  the card type of your choice until end of turn."
+- **Engine gap (Gap 8, card-type variant):** the repo already had protection from color (floating)
+  and from subtype/supertype (static `ProtectionComponent`), but nothing granted protection from a
+  *card type*, and there was no resolution-time card-type choice. Added a self-contained
+  `Effects.GrantProtectionFromChosenCardType(target, duration)`: its executor presents a
+  `ChooseOptionDecision` over the fixed protectable card-type set (Artifact, Creature, Enchantment,
+  Instant, Land, Planeswalker, Sorcery, Battle) and pushes a `ChooseCardTypeForProtectionContinuation`;
+  the resumer grants a floating `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword (new
+  `SerializableModification`/`Modification.GrantProtectionFromCardType` → `EffectApplicator`). Chose a
+  dedicated self-contained effect rather than a "ChooseCardTypeThen" combinator because the option set
+  is fixed/shared, so there is no per-card variation to compose under (mirrors the chosen-color shape
+  in flow, not in needing a wrapper).
+- **Enforcement:** parallel CARDTYPE checks added at every site that already honored supertype/subtype
+  protection — `TargetValidator` (ability targeting), `StackResolver` (spell targeting, with a printed
+  card-type fallback for stack spells not in the projection), `DamageUtils` (damage prevention),
+  `CombatDamagePipeline` + `CombatDamageManager` (combat damage), and a new `ProtectionFromCardTypeRule`
+  in `BlockEvasionRules` (can't be blocked by). The source's card types come from
+  `ProjectedState.getTypes`.
+- **Intentionally skipped:** the "can't be enchanted or equipped by anything of that type" clause is
+  reminder text. No existing protection-attach legality check exists for color/subtype/supertype either
+  (the equip/aura attach executors don't consult protection), so adding one would be a new system out of
+  scope for this card — left unenforced to match the existing protection behavior.
+- **Card shape:** `keywords(Keyword.VIGILANCE)` + `keywordAbility(KeywordAbility.ward("{1}"))`;
+  activated ability `cost = Costs.Tap`, `target = Targets.OtherCreatureYouControl`,
+  `effect = Effects.GrantProtectionFromChosenCardType()`.
+- **Test:** `PippinGuardOfTheCitadelScenarioTest` — activating `{T}` on a Grizzly Bears and choosing
+  Creature grants `PROTECTION_FROM_CARDTYPE_CREATURE`, then (1) a Hill Giant's combat damage is
+  prevented when the Bears block it, and (2) the protected Bears can't be blocked by the Giant.
