@@ -196,12 +196,12 @@ check-card-printing CARD:
 # Start the game server (loads .env if present)
 [group: 'dev']
 server:
-    @if [ -f .env ]; then set -a && source .env && set +a; fi && ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
+    @if [ -f .env ]; then set -a && . ./.env && set +a; fi && ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
 
 # Start the game server with Onslaught set enabled
 [group: 'dev']
 server-ons:
-    @if [ -f .env ]; then set -a && source .env && set +a; fi && GAME_SETS_ONSLAUGHT_ENABLED=true ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
+    @if [ -f .env ]; then set -a && . ./.env && set +a; fi && GAME_SETS_ONSLAUGHT_ENABLED=true ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
 
 # Start the gym HTTP server on port 8081 (for RL / MCTS training loops)
 [group: 'dev']
