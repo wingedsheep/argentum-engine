@@ -1690,9 +1690,11 @@ sealed set for attack-time facts beyond the basics.
   `triggeringEntityId` is set to the blocked attacker in that case.
 - `becomesBlocked(filter?, binding?)` — factory. Replaces the old
   `CreatureYouControlBecomesBlocked` and `FilteredBecomesBlocked(filter)`.
-- `BlocksOrBecomesBlockedBy(filter)` — either direction, partner-filtered;
+- `BlocksOrBecomesBlockedBy(filter, binding = SELF)` — either direction, partner-filtered;
   sole consumer of `BlocksOrBecomesBlockedByEvent`. Prefer `blocks(attackerFilter=...)`
-  when only the blocking direction should fire.
+  when only the blocking direction should fire. `binding = ATTACHED` fires off the
+  equipped/enchanted creature's combat (Barrow-Blade — "Whenever equipped creature blocks
+  or becomes blocked by a creature, …"); the partner is the `TriggeringEntity`.
 - `AttacksAndIsntBlocked` — SELF. Fires once per attacker that reaches end of
   Declare Blockers with no creatures declared as blockers (CR 509.3g). Backed by
   `BecomesUnblockedEvent` matched against `BlockersDeclaredEvent`. Used for

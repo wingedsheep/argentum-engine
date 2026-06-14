@@ -323,6 +323,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DoubleFacedComponent::class)
         subclass(RoomComponent::class)
         subclass(CantBeCounteredComponent::class)
+        subclass(com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent::class)
         subclass(PutIntoGraveyardFromBattlefieldThisTurnMarker::class)
         subclass(EmblemSourceComponent::class)
         subclass(CommanderComponent::class)

@@ -74,8 +74,13 @@ class TriggerMatcher(
         controllerId: EntityId,
         state: GameState
     ): Boolean {
-        // ATTACHED triggers are handled by AttachmentTriggerDetector, not the main loop
-        if (binding == TriggerBinding.ATTACHED) return false
+        // ATTACHED triggers are generally handled by AttachmentTriggerDetector, not the main loop.
+        // Exception: BlocksOrBecomesBlockedByEvent ATTACHED is handled in the main loop, since it
+        // needs the full BlockersDeclaredEvent block map to find the equipped creature's combat
+        // partner (Barrow-Blade).
+        if (binding == TriggerBinding.ATTACHED &&
+            trigger !is EventPattern.BlocksOrBecomesBlockedByEvent
+        ) return false
 
         return when (trigger) {
             is EventPattern.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
@@ -169,13 +174,21 @@ class TriggerMatcher(
                 false
             }
             is EventPattern.BlocksOrBecomesBlockedByEvent -> {
-                // Basic match: it's a BlockersDeclaredEvent and the source is involved in combat
-                // Per-partner trigger creation happens in detectTriggersForEvent
+                // Basic match: it's a BlockersDeclaredEvent and the relevant creature is involved
+                // in combat. Per-partner trigger creation happens in detectTriggersForEvent.
+                // SELF: the source creature itself; ATTACHED: the source's equipped/enchanted
+                // creature (Barrow-Blade). Other bindings don't apply.
                 if (event !is BlockersDeclaredEvent) return false
-                if (binding != TriggerBinding.SELF) return false
-                // Source is a blocker or an attacker that's being blocked
-                event.blockers.keys.contains(sourceId) ||
-                    event.blockers.values.any { it.contains(sourceId) }
+                val combatCreatureId = when (binding) {
+                    TriggerBinding.SELF -> sourceId
+                    TriggerBinding.ATTACHED -> state.getEntity(sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                        ?.targetId ?: return false
+                    else -> return false
+                }
+                // The combat creature is a blocker or an attacker that's being blocked.
+                event.blockers.keys.contains(combatCreatureId) ||
+                    event.blockers.values.any { it.contains(combatCreatureId) }
             }
             is EventPattern.DealsDamageEvent -> {
                 // SELF-bound DealsDamageEvent handled separately in detectDamageSourceTriggers

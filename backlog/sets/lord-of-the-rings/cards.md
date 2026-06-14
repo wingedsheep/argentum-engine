@@ -279,7 +279,7 @@ starter-deck/special cards and basic lands.
 ### Artifact
 
 - [x] Andúril, Flame of the West
-- [ ] Barrow-Blade
+- [x] Barrow-Blade
 - [ ] Ent-Draught Basin
 - [ ] Glamdring
 - [x] Horn of Gondor

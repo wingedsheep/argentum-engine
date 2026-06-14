@@ -376,9 +376,12 @@ object Triggers {
      * TriggerContext.triggeringEntityId = the combat partner.
      * Sole consumer of [BlocksOrBecomesBlockedByEvent].
      */
-    fun BlocksOrBecomesBlockedBy(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+    fun BlocksOrBecomesBlockedBy(
+        filter: GameObjectFilter,
+        binding: TriggerBinding = TriggerBinding.SELF
+    ): TriggerSpec = TriggerSpec(
         event = BlocksOrBecomesBlockedByEvent(partnerFilter = filter),
-        binding = TriggerBinding.SELF
+        binding = binding
     )
 
     // -------------------------------------------------------------------------

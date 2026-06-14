@@ -154,8 +154,14 @@ class TriggerIndex(
          * Only includes categories for triggers handled in the main detectTriggersForEvent loop.
          */
         fun triggerToCategories(trigger: SdkGameEvent, binding: TriggerBinding): List<TriggerCategory> {
-            // ATTACHED triggers are handled by AttachmentTriggerDetector via aurasByTarget index
-            if (binding == TriggerBinding.ATTACHED) return emptyList()
+            // ATTACHED triggers are generally handled by AttachmentTriggerDetector via the
+            // aurasByTarget index. Exception: BlocksOrBecomesBlockedByEvent needs the full
+            // BlockersDeclaredEvent block map to compute the equipped creature's combat partner,
+            // so it stays indexed under BLOCKERS_DECLARED and is handled in the main
+            // detectTriggersForEvent loop (which resolves ATTACHED → the equipped creature).
+            if (binding == TriggerBinding.ATTACHED &&
+                trigger !is SdkGameEvent.BlocksOrBecomesBlockedByEvent
+            ) return emptyList()
 
             return when (trigger) {
                 is SdkGameEvent.ZoneChangeEvent -> listOf(TriggerCategory.ZONE_CHANGE)

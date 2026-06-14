@@ -897,23 +897,35 @@ class TriggerDetector(
                             }
                         }
                     }
-                    // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent with SELF binding),
-                    // check both blocking and being-blocked relationships and create one trigger per matching partner.
+                    // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent),
+                    // check both blocking and being-blocked relationships and create one trigger per
+                    // matching partner. Supports SELF binding (the creature itself) and ATTACHED
+                    // binding (an Equipment/Aura whose equipped/enchanted creature is in combat —
+                    // Barrow-Blade); for ATTACHED the combat relationships are read against the
+                    // attached creature, but the trigger's source stays the equipment.
                     else if (ability.trigger is EventPattern.BlocksOrBecomesBlockedByEvent &&
-                        ability.binding == TriggerBinding.SELF && event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
+                        (ability.binding == TriggerBinding.SELF || ability.binding == TriggerBinding.ATTACHED) &&
+                        event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
                         val trigger = ability.trigger as EventPattern.BlocksOrBecomesBlockedByEvent
+                        val combatCreatureId: EntityId? = if (ability.binding == TriggerBinding.ATTACHED) {
+                            state.getEntity(entityId)
+                                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                                ?.targetId
+                        } else entityId
                         val partners = mutableListOf<EntityId>()
 
-                        // Case 1: Source creature is a blocker — its combat partners are the attackers it blocks
-                        val blockedAttackerIds = event.blockers[entityId]
-                        if (blockedAttackerIds != null) {
-                            partners.addAll(blockedAttackerIds)
-                        }
+                        if (combatCreatureId != null) {
+                            // Case 1: combat creature is a blocker — partners are the attackers it blocks
+                            val blockedAttackerIds = event.blockers[combatCreatureId]
+                            if (blockedAttackerIds != null) {
+                                partners.addAll(blockedAttackerIds)
+                            }
 
-                        // Case 2: Source creature is an attacker — its combat partners are blockers blocking it
-                        for ((blockerId, attackerIds) in event.blockers) {
-                            if (attackerIds.contains(entityId)) {
-                                partners.add(blockerId)
+                            // Case 2: combat creature is an attacker — partners are blockers blocking it
+                            for ((blockerId, attackerIds) in event.blockers) {
+                                if (attackerIds.contains(combatCreatureId)) {
+                                    partners.add(blockerId)
+                                }
                             }
                         }
 

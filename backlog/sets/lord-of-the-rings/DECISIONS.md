@@ -518,3 +518,19 @@ Confirmed-OBSOLETE gaps this session: 11 (graveyard-activated), 13 (set base P/T
   targets). Effect: `DealDamage(targetPower(0), ContextTarget(1), damageSource = ContextTarget(0))`
   then `TheRingTemptsYou()`. The damage-source/dynamic-power infra (Gap 15) already existed.
 - **Test:** `BreakingOfTheFellowshipScenarioTest` — a 3/3 deals 3 to a 2/2 (dies), dealer survives.
+
+### Barrow-Blade (Artifact) — Gap 26 (composable + ATTACHED block trigger)
+
+- **Oracle:** "Equipped creature gets +1/+1. Whenever equipped creature blocks or becomes
+  blocked by a creature, that creature loses all abilities until end of turn. Equip {1}."
+- **Decision:** the `RemoveAllAbilities` effect and `BlocksOrBecomesBlockedBy` trigger both
+  already existed, but the trigger only supported `SELF` binding. Added `ATTACHED`-binding
+  support so an Equipment fires off its *equipped* creature's combat: gave the
+  `Triggers.BlocksOrBecomesBlockedBy` facade a `binding` param, and taught three engine sites
+  to resolve ATTACHED → the equipped creature — `TriggerIndex.triggerToCategories` (index it
+  under BLOCKERS_DECLARED instead of the attachment path), `TriggerMatcher.matchesTrigger`
+  (both the top-level ATTACHED guard and the `BlocksOrBecomesBlockedByEvent` branch read the
+  `AttachedToComponent` target), and `TriggerDetector`'s per-partner block loop. The partner
+  is the `TriggeringEntity`, so the card is just `RemoveAllAbilities(TriggeringEntity, EndOfTurn)`.
+- **Test:** `BarrowBladeScenarioTest` — equip, attack, opponent blocks with a Wind Drake; after
+  the trigger resolves the Drake has lost flying.
