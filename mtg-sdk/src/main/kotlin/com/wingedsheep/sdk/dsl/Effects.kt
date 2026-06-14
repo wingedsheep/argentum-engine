@@ -2219,6 +2219,17 @@ object Effects {
     fun ReturnSpellToOwnersHand(): Effect = ReturnSpellToOwnersHandEffect
 
     /**
+     * Return a single target — a spell on the stack **or** a permanent on the battlefield —
+     * to its owner's hand. The executor dispatches on what the resolved target actually is.
+     *
+     * Pair with `TargetSpellOrPermanent` for cards like Press the Enemy whose one target
+     * ("spell or nonland permanent") must go to hand regardless of which it is. Like
+     * [ReturnSpellToOwnersHand], bouncing a spell this way is not a counter.
+     */
+    fun ReturnSpellOrPermanentToOwnersHand(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect(target)
+
+    /**
      * Counter all spells and abilities your opponents control on the stack.
      * "Counter all spells your opponents control and all abilities your opponents control."
      *

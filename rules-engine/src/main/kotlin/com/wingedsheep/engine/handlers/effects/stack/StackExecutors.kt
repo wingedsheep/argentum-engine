@@ -33,6 +33,7 @@ class StackExecutors(
         MarkSpellExileWithCountersExecutor(),
         MarkSpellPlotOnResolveExecutor(),
         ReturnSpellToOwnersHandExecutor(),
+        ReturnSpellOrPermanentToOwnersHandExecutor(cardRegistry),
         DestroySourceOfTargetedAbilityExecutor()
     )
 }

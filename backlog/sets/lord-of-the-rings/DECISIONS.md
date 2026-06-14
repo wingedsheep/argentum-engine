@@ -796,3 +796,37 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GandalfTheGreyScenarioTest` — casting an instant triggers the modal; the damage mode hits
   the opponent (3 + Bolt 3 = 6); the damage mode is absent from a later trigger's options
   ("hasn't been chosen", 4 → 3 modes); the copy mode copies the Bolt still on the stack for +3.
+
+## Press the Enemy (Gap 10)
+
+- **Card:** `{2}{U}{U}` Instant. "Return target spell or nonland permanent an opponent controls to
+  its owner's hand. You may cast an instant or sorcery spell with equal or lesser mana value from
+  your hand without paying its mana cost."
+- **New SDK primitive — `Effects.ReturnSpellOrPermanentToOwnersHand(target)`**
+  (`ReturnSpellOrPermanentToOwnersHandEffect`, `@Serializable` data class in `StackEffects.kt`).
+  Bounces ONE target to its owner's hand, dispatching on what it resolves to: a **spell on the
+  stack** is removed from the stack to hand (does not resolve; not a counter, CR 701.27/701.5b) —
+  reusing the proven `ReturnSpellToOwnersHandExecutor` logic — and a **permanent** delegates to the
+  existing `MoveToZoneEffectExecutor(HAND)` so it shares all leave-the-battlefield cleanup. This is
+  the bounce counterpart to `PutOnLibraryPositionOfChoiceEffect` (Swat Away), which already handled
+  the dual spell/permanent case for library placement. Executor registered in `StackExecutors`.
+  Reusable for any "return target spell or nonland permanent to hand" card.
+- **Why a new effect and not `Effects.ReturnToHand`:** the stack is a separate `state.stack` list,
+  NOT part of `state.zones`, so `MoveToZoneEffectExecutor.findEntityZone` returns null for a spell
+  on the stack and `ReturnToHand` would error. The dual-dispatch executor handles both.
+- **Free cast composes existing pipeline atoms:** `StoreNumber("bouncedMv", EntityProperty(Target(0),
+  ManaValue))` captures the MV cap BEFORE the bounce (the object becomes untracked once it leaves) →
+  `ReturnSpellOrPermanentToOwnersHand` → `GatherCards(FromZone(HAND, You, InstantOrSorcery))` →
+  `FilterCollection(ManaValueAtMost(VariableReference("bouncedMv")))` →
+  `ConditionalOnCollection(ifNotEmpty = MayEffect(CastFromCollectionWithoutPayingCost))`. Same
+  free-cast shape as Breaching Dragonstorm. The `ConditionalOnCollection` gate means a too-expensive
+  spell never produces an empty "may cast" prompt.
+- **Target:** `TargetSpellOrPermanent(permanentFilter = NonlandPermanent.opponentControls())`.
+- **Glamdring (also Gap 10):** the same free-cast-from-hand-with-MV-cap composition (StoreNumber →
+  GatherCards(HAND, InstantOrSorcery) → FilterCollection(ManaValueAtMost) →
+  MayEffect(CastFromCollectionWithoutPayingCost)) is directly reusable for Glamdring's "cast an
+  instant or sorcery with MV <= that damage without paying its mana cost"; no new primitive needed
+  there (only the MV source differs — damage dealt vs. bounced object's MV).
+- **Test:** `PressTheEnemyScenarioTest` — (a) bounce an opponent's creature then free-cast a MV-1
+  sorcery (MV <= 3); (b) a MV-5 sorcery is NOT offered (no pending decision, stays in hand);
+  (c) bounce a spell on the stack so it returns to hand without resolving.

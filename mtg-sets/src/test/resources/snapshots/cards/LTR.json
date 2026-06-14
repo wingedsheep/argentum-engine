@@ -12674,6 +12674,93 @@
     ]
 }
 
+// Press the Enemy
+{
+    "name": "Press the Enemy",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target spell or nonland permanent an opponent controls to its owner's hand. You may cast an instant or sorcery spell with equal or lesser mana value from your hand without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "bouncedMv",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                {
+                    "type": "ReturnSpellOrPermanentToOwnersHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target spell or nonland permanent an opponent controls"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "handSpells"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "handSpells",
+                    "filter": {
+                        "type": "ManaValueAtMost",
+                        "max": {
+                            "type": "VariableReference",
+                            "variableName": "bouncedMv"
+                        }
+                    },
+                    "storeMatching": "castable"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "castable",
+                    "ifNotEmpty": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "castable"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "target spell or nonland permanent an opponent controls",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsNonland",
+                        "IsPermanent"
+                    ],
+                    "controllerPredicate": "ControlledByOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Valera Lutfullina",
+        "flavorText": "\"I showed the blade reforged to him. He is not so mighty yet that he is above fear.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfa5380a-480c-4c61-ac52-5debc49c5df9.jpg?1686968246"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Prince Imrahil the Fair
 {
     "name": "Prince Imrahil the Fair",

@@ -795,3 +795,27 @@ data class MarkSpellPlotOnResolveEffect(
 data object ReturnSpellToOwnersHandEffect : Effect {
     override val description: String = "Return target spell to its owner's hand"
 }
+
+/**
+ * Return a single [target] — which may be a **spell on the stack** or a **permanent on the
+ * battlefield** — to its owner's hand. This is the bounce counterpart to
+ * [com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect] (Swat Away),
+ * which already handles the dual spell/permanent case for library placement.
+ *
+ * The executor resolves [target] to a single entity and dispatches:
+ * - if the entity is a spell on the stack, it is removed from the stack and put into its
+ *   owner's hand (it does not resolve) — like [ReturnSpellToOwnersHandEffect], this is **not**
+ *   a counter (CR 701.27 / 701.5b), so "can't be countered" does not prevent it;
+ * - otherwise it is treated as a permanent and bounced to its owner's hand.
+ *
+ * Used by cards whose single "target spell or nonland permanent" must go to hand regardless of
+ * which it turns out to be (e.g. Press the Enemy). Pair with [TargetSpellOrPermanent].
+ * If the target is no longer in a valid zone at resolution, the effect does nothing.
+ */
+@SerialName("ReturnSpellOrPermanentToOwnersHand")
+@Serializable
+data class ReturnSpellOrPermanentToOwnersHandEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Return target spell or permanent to its owner's hand"
+}
