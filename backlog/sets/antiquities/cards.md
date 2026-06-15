@@ -2,7 +2,7 @@
 
 **Set Size:** 85 cards
 **Release Date:** March 4, 1994
-**Implemented:** 5 / 85
+**Implemented:** 6 / 85
 | Color       | Count |
 |-------------|-------|
 | White       | 7     |
@@ -74,7 +74,7 @@
 - [ ] Battering Ram
 - [ ] Bronze Tablet
 - [ ] Candelabra of Tawnos
-- [ ] Clay Statue
+- [x] Clay Statue
 - [ ] Clockwork Avian
 - [ ] Colossus of Sardia
 - [ ] Coral Helm
