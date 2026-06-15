@@ -44,7 +44,7 @@ the work; **confirm during implementation.**
 
 ---
 
-## ✅ List A — Implementable WITHOUT engine work (52 cards)
+## ✅ List A — Implementable WITHOUT engine work (48 cards)
 
 Compose from existing primitives. Items tagged **(verify)** are composable but non-trivial —
 confirm the noted clause during `add-card`; if it surprises you, move it to List B.
@@ -95,18 +95,9 @@ confirm the noted clause during `add-card`; if it surprises you, move it to List
   (**verify** life = target's mana value).
 - **Ashnod's Transmogrant** — `{T}, Sacrifice this`: +1/+1 counter on a nonartifact creature;
   it becomes an artifact in addition to its types (**verify** add-type effect).
-- **Battering Ram** — gains banding at begin combat; when blocked by a Wall, destroy that Wall
-  (banding keyword exists; **verify** grant-banding-EOT + blocked-by-Wall trigger).
-- **Clockwork Avian** — enters with four +1/+0 counters; sheds one at end of combat if it
-  fought; `{X},{T}` refill capped at four, only in upkeep (**verify** capped add + conditional removal).
 - **Feldon's Cane** — `{T}, Exile this`: shuffle your graveyard into your library (**verify** exile-self cost).
 - **Ivory Tower** — upkeep: gain life = cards in hand − 4 (dynamic, floor 0; **verify**).
-- **Mishra's War Machine** — banding; upkeep "3 damage to you unless you discard; if it dealt
-  damage, tap it" (**verify** pay-with-discard-else damage+tap).
 - **Rakalite** — `{2}`: prevent next 1 to any target; return to hand next end step (**verify** self-bounce at end step).
-- **Rocket Launcher** — `{2}`: 1 damage to any target; destroy at next end step; activate only
-  if controlled continuously since your most recent turn (**verify** the "controlled since"
-  activation restriction).
 - **Su-Chi** — dies → add `{C}{C}{C}{C}` (**verify** mana from a triggered ability).
 - **The Rack** — choose an opponent as it enters; that player's upkeep deals 3 − their hand
   size (`EntersWithChoice(OPPONENT)` + chosen-player upkeep trigger + dynamic damage; **verify**).
@@ -122,7 +113,7 @@ confirm the noted clause during `add-card`; if it surprises you, move it to List
 
 ---
 
-## 🔧 List B — NEEDS ENGINE WORK (30 cards), grouped by missing mechanic
+## 🔧 List B — NEEDS ENGINE WORK (34 cards), grouped by missing mechanic
 
 Each group is a candidate single feature PR. Confirm with `add-card` before building.
 
@@ -195,6 +186,20 @@ suppression, or untap-count restriction primitive exists.
   the only "(clean)" card that turned out to need engine work.)
 
 ### Reclassified from List A during implementation (confirmed engine gaps)
+- **Battering Ram** — needs a *"this creature becomes blocked by a [filter] creature"* trigger
+  (blocker-side filter). `BecomesBlockedEvent.filter` filters the attacker, not the blocker; the
+  only blocker-filtered trigger (`BlocksOrBecomesBlockedBy`) is strictly broader than "becomes
+  blocked by a Wall." (Grant-banding-until-EOC composes fine; the Wall trigger does not.)
+- **Clockwork Avian** — needs a **+1/+0 stat counter**. The layer system (`EffectApplicator`) only
+  maps +1/+1 and -1/-1 counters to P/T; a +1/+0 counter would be stored but never modify power, so
+  the card's core mechanic can't function (the ≤4 cap and attacked/blocked condition are moot until
+  that gap is closed).
+- **Mishra's War Machine** — needs an "if it dealt damage to you this way, [then] tap it" gate: a
+  conditional keyed on whether the sub-effect's damage was actually dealt (vs. prevented/replaced).
+  `IfYouDo`/`SuccessCriterion` has no "damage was dealt" criterion.
+- **Rocket Launcher** — needs an activation restriction "controlled continuously since the
+  beginning of your most recent turn" (artifact summoning-sickness). No `ActivationRestriction` /
+  `Condition` exposes it; `SourceEnteredThisTurn` is not equivalent (ignores control changes).
 - **Circle of Protection: Artifacts** — needs a "choose an **artifact** source, prevent its next
   damage" prevention filter. `PreventionSourceFilter` has `ChosenSource` / `ChosenColoredSource` /
   `ChosenCreatureType` but no `ChosenArtifactSource`; the executor only supports a `coloredOnly`
@@ -224,4 +229,4 @@ suppression, or untap-count restriction primitive exists.
   citing it — never a web source.
 - The "(verify)" tags in List A mark the cards most likely to surprise you into List B during
   `add-card`; everything else in List A should compose cleanly.
-- Counts: 3 done + 52 List A + 30 List B = 85.
+- Counts: 3 done + 48 List A + 34 List B = 85.
