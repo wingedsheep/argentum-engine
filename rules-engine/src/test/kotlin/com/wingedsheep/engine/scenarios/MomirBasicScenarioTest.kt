@@ -70,6 +70,7 @@ class MomirBasicScenarioTest : ScenarioTestBase() {
             action.hasXCost.shouldBeTrue()
             // {X} with 6 available mana ⇒ X up to 6 (1 mana per point of X).
             action.maxAffordableX shouldBe 6
+            action.availableManaSources.shouldNotBeNull() shouldHaveSize 6
         }
 
         test("activating with X=1 creates a token copy of a mana-value-1 creature") {
