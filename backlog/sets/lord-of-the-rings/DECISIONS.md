@@ -1239,3 +1239,25 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GollumSchemingGuideScenarioTest` — all three branches GREEN: right guess (land/land and
   nonland/nonland) → Gollum removed from combat, no draw, not unblockable; wrong guess (land/nonland) →
   controller draws one card and Gollum gains CANT_BE_BLOCKED for the turn while still attacking.
+
+## Grond, the Gatebreaker (LTR #89) — Gap 31, Vehicle + Crew (reused) + conditional artifact-creature
+- **Card:** {3}{B} Legendary Artifact — Vehicle, 5/5. Trample; "As long as it's your turn and you
+  control an Army, Grond is an artifact creature"; Crew 3.
+- **Finding:** Vehicle (artifact subtype, CR 301.7) and Crew (CR 702.122) already exist in the engine
+  (`Subtype.VEHICLE`, `Keyword.CREW`, `KeywordAbility.crew(n)`, `CrewVehicleHandler`,
+  `CrewEnumerator`). `CrewVehicleHandler` already animates a Vehicle to its printed P/T with its
+  printed keywords via a `BecomeCreatureEffect`, and summoning-sick creatures may crew (matches CR
+  702.122c). So **no new primitive was needed** — this was a pure authoring task.
+- **Conditional static:** "becomes an artifact creature while X" is the same shape as Synthesizer
+  Labship's "it's an artifact creature at 9+": `staticAbility { condition = …; ability =
+  GrantCardType("CREATURE", GroupFilter.source()) }` (Layer-4 type change; printed 5/5 applies once
+  it's a creature). Condition = `Conditions.All(Conditions.IsYourTurn, Conditions.YouControl(
+  GameObjectFilter.Creature.youControl().withSubtype("Army")))`. "An Army" = any Army-subtyped
+  creature you control (Armies are creatures from amass).
+- **Rule numbers verified** against `MagicCompRules_20260417.txt`: Vehicle subtype = **301.7** (the
+  task said 301.6 — that's actually Fortification); Crew = **702.122**.
+- **Touched:** only `GrondTheGatebreaker.kt` (card) + `GrondTheGatebreakerScenarioTest.kt` (test) +
+  SDK-reference Crew/Vehicle entry. No engine/SDK code changes; no new serializable components.
+- **Test:** `GrondTheGatebreakerScenarioTest` — Grond not a creature by default; Crew 3 (tap a 5/5)
+  → artifact creature with Trample that can attack; static animates it on your turn with an Army and
+  not with a non-Army creature.

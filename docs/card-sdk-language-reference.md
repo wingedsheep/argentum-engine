@@ -2788,10 +2788,18 @@ composite abilities).
   subsystem is involved. Example: `flurry { effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent), damageSource = EffectTarget.Self) }`.
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
-  tap N power worth to animate a Vehicle. Pass `onceEachTurn = true` for "Crew N. Activate only once each
-  turn." (Luxurious Locomotive): the crew enumerator + handler then refuse a second crew activation in the
-  same turn (counted via `CrewSaddleContributorsComponent.crewActivations`, reset at end of turn). Vanilla
-  Crew is uncapped. `onceEachTurn` is omitted from compiled JSON when false (`encodeDefaults = false`).
+  Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to
+  animate a **Vehicle** (artifact subtype, CR 301.7) — it becomes an artifact creature until end of turn at
+  its printed P/T and keywords (the engine `CrewVehicleHandler` resolves a `BecomeCreature`; surfaced as the
+  `CrewVehicle` legal action). Summoning-sick creatures may crew (CR 702.122c). Pass `onceEachTurn = true` for
+  "Crew N. Activate only once each turn." (Luxurious Locomotive): the crew enumerator + handler then refuse a
+  second crew activation in the same turn (counted via `CrewSaddleContributorsComponent.crewActivations`, reset
+  at end of turn). Vanilla Crew is uncapped. `onceEachTurn` is omitted from compiled JSON when false
+  (`encodeDefaults = false`). To make a Vehicle a creature **conditionally** instead of via crew (e.g. Grond,
+  the Gatebreaker — "As long as it's your turn and you control an Army, this is an artifact creature"), use a
+  `staticAbility { }` with `ability = GrantCardType("CREATURE", GroupFilter.source())` gated by a `condition`
+  (Layer 4 type change; printed P/T applies automatically). The same `GrantCardType("CREATURE", …)` pattern
+  covers Spacecraft "it's an artifact creature at N+" (see Synthesizer Labship).
 - `saddle(n)` (`KeywordAbility.saddle(n)`) — Saddle N (CR 702.171). A sorcery-speed activated
   ability whose cost is tapping any number of *other* untapped creatures you control with total
   power ≥ N; on resolution this permanent **becomes saddled** until end of turn. Reuses the same

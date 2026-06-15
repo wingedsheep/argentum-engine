@@ -8522,6 +8522,61 @@
     ]
 }
 
+// Grond, the Gatebreaker
+{
+    "name": "Grond, the Gatebreaker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Legendary Artifact — Vehicle",
+    "oracleText": "Trample\nAs long as it's your turn and you control an Army, Grond is an artifact creature.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "IsYourTurn",
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature Army ctrl:you"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Ramazan Kazaliev",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bc61b28-afdd-4de9-829b-ffe5ca7c7f19.jpg?1738052978"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gríma Wormtongue
 {
     "name": "Gríma Wormtongue",
