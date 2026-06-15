@@ -33,3 +33,21 @@ export function seatColor(seatIndex: number): SeatColor {
   const n = SEAT_COLORS.length
   return SEAT_COLORS[((seatIndex % n) + n) % n]!
 }
+
+/**
+ * Team identity colors for Two-Headed Giant (CR 810): two hues, one per team, so both
+ * teammates share a color and the table reads as "us vs them" rather than four individual
+ * seats. Warm amber vs cool teal — a strong, colorblind-safe (Okabe-Ito) contrast. Used by the
+ * rail, the life orbs, the board edge flash, and combat affordances whenever a team game is in
+ * progress; non-team games keep the six per-seat hues above.
+ */
+export const TEAM_COLORS: readonly SeatColor[] = [
+  { base: '#E69F00', bright: '#FFC846', soft: 'rgba(230, 159, 0, 0.22)' }, // team 0 — amber
+  { base: '#009E73', bright: '#2FD1A4', soft: 'rgba(0, 158, 115, 0.22)' }, // team 1 — teal
+]
+
+/** Color for a team index (wraps for safety; 2HG has exactly two teams). */
+export function teamColor(teamIndex: number): SeatColor {
+  const n = TEAM_COLORS.length
+  return TEAM_COLORS[((teamIndex % n) + n) % n]!
+}

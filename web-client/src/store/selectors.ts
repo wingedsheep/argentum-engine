@@ -9,7 +9,7 @@ import type {
   ZoneId,
 } from '@/types'
 import { ZoneType, zoneIdEquals, graveyard, library } from '@/types'
-import { seatColor, type SeatColor } from '@/styles/seatColors'
+import { seatColor, teamColor, type SeatColor } from '@/styles/seatColors'
 import {
   type GroupedCard,
   computeCardGroupKey,
@@ -273,6 +273,75 @@ export function useSeatIndex(playerId: EntityId | null): number {
 export function useSeatColor(playerId: EntityId | null): SeatColor {
   const seatIndex = useSeatIndex(playerId)
   return seatColor(Math.max(0, seatIndex))
+}
+
+// ── Two-Headed Giant team helpers (CR 810) ──────────────────────────────────
+// The seat → team map is stamped once from the game-start roster (boardViewSlice.teamByPlayerId).
+// It's empty in every non-team game, so each helper degrades to the per-seat behavior and the
+// 2-player / FFA UIs are untouched.
+
+const EMPTY_TEAM_MAP: Readonly<Record<EntityId, number>> = Object.freeze({})
+
+/** The seat → team-index map (empty in a non-team game). */
+export const selectTeamMap = (state: GameStore): Readonly<Record<EntityId, number>> =>
+  state.teamByPlayerId ?? EMPTY_TEAM_MAP
+
+/** True when a Two-Headed Giant team game is in progress (the team map has entries). */
+export const selectIsTeamGame = (state: GameStore): boolean =>
+  Object.keys(state.teamByPlayerId ?? {}).length > 0
+
+/** Hook form of [selectIsTeamGame]. */
+export function useIsTeamGame(): boolean {
+  return useGameStore(selectIsTeamGame)
+}
+
+/** Team index of a player, or null in a non-team game / unknown player. */
+export function useTeamIndex(playerId: EntityId | null): number | null {
+  return useGameStore((state) => (playerId ? state.teamByPlayerId?.[playerId] ?? null : null))
+}
+
+/**
+ * The viewing player's team index (null outside a team game). Drives the rail's
+ * "your team vs the enemy team" split and the ally treatment.
+ */
+export function useViewerTeamIndex(): number | null {
+  const viewerId = useGameStore(selectViewingPlayerId)
+  return useGameStore((state) => (viewerId ? state.teamByPlayerId?.[viewerId] ?? null : null))
+}
+
+/**
+ * Pure identity-color resolver: a player's team hue in a team game, else their per-seat hue.
+ * Used both by [useIdentityColor] and inline at call sites that already hold the team map.
+ */
+export function identitySeatColor(
+  teamMap: Readonly<Record<EntityId, number>>,
+  playerId: EntityId | null,
+  seatIndex: number,
+): SeatColor {
+  const t = playerId != null ? teamMap[playerId] : undefined
+  return t != null ? teamColor(t) : seatColor(Math.max(0, seatIndex))
+}
+
+/**
+ * The identity color to paint a player with: their team hue in a Two-Headed Giant game (both
+ * teammates share it), otherwise their stable per-seat hue. One call for chips, orbs, arrows.
+ */
+export function useIdentityColor(playerId: EntityId | null): SeatColor {
+  const seatIndex = useSeatIndex(playerId)
+  const teamMap = useGameStore(selectTeamMap)
+  return useMemo(() => identitySeatColor(teamMap, playerId, seatIndex), [teamMap, playerId, seatIndex])
+}
+
+/**
+ * True when `playerId` is the viewing player's teammate (same team, not self) in a team game —
+ * i.e. an ally whose board/hand you may see and whom you can't attack.
+ */
+export function useIsAlly(playerId: EntityId | null): boolean {
+  const viewerId = useGameStore(selectViewingPlayerId)
+  const teamMap = useGameStore(selectTeamMap)
+  if (!playerId || !viewerId || playerId === viewerId) return false
+  const vt = teamMap[viewerId]
+  return vt != null && teamMap[playerId] === vt
 }
 
 const EMPTY_ACTIONS: readonly LegalActionInfo[] = Object.freeze([])

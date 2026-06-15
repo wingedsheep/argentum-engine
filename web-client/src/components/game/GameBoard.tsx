@@ -1,8 +1,7 @@
 import { useMemo, useCallback, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { useInteraction } from '@/hooks/useInteraction'
-import { useViewingPlayer, useOpponent, useOpponents, useViewedOpponent, useSeatIndex, useStackCards, selectPriorityMode, useGhostCards, useBattlefieldCards } from '@/store/selectors'
-import { seatColor } from '@/styles/seatColors'
+import { useViewingPlayer, useOpponent, useOpponents, useViewedOpponent, useStackCards, selectPriorityMode, useGhostCards, useBattlefieldCards, selectTeamMap, useIdentityColor, useViewerTeamIndex, useIsAlly, identitySeatColor } from '@/store/selectors'
 import { useMultiplayerView } from '@/hooks/useMultiplayerView'
 import { OpponentRail } from './OpponentRail'
 import { hand, getNextStep, StepShortNames } from '@/types'
@@ -93,8 +92,12 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     0,
     stripOpponents.findIndex((o) => o.playerId === viewedOpponent?.playerId),
   )
-  const viewedSeatIndex = useSeatIndex(viewedOpponent?.playerId ?? null)
-  const viewedSeatColor = seatColor(Math.max(0, viewedSeatIndex))
+  // In a Two-Headed Giant game the orb/edge tints follow the *team* hue (both teammates share
+  // it); otherwise they keep the per-seat hue. The team map is empty in every non-team game.
+  const teamMap = useGameStore(selectTeamMap)
+  const viewerTeam = useViewerTeamIndex()
+  const viewedSeatColor = useIdentityColor(viewedOpponent?.playerId ?? null)
+  const isViewedOpponentAlly = useIsAlly(viewedOpponent?.playerId ?? null)
   const stripTouchX = useRef<number | null>(null)
 
   // Card counts per battlefield zone — used by useResponsive to decide when wrapping
@@ -205,8 +208,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   // The viewing player's own seat-identity color. In multiplayer "you" are tinted with the same
   // seat color everyone else sees for you (and that the rail's self chip uses), instead of the
   // fixed 2-player blue.
-  const selfSeatIndex = useSeatIndex(effectiveViewingPlayer?.playerId ?? null)
-  const selfSeatColor = seatColor(Math.max(0, selfSeatIndex))
+  const selfSeatColor = useIdentityColor(effectiveViewingPlayer?.playerId ?? null)
 
   if (!gameState || (!spectatorMode && (!playerId || !viewingPlayer))) {
     return null
@@ -489,18 +491,24 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 transition: 'transform 220ms cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
-              {stripOpponents.map((o) => (
-                <OpponentBoardArea
-                  key={o.playerId}
-                  opponent={o}
-                  layout="strip"
-                  topOffset={effectiveTopOffset}
-                  handReservation={oppHandReservation}
-                  spectatorMode={spectatorMode}
-                  isHijacking={hijackControlledOpponentId === o.playerId}
-                  hijackedSurfaceStyle={hijackedSurfaceStyle}
-                />
-              ))}
+              {stripOpponents.map((o) => {
+                // Two-Headed Giant: your teammate's board is an ally (face-up hand + marker).
+                const oIsAlly = viewerTeam != null && teamMap[o.playerId] === viewerTeam
+                return (
+                  <OpponentBoardArea
+                    key={o.playerId}
+                    opponent={o}
+                    layout="strip"
+                    topOffset={effectiveTopOffset}
+                    handReservation={oppHandReservation}
+                    spectatorMode={spectatorMode}
+                    isHijacking={hijackControlledOpponentId === o.playerId}
+                    hijackedSurfaceStyle={hijackedSurfaceStyle}
+                    isAlly={oIsAlly}
+                    {...(oIsAlly && viewerTeam != null ? { allyColor: selfSeatColor.base } : {})}
+                  />
+                )
+              })}
             </div>
             {/* Seat-colored edge flash on board arrival */}
             {viewedOpponent && (
@@ -571,6 +579,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 poisonCounters={effectiveOpponent.poisonCounters}
                 commanderDamage={effectiveOpponent.commanderDamage ?? []}
                 {...(isMulti ? { seatColor: viewedSeatColor.base } : {})}
+                {...(isViewedOpponentAlly ? { isAlly: true } : {})}
               />
               {!responsive.isMobile && <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />}
               {!responsive.isMobile && effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
@@ -901,7 +910,11 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       {!spectatorMode && isMulti && combatState?.mode === 'declareAttackers' &&
         combatState.selectedAttackers.some((id) => !combatState.attackerTargets[id]) && (() => {
           const unassignedCount = combatState.selectedAttackers.filter((id) => !combatState.attackerTargets[id]).length
-          const living = opponents.filter((o) => !o.hasLost)
+          // Only offer players the engine says are legal attack targets — in Two-Headed Giant
+          // that excludes your own teammate (you can't attack your own team).
+          const living = opponents.filter(
+            (o) => !o.hasLost && combatState.validAttackTargets.includes(o.playerId),
+          )
           return (
             <div style={{
               position: 'fixed',
@@ -927,7 +940,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               <div style={{ display: 'flex', gap: 6 }}>
                 {living.map((o) => {
                   const idx = gameState.players.findIndex((p) => p.playerId === o.playerId)
-                  const seat = seatColor(Math.max(0, idx))
+                  const seat = identitySeatColor(teamMap, o.playerId, idx)
                   return (
                     <button
                       key={o.playerId}

@@ -38,6 +38,13 @@ export interface BoardViewSliceState {
    * seat-switcher in multiplayer pods.
    */
   spectatorBottomSeatId: EntityId | null
+  /**
+   * Two-Headed Giant (CR 810) seat → team-index map, keyed by playerId. Empty in a non-team
+   * game. `teamIndex` only arrives once, in the `GameStarted` roster, so the client stamps this
+   * map at game start and reads it for the whole game (team-grouped rail, team colors, ally
+   * board, shared-life headers).
+   */
+  teamByPlayerId: Readonly<Record<EntityId, number>>
 }
 
 export interface BoardViewSliceActions {
@@ -55,6 +62,11 @@ export interface BoardViewSliceActions {
   followViewTo: (playerId: EntityId) => void
   /** Spectator/replay: anchor the bottom half to a seat (null = stream default). */
   setSpectatorBottomSeat: (playerId: EntityId | null) => void
+  /**
+   * Stamp the Two-Headed Giant seat → team map from the game-start roster. Pass an empty map for
+   * a non-team game (the default). Persists until the next reset.
+   */
+  setSeatTeams: (teamByPlayerId: Record<EntityId, number>) => void
   /** Reset on game start / leave. */
   resetBoardView: () => void
 }
@@ -66,6 +78,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   viewPinned: false,
   followAction: loadFollowAction(),
   spectatorBottomSeatId: null,
+  teamByPlayerId: {},
 
   viewOpponent: (playerId, opts) => {
     const { gameState, playerId: ownId } = get()
@@ -120,6 +133,8 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   setSpectatorBottomSeat: (playerId) =>
     set({ spectatorBottomSeatId: playerId, viewedOpponentId: null, viewPinned: false }),
 
+  setSeatTeams: (teamByPlayerId) => set({ teamByPlayerId }),
+
   resetBoardView: () =>
-    set({ viewedOpponentId: null, viewPinned: false, spectatorBottomSeatId: null }),
+    set({ viewedOpponentId: null, viewPinned: false, spectatorBottomSeatId: null, teamByPlayerId: {} }),
 })

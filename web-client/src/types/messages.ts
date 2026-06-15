@@ -125,6 +125,12 @@ export interface PlayerSeatInfo {
   readonly seatIndex: number
   readonly isYou: boolean
   readonly isAi: boolean
+  /**
+   * Two-Headed Giant (CR 810) team membership: seats sharing a `teamIndex` are teammates
+   * (shared life, shared turns, combined combat). Null/undefined in non-team games. Only sent
+   * in this game-start roster, so the client persists the seat→team map for the whole game.
+   */
+  readonly teamIndex?: number | null
 }
 
 /**
@@ -1151,7 +1157,7 @@ export interface LobbySettings {
   readonly attackMode: AttackMode
 }
 
-export type LobbyGameMode = 'TOURNAMENT' | 'FREE_FOR_ALL'
+export type LobbyGameMode = 'TOURNAMENT' | 'FREE_FOR_ALL' | 'TWO_HEADED_GIANT'
 
 /**
  * Free-for-All attack rule (CR 802/803): 'MULTIPLE' = attack any opponent; 'LEFT'/'RIGHT' =

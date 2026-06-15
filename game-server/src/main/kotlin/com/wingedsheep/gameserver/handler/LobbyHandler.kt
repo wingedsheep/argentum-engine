@@ -576,6 +576,8 @@ class LobbyHandler(
         val maxPlayers = when {
             format == TournamentFormat.WINSTON_DRAFT -> 2
             format == TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 4)
+            // Two-Headed Giant is always exactly four seats (two teams of two).
+            gameMode == LobbyGameMode.TWO_HEADED_GIANT -> 4
             // FFA pods cap at 6 — the multiplayer UI lays opponent boards out around the table.
             gameMode == LobbyGameMode.FREE_FOR_ALL -> message.maxPlayers.coerceIn(2, 6)
             else -> message.maxPlayers.coerceIn(2, 8)
@@ -1999,11 +2001,21 @@ class LobbyHandler(
                 return
             }
             if (newMode != lobby.gameMode) {
-                if (newMode == LobbyGameMode.FREE_FOR_ALL) {
+                if (newMode == LobbyGameMode.FREE_FOR_ALL || newMode == LobbyGameMode.TWO_HEADED_GIANT) {
                     if (lobby.players.keys.any { aiGameManager.isAiPlayer(it) }) {
-                        sender.sendError(session, ErrorCode.INVALID_ACTION, "Free-for-All doesn't support AI players yet — remove them first")
+                        val label = if (newMode == LobbyGameMode.TWO_HEADED_GIANT) "Two-Headed Giant" else "Free-for-All"
+                        sender.sendError(session, ErrorCode.INVALID_ACTION, "$label doesn't support AI players yet — remove them first")
                         return
                     }
+                }
+                if (newMode == LobbyGameMode.TWO_HEADED_GIANT) {
+                    // Two teams of two — always exactly four seats.
+                    if (lobby.playerCount > 4) {
+                        sender.sendError(session, ErrorCode.INVALID_ACTION, "Two-Headed Giant is exactly four players")
+                        return
+                    }
+                    lobby.maxPlayers = 4
+                } else if (newMode == LobbyGameMode.FREE_FOR_ALL) {
                     if (lobby.playerCount > 6) {
                         sender.sendError(session, ErrorCode.INVALID_ACTION, "Free-for-All supports at most 6 players")
                         return
@@ -2053,9 +2065,11 @@ class LobbyHandler(
         message.maxPlayers?.let {
             val oldMaxPlayers = lobby.maxPlayers
             val modeCap = if (lobby.isFreeForAll) 6 else 8
-            when (lobby.format) {
-                TournamentFormat.WINSTON_DRAFT -> lobby.maxPlayers = 2
-                TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 4)
+            when {
+                // Two-Headed Giant is locked at four seats — the host can't change it.
+                lobby.isTwoHeadedGiant -> lobby.maxPlayers = 4
+                lobby.format == TournamentFormat.WINSTON_DRAFT -> lobby.maxPlayers = 2
+                lobby.format == TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 4)
                 else -> lobby.maxPlayers = it.coerceIn(2, modeCap)
             }
             // Auto-adjust grid draft booster count when player count changes (always, since it's fixed)

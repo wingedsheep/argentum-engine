@@ -48,6 +48,8 @@ class FreeForAllHandler(
         if (!lobby.isFreeForAll) return false
         if (lobby.ffaGameSessionId != null) return false
         if (lobby.playerCount < 2) return false
+        // Two-Headed Giant needs a full pod — exactly four players for two teams of two (CR 810).
+        if (lobby.isTwoHeadedGiant && lobby.playerCount != 4) return false
         if (!lobby.allDecksSubmitted()) return false
 
         val playerStates = lobby.players.values.toList()
@@ -84,6 +86,15 @@ class FreeForAllHandler(
         }
         // CR 802 / 803 — the lobby's chosen attack rule applies to this multiplayer game.
         gameSession.attackMode = lobby.attackMode
+
+        // Two-Headed Giant (CR 810): run under the team format and assign the four seats to two
+        // teams of two. Team indices reference the add-player order below; GameInitializer seats
+        // teammates adjacently (CR 805.1). GameSession.teams flows into GameConfig.teams, which
+        // stamps a TeamComponent on each seat — the engine then shares life/turns/combat per team.
+        if (lobby.isTwoHeadedGiant) {
+            gameSession.engineFormat = com.wingedsheep.sdk.core.Format.TwoHeadedGiant()
+            gameSession.teams = listOf(listOf(0, 1), listOf(2, 3))
+        }
 
         for (playerState in playerStates) {
             val identity = playerState.identity

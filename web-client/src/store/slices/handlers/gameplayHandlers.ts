@@ -430,6 +430,15 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       set({ spectatingState: null })
       get().resetBoardView()
 
+      // Two-Headed Giant (CR 810): the seat → team map only arrives here, in the game-start
+      // roster. Stamp it now (after resetBoardView clears it) so the team-grouped rail, team
+      // colors, ally board, and shared-life headers can read it for the whole game.
+      const seatTeams: Record<string, number> = {}
+      for (const p of msg.players) {
+        if (p.teamIndex != null) seatTeams[p.playerId] = p.teamIndex
+      }
+      get().setSeatTeams(seatTeams)
+
       // Load persisted stop overrides and send to server
       try {
         const saved = localStorage.getItem('argentum-stop-overrides')

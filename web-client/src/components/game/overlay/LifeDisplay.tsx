@@ -18,6 +18,7 @@ export function LifeDisplay({
   poisonCounters = 0,
   commanderDamage,
   seatColor,
+  isAlly = false,
 }: {
   life: number
   isPlayer?: boolean
@@ -31,6 +32,11 @@ export function LifeDisplay({
    * name so the viewed opponent's orb visibly matches their rail chip.
    */
   seatColor?: string
+  /**
+   * Two-Headed Giant: this orb is the viewing player's teammate (shown in the opponent slot when
+   * their board is viewed). The role tag reads "Ally" so it never reads as an opponent.
+   */
+  isAlly?: boolean
 }) {
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
@@ -234,7 +240,7 @@ export function LifeDisplay({
             lineHeight: '12px',
           }}
         >
-          {isPlayer ? 'You' : 'Opponent'}
+          {isPlayer ? 'You' : isAlly ? 'Ally' : 'Opponent'}
         </span>
       )}
     </div>

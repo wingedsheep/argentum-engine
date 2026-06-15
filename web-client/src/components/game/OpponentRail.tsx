@@ -3,12 +3,15 @@ import type React from 'react'
 import { useGameStore } from '@/store/gameStore'
 import {
   selectGameState,
+  selectTeamMap,
   useOpponents,
   useViewedOpponent,
   useViewingPlayer,
-  useSeatIndex,
+  useIdentityColor,
+  useIsTeamGame,
+  useViewerTeamIndex,
 } from '@/store/selectors'
-import { seatColor } from '@/styles/seatColors'
+import { teamColor, type SeatColor } from '@/styles/seatColors'
 import type { ClientCard, ClientPlayer } from '@/types'
 import { useResponsiveContext } from './board/shared'
 
@@ -58,7 +61,23 @@ export function OpponentRail({
   const followAction = useGameStore((state) => state.followAction)
   const toggleFollowAction = useGameStore((state) => state.toggleFollowAction)
 
+  // Two-Headed Giant (CR 810): when a team game is in progress, the rail splits into two
+  // team sections — your team (you + ally) and the opposing team — colored by team with one
+  // shared-life header each. Spectators (no "you") keep the flat per-seat rail.
+  const isTeamGame = useIsTeamGame()
+  const teamMap = useGameStore(selectTeamMap)
+  const viewerTeam = useViewerTeamIndex()
+  const teamMode = isTeamGame && viewerTeam != null && !spectatorMode
+
   if (opponents.length <= 1) return null
+
+  const teammates = teamMode ? opponents.filter((o) => teamMap[o.playerId] === viewerTeam) : []
+  const enemies = teamMode ? opponents.filter((o) => teamMap[o.playerId] !== viewerTeam) : opponents
+  const enemyTeam = viewerTeam === 0 ? 1 : 0
+  // Shared life is the same on every living member of a team (the engine pools it), so read it
+  // from the first living member — or any member if the whole team is gone (game's already over).
+  const yourTeamLife = self?.life ?? 0
+  const enemyTeamLife = (enemies.find((e) => !e.hasLost) ?? enemies[0])?.life ?? 0
 
   // Vertical column in the top-left corner, tucked under the fullscreen button (top: 8/12,
   // ~36px tall). A column reads as a clear turn-order list and leaves the board its full height.
@@ -109,19 +128,52 @@ export function OpponentRail({
           50% { transform: translateX(2px); opacity: 1; }
         }
       `}</style>
-      {/* "You" chip first, so the full turn order — and whose turn it is — reads left to
-          right across the rail. Informational only: your board is always at the bottom, and
-          your life/targeting anchor stays on the center-HUD orb. Hidden when spectating. */}
-      {!spectatorMode && self && <SelfRailChip self={self} />}
-      {opponents.map((opponent) => (
-        <RailChip
-          key={opponent.playerId}
-          opponent={opponent}
-          isViewed={viewedOpponent?.playerId === opponent.playerId}
-          viewPinned={viewPinned}
-          spectatorMode={spectatorMode}
-        />
-      ))}
+      {teamMode ? (
+        <>
+          {/* Your team: shared-life header, then your "you" chip + your ally chip(s). */}
+          <TeamRailSection label="Your Team" color={teamColor(viewerTeam!)} life={yourTeamLife}>
+            {self && <SelfRailChip self={self} />}
+            {teammates.map((opponent) => (
+              <RailChip
+                key={opponent.playerId}
+                opponent={opponent}
+                isViewed={viewedOpponent?.playerId === opponent.playerId}
+                viewPinned={viewPinned}
+                spectatorMode={spectatorMode}
+                isAlly
+              />
+            ))}
+          </TeamRailSection>
+          {/* Opposing team: their shared life, then their seats. */}
+          <TeamRailSection label="Opponents" color={teamColor(enemyTeam)} life={enemyTeamLife}>
+            {enemies.map((opponent) => (
+              <RailChip
+                key={opponent.playerId}
+                opponent={opponent}
+                isViewed={viewedOpponent?.playerId === opponent.playerId}
+                viewPinned={viewPinned}
+                spectatorMode={spectatorMode}
+              />
+            ))}
+          </TeamRailSection>
+        </>
+      ) : (
+        <>
+          {/* "You" chip first, so the full turn order — and whose turn it is — reads left to
+              right across the rail. Informational only: your board is always at the bottom, and
+              your life/targeting anchor stays on the center-HUD orb. Hidden when spectating. */}
+          {!spectatorMode && self && <SelfRailChip self={self} />}
+          {opponents.map((opponent) => (
+            <RailChip
+              key={opponent.playerId}
+              opponent={opponent}
+              isViewed={viewedOpponent?.playerId === opponent.playerId}
+              viewPinned={viewPinned}
+              spectatorMode={spectatorMode}
+            />
+          ))}
+        </>
+      )}
       {!spectatorMode && (
         <>
           {/* Divider — the Follow control is a camera *setting*, not a player, so set it apart
@@ -169,6 +221,76 @@ export function OpponentRail({
 }
 
 /**
+ * A Two-Headed Giant team grouping in the rail (CR 810): a team-colored banner carrying the
+ * label and the team's single shared life total, above that team's member chips. This is where
+ * the "one life total per team" reads — the member chips drop their own (identical) life number.
+ */
+function TeamRailSection({
+  label,
+  color,
+  life,
+  children,
+}: {
+  label: string
+  color: SeatColor
+  life: number
+  children: React.ReactNode
+}) {
+  const lifeDanger = life <= 5
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, pointerEvents: 'none' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '2px 10px',
+          borderRadius: 6,
+          border: `1px solid ${color.base}`,
+          borderLeft: `4px solid ${color.base}`,
+          background: `linear-gradient(90deg, ${color.soft}, rgba(10, 12, 20, 0.55))`,
+          color: color.bright,
+          userSelect: 'none',
+        }}
+      >
+        <span
+          style={{
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {label}
+        </span>
+        <span
+          title="Shared team life"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            flexShrink: 0,
+            fontSize: 14,
+            fontWeight: 800,
+            fontVariantNumeric: 'tabular-nums',
+            color: lifeDanger ? '#ff5555' : '#ffffff',
+          }}
+        >
+          <span aria-hidden style={{ color: '#ff6b6b', fontSize: 12 }}>❤</span>
+          {life}
+        </span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/**
  * The viewing player's own chip in the rail — the multiplayer overview's "you" entry, so the
  * whole table (and whose turn it is) is visible in one strip. Deliberately a slim, informational
  * subset of [RailChip]: seat color, name, life, hand, poison, plus the active-turn ring and
@@ -181,8 +303,10 @@ function SelfRailChip({ self }: { self: ClientPlayer }) {
   const opponentDecisionStatus = useGameStore((state) => state.opponentDecisionStatus)
 
   const playerId = self.playerId
-  const seatIndex = useSeatIndex(playerId)
-  const seat = seatColor(Math.max(0, seatIndex))
+  const seat = useIdentityColor(playerId)
+  // In a team game the shared life lives in the team header above, so the chip drops its own
+  // (identical) life number; it keeps hand/poison/turn/priority signals.
+  const teamMode = useIsTeamGame()
 
   const isActiveTurn = gameState?.activePlayerId === playerId && !self.hasLost
   const hasPriority = gameState?.priorityPlayerId === playerId && !self.hasLost
@@ -284,24 +408,26 @@ function SelfRailChip({ self }: { self: ClientPlayer }) {
           </span>
         )}
 
-        {/* Life */}
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 3,
-            flexShrink: 0,
-            marginLeft: compact ? 'auto' : 0,
-            fontSize: sz.life,
-            fontWeight: 800,
-            fontVariantNumeric: 'tabular-nums',
-            color: tomb ? '#555' : lifeDanger ? '#ff5555' : '#ffffff',
-            textDecoration: tomb ? 'line-through' : 'none',
-          }}
-        >
-          <span aria-hidden style={{ color: tomb ? '#555' : '#ff6b6b', fontSize: sz.heart }}>❤</span>
-          {self.life}
-        </span>
+        {/* Life — hidden in team mode (the team header carries the shared total). */}
+        {!teamMode && (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3,
+              flexShrink: 0,
+              marginLeft: compact ? 'auto' : 0,
+              fontSize: sz.life,
+              fontWeight: 800,
+              fontVariantNumeric: 'tabular-nums',
+              color: tomb ? '#555' : lifeDanger ? '#ff5555' : '#ffffff',
+              textDecoration: tomb ? 'line-through' : 'none',
+            }}
+          >
+            <span aria-hidden style={{ color: tomb ? '#555' : '#ff6b6b', fontSize: sz.heart }}>❤</span>
+            {self.life}
+          </span>
+        )}
 
         {/* Hand count */}
         {!tomb && (
@@ -311,6 +437,9 @@ function SelfRailChip({ self }: { self: ClientPlayer }) {
               alignItems: 'center',
               gap: 3,
               flexShrink: 0,
+              // On phones the life number normally provides the right-push; with it hidden in
+              // team mode the hand count takes over the auto margin.
+              marginLeft: compact && teamMode ? 'auto' : 0,
               fontSize: sz.hand,
               fontWeight: 700,
               fontVariantNumeric: 'tabular-nums',
@@ -389,11 +518,14 @@ function RailChip({
   isViewed,
   viewPinned,
   spectatorMode,
+  isAlly = false,
 }: {
   opponent: ClientPlayer
   isViewed: boolean
   viewPinned: boolean
   spectatorMode: boolean
+  /** Two-Headed Giant: this seat is the viewing player's teammate (ally treatment, no own life). */
+  isAlly?: boolean
 }) {
   const responsive = useResponsiveContext()
   const gameState = useGameStore(selectGameState)
@@ -421,8 +553,9 @@ function RailChip({
   const opponentDecisionStatus = useGameStore((state) => state.opponentDecisionStatus)
 
   const playerId = opponent.playerId
-  const seatIndex = useSeatIndex(playerId)
-  const seat = seatColor(Math.max(0, seatIndex))
+  const seat = useIdentityColor(playerId)
+  // Team game: the shared life is in the team header, so the chip drops its own life number.
+  const teamMode = useIsTeamGame()
 
   const isActiveTurn = gameState?.activePlayerId === playerId && !opponent.hasLost
   const hasPriority = gameState?.priorityPlayerId === playerId && !opponent.hasLost
@@ -682,46 +815,53 @@ function RailChip({
         </span>
 
         {/* Name (hidden on phones — the seat dot + position carries identity). Flexes to fill
-            the fixed chip width and truncates, so every chip is the same size. */}
+            the fixed chip width and truncates, so every chip is the same size. An ally (your
+            2HG teammate) gets an "ALLY" tag so it never reads as an opponent. */}
         {!compact && (
-          <span
-            style={{
-              flex: 1,
-              minWidth: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontSize: sz.name,
-              fontWeight: 700,
-              letterSpacing: '0.02em',
-              color: tomb ? '#666' : seat.bright,
-            }}
-          >
-            {opponent.name}
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 5, overflow: 'hidden' }}>
+            <span
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                fontSize: sz.name,
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                color: tomb ? '#666' : seat.bright,
+              }}
+            >
+              {opponent.name}
+            </span>
+            {isAlly && !tomb && (
+              <span aria-hidden title="Your teammate" style={{ fontSize: 9, opacity: 0.85, fontWeight: 700, flexShrink: 0, color: seat.bright }}>ALLY</span>
+            )}
             {isViewed && viewPinned && !spectatorMode && (
-              <span aria-hidden title="Pinned — follow-the-action paused" style={{ marginLeft: 4 }}>📌</span>
+              <span aria-hidden title="Pinned — follow-the-action paused" style={{ flexShrink: 0 }}>📌</span>
             )}
           </span>
         )}
 
-        {/* Life — also the anchor for floating ±life deltas (data-life-display) */}
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 3,
-            flexShrink: 0,
-            marginLeft: compact ? 'auto' : 0,
-            fontSize: sz.life,
-            fontWeight: 800,
-            fontVariantNumeric: 'tabular-nums',
-            color: tomb ? '#555' : lifeDanger ? '#ff5555' : '#ffffff',
-            textDecoration: tomb ? 'line-through' : 'none',
-          }}
-        >
-          <span aria-hidden style={{ color: tomb ? '#555' : '#ff6b6b', fontSize: sz.heart }}>❤</span>
-          {opponent.life}
-        </span>
+        {/* Life — hidden in team mode (the team header carries the shared total). The floating
+            ±life delta anchor is the chip div itself (data-life-display), not this span. */}
+        {!teamMode && (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3,
+              flexShrink: 0,
+              marginLeft: compact ? 'auto' : 0,
+              fontSize: sz.life,
+              fontWeight: 800,
+              fontVariantNumeric: 'tabular-nums',
+              color: tomb ? '#555' : lifeDanger ? '#ff5555' : '#ffffff',
+              textDecoration: tomb ? 'line-through' : 'none',
+            }}
+          >
+            <span aria-hidden style={{ color: tomb ? '#555' : '#ff6b6b', fontSize: sz.heart }}>❤</span>
+            {opponent.life}
+          </span>
+        )}
 
         {/* Hand count */}
         {!tomb && (
@@ -731,6 +871,9 @@ function RailChip({
               alignItems: 'center',
               gap: 3,
               flexShrink: 0,
+              // On phones the life number normally provides the right-push; with it hidden in
+              // team mode the hand count takes over the auto margin.
+              marginLeft: compact && teamMode ? 'auto' : 0,
               fontSize: sz.hand,
               fontWeight: 700,
               fontVariantNumeric: 'tabular-nums',

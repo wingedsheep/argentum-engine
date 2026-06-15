@@ -931,11 +931,13 @@ export type GameStore = {
   viewPinned: boolean
   followAction: boolean
   spectatorBottomSeatId: EntityId | null
+  teamByPlayerId: Readonly<Record<EntityId, number>>
   viewOpponent: (playerId: EntityId, opts?: { pin?: boolean }) => void
   unpinView: () => void
   toggleFollowAction: () => void
   followViewTo: (playerId: EntityId) => void
   setSpectatorBottomSeat: (playerId: EntityId | null) => void
+  setSeatTeams: (teamByPlayerId: Record<EntityId, number>) => void
   resetBoardView: () => void
 
   // UI slice

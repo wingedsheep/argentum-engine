@@ -30,6 +30,8 @@ export function OpponentBoardArea({
   spectatorMode,
   isHijacking,
   hijackedSurfaceStyle,
+  isAlly = false,
+  allyColor,
 }: {
   opponent: ClientPlayer
   layout: 'grid' | 'strip'
@@ -40,6 +42,14 @@ export function OpponentBoardArea({
   /** This opponent's seat is currently driven by this client (Mindslaver / hotseat). */
   isHijacking: boolean
   hijackedSurfaceStyle?: React.CSSProperties
+  /**
+   * Two-Headed Giant (CR 810): this board belongs to your teammate. You may see their hand
+   * (CR 810.5b), so it renders face-up, and the cell gets an "ALLY" marker so it never reads as
+   * an enemy board. You still can't act with their cards — only its controller plays from it.
+   */
+  isAlly?: boolean
+  /** Team color for the ally marker (the viewing player's team hue). */
+  allyColor?: string
 }) {
   const revealedTopCard = useRevealedLibraryTopCard(opponent.playerId)
   const ghostCards = useMemo(
@@ -65,7 +75,7 @@ export function OpponentBoardArea({
     >
       <CardRow
         zoneId={hand(opponent.playerId)}
-        faceDown={!isHijacking}
+        faceDown={!isHijacking && !isAlly}
         small
         inverted
         interactive={isHijacking}
@@ -125,6 +135,7 @@ export function OpponentBoardArea({
   return (
     <div
       data-opponent-board={opponent.playerId}
+      data-ally={isAlly || undefined}
       style={{
         flex: '0 0 100%',
         minWidth: '100%',
@@ -135,6 +146,36 @@ export function OpponentBoardArea({
         overflow: 'hidden',
       }}
     >
+      {/* Two-Headed Giant ally marker — a team-colored corner badge so a teammate's board (with
+          its face-up hand) is never mistaken for an opponent's. */}
+      {isAlly && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: topOffset + 4,
+            left: 10,
+            zIndex: 55,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '2px 9px',
+            borderRadius: 999,
+            border: `1px solid ${allyColor ?? '#2FD1A4'}`,
+            background: 'rgba(8, 12, 18, 0.82)',
+            color: allyColor ?? '#2FD1A4',
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        >
+          <span aria-hidden style={{ width: 7, height: 7, borderRadius: '50%', background: allyColor ?? '#2FD1A4' }} />
+          Ally · {opponent.name}
+        </div>
+      )}
       {handBlock}
       {/* Reservation band mirrors grid row 1 so the board area below aligns
           exactly with the 2-player opponent area (grid row 2). */}

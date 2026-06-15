@@ -63,7 +63,16 @@ enum class LobbyGameMode {
      * starts. Standings are the elimination order; readying up afterwards starts a new game with
      * the same pod ("play again").
      */
-    FREE_FOR_ALL;
+    FREE_FOR_ALL,
+
+    /**
+     * One Two-Headed Giant game (CR 810): exactly four lobby players in two teams of two. Shares
+     * the Free-for-All single-pod lifecycle (one [com.wingedsheep.gameserver.session.GameSession],
+     * play-again, standings) but stamps team assignment (seats [0,1] vs [2,3]) and the
+     * [com.wingedsheep.sdk.core.Format.TwoHeadedGiant] format at game start. Built from the same
+     * sealed/draft pool-building as any other mode.
+     */
+    TWO_HEADED_GIANT;
 }
 
 /**
@@ -291,7 +300,16 @@ class TournamentLobby(
     var attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
 ) {
 
-    val isFreeForAll: Boolean get() = gameMode == LobbyGameMode.FREE_FOR_ALL
+    /**
+     * True for a single-pod multiplayer game — Free-for-All *or* Two-Headed Giant. Both seat every
+     * lobby player in one [com.wingedsheep.gameserver.session.GameSession] and share the same pod
+     * lifecycle (game start, play-again, standings, reconnection, leave-conceding), so the routing
+     * branches keyed on this flag cover both. Use [isTwoHeadedGiant] for the team-specific bits.
+     */
+    val isFreeForAll: Boolean get() = gameMode == LobbyGameMode.FREE_FOR_ALL || gameMode == LobbyGameMode.TWO_HEADED_GIANT
+
+    /** True only for a Two-Headed Giant pod (CR 810): four seats, two teams, shared life/turns/combat. */
+    val isTwoHeadedGiant: Boolean get() = gameMode == LobbyGameMode.TWO_HEADED_GIANT
 
     // =========================================================================
     // Free-for-All mode state (unused in TOURNAMENT mode)

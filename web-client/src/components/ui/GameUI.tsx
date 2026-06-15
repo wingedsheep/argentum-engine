@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore, type LobbyState, type TournamentState, type FfaState } from '@/store/gameStore.ts'
 import type { SealedCardInfo, TournamentFormat } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { teamColor } from '@/styles/seatColors'
 import { ManaCost } from './ManaSymbols'
 import { SetIcon } from './SetIcon'
 import { randomBackground } from '@/utils/background.ts'
@@ -766,6 +767,9 @@ function LobbyOverlay({
   const isAnyCommander = isCommanderDraft || isCommanderSealed
   const isPremade = format === 'PREMADE_DECKS'
   const isFfa = lobbyState.settings.gameMode === 'FREE_FOR_ALL'
+  // Two-Headed Giant (CR 810): the pod mode that runs two teams of two off the same draft/sealed
+  // build. Exactly four players; combat/attack rules are fixed (no per-creature attack picker).
+  const is2hg = lobbyState.settings.gameMode === 'TWO_HEADED_GIANT'
   // "Draft-shape" — anything that hands packs around at pick time. Commander Draft fits the
   // shape (same per-pick UI / timer / pack-passing) so it inherits Draft-only settings.
   const isAnyDraft = isDraft || isWinston || isGridDraft || isCommanderDraft
@@ -781,6 +785,7 @@ function LobbyOverlay({
   const playerCheck = isWinston ? playerCount === 2
     : isGridDraft ? playerCount >= 2 && playerCount <= 4
     : isAnyCommander ? playerCount === 2
+    : is2hg ? playerCount === 4
     : playerCount >= 2
   // Premade format: no boosters generated, so set selection is optional. We do require every
   // connected player to have submitted a deck before the host can start.
@@ -832,7 +837,7 @@ function LobbyOverlay({
           </div>
           <h1 className={styles.lobbyTitle}>
             {isPremade
-              ? (isFfa ? 'Premade Decks Free-for-All' : 'Premade Decks Tournament')
+              ? (is2hg ? 'Premade Decks Two-Headed Giant' : isFfa ? 'Premade Decks Free-for-All' : 'Premade Decks Tournament')
               : (lobbyState.settings.setNames.join(' + ') || 'Lobby')}
           </h1>
           <p className={styles.lobbySubtitle}>
@@ -853,8 +858,9 @@ function LobbyOverlay({
               if (isPremade) return 'Premade Decks · bring your own ≥40-card deck'
               return distText ?? `${lobbyState.settings.boosterCount} boosters per player`
             })()}
-            {!isFfa && (lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
+            {!isFfa && !is2hg && (lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
             {isFfa && ' · Free-for-All'}
+            {is2hg && ' · Two-Headed Giant'}
           </p>
         </div>
 
@@ -912,7 +918,7 @@ function LobbyOverlay({
                 <div className={styles.settingsButtons}>
                   <button
                     onClick={() => updateLobbySettings({ gameMode: 'TOURNAMENT' })}
-                    className={`${styles.settingsButton} ${!isFfa ? styles.settingsButtonActive : ''}`}
+                    className={`${styles.settingsButton} ${!isFfa && !is2hg ? styles.settingsButtonActive : ''}`}
                     title="Round-robin bracket of 1v1 matches"
                   >
                     Tournament
@@ -925,10 +931,24 @@ function LobbyOverlay({
                   >
                     Free-for-All
                   </button>
+                  <button
+                    onClick={() => playerCount <= 4 && updateLobbySettings({ gameMode: 'TWO_HEADED_GIANT' })}
+                    disabled={playerCount > 4}
+                    className={`${styles.settingsButton} ${is2hg ? styles.settingsButtonActive : ''}`}
+                    title="2v2 teams — draft or seal, then play one team game (exactly 4 players)"
+                  >
+                    Two-Headed Giant
+                  </button>
                 </div>
                 {isFfa && (
                   <div className={styles.variantCaption}>
                     One game, everyone at the same table (2-6 players). Last player standing wins.
+                  </div>
+                )}
+                {is2hg && (
+                  <div className={styles.variantCaption}>
+                    Four players in two teams of two (seats 1+2 vs 3+4). Each team shares one 30-life
+                    total, takes turns together, and attacks and blocks as one. Last team standing wins.
                   </div>
                 )}
               </div>
@@ -1414,6 +1434,28 @@ function LobbyOverlay({
                 <span className={styles.playerName}>
                   {player.playerName}
                 </span>
+                {/* Two-Headed Giant team chip — seats fill the two teams in join order (1+2, 3+4). */}
+                {is2hg && (() => {
+                  const team = Math.floor(i / 2)
+                  const c = teamColor(team)
+                  return (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 800,
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                        color: c.bright,
+                        border: `1px solid ${c.base}`,
+                        background: c.soft,
+                        borderRadius: 4,
+                        padding: '1px 6px',
+                      }}
+                    >
+                      Team {team + 1}
+                    </span>
+                  )
+                })()}
                 {player.isHost && (
                   <span className={styles.hostBadge}>Host</span>
                 )}
