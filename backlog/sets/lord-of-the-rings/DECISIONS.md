@@ -1425,3 +1425,24 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `OneRingToRuleThemAllScenarioTest` — I: designate a power-3 Ring-bearer, both players mill
   exactly 3. II: nonlegendary creature destroyed, legendary survives. III: opponent with 2 creature
   cards (+ 1 noncreature) in graveyard loses exactly 2 life; controller unaffected.
+
+## Sauron's Ransom ({1}{U}{B} Instant)
+
+- **Pile split = reuse, not new SDK.** "Choose an opponent. They look at the top four cards of your
+  library and separate them into a face-down pile and a face-up pile. Put one pile into your hand and
+  the other into your graveyard." is a Fact-or-Fiction variant (CR 700.3 "divvy"). Implemented as
+  `Patterns.Library.factOrFiction(count = 4).then(Effects.TheRingTemptsYou())` — the existing shared
+  pile-split primitive (`GatherCards → SelectFromCollection[Opponent] → ChoosePile[Controller] →
+  MoveCollection×2`), parameterized to 4 cards. No new effect type was created.
+- **Choose an opponent:** handled implicitly by `Chooser.Opponent` on the split step; in a two-player
+  game the lone opponent is the splitter automatically (matches Fact or Fiction).
+- **Face-down / face-up nuance:** information-visibility only — the splitter sees both piles either
+  way, and the controller then picks where each pile goes. The mechanically load-bearing part (split,
+  choose, hand/graveyard routing) is faithful; we did not model per-pile hidden-info to the controller
+  since `ChoosePileEffect` has no hidden-pile mode and the task scoped that as a nuance.
+- **Rule numbers:** divvy/piles CR 700.3 (verified in `MagicCompRules_20260417.txt`).
+- **Touched:** `SauronsRansom.kt` (card), SDK reference (factOrFiction entry), backlog,
+  `SauronsRansomScenarioTest.kt`. No engine/SDK source changed (pure reuse).
+- **Test:** `SauronsRansomScenarioTest` — opponent splits top four (c4,c3 / c2,c1), controller routes
+  Pile 1 to hand and Pile 2 to graveyard, then designates a Ring-bearer; asserts zones, hand/graveyard
+  counts, and `TheRingComponent.temptCount == 1`.

@@ -1045,7 +1045,10 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 
 - `revealUntilNonlandDealDamage(target)` — Bonecrusher Giant shape.
 - `wheelEffect(players)` — each player shuffles hand into library, draws that many.
-- `factOrFiction(...)` — reveal 5, opponent splits into two piles, you choose one.
+- `factOrFiction(count = 5, keepZone, otherZone, ...)` — reveal/look at the top `count`, an
+  opponent splits them into two piles, then you choose which pile goes to `keepZone` (hand) and
+  which to `otherZone` (graveyard). The shared CR 700.3 "divvy" pile-split primitive — also drives
+  Sauron's Ransom (`count = 4`, chained `.then(Effects.TheRingTemptsYou())`).
 
 **Hand manipulation**
 

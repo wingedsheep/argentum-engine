@@ -15571,6 +15571,81 @@
     ]
 }
 
+// Sauron's Ransom
+{
+    "name": "Sauron's Ransom",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose an opponent. They look at the top four cards of your library and separate them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard. The Ring tempts you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "revealed",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "revealed",
+                    "selection": "ChooseAnyNumber",
+                    "chooser": "Opponent",
+                    "storeSelected": "pileA",
+                    "storeRemainder": "pileB",
+                    "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                    "selectedLabel": "Pile 1",
+                    "remainderLabel": "Pile 2",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ChoosePile",
+                    "pileA": "pileA",
+                    "pileB": "pileB",
+                    "storeChosenAs": "keepPile",
+                    "storeOtherAs": "otherPile",
+                    "prompt": "Choose which pile goes to your Hand; the other goes to your Graveyard."
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "keepPile",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "otherPile",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                "TheRingTemptsYou"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Alex Brock",
+        "flavorText": "\"He was dear to you, I see. And now he shall endure the slow torment of years.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b98850c-ad69-42da-b91a-8dc5e226c444.jpg?1686970005"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Sauron, the Lidless Eye
 {
     "name": "Sauron, the Lidless Eye",
