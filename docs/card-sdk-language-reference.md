@@ -1064,7 +1064,11 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `connive(target?)` — draw 1, discard 1, then put a +1/+1 counter on `target` if the discard was a nonland (CR 702.166). Also exposed as `Effects.Connive(target)`.
 - `readTheRunes()` — "draw X cards; for each, discard a card unless you sacrifice a permanent." Composes `RepeatDynamicTimesEffect(XValue, ChooseActionEffect(...))` with feasibility guards. Exposed as `Effects.ReadTheRunes()`.
 - `eachOpponentMayPutFromHand(filter?)` — each opponent may dump a matching card.
-- `putFromHand(filter?, count?, entersTapped?)` — you may put N from hand onto battlefield.
+- `putFromHand(filter?, count?, entersTapped?, entersAttacking?)` — you may put N from hand onto
+  battlefield. `entersAttacking = true` puts them in **tapped and attacking**
+  (`ZonePlacement.TappedAndAttacking`; the engine adds an `AttackingComponent` against the defending
+  player), e.g. Shadowfax, Lord of Horses ("put a creature card with lesser power from your hand onto
+  the battlefield tapped and attacking").
 - `incubate(n)` — make an Incubator token with N counters.
 - `impulse(count?, expiry?)` — impulse draw: exile the top N of your library, may play those cards until `expiry` (default end of turn); played cards still pay their mana. For the play-free variant compose with `GrantPlayWithoutPayingCostEffect` (cf. `shuffleAndExileTopPlayFree`). Irascible Wolverine (1), Annie Flash, the Veteran (2).
 - `returnLinkedExile(underOwnersControl?)` — bring back linked exile pile.

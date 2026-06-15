@@ -1141,3 +1141,23 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `EntDraughtBasinScenarioTest` — with X=3, a power-2 and a power-4 creature are rejected by
   validation while the power-3 creature is accepted and gains a +1/+1 counter; activation is illegal at
   instant speed (sorcery-speed gate).
+
+## Shadowfax, Lord of Horses (LTR #227)
+
+- **Anthem:** "Horses you control have haste" is the standard keyword-anthem lord static —
+  `GrantKeyword(HASTE, GroupFilter(Creature.withSubtype(Horse).youControl()))`. Shadowfax is itself a
+  Horse you control, so the unfiltered (no `excludeSelf`) group correctly grants it haste too.
+- **Cheat-in attack trigger:** `Triggers.Attacks` (SELF) + `Patterns.Hand.putFromHand(...)`. "you may"
+  is the pattern's built-in `ChooseUpTo(1)` selection (choosing zero declines).
+- **"with lesser power":** the chosen hand card's power is strictly < Shadowfax's power, modeled with
+  `GameObjectFilter.Creature.powerLessThanEntity(EntityReference.Source)` (the same strict
+  source-power filter Rangers of Ithilien uses for battlefield targets — here applied to hand-card
+  selection, where it reads the card's printed power and Shadowfax's projected power).
+- **New reusable primitive:** added an `entersAttacking: Boolean` parameter to
+  `HandPatterns.putFromHand`. When set it routes the move through `ZonePlacement.TappedAndAttacking`
+  (the `MoveCollectionExecutor`/`ZoneTransitionService` already supported that placement — it adds the
+  `AttackingComponent` against the defending player), so any future "put from hand tapped and
+  attacking" card reuses the same pattern. No new effect type or executor was needed.
+- **Test:** `ShadowfaxLordOfHorsesScenarioTest` — a summoning-sick Horse can attack the turn it enters
+  (haste); a power-3 hand creature is eligible and enters tapped+attacking while a power-5 creature
+  stays in hand even as the only option (strict `< 4` power gate).

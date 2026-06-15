@@ -201,7 +201,8 @@ object HandPatterns {
     fun putFromHand(
         filter: GameObjectFilter = GameObjectFilter.Any,
         count: Int = 1,
-        entersTapped: Boolean = false
+        entersTapped: Boolean = false,
+        entersAttacking: Boolean = false
     ): CompositeEffect = CompositeEffect(
         listOf(
             GatherCardsEffect(
@@ -218,7 +219,11 @@ object HandPatterns {
                 destination = CardDestination.ToZone(
                     Zone.BATTLEFIELD,
                     Player.You,
-                    if (entersTapped) ZonePlacement.Tapped else ZonePlacement.Default
+                    when {
+                        entersAttacking -> ZonePlacement.TappedAndAttacking
+                        entersTapped -> ZonePlacement.Tapped
+                        else -> ZonePlacement.Default
+                    }
                 )
             )
         )
