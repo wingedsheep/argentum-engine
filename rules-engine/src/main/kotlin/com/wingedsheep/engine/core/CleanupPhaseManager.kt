@@ -534,6 +534,9 @@ class CleanupPhaseManager(
             if (container.has<PlayerAttackersThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (container.has<GraveyardPlayPermissionUsedComponent>()) {
                 needsUpdate = true
             }
@@ -577,6 +580,7 @@ class CleanupPhaseManager(
                         .without<ReceivedCountersThisTurnComponent>()
                         .without<PlayerAttackedThisTurnComponent>()
                         .without<PlayerAttackersThisTurnComponent>()
+                        .without<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
                         .without<GraveyardPlayPermissionUsedComponent>()
                         .without<TriggeredAbilityFiredThisTurnComponent>()
                         .without<AbilityResolutionCountThisTurnComponent>()

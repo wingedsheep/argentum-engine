@@ -3220,6 +3220,14 @@ default to "you" so card authors don't need to pass it explicitly.
 
 - `YouAttackedWithCreaturesThisTurn(filter, atLeast)` — Raid/Battalion shape. Backed by
   `PlayerAttackedWithCreaturesThisTurn(Player.You, filter, atLeast)`.
+- `PlayerAttackedPlayerThisTurn(attacker, defender = Player.You)` — whether `attacker` "attacked"
+  `defender` this turn (CR 508.6): they declared one or more attackers whose defending player was
+  `defender` (the player directly, or the controller of a planeswalker / protector of a battle the
+  attacker was attacking, CR 508.5). Reads the attacker's per-turn `PlayerAttackedPlayersThisTurnComponent`
+  (stamped at declare-attackers, cleared at end of turn). Negate with `Not(...)` for "didn't attack you
+  that turn" (Faramir, Prince of Ithilien: at the chosen opponent's next end step, draw if they didn't
+  attack you, else make three Human Soldier tokens). `attacker` is typically `Player.TriggeringPlayer`
+  (the player a delayed trigger fired on via `CreateDelayedTriggerEffect.fireOnPlayer`).
 - `YouCastSpellsThisTurn(atLeast, filter, fromZone?)` — Prowess/Magecraft shape. Backed by
   `PlayerCastSpellsThisTurn(Player.You, filter, atLeast, fromZone)`. `fromZone` (default any) restricts
   the count to spells cast from that zone, matched independently of `filter` (a face-down/morph spell
@@ -4219,6 +4227,8 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 - `LifeLostThisTurnComponent` — marker that you've lost life this turn.
 - `PlayerAttackedThisTurnComponent` — marker that you've attacked this turn.
 - `PlayerAttackersThisTurnComponent` — list of attackers declared this turn.
+- `PlayerAttackedPlayersThisTurnComponent` — set of defending players you "attacked" this turn (CR
+  508.6); read by `PlayerAttackedPlayerThisTurn`.
 - `LandDropsComponent` — lands played this turn.
 - `FoodSacrificeThisTurnComponent` — marker that you sacrificed a Food this turn.
 - `SpellsCastThisTurnByPlayer` — count of spells you cast this turn.

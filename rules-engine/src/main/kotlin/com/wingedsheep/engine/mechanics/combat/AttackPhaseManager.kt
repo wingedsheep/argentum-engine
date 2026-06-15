@@ -196,12 +196,36 @@ internal class AttackPhaseManager(
             }
         }
 
+        // Resolve each attacker's defending player (CR 508.5/508.6): the defender entity is
+        // either a player directly, or a planeswalker/battle whose controller is the defending
+        // player. Record the set so "did player X attack player Y this turn?" can be answered
+        // after combat (Faramir, Prince of Ithilien).
+        val defendingPlayers: Set<EntityId> = attackers.values.mapNotNull { defenderId ->
+            if (defenderId in state.turnOrder) {
+                defenderId
+            } else {
+                state.getEntity(defenderId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
+                    ?.playerId
+            }
+        }.toSet()
+
         newState = newState.updateEntity(attackingPlayer) { container ->
             var updated = container.with(AttackersDeclaredThisCombatComponent)
             if (attackers.isNotEmpty()) {
                 updated = updated.with(PlayerAttackedThisTurnComponent)
                 val previous = container.get<PlayerAttackersThisTurnComponent>()?.attackerIds ?: emptySet()
                 updated = updated.with(PlayerAttackersThisTurnComponent(previous + attackers.keys))
+                if (defendingPlayers.isNotEmpty()) {
+                    val previousDefenders = container
+                        .get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
+                        ?.defendingPlayerIds ?: emptySet()
+                    updated = updated.with(
+                        com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent(
+                            previousDefenders + defendingPlayers
+                        )
+                    )
+                }
             }
             updated
         }

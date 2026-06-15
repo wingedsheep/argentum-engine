@@ -1161,3 +1161,27 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `ShadowfaxLordOfHorsesScenarioTest` — a summoning-sick Horse can attack the turn it enters
   (haste); a power-3 hand creature is eligible and enters tapped+attacking while a power-5 creature
   stays in hand even as the only option (strict `< 4` power gate).
+
+## Faramir, Prince of Ithilien (LTR #202)
+
+- **Choose an opponent + delayed trigger keyed to that player:** `Triggers.YourEndStep` with
+  `target = Targets.Opponent` (the engine's mechanism for "choose an opponent"; auto-selects the lone
+  opponent in 1v1). The end-step effect schedules a `CreateDelayedTriggerEffect(step = END,
+  fireOnPlayer = ContextTarget(0), timing = NEXT_TURN)` — baking the chosen opponent into
+  `fireOnPlayerId` so the delayed trigger fires at the beginning of *that* player's next end step and
+  re-exposes them as `Player.TriggeringPlayer` to the inner conditional (same axis Nafs Asp uses).
+- **"didn't attack you that turn" (CR 508.6):** added a new reusable condition
+  `Conditions.PlayerAttackedPlayerThisTurn(attacker, defender = You)` backed by a new
+  `PlayerAttackedPlayersThisTurnComponent` on the attacking player. At declare-attackers,
+  `AttackPhaseManager.commitAttackDeclaration` resolves each attacker's defending player (the player, or
+  the controller of an attacked planeswalker/battle per CR 508.5) and unions them into the component;
+  it's cleared at end of turn in `CleanupPhaseManager` and registered in `Serialization.kt`. The
+  card negates it with `Conditions.Not(...)`: didn't attack → `Effects.DrawCards(1)`, otherwise →
+  three 1/1 white Human Soldier tokens via `Effects.CreateToken(count = 3)`.
+- **Why a new condition, not the existing `PlayerAttackedWithCreaturesThisTurn`:** that one only asks
+  "did the player declare any attacker", not *whom* they attacked. Faithful to "attacked **you**",
+  Faramir needs the per-defender record, which matters in multiplayer (attacking a different opponent
+  shouldn't count). Reusable for any "attacked you/this player this turn" card.
+- **Test:** `FaramirPrinceOfIthilienScenarioTest` — both branches: opponent who doesn't attack lets you
+  draw at their next end step; opponent who declares an attacker at you (Grizzly Bears) instead gives
+  you three Human Soldier tokens.

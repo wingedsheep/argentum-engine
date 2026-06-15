@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 270 / 291
+**Implemented:** 271 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -241,7 +241,7 @@ starter-deck/special cards and basic lands.
 - [x] Doors of Durin
 - [x] Elrond, Master of Healing
 - [x] Éowyn, Fearless Knight
-- [ ] Faramir, Prince of Ithilien
+- [x] Faramir, Prince of Ithilien
 - [x] Flame of Anor
 - [x] Friendly Rivalry
 - [x] Frodo Baggins

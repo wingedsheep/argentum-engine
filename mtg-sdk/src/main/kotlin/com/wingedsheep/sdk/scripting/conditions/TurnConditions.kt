@@ -119,6 +119,25 @@ data class PlayerAttackedWithCreaturesThisTurn(
 }
 
 /**
+ * Condition: "If [attacker] attacked [defender] this turn" (CR 508.6) — i.e. [attacker]
+ * declared one or more creatures as attackers whose defending player was [defender] (the
+ * player itself, or the controller of a planeswalker / protector of a battle the creature
+ * attacked). Reads [attacker]'s per-turn attacked-players record.
+ *
+ * Negate via `Conditions.Not(...)` for "didn't attack you that turn" (Faramir, Prince of
+ * Ithilien: "you draw a card if they didn't attack you that turn").
+ */
+@SerialName("PlayerAttackedPlayerThisTurn")
+@Serializable
+data class PlayerAttackedPlayerThisTurn(
+    val attacker: Player,
+    val defender: Player = Player.You
+) : Condition {
+    override val description: String =
+        "if ${attacker.description} attacked ${defender.description} this turn"
+}
+
+/**
  * Condition: "If [player] has cast [atLeast] or more spells matching [filter] this turn".
  * Counts [player]'s `CastSpellRecord`s captured at cast time, so every spell
  * cast counts even if it was countered, fizzled, or is still on the stack.

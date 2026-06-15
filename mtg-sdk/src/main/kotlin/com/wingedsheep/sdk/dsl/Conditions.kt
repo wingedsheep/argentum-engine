@@ -822,6 +822,17 @@ object Conditions {
         PlayerAttackedWithCreaturesThisTurn(Player.You, filter, atLeast)
 
     /**
+     * Whether [attacker] attacked [defender] this turn (CR 508.6) — declared one or more
+     * attackers whose defending player was [defender]. Defaults [defender] to [Player.You].
+     * Negate with [Not] for "didn't attack you that turn" (Faramir, Prince of Ithilien).
+     */
+    fun PlayerAttackedPlayerThisTurn(
+        attacker: Player,
+        defender: Player = Player.You
+    ): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerAttackedPlayerThisTurn(attacker, defender)
+
+    /**
      * As long as you've cast [atLeast] or more spells matching [filter] this turn.
      * Counts every spell cast — countered, fizzled, or still on the stack all count.
      * Defaults to any spell, matching the typical "you've cast two or more spells
