@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 282 / 291
+**Implemented:** 283 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -262,7 +262,7 @@ starter-deck/special cards and basic lands.
 - [x] Ringsight
 - [x] Rise of the Witch-king
 - [x] Samwise Gamgee
-- [ ] Saruman of Many Colors
+- [x] Saruman of Many Colors
 - [x] Sauron, the Dark Lord
 - [x] Sauron's Ransom
 - [x] Shadow Summoning

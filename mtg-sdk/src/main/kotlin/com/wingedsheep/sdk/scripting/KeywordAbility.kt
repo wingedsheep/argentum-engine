@@ -638,10 +638,15 @@ sealed interface KeywordAbility {
         fun wardLife(amount: Int): KeywordAbility = Ward(WardCost.Life(amount))
 
         /**
-         * Create Ward with discard cost.
+         * Create Ward with discard cost. When [filter] is non-null the discarded
+         * card(s) must match it (e.g. "Ward—Discard an enchantment, instant, or sorcery card").
          */
-        fun wardDiscard(count: Int = 1, random: Boolean = false): KeywordAbility =
-            Ward(WardCost.Discard(count, random))
+        fun wardDiscard(
+            count: Int = 1,
+            random: Boolean = false,
+            filter: GameObjectFilter? = null,
+        ): KeywordAbility =
+            Ward(WardCost.Discard(count, random, filter))
 
         /**
          * Create Ward with sacrifice cost.

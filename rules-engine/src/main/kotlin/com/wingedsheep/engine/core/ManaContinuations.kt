@@ -234,6 +234,7 @@ data class CounterUnlessDiscardContinuation(
     val spellEntityId: EntityId,
     val count: Int,
     val random: Boolean = false,
+    val filter: com.wingedsheep.sdk.scripting.GameObjectFilter? = null,
     val exileOnCounter: Boolean = false,
     val controllerId: EntityId? = null,
     /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */

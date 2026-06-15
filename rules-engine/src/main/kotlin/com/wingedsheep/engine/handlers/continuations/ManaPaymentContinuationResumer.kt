@@ -265,8 +265,22 @@ class ManaPaymentContinuationResumer(
             return checkForMore(counterResult.newState, counterResult.events)
         }
 
-        // Yes — re-verify the player can actually discard the required number of cards.
-        if (state.getHand(continuation.payingPlayerId).size < continuation.count) {
+        // Yes — re-verify the player can actually discard the required number of
+        // eligible cards (matching the filter, when the ward cost specifies one).
+        val eligibleCount = if (continuation.filter == null) {
+            state.getHand(continuation.payingPlayerId).size
+        } else {
+            val predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator()
+            val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                controllerId = continuation.payingPlayerId
+            )
+            state.getHand(continuation.payingPlayerId).count { cardId ->
+                predicateEvaluator.matches(
+                    state, state.projectedState, cardId, continuation.filter, predicateContext
+                )
+            }
+        }
+        if (eligibleCount < continuation.count) {
             val counterResult = if (continuation.exileOnCounter) {
                 services.stackResolver.counterSpellToExile(
                     state, continuation.spellEntityId,
@@ -281,6 +295,11 @@ class ManaPaymentContinuationResumer(
 
         val discardEffect = if (continuation.random) {
             com.wingedsheep.sdk.dsl.Patterns.Hand.discardRandom(continuation.count)
+        } else if (continuation.filter != null) {
+            com.wingedsheep.sdk.dsl.Patterns.Hand.discardCards(
+                continuation.count,
+                filter = continuation.filter,
+            )
         } else {
             com.wingedsheep.sdk.dsl.Patterns.Hand.discardCards(continuation.count)
         }

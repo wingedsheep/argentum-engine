@@ -1497,3 +1497,41 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   attacking and dealing combat damage to the opponent tempts the controller (`TheRingComponent
   .temptCount` = 1) and the resulting Ring-tempt trigger lets the controller discard their hand to
   draw four.
+
+## Saruman of Many Colors (#223)
+
+- **Verdict:** mostly composition; one small SDK extension (ward-discard filter). Canonical printing
+  is LTR itself (earliest real printing).
+- **Ward—Discard an enchantment, instant, or sorcery card:** extended `WardCost.Discard` with an
+  optional `GameObjectFilter` (and `KeywordAbility.wardDiscard(count, random, filter)` +
+  `Patterns.Hand.discardCards(count, target, filter)`). The ward executor / continuation now count
+  only matching hand cards toward the can-pay check and offer only matching cards for discard. Used
+  as `wardDiscard(filter = Enchantment or Instant or Sorcery)`.
+- **Second-spell trigger:** `Triggers.NthSpellCast(2, Player.You)` (same as Saruman the White /
+  Cori-Steel Cutter's Flurry).
+- **Each opponent mills two + reflexive exile/copy/cast:** a single `ReflexiveTriggerEffect`
+  (Wick's Patrol pattern). The action is `Patterns.Library.mill(2, PlayerRef(EachOpponent))` —
+  modeled as a flat Gather→Move aimed at every opponent rather than a `ForEachPlayer` wrapper,
+  *specifically* because `ForEachPlayerExecutor` swallows its inner `storedCollections` and never
+  surfaces them; the flat mill puts every milled card into the propagated `"milled"` pipeline
+  collection, which the reflexive's "one or more cards milled this way" gate reads. The reflexive
+  effect is `ConditionalEffect(CollectionContainsMatch("milled"), <exile→copy→may-cast>)` and its
+  target is chosen after the mill via `reflexiveTargetRequirements` (so it's a true reflexive
+  trigger, not an up-front target).
+- **"that spell" MV:** the target filter is `(Enchantment or Instant or Sorcery).ownedByOpponent()
+  .manaValueAtMostEntity(EntityReference.Triggering)` in the graveyard. For an `NthSpellCast`
+  trigger fired off a `SpellCastEvent`, `TriggerContext.fromEvent` sets `triggeringEntityId` to the
+  second spell (still on the stack as the ability resolves above it), so its mana value reads
+  directly — same `manaValueAtMostEntity(Triggering)` shape as Sunbird's Invocation.
+- **Copy-a-card-then-cast:** `Effects.CopyCardIntoCollection` + `MayEffect(
+  Effects.CastFromCollectionWithoutPayingCost)` (the Shiko, Paragon of the Way pattern). A declined
+  or uncastable copy is removed by the Rule 707.10a state-based action.
+- **Touched:** `SarumanOfManyColors.kt` (card), `StackEffects.kt` (`WardCost.Discard` filter),
+  `KeywordAbility.kt` (`wardDiscard` filter), `HandPatterns.kt` (`discardCards` filter),
+  `WardCounterEffectExecutor.kt` + `ManaContinuations.kt` + `ManaPaymentContinuationResumer.kt`
+  (filtered ward-discard eligibility/selection), SDK reference (ward section), LTR snapshot golden,
+  backlog, `SarumanOfManyColorsScenarioTest.kt`.
+- **Test:** `SarumanOfManyColorsScenarioTest` — casting the second spell mills two from each
+  opponent; the reflexive exiles a legal opponent-graveyard enchantment/instant/sorcery (MV ≤ that
+  spell), copies it, and casts the copy free (a copied Divination draws two for the controller); a
+  graveyard card with MV greater than the second spell is *not* a legal target.

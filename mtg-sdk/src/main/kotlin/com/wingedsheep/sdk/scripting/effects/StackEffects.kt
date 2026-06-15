@@ -329,12 +329,28 @@ sealed interface WardCost {
         override val description: String = "pay $amount life"
     }
 
-    /** Ward with a discard cost — e.g. Ward—Discard a card. */
+    /**
+     * Ward with a discard cost — e.g. Ward—Discard a card.
+     *
+     * When [filter] is non-null the discarded card(s) must match it — e.g.
+     * Saruman of Many Colors' "Ward—Discard an enchantment, instant, or sorcery card."
+     * The filter restricts both the can-pay eligibility check and the cards offered for
+     * discard. A null filter means any card.
+     */
     @SerialName("WardCost.Discard")
     @Serializable
-    data class Discard(val count: Int = 1, val random: Boolean = false) : WardCost {
+    data class Discard(
+        val count: Int = 1,
+        val random: Boolean = false,
+        val filter: GameObjectFilter? = null,
+    ) : WardCost {
         override val description: String = buildString {
-            if (count == 1) append("a card") else append("$count cards")
+            if (filter != null) {
+                if (count == 1) append("a ") else append("$count ")
+                append(filter.description)
+            } else {
+                if (count == 1) append("a card") else append("$count cards")
+            }
             if (random) append(" at random")
         }
     }

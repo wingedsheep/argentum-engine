@@ -14,6 +14,7 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -127,7 +128,7 @@ class WardCounterEffectExecutor(
                 )
                 is WardCost.Discard -> handleDiscardCost(
                     state, cardRegistry, spellEntityId, container, payingPlayerId,
-                    cost.count, cost.random, remainingParts, wardSourceId, controllerId
+                    cost.count, cost.random, cost.filter, remainingParts, wardSourceId, controllerId
                 )
                 is WardCost.Sacrifice -> handleSacrificeCost(
                     state, cardRegistry, spellEntityId, container, payingPlayerId,
@@ -218,17 +219,33 @@ class WardCounterEffectExecutor(
             payingPlayerId: EntityId,
             count: Int,
             random: Boolean,
+            filter: GameObjectFilter?,
             remainingParts: List<WardCost>,
             wardSourceId: EntityId?,
             controllerId: EntityId?
         ): EffectResult {
-            // Not enough cards in hand → counter immediately.
+            // Not enough eligible cards in hand → counter immediately. When the ward names a
+            // card type (Saruman of Many Colors: "Discard an enchantment, instant, or sorcery
+            // card"), only matching cards count toward the can-pay check.
             // (The caster spends the spell as part of casting, so the spell itself is not in hand here.)
-            if (state.getHand(payingPlayerId).size < count) {
+            val eligibleCount = if (filter == null) {
+                state.getHand(payingPlayerId).size
+            } else {
+                val predicateContext = PredicateContext(controllerId = payingPlayerId)
+                val predicateEvaluator = PredicateEvaluator()
+                state.getHand(payingPlayerId).count { cardId ->
+                    predicateEvaluator.matches(state, state.projectedState, cardId, filter, predicateContext)
+                }
+            }
+            if (eligibleCount < count) {
                 return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
             }
 
-            val cardsLabel = if (count == 1) "a card" else "$count cards"
+            val cardsLabel = if (filter != null) {
+                if (count == 1) "a ${filter.description}" else "$count ${filter.description} cards"
+            } else {
+                if (count == 1) "a card" else "$count cards"
+            }
             val randomSuffix = if (random) " at random" else ""
             val decisionId = java.util.UUID.randomUUID().toString()
             val decision = YesNoDecision(
@@ -250,6 +267,7 @@ class WardCounterEffectExecutor(
                 spellEntityId = spellEntityId,
                 count = count,
                 random = random,
+                filter = filter,
                 controllerId = controllerId,
                 remainingWardParts = remainingParts,
                 wardSourceId = wardSourceId

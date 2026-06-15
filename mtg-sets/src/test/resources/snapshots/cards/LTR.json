@@ -15556,6 +15556,152 @@
     ]
 }
 
+// Saruman of Many Colors
+{
+    "name": "Saruman of Many Colors",
+    "manaCost": "{3}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Avatar Wizard",
+    "oracleText": "Ward—Discard an enchantment, instant, or sorcery card.\nWhenever you cast your second spell each turn, each opponent mills two cards. When one or more cards are milled this way, exile target enchantment, instant, or sorcery card with equal or lesser mana value than that spell from an opponent's graveyard. Copy the exiled card. You may cast the copy without paying its mana cost.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Discard",
+                "filter": "enchantment|instant|sorcery"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "player": "EachOpponent"
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        ]
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "CollectionContainsMatch",
+                                "collection": "milled"
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "destination": "Exile"
+                                },
+                                {
+                                    "type": "CopyCardIntoCollection",
+                                    "storeAs": "copy"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "copy"
+                                    },
+                                    "descriptionOverride": "You may cast the copy without paying its mana cost."
+                                }
+                            ]
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        "IsInstant"
+                                                    ]
+                                                },
+                                                "IsSorcery"
+                                            ]
+                                        },
+                                        {
+                                            "type": "ManaValueAtMostEntity",
+                                            "reference": "Triggering"
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByOpponent"
+                                },
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Each opponent mills two cards. When one or more cards are milled this way, exile target enchantment, instant, or sorcery card with equal or lesser mana value than that spell from an opponent's graveyard. Copy the exiled card. You may cast the copy without paying its mana cost."
+                },
+                "descriptionOverride": "Whenever you cast your second spell each turn, each opponent mills two cards. When one or more cards are milled this way, exile target enchantment, instant, or sorcery card with equal or lesser mana value than that spell from an opponent's graveyard. Copy the exiled card. You may cast the copy without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cfcc7ec-87a2-4712-8d82-217bd8600891.jpg?1686969983"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Saruman the White
 {
     "name": "Saruman the White",
