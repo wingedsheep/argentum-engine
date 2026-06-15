@@ -329,6 +329,18 @@ class PredicateEvaluator {
                 val power = projectedValues?.power ?: card.baseStats?.basePower
                 power == predicate.value
             }
+            is CardPredicate.PowerEqualsX -> {
+                // Null xValue means X is unbound (legal-action enumeration runs before the
+                // player chooses X). Match permissively so the ability is offered; the chosen
+                // X is enforced at activation-time validation and resolution-time re-check —
+                // mirrors ManaValueAtMostX. Once X is bound, require power to equal it exactly.
+                val xValue = context?.xValue
+                if (xValue == null) true
+                else {
+                    val power = projectedValues?.power ?: card.baseStats?.basePower
+                    power == xValue
+                }
+            }
             is CardPredicate.PowerAtMost -> {
                 val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
                 power <= predicate.max
@@ -1007,6 +1019,7 @@ class PredicateEvaluator {
 
             // Power/toughness — not meaningful for cast records
             is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
+            CardPredicate.PowerEqualsX,
             is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
             CardPredicate.ToughnessAtMostX,
             is CardPredicate.PowerOrToughnessAtLeast,

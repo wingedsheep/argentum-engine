@@ -890,6 +890,8 @@ class TriggerMatcher(
             }
             // Resolution-time only — TriggerMatcher has no X context, so the predicate never matches here.
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMostX -> false
+            // Resolution-time chosen-number predicate; TriggerMatcher has no chosen-number context.
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEqualsX -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
                 val toughness = if (isFaceDown) 2
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0

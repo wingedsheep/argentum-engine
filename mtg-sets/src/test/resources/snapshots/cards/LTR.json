@@ -4431,6 +4431,65 @@
     ]
 }
 
+// Ent-Draught Basin
+{
+    "name": "Ent-Draught Basin",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{X}, {T}: Put a +1/+1 counter on target creature with power X. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "PowerEqualsX"
+                                ]
+                            }
+                        },
+                        "id": "creature with power X"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Torgeir Fjereide",
+        "flavorText": "The effect of the draught began at the toes, and rose steadily through every limb, bringing refreshment and vigor as it coursed upward, right to the tips of the hair.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1500126f-fbe4-4c39-bb06-1a36e2c4682f.jpg?1686970148"
+    }
+}
+
 // Entish Restoration
 {
     "name": "Entish Restoration",

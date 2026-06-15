@@ -38,6 +38,7 @@ class LegalActionEnricher(
             targetDescription = action.targetDescription,
             targetRequirements = action.targetRequirements?.map { it.toDto() },
             xConstrainsTargetManaValue = action.xConstrainsTargetManaValue,
+            xConstrainsTargetPower = action.xConstrainsTargetPower,
             xConstrainsTargetCount = action.xConstrainsTargetCount,
             validAttackers = action.validAttackers,
             mandatoryAttackers = action.mandatoryAttackers,
@@ -134,6 +135,7 @@ class LegalActionEnricher(
         validTargets = validTargets,
         targetZone = targetZone,
         xConstrainsManaValue = xConstrainsManaValue,
+        xConstrainsPower = xConstrainsPower,
         xConstrainsCount = xConstrainsCount
     )
 

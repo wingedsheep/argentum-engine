@@ -298,6 +298,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.PowerEquals(value)
     )
 
+    /** Power exactly equal to the X chosen for the source spell/ability (Ent-Draught Basin) */
+    fun powerEqualsX() = copy(
+        cardPredicates = cardPredicates + CardPredicate.PowerEqualsX
+    )
+
     /** Power at most */
     fun powerAtMost(max: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.PowerAtMost(max)

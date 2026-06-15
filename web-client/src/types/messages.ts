@@ -735,6 +735,12 @@ export interface LegalActionTargetInfo {
    */
   readonly xConstrainsManaValue?: boolean
   /**
+   * True when this requirement filters by "power X" (Ent-Draught Basin) — the client must
+   * intersect [validTargets] with `card.power === chosenX` after X selection, since the
+   * server enumerates targets permissively before X is bound.
+   */
+  readonly xConstrainsPower?: boolean
+  /**
    * True when this requirement's max-count scales with the chosen X
    * (TargetObject.dynamicMaxCount == XValue server-side). The client must clamp
    * selectable targets to the X chosen at cast time.
@@ -768,6 +774,13 @@ export interface LegalActionInfo {
    * [validTargets] by the chosen X after X selection.
    */
   readonly xConstrainsTargetManaValue?: boolean
+  /**
+   * True when the (single) target requirement filters by "power X" (Ent-Draught Basin).
+   * The client must re-filter [validTargets] to creatures whose power equals the chosen X
+   * after X selection. For multi-requirement abilities, see the per-requirement
+   * [LegalActionTargetInfo.xConstrainsPower].
+   */
+  readonly xConstrainsTargetPower?: boolean
   /**
    * True when the (single) target requirement's max-count scales with the chosen X
    * (e.g. Builder's Bane: "Destroy X target artifacts"). The client must clamp the

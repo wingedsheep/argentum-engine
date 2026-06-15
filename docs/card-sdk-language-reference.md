@@ -1459,6 +1459,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   Available on both the object-filter builders and on `TargetFilter` (mirrors `.manaValueAtMostX()`). Used by Void
   (`Effects.ChooseNumberThen`) and Repeal (`{X}{U}` — return target nonland permanent with mana value X).
 - `.manaValueAtMostEntity(ref)` — mana value ≤ a referenced entity's mana value (e.g. Kodama of the East Tree).
+- `.powerEqualsX()` — **projected power exactly equal** to the X chosen for the source spell/ability — the power
+  analogue of `.manaValueEqualsX()`. Available on both the object-filter builders and on `TargetFilter`. Used by an
+  X-cost activated ability that targets "a creature with power X" (Ent-Draught Basin: `{X}, {T}: Put a +1/+1
+  counter on target creature with power X`). Legal-action enumeration runs before X is bound, so it matches
+  permissively then (the client re-filters by the chosen X via the `xConstrainsTargetPower` /
+  `LegalActionTargetInfo.xConstrainsPower` flags); activation-time validation re-checks with X bound and rejects
+  any creature whose power isn't exactly X.
 - `.powerGreaterThanEntity(ref)` — power strictly greater than a referenced entity's projected power. Used by
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EntityReference.Source` to express "greater power than the ability's source".

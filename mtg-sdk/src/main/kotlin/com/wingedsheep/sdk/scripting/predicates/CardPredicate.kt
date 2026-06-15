@@ -393,6 +393,20 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with power $value"
     }
 
+    /**
+     * Power exactly equal to the X chosen for the source spell/ability. Resolves against
+     * `PredicateContext.xValue` at evaluation time — the power analogue of [ManaValueEqualsX].
+     * Used by an X-cost activated ability that targets "a creature with power X"
+     * (Ent-Draught Basin). When X is unbound (legal-action enumeration runs before the player
+     * chooses X) it matches permissively so the ability is still offered; the chosen X is then
+     * enforced at activation-time validation and resolution-time re-check.
+     */
+    @SerialName("PowerEqualsX")
+    @Serializable
+    data object PowerEqualsX : CardPredicate {
+        override val description: String = "with power X"
+    }
+
     @SerialName("PowerAtMost")
     @Serializable
     data class PowerAtMost(val max: Int) : CardPredicate {

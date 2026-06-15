@@ -778,6 +778,24 @@ export function enterPhase(
           return typeof mv === 'number' && mv <= chosenX
         })
       }
+      // Ent-Draught Basin: "target creature with power X" — keep only creatures whose
+      // (projected) power equals the chosen X. The server enumerates permissively before X
+      // is bound, so the client narrows the list once X is known.
+      const filterByPowerX = (
+        ids: readonly EntityId[],
+        constrained: boolean | undefined,
+      ): EntityId[] => {
+        if (!constrained || chosenX == null || gameState == null) return [...ids]
+        return ids.filter((id) => {
+          const power = gameState.cards[id]?.power
+          return typeof power === 'number' && power === chosenX
+        })
+      }
+      const applyXFilters = (
+        ids: readonly EntityId[],
+        mvConstrained: boolean | undefined,
+        powerConstrained: boolean | undefined,
+      ): EntityId[] => filterByPowerX(filterByX(ids, mvConstrained), powerConstrained)
 
       // When a requirement's max-count is X-driven (TargetObject.dynamicMaxCount =
       // XValue server-side), the static `count` field is just a placeholder (often
@@ -794,7 +812,7 @@ export function enterPhase(
         const maxTargets = resolveMaxByX(firstReq.maxTargets, firstReq.xConstrainsCount)
         store.startTargeting({
           action,
-          validTargets: filterByX(firstReq.validTargets, firstReq.xConstrainsManaValue),
+          validTargets: applyXFilters(firstReq.validTargets, firstReq.xConstrainsManaValue, firstReq.xConstrainsPower),
           selectedTargets: [],
           minTargets: Math.min(firstReq.minTargets, maxTargets),
           maxTargets,
@@ -812,7 +830,7 @@ export function enterPhase(
         const rawMin = actionInfo.minTargets ?? rawMax
         store.startTargeting({
           action,
-          validTargets: filterByX(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue),
+          validTargets: applyXFilters(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue, actionInfo.xConstrainsTargetPower),
           selectedTargets: [],
           minTargets: Math.min(rawMin, maxTargets),
           maxTargets,

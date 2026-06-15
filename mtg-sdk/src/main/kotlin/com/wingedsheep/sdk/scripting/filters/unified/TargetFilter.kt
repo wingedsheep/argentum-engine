@@ -282,6 +282,9 @@ data class TargetFilter(
     /** Mana value at least */
     fun manaValueAtLeast(min: Int) = copy(baseFilter = baseFilter.manaValueAtLeast(min))
 
+    /** Power exactly equal to the X chosen for the source spell/ability (Ent-Draught Basin). */
+    fun powerEqualsX() = copy(baseFilter = baseFilter.powerEqualsX())
+
     /** Power at most */
     fun powerAtMost(max: Int) = copy(baseFilter = baseFilter.powerAtMost(max))
 

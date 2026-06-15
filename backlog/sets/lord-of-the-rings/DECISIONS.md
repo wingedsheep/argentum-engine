@@ -1114,3 +1114,30 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GrishnakhBrashInstigatorScenarioTest` — amass Orcs 2 makes a 2/2 Army; the reflexive
   trigger's legal targets include a power-2 Grizzly Bears and exclude a power-3 Hill Giant; stealing
   the bear flips control, untaps it, and grants haste; control reverts to its owner at cleanup.
+
+## Ent-Draught Basin — `PowerEqualsX` target filter for X-cost activated abilities (2026-06-15)
+
+- **Card:** `{2}` Artifact. `{X}, {T}: Put a +1/+1 counter on target creature with power X. Activate
+  only as a sorcery.` Composes existing primitives: `Costs.Composite(Costs.Mana("{X}"), Costs.Tap)`
+  (X-in-activated-cost, cf. Barad-dûr), `Effects.AddCounters(PLUS_ONE_PLUS_ONE, 1, ContextTarget(0))`,
+  `timing = TimingRule.SorcerySpeed`.
+- **New SDK primitive — `CardPredicate.PowerEqualsX`** (`.powerEqualsX()` on `ObjectFilter` and
+  `TargetFilter`): projected **power exactly equal** to the X chosen for the source spell/ability — the
+  power analogue of the existing `ManaValueEqualsX`. Unlike Grishnákh's `PowerAtMostEntity` +
+  `AmassedArmy` (which reads a *pipeline-stored entity*), this reads the activation's **X**, already
+  carried on the `ActivateAbility` action as `xValue` and threaded into `PredicateContext.xValue`.
+- **Enumeration vs validation:** at legal-action enumeration time X is unbound, so the predicate matches
+  permissively (`xValue == null → true`, mirroring `ManaValueAtMostX`). The real gate is
+  activation-time `TargetValidator.validateTargets(..., xValue = action.xValue)`, which builds a
+  `PredicateContext` with X bound and rejects any creature whose power isn't exactly X. No new
+  continuation/threading was needed — the activated-ability path already passes `action.xValue` to both
+  cost payment and target validation.
+- **Client UX:** added `xConstrainsTargetPower` / `LegalActionTargetInfo.xConstrainsPower` flags
+  (parallel to `xConstrainsManaValue`) through `TargetInfo` → enricher → DTO → `messages.ts`, and
+  `pipelinePhases.ts` re-filters the permissive target list to `card.power === chosenX` after X
+  selection, so the player can't click a wrong-power target the server would then reject.
+- **Exhaustive-when fan-out:** `PowerEqualsX` needed explicit branches in the cast-record matcher and
+  TriggerMatcher/AffectsFilterResolver/CostCalculator (all `→ false`, no X context there).
+- **Test:** `EntDraughtBasinScenarioTest` — with X=3, a power-2 and a power-4 creature are rejected by
+  validation while the power-3 creature is accepted and gains a +1/+1 counter; activation is illegal at
+  instant speed (sorcery-speed gate).

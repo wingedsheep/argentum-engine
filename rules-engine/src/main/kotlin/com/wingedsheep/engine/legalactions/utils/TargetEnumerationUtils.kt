@@ -269,6 +269,7 @@ class TargetEnumerationUtils(
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
                 xConstrainsManaValue = requirementUsesManaValueAtMostX(req),
+                xConstrainsPower = requirementUsesPowerEqualsX(req),
                 xConstrainsCount = requirementXConstrainsCount(req)
             )
         }
@@ -328,6 +329,25 @@ class TargetEnumerationUtils(
         is CardPredicate.And -> predicate.predicates.any { containsManaValueAtMostX(it) }
         is CardPredicate.Or -> predicate.predicates.any { containsManaValueAtMostX(it) }
         is CardPredicate.Not -> containsManaValueAtMostX(predicate.predicate)
+        else -> false
+    }
+
+    /**
+     * True when [requirement] is a [TargetObject] whose filter contains
+     * [CardPredicate.PowerEqualsX] (anywhere in the predicate tree). Surfaced to the client
+     * so it re-filters the permissive enumeration down to creatures whose power equals the
+     * chosen X after X selection (Ent-Draught Basin).
+     */
+    fun requirementUsesPowerEqualsX(requirement: TargetRequirement): Boolean {
+        val filter = (requirement as? TargetObject)?.filter ?: return false
+        return filter.baseFilter.cardPredicates.any { containsPowerEqualsX(it) }
+    }
+
+    private fun containsPowerEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
+        CardPredicate.PowerEqualsX -> true
+        is CardPredicate.And -> predicate.predicates.any { containsPowerEqualsX(it) }
+        is CardPredicate.Or -> predicate.predicates.any { containsPowerEqualsX(it) }
+        is CardPredicate.Not -> containsPowerEqualsX(predicate.predicate)
         else -> false
     }
 

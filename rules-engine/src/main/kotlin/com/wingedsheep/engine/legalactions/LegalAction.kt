@@ -36,6 +36,14 @@ data class LegalAction(
      */
     val xConstrainsTargetManaValue: Boolean = false,
     /**
+     * True when the (single) target requirement filters by "power X" (i.e. the requirement's
+     * filter contains [CardPredicate.PowerEqualsX] — Ent-Draught Basin). The enumerator builds
+     * [validTargets] permissively because X is unbound at enumeration time; the client must
+     * re-filter [validTargets] to creatures whose power equals the chosen X once the player
+     * picks it. For multi-requirement abilities, see [TargetInfo.xConstrainsPower].
+     */
+    val xConstrainsTargetPower: Boolean = false,
+    /**
      * True when the (single) target requirement's max-count is dynamically driven by the
      * chosen X (i.e. [TargetObject.dynamicMaxCount] is [DynamicAmount.XValue]).
      *
@@ -190,6 +198,12 @@ data class TargetInfo(
      * The client re-filters [validTargets] by the chosen X after X selection.
      */
     val xConstrainsManaValue: Boolean = false,
+    /**
+     * True when this requirement's filter contains [CardPredicate.PowerEqualsX].
+     * The client re-filters [validTargets] to creatures whose power equals the chosen X
+     * after X selection (Ent-Draught Basin).
+     */
+    val xConstrainsPower: Boolean = false,
     /**
      * True when this requirement's max-count is dynamically driven by the chosen X
      * (`TargetObject.dynamicMaxCount == DynamicAmount.XValue`). The client should
