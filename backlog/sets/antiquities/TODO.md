@@ -6,8 +6,10 @@
 > (`MagicCompRules_20260417.pdf` / `.txt`, repo root) in full, including edge cases, timing,
 > and interactions. A card is not done until its scenario test proves rules-correct behavior.
 
-**Set:** Antiquities (ATQ), 85 cards, released 1994-03-04. **Implemented: 3 / 85**
-(Jalum Tome, Sage of Lat-Nam, Wall of Spears). Verify with `scripts/card-status --set ATQ`.
+**Set:** Antiquities (ATQ), 85 cards, released 1994-03-04. **Implemented: 48 / 85** — all 45
+no-engine-work (List A) cards plus the 3 pre-existing reprints (Jalum Tome, Sage of Lat-Nam,
+Wall of Spears). The remaining 37 are List B (need engine work). Verify with
+`scripts/card-status --set ATQ`.
 
 The set's mechanics are catalogued in [`MECHANICS.md`](MECHANICS.md); the checklist is
 [`cards.md`](cards.md). This file is the **card-for-card triage**: which cards compose from
@@ -16,10 +18,11 @@ mechanic named).
 
 ## Scaffolding status
 
-**Not yet scaffolded in code.** Still to do before implementation begins:
-- `mtg-sets/.../definitions/atq/AntiquitiesSet.kt` + register in `MtgSetCatalog.all`.
-- `mtg-sets/.../definitions/atq/cards/` — one file per card (via the `add-card` skill).
-This backlog (JSON + cards.md + MECHANICS.md + this triage) is the input for that work.
+**Scaffolded; all List A cards implemented.** `mtg-sets/.../definitions/atq/AntiquitiesSet.kt`
+exists (auto-discovered via `CardDiscovery`, with `basicLandsFallback = PortalSet`), and every
+List A card has a full `CardDefinition` under `definitions/atq/cards/` with one commit each.
+The 37 List B cards remain — each needs the engine feature named in its group below
+(`add-feature` territory), to be built in separate PRs.
 
 ## Data sources — do NOT hit the network
 
@@ -44,7 +47,7 @@ the work; **confirm during implementation.**
 
 ---
 
-## ✅ List A — Implementable WITHOUT engine work (48 cards)
+## ✅ List A — Implementable WITHOUT engine work (45 cards)
 
 Compose from existing primitives. Items tagged **(verify)** are composable but non-trivial —
 confirm the noted clause during `add-card`; if it surprises you, move it to List B.
@@ -99,13 +102,7 @@ confirm the noted clause during `add-card`; if it surprises you, move it to List
 - **Ivory Tower** — upkeep: gain life = cards in hand − 4 (dynamic, floor 0; **verify**).
 - **Rakalite** — `{2}`: prevent next 1 to any target; return to hand next end step (**verify** self-bounce at end step).
 - **Su-Chi** — dies → add `{C}{C}{C}{C}` (**verify** mana from a triggered ability).
-- **The Rack** — choose an opponent as it enters; that player's upkeep deals 3 − their hand
-  size (`EntersWithChoice(OPPONENT)` + chosen-player upkeep trigger + dynamic damage; **verify**).
 - **Urza's Chalice** — any player casts an artifact spell → may pay `{1}`, gain 1 (**verify** any-player cast trigger + optional pay).
-- **Urza's Miter** — artifact you control dies and *wasn't sacrificed* → may pay `{3}`, draw
-  (artifact-dies trigger; **verify** the "wasn't sacrificed" condition).
-- **Mishra's Factory** — `{T}`: add `{C}`; `{1}`: becomes a 2/2 Assembly-Worker artifact
-  creature (still a land); `{T}`: target Assembly-Worker +1/+1 (`Effects.AnimateLand`; **verify**).
 - **Mishra's Workshop** — `{T}`: add `{C}{C}{C}`, spend only on artifact spells
   (`ManaRestriction`; **verify**).
 - **Urza's Mine / Urza's Power Plant / Urza's Tower** — `{T}`: add `{C}`, or more if you
@@ -113,7 +110,7 @@ confirm the noted clause during `add-card`; if it surprises you, move it to List
 
 ---
 
-## 🔧 List B — NEEDS ENGINE WORK (34 cards), grouped by missing mechanic
+## 🔧 List B — NEEDS ENGINE WORK (37 cards), grouped by missing mechanic
 
 Each group is a candidate single feature PR. Confirm with `add-card` before building.
 
@@ -186,6 +183,15 @@ suppression, or untap-count restriction primitive exists.
   the only "(clean)" card that turned out to need engine work.)
 
 ### Reclassified from List A during implementation (confirmed engine gaps)
+- **The Rack** — needs a step/phase trigger keyed to *the chosen opponent*. `TriggerMatcher.
+  matchesPlayerForStep` resolves only `You`/`Each`/`Opponent`/`EachOpponent`; `Player.ChosenOpponent`
+  hits the `else -> true` branch, so a chosen-player upkeep trigger would fire on every upkeep.
+- **Urza's Miter** — needs an intervening-if that distinguishes a death *caused by sacrifice* from
+  other deaths on a leaves/dies trigger. `ZoneChangeEvent` carries no sacrifice-cause flag (the
+  no-condition sibling, Tablet of Epityr, already exists).
+- **Mishra's Factory** — `AnimateLandEffect`/`BecomeCreatureEffect` only add the CREATURE type;
+  neither can grant the **artifact** type, so "becomes a 2/2 Assembly-Worker *artifact* creature"
+  can't be modeled without altering the clause. (Shares the animate-also-grants-artifact gap.)
 - **Battering Ram** — needs a *"this creature becomes blocked by a [filter] creature"* trigger
   (blocker-side filter). `BecomesBlockedEvent.filter` filters the attacker, not the blocker; the
   only blocker-filtered trigger (`BlocksOrBecomesBlockedBy`) is strictly broader than "becomes
@@ -229,4 +235,4 @@ suppression, or untap-count restriction primitive exists.
   citing it — never a web source.
 - The "(verify)" tags in List A mark the cards most likely to surprise you into List B during
   `add-card`; everything else in List A should compose cleanly.
-- Counts: 3 done + 48 List A + 34 List B = 85.
+- Counts: 3 pre-existing + 45 List A + 37 List B = 85. (All 45 List A cards now implemented.)
