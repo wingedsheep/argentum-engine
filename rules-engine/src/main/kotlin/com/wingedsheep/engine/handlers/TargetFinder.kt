@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.sdk.scripting.values.EntityReference
 
 /**
  * Identifies the type of source that is doing the targeting.
@@ -45,6 +46,25 @@ class TargetFinder(
     private val predicateEvaluator = PredicateEvaluator()
 
     /**
+     * Build the per-candidate [PredicateContext] for filter evaluation, folding in any
+     * pipeline-derived fields (storedCollections, chosenValues, xValue, …) carried by
+     * [pipelineContext]. Keeps the always-present `controllerId`/`sourceId`/`ownerId` from
+     * the call site while letting resolution-time filters see the resolving effect's pipeline
+     * state — needed for "power <= the amassed Army's power" (EntityReference.AmassedArmy).
+     */
+    private fun targetingContext(
+        controllerId: EntityId,
+        sourceId: EntityId? = null,
+        ownerId: EntityId? = null,
+        pipelineContext: PredicateContext? = null
+    ): PredicateContext =
+        (pipelineContext ?: PredicateContext(controllerId = controllerId)).copy(
+            controllerId = controllerId,
+            sourceId = sourceId,
+            ownerId = ownerId
+        )
+
+    /**
      * Find all legal targets for a given requirement.
      *
      * @param state The current game state
@@ -64,22 +84,30 @@ class TargetFinder(
         sourceId: EntityId? = null,
         ignoreTargetingRestrictions: Boolean = false,
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
-        triggeringEntityId: EntityId? = null
+        triggeringEntityId: EntityId? = null,
+        /**
+         * Pipeline-derived predicate context (storedCollections, chosenValues, xValue, …) from the
+         * resolving effect. Threaded so a target filter can compare candidates against a
+         * resolution-time pipeline value — e.g. "power <= the amassed Army's power" reads
+         * [EntityReference.AmassedArmy] out of `pipelineContext.storedCollections`. Null for
+         * cast-time targeting where no pipeline state exists yet.
+         */
+        pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         return when (requirement) {
             is TargetPlayer -> findPlayerTargets(state, requirement, controllerId, sourceId)
             is TargetOpponent -> findOpponentTargets(state, requirement, controllerId, sourceId)
             is AnyTarget -> findAnyTargets(state, controllerId, sourceId, targetingSourceType)
-            is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId, targetingSourceType)
+            is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId, targetingSourceType, pipelineContext)
             is TargetOpponentOrPlaneswalker -> findOpponentOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetPlayerOrPlaneswalker -> findPlayerOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
-            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
+            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId, pipelineContext)
             is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, requirement, controllerId, sourceId, targetingSourceType)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
                 // (or, for "enchanted creature deals damage to any other target", the attached creature).
-                val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
+                val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId, pipelineContext)
                 val excludeId = requirement.excludeSourceId
                     ?: if (requirement.excludeAttachedCreature) {
                         sourceId?.let { state.getEntity(it)?.get<AttachedToComponent>()?.targetId }
@@ -218,7 +246,8 @@ class TargetFinder(
         sourceId: EntityId?,
         ignoreTargetingRestrictions: Boolean = false,
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
-        triggeringEntityId: EntityId? = null
+        triggeringEntityId: EntityId? = null,
+        pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         val projected = state.projectedState
         val battlefield = state.getBattlefield()
@@ -258,7 +287,7 @@ class TargetFinder(
             }
 
             // Use unified filter with projected state
-            val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+            val predicateContext = targetingContext(controllerId, sourceId, pipelineContext = pipelineContext)
             predicateEvaluator.matches(state, projected, entityId, filter.baseFilter, predicateContext)
         }
     }
@@ -314,7 +343,8 @@ class TargetFinder(
         state: GameState,
         controllerId: EntityId,
         sourceId: EntityId?,
-        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
+        pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
 
@@ -323,7 +353,7 @@ class TargetFinder(
             !playerHasHexproofAgainst(state, it, controllerId) })
 
         // Add all creatures
-        targets.addAll(findPermanentTargets(state, TargetCreature(), controllerId, sourceId, targetingSourceType = targetingSourceType))
+        targets.addAll(findPermanentTargets(state, TargetCreature(), controllerId, sourceId, targetingSourceType = targetingSourceType, pipelineContext = pipelineContext))
 
         return targets
     }
@@ -371,7 +401,8 @@ class TargetFinder(
         state: GameState,
         filter: TargetFilter,
         controllerId: EntityId,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
 
@@ -382,7 +413,7 @@ class TargetFinder(
 
             for (cardId in graveyard) {
                 if (filter.excludeSelf && cardId == sourceId) continue
-                val predicateContext = PredicateContext(controllerId = controllerId, ownerId = playerId, sourceId = sourceId)
+                val predicateContext = targetingContext(controllerId, sourceId, ownerId = playerId, pipelineContext = pipelineContext)
                 if (predicateEvaluator.matches(state, state.projectedState, cardId, filter.baseFilter, predicateContext)) {
                     targets.add(cardId)
                 }
@@ -444,12 +475,13 @@ class TargetFinder(
         sourceId: EntityId?,
         ignoreTargetingRestrictions: Boolean = false,
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
-        triggeringEntityId: EntityId? = null
+        triggeringEntityId: EntityId? = null,
+        pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         val filter = requirement.filter
         return when (filter.zone) {
-            Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
-            Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId, sourceId)
+            Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId, pipelineContext)
+            Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId, sourceId, pipelineContext)
             Zone.STACK -> findSpellTargets(state, requirement, controllerId)
             else -> findCardTargetsInZone(state, filter, controllerId)
         }

@@ -1465,7 +1465,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
   entity's projected power; inverses of `.powerGreaterThanEntity`. `powerAtMostEntity` backs Old Man of
   the Sea ("power less than or equal to this creature's power"); `powerLessThanEntity` backs "a creature
-  with lesser power" (Rangers of Ithilien). Pair with `EntityReference.Source` for "than the source".
+  with lesser power" (Rangers of Ithilien). Pair with `EntityReference.Source` for "than the source", or
+  with `EntityReference.AmassedArmy` for a **resolution-time pipeline** bound — Grishnákh, Brash Instigator
+  ("power ≤ the amassed Army's power"). The pipeline reference is threaded into target enumeration via
+  `findLegalTargets(..., pipelineContext = …)`; see §13 "Pipeline values inside target filters".
 - `.manaValueAtMostEntityManaSpent(ref)` — mana value ≤ the mana **actually spent** to cast a referenced
   entity. Reads the live `SpellOnStackComponent` buckets while the entity is still a spell, or the
   `CastRecordComponent` snapshot once it has resolved onto the battlefield (0 if it was never cast).
@@ -3576,10 +3579,28 @@ sibling effect that reads `DynamicAmount.EntityProperty(EntityReference.AmassedA
   reads the chosen Army even when Amass paused for a decision.
 - Pair with `EntityNumericProperty.{Power,Toughness}` for "deals damage equal to the amassed
   Army's power" (Foray of Orcs) or "mills X cards, where X is the amassed Army's power"
-  (Surrounded by Orcs). Pipeline state is not threaded into predicate contexts, so the
-  reference returns null in target filters — comparison-based targeting like Grishnákh's
-  "with power ≤ the amassed Army's power" needs a separate predicate plumbing that the
-  primitive doesn't yet provide.
+  (Surrounded by Orcs).
+- It also resolves inside **target / affected-entity filters** via the pipeline-threaded
+  predicate path (below), so comparison-based targeting like Grishnákh's "with power ≤ the
+  amassed Army's power" works — `TargetFilter.…powerAtMostEntity(EntityReference.AmassedArmy)`.
+
+#### Pipeline values inside target filters (`powerAtMostEntity`/`powerLessThanEntity` + `AmassedArmy`)
+
+A target filter can compare each candidate against a **resolution-time pipeline value** — the
+Army just amassed by a sibling/action effect, or any cost-chosen entity. The plumbing:
+
+- `PredicateContext` carries `storedCollections` (the pipeline's `storedCollections`, threaded
+  by `PredicateContext.fromEffectContext`). `PredicateEvaluator.resolveEntityReference` resolves
+  `EntityReference.AmassedArmy` / `FromCostStorage` from it (mirroring
+  `TargetResolutionUtils.resolveEntityReference`), instead of returning null.
+- `TargetFinder.findLegalTargets(..., pipelineContext = …)` accepts the resolving effect's
+  `PredicateContext` and folds it into the per-candidate context, so **target enumeration** sees
+  the pipeline. `ReflexiveTriggerEffectExecutor` passes it for deferred ("when you do, … target …")
+  triggers, which is how Grishnákh filters its steal target.
+- Pair with `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` / `.powerGreaterThanEntity(ref)`
+  on the `TargetFilter`. With `ref = EntityReference.AmassedArmy`, after "amass Orcs 2" the legal
+  targets exclude any creature with power > 2. This same plumbing unblocks Ent-Draught Basin's
+  "target creature with power X"-style references that need a pipeline-known bound.
 
 ### Context-plumbed
 

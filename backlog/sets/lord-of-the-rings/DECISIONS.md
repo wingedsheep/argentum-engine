@@ -1080,3 +1080,37 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `LostIsleCallingScenarioTest` — scrying once adds one verse counter; activating with 3
   counters draws 3 and exiles the enchantment with no extra turn; activating with 7 draws 7 and grants
   an extra turn (verified via the opponent's `SkipNextTurnComponent`, mirroring Time Walk's model).
+
+## Grishnákh, Brash Instigator
+
+- **Card:** {2}{R} Legendary Goblin Soldier 1/1. "When Grishnákh enters, amass Orcs 2. When you do,
+  until end of turn, gain control of target nonlegendary creature an opponent controls with power
+  less than or equal to the amassed Army's power. Untap that creature. It gains haste until end of
+  turn." Modeled as `Triggers.EntersBattlefield` → `ReflexiveTriggerEffect(action = Amass(2,"Orc"),
+  reflexiveEffect = Composite(GainControl(EndOfTurn), Untap, GrantKeyword(HASTE, EndOfTurn)),
+  reflexiveTargetRequirements = [TargetCreature(CreatureOpponentControls.nonlegendary()
+  .powerAtMostEntity(EntityReference.AmassedArmy))])`. The "when you do" half is the reflexive
+  trigger; its target is chosen as the reflexive ability goes on the stack (Scryfall 2023-06-16).
+  Control/untap/haste compose existing primitives (same shape as Goatnap).
+- **New reusable primitive — pipeline values inside target filters.** Closed the long-standing
+  "residual Grishnákh blocker": a target filter's power bound can now reference a resolution-time
+  pipeline value. `PredicateContext` gained `storedCollections` (threaded by
+  `PredicateContext.fromEffectContext` from `EffectContext.pipeline.storedCollections`), and
+  `PredicateEvaluator.resolveEntityReference` now resolves `EntityReference.AmassedArmy` /
+  `FromCostStorage` from it (previously hardcoded to null), mirroring
+  `TargetResolutionUtils.resolveEntityReference`. `TargetFinder.findLegalTargets` gained an optional
+  `pipelineContext: PredicateContext?` folded into the per-candidate `PredicateContext` at every
+  battlefield/graveyard call site, so **target enumeration** sees the pipeline.
+  `ReflexiveTriggerEffectExecutor.presentReflexiveTargets` passes the resolving effect's pipeline
+  context, which is how "creature with power ≤ the amassed Army's power" filters correctly.
+- **Why enumeration, not validation:** the reflexive resolve continuation
+  (`EffectAndTriggerContinuationResumer.resumeReflexiveTriggerResolve`) executes the reflexive effect
+  with the chosen targets and does not re-run `TargetValidator`; the gate is the legal-target set the
+  player chooses from, which now excludes power>Army candidates. The existing `PowerAtMostEntity`
+  predicate already compared projected powers — only the reference resolution + context threading was
+  missing.
+- **Unblocks:** Ent-Draught Basin and any future "target creature with power X / ≤ a pipeline-known
+  bound" card via the same `powerAtMostEntity(reference)` + `pipelineContext` plumbing.
+- **Test:** `GrishnakhBrashInstigatorScenarioTest` — amass Orcs 2 makes a 2/2 Army; the reflexive
+  trigger's legal targets include a power-2 Grizzly Bears and exclude a power-3 Hill Giant; stealing
+  the bear flips control, untaps it, and grants haste; control reverts to its owner at cleanup.

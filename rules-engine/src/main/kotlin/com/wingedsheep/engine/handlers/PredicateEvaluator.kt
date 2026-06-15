@@ -664,8 +664,13 @@ class PredicateEvaluator {
             is EntityReference.TappedAsCost -> null
             is EntityReference.AffectedEntity -> context?.affectedEntityId
             is EntityReference.IterationEntity -> null // Only available during ForEachInGroup iteration
-            is EntityReference.FromCostStorage -> null // Cost-pipeline state is not threaded into PredicateContext
-            is EntityReference.AmassedArmy -> null // Pipeline state is not threaded into PredicateContext
+            // Pipeline-stored entities (cost-chosen, amassed Army) are threaded into PredicateContext
+            // via [storedCollections] so a target/affected-entity filter can compare against them
+            // ("power <= the amassed Army's power"). Mirrors TargetResolutionUtils.resolveEntityReference.
+            is EntityReference.FromCostStorage ->
+                context?.storedCollections?.get(ref.collectionName)?.getOrNull(ref.index)
+            is EntityReference.AmassedArmy ->
+                context?.storedCollections?.get(EntityReference.AmassedArmy.STORAGE_KEY)?.firstOrNull()
             is EntityReference.EnchantedCreature -> null // Attachment lookup needs state, not threaded here
         }
     }
@@ -1079,6 +1084,15 @@ data class PredicateContext(
      * each of" semantics.
      */
     val storedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap(),
+    /**
+     * Named lists of entity ids stored by pipeline effects — e.g. the amassed Army under
+     * [EntityReference.AmassedArmy.STORAGE_KEY], or a cost-chosen entity under its `storeAs` key.
+     * Lets a target/affected-entity filter resolve [EntityReference.AmassedArmy] /
+     * [EntityReference.FromCostStorage] and compare against the stored entity's projected
+     * characteristics ("power <= the amassed Army's power" — Grishnákh, Brash Instigator).
+     * Threaded from `EffectContext.pipeline.storedCollections`; empty when no pipeline state exists.
+     */
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     /** Ordered targets chosen for the effect; used to resolve explicit EffectTarget references. */
     val targets: List<ChosenTarget> = emptyList(),
     /** Named targets bound via the DSL, mapped by name. */
@@ -1139,6 +1153,7 @@ data class PredicateContext(
                 chosenValues = context.pipeline.chosenValues,
                 storedStringLists = context.pipeline.storedStringLists,
                 storedSubtypeGroups = context.pipeline.storedSubtypeGroups,
+                storedCollections = context.pipeline.storedCollections,
                 targets = context.targets,
                 namedTargets = context.pipeline.namedTargets,
                 xValue = context.xValue,

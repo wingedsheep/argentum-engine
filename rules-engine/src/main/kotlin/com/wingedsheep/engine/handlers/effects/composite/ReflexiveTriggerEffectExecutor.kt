@@ -242,14 +242,19 @@ class ReflexiveTriggerEffectExecutor(
         val sourceId = context.sourceId
         val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "ability"
 
-        // Find legal targets for each requirement
+        // Find legal targets for each requirement. Thread the resolving effect's pipeline into the
+        // target search so a filter can compare candidates against a resolution-time pipeline value
+        // — Grishnákh's reflexive "creature with power <= the amassed Army's power" reads
+        // EntityReference.AmassedArmy out of context.pipeline.storedCollections during enumeration.
+        val pipelineContext = com.wingedsheep.engine.handlers.PredicateContext.fromEffectContext(context)
         val allLegalTargets = mutableMapOf<Int, List<com.wingedsheep.sdk.model.EntityId>>()
         for ((index, req) in targetRequirements.withIndex()) {
             val legalTargets = targetFinder.findLegalTargets(
                 state = state,
                 requirement = req,
                 controllerId = controllerId,
-                sourceId = sourceId
+                sourceId = sourceId,
+                pipelineContext = pipelineContext
             )
             allLegalTargets[index] = legalTargets
         }

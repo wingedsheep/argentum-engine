@@ -8202,6 +8202,107 @@
     ]
 }
 
+// Grishnákh, Brash Instigator
+{
+    "name": "Grishnákh, Brash Instigator",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Goblin Soldier",
+    "oracleText": "When Grishnákh enters, amass Orcs 2. When you do, until end of turn, gain control of target nonlegendary creature an opponent controls with power less than or equal to the amassed Army's power. Untap that creature. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Amass",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "subtype": "Orc"
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsNonlegendary",
+                                        {
+                                            "type": "PowerAtMostEntity",
+                                            "reference": "AmassedArmy"
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByOpponent"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Harmatiuk",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6385e769-f805-499d-9f47-494533362152.jpg?1686969015",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "You don't choose a target for Grishnákh, Brash Instigator's ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you amass Orcs this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Some cards refer to the \"amassed Army.\" That means the Army creature you chose to receive counters, even if no counters were placed on it for some reason."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gríma Wormtongue
 {
     "name": "Gríma Wormtongue",
