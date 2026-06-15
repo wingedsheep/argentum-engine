@@ -2,7 +2,7 @@
 
 **Set Size:** 85 cards
 **Release Date:** March 4, 1994
-**Implemented:** 39 / 85
+**Implemented:** 40 / 85
 | Color       | Count |
 |-------------|-------|
 | White       | 7     |
@@ -80,7 +80,7 @@
 - [x] Coral Helm
 - [ ] Cursed Rack
 - [x] Dragon Engine
-- [ ] Feldon's Cane
+- [x] Feldon's Cane
 - [ ] Golgothian Sylex
 - [x] Grapeshot Catapult
 - [ ] Ivory Tower

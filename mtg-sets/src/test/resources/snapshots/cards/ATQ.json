@@ -867,6 +867,59 @@
     ]
 }
 
+// Feldon's Cane
+{
+    "name": "Feldon's Cane",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Exile this artifact: Shuffle your graveyard into your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "graveyardCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "graveyardCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Exile this artifact: Shuffle your graveyard into your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "flavorText": "Feldon found the first of these canes frozen in the Ronom Glacier.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb6af436-bcfd-4d47-a1aa-e84b587a725a.jpg?1562934632"
+    },
+    "colorIdentityOverride": []
+}
+
 // Gaea's Avenger
 {
     "name": "Gaea's Avenger",
