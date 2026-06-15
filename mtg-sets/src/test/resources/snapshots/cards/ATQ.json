@@ -1301,6 +1301,44 @@
     "colorIdentityOverride": []
 }
 
+// Mishra's Workshop
+{
+    "name": "Mishra's Workshop",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}{C}{C}. Spend this mana only to cast artifact spells.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "ARTIFACT"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}{C}{C}. Spend this mana only to cast artifact spells."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "flavorText": "Though he eventually came to despise Tocasia, Mishra listened well to her lessons on clarity of purpose. Unlike his brother, he focused his mind on a single goal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/135de5c7-6ac9-4b68-8f1a-97f120a4b125.jpg?1745319958"
+    },
+    "colorIdentityOverride": []
+}
+
 // Obelisk of Undoing
 {
     "name": "Obelisk of Undoing",

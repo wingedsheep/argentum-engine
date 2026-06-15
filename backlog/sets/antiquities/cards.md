@@ -2,7 +2,7 @@
 
 **Set Size:** 85 cards
 **Release Date:** March 4, 1994
-**Implemented:** 44 / 85
+**Implemented:** 45 / 85
 | Color       | Count |
 |-------------|-------|
 | White       | 7     |
@@ -113,7 +113,7 @@
 
 ### Lands
 - [ ] Mishra's Factory
-- [ ] Mishra's Workshop
+- [x] Mishra's Workshop
 - [x] Strip Mine
 - [ ] Urza's Mine
 - [ ] Urza's Power Plant
