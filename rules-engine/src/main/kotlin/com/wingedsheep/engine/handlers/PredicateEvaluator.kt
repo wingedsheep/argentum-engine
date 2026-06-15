@@ -708,6 +708,7 @@ class PredicateEvaluator {
             is EntityReference.AmassedArmy ->
                 context?.storedCollections?.get(EntityReference.AmassedArmy.STORAGE_KEY)?.firstOrNull()
             is EntityReference.EnchantedCreature -> null // Attachment lookup needs state, not threaded here
+            is EntityReference.RingBearer -> null // Ring-bearer lookup needs state, not threaded here
         }
     }
 

@@ -1395,3 +1395,33 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GoldberryRiverDaughterScenarioTest` — Ability A moves a +1/+1 (lacked) onto Goldberry but
   not another charge (already had one), and the source keeps its charge; Ability B moves both chosen
   +1/+1 counters onto another permanent and draws a card.
+
+## One Ring to Rule Them All (LTR #102)
+
+- **Card:** `{2}{B}{B}` Enchantment — Saga, three chapters. I — The Ring tempts you, then each player
+  mills cards equal to your Ring-bearer's power. II — Destroy all nonlegendary creatures. III — Each
+  opponent loses 1 life for each creature card in that player's graveyard.
+- **Chapter I:** composed `Effects.Composite(TheRingTemptsYou(), Patterns.Library.mill(count =
+  EntityProperty(RingBearer(Player.You), Power), target = PlayerRef(Player.Each)))`. The mill applies
+  to every player while the amount stays anchored to *your* Ring-bearer.
+- **New reusable primitive — `EntityReference.RingBearer(player = Player.You)`:** resolves to the
+  referenced player's designated Ring-bearer (the battlefield creature with `RingBearerComponent`
+  controlled by its owner; null/0 when none). Reads the *referenced* player's bearer regardless of any
+  later player-context rebinding, so "each player mills equal to **your** Ring-bearer's power" is the
+  same number for every player. Resolved in `TargetResolutionUtils.resolveEntityReference` (and a null
+  branch in `PredicateEvaluator`). Also satisfies the engine TODO for "your Ring-bearer's power" mill.
+- **Chapter II:** `Effects.DestroyAll(GameObjectFilter.Creature.nonlegendary())` — board wipe over the
+  existing nonlegendary-creature filter; legendary creatures survive.
+- **Chapter III:** `Effects.ForEachPlayer(Player.EachOpponent, [LoseLife(Count(Player.You, GRAVEYARD,
+  Creature), target = Controller)])`. `ForEachPlayerEffect` rebinds the loop's controller to each
+  opponent, so `Player.You` inside counts *that* opponent's own graveyard. Added the
+  `Effects.ForEachPlayer` facade (raw `ForEachPlayerEffect` was already used by ~34 cards but lacked a
+  facade).
+- **Rule numbers:** Ring-bearer designation CR 701.54a–e (verified in
+  `MagicCompRules_20260417.txt`); per-player effects = "each"/"each opponent" wording.
+- **Touched:** `OneRingToRuleThemAll.kt` (card), `EntityReference.kt` (new RingBearer ref),
+  `Effects.kt` (ForEachPlayer facade), `TargetResolutionUtils.kt` + `PredicateEvaluator.kt`
+  (RingBearer resolution), SDK reference, backlog, `OneRingToRuleThemAllScenarioTest.kt`.
+- **Test:** `OneRingToRuleThemAllScenarioTest` — I: designate a power-3 Ring-bearer, both players mill
+  exactly 3. II: nonlegendary creature destroyed, legendary survives. III: opponent with 2 creature
+  cards (+ 1 noncreature) in graveyard loses exactly 2 life; controller unaffected.

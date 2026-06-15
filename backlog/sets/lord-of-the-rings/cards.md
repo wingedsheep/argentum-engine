@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 278 / 291
+**Implemented:** 279 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -132,7 +132,7 @@ starter-deck/special cards and basic lands.
 - [x] Nasty End
 - [x] Nazgûl
 - [x] Oath of the Grey Host
-- [ ] One Ring to Rule Them All
+- [x] One Ring to Rule Them All
 - [x] Orcish Bowmasters
 - [x] Orcish Medicine
 - [x] Sam's Desperate Rescue

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.values
 
+import com.wingedsheep.sdk.scripting.references.Player
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -40,6 +41,23 @@ sealed interface EntityReference {
     @Serializable
     data object Triggering : EntityReference {
         override val description: String = "the triggering creature"
+    }
+
+    /**
+     * A player's designated **Ring-bearer** (CR 701.54a–e) — the creature currently carrying that
+     * player's Ring-bearer designation, on the battlefield under their control.
+     *
+     * Resolves to that creature's entity id, or null when the referenced player has no Ring-bearer
+     * (so a `DynamicAmount.EntityProperty(RingBearer(), Power)` reads 0). [player] defaults to
+     * [Player.You] — "your Ring-bearer". The reference always reads the *referenced* player's
+     * Ring-bearer, independent of any later player-context rebinding (e.g. inside a
+     * `ForEachPlayerEffect`), so "each player mills cards equal to **your** Ring-bearer's power"
+     * (One Ring to Rule Them All) measures the spell controller's Ring-bearer for every player.
+     */
+    @SerialName("RingBearer")
+    @Serializable
+    data class RingBearer(val player: Player = Player.You) : EntityReference {
+        override val description: String = "${player.possessive} Ring-bearer"
     }
 
     /**

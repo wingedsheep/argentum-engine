@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.PreventLandPlaysThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.CopyCardIntoCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
@@ -2063,6 +2064,19 @@ object Effects {
         effect: Effect,
         noRegenerate: Boolean = false
     ): Effect = ForEachInGroupEffect(filter, effect, noRegenerate)
+
+    /**
+     * Run [effects] in sequence once for each player matching [players] (Rule: "each player …",
+     * "each opponent …"). Each iteration rebinds the resolution context's controller to the
+     * current player, so `Player.You` inside [effects] resolves to the player being processed and
+     * a fresh pipeline (stored collections) is used. Use this for per-player effects whose amount
+     * or target is measured relative to *that* player — e.g. "each opponent loses 1 life for each
+     * creature card in that player's graveyard" (One Ring to Rule Them All).
+     */
+    fun ForEachPlayer(
+        players: Player,
+        effects: List<Effect>
+    ): Effect = ForEachPlayerEffect(players, effects)
 
     /**
      * Copy a card referenced by [source] into the pipeline collection [storeAs] (Rule 707.12).

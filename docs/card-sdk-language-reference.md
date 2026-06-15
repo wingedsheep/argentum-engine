@@ -944,7 +944,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
     only the current target as `ContextTarget(0)`, fresh `storedCollections` (Kaboom!).
   - `ForEachPlayerEffect(players, effects)` → `IterationSpace.Players(players)` — per matching
     player; `controllerId` rebound so `Player.You` is the current player, `opponentId` recomputed,
-    fresh `storedCollections` (Winds of Change, Bend or Break).
+    fresh `storedCollections` (Winds of Change, Bend or Break, One Ring to Rule Them All).
   - `ForEachInCollectionEffect(collection, effect)` → `IterationSpace.Collection(name)` — per
     entity of a named pipeline collection; `pipeline.iterationTarget` bound so `EffectTarget.Self`
     is the current entity; outer collections preserved (Fight or Flight).
@@ -3621,6 +3621,17 @@ than the source permanent itself — for an Aura, `EntityReference.Source` is th
   thread state. When read in a **triggered ability** and the attached creature has already left the
   battlefield by resolution (e.g. removed in response to the aura's ETB trigger), it falls back to the
   creature's last-known power — captured when the trigger fired — per CR 608.2g, rather than 0.
+
+### Ring-bearer's power (`EntityReference.RingBearer`)
+
+- `EntityProperty(EntityReference.RingBearer(player = Player.You), EntityNumericProperty.Power)` —
+  the power of the referenced player's designated **Ring-bearer** (CR 701.54: the creature carrying
+  `RingBearerComponent` and controlled by its designating owner), or 0 when that player has no
+  Ring-bearer. The reference always reads the *referenced* player's bearer independent of any later
+  player-context rebinding — so inside a `ForEachPlayerEffect` / mill-each-player, "each player mills
+  cards equal to **your** Ring-bearer's power" (One Ring to Rule Them All) measures the spell
+  controller's Ring-bearer for every player. `player` defaults to `Player.You` ("your Ring-bearer");
+  opponent variants resolve through the effect context's `opponentId`.
 
 ### Attachment-count shortcuts (`DynamicAmounts.*` facades)
 

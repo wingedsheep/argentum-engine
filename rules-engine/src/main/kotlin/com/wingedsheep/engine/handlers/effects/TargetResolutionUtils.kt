@@ -253,6 +253,24 @@ object TargetResolutionUtils {
             is EntityReference.Sacrificed -> context.sacrificedPermanents.getOrNull(ref.index)?.entityId
             is EntityReference.TappedAsCost -> context.tappedPermanents.getOrNull(ref.index)
             is EntityReference.Triggering -> context.triggeringEntityId
+            is EntityReference.RingBearer -> {
+                // The creature carrying [player]'s Ring-bearer designation, on the battlefield
+                // under their control (CR 701.54e). Null when the player has no Ring-bearer.
+                val ownerId = when (ref.player) {
+                    is Player.You -> context.controllerId
+                    is Player.Opponent, is Player.EachOpponent,
+                    is Player.TargetOpponent, is Player.TargetPlayer -> context.opponentId
+                    else -> context.controllerId
+                }
+                ownerId?.let { owner ->
+                    state.getBattlefield().firstOrNull { id ->
+                        val bearer = state.getEntity(id)
+                            ?.get<com.wingedsheep.engine.state.components.identity.RingBearerComponent>()
+                        bearer?.ownerId == owner &&
+                            state.getEntity(id)?.get<ControllerComponent>()?.playerId == owner
+                    }
+                }
+            }
             is EntityReference.AffectedEntity -> context.affectedEntityId
             is EntityReference.IterationEntity -> context.pipeline.iterationTarget
             is EntityReference.FromCostStorage ->
