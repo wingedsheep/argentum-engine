@@ -672,6 +672,8 @@ object DamageUtils {
      * on the battlefield (e.g., Sunspine Lynx, Leyline of Punishment).
      */
     fun isDamagePreventionDisabled(state: GameState): Boolean {
+        // Turn-scoped "Damage can't be prevented this turn" (Fear, Fire, Foes!).
+        if (state.damageCantBePreventedThisTurn) return true
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue

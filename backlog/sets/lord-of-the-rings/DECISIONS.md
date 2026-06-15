@@ -1261,3 +1261,37 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `GrondTheGatebreakerScenarioTest` — Grond not a creature by default; Crew 3 (tap a 5/5)
   → artifact creature with Trample that can attack; static animates it on your turn with an Army and
   not with a non-Army creature.
+
+## Fear, Fire, Foes! (Gap 35)
+
+- **Card:** {X}{R} Sorcery — "Damage can't be prevented this turn. Fear, Fire, Foes! deals X damage
+  to target creature and 1 damage to each other creature with the same controller."
+- **Two new reusable primitives:**
+  1. **`Effects.DamageCantBePreventedThisTurn()`** (`DamageCantBePreventedThisTurnEffect`, a
+     `data object`) — turn-scoped one-shot that sets a new `GameState.damageCantBePreventedThisTurn`
+     boolean flag (reset in `TurnManager.startTurn`, alongside `spellWarpedThisTurn`).
+     `DamageUtils.isDamagePreventionDisabled(state)` now returns true when the flag is set, so the
+     existing damage path ignores all prevention (shields, prevention/replacement-of-damage,
+     protection's prevention clause). This is the one-shot complement to the static, permanent-hosted
+     `DamageCantBePrevented` replacement effect (Sunspine Lynx) — chosen because a sorcery has no
+     battlefield permanent to host the replacement effect.
+  2. **`GroupFilter.excludeTarget` / `.otherThanTarget()`** — drops the spell/ability's *first chosen
+     target* from a group (distinct from `excludeSelf`, which drops the resolving source). Resolved in
+     `ForEachInGroupExecutor`. Paired with extending `PredicateEvaluator.resolveReferencedPlayerFromState`
+     to resolve `EffectTarget.TargetController` (controller of the first chosen target) so
+     `GameObjectFilter.Creature.targetPlayerControls(EffectTarget.TargetController)` scopes the sweep to
+     the target creature's controller. Together they express "each OTHER creature with the same
+     controller [as the target]".
+- **No new serializable Component:** the turn flag is a `GameState` field (serializes with the state,
+  matching `spellWarpedThisTurn`); the new effect is a sealed-interface `@Serializable data object`,
+  registered automatically via SDK polymorphism.
+- **Rule numbers verified** against `MagicCompRules_20260417.txt`: prevention effects can't apply to
+  damage that can't be prevented — **615.6**.
+- **Touched:** `FearFireFoes.kt` (card), `DamageEffects.kt` + `Effects.kt` facade (new effect),
+  `GroupFilter.kt` (excludeTarget), `ForEachInGroupExecutor.kt`, `PredicateEvaluator.kt`
+  (TargetController), `GameState.kt` + `TurnManager.kt` (turn flag), `DamageUtils.kt`,
+  `DamageCantBePreventedThisTurnExecutor.kt` + `DamageExecutors.kt`, SDK reference, and
+  `FearFireFoesScenarioTest.kt`.
+- **Test:** `FearFireFoesScenarioTest` — X damage to the target + 1 to each other creature its
+  controller controls (a different player's creatures untouched); and a Battlefield Medic prevent-1
+  shield is ignored so full damage lands.

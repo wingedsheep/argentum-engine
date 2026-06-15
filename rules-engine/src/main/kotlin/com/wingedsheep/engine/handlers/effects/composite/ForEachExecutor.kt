@@ -13,6 +13,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
@@ -230,7 +231,17 @@ class ForEachExecutor(
         }
 
         val excludeSelfId = if (filter.excludeSelf) context.sourceId else null
+        // excludeTarget removes the spell/ability's first chosen target — used for "each other X
+        // with the same controller" relative to a targeted permanent (Fear, Fire, Foes!).
+        val excludeTargetId = if (filter.excludeTarget) {
+            when (val first = context.targets.firstOrNull()) {
+                is ChosenTarget.Permanent -> first.entityId
+                is ChosenTarget.Card -> first.cardId
+                else -> null
+            }
+        } else null
         val matched = BattlefieldFilterUtils.findMatchingOnBattlefield(state, filter.baseFilter, context, excludeSelfId)
+            .filter { excludeTargetId == null || it != excludeTargetId }
 
         // Additionally filter by chosen subtype if specified
         return if (chosenSubtype != null) {

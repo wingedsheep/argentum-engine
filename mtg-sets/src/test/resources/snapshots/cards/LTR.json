@@ -5402,6 +5402,72 @@
     ]
 }
 
+// Fear, Fire, Foes!
+{
+    "name": "Fear, Fire, Foes!",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Damage can't be prevented this turn. Fear, Fire, Foes! deals X damage to target creature and 1 damage to each other creature with the same controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "DamageCantBePreventedThisTurn",
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                {
+                    "type": "ForEachInGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": "TargetController"
+                            }
+                        },
+                        "excludeTarget": true
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Hristo D. Chukov",
+        "flavorText": "\"Open, in the name of Mordor!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37be98a4-0cba-46b4-be93-a9805fe77160.jpg?1686968914"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fiery Inscription
 {
     "name": "Fiery Inscription",

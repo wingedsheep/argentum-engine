@@ -108,6 +108,23 @@ data class AmplifyNoncombatDamageThisTurnEffect(
 }
 
 /**
+ * Turn-scoped "Damage can't be prevented this turn" (CR 615.6 — a prevention effect can't apply
+ * to damage that can't be prevented). While active for the current turn, all damage-prevention
+ * shields, prevention/replacement-of-damage effects, and protection's damage-prevention clause are
+ * ignored when damage is dealt.
+ *
+ * Unlike the static [com.wingedsheep.sdk.scripting.DamageCantBePrevented] replacement effect (which
+ * lives on a battlefield permanent like Sunspine Lynx), this is a one-shot effect a spell or ability
+ * can apply for the rest of the turn — e.g. Fear, Fire, Foes!: "Damage can't be prevented this turn."
+ * The engine sets a turn-scoped flag on the game state that is cleared at the next turn boundary.
+ */
+@SerialName("DamageCantBePreventedThisTurn")
+@Serializable
+data object DamageCantBePreventedThisTurnEffect : Effect {
+    override val description: String = "Damage can't be prevented this turn"
+}
+
+/**
  * Deal damage to multiple targets, dividing the total as you choose.
  * Used for cards like Forked Lightning ("4 damage divided among 1-3 targets").
  *

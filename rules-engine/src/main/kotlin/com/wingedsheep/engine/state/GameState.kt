@@ -117,6 +117,15 @@ data class GameState(
     /** Whether a spell was warped this turn (for Void condition: "a spell was warped this turn") */
     val spellWarpedThisTurn: Boolean = false,
 
+    /**
+     * Whether damage can't be prevented for the rest of this turn (CR 615.6 — a prevention effect
+     * can't apply to damage that can't be prevented). Set by the
+     * [com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect] one-shot (Fear,
+     * Fire, Foes!) and read by [com.wingedsheep.engine.handlers.effects.DamageUtils.isDamagePreventionDisabled].
+     * Reset to false at every turn boundary.
+     */
+    val damageCantBePreventedThisTurn: Boolean = false,
+
     /** Whether a nonland permanent left the battlefield this turn (for the Void ability word). */
     val nonlandPermanentLeftBattlefieldThisTurn: Boolean = false,
 

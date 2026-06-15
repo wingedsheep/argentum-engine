@@ -661,6 +661,17 @@ class PredicateEvaluator {
             projected.getController(triggeringId)
                 ?: state.getEntity(triggeringId)?.get<ControllerComponent>()?.playerId
         }
+        // The controller of the spell/ability's first chosen target — lets a filter scope to
+        // "creatures with the same controller as the target" (Fear, Fire, Foes!).
+        EffectTarget.TargetController -> {
+            val targetId = when (val first = context.targets.firstOrNull()) {
+                is ChosenTarget.Permanent -> first.entityId
+                is ChosenTarget.Card -> first.cardId
+                else -> null
+            } ?: return null
+            projected.getController(targetId)
+                ?: state.getEntity(targetId)?.get<ControllerComponent>()?.playerId
+        }
         else -> null
     }
 

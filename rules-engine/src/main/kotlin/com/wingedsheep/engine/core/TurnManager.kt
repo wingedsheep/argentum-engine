@@ -104,6 +104,7 @@ class TurnManager(
             pendingSpellCopies = emptyList(),
             pendingUncounterableSpells = emptyList(),
             spellWarpedThisTurn = false,
+            damageCantBePreventedThisTurn = false,
             nonlandPermanentLeftBattlefieldThisTurn = false,
             permanentsSacrificedThisTurn = 0,
             playersWhoCommittedCrimeThisTurn = emptySet(),

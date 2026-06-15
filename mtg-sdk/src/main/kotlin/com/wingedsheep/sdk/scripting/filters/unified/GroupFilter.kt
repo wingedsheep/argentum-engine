@@ -72,6 +72,13 @@ data class GroupFilter(
      */
     val chosenSubtypeKey: String? = null,
     /**
+     * When true, excludes the spell/ability's first chosen target from the group. Use this for
+     * "each OTHER X with the same controller" relative to a *targeted* permanent (as opposed to
+     * [excludeSelf], which excludes the resolving source). Example: Fear, Fire, Foes! — "1 damage
+     * to each other creature with the same controller" excludes the target creature itself.
+     */
+    val excludeTarget: Boolean = false,
+    /**
      * Where this filter applies. Defaults to scanning the battlefield. Use
      * [Scope.Self] for "this creature", [Scope.AttachedTo] for "enchanted/equipped
      * creature", or [Scope.Specific] for a bound entity. When non-Battlefield,
@@ -88,7 +95,7 @@ data class GroupFilter(
         is Scope.Specific -> "the chosen permanent"
         is Scope.Battlefield -> buildString {
             append("all ")
-            if (excludeSelf) append("other ")
+            if (excludeSelf || excludeTarget) append("other ")
             append(baseFilter.description)
             if (!baseFilter.description.endsWith("s")) {
                 append("s")  // Pluralize simple types
@@ -238,6 +245,9 @@ data class GroupFilter(
 
     /** Exclude the source permanent */
     fun other() = copy(excludeSelf = true)
+
+    /** Exclude the spell/ability's first chosen target (for "each other X" relative to a target) */
+    fun otherThanTarget() = copy(excludeTarget = true)
 
     override fun applyTextReplacement(replacer: TextReplacer): GroupFilter {
         val newBase = baseFilter.applyTextReplacement(replacer)

@@ -68,6 +68,7 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.effects.GrantDamageBonusEffect
+import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
@@ -250,6 +251,14 @@ object Effects {
      */
     fun Fight(target1: EffectTarget, target2: EffectTarget): Effect =
         FightEffect(target1, target2)
+
+    /**
+     * "Damage can't be prevented this turn." Turn-scoped shutoff of all damage prevention
+     * (shields, prevention/replacement-of-damage effects, protection's prevention clause).
+     * Used by Fear, Fire, Foes!.
+     */
+    fun DamageCantBePreventedThisTurn(): Effect =
+        DamageCantBePreventedThisTurnEffect
 
     // =========================================================================
     // Life Effects

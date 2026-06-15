@@ -298,6 +298,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `dynamicTotal` (a `DynamicAmount`) for totals computed when the ability resolves/goes on the stack —
   Ureni, the Song Unending: `dynamicTotal = DynamicAmounts.landsYouControl()`. Works for creatures and
   planeswalkers (`GameObjectFilter.CreatureOrPlaneswalker`); zero chosen targets ⇒ no-op.
+- `DamageCantBePreventedThisTurn()` — "Damage can't be prevented this turn." Turn-scoped one-shot that
+  sets a `GameState` flag (cleared at the next turn boundary), shutting off all damage prevention for
+  the rest of the turn — prevention shields, prevention/replacement-of-damage effects, and protection's
+  prevention clause are ignored (CR 615.6). The static, permanent-hosted equivalent is the
+  `DamageCantBePrevented` replacement effect (Sunspine Lynx); use this effect when a spell/ability needs
+  the shutoff without a permanent on the battlefield (Fear, Fire, Foes!).
 
 ### Life
 
@@ -1101,6 +1107,7 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `modifyStatsForAll(power, toughness, filter, duration?)` — give every match +X/+Y (`Int` or `DynamicAmount`).
 - `doublePowerAndToughnessForAll(filter, duration?)` — double each match's power and toughness. Resolves to a fixed +P/+T modification read per-entity from projected state via `DynamicAmount.EntityProperty(EntityReference.IterationEntity, …)`, so the bonus locks in at resolution (no re-doubling) and negative power doubles correctly. Roar of Endless Song, Unnatural Growth.
 - `grantKeywordToAll(keyword, filter, duration?)` / `removeKeywordFromAll(...)`; `tapAll(filter)` / `untapGroup(filter?)`; `dealDamageToAll(amount, filter)`; `destroyAll(filter, noRegenerate?)`; `gainControlOfGroup(filter?, duration?)`.
+- `GroupFilter` exclusion flags: `excludeSelf` (`.other()`) drops the resolving **source** from the group; `excludeTarget` (`.otherThanTarget()`) drops the spell/ability's **first chosen target**. Combine `GameObjectFilter.Creature.targetPlayerControls(EffectTarget.TargetController)` with `.otherThanTarget()` for "each other creature with the same controller [as the target]" — Fear, Fire, Foes!: `dealDamageToAll(1, GroupFilter(Creature.targetPlayerControls(TargetController)).otherThanTarget())`.
 
 ---
 
