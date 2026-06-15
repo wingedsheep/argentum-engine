@@ -2037,6 +2037,7 @@ class StackResolver(
             xValue = abilityComponent.xValue,
             tappedPermanents = abilityComponent.tappedPermanents,
             tappedPermanentSnapshots = abilityComponent.tappedPermanentSnapshots,
+            lastKnownSourceCounters = abilityComponent.lastKnownSourceCounters,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, activatedTargets))
         )
 

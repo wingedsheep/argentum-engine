@@ -259,6 +259,16 @@ object DynamicAmounts {
     fun additionalCostExiledCount(): DynamicAmount =
         DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT)
 
+    /**
+     * The number of [filter] counters the source had the moment its self-exile / self-sacrifice
+     * cost wiped them — "for each verse counter on this" / "if it had seven or more counters on it"
+     * read as last-known information (CR 112.7a). See
+     * [DynamicAmount.LastKnownSourceCounters] (Lost Isle Calling).
+     */
+    fun lastKnownSourceCounters(
+        filter: com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+    ): DynamicAmount = DynamicAmount.LastKnownSourceCounters(filter)
+
     // =========================================================================
     // Spell-cast trigger values
     // =========================================================================

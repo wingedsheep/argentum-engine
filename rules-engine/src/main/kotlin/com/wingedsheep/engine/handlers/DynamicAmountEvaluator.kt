@@ -32,6 +32,7 @@ import com.wingedsheep.sdk.scripting.values.EntityReference
 import com.wingedsheep.sdk.scripting.values.TurnTracker
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+import com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString
 import com.wingedsheep.sdk.scripting.references.Player
 import kotlin.math.max
 import kotlin.math.min
@@ -82,6 +83,17 @@ class DynamicAmountEvaluator(
             is DynamicAmount.Fixed -> amount.amount
 
             is DynamicAmount.XValue -> context.xValue ?: 0
+
+            // Counters the source had the moment its self-exile / self-sacrifice cost wiped them
+            // (CR 112.7a). Snapshotted into the resolution context at cost-payment time so the
+            // resolving effect reads the pre-cost count rather than zero (Lost Isle Calling).
+            is DynamicAmount.LastKnownSourceCounters -> {
+                val snapshot = context.lastKnownSourceCounters
+                when (val filter = amount.counterType) {
+                    is CounterTypeFilter.Any -> snapshot.values.sum()
+                    else -> snapshot[counterTypeToString(resolveCounterType(filter))] ?: 0
+                }
+            }
 
             // The {X} this object was cast with, read off the current object regardless of zone.
             // Reads, in order: the durable CastChoicesComponent on the battlefield permanent (and

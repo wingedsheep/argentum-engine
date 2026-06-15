@@ -1051,3 +1051,32 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   one extra Food (fires once per event, not per token); Brandywine Farmer's single ETB Food yields
   exactly two Foods (no loop); and the sacrifice-three-Foods ability (paid via
   `AdditionalCostPayment(sacrificedPermanents = …)`) draws a card and removes all three Foods.
+
+## Lost Isle Calling (LTR #61) — {1}{U} Enchantment
+
+- **Oracle:** "Whenever you scry, put a verse counter on this enchantment. {4}{U}{U}, Exile this
+  enchantment: Draw a card for each verse counter on this enchantment. If it had seven or more verse
+  counters on it, take an extra turn after this one. Activate only as a sorcery."
+- **Scry trigger is pure composition:** `Triggers.WheneverYouScry` (already used by Galadriel,
+  Celeborn, Elrond, …) + `Effects.AddCounters(Counters.VERSE, 1, Self)`. The verse counter type
+  already existed.
+- **The hard part — reading the source's counters after its self-exile cost wiped them.** The
+  ability's `Costs.ExileSelf` is part of the *cost*, so by resolution the source is in exile and its
+  verse counters are gone (CR 122.2 removes counters on a zone change). Both "draw a card for each
+  verse counter on this" and "if it had seven or more" must read the count *as it last existed*
+  (CR 112.7a / 608.2h).
+- **New reusable primitive: `DynamicAmount.LastKnownSourceCounters(CounterTypeFilter)`** (facade
+  `DynamicAmounts.lastKnownSourceCounters(filter)`). `ActivateAbilityHandler` now snapshots the
+  source's `CountersComponent` into a new `lastKnownSourceCounters` field on
+  `ActivatedAbilityOnStackComponent` (and thence `EffectContext`) *before* paying the cost, but only
+  when the cost self-exiles or self-sacrifices (`costExilesOrSacrificesSelf`). The evaluator reads
+  that map (filtered by counter type; `Any` sums all). Reusable for any future "exile/sacrifice this:
+  do X per counter on it" card. Did **not** extend the trigger-LKI path (`triggerCounterCount` etc.)
+  because that fires off a leave-battlefield *event*, whereas a paid cost has no such trigger.
+- **Draw + extra turn compose existing nodes:** `DrawCards(lastKnownSourceCounters(Named(VERSE)))` and
+  `ConditionalEffect(Compare(lastKnownSourceCounters(Named(VERSE)), GTE, Fixed(7)), TakeExtraTurn())`.
+  Added an `Effects.TakeExtraTurn(target, loseAtEndStep)` facade over the existing `TakeExtraTurnEffect`
+  (cards previously hand-rolled the raw constructor).
+- **Test:** `LostIsleCallingScenarioTest` — scrying once adds one verse counter; activating with 3
+  counters draws 3 and exiles the enchantment with no extra turn; activating with 7 draws 7 and grants
+  an extra turn (verified via the opponent's `SkipNextTurnComponent`, mirroring Time Walk's model).

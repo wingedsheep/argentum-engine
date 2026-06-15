@@ -108,6 +108,14 @@ data class EffectContext(
     /** LKI snapshots for [tappedPermanents] (Rule 112.7a). See [PermanentSnapshot]. */
     val tappedPermanentSnapshots: List<PermanentSnapshot> = emptyList(),
     /**
+     * Counters (counter-type-string → count) the source had the moment a self-exile /
+     * self-sacrifice cost wiped them (CR 112.7a). Read by
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.LastKnownSourceCounters] so an effect
+     * like "Draw a card for each verse counter on this. If it had seven or more..." (Lost Isle
+     * Calling) sees the pre-cost count rather than zero.
+     */
+    val lastKnownSourceCounters: Map<String, Int> = emptyMap(),
+    /**
      * LKI snapshots (Rule 112.7a) for entities chosen via an additional cost
      * step like [com.wingedsheep.sdk.scripting.AdditionalCost.ChooseEntity]
      * with `captureSnapshot = true`. Indexed by entity id via

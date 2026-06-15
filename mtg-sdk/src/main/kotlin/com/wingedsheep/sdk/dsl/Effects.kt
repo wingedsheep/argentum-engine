@@ -292,6 +292,17 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.WinGameEffect(target, message)
 
     /**
+     * Take an extra turn after this one (Time Walk, Lost Isle Calling). When [loseAtEndStep]
+     * is true, the player loses the game at the beginning of that turn's end step (Last Chance,
+     * Final Fortune). Prevented by `PreventExtraTurns` (Ugin's Nexus).
+     */
+    fun TakeExtraTurn(
+        target: EffectTarget = EffectTarget.Controller,
+        loseAtEndStep: Boolean = false
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect(loseAtEndStep, target)
+
+    /**
      * Force a player to exile from multiple zones (battlefield, hand, graveyard).
      * Used for Lich's Mastery: "for each 1 life you lost, exile a permanent you control
      * or a card from your hand or graveyard."

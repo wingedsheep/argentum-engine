@@ -765,6 +765,21 @@ class ActivateAbilityHandler(
         val tappedTargetIds = firstTapSlice
         val tappedSnapshots = capturePermanentSnapshots(tappedTargetIds, currentState.projectedState)
 
+        // Snapshot the source's counters before a self-exile / self-sacrifice cost wipes them
+        // (CR 112.7a / 122.2), so the effect can read the pre-cost count via
+        // DynamicAmount.LastKnownSourceCounters (Lost Isle Calling).
+        val lastKnownSourceCounters: Map<String, Int> =
+            if (costExilesOrSacrificesSelf(effectiveCost)) {
+                currentState.getEntity(action.sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                    ?.counters
+                    ?.filterValues { it > 0 }
+                    ?.mapKeys { (type, _) ->
+                        com.wingedsheep.engine.handlers.effects.permanent.counters
+                            .counterTypeToString(type)
+                    } ?: emptyMap()
+            } else emptyMap()
+
         // When using Explicit payment, mana sources were already tapped above —
         // strip the Mana portion so payAbilityCost doesn't try to deduct from the pool.
         // When convoke was applied, replace the mana portion with the reduced cost.
@@ -1213,6 +1228,7 @@ class ActivateAbilityHandler(
             xValue = action.xValue,
             tappedPermanents = firstTapSlice,
             tappedPermanentSnapshots = tappedSnapshots,
+            lastKnownSourceCounters = lastKnownSourceCounters,
             descriptionOverride = ability.descriptionOverride,
             abilityIdentity = com.wingedsheep.sdk.scripting.AbilityIdentity(
                 cardComponent.cardDefinitionId, ability.id
@@ -1474,6 +1490,17 @@ class ActivateAbilityHandler(
     private fun hasTapCost(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Tap -> true
         is AbilityCost.Composite -> cost.costs.any { it is AbilityCost.Tap }
+        else -> false
+    }
+
+    /**
+     * Whether [cost] removes the source from its current zone — a self-exile or self-sacrifice.
+     * Used to decide whether to snapshot the source's counters before payment so the resolving
+     * effect can read the pre-cost count (DynamicAmount.LastKnownSourceCounters).
+     */
+    private fun costExilesOrSacrificesSelf(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.ExileSelf, is AbilityCost.SacrificeSelf -> true
+        is AbilityCost.Composite -> cost.costs.any { costExilesOrSacrificesSelf(it) }
         else -> false
     }
 

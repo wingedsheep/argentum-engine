@@ -310,6 +310,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of counters matching [counterType] that the *source* of the current ability had
+     * the moment its self-exile / self-sacrifice cost was paid (CR 112.7a / 608.2h last-known
+     * information). When an activated ability's cost exiles or sacrifices its own source, the
+     * source's counters are gone by the time the effect resolves (CR 122.2 removes counters on a
+     * zone change), so the count is snapshotted into the resolution context at cost-payment time.
+     *
+     * Example — Lost Isle Calling: "{4}{U}{U}, Exile this enchantment: Draw a card for each verse
+     * counter on this enchantment. If it had seven or more verse counters on it, take an extra turn
+     * after this one." Both the draw amount and the seven-or-more test read
+     * `LastKnownSourceCounters(CounterTypeFilter.Named(Counters.VERSE))`.
+     */
+    @SerialName("LastKnownSourceCounters")
+    @Serializable
+    data class LastKnownSourceCounters(
+        val counterType: com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+    ) : DynamicAmount {
+        override val description: String =
+            "the number of ${counterType.description} counters on it".replace("  ", " ")
+    }
+
+    /**
      * The value of `{X}` this object was cast with, read off the *current object* regardless of
      * what zone it is in.
      *

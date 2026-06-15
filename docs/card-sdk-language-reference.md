@@ -308,6 +308,9 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `LoseHalfLife(roundUp, target, lifePlayer?)` — lose half of life total (round up/down).
 - `LoseGame(target, message?)` — target loses the game.
 - `WinGame(target, message?)` — target wins the game.
+- `TakeExtraTurn(target, loseAtEndStep?)` — target takes an extra turn after this one (Time Walk, Lost Isle Calling).
+  Set `loseAtEndStep = true` for "...you lose the game at the beginning of that turn's end step" (Last Chance, Final
+  Fortune). Prevented by the `PreventExtraTurns` replacement (Ugin's Nexus).
 - `ForceExileMultiZone(count, target)` — exile from hand/battlefield/graveyard combined (Lich's Mastery shape).
 
 ### Cards (draw / discard)
@@ -3469,6 +3472,20 @@ Numbers computed at resolution time.
 - `LastKnownCountersOnSource(type)` — counters when source last existed (for dies-triggers).
 - `CountersOnTarget(target, type)` — counters on a target permanent.
 - `CountersOnContext(path, type)` — counters stored in an `EffectContext` path.
+
+### Last-known source counters (self-exile / self-sacrifice cost)
+
+- `LastKnownSourceCounters(CounterTypeFilter)` — the number of matching counters the *source* had the moment its
+  self-exile / self-sacrifice cost wiped them (CR 112.7a / 122.2). When an activated ability's cost exiles or
+  sacrifices its own source, the counters are gone by resolution, so `ActivateAbilityHandler` snapshots them into the
+  resolution context at cost-payment time and this node reads them back. `CounterTypeFilter.Any` sums all counter
+  types; otherwise it reads the named/typed counter. Facade: `DynamicAmounts.lastKnownSourceCounters(filter)`.
+  Example — Lost Isle Calling: "{4}{U}{U}, Exile this enchantment: Draw a card for each verse counter on this
+  enchantment. If it had seven or more verse counters on it, take an extra turn." Both the draw amount
+  (`DrawCards(lastKnownSourceCounters(Named(Counters.VERSE)))`) and the seven-or-more gate
+  (`Compare(lastKnownSourceCounters(Named(Counters.VERSE)), GTE, Fixed(7))`) read this node. Contrast
+  `EntityProperty(Source, CounterCount(filter))`, which reads counters on the still-present source (zero after a
+  self-exile cost).
 
 ### Station
 

@@ -178,6 +178,13 @@ data class ActivatedAbilityOnStackComponent(
     val tappedPermanents: List<EntityId> = emptyList(),
     /** LKI snapshots for [tappedPermanents] — see [sacrificedPermanents]. */
     val tappedPermanentSnapshots: List<PermanentSnapshot> = emptyList(),
+    /**
+     * Counters (counter-type-string → count) the source had the moment a self-exile /
+     * self-sacrifice cost was paid (CR 112.7a). Captured before the cost wipes them so the
+     * resolving effect can read the pre-cost count via
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.LastKnownSourceCounters] (Lost Isle Calling).
+     */
+    val lastKnownSourceCounters: Map<String, Int> = emptyMap(),
     /** Optional human-readable description from `ActivatedAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
     val descriptionOverride: String? = null,

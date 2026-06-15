@@ -10154,6 +10154,95 @@
     ]
 }
 
+// Lost Isle Calling
+{
+    "name": "Lost Isle Calling",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you scry, put a verse counter on this enchantment.\n{4}{U}{U}, Exile this enchantment: Draw a card for each verse counter on this enchantment. If it had seven or more verse counters on it, take an extra turn after this one. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "ScriedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "verse",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "LastKnownSourceCounters",
+                                "counterType": {
+                                    "type": "Named",
+                                    "name": "verse"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "LastKnownSourceCounters",
+                                        "counterType": {
+                                            "type": "Named",
+                                            "name": "verse"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    }
+                                }
+                            },
+                            "then": "TakeExtraTurn"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Wangjie Li",
+        "flavorText": "\"To the Sea, to the Sea!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b744230-8127-4d4f-9d40-75e7c2aab77c.jpg?1686968202"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lost to Legend
 {
     "name": "Lost to Legend",

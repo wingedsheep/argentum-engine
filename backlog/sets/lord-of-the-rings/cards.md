@@ -2,7 +2,7 @@
 
 **Set Size:** 291 cards (261 Draft / 30 Extra)
 **Release Date:** June 23, 2023
-**Implemented:** 266 / 291
+**Implemented:** 267 / 291
 Run `scripts/card-status --set LTR` (and `--list --set LTR`) to verify status at any time.
 The split below mirrors that script: **Draft** = Scryfall `booster: true`; **Extra** =
 starter-deck/special cards and basic lands.
@@ -88,7 +88,7 @@ starter-deck/special cards and basic lands.
 - [x] Ithilien Kingfisher
 - [x] Knights of Dol Amroth
 - [x] Lórien Revealed
-- [ ] Lost Isle Calling
+- [x] Lost Isle Calling
 - [x] Meneldor, Swift Savior
 - [x] Nimrodel Watcher
 - [x] Pelargir Survivor
