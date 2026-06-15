@@ -112,6 +112,56 @@
     ]
 }
 
+// Argivian Blacksmith
+{
+    "name": "Argivian Blacksmith",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "{T}: Prevent the next 2 damage that would be dealt to target artifact creature this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact creature"
+                        },
+                        "id": "target artifact creature"
+                    }
+                ],
+                "descriptionOverride": "{T}: Prevent the next 2 damage that would be dealt to target artifact creature this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Kerstin Kaman",
+        "flavorText": "Through years of study and training, the Blacksmiths of Argive became adept at reassembling the mangled remains of the strange, mechanical creatures abounding in their native land.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f604338-5ee4-4c47-ad5a-5c805c96c8de.jpg?1562914930"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ashnod's Altar
 {
     "name": "Ashnod's Altar",
