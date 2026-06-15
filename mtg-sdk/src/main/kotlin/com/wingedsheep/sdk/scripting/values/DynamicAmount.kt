@@ -470,6 +470,21 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override val description: String = "the number of distinct selected permanents"
     }
 
+    /**
+     * Sum of the mana values of *every* card in a named pipeline collection.
+     *
+     * Unlike [StoredCardManaValue] (which reads only the first card), this totals the mana value
+     * of all cards stored under [collectionName]. Cards are read by entity id, so the value is
+     * correct even after the collection has been moved to another zone (e.g. milled into the
+     * graveyard). Used for "you mill X cards… that player loses life equal to the total mana value
+     * of those cards" (Palantír of Orthanc).
+     */
+    @SerialName("ManaValueSumOfCollection")
+    @Serializable
+    data class ManaValueSumOfCollection(val collectionName: String) : DynamicAmount {
+        override val description: String = "the total mana value of the $collectionName cards"
+    }
+
     // =========================================================================
     // Math Operations - Composable arithmetic on DynamicAmounts
     // =========================================================================

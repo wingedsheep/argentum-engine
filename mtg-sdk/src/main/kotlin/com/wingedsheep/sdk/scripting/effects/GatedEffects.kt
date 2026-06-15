@@ -265,7 +265,9 @@ fun OptionalCostEffect(
  * @param inlineOnTrigger Render the yes/no inline on the triggering permanent.
  * @param hint Optional reminder text shown under the prompt.
  * @param decisionMaker Who answers the yes/no. Defaults to the controller; only the prompt is
- *   delegated (e.g. [EffectTarget.TargetController] for "that creature's controller may …").
+ *   delegated (e.g. [EffectTarget.TargetController] for "that creature's controller may …",
+ *   or [EffectTarget.PlayerRef] of `TargetOpponent` for "target opponent may …").
+ * @param otherwise Effect that runs iff the chooser declines ("If that player doesn't, …").
  */
 @Suppress("FunctionName")
 fun MayEffect(
@@ -274,7 +276,8 @@ fun MayEffect(
     sourceRequiredZone: Zone? = null,
     inlineOnTrigger: Boolean = false,
     hint: String? = null,
-    decisionMaker: EffectTarget? = null
+    decisionMaker: EffectTarget? = null,
+    otherwise: Effect? = null
 ): GatedEffect = GatedEffect(
     gate = Gate.MayDecide(
         hint = hint,
@@ -282,6 +285,7 @@ fun MayEffect(
         inlineOnTrigger = inlineOnTrigger
     ),
     then = effect,
+    otherwise = otherwise,
     decisionMaker = decisionMaker,
     descriptionOverride = descriptionOverride
 )

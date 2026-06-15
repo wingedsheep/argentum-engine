@@ -207,6 +207,7 @@ object CardLinter {
         put("PipelineTarget" to "collectionName", read(Space.COLLECTION))
         put("ControllerOfPipelineTarget" to "collectionName", read(Space.COLLECTION))
         put("StoredCardManaValue" to "collectionName", read(Space.COLLECTION))
+        put("ManaValueSumOfCollection" to "collectionName", read(Space.COLLECTION))
         put("FromCostStorage" to "collectionName", read(Space.COLLECTION))
         put("RetargetChooser.OwnerOfStored" to "collectionName", read(Space.COLLECTION))
         put("TapUntapCollection" to "collectionName", read(Space.COLLECTION))

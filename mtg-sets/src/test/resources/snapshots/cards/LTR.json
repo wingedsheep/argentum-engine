@@ -12858,6 +12858,161 @@
     ]
 }
 
+// Palantír of Orthanc
+{
+    "name": "Palantír of Orthanc",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "At the beginning of your end step, put an influence counter on Palantír of Orthanc and scry 2. Then target opponent may have you draw a card. If that player doesn't, you mill X cards, where X is the number of influence counters on Palantír of Orthanc, and that player loses life equal to the total mana value of those cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "influence",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "scried"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "scried",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "toBottom",
+                                    "storeRemainder": "toTop",
+                                    "selectedLabel": "Put on bottom",
+                                    "remainderLabel": "Put on top"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toBottom",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toTop",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                },
+                                "EmitScriedEvent"
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "otherwise": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "TopOfLibrary",
+                                                    "count": {
+                                                        "type": "EntityProperty",
+                                                        "entity": "Source",
+                                                        "numericProperty": {
+                                                            "type": "CounterCount",
+                                                            "counterType": {
+                                                                "type": "Named",
+                                                                "name": "influence"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "storeAs": "milled"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "milled",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "ManaValueSumOfCollection",
+                                            "collectionName": "milled"
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "target opponent"
+                                        }
+                                    }
+                                ]
+                            },
+                            "decisionMaker": {
+                                "type": "BoundVariable",
+                                "name": "target opponent"
+                            },
+                            "descriptionOverride": "Have Palantír of Orthanc's controller draw a card?"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "MYTHIC",
+        "artist": "Tatiana Veryayskaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6efb6a69-562c-4d95-858d-b067444cfd7e.jpg?1686970247"
+    }
+}
+
 // Pelargir Survivor
 {
     "name": "Pelargir Survivor",

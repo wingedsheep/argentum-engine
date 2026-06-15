@@ -863,12 +863,22 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
     `MayPayXForEffect` (see "Optional & gated" below).
   - The multi-player APNAP `AnyPlayerMayPayEffect` stays a **standalone effect**, not a gate — a
     single `decisionMaker` can't express its turn-order loop (see below).
-- `MayEffect(effect, descriptionOverride?, sourceRequiredZone?, inlineOnTrigger?, hint?, decisionMaker?)`
+- `MayEffect(effect, descriptionOverride?, sourceRequiredZone?, inlineOnTrigger?, hint?, decisionMaker?, otherwise?)`
   — "You may [effect]." Facade preserved for existing cards; it now **lowers to
-  `GatedEffect(Gate.MayDecide(...), then = effect)`** (compiled form is `Gated`, no distinct `May` type
-  or executor). The may-vs-target trigger reorder — for a "may" ability that *also* targets, the yes/no
-  is asked *before* target selection (Invigorating Boon) — recognizes the lowered shape via the
-  `Effect.asMayDecide()` matcher (a bare `Gate.MayDecide` with no `otherwise`).
+  `GatedEffect(Gate.MayDecide(...), then = effect, otherwise = otherwise, decisionMaker = decisionMaker)`**
+  (compiled form is `Gated`, no distinct `May` type or executor). The may-vs-target trigger reorder —
+  for a "may" ability that *also* targets, the yes/no is asked *before* target selection (Invigorating
+  Boon) — recognizes the lowered shape via the `Effect.asMayDecide()` matcher (a bare `Gate.MayDecide`
+  with no `otherwise`).
+  - **`decisionMaker` routes the yes/no to a non-controller** — pass any player `EffectTarget`
+    (`EffectTarget.TargetController` for "that creature's controller may …", or a bound target such
+    as `target("target opponent", Targets.Opponent)` for "**target opponent may …**"). Only the
+    yes/no prompt is delegated; the `then`/`otherwise` effects still resolve from the controller's
+    perspective unless they themselves target a specific player.
+  - **`otherwise` is the "if that player doesn't" branch** — runs iff the chooser declines. Combine
+    with a delegated `decisionMaker` for "target opponent may [then]; if that player doesn't,
+    [otherwise]" (Palantír of Orthanc: "target opponent may have you draw a card; if that player
+    doesn't, you mill X cards and that player loses life equal to their total mana value").
 - `OptionalCostEffect(cost, ifPaid, ifNotPaid?)` — "You may [cost]. If you do, [ifPaid]." Facade
   preserved for existing cards; it now **lowers to `GatedEffect` with a `Gate.MayPay`** gate (compiled
   form is `Gated`, not a distinct `OptionalCost` type).
@@ -3683,6 +3693,14 @@ Army just amassed by a sibling/action effect, or any cost-chosen entity. The plu
   e.g. Call the Spirit Dragons puts a +1/+1 counter on a chosen Dragon of each color (one `SelectTarget`
   per color, each stored under its own key) and wins if five *different* Dragons received counters, so a
   multicolored Dragon chosen for two colors counts once.
+- `StoredCardManaValue(collectionName)` — mana value of the **first** card in a named pipeline
+  collection (Erratic Explosion-style "that card's mana value").
+- `ManaValueSumOfCollection(collectionName)` — **total** mana value of *every* card in a named
+  pipeline collection. Facade: `DynamicAmounts.manaValueSumOf(collectionName)`. Cards are read by
+  entity id, so the value stays correct after the collection has moved zones (e.g. milled into the
+  graveyard). For "you mill X cards … that player loses life equal to the total mana value of those
+  cards" — Palantír of Orthanc mills into the default `"milled"` collection
+  (`Patterns.Library.mill(X)`), then `Effects.LoseLife(DynamicAmounts.manaValueSumOf("milled"), opponent)`.
 
 ### `ManaColorSet`<a id="manacolorset"></a>
 

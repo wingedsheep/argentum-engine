@@ -173,6 +173,13 @@ class DynamicAmountEvaluator(
                     .size
             }
 
+            is DynamicAmount.ManaValueSumOfCollection -> {
+                val cards = context.pipeline.storedCollections[amount.collectionName] ?: return 0
+                cards.sumOf { cardId ->
+                    state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
+                }
+            }
+
             // Math operations — propagate [projectedState] so a mid-projection caller's
             // intermediate snapshot survives nested aggregates. Arithmetic is saturating
             // (GameLimits.*Clamped): a "twice the number of X" / doubling chain must clamp at

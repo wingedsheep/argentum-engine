@@ -1185,3 +1185,30 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `FaramirPrinceOfIthilienScenarioTest` — both branches: opponent who doesn't attack lets you
   draw at their next end step; opponent who declares an attacker at you (Grizzly Bears) instead gives
   you three Human Soldier tokens.
+
+### Palantír of Orthanc (Gap 6)
+
+- **Card:** `{3}` Legendary Artifact. "At the beginning of your end step, put an influence counter on
+  Palantír of Orthanc and scry 2. Then target opponent may have you draw a card. If that player
+  doesn't, you mill X cards (X = influence counters on Palantír) and that player loses life equal to
+  the total mana value of those cards." Modeled as one `Triggers.YourEndStep` triggered ability with a
+  `target("target opponent", Targets.Opponent)`, then `Effects.Composite` of: `AddCounters(INFLUENCE, 1,
+  Self)` → `Patterns.Library.scry(2)` → the gated may.
+- **Opponent-decides "may" — no new type needed.** `GatedEffect`/the `MayEffect` facade already carries
+  a `decisionMaker` that routes the yes/no to a non-controller (used by Magnetic Mountain, Requiem
+  Monolith). Set `decisionMaker = <the bound target opponent>` so the *targeted opponent* answers. On
+  yes → `Effects.DrawCards(1, Controller)` (you draw); on no → the `otherwise` branch. I only added an
+  `otherwise` parameter to the `MayEffect` facade (it already existed on `GatedEffect`) so "target
+  opponent may [then]; if they don't, [otherwise]" is expressible through the facade.
+- **`DynamicAmount.ManaValueSumOfCollection(collectionName)` (new, reusable).** Else-branch is
+  `Patterns.Library.mill(countersOnSelf(INFLUENCE), Controller)` (mills into the default `"milled"`
+  collection) → `Effects.LoseLife(DynamicAmounts.manaValueSumOf("milled"), opponent)`. The existing
+  `StoredCardManaValue` only reads the *first* card; the new variant sums **every** card in a named
+  pipeline collection. Reads each card by entity id, so it is correct after the cards have moved to the
+  graveyard. Evaluator branch in `DynamicAmountEvaluator`; facade `DynamicAmounts.manaValueSumOf`. No
+  new serialized component — `DynamicAmount` is a sealed interface (auto-polymorphic) and the milled
+  set lives in the existing `PipelineState.storedCollections`.
+- **Test:** `PalantirOfOrthancScenarioTest` — both branches. Yes: influence counter added, scry 2, then
+  opponent (player 2) says yes → you draw exactly one card, nothing milled, opponent at 20. No: pre-load
+  2 influence counters (X = 3 after the increment), opponent declines → mill Grizzly Bears (MV 2) +
+  Hill Giant (MV 4) + Lightning Bolt (MV 1), opponent loses 7 life (20 → 13).

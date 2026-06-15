@@ -204,6 +204,14 @@ object DynamicAmounts {
     fun distinctEntitiesIn(vararg collections: String): DynamicAmount =
         DynamicAmount.DistinctEntitiesInCollections(collections.toList())
 
+    /**
+     * Total mana value of every card in a named pipeline collection (e.g. the cards just milled
+     * into a "milled" collection). Reads each card by entity id, so it stays correct after the
+     * collection has moved zones. See [DynamicAmount.ManaValueSumOfCollection].
+     */
+    fun manaValueSumOf(collectionName: String): DynamicAmount =
+        DynamicAmount.ManaValueSumOfCollection(collectionName)
+
     // =========================================================================
     // Graveyard counting
     // =========================================================================
