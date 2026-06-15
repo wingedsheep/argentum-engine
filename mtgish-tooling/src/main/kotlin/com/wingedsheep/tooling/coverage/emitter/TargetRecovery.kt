@@ -644,6 +644,11 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         val types = targetTypes(args)
         val colors = args.colorsOf("IsColor")
         val nonColors = args.colorsOf("IsNonColor")
+        val nonTypes = args.argWordsTagged("IsNonCardtype")
+        if (types.isEmpty() && colors.isEmpty() && nonColors.isEmpty() && nonTypes == listOf("Creature")) {
+            return Call("TargetSpell", listOf(arg("filter", "TargetFilter.NoncreatureSpellOnStack")))
+        }
+        if (nonTypes.isNotEmpty()) return null  // non-type + extra predicates not rendered -> SCAFFOLD
         // "counter target nonblue spell" (Frazzle) — an IsNonColor clause on a stack spell. AND-of-not =
         // "neither X nor Y"; each excluded colour chains as .notColor. SDK supports it on SpellOnStack.
         if (types.isEmpty() && colors.isEmpty() && nonColors.isNotEmpty()) {

@@ -120,6 +120,11 @@ class TargetRecoveryTest : StringSpec({
             "TargetSpell(filter = TargetFilter.SpellOnStack.withColor(Color.BLUE))"
     }
 
+    "targetExpr restricts a counter to a noncreature spell (Spell Pierce)" {
+        ctx.targetDsl(obj("""{"_Target":"TargetSpell","args":{"_Spells":"IsNonCardtype","args":"Creature"}}""")) shouldBe
+            "TargetSpell(filter = TargetFilter.NoncreatureSpellOnStack)"
+    }
+
     "targetExpr declines a spell whose filter is about what it targets, not its type (Confound)" {
         // "counter target spell that targets a creature": the nested IsCardtype describes the spell's
         // target, so it must not collapse to CreatureSpellOnStack ("a creature spell"). Decline -> SCAFFOLD.
