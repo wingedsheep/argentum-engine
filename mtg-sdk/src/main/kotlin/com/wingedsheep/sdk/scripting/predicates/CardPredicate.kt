@@ -654,6 +654,24 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         }
     }
 
+    /**
+     * Matches creature cards that share **no** creature type with any permanent the evaluating
+     * player controls matching [filter]. Used by Radagast the Brown ("a creature card that doesn't
+     * share a creature type with a creature you control") with `filter = GameObjectFilter.Creature`.
+     * The creature types of the controlled permanents are read from projected state, so granted
+     * types (changelings, type-changing effects) are honored. A candidate with no creature types of
+     * its own shares none, so it matches.
+     */
+    @SerialName("DoesNotShareCreatureTypeWithPermanentYouControl")
+    @Serializable
+    data class DoesNotShareCreatureTypeWithPermanentYouControl(val filter: GameObjectFilter) : CardPredicate {
+        override val description: String = "that doesn't share a creature type with ${filter.description} you control"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     // =============================================================================
     // Stack Item Type Predicates
     // =============================================================================

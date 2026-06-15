@@ -1029,6 +1029,10 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `surveil(count)` — look at top N, any to graveyard, rest on top.
 - `mill(count)` — top N cards into graveyard.
 - `lookAtTopAndKeep(count, keepCount)` — Ancestral Memories — keep exactly K to hand.
+- `lookAtTopRevealMatchingToHand(count, filter, prompt, restDestination?, restOrder?)` — Radagast the
+  Brown / Star Charter shape: look at top `count`, **optionally** reveal one card matching `filter` to
+  hand, rest to `restDestination` (default bottom of library) in `restOrder` (default
+  `CardOrder.Random`). `count` is a `DynamicAmount` (e.g. `DynamicAmounts.triggeringManaValue()`).
 - `lookAtTopAndReorder(count)` — reorder top N.
 
 **Reveal patterns**
@@ -1477,6 +1481,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   creature you control") with `filter = GameObjectFilter.Creature.legendary()`. Colorless candidates
   never match. Evaluated for real in targeting/search/count contexts; inert (false) in
   static-projection / trigger-gating, permissive (true) in cost-calculation.
+- `.notSharingCreatureTypeWithPermanentYouControl(filter)` —
+  `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl`: shares **no** (projected) creature
+  type with any permanent the evaluating player controls matching `filter`. Negative analogue of
+  `.sharingColorWithPermanentYouControl`. Used by Radagast the Brown ("a creature card that doesn't share
+  a creature type with a creature you control") with `filter = GameObjectFilter.Creature`. A candidate
+  with no creature types of its own shares none, so it matches.
 - `.named(name)` — `CardPredicate.NameEquals`: matches a fixed card name.
 - `.namedFromVariable(variableName)` — `CardPredicate.NameEqualsChosen`: matches the card name stored in
   `chosenValues[variableName]` (case-insensitive). Set the name with `Effects.ChooseCardName` (player names it)

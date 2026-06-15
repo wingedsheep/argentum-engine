@@ -1332,3 +1332,31 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `FiresOfMountDoomScenarioTest` — ETB deals 2 to a targeted opponent creature and destroys
   an Equipment attached to it; the activated ability impulse-exiles the top card, and playing it that
   turn fires the rider dealing 2 to each player.
+
+## Radagast the Brown (LTR #184) — "doesn't share a creature type with a creature you control" filter (2026-06-15)
+- **Card:** {2}{G}{G} Legendary Creature — Avatar Wizard, 2/5. "Whenever Radagast or another nontoken
+  creature you control enters, look at the top X cards of your library, where X is that creature's
+  mana value. You may reveal a creature card that doesn't share a creature type with a creature you
+  control from among those cards and put it into your hand. Put the rest on the bottom of your library
+  in a random order."
+- **Trigger:** `TriggerSpec(ZoneChangeEvent(GameObjectFilter.Creature.youControl().nontoken(), to =
+  BATTLEFIELD), binding = TriggerBinding.ANY)` — `ANY` makes it fire for Radagast itself plus any other
+  matching creature. X = `DynamicAmounts.triggeringManaValue()` (the entering creature's MV).
+- **New filter primitive:** `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl(filter)` +
+  facade `GameObjectFilter.notSharingCreatureTypeWithPermanentYouControl(filter)`. Negative analogue of
+  the existing `SharesColorWithPermanentYouControl`; evaluated in `PredicateEvaluator` via projected
+  subtypes (granted types honored), `none { ... }` over the controller's matching battlefield
+  permanents. A candidate with no creature types of its own shares none → matches. Sealed
+  `@Serializable` CardPredicate — no manual Serialization.kt registration needed.
+- **New pattern helper:** `Patterns.Library.lookAtTopRevealMatchingToHand(count, filter, prompt,
+  restDestination?, restOrder?)` — Gather top `count` → optional filtered `ChooseUpTo(1)` reveal-to-hand
+  → rest to bottom (`CardOrder.Random` default). Generalizes the Star Charter / Whiskervale shape with a
+  `DynamicAmount` count and a custom filter.
+- **Rule numbers:** modeled per oracle wording; "look at" + optional reveal + bottom-in-random-order are
+  CR 701/library-ordering mechanics — no specific number cited in code.
+- **Touched:** `RadagastTheBrown.kt` (card), `CardPredicate.kt` + `ObjectFilter.kt` (filter facade),
+  `PredicateEvaluator.kt` (evaluation), `LibraryPatterns.kt` (pattern), SDK reference, backlog,
+  `RadagastTheBrownScenarioTest.kt`.
+- **Test:** `RadagastTheBrownScenarioTest` — proves a Bear/Soldier sharing a type with your creatures
+  is shown-but-not-selectable while a Spirit sharing none is selectable and goes to hand; the "may" is
+  declinable; the rest go to the bottom.

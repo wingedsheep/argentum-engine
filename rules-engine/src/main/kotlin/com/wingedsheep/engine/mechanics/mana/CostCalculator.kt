@@ -989,6 +989,7 @@ class CostCalculator(
             is CardPredicate.SharesCreatureTypeWith -> true
             is CardPredicate.SharesColorWith -> true
             is CardPredicate.SharesColorWithPermanentYouControl -> true
+            is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> true
             CardPredicate.SharesColorWithRecipient -> false
             CardPredicate.SharesChosenColorWithSource -> {
                 if (sourceEntityId == null || state == null) return false

@@ -505,6 +505,19 @@ class PredicateEvaluator {
                 }
             }
 
+            is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> {
+                val controllerId = context?.controllerId ?: return false
+                val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
+                // No shared type when no permanent you control shares any creature type with the candidate.
+                state.getBattlefield().none { otherId ->
+                    projected.getController(otherId) == controllerId &&
+                        matches(state, projected, otherId, predicate.filter, context) &&
+                        projected.getSubtypes(otherId).any { otherSubtype ->
+                            entitySubtypes.any { it.equals(otherSubtype, ignoreCase = true) }
+                        }
+                }
+            }
+
             CardPredicate.SharesChosenColorWithSource -> {
                 val sourceId = context?.sourceId ?: return false
                 val chosenColor = state.getEntity(sourceId)
@@ -1054,7 +1067,8 @@ class PredicateEvaluator {
             CardPredicate.SharesColorWithRecipient,
             is CardPredicate.SharesCreatureTypeWith,
             is CardPredicate.SharesColorWith,
-            is CardPredicate.SharesColorWithPermanentYouControl -> false
+            is CardPredicate.SharesColorWithPermanentYouControl,
+            is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,
             is CardPredicate.HasSubtypeInEachStoredGroup -> false
 

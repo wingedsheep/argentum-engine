@@ -105,6 +105,47 @@ object LibraryPatterns {
         }
     }
 
+    /**
+     * "Look at the top [count] cards of your library. You may reveal a card matching [filter] from
+     * among them and put it into your hand. Put the rest [restDestination] (defaults to the bottom
+     * of your library) [restOrder] (defaults to a random order)." — Radagast the Brown / Star
+     * Charter shape. The reveal is optional ([SelectionMode.ChooseUpTo] of 1), filtered, and the
+     * selected card is revealed as it moves to hand.
+     */
+    fun lookAtTopRevealMatchingToHand(
+        count: DynamicAmount,
+        filter: GameObjectFilter,
+        prompt: String,
+        restDestination: CardDestination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+        restOrder: CardOrder = CardOrder.Random
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.TopOfLibrary(count),
+                storeAs = "looked"
+            ),
+            SelectFromCollectionEffect(
+                from = "looked",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+                filter = filter,
+                storeSelected = "kept",
+                storeRemainder = "rest",
+                prompt = prompt,
+                showAllCards = true
+            ),
+            MoveCollectionEffect(
+                from = "kept",
+                destination = CardDestination.ToZone(Zone.HAND),
+                revealed = true
+            ),
+            MoveCollectionEffect(
+                from = "rest",
+                destination = restDestination,
+                order = restOrder
+            )
+        )
+    )
+
     fun lookAtTopAndReorder(count: Int): CompositeEffect = CompositeEffect(
         listOf(
             GatherCardsEffect(

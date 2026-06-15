@@ -453,6 +453,15 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.SharesColorWithPermanentYouControl(filter)
     )
 
+    /**
+     * Must share **no** creature type with any permanent the evaluating player controls matching
+     * [filter] (Radagast the Brown: "a creature card that doesn't share a creature type with a
+     * creature you control").
+     */
+    fun notSharingCreatureTypeWithPermanentYouControl(filter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl(filter)
+    )
+
     // =============================================================================
     // Fluent Builder Methods - State Predicates
     // =============================================================================
