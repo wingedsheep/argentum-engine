@@ -25,7 +25,7 @@ class ModalAndCloneContinuationResumer(
         resumer(ModalTargetContinuation::class, ::resumeModalTarget),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(EntersWithChoiceSpellContinuation::class, ::resumeEntersWithChoiceSpell),
-        resumer(EntersWithChoiceLandContinuation::class, ::resumeEntersWithChoiceLand),
+        resumer(EntersWithChoiceOnBattlefieldContinuation::class, ::resumeEntersWithChoiceOnBattlefield),
         resumer(PayLifeOrEnterTappedLandContinuation::class, ::resumePayLifeOrEnterTappedLand),
         resumer(PayLifeOrEnterTappedSpellContinuation::class, ::resumePayLifeOrEnterTappedSpell),
         resumer(RevealCountersContinuation::class, ::resumeRevealCounters),
@@ -624,19 +624,20 @@ class ModalAndCloneContinuationResumer(
      * Resume after player makes an "as enters" choice for a land played directly to the battlefield.
      * The land is already on the battlefield — just store the chosen value and check for chained choices.
      */
-    fun resumeEntersWithChoiceLand(
+    fun resumeEntersWithChoiceOnBattlefield(
         state: GameState,
-        continuation: EntersWithChoiceLandContinuation,
+        continuation: EntersWithChoiceOnBattlefieldContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
+        val entityId = continuation.entityId
         // Store the chosen value based on choice type — into the unified cast-choices bag.
         var newState = when (continuation.choiceType) {
             com.wingedsheep.sdk.scripting.ChoiceType.COLOR -> {
                 if (response !is ColorChosenResponse) {
                     return ExecutionResult.error(state, "Expected color choice response")
                 }
-                state.updateEntity(continuation.landId) { c ->
+                state.updateEntity(entityId) { c ->
                     c.withCastChoice(ChoiceSlot.COLOR, ChoiceValue.ColorChoice(response.color))
                 }
             }
@@ -646,13 +647,19 @@ class ModalAndCloneContinuationResumer(
                 }
                 val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
                     ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
-                state.updateEntity(continuation.landId) { c ->
+                state.updateEntity(entityId) { c ->
                     c.withCastChoice(ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice(chosenType))
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.CREATURE_ON_BATTLEFIELD -> {
-                // Lands don't use this choice type, but handle gracefully
-                return checkForMore(state, emptyList())
+                if (response !is CardsSelectedResponse) {
+                    return ExecutionResult.error(state, "Expected cards selected response for creature choice")
+                }
+                val chosenCreatureId = response.selectedCards.firstOrNull()
+                    ?: return ExecutionResult.error(state, "No creature selected")
+                state.updateEntity(entityId) { c ->
+                    c.withCastChoice(ChoiceSlot.CREATURE, ChoiceValue.EntityChoice(chosenCreatureId))
+                }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.MODE -> {
                 if (response !is OptionChosenResponse) {
@@ -660,7 +667,7 @@ class ModalAndCloneContinuationResumer(
                 }
                 val modeId = continuation.modeOptionIds.getOrNull(response.optionIndex)
                     ?: return ExecutionResult.error(state, "Invalid mode option index: ${response.optionIndex}")
-                state.updateEntity(continuation.landId) { c ->
+                state.updateEntity(entityId) { c ->
                     c.withCastChoice(ChoiceSlot.MODE, ChoiceValue.TextChoice(modeId))
                 }
             }
@@ -670,20 +677,25 @@ class ModalAndCloneContinuationResumer(
                 }
                 val chosenType = continuation.landTypes.getOrNull(response.optionIndex)
                     ?: return ExecutionResult.error(state, "Invalid land type index: ${response.optionIndex}")
-                state.updateEntity(continuation.landId) { c ->
+                state.updateEntity(entityId) { c ->
                     c.withCastChoice(ChoiceSlot.LAND_TYPE, ChoiceValue.TextChoice(chosenType))
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT -> {
-                // Lands don't currently surface an opponent choice (no land card uses it),
-                // but the branch is here for exhaustiveness over [ChoiceType].
-                return checkForMore(state, emptyList())
+                if (response !is OptionChosenResponse) {
+                    return ExecutionResult.error(state, "Expected option chosen response for opponent choice")
+                }
+                val chosenOpponent = continuation.opponentIds.getOrNull(response.optionIndex)
+                    ?: return ExecutionResult.error(state, "Invalid opponent index: ${response.optionIndex}")
+                state.updateEntity(entityId) { c ->
+                    c.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosenOpponent))
+                }
             }
         }
 
-        // Check if the land has remaining choices to chain to
-        val landContainer = newState.getEntity(continuation.landId)
-        val cardComponent = landContainer?.get<CardComponent>()
+        // Check if the permanent has remaining choices to chain to (e.g. color + creature type).
+        val entityContainer = newState.getEntity(entityId)
+        val cardComponent = entityContainer?.get<CardComponent>()
         val cardDef = cardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
 
         val nextChoice = cardDef?.script?.replacementEffects
@@ -691,52 +703,20 @@ class ModalAndCloneContinuationResumer(
             ?.sortedBy { it.choiceType.ordinal }
             ?.firstOrNull { it.choiceType.ordinal > continuation.choiceType.ordinal }
 
-        if (nextChoice != null) {
-            val chooserId = when (nextChoice.chooser) {
-                com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
-                    newState.getOpponents(continuation.controllerId).firstOrNull() ?: continuation.controllerId
-                else -> continuation.controllerId
-            }
-
-            when (nextChoice.choiceType) {
-                com.wingedsheep.sdk.scripting.ChoiceType.CREATURE_TYPE -> {
-                    val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
-                    val decisionId = "choose-creature-type-land-enters-${continuation.landId.value}"
-                    val decision = ChooseOptionDecision(
-                        id = decisionId,
-                        playerId = chooserId,
-                        prompt = "Choose a creature type",
-                        context = DecisionContext(
-                            sourceId = continuation.landId,
-                            sourceName = cardComponent.name,
-                            phase = DecisionPhase.RESOLUTION
-                        ),
-                        options = allCreatureTypes,
-                        defaultSearch = ""
-                    )
-                    val nextContinuation = EntersWithChoiceLandContinuation(
-                        decisionId = decisionId,
-                        landId = continuation.landId,
-                        controllerId = continuation.controllerId,
-                        choiceType = com.wingedsheep.sdk.scripting.ChoiceType.CREATURE_TYPE,
-                        creatureTypes = allCreatureTypes,
-                        fromZone = continuation.fromZone
-                    )
-                    val pausedState = newState
-                        .pushContinuation(nextContinuation)
-                        .withPendingDecision(decision)
-                    return ExecutionResult.paused(pausedState, decision)
-                }
-                else -> { /* No other chaining needed for lands */ }
-            }
+        if (nextChoice != null && cardComponent != null) {
+            val result = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.pauseForEntersWithChoice(
+                newState, entityId, continuation.controllerId, cardComponent, nextChoice, continuation.fromZone
+            )
+            if (result != null) return result
+            // null means the chained choice couldn't be presented — fall through to fire triggers.
         }
 
-        // Final choice resolved — fire any triggers from the land entering
-        // (e.g., landfall). The land already moved to the battlefield when it was
-        // played; we synthesize the matching ZoneChangeEvent here so triggers
-        // can react now that the chosen value is recorded.
+        // Final choice resolved — fire any triggers from the permanent entering (e.g. landfall,
+        // "when ~ enters"). The permanent already moved to the battlefield when it was placed; we
+        // synthesize the matching ZoneChangeEvent here so triggers can react now that the chosen
+        // value is recorded.
         val zoneChangeEvent = ZoneChangeEvent(
-            continuation.landId,
+            entityId,
             cardComponent?.name ?: "Unknown",
             continuation.fromZone,
             Zone.BATTLEFIELD,

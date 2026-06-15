@@ -1,10 +1,14 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseColorDecision
+import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -85,6 +89,136 @@ class MomirBasicScenarioTest : ScenarioTestBase() {
             val token = game.state.getEntity(tokens.first())!!
             token.has<TokenComponent>().shouldBeTrue()
             token.get<ControllerComponent>()?.playerId shouldBe game.player1Id
+        }
+
+        test("ETB draw trigger fires for the minted token") {
+            val game = scenario()
+                .withPlayers()
+                .withFormat(Format.MomirBasic(eligibleCreatureNames = listOf("Elvish Visionary")))
+                .withCardInCommandZone(1, avatar)
+                .withLandsOnBattlefield(1, "Forest", 6)
+                .withCardsInHand(1, "Mountain", 2)
+                .withCardInLibrary(1, "Plains")
+                .build()
+
+            val handBefore = game.state.getZone(game.player1Id, Zone.HAND).size
+            // Elvish Visionary is mana value 2; X=2 picks it.
+            game.execute(game.momirAction(xValue = 2)).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanents("Elvish Visionary") shouldHaveSize 1
+            // ETB: "When Elvish Visionary enters the battlefield, draw a card."
+            // Hand: started at 2, discarded 1 for the cost, +1 from the ETB draw = 2.
+            game.state.getZone(game.player1Id, Zone.HAND).size shouldBe handBefore
+        }
+
+        test("search-library ETB (Wood Elves) fires for the minted token") {
+            val game = scenario()
+                .withPlayers()
+                .withFormat(Format.MomirBasic(eligibleCreatureNames = listOf("Wood Elves")))
+                .withCardInCommandZone(1, avatar)
+                .withLandsOnBattlefield(1, "Plains", 6)
+                .withCardsInHand(1, "Mountain", 2)
+                .withCardInLibrary(1, "Forest")
+                .build()
+
+            // Wood Elves is mana value 3.
+            game.execute(game.momirAction(xValue = 3)).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanents("Wood Elves") shouldHaveSize 1
+            // The ETB trigger fired and is asking which card to search for.
+            val forestId = game.findCardsInLibrary(1, "Forest").single()
+            game.selectCards(listOf(forestId))
+            game.resolveStack()
+            game.isOnBattlefield("Forest").shouldBeTrue()
+        }
+
+        test("targeting ETB (Flametongue Kavu) fires for the minted token") {
+            val game = scenario()
+                .withPlayers()
+                .withFormat(Format.MomirBasic(eligibleCreatureNames = listOf("Flametongue Kavu")))
+                .withCardInCommandZone(1, avatar)
+                .withLandsOnBattlefield(1, "Mountain", 6)
+                .withCardsInHand(1, "Plains", 2)
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .build()
+
+            // Flametongue Kavu is mana value 4.
+            game.execute(game.momirAction(xValue = 4)).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanents("Flametongue Kavu") shouldHaveSize 1
+            // The ETB trigger fired and is asking for a target creature.
+            val bearsId = game.findPermanent("Grizzly Bears")!!
+            game.selectTargets(listOf(bearsId))
+            game.resolveStack()
+            // ETB: deals 4 damage to the only creature -> Grizzly Bears (2/2) dies.
+            game.isInGraveyard(2, "Grizzly Bears").shouldBeTrue()
+        }
+
+        test("an 'enters tapped' minted token enters tapped (Diregraf Ghoul)") {
+            val game = scenario()
+                .withPlayers()
+                .withFormat(Format.MomirBasic(eligibleCreatureNames = listOf("Diregraf Ghoul")))
+                .withCardInCommandZone(1, avatar)
+                .withLandsOnBattlefield(1, "Swamp", 6)
+                .withCardsInHand(1, "Mountain", 2)
+                .build()
+
+            // Diregraf Ghoul is mana value 1.
+            game.execute(game.momirAction(xValue = 1)).error shouldBe null
+            game.resolveStack()
+
+            val token = game.findPermanents("Diregraf Ghoul").single()
+            // As-enters replacement (CR 614): "This creature enters tapped."
+            game.state.getEntity(token)!!.has<TappedComponent>().shouldBeTrue()
+        }
+
+        test("a minted token applies its own enters-with-counters (Servant of the Scale)") {
+            val game = scenario()
+                .withPlayers()
+                .withFormat(Format.MomirBasic(eligibleCreatureNames = listOf("Servant of the Scale")))
+                .withCardInCommandZone(1, avatar)
+                .withLandsOnBattlefield(1, "Forest", 6)
+                .withCardsInHand(1, "Mountain", 2)
+                .build()
+
+            // Servant of the Scale is mana value 1; a 0/0 that enters with a +1/+1 counter.
+            game.execute(game.momirAction(xValue = 1)).error shouldBe null
+            game.resolveStack()
+
+            val token = game.findPermanents("Servant of the Scale").single()
+            // The +1/+1 counter made it a 1/1 in the projected state.
+            game.state.projectedState.getPower(token) shouldBe 1
+            game.state.projectedState.getToughness(token) shouldBe 1
+        }
+
+        test("a minted token prompts its as-enters choice and becomes the chosen color (Alloy Golem)") {
+            val game = scenario()
+                .withPlayers()
+                .withFormat(Format.MomirBasic(eligibleCreatureNames = listOf("Alloy Golem")))
+                .withCardInCommandZone(1, avatar)
+                .withLandsOnBattlefield(1, "Mountain", 8)
+                .withCardsInHand(1, "Forest", 2)
+                .build()
+
+            // Alloy Golem is mana value 6.
+            game.execute(game.momirAction(xValue = 6)).error shouldBe null
+            game.resolveStack()
+
+            // As-enters replacement (CR 614.12): "As this creature enters, choose a color."
+            // The minted token must surface the color prompt — the bug was that it never did.
+            val decision = game.getPendingDecision()
+            decision.shouldNotBeNull()
+            (decision is ChooseColorDecision).shouldBeTrue()
+
+            game.submitDecision(ColorChosenResponse(decision!!.id, Color.RED))
+            game.resolveStack()
+
+            val token = game.findPermanents("Alloy Golem").single()
+            // "This creature is the chosen color." (still an artifact, which is colorless by default).
+            game.state.projectedState.getColors(token) shouldContain "RED"
         }
 
         test("the random copy is filtered to the chosen mana value") {
