@@ -209,3 +209,25 @@
     },
     "colorIdentityOverride": []
 }
+
+// Yotian Soldier
+{
+    "name": "Yotian Soldier",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Soldier",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Christopher Rush",
+        "flavorText": "After Kroog was destroyed while most of its defenders were at his side, Urza vowed that none of his allies would ever need to fear for their own defense again, even while laying siege to a city far from their homes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27cf53e3-76f6-4831-800e-1259394d779d.jpg?1562903450"
+    },
+    "colorIdentityOverride": []
+}

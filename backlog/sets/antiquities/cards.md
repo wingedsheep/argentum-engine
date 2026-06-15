@@ -2,7 +2,7 @@
 
 **Set Size:** 85 cards
 **Release Date:** March 4, 1994
-**Implemented:** 4 / 85
+**Implemented:** 5 / 85
 | Color       | Count |
 |-------------|-------|
 | White       | 7     |
@@ -109,7 +109,7 @@
 - [ ] Urza's Miter
 - [x] Wall of Spears
 - [ ] Weakstone
-- [ ] Yotian Soldier
+- [x] Yotian Soldier
 
 ### Lands
 - [ ] Mishra's Factory
