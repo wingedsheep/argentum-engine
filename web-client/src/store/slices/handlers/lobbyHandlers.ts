@@ -68,6 +68,14 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
       // FFA counterpart of onTournamentMatchStarting: enter the game. The seat roster arrives
       // again via GameStarted; the legacy opponentName field gets the other seats' names.
       const opponentName = msg.players.filter((p) => !p.isYou).map((p) => p.name).join(', ')
+      // Two-Headed Giant (CR 810): stamp the seat → team map here too, not only in onGameStarted.
+      // On a mid-game reconnect (refresh) the pod re-sends *this* message — not GameStarted — and
+      // its roster carries teamIndex (the game is running, so TeamComponent is populated). Without
+      // this the team-grouped rail / ally board / shared-life headers would be lost on refresh.
+      const seatTeams: Record<string, number> = {}
+      for (const p of msg.players) {
+        if (p.teamIndex != null) seatTeams[p.playerId] = p.teamIndex
+      }
       set({
         ffaState: {
           lobbyId: msg.lobbyId,
@@ -79,6 +87,7 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
         },
         sessionId: msg.gameSessionId,
         opponentName,
+        teamByPlayerId: seatTeams,
       })
     },
 

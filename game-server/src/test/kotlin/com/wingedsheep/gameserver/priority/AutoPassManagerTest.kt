@@ -64,6 +64,12 @@ class AutoPassManagerTest : FunSpec({
         every { state.isYieldingTo(any(), any()) } returns priorityPlayerYieldsToStack
         every { state.priorityPlayerId } returns priorityPlayerId
         every { state.activePlayerId } returns activePlayerId
+        // These cases model 2-player games (no teams), where turn ownership reduces to equality
+        // with the active player. AutoPassManager reads turn ownership via isActiveTurnFor so it
+        // can be team-aware in Two-Headed Giant; stub it to match for the 2-player mock. (EntityId
+        // is a value class, so stub the two concrete ids rather than an any()-matcher.)
+        every { state.isActiveTurnFor(player1) } returns (activePlayerId == player1)
+        every { state.isActiveTurnFor(player2) } returns (activePlayerId == player2)
         every { state.step } returns step
         every { state.phase } returns step.phase
 
@@ -883,6 +889,9 @@ class AutoPassManagerTest : FunSpec({
             val state = mockk<GameState>(relaxed = true)
             every { state.priorityPlayerId } returns player1
             every { state.activePlayerId } returns player1
+            // 2-player mock: turn ownership reduces to equality with the active player (player1).
+            every { state.isActiveTurnFor(player1) } returns true
+            every { state.isActiveTurnFor(player2) } returns false
             every { state.step } returns step
             every { state.phase } returns step.phase
             every { state.stack } returns emptyList()

@@ -371,10 +371,14 @@ class GameSession(
                 seatIndex = seatIndex,
                 isYou = viewerId != null && player.playerId == viewerId,
                 isAi = playerPersistenceInfo[player.playerId]?.isAi == true,
-                // Team membership for Two-Headed Giant (CR 810); null in non-team games.
+                // Team membership for Two-Headed Giant (CR 810); null in non-team games. Prefer the
+                // engine's stamped TeamComponent, but fall back to the configured [teams] partition
+                // (join-order indices) so the roster carries teamIndex even before startGame() runs
+                // (the pod sends the seat roster before the game state is initialized).
                 teamIndex = state?.getEntity(player.playerId)
                     ?.get<com.wingedsheep.engine.state.components.identity.TeamComponent>()
-                    ?.teamIndex,
+                    ?.teamIndex
+                    ?: teams?.indexOfFirst { joinIndex in it }?.takeIf { it >= 0 },
             )
         }.sortedBy { it.seatIndex }
     }
