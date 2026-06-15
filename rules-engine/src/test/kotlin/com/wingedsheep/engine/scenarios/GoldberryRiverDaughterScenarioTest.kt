@@ -69,6 +69,7 @@ class GoldberryRiverDaughterScenarioTest : FunSpec({
             )
         )
         result.isSuccess shouldBe true
+        driver.bothPass()
 
         // Goldberry gained a +1/+1 (it lacked it) but NOT another charge (already had one).
         count(driver, goldberry, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
@@ -105,6 +106,7 @@ class GoldberryRiverDaughterScenarioTest : FunSpec({
             )
         )
         activateResult.isSuccess shouldBe true
+        driver.bothPass()
 
         // Engine prompts how many +1/+1 counters to move. Move both.
         val decision = driver.pendingDecision
