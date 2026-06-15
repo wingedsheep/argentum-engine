@@ -52,6 +52,7 @@ import com.wingedsheep.sdk.scripting.GrantColor
 import com.wingedsheep.sdk.scripting.GrantChosenColor
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.TransformPermanent
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessDynamicStatic
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
@@ -608,6 +609,12 @@ class StaticAbilityHandler(
             is SetBasePowerToughnessStatic -> {
                 ContinuousEffectData(
                     modification = Modification.SetPowerToughness(ability.power, ability.toughness),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is SetBasePowerToughnessDynamicStatic -> {
+                ContinuousEffectData(
+                    modification = Modification.SetPowerToughnessDynamic(ability.power, ability.toughness),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

@@ -55,6 +55,21 @@ internal class EffectApplicator(
                     values.power = mod.power
                     values.toughness = mod.toughness
                 }
+                is Modification.SetPowerToughnessDynamic -> {
+                    // CDA (CR 604.3): the dynamic value *is* the base P/T, set at Layer 7b.
+                    val controllerId = projectedValues[effect.sourceId]?.controllerId
+                        ?: state.getEntity(effect.sourceId)?.get<ControllerComponent>()?.playerId
+                    if (controllerId != null && "CREATURE" in values.types) {
+                        val context = EffectContext(
+                            sourceId = effect.sourceId,
+                            controllerId = controllerId,
+                            affectedEntityId = entityId
+                        )
+                        val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
+                        values.power = dynamicAmountEvaluator.evaluate(state, mod.power, context, intermediateProjected)
+                        values.toughness = dynamicAmountEvaluator.evaluate(state, mod.toughness, context, intermediateProjected)
+                    }
+                }
                 is Modification.SetPower -> {
                     values.power = mod.power
                 }

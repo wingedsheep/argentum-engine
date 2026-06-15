@@ -18,6 +18,7 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // attacker filter exactly or declines -> SCAFFOLD.
     supported("WhenAPlayerAttacksWithAnyNumberOfCreatures", "trigger: you attack with one or more creatures matching a filter (Triggers.YouAttackWithFilter)")
     supported("WhenACreatureBlocks", "trigger: blocks (Ydwen Efreet)")
+    supported("WhenAPermanentBecomesTapped", "trigger: this permanent becomes tapped (Triggers.BecomesTapped — Wylie Duke, Atiin Hero)")
     supported("WhenACreatureDealsCombatDamageToAPlayer", "trigger: combat damage to player")
     supported("WhenAPlayerCastsASpell", "trigger: a player casts a spell (Triggers.YouCastSpell / AnyPlayerCastsSpell / OpponentCastsSpell + type filters)")
     supported("WhenAPlayerCastsTheirNthSpellInATurn", "trigger: you cast your Nth spell each turn (Triggers.NthSpellCast(N, Player.You) — Rodeo Pyromancers)")

@@ -1640,6 +1640,120 @@
     ]
 }
 
+// Bonny Pall, Clearcutter
+{
+    "name": "Bonny Pall, Clearcutter",
+    "manaCost": "{3}{G}{U}{U}",
+    "typeLine": "Legendary Creature — Giant Scout",
+    "oracleText": "Reach\nWhen Bonny Pall enters, create Beau, a legendary blue Ox creature token with \"Beau's power and toughness are each equal to the number of lands you control.\"\nWhenever you attack, draw a card, then you may put a land card from your hand or graveyard onto the battlefield.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Ox"
+                    ],
+                    "name": "Beau",
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1751016-9461-4250-ac07-afe4f5b41095.jpg?1712316157",
+                    "legendary": true,
+                    "staticAbilities": [
+                        {
+                            "type": "SetBasePowerToughnessDynamicStatic",
+                            "power": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "toughness": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": "land"
+                            },
+                            "storeAs": "bonnyPallLands"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bonnyPallLands",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bonnyPallLandToPlay"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "bonnyPallLandToPlay",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/4383ae7c-58ea-4354-93e4-677ad185c3bb.jpg?1712356061"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Boom Box
 {
     "name": "Boom Box",
@@ -18231,6 +18345,87 @@
     ]
 }
 
+// Vraska, the Silencer
+{
+    "name": "Vraska, the Silencer",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Gorgon Assassin",
+    "oracleText": "Deathtouch\nWhenever a nontoken creature an opponent controls dies, you may pay {1}. If you do, return that card to the battlefield tapped under your control. It's a Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color,\" and it loses all other card types.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "TriggeringEntity",
+                                "destination": "Battlefield",
+                                "placement": "Tapped",
+                                "controllerOverride": "Controller"
+                            },
+                            {
+                                "type": "BecomeArtifact",
+                                "target": "TriggeringEntity",
+                                "subtypes": [
+                                    "Treasure"
+                                ],
+                                "grantedAbility": {
+                                    "id": "ability_2",
+                                    "cost": {
+                                        "type": "CostComposite",
+                                        "costs": [
+                                            "CostTap",
+                                            "CostSacrificeSelf"
+                                        ]
+                                    },
+                                    "effect": "AddManaOfChoice",
+                                    "isManaAbility": true,
+                                    "descriptionOverride": "{T}, Sacrifice this artifact: Add one mana of any color."
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b042abf2-c40b-4235-a4fa-2e4901c375c3.jpg?1712356238"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Wanted Griffin
 {
     "name": "Wanted Griffin",
@@ -18366,5 +18561,58 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Wylie Duke, Atiin Hero
+{
+    "name": "Wylie Duke, Atiin Hero",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Ranger",
+    "oracleText": "Vigilance\nWhenever Wylie Duke becomes tapped, you gain 1 life and draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"I've seen a fair few worlds in my travels, and there's always some lowlife looking to prey on the innocent. That's where I come in.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc97ffcf-4f51-44cd-8daa-a7dae4592ee5.jpg?1712356248"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }

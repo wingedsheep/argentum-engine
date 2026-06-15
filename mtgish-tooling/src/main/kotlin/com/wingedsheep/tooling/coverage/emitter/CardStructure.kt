@@ -1255,6 +1255,9 @@ private val TRIGGER_SPEC = mapOf(
     "WhenACreatureBlocks" to "Triggers.Blocks",
     "WhenACreatureDealsCombatDamageToAPlayer" to "Triggers.DealsCombatDamageToPlayer",
     "WhenACreatureBecomesBlocked" to "Triggers.BecomesBlocked",
+    // "Whenever this permanent becomes tapped" (SELF) — e.g. Wylie Duke, Atiin Hero
+    // ("Whenever Wylie Duke becomes tapped, you gain 1 life and draw a card.").
+    "WhenAPermanentBecomesTapped" to "Triggers.BecomesTapped",
 )
 
 /**

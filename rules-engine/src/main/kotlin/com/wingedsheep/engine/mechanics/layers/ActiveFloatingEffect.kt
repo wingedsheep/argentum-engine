@@ -279,6 +279,24 @@ sealed interface SerializableModification {
     data class SetBasicLandTypes(val subtypes: Set<String>) : SerializableModification
 
     /**
+     * Replace ALL card types with the given set, leaving supertypes and subtypes intact
+     * (Layer 4). One-shot floating counterpart to the [com.wingedsheep.sdk.scripting.TransformPermanent]
+     * static ability's `setCardTypes`. Used by "becomes a [type] and loses all other card
+     * types" effects on a returned permanent — e.g. Vraska, the Silencer turning a dead
+     * creature into a Treasure artifact.
+     */
+    @Serializable
+    data class SetCardTypes(val types: Set<String>) : SerializableModification
+
+    /**
+     * Replace ALL subtypes with the given set (Layer 4). One-shot floating counterpart to
+     * [com.wingedsheep.sdk.scripting.TransformPermanent]'s `setSubtypes`. Pair with
+     * [SetCardTypes] for "becomes a colorless Treasure artifact" (Vraska, the Silencer).
+     */
+    @Serializable
+    data class SetAllSubtypes(val subtypes: Set<String>) : SerializableModification
+
+    /**
      * Add every creature type in addition to existing types, without granting the
      * Changeling keyword. Used by cards like Stalactite Dagger that say "is all
      * creature types" but don't print the Changeling keyword.
@@ -513,6 +531,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
     is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
     is SerializableModification.AddSubtype -> Modification.AddSubtype(subtype)
+    is SerializableModification.SetCardTypes -> Modification.SetCardTypes(types)
+    is SerializableModification.SetAllSubtypes -> Modification.SetAllSubtypes(subtypes)
     is SerializableModification.SetBasicLandTypes -> Modification.SetBasicLandTypes(subtypes)
     is SerializableModification.AddAllCreatureTypes -> Modification.AddAllCreatureTypes
     // SetCantAttack maps to the layer modification for "can't attack" projection

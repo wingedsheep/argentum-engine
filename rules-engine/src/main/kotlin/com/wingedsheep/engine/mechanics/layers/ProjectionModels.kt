@@ -517,6 +517,21 @@ sealed interface Modification {
     }
 
     /**
+     * Dynamic base power/toughness *setting* (characteristic-defining ability) — Layer 7b
+     * (SET_VALUES). The amounts are computed at projection time by evaluating the DynamicAmounts.
+     * Distinct from [ModifyPowerToughnessDynamic], which is a Layer 7c additive bonus. Used for
+     * star/star CDAs like Beau ("power and toughness each equal to the number of lands you control").
+     */
+    @Serializable
+    data class SetPowerToughnessDynamic(
+        val power: DynamicAmount,
+        val toughness: DynamicAmount
+    ) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.SET_VALUES
+    }
+
+    /**
      * Dynamic power/toughness modification based on a DynamicAmount.
      * The actual modification is computed at projection time by evaluating the DynamicAmount.
      * Used for effects like "gets +2/+2 for each face-down creature on the battlefield."

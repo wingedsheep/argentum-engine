@@ -249,10 +249,12 @@ power via `dynamicPower = CharacteristicValue.dynamic(TurnTracking(You, CARDS_DR
    duration tied to "while this Aura remains attached." Three small new pieces.
    → **Eriette, the Beguiler**.
 
-9. **Characteristic-defining base P/T on a created token.** Token `dynamicPower/Toughness` are
+9. ~~**Characteristic-defining base P/T on a created token.** Token `dynamicPower/Toughness` are
    evaluated once at creation; there's no Layer-7b CDA "set base P/T = a dynamic count" granted to a
    token (here "= the number of lands you control", recomputed continuously).
-   → **Bonny Pall, Clearcutter** (the Beau token).
+   → **Bonny Pall, Clearcutter** (the Beau token).~~ **DONE** — added
+   `SetBasePowerToughnessDynamicStatic` (Layer 7b SET_VALUES) + `Modification.SetPowerToughnessDynamic`;
+   Bonny Pall implemented.
 
 10. **Additional upkeep steps inserted into the current turn.** Extra *combat* phases and extra
     *turns* are supported, but not inserting N extra upkeep steps after the current phase.
