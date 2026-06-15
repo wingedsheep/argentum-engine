@@ -249,6 +249,8 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseOptionPipelineContinuation::class)
         subclass(NoteCreatureTypePipelineContinuation::class)
         subclass(ChoosePileContinuation::class)
+        subclass(ChooseGuessKindContinuation::class)
+        subclass(GuessTopCardKindContinuation::class)
         subclass(SelectTargetPipelineContinuation::class)
         subclass(CycleDrawContinuation::class)
         subclass(TypecycleSearchContinuation::class)

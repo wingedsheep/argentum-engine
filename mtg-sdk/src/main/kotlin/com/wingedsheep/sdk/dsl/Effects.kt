@@ -2816,6 +2816,30 @@ object Effects {
         RemoveFromCombatEffect(target, unblockSoleBlockedAttackers)
 
     /**
+     * "Choose land or nonland. An opponent guesses whether the top card of your library is the
+     * chosen kind. Reveal that card. If they guessed right, [onGuessedRight]. Otherwise,
+     * [onGuessedWrong]." (Gollum, Scheming Guide.)
+     *
+     * The [chooser] (controller by default) picks the framing kind; the [guesser] (opponent by
+     * default) guesses the actual land/nonland kind of the top card of the controller's library;
+     * the card is revealed and the guess compared to reality. Both branch effects resolve in the
+     * source's original context, so `EffectTarget.Self` inside them refers to this ability's source.
+     */
+    fun OpponentGuessesTopCardKind(
+        onGuessedRight: Effect,
+        onGuessedWrong: Effect,
+        chooser: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Controller,
+        guesser: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Opponent,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.OpponentGuessesTopCardKindEffect(
+        onGuessedRight = onGuessedRight,
+        onGuessedWrong = onGuessedWrong,
+        chooser = chooser,
+        guesser = guesser,
+    )
+
+    /**
      * Let a creature attack this turn as though it didn't have defender (Krotiq Nestguard).
      * The activated/temporary counterpart to the static [com.wingedsheep.sdk.scripting.CanAttackDespiteDefender].
      */

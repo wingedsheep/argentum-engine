@@ -1212,3 +1212,30 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   opponent (player 2) says yes → you draw exactly one card, nothing milled, opponent at 20. No: pre-load
   2 influence counters (X = 3 after the increment), opponent declines → mill Grizzly Bears (MV 2) +
   Hill Giant (MV 4) + Lightning Bolt (MV 1), opponent loses 7 life (20 → 13).
+
+### Gollum, Scheming Guide (Black) — Gap 38, opponent-guess land/nonland (NEW primitive)
+
+- **Oracle:** "Whenever Gollum attacks, look at the top two cards of your library, put them back in any
+  order, then choose land or nonland. An opponent guesses whether the top card of your library is the
+  chosen kind. Reveal that card. If they guessed right, remove Gollum from combat. Otherwise, you draw a
+  card and Gollum can't be blocked this turn."
+- **Engine gap:** no opponent-guess mechanic existed. Built a reusable, parameterized primitive
+  `OpponentGuessesTopCardKindEffect(onGuessedRight, onGuessedWrong, chooser, guesser)` rather than a
+  card-specific monolith — any "opponent guesses your top card's kind, branch" card composes it.
+- **Composition:** trigger = `Triggers.Attacks`; effect = `Patterns.Library.lookAtTopAndReorder(2)` then
+  `Effects.OpponentGuessesTopCardKind(onGuessedRight = Effects.RemoveFromCombat(Self), onGuessedWrong =
+  Effects.DrawCards(1) then Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, Self, EndOfTurn))`.
+- **Decision flow:** two sequenced `ChooseOptionDecision`s via two continuation frames
+  (`ChooseGuessKindContinuation` → controller picks framing kind; `GuessTopCardKindContinuation` →
+  opponent guesses). On the guess resume the top card is revealed (`CardsRevealedEvent` + reveal marker),
+  its actual `typeLine.isLand` compared to the guess, and the matching branch run through
+  `EffectContinuationRunner` in the source's original context (so `EffectTarget.Self` = Gollum). A correct
+  guess = the guesser's land/nonland call matches reality; the controller's framing choice only phrases
+  the prompt. Empty library → no top card → never "right" → wrong branch.
+- **Touched:** `GuessEffects.kt` (new effect + `CardKind` enum), `Effects.kt` facade,
+  `GuessContinuations.kt` (frames), `OpponentGuessesTopCardKindExecutor.kt`, `GuessContinuationResumer.kt`,
+  `CombatExecutors.kt` (register executor), `ContinuationHandler.kt` (register resumer module),
+  `Serialization.kt` (register both continuation frames).
+- **Test:** `GollumSchemingGuideScenarioTest` — all three branches GREEN: right guess (land/land and
+  nonland/nonland) → Gollum removed from combat, no draw, not unblockable; wrong guess (land/nonland) →
+  controller draws one card and Gollum gains CANT_BE_BLOCKED for the turn while still attacking.

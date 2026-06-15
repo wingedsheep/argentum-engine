@@ -674,6 +674,16 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `RemoveFromCombatEffect(target, unblockSoleBlockedAttackers = false)` — yank target out of combat.
   Set `unblockSoleBlockedAttackers = true` for the old-rules behavior (Ydwen Efreet): attackers the
   target was sole blocker of become unblocked (CR 509.1h normally keeps them blocked).
+- `Effects.OpponentGuessesTopCardKind(onGuessedRight, onGuessedWrong, chooser = Controller, guesser = Opponent)`
+  (`OpponentGuessesTopCardKindEffect`) — "Choose land or nonland. An opponent guesses whether the top
+  card of your library is the chosen kind. Reveal that card. If they guessed right, [onGuessedRight];
+  otherwise, [onGuessedWrong]." (Gollum, Scheming Guide.) A reusable opponent-guess primitive that
+  sequences two `ChooseOptionDecision`s: the `chooser` picks the framing land/nonland kind, then the
+  `guesser` guesses the *actual* kind of the top card of the chooser's library; the card is revealed
+  and the guess compared to reality (a correct guess = the guesser's call matches the actual top card).
+  Both branch effects resolve in the source's original context, so `EffectTarget.Self` inside them
+  refers to the ability's source. Empty library → no top card → guess can never be right, so the
+  "wrong" branch runs. `chooser`/`guesser` reuse the shared `Chooser` enum (see `ChoosePileEffect`).
 - `Effects.CanAttackDespiteDefenderThisTurn(target = Self)` (`CanAttackDespiteDefenderThisTurnEffect`) — target can attack this
   turn as though it didn't have defender. Adds a transient `CanAttackDespiteDefenderThisTurnComponent`
   honored by the defender attack-restriction rule and cleaned up at end of turn. The

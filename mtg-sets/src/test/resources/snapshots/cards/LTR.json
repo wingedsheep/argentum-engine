@@ -8054,6 +8054,85 @@
     ]
 }
 
+// Gollum, Scheming Guide
+{
+    "name": "Gollum, Scheming Guide",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Halfling Horror",
+    "oracleText": "Whenever Gollum attacks, look at the top two cards of your library, put them back in any order, then choose land or nonland. An opponent guesses whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove Gollum from combat. Otherwise, you draw a card and Gollum can't be blocked this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "looked",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "OpponentGuessesTopCardKindEffect",
+                            "onGuessedRight": {
+                                "type": "RemoveFromCombat",
+                                "target": "Self"
+                            },
+                            "onGuessedWrong": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "CANT_BE_BLOCKED",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "292",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f93ad17-b655-4a10-990e-b26ead90d221.jpg?1687424790"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gorbag of Minas Morgul
 {
     "name": "Gorbag of Minas Morgul",

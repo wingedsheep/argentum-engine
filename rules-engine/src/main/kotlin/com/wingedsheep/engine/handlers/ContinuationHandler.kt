@@ -44,6 +44,7 @@ class ContinuationHandler(
         registerModule(CostPaymentContinuationResumer(services))
         registerModule(ManaPaymentContinuationResumer(services))
         registerModule(LibraryAndZoneContinuationResumer(services))
+        registerModule(GuessContinuationResumer(services))
         registerModule(ModalAndCloneContinuationResumer(services))
         registerModule(CastModalContinuationResumer(services))
         registerModule(TokenContinuationResumer(services))
