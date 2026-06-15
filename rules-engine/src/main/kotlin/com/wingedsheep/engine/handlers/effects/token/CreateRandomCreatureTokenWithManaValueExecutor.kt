@@ -65,6 +65,7 @@ class CreateRandomCreatureTokenWithManaValueExecutor(
             state = stateAfterPick,
             cardDef = chosen,
             controllerId = context.controllerId,
+            cardRegistry = cardRegistry,
             staticAbilityHandler = staticAbilityHandler,
         )
     }
