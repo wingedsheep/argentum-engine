@@ -172,6 +172,40 @@ data class RemoveAnyNumberOfCountersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller picks how many counters of one kind to move from a
+ * [sourceId] permanent onto a [destinationId] permanent. The executor for
+ * `MoveChosenCountersToTargetEffect` issues one decision per counter kind on the source;
+ * on resume, the chosen amount is removed from the source and added to the destination, and
+ * the next kind (if any) is prompted. After the last kind, if [drawCardOnMove] is set and at
+ * least one counter was moved overall, the controller draws a card. (Goldberry — ability B.)
+ *
+ * @property sourceId The permanent counters are moved from
+ * @property destinationId The permanent counters are moved onto
+ * @property controllerId The player making the choices (and who draws)
+ * @property currentCounterType The counter kind the active decision is for
+ * @property currentMaxAmount Cap shown to the player (0..currentMaxAmount)
+ * @property remainingCounterTypes Pending (counterType, maxAmount) prompts
+ * @property sourceName Display name of the source for follow-up prompts
+ * @property destinationName Display name of the destination for follow-up prompts
+ * @property drawCardOnMove Whether to draw a card at the end if any counter was moved
+ * @property anyMovedSoFar Whether any counter has been moved across prior prompts
+ */
+@Serializable
+data class MoveChosenCountersToTargetContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId,
+    val destinationId: EntityId,
+    val controllerId: EntityId,
+    val currentCounterType: String,
+    val currentMaxAmount: Int,
+    val remainingCounterTypes: List<Pair<String, Int>>,
+    val sourceName: String,
+    val destinationName: String,
+    val drawCardOnMove: Boolean,
+    val anyMovedSoFar: Boolean = false
+) : ContinuationFrame
+
+/**
  * Resume after the controller picks the permanents and/or players that should
  * each receive another counter of each kind already on them (Proliferate).
  *

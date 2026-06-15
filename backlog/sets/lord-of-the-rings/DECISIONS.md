@@ -1360,3 +1360,38 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `RadagastTheBrownScenarioTest` — proves a Bear/Soldier sharing a type with your creatures
   is shown-but-not-selectable while a Spirit sharing none is selectable and goes to hand; the "may" is
   declinable; the rest go to the bottom.
+
+## Goldberry, River-Daughter
+
+- **Card:** {1}{U} Legendary Creature — Nymph, 1/3. Two activated abilities, both targeting
+  "another target permanent you control" (`TargetFilter.PermanentYouControl.other()`,
+  `excludeSelf = true`); the *other* permanent is the source/destination depending on the ability,
+  with Goldberry herself (`EffectTarget.Self`) as the opposite end. Move-counters-between-permanents
+  (Gap 38).
+- **Ability A — `{T}`:** "Move a counter of each kind not on Goldberry from another target permanent
+  you control onto Goldberry." New effect `MoveCountersEachKindMissing(source, destination)` +
+  `MoveCountersEachKindMissingExecutor`. Deterministic, no decision: for each counter kind on the
+  source that the destination does *not* already have, move one of that kind onto the destination.
+  Kinds the destination already has are left untouched. Honors counter-placement replacements and
+  emits proper `CountersRemovedEvent`/`CountersAddedEvent`.
+- **Ability B — `{U}, {T}`:** "Move one or more counters from Goldberry onto another target permanent
+  you control. If you do, draw a card." New effect `MoveChosenCountersToTarget(source, destination,
+  drawCardOnMove)` + `MoveChosenCountersToTargetExecutor`, mirroring the `RemoveAnyNumberOfCounters`
+  per-kind pattern: one `ChooseNumberDecision` (0..count) per counter kind on the source, applied via
+  new `MoveChosenCountersToTargetContinuation` (registered in Serialization.kt). The destination
+  receives the moved counters; after the last kind, the controller draws a card iff `drawCardOnMove`
+  and at least one counter was actually moved ("if you do" — conditional draw via
+  `services.turnManager.drawCards`).
+- **Reusable primitives:** both effects are general parameterized move-counters facades
+  (`Effects.MoveCountersEachKindMissing`, `Effects.MoveChosenCountersToTarget`) usable by any future
+  "move counters between two permanents" card, not Goldberry-specific.
+- **Rule numbers:** modeled per oracle wording (counter movement = remove-then-add); no specific CR
+  number cited in code.
+- **Touched:** `GoldberryRiverDaughter.kt` (card), `CounterEffects.kt` (SDK effects), `Effects.kt`
+  (facades), `MoveCountersEachKindMissingExecutor.kt` + `MoveChosenCountersToTargetExecutor.kt` +
+  `PermanentExecutors.kt` (registration), `CardSpecificContinuations.kt` + `Serialization.kt`
+  (continuation), `MiscContinuationResumer.kt` (resumer), SDK reference, backlog,
+  `GoldberryRiverDaughterScenarioTest.kt`.
+- **Test:** `GoldberryRiverDaughterScenarioTest` — Ability A moves a +1/+1 (lacked) onto Goldberry but
+  not another charge (already had one), and the source keeps its charge; Ability B moves both chosen
+  +1/+1 counters onto another permanent and draws a card.

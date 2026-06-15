@@ -152,6 +152,63 @@ data class AddCountersToCollectionEffect(
 }
 
 /**
+ * Move one counter of each kind present on a [source] permanent that is *not* already
+ * on the [destination] permanent, from the source onto the destination.
+ *
+ * "Move a counter of each kind not on Goldberry from another target permanent you control
+ * onto Goldberry." (Goldberry, River-Daughter — ability A.)
+ *
+ * Deterministic, no player decision: the executor inspects every counter kind on the
+ * source; for each kind the destination does *not* currently have, it removes one of that
+ * kind from the source and adds one to the destination (emitting proper counter events and
+ * honoring counter-placement replacement effects). Kinds the destination already has are
+ * left untouched. No-op when source/destination is missing or the destination can't receive
+ * counters.
+ *
+ * @property source The permanent counters are moved *from*
+ * @property destination The permanent counters are moved *onto*
+ */
+@SerialName("MoveCountersEachKindMissing")
+@Serializable
+data class MoveCountersEachKindMissingEffect(
+    val source: EffectTarget,
+    val destination: EffectTarget
+) : Effect {
+    override val description: String =
+        "Move a counter of each kind not on ${destination.description} from ${source.description} onto ${destination.description}"
+}
+
+/**
+ * Move a player-chosen set (one or more) of counters from a [source] permanent onto a
+ * [destination] permanent, then optionally draw a card if any counters were moved.
+ *
+ * "Move one or more counters from Goldberry onto another target permanent you control.
+ * If you do, draw a card." (Goldberry, River-Daughter — ability B.)
+ *
+ * At resolution the executor enumerates each counter kind on the source and prompts the
+ * controller (one [ChooseNumberDecision][com.wingedsheep.engine.core.ChooseNumberDecision]
+ * per kind, 0..count) for how many of that kind to move; chosen counters are removed from
+ * the source and added to the destination (honoring counter-placement replacement effects).
+ * If [drawCardOnMove] is set and at least one counter was moved, the controller draws a card.
+ *
+ * @property source The permanent counters are moved *from*
+ * @property destination The permanent counters are moved *onto*
+ * @property drawCardOnMove When true, the controller draws a card if any counter was moved
+ */
+@SerialName("MoveChosenCountersToTarget")
+@Serializable
+data class MoveChosenCountersToTargetEffect(
+    val source: EffectTarget,
+    val destination: EffectTarget,
+    val drawCardOnMove: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Move one or more counters from ${source.description} onto ${destination.description}")
+        if (drawCardOnMove) append(". If you do, draw a card")
+    }
+}
+
+/**
  * Distribute any number of counters from this creature onto other creatures.
  * "At the beginning of your upkeep, you may move any number of +1/+1 counters
  * from Forgotten Ancient onto other creatures."

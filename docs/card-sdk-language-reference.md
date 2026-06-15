@@ -489,6 +489,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `RemoveAllCountersOfType(type, target)` — wipe one kind.
 - `MoveAllLastKnownCounters(target)` — Hooded Hydra / Essence Channeler — move every counter kind from source's
   last-known state.
+- `MoveCountersEachKindMissing(source, destination)` — Goldberry, River-Daughter (ability A) — for each counter
+  kind on `source` that `destination` does not already have, move one of that kind from `source` onto
+  `destination`. Deterministic, no player choice; kinds the destination already has are left untouched.
+- `MoveChosenCountersToTarget(source, destination, drawCardOnMove?)` — Goldberry, River-Daughter (ability B) —
+  player chooses how many of each kind to move from `source` onto `destination` (one `ChooseNumberDecision` per
+  kind). When `drawCardOnMove` is true, the controller draws a card if any counter was moved ("if you do, draw").
 - `Counters.ANY` — wildcard counter-type string for "counters of any type" triggers/events (e.g.
   `Triggers.countersPlacedOn`); not a real placeable counter, only a matcher sentinel.
 - `DistributeCountersFromSelf(type?, count?)` — split source's counters among creatures you control.

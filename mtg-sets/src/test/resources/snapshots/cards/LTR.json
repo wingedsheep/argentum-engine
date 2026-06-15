@@ -8101,6 +8101,89 @@
     ]
 }
 
+// Goldberry, River-Daughter
+{
+    "name": "Goldberry, River-Daughter",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Nymph",
+    "oracleText": "{T}: Move a counter of each kind not on Goldberry from another target permanent you control onto Goldberry.\n{U}, {T}: Move one or more counters from Goldberry onto another target permanent you control. If you do, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveCountersEachKindMissing",
+                    "source": {
+                        "type": "BoundVariable",
+                        "name": "another target permanent you control"
+                    },
+                    "destination": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another target permanent you control"
+                    }
+                ]
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveChosenCountersToTarget",
+                    "source": "Self",
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "another target permanent you control"
+                    },
+                    "drawCardOnMove": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another target permanent you control"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Marie Magny",
+        "flavorText": "\"Fear nothing! For tonight you are under the roof of Tom Bombadil.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf4f0a7c-620e-4ed8-8da3-fa6564e8a0cd.jpg?1686968111"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gollum's Bite
 {
     "name": "Gollum's Bite",

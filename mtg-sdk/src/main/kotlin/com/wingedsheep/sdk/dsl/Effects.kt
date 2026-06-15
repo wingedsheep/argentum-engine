@@ -1105,6 +1105,27 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect(target)
 
     /**
+     * Move one counter of each kind on [source] that [destination] does not already have,
+     * from the source onto the destination. Deterministic (no player choice). Used by
+     * Goldberry, River-Daughter's first ability.
+     */
+    fun MoveCountersEachKindMissing(source: EffectTarget, destination: EffectTarget): Effect =
+        com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect(source, destination)
+
+    /**
+     * Move a player-chosen set (one or more) of counters from [source] onto [destination]
+     * (one prompt per counter kind on the source). When [drawCardOnMove] is true, the
+     * controller draws a card if any counter was moved. Used by Goldberry, River-Daughter's
+     * second ability.
+     */
+    fun MoveChosenCountersToTarget(
+        source: EffectTarget,
+        destination: EffectTarget,
+        drawCardOnMove: Boolean = false
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(source, destination, drawCardOnMove)
+
+    /**
      * Remove every counter (of any kind) from a target permanent. Mandatory; clears
      * all counter kinds currently on the target. Used by Perfect Intimidation.
      */

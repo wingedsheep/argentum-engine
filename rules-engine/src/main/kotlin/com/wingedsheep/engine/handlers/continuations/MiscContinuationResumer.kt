@@ -30,6 +30,7 @@ class MiscContinuationResumer(
         resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
+        resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
         resumer(AddManaPipsContinuation::class, ::resumeAddManaPip),
@@ -572,6 +573,139 @@ class MiscContinuationResumer(
             .withPendingDecision(decision)
             .pushContinuation(nextContinuation)
         return ExecutionResult.paused(pausedState, decision, events)
+    }
+
+    private fun resumeMoveChosenCountersToTarget(
+        state: GameState,
+        continuation: MoveChosenCountersToTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for move-chosen-counters")
+        }
+
+        val chosen = response.number.coerceIn(0, continuation.currentMaxAmount)
+        val counterType = com.wingedsheep.engine.handlers.effects.permanent.counters
+            .resolveCounterType(continuation.currentCounterType)
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        var anyMoved = continuation.anyMovedSoFar
+
+        if (chosen > 0) {
+            // Remove the chosen counters from the source.
+            val sourceCounters = newState.getEntity(continuation.sourceId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+            val actuallyRemovable = minOf(chosen, sourceCounters.getCount(counterType))
+            if (actuallyRemovable > 0) {
+                newState = newState.updateEntity(continuation.sourceId) { container ->
+                    container.with(sourceCounters.withRemoved(counterType, actuallyRemovable))
+                }
+                events.add(
+                    CountersRemovedEvent(
+                        continuation.sourceId,
+                        continuation.currentCounterType,
+                        actuallyRemovable,
+                        continuation.sourceName
+                    )
+                )
+
+                // Add them to the destination (honoring counter-placement replacements).
+                val modified = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    newState, continuation.destinationId, counterType, actuallyRemovable,
+                    placerId = continuation.controllerId
+                )
+                if (modified > 0) {
+                    val destCounters = newState.getEntity(continuation.destinationId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                        ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+                    newState = newState.updateEntity(continuation.destinationId) { container ->
+                        container.with(destCounters.withAdded(counterType, modified))
+                    }
+                    val (afterMark, firstThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
+                        .recordCounterPlacement(newState, continuation.destinationId)
+                    newState = afterMark
+                    events.add(
+                        CountersAddedEvent(
+                            continuation.destinationId,
+                            continuation.currentCounterType,
+                            modified,
+                            continuation.destinationName,
+                            firstThisTurn
+                        )
+                    )
+                }
+                anyMoved = true
+            }
+        }
+
+        // Prompt for the next kind still present on the source, if any.
+        val live = newState.getEntity(continuation.sourceId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+        val nextPrompt = continuation.remainingCounterTypes
+            .map { (type, _) ->
+                type to (live?.getCount(
+                    com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(type)
+                ) ?: 0)
+            }
+            .firstOrNull { it.second > 0 }
+
+        if (nextPrompt != null) {
+            val (nextType, nextMax) = nextPrompt
+            val remainingAfter = continuation.remainingCounterTypes
+                .dropWhile { it.first != nextType }
+                .drop(1)
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = ChooseNumberDecision(
+                id = decisionId,
+                playerId = continuation.controllerId,
+                prompt = "Move how many $nextType counters from ${continuation.sourceName} onto ${continuation.destinationName}? (0-$nextMax)",
+                context = DecisionContext(
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                minValue = 0,
+                maxValue = nextMax
+            )
+            val nextContinuation = MoveChosenCountersToTargetContinuation(
+                decisionId = decisionId,
+                sourceId = continuation.sourceId,
+                destinationId = continuation.destinationId,
+                controllerId = continuation.controllerId,
+                currentCounterType = nextType,
+                currentMaxAmount = nextMax,
+                remainingCounterTypes = remainingAfter,
+                sourceName = continuation.sourceName,
+                destinationName = continuation.destinationName,
+                drawCardOnMove = continuation.drawCardOnMove,
+                anyMovedSoFar = anyMoved
+            )
+            events.add(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.controllerId,
+                    decisionType = "CHOOSE_NUMBER",
+                    prompt = decision.prompt
+                )
+            )
+            val pausedState = newState
+                .withPendingDecision(decision)
+                .pushContinuation(nextContinuation)
+            return ExecutionResult.paused(pausedState, decision, events)
+        }
+
+        // All kinds processed. Draw a card if requested and at least one counter moved.
+        if (continuation.drawCardOnMove && anyMoved) {
+            val drawResult = services.turnManager.drawCards(newState, continuation.controllerId, 1)
+            newState = drawResult.state
+            events.addAll(drawResult.events)
+        }
+
+        return checkForMore(newState, events)
     }
 
     private fun resumeReturnFromLinkedExile(
