@@ -1472,3 +1472,28 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `HewTheEntwoodScenarioTest` — sacrifice 3 lands, reveal top 3 (artifact / Forest /
   Ogre); choose artifact + Forest (Ogre not selectable); asserts artifact on battlefield untapped,
   Forest on battlefield tapped, Ogre back on the bottom of the library.
+
+## Sauron, the Dark Lord (#224)
+
+- **Verdict:** pure composition — no new SDK. All four abilities reuse existing facades.
+- **Ward—Sacrifice a legendary artifact or legendary creature:** `KeywordAbility.wardSacrifice`
+  over `GameObjectFilter.Artifact.legendary() or GameObjectFilter.Creature.legendary()`. The
+  `WardCost.Sacrifice` shape already existed (Ygra, Eater of All).
+- **Opponent-cast amass:** `Triggers.OpponentCastsSpell` + `Effects.Amass(1, "Orc")` (Boromir,
+  Warden of the Tower already pairs `OpponentCastsSpell` with a payoff; amass substrate from the
+  Amass mechanic).
+- **Army-damage Ring-tempt:** the generic `Triggers.dealsDamage(DamageType.Combat,
+  RecipientFilter.AnyPlayer, sourceFilter = Creature.youControl().withSubtype("Army"),
+  binding = ANY)` factory + `Effects.TheRingTemptsYou()`. Same "subtype-source deals combat
+  damage to a player" shape the factory was built for; no new trigger.
+- **Ring-tempt discard/draw:** `Triggers.RingTemptsYou` + the standard
+  `MayEffect(IfYouDoEffect(action = Patterns.Hand.discardHand, ifYouDo = Effects.DrawCards(4)))`
+  pair (identical to Narset, Jeskai Waymaster). "If you do" = the draw is gated on the discard
+  actually happening, and the whole thing is optional ("you may").
+- **Touched:** `SauronTheDarkLord.kt` (card), `SauronTheDarkLordScenarioTest.kt`, LTR snapshot
+  golden, backlog. No SDK / engine / docs change (all primitives pre-existed).
+- **Test:** `SauronTheDarkLordScenarioTest` — Ward keyword present with a `WardCost.Sacrifice`;
+  opponent casting two spells amasses Orcs 1 then grows the same Army to 2 counters; an Army
+  attacking and dealing combat damage to the opponent tempts the controller (`TheRingComponent
+  .temptCount` = 1) and the resulting Ring-tempt trigger lets the controller discard their hand to
+  draw four.
