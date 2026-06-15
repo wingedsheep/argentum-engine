@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.library
 import com.wingedsheep.engine.core.CardPlottedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -13,6 +14,9 @@ import com.wingedsheep.engine.state.components.identity.PlottedComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
@@ -47,7 +51,32 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         var newState = state
         if (collection.isNotEmpty()) {
             val (permId, stateWithPerm) = newState.newEntity()
-            newState = stateWithPerm.addMayPlayPermission(
+            newState = stateWithPerm
+
+            // "When you play a card this way, …" rider (Fires of Mount Doom). Register an
+            // event-based delayed triggered ability linked to the permission via a shared id;
+            // playing a granted card emits a CardPlayedFromPermissionEvent carrying that id,
+            // which fires the rider on the stack. EndOfTurn expiry mirrors the impulse grant's
+            // own end-of-turn cleanup.
+            val riderLinkId: String? = effect.onPlayRider?.let { rider ->
+                val sourceId = context.sourceId ?: return@let null
+                val linkId = "may-play-rider-${permId.value}"
+                newState = newState.addDelayedTrigger(
+                    DelayedTriggeredAbility(
+                        id = linkId,
+                        effect = rider,
+                        sourceId = sourceId,
+                        sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "",
+                        controllerId = controllerId,
+                        trigger = TriggerSpec(EventPattern.CardPlayedFromPermissionEvent),
+                        expiry = DelayedTriggerExpiry.EndOfTurn,
+                        fireOnce = false,
+                    )
+                )
+                linkId
+            }
+
+            newState = newState.addMayPlayPermission(
                 MayPlayPermission(
                     id = permId,
                     cardIds = collection.toSet(),
@@ -58,6 +87,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     landEntersTapped = effect.landEntersTapped,
                     permanent = isPermanent,
                     expiresAfterTurn = expiresAfterTurn,
+                    riderLinkId = riderLinkId,
                     timestamp = state.timestamp,
                 )
             )

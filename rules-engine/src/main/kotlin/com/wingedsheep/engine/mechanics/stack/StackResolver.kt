@@ -352,6 +352,30 @@ class StackResolver(
             newState = emitBecomesTarget(newState, target, cardId, casterId, events, sourceIsSpell = true)
         }
 
+        // "When you play a card this way, …" rider (Fires of Mount Doom). If this spell was cast
+        // from exile via a may-play permission that carries a rider, emit the linked event so the
+        // rider's delayed triggered ability fires on the stack. Read off the pre-removal [state] —
+        // the permission survives until the spell resolves, but its cardIds is most reliably
+        // inspected before any of this method's zone churn.
+        if (castFromZone == Zone.EXILE) {
+            for (permission in state.mayPlayPermissions) {
+                if (permission.riderLinkId != null &&
+                    permission.controllerId == casterId &&
+                    cardId in permission.cardIds &&
+                    permission.sourceId != null
+                ) {
+                    events.add(
+                        com.wingedsheep.engine.core.CardPlayedFromPermissionEvent(
+                            cardId = cardId,
+                            controllerId = casterId,
+                            sourceId = permission.sourceId,
+                            linkId = permission.riderLinkId
+                        )
+                    )
+                }
+            }
+        }
+
         return ExecutionResult.success(
             newState.tick(),
             events

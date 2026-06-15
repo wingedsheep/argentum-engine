@@ -674,6 +674,11 @@ class TriggerDetector(
             is com.wingedsheep.sdk.scripting.EventPattern.DamagePreventedEvent -> {
                 event is com.wingedsheep.engine.core.DamagePreventedEvent && event.linkId == delayedId
             }
+            // "When you play a card this way": fires only for the may-play permission that this
+            // delayed trigger is linked to, matched by the linkId echoed on the event.
+            is com.wingedsheep.sdk.scripting.EventPattern.CardPlayedFromPermissionEvent -> {
+                event is com.wingedsheep.engine.core.CardPlayedFromPermissionEvent && event.linkId == delayedId
+            }
             is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent -> {
                 if (event !is ZoneChangeEvent) return false
                 if (watchedEntityId != null) {

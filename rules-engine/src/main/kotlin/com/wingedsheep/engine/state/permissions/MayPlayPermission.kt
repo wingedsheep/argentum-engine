@@ -51,6 +51,14 @@ data class MayPlayPermission(
     val landEntersTapped: Boolean = false,
     val permanent: Boolean = false,
     val expiresAfterTurn: Int? = null,
+    /**
+     * When set, playing a card granted by this permission emits a
+     * [com.wingedsheep.engine.core.CardPlayedFromPermissionEvent] carrying this id, which
+     * fires a linked event-based delayed triggered ability — the "When you play a card this
+     * way, …" rider (Fires of Mount Doom). The rider's [DelayedTriggeredAbility] shares this
+     * id. Null when the grant has no rider.
+     */
+    val riderLinkId: String? = null,
     val timestamp: Long
 ) {
     init {

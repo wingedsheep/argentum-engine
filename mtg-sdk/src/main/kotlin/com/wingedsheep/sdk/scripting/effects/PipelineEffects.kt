@@ -1101,7 +1101,17 @@ data class GrantMayPlayFromExileEffect(
      * clauses, where the tapped-on-entry rule is imposed by the granting effect rather
      * than the played card's own script.
      */
-    val landEntersTapped: Boolean = false
+    val landEntersTapped: Boolean = false,
+    /**
+     * Optional "When you play a card this way, …" rider. When set, playing (casting or
+     * playing as a land) any card granted by this permission puts this effect on the stack
+     * as a triggered ability of the granting source. The engine registers a linked
+     * event-based delayed triggered ability alongside the permission and emits a
+     * `CardPlayedFromPermissionEvent` at the play site. Used by impulse effects whose grant
+     * carries a payoff — e.g. Fires of Mount Doom ("…When you play a card this way, Fires of
+     * Mount Doom deals 2 damage to each player.").
+     */
+    val onPlayRider: Effect? = null
 ) : Effect {
     override val description: String = buildString {
         append("${expiry.description.replaceFirstChar { it.uppercase() }}, you may play those cards from exile")

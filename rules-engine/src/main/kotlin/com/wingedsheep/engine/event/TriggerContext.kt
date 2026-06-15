@@ -177,6 +177,12 @@ data class TriggerContext(
                     triggeringEntityId = event.sourceId,
                     damageAmount = event.amount
                 )
+                is com.wingedsheep.engine.core.CardPlayedFromPermissionEvent -> TriggerContext(
+                    // The card played this way; the player who played it. The rider's source
+                    // (e.g. Fires of Mount Doom) is carried separately on the delayed trigger.
+                    triggeringEntityId = event.cardId,
+                    triggeringPlayerId = event.controllerId
+                )
                 is com.wingedsheep.engine.core.CountersAddedEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     counterCount = event.amount

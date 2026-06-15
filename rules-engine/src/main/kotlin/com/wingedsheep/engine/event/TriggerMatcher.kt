@@ -441,6 +441,7 @@ class TriggerMatcher(
             // "When damage is prevented this way" fires only via its linked delayed trigger
             // (detectEventBasedDelayedTriggers), never as a battlefield trigger.
             is EventPattern.DamagePreventedEvent -> false
+            is EventPattern.CardPlayedFromPermissionEvent -> false
             // Replacement-effect-only events never match as triggers
             is EventPattern.DamageEvent -> false
             is EventPattern.CounterPlacementEvent -> false

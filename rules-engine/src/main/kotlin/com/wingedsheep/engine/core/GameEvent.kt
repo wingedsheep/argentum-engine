@@ -210,6 +210,27 @@ data class DamagePreventedEvent(
 ) : GameEvent
 
 /**
+ * A card was played (cast as a spell or played as a land) using an impulse-style
+ * "you may play this card" permission that carried an "When you play a card this way, …"
+ * rider (Fires of Mount Doom). Emitted at the play site; carries [linkId] so the granting
+ * permission's linked delayed triggered ability fires the rider on the stack. Mirrors
+ * [DamagePreventedEvent]'s link-id scoping.
+ *
+ * @property cardId The card that was played
+ * @property controllerId The player who played it
+ * @property sourceId The permanent that granted the play permission (the rider's source)
+ * @property linkId The id shared with the linked delayed triggered ability
+ */
+@Serializable
+@SerialName("CardPlayedFromPermissionEvent")
+data class CardPlayedFromPermissionEvent(
+    val cardId: EntityId,
+    val controllerId: EntityId,
+    val sourceId: EntityId,
+    val linkId: String
+) : GameEvent
+
+/**
  * Stats were modified (e.g., +3/+3 until end of turn).
  */
 @Serializable

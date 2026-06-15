@@ -713,6 +713,20 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         override val description: String = "when damage is prevented this way"
     }
 
+    /**
+     * When a card is played (cast as a spell or played as a land) using a specific
+     * "you may play this card" permission — i.e. an impulse-style "exile … you may play
+     * that card this turn" grant. Used only as the spec of an event-based delayed
+     * triggered ability that the granting permission links to via id, so the rider
+     * ("When you play a card this way, …") fires on the stack. Mirrors the link-id
+     * scoping of [DamagePreventedEvent]. (Fires of Mount Doom.)
+     */
+    @SerialName("CardPlayedFromPermissionEvent")
+    @Serializable
+    data object CardPlayedFromPermissionEvent : EventPattern {
+        override val description: String = "when you play a card this way"
+    }
+
     // ---- Phase/Step Triggers ----
 
     /**

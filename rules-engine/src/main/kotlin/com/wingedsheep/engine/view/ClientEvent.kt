@@ -1210,6 +1210,7 @@ is PermanentsSacrificedEvent -> {
 
             is TurnHijackedEvent,
             is CommitCrimeEvent,
+            is CardPlayedFromPermissionEvent,
             is TargetsChosenEvent -> null
         }
     }

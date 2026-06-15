@@ -753,8 +753,11 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.MayPlayExpiry.EndOfTurn,
         withAnyManaType: Boolean = false,
         condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
-        landEntersTapped: Boolean = false
-    ): Effect = GrantMayPlayFromExileEffect(from, expiry, withAnyManaType, condition, landEntersTapped)
+        landEntersTapped: Boolean = false,
+        onPlayRider: Effect? = null
+    ): Effect = GrantMayPlayFromExileEffect(
+        from, expiry, withAnyManaType, condition, landEntersTapped, onPlayRider
+    )
 
     /**
      * Make every card in a named collection *plotted* (CR 718). The cards must already be in

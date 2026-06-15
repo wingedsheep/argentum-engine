@@ -152,6 +152,26 @@ class PlayLandHandler(
         if (permissionForcesTapped) {
             newState = newState.updateEntity(action.cardId) { c -> c.with(TappedComponent) }
         }
+        // "When you play a card this way, …" rider (Fires of Mount Doom). If this land was
+        // played from exile via a may-play permission carrying a rider, capture the linked
+        // event BEFORE removing the permission so the rider's delayed triggered ability fires.
+        val riderPlayEvent: com.wingedsheep.engine.core.CardPlayedFromPermissionEvent? =
+            if (fromZone == Zone.EXILE) {
+                state.mayPlayPermissions.firstOrNull { permission ->
+                    permission.riderLinkId != null &&
+                        permission.controllerId == action.playerId &&
+                        action.cardId in permission.cardIds &&
+                        permission.sourceId != null
+                }?.let { permission ->
+                    com.wingedsheep.engine.core.CardPlayedFromPermissionEvent(
+                        cardId = action.cardId,
+                        controllerId = action.playerId,
+                        sourceId = permission.sourceId!!,
+                        linkId = permission.riderLinkId!!
+                    )
+                }
+            } else null
+
         // Clean up may-play permissions now that the card has left exile. Lands don't go
         // through the stack, so StackResolver's removeMayPlayPermissionsForCard never runs
         // for them; without this, a permanent permission would silently re-authorize the
@@ -186,6 +206,7 @@ class PlayLandHandler(
                     action.playerId,
                 )
                 val onEnterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>(zoneChangeEvent)
+                riderPlayEvent?.let { onEnterEvents.add(it) }
                 newState = newState.tick()
 
                 val effectContext = EffectContext(
@@ -249,7 +270,7 @@ class PlayLandHandler(
                         Zone.BATTLEFIELD,
                         action.playerId
                     )
-                    val events = listOf(zoneChangeEvent)
+                    val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent)
                     newState = newState.tick()
 
                     val decisionId = "pay-life-or-enter-tapped-${action.cardId.value}"
@@ -316,7 +337,7 @@ class PlayLandHandler(
                     Zone.BATTLEFIELD,
                     action.playerId
                 )
-                val events = listOf(zoneChangeEvent)
+                val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent)
                 newState = newState.tick()
 
                 // Build the choice prompt + entity-keyed continuation via the shared on-battlefield
@@ -350,7 +371,7 @@ class PlayLandHandler(
             action.playerId
         )
 
-        val events = listOf(zoneChangeEvent)
+        val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent)
         newState = newState.tick()
 
         // Detect and process any triggers from the land entering (e.g., landfall)

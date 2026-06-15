@@ -1295,3 +1295,40 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `FearFireFoesScenarioTest` — X damage to the target + 1 to each other creature its
   controller controls (a different player's creatures untouched); and a Battlefield Medic prevent-1
   shield is ignored so full damage lands.
+
+## Fires of Mount Doom (LTR #294) — `onPlayRider` for impulse-play ("when you play a card this way") (2026-06-15)
+- **Card:** {2}{R} Legendary Enchantment. ETB: 2 damage to target creature an opponent controls,
+  then destroy all Equipment attached to it. {2}{R}: exile top card, may play it this turn; when you
+  play a card this way, Fires deals 2 to each player.
+- **ETB — fully reused:** `Effects.DealDamage(2, ContextTarget, damageSource = Self)` +
+  `Effects.DestroyAllEquipmentOnTarget(ContextTarget)` (both pre-existing). No new code.
+- **Activated ability — reused impulse pipeline** (`GatherCards → MoveCollection(EXILE) →
+  GrantMayPlayFromExile`), with ONE new SDK primitive for the rider:
+  1. **`GrantMayPlayFromExile(..., onPlayRider: Effect?)`** — new optional field on
+     `GrantMayPlayFromExileEffect`. The "When you play a card this way, …" payoff is expressed as a
+     normal stack triggered ability (CR-faithful — opponents get priority). Mechanically mirrors the
+     `DamagePreventedEvent` link-id shield: the grant executor registers a linked **event-based
+     delayed triggered ability** (`expiry = EndOfTurn`) alongside the `MayPlayPermission`, sharing a
+     `riderLinkId`. Playing a granted card (cast or land) emits a new **`CardPlayedFromPermissionEvent`**
+     carrying that id, matched only by `delayedId` in `TriggerDetector.matchesEventForWatchedEntity`,
+     so the rider fires on the stack with the granting source as its source.
+  - New EventPattern `EventPattern.CardPlayedFromPermissionEvent` (link-id marker, like
+    `DamagePreventedEvent`). New engine `GameEvent CardPlayedFromPermissionEvent` (@Serializable +
+    registered in `Serialization.kt`; null-mapped in `ClientEvent.kt`; empty categories in
+    `TriggerIndex`).
+  - Emit sites: `StackResolver.castSpell` (cast-time, when the spell was cast from EXILE via a
+    rider-bearing permission) and `PlayLandHandler` (captured before `removeMayPlayPermissionsForCard`,
+    threaded into all event-list return paths).
+- **No new serializable Component:** the rider link lives on the existing `MayPlayPermission` (new
+  `riderLinkId` field) and the existing `DelayedTriggeredAbility` (event-based).
+- **Rule numbers:** modeled per oracle wording; the rider is a triggered ability that goes on the
+  stack (CR 603) — no specific number cited in code.
+- **Touched:** `FiresOfMountDoom.kt` (card), `PipelineEffects.kt` + `Effects.kt` facade
+  (`onPlayRider`), `EventPattern.kt` (new pattern), `GameEvent.kt` + `Serialization.kt` +
+  `ClientEvent.kt` + `TriggerIndex.kt` (new event), `MayPlayPermission.kt` (`riderLinkId`),
+  `ExileTopCardMayPlayFreeExecutor.kt` (register linked delayed trigger), `StackResolver.kt` +
+  `PlayLandHandler.kt` (emit), `TriggerDetector.kt` + `TriggerContext.kt` + `TriggerMatcher.kt`
+  (match/context), SDK reference, and `FiresOfMountDoomScenarioTest.kt`.
+- **Test:** `FiresOfMountDoomScenarioTest` — ETB deals 2 to a targeted opponent creature and destroys
+  an Equipment attached to it; the activated ability impulse-exiles the top card, and playing it that
+  turn fires the rider dealing 2 to each player.
