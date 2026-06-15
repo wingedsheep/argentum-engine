@@ -751,6 +751,13 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   rounded up" (Rush of Dread): `Divide(AggregateBattlefield(Player.ContextPlayer(0), Creature), Fixed(2),
   roundUp = true)`. The amount is evaluated at resolution against the resolving context, so a per-target
   player reference counts the chosen player's permanents.
+- `Effects.SacrificeAnyNumber(filter)` (= `SacrificeEffect(filter, any = true)`) — the *resolving*
+  player chooses 0+ of their own permanents matching `filter` to sacrifice. Distinct from
+  `ForceSacrifice` (edict on a target) and from `Costs.pay.Sacrifice` (a cost): this is a
+  resolution effect. The sacrificed permanents are recorded in the effect context, so a later
+  composite step can read the count via `DynamicAmounts.permanentsSacrificedThisWay()` — e.g.
+  "Sacrifice any number of lands. Reveal the top X cards … where X is the number of lands
+  sacrificed this way" (Hew the Entwood; same shape as Scapeshift).
 - "Return a permanent you control [to its owner's hand]" is a pipeline composition, not an effect type:
   `GatherCards(BattlefieldMatching(filter, Player.You, excludeSelf?))` →
   `SelectFromCollection(ChooseExactly(1), useTargetingUI = true)` → `MoveCollection(→ HAND)` (the

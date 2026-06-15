@@ -2448,6 +2448,16 @@ object Effects {
         ForceSacrificeEffect(filter = filter, target = target, dynamicCount = count)
 
     /**
+     * "Sacrifice any number of [filter]" — the resolving player chooses 0 or more of their own
+     * permanents matching [filter] to sacrifice. The sacrificed permanents are recorded in the
+     * effect context, so a later step in the same composite can read the count via
+     * [com.wingedsheep.sdk.dsl.DynamicAmounts.permanentsSacrificedThisWay] (e.g. "where X is the
+     * number of lands sacrificed this way" — Hew the Entwood, Scapeshift).
+     */
+    fun SacrificeAnyNumber(filter: GameObjectFilter): Effect =
+        com.wingedsheep.sdk.scripting.effects.SacrificeEffect(filter = filter, any = true)
+
+    /**
      * Sacrifice a specific permanent identified by target.
      * Used in delayed triggers where the exact permanent was determined at resolution time.
      */

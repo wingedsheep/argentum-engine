@@ -1446,3 +1446,29 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
 - **Test:** `SauronsRansomScenarioTest` — opponent splits top four (c4,c3 / c2,c1), controller routes
   Pile 1 to hand and Pile 2 to graveyard, then designates a Ring-bearer; asserts zones, hand/graveyard
   counts, and `TheRingComponent.temptCount == 1`.
+
+## Hew the Entwood ({3}{R}{R} Sorcery)
+
+- **Shape:** "Sacrifice any number of lands. Reveal the top X cards … where X = lands sacrificed
+  this way. Choose any number of artifact and/or land cards revealed. Put chosen nonland cards onto
+  the battlefield, then chosen land cards onto the battlefield tapped, then the rest on the bottom of
+  your library in a random order." Pure pipeline composition.
+- **New SDK (one facade only):** `Effects.SacrificeAnyNumber(filter)` = `SacrificeEffect(filter,
+  any = true)` surfaced as a facade. The underlying `SacrificeEffect(any = true)` already existed
+  (Scapeshift's documented use case) and its executor already records the sacrificed permanents into
+  the effect context — no engine change. The facade gives cards a clean "controller sacrifices any
+  number of [filter] as a resolution effect" primitive, distinct from `ForceSacrifice` (edict) and
+  `Costs.pay.Sacrifice` (cost).
+- **X plumbing:** reused `DynamicAmounts.permanentsSacrificedThisWay()` (Gap 16 / Voracious Fell
+  Beast), which reads `context.sacrificedPermanents.size`. Fed into
+  `GatherCards(TopOfLibrary(X, You))`.
+- **Partition:** reused `SelectFromCollection(ChooseAnyNumber, filter = Artifact or Land)` →
+  `chosen` / `rest`, then three filtered `MoveCollection`s: `chosen` Nonland → battlefield untapped,
+  `chosen` Land → battlefield tapped (`ZonePlacement.Tapped`), `rest` → library Bottom
+  (`CardOrder.Random`). Same building blocks as The Ring Goes South / Galadriel of Lothlórien.
+  Note: an artifact *land* is a land card, so it correctly routes to the tapped step.
+- **Touched:** `HewTheEntwood.kt` (card), `Effects.kt` (`SacrificeAnyNumber` facade), SDK reference
+  (forced-sacrifice section), backlog, `HewTheEntwoodScenarioTest.kt`.
+- **Test:** `HewTheEntwoodScenarioTest` — sacrifice 3 lands, reveal top 3 (artifact / Forest /
+  Ogre); choose artifact + Forest (Ogre not selectable); asserts artifact on battlefield untapped,
+  Forest on battlefield tapped, Ogre back on the bottom of the library.
