@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.events.AbilityTargetMatch
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -947,6 +948,25 @@ object Triggers {
      */
     val OpponentActivatesAbility: TriggerSpec = TriggerSpec(
         event = AbilityActivatedEvent(player = Player.EachOpponent),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you activate an ability that isn't a mana ability (CR 605 / 606).
+     */
+    val YouActivateAbility: TriggerSpec = TriggerSpec(
+        event = AbilityActivatedEvent(player = Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you activate an ability whose chosen targets satisfy [targetMatch] — e.g.
+     * [AbilityTargetMatch.CreatureOrPlayer] for Ertha Jo, Frontier Mentor's
+     * "Whenever you activate an ability that targets a creature or player". A non-targeting
+     * ability (a tap-for-mana, etc.) never matches.
+     */
+    fun youActivateAbilityTargeting(targetMatch: AbilityTargetMatch): TriggerSpec = TriggerSpec(
+        event = AbilityActivatedEvent(player = Player.You, targetMatch = targetMatch),
         binding = TriggerBinding.ANY
     )
 

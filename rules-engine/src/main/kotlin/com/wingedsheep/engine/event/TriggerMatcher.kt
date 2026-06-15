@@ -36,8 +36,10 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.sdk.scripting.events.AbilityTargetMatch
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -241,8 +243,15 @@ class TriggerMatcher(
                 // The engine only emits AbilityActivatedEvent for non-mana activated abilities
                 // (mana abilities resolve without the stack), so this naturally matches
                 // "activates an ability that isn't a mana ability". Loyalty abilities qualify.
-                event is AbilityActivatedEvent &&
-                    matchesPlayer(trigger.player, event.controllerId, controllerId)
+                if (event !is AbilityActivatedEvent) return false
+                if (!matchesPlayer(trigger.player, event.controllerId, controllerId)) return false
+                val targetMatch = trigger.targetMatch
+                if (targetMatch != null) {
+                    // "...that targets a creature or player": the activated ability on the stack
+                    // must have at least one chosen target satisfying the constraint. A
+                    // non-targeting ability has no TargetsComponent and therefore never matches.
+                    matchesAbilityTargetConstraint(event.abilityEntityId, targetMatch, sourceId, controllerId, state)
+                } else true
             }
             is EventPattern.CycleEvent -> {
                 event is CardCycledEvent &&
@@ -1137,6 +1146,56 @@ class TriggerMatcher(
      * the mana-pool tracker is generalized to a `Set<Subtype>`; card
      * definitions can already declare them forward-compatibly.
      */
+    /**
+     * "Whenever you activate an ability that targets [a creature or player]" — true when the
+     * activated ability on the stack ([abilityEntityId]) has at least one chosen target satisfying
+     * [match]. The ability's chosen targets live on its [TargetsComponent]; a non-targeting ability
+     * has no such component, so this returns false (the trigger doesn't fire).
+     */
+    private fun matchesAbilityTargetConstraint(
+        abilityEntityId: EntityId?,
+        match: AbilityTargetMatch,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        if (abilityEntityId == null) return false
+        val targets = state.getEntity(abilityEntityId)?.get<TargetsComponent>()?.targets ?: return false
+        return targets.any { target -> matchesAbilityTarget(target, match, sourceId, controllerId, state) }
+    }
+
+    /** True if a single chosen target satisfies the [match] constraint. */
+    private fun matchesAbilityTarget(
+        target: ChosenTarget,
+        match: AbilityTargetMatch,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean = when (match) {
+        is AbilityTargetMatch.AnyPlayer -> target is ChosenTarget.Player
+        is AbilityTargetMatch.AnyOf -> match.options.any {
+            matchesAbilityTarget(target, it, sourceId, controllerId, state)
+        }
+        is AbilityTargetMatch.ObjectMatching -> {
+            val objectId = when (target) {
+                is ChosenTarget.Permanent -> target.entityId
+                is ChosenTarget.Card -> target.cardId
+                is ChosenTarget.Spell -> target.spellEntityId
+                is ChosenTarget.Player -> null
+            }
+            if (objectId == null) false
+            else {
+                val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                    controllerId = controllerId,
+                    sourceId = sourceId
+                )
+                predicateEvaluator.matches(
+                    state, state.projectedState, objectId, match.filter, predicateContext
+                )
+            }
+        }
+    }
+
     /**
      * Resolve one [AttackPredicate] against the runtime [AttackersDeclaredEvent].
      *

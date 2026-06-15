@@ -276,6 +276,35 @@ data class AdditionalCombatPhasesComponent(
 ) : Component
 
 /**
+ * Component tracking additional upkeep steps to be inserted into the current turn
+ * (Obeka, Splitter of Seconds). Per CR 500.10, adding a step after a phase creates the
+ * beginning phase that normally contains that step directly after the specified phase, with
+ * its other steps (untap and draw) skipped. Per CR 500.8, these extra phases occur after the
+ * current phase, and after any extra combat phases added to the same point (CR 500.8: the most
+ * recently created phase occurs first — combat phases are created before the upkeep phases here,
+ * so combat happens first).
+ *
+ * The TurnManager drains this at the postcombat-main → end transition, *after* the
+ * additional-combat-phase check, redirecting into a fresh beginning phase whose only step is the
+ * upkeep step. The count is decremented each time an additional upkeep step begins.
+ *
+ * @param count Number of additional upkeep steps (beginning phases) remaining to insert
+ */
+@Serializable
+data class AdditionalUpkeepStepsComponent(
+    val count: Int = 1
+) : Component
+
+/**
+ * Marker placed on the active player while the game is inside an inserted additional upkeep step
+ * (see [AdditionalUpkeepStepsComponent]). It tells the TurnManager that advancing out of this
+ * upkeep step must skip the draw step and return to the postcombat main phase (CR 500.10), rather
+ * than following the normal upkeep → draw progression. Consumed when that redirect happens.
+ */
+@Serializable
+data object InAdditionalUpkeepStepComponent : Component
+
+/**
  * Marker component indicating that a player should skip all combat phases
  * during their next turn. Applied by effects like False Peace.
  *

@@ -86,7 +86,11 @@ class CopyTargetSpellOrAbilityExecutor(
         if (targetRequirements.isEmpty()) {
             val copy = source.copy(controllerId = context.controllerId)
             val stackResolver = StackResolver(cardRegistry = cardRegistry)
-            return EffectResult.from(stackResolver.putActivatedAbility(state, copy))
+            // CR 707.10: a copy isn't activated, so don't emit an AbilityActivatedEvent (it would
+            // re-fire "whenever you activate an ability" triggers off the copy).
+            return EffectResult.from(
+                stackResolver.putActivatedAbility(state, copy, emitActivationEvent = false)
+            )
         }
 
         // The source has targets — prompt the copier to choose new ones.

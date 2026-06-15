@@ -425,7 +425,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `ReturnLinkedExileUnderOwnersControl()` — return under each card's owner.
 - `ReturnLinkedExileToHand()` — return all from linked exile to hand.
 - `ReturnOneFromLinkedExile()` — return one chosen card.
-- `GrantMayPlayFromExile(from, expiry?, withAnyManaType?, condition?, landEntersTapped?)` — controller may play matching cards from exile. `landEntersTapped=true` forces a played land tapped regardless of its own ETB script (Lightstall Inquisitor); PlayLandHandler reads the flag off the active `MayPlayPermission` at play time and stamps `TappedComponent` before the card's intrinsic `EntersTapped` branch runs.
+- `GrantMayPlayFromExile(from, expiry?, withAnyManaType?, condition?, landEntersTapped?)` — controller may play matching cards from exile. `withAnyManaType=true` relaxes the colored pips so mana of any type can pay them (Laughing Jasper Flint, Cruelclaw's Heist); the grant works whether the card stays in exile *or* in a graveyard (Tinybones, the Pickpocket grants over a card the trigger gathered straight from a graveyard via `CardSource.ChosenTargets`), and the relaxation is applied both in the legal-action enumerator and in the cast handler's payment. `landEntersTapped=true` forces a played land tapped regardless of its own ETB script (Lightstall Inquisitor); PlayLandHandler reads the flag off the active `MayPlayPermission` at play time and stamps `TappedComponent` before the card's intrinsic `EntersTapped` branch runs.
 - `GrantPlayWithoutPayingCost(from)` — same, without paying mana costs.
 - `GrantPlayWithCostIncrease(from, amount)` — stamp `PlayWithCostIncreaseComponent(controllerId, amount)` on every card in the collection, so the next cast pays `{amount}` extra generic. Pair with `GrantMayPlayFromExile` for "each spell cast this way costs {N} more" clauses (Lightstall Inquisitor); for target-based "exile this permanent, owner may play it, opponents tax" effects use `Effects.ExileAndGrantOwnerPlayPermission` instead.
 - `GrantFreeCastTargetFromExile(target)` — cast specific exiled card for free.
@@ -747,6 +747,18 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `PhaseOutEffect(target = Self)` — phase the target permanent out (Rule 702.26); facade `Effects.PhaseOut(target)`. While phased out it's treated as though it doesn't exist (excluded from `getBattlefield`, so from projection, triggers, combat, targeting, and SBAs) and phases back in before its controller's next untap step. Indirect phasing (attached Auras/Equipment) is handled automatically. Used as the `suffer` branch of a pay-or-phase trigger (Vaporous Djinn: "phases out unless you pay {U}{U}" = `PayOrSufferEffect(Costs.pay.Mana(...), Effects.PhaseOut())`).
 - `PhaseOutUntilLeavesEffect(target, tapOnPhaseIn)` / `Effects.PhaseOutUntilLeaves(target, tapOnPhaseIn)` — phase the target out **indefinitely, linked to the effect's source** (the phasing analogue of `ExileUntilLeaves`): it skips its untap-step phase-in and stays out until the source leaves the battlefield. Pair with `Effects.PhaseInLinkedToSource()` on the source's `LeavesBattlefield` trigger, which phases everything the source phased out this way back in (tapping those flagged `tapOnPhaseIn`). The link lives on the phased-out permanent (`PhasedOutComponent.phaseInOnSourceLeaves`); indirect phasing carries Auras/Equipment out with the creature. This is Oubliette (ETB phase-out + leaves-trigger phase-in, tapped).
 - `MarkExileOnDeathEffect(target)` — replace next "to graveyard" with "to exile".
+- `Effects.AddAdditionalUpkeepSteps(amount)` (`amount: DynamicAmount` or `Int`) — give the
+  controller `amount` additional upkeep steps after the current phase (Obeka, Splitter of Seconds:
+  "you get that many additional upkeep steps after this phase"). Per CR 500.10, each added upkeep
+  step creates the *beginning phase* that normally contains it, with the untap and draw steps
+  skipped; per CR 500.8 the phases are inserted after the current phase, and after any additional
+  combat phases added to the same point (most-recently-created phase first). "At the beginning of
+  [your] upkeep" abilities trigger in each inserted step (CR 503.1a). Steps are always added to the
+  controller's own turn (CR 500.10a). Implemented by accumulating an `AdditionalUpkeepStepsComponent`
+  count on the active player, drained by `TurnManager.advanceStep` after the postcombat main phase
+  (after the additional-combat-phase check), each remaining count redirecting into a fresh upkeep
+  step in the beginning phase. Read "that many" from the triggering combat damage with
+  `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT)`.
 - `GatedEffect(gate, then, otherwise?, decisionMaker?)` — **the unified resolution frame for the
   optional / gated-effect cluster** (phase-rs Lesson 1). A `Gate` decides whether `then` runs; if it
   fails, `otherwise` runs. One executor + one continuation/resumer own the canonical unwind order, so
@@ -1770,6 +1782,17 @@ Named sugar for the common type-primitive cases; reach for `youCastSpell(...)` p
   abilities don't use the stack, so they never fire this; loyalty abilities (which are activated abilities) do. Pair
   with `Effects.DealDamage(n, EffectTarget.PlayerRef(Player.TriggeringPlayer))` to punish the activator (Flamescroll
   Celebrant). Backed by `EventPattern.AbilityActivatedEvent(player)`.
+- `YouActivateAbility` — you activate an ability that isn't a mana ability (the `Player.You` form of the above).
+- `youActivateAbilityTargeting(targetMatch)` — you activate an ability whose **chosen targets** satisfy
+  `targetMatch`. Backed by `EventPattern.AbilityActivatedEvent(player, targetMatch)`: when `targetMatch != null`, the
+  activated ability on the stack must have at least one chosen target matching it, so a non-targeting ability (e.g.
+  tap-for-mana) never fires. `targetMatch` is an `AbilityTargetMatch` (in `scripting.events`): `ObjectMatching(filter)`
+  matches an object target against a `GameObjectFilter`, `AnyPlayer` matches a player target, and `AnyOf(list)` is a
+  heterogeneous OR (the match space is wider than `GameObjectFilter` because an ability can target a player too).
+  `AbilityTargetMatch.CreatureOrPlayer` is the prebuilt "targets a creature or player" used by Ertha Jo, Frontier
+  Mentor, whose payoff is `Effects.CopyTargetSpellOrAbility(EffectTarget.TriggeringEntity)` (for an
+  `AbilityActivatedEvent` the triggering entity is the activated ability on the stack; the copy executor reprompts for
+  new targets, CR 707.10/707.10c).
 
 **Other casters.** The same shape, scoped to a different caster via the runtime
 `Player.Each` / `Player.EachOpponent` matching on `SpellCastEvent`. Bind the payoff to the

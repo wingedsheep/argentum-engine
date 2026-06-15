@@ -2508,6 +2508,20 @@ object Effects {
     fun ForceBlock(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         com.wingedsheep.sdk.scripting.effects.ForceBlockEffect(target)
 
+    /**
+     * Give the controller [amount] additional upkeep steps after the current phase
+     * (Obeka, Splitter of Seconds). Each is a beginning phase containing only an upkeep step
+     * (untap and draw skipped, CR 500.10); they occur after any additional combat phases (CR 500.8).
+     */
+    fun AddAdditionalUpkeepSteps(amount: DynamicAmount): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect(amount)
+
+    /**
+     * Give the controller a fixed number of additional upkeep steps after the current phase.
+     */
+    fun AddAdditionalUpkeepSteps(amount: Int): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddAdditionalUpkeepStepsEffect(DynamicAmount.Fixed(amount))
+
     // -------------------------------------------------------------------------
     // Damage Prevention (unified via PreventDamageEffect)
     // -------------------------------------------------------------------------

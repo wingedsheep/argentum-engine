@@ -12,6 +12,8 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
+import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
+import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
@@ -183,6 +185,30 @@ class TurnManager(
             return endTurn(state)
         }
 
+        // Leaving an inserted additional upkeep step (Obeka, Splitter of Seconds). Per CR 500.10
+        // the extra beginning phase has only its upkeep step (its untap and draw steps are
+        // skipped), and the game then returns to the phase after which the steps were added — the
+        // postcombat main phase. The active player gets priority there; when they pass, the
+        // POSTCOMBAT_MAIN drain below inserts the next remaining additional upkeep step (if any).
+        if (currentStep == Step.UPKEEP &&
+            state.getEntity(activePlayer)?.has<InAdditionalUpkeepStepComponent>() == true
+        ) {
+            var redirectedState = state.updateEntity(activePlayer) { container ->
+                container.without<InAdditionalUpkeepStepComponent>()
+            }
+            redirectedState = redirectedState.copy(
+                step = Step.POSTCOMBAT_MAIN,
+                phase = Phase.POSTCOMBAT_MAIN,
+                priorityPassedBy = emptySet()
+            )
+            val events = mutableListOf<GameEvent>(
+                PhaseChangedEvent(Phase.POSTCOMBAT_MAIN),
+                StepChangedEvent(Step.POSTCOMBAT_MAIN)
+            )
+            redirectedState = redirectedState.withPriority(activePlayer)
+            return ExecutionResult.success(redirectedState, events)
+        }
+
         // Check for additional combat phases (Aggravated Assault, etc.)
         if (currentStep == Step.POSTCOMBAT_MAIN) {
             val additionalPhases = state.getEntity(activePlayer)?.get<AdditionalCombatPhasesComponent>()
@@ -204,6 +230,41 @@ class TurnManager(
                 val events = mutableListOf<GameEvent>(
                     PhaseChangedEvent(Phase.COMBAT),
                     StepChangedEvent(Step.BEGIN_COMBAT)
+                )
+
+                redirectedState = redirectedState.withPriority(activePlayer)
+                return ExecutionResult.success(redirectedState, events)
+            }
+
+            // No more additional combat phases — now drain any additional upkeep steps
+            // (Obeka, Splitter of Seconds). Per the card's rulings, extra combat phases (created
+            // earlier) happen before the extra beginning phases, which is why this check follows
+            // the combat-phase check above. Each remaining count inserts one fresh beginning phase
+            // whose only step is the upkeep step (untap and draw skipped); the
+            // InAdditionalUpkeepStepComponent marker makes the redirect at the top of advanceStep
+            // send the game back here after that upkeep step, draining the next one until the
+            // count is exhausted, after which the turn proceeds to the postcombat main phase.
+            val additionalUpkeeps = state.getEntity(activePlayer)?.get<AdditionalUpkeepStepsComponent>()
+            if (additionalUpkeeps != null && additionalUpkeeps.count > 0) {
+                var redirectedState = if (additionalUpkeeps.count <= 1) {
+                    state.updateEntity(activePlayer) { it.without<AdditionalUpkeepStepsComponent>() }
+                } else {
+                    state.updateEntity(activePlayer) { container ->
+                        container.with(AdditionalUpkeepStepsComponent(additionalUpkeeps.count - 1))
+                    }
+                }
+
+                redirectedState = redirectedState
+                    .updateEntity(activePlayer) { it.with(InAdditionalUpkeepStepComponent) }
+                    .copy(
+                        step = Step.UPKEEP,
+                        phase = Phase.BEGINNING,
+                        priorityPassedBy = emptySet()
+                    )
+
+                val events = mutableListOf<GameEvent>(
+                    PhaseChangedEvent(Phase.BEGINNING),
+                    StepChangedEvent(Step.UPKEEP)
                 )
 
                 redirectedState = redirectedState.withPriority(activePlayer)

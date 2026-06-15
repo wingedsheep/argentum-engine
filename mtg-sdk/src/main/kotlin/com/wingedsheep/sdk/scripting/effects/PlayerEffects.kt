@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -92,6 +93,29 @@ data class PlayAdditionalLandsEffect(
 data object AddCombatPhaseEffect : Effect {
     override val description: String =
         "After this main phase, there is an additional combat phase followed by an additional main phase"
+}
+
+/**
+ * Give the controller additional upkeep steps after the current phase
+ * (Obeka, Splitter of Seconds: "you get that many additional upkeep steps after this phase").
+ *
+ * Per CR 500.10, adding an upkeep step after a phase creates the beginning phase that normally
+ * contains the upkeep step, with its untap and draw steps skipped. The phases are inserted after
+ * the current phase (CR 500.8), and after any additional combat phases added to the same point
+ * (CR 500.8: most recently created phase occurs first), so any extra combat happens before the
+ * extra upkeeps. "At the beginning of [your] upkeep" abilities trigger in each (CR 503.1a).
+ *
+ * Always added to the controller of the effect (CR 500.10a — "you get" steps are never added to
+ * another player's turn).
+ *
+ * @param amount The number of additional upkeep steps to add (e.g. the combat damage dealt).
+ */
+@SerialName("AddAdditionalUpkeepSteps")
+@Serializable
+data class AddAdditionalUpkeepStepsEffect(
+    val amount: DynamicAmount
+) : Effect {
+    override val description: String = "You get ${amount.description} additional upkeep step(s) after this phase"
 }
 
 /**

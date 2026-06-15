@@ -99,7 +99,10 @@ class MiscContinuationResumer(
             state = state,
             ability = copy,
             targets = selectedTargets,
-            targetRequirements = continuation.targetRequirements
+            targetRequirements = continuation.targetRequirements,
+            // CR 707.10: a copy isn't activated — suppress the AbilityActivatedEvent so the copy
+            // doesn't itself re-trigger "whenever you activate an ability" abilities.
+            emitActivationEvent = false
         )
         if (!stackResult.isSuccess) return stackResult
 

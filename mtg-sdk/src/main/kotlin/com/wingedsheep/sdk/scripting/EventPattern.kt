@@ -1202,14 +1202,29 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * Used by Flamescroll Celebrant: "Whenever an opponent activates an ability that isn't a mana
      * ability, this creature deals 1 damage to that player."
+     *
+     * [targetMatch] optionally narrows the trigger to abilities that target a particular kind of
+     * object or player. When non-null, the activated ability must have at least one chosen target
+     * satisfying it — a non-targeting ability never fires. Ertha Jo, Frontier Mentor uses
+     * [com.wingedsheep.sdk.scripting.events.AbilityTargetMatch.CreatureOrPlayer] for
+     * "Whenever you activate an ability that targets a creature or player".
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable
     data class AbilityActivatedEvent(
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val targetMatch: com.wingedsheep.sdk.scripting.events.AbilityTargetMatch? = null
     ) : EventPattern {
-        override val description: String =
-            "${player.description} activates an ability that isn't a mana ability"
+        override val description: String = buildString {
+            append(player.description)
+            append(" activates an ability that ")
+            if (targetMatch != null) {
+                append("targets a ")
+                append(targetMatch.description)
+            } else {
+                append("isn't a mana ability")
+            }
+        }
     }
 
     /**

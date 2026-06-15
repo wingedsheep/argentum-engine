@@ -241,8 +241,9 @@ power via `dynamicPower = CharacteristicValue.dynamic(TurnTracking(You, CARDS_DR
    stack-object kind the single target resolved to — instant/sorcery spell, **activated ability**, or
    triggered ability — via `Targets.InstantSorcerySpellOrAbility`; STACK targeting enumeration was
    widened so an ability becomes a legal target when the filter names an ability predicate. This
-   closed the **Return the Favor** copy mode. Still open for **Ertha Jo, Frontier Mentor**: a trigger
-   predicate for "an ability that targets a creature or player."
+   closed the **Return the Favor** copy mode. ~~Still open for **Ertha Jo, Frontier Mentor**: a trigger
+   predicate for "an ability that targets a creature or player."~~ **DONE** — added
+   `Triggers.youActivateAbilityTargeting(AbilityTargetMatch)`; Ertha Jo implemented.
 
 8. **Aura "becomes attached" trigger + control-for-as-long-as-attached + MV-on-attach condition.**
    No "becomes attached" trigger event, no MV-comparison-on-attachment condition, and no control
@@ -256,9 +257,11 @@ power via `dynamicPower = CharacteristicValue.dynamic(TurnTracking(You, CARDS_DR
    `SetBasePowerToughnessDynamicStatic` (Layer 7b SET_VALUES) + `Modification.SetPowerToughnessDynamic`;
    Bonny Pall implemented.
 
-10. **Additional upkeep steps inserted into the current turn.** Extra *combat* phases and extra
+10. ~~**Additional upkeep steps inserted into the current turn.** Extra *combat* phases and extra
     *turns* are supported, but not inserting N extra upkeep steps after the current phase.
-    → **Obeka, Splitter of Seconds**.
+    → **Obeka, Splitter of Seconds**.~~ **DONE** — added `Effects.AddAdditionalUpkeepSteps` +
+    `AdditionalUpkeepStepsComponent`; TurnManager drains the queue after the postcombat main phase.
+    Obeka implemented.
 
 11. **"Tap an artifact (token) for mana" trigger + reflexive same-type mana.** The tap-for-mana
     trigger is land-only (`LandTappedForMana`); needs generalization to artifact/permanent-tapped-for-mana

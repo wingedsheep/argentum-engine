@@ -766,16 +766,21 @@ class CastSpellHandler(
     }
 
     /**
-     * True if the spell is being cast from exile via a [com.wingedsheep.engine.state.permissions.MayPlayPermission]
-     * that allows mana of any type to be spent. The card must currently be in some exile
-     * zone (the card's owner's, which may be an opponent — e.g. Taster of Wares leaves the
-     * exiled card in the revealing player's exile), an active permission must be granted
-     * to the casting player with its condition gate open, and the `withAnyManaType` flag
-     * must be set on at least one of those active permissions.
+     * True if the spell is being cast via a [com.wingedsheep.engine.state.permissions.MayPlayPermission]
+     * that allows mana of any type to be spent. The card must currently be in a zone a may-play
+     * permission can grant casting from — exile (the card's owner's, which may be an opponent —
+     * e.g. Taster of Wares leaves the exiled card in the revealing player's exile) or a graveyard
+     * (per-card grants that leave the card in the graveyard — e.g. Tinybones, the Pickpocket lets
+     * you cast a targeted nonland permanent card from the damaged player's graveyard). An active
+     * permission must be granted to the casting player with its condition gate open, and the
+     * `withAnyManaType` flag must be set on at least one of those active permissions.
      */
     private fun isCastWithAnyManaType(state: GameState, action: CastSpell): Boolean {
-        val inExile = state.turnOrder.any { ownerId -> action.cardId in state.getZone(ZoneKey(ownerId, Zone.EXILE)) }
-        if (!inExile) return false
+        val inGrantableZone = state.turnOrder.any { ownerId ->
+            action.cardId in state.getZone(ZoneKey(ownerId, Zone.EXILE)) ||
+                action.cardId in state.getZone(ZoneKey(ownerId, Zone.GRAVEYARD))
+        }
+        if (!inGrantableZone) return false
         return state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator)
             .any { it.withAnyManaType }
     }

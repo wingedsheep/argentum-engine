@@ -2699,6 +2699,185 @@
     ]
 }
 
+// Bruse Tarl, Roving Rancher
+{
+    "name": "Bruse Tarl, Roving Rancher",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Oxen you control have double strike.\nWhenever Bruse Tarl enters or attacks, exile the top card of your library. If it's a land card, create a 2/2 white Ox creature token. Otherwise, you may cast it until the end of your next turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "exiledCard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiledCard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "exiledCard",
+                            "filter": {
+                                "type": "MatchesFilter",
+                                "filter": "land"
+                            },
+                            "storeMatching": "landCards",
+                            "storeNonMatching": "nonLandCards"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "landCards",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Ox"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/c/e/cee3ecef-4566-4164-af39-89cb0bbbffeb.jpg?1712316060"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "nonLandCards",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "exiledCard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiledCard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "exiledCard",
+                            "filter": {
+                                "type": "MatchesFilter",
+                                "filter": "land"
+                            },
+                            "storeMatching": "landCards",
+                            "storeNonMatching": "nonLandCards"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "landCards",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Ox"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/c/e/cee3ecef-4566-4164-af39-89cb0bbbffeb.jpg?1712316060"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "nonLandCards",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "filter": {
+                    "baseFilter": "creature Ox ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Forrest Imel",
+        "flavorText": "\"I find a world where the herds finally listen to me, but now the plants have an attitude?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/286c55c2-dcc1-4e87-a83f-9981d28ab62d.jpg?1712356070"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Bucolic Ranch
 {
     "name": "Bucolic Ranch",
@@ -5265,6 +5444,102 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Ertha Jo, Frontier Mentor
+{
+    "name": "Ertha Jo, Frontier Mentor",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Kor Advisor",
+    "oracleText": "When Ertha Jo enters, create a 1/1 red Mercenary creature token with \"{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery.\"\nWhenever you activate an ability that targets a creature or player, copy that ability. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Mercenary"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f04607f-eed2-462e-897f-82e41e5f7049.jpg?1712316319",
+                    "activatedAbilities": [
+                        {
+                            "id": "ability_2",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                }
+                            ],
+                            "timing": "SorcerySpeed"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "targetMatch": {
+                        "type": "AbilityTargetAnyOf",
+                        "options": [
+                            {
+                                "type": "AbilityTargetObjectMatching",
+                                "filter": "creature"
+                            },
+                            "AbilityTargetAnyPlayer"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpellOrAbility",
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Michal Ivan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4e81be6-6447-4f1e-be00-6fcdb2ab35af.jpg?1712356089"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -11735,6 +12010,52 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee0dc663-4bfb-46d4-af79-d0143c799487.jpg?1712356276"
     },
     "colorIdentityOverride": []
+}
+
+// Obeka, Splitter of Seconds
+{
+    "name": "Obeka, Splitter of Seconds",
+    "manaCost": "{1}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Ogre Warlock",
+    "oracleText": "Menace\nWhenever Obeka deals combat damage to a player, you get that many additional upkeep steps after this phase.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "AddAdditionalUpkeepSteps",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"You're living on borrowed time.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03415c42-086e-4a2e-9be8-5cdcde83f134.jpg?1712356168"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
 }
 
 // Omenport Vigilante
@@ -18546,6 +18867,71 @@
         "artist": "Wylie Beckert",
         "flavorText": "It was going to be the greatest heist of his unlife.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/7/5724a15f-0ba0-421a-9cd4-a2b701e6141f.jpg?1712355685"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Tinybones, the Pickpocket
+{
+    "name": "Tinybones, the Pickpocket",
+    "manaCost": "{B}",
+    "typeLine": "Legendary Creature — Skeleton Rogue",
+    "oracleText": "Deathtouch\nWhenever Tinybones deals combat damage to a player, you may cast target nonland permanent card from that player's graveyard, and mana of any type can be spent to cast that spell.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "stolenCard"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "stolenCard",
+                            "withAnyManaType": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target nonland permanent card from that player's graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d3025a2-4a17-4137-ba0b-bd676c6f5f88.jpg?1712355685",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "You choose whether to cast the target nonland permanent card as Tinybones's triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's types are ignored."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

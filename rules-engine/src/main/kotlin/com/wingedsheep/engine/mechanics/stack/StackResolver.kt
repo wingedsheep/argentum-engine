@@ -561,12 +561,20 @@ class StackResolver(
 
     /**
      * Put an activated ability on the stack.
+     *
+     * [emitActivationEvent] is true for a genuine activation. A **copy** of an activated ability is
+     * *not* activated (CR 707.10), so the copy paths pass false to suppress the
+     * [AbilityActivatedEvent] — otherwise placing the copy would itself re-fire
+     * "whenever you activate an ability" triggers (e.g. Ertha Jo, Frontier Mentor would copy its own
+     * copies endlessly). The copy still becomes a stack object with its own targets, so
+     * `BecomesTargetEvent`/`TargetsChosenEvent` are still emitted below.
      */
     fun putActivatedAbility(
         state: GameState,
         ability: ActivatedAbilityOnStackComponent,
         targets: List<ChosenTarget> = emptyList(),
-        targetRequirements: List<TargetRequirement> = emptyList()
+        targetRequirements: List<TargetRequirement> = emptyList(),
+        emitActivationEvent: Boolean = true
     ): ExecutionResult {
         val (abilityId, stateWithId) = state.newEntity()
 
@@ -579,14 +587,17 @@ class StackResolver(
         newState = newState.pushToStack(abilityId)
             .copy(priorityPassedBy = emptySet())
 
-        val events = mutableListOf<GameEvent>(
-            AbilityActivatedEvent(
-                ability.sourceId,
-                ability.sourceName,
-                ability.controllerId,
-                abilityEntityId = abilityId
+        val events = mutableListOf<GameEvent>()
+        if (emitActivationEvent) {
+            events.add(
+                AbilityActivatedEvent(
+                    ability.sourceId,
+                    ability.sourceName,
+                    ability.controllerId,
+                    abilityEntityId = abilityId
+                )
             )
-        )
+        }
 
         if (CrimeDetector.isCrime(newState, ability.controllerId, targets)) {
             events.add(CommitCrimeEvent(ability.controllerId, abilityId, ability.sourceName))
