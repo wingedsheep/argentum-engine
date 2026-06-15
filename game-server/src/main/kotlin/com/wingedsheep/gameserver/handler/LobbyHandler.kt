@@ -2033,6 +2033,14 @@ class LobbyHandler(
                 .onSuccess { lobby.attackMode = it }
         }
 
+        // Two-Headed Giant team setup (CR 810). Stored regardless of mode; only consumed when a 2HG
+        // game starts. randomTeams=true re-rolls teams each game; when false the host's
+        // teamAssignments (playerId -> team) are used, balanced/falling back if incomplete.
+        message.randomTeams?.let { lobby.randomTeams = it }
+        message.teamAssignments?.let { assignments ->
+            lobby.setTeamAssignments(assignments.mapKeys { com.wingedsheep.sdk.model.EntityId(it.key) })
+        }
+
         // Manual boosterCount override (apply after format change)
         // Grid draft uses fixed booster counts based on player count — no manual override.
         // Premade decks doesn't use boosters at all — ignore.

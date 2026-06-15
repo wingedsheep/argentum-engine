@@ -325,6 +325,14 @@ sealed, or premade), then one N-player game".
   `GameConfig.attackMode` → `GameState.attackMode`; the legal-action enumerator filters
   `validAttackTargets` and the engine rejects an out-of-seat declaration. Ignored in `TOURNAMENT`
   mode and in any two-player game (all three modes permit the sole opponent).
+- **Two-Headed Giant teams (CR 810).** When `gameMode` is `TWO_HEADED_GIANT`, the same two messages
+  carry an optional `randomTeams` (default **`true`**) and `teamAssignments` (playerId → team index
+  `0`/`1`, full map), both echoed by `LobbySettings`. `randomTeams = true` shuffles the four seats
+  into two teams of two at game start, re-rolled each game; `false` uses the host's
+  `teamAssignments`. At start the server resolves the partition (`TwoHeadedGiantTeams.partition`):
+  random, or the manual map balanced into even teams, falling back to seat-order pairing if the
+  manual assignment can't form two pairs of two. The result flows to `GameSession.teams` →
+  `GameConfig.teams`. Ignored outside `TWO_HEADED_GIANT`.
 - **Free mulligan.** A game that begins with more than two players (any FFA pod) uses the CR 800.6
   multiplayer mulligan: a player's *first* mulligan is free — it bottoms 0 cards and doesn't count
   toward the mulligan limit. This is engine-internal; the existing `MulliganDecision.cardsToPutOnBottom`

@@ -65,6 +65,8 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         aiAssistEnabled = aiAssistEnabled,
         gameMode = gameMode.name,
         attackMode = attackMode.name,
+        randomTeams = randomTeams,
+        teamAssignments = teamAssignments.mapKeys { it.key.value },
         ffaGameSessionId = ffaGameSessionId,
         ffaGamesPlayed = ffaGamesPlayed
     )
@@ -105,7 +107,8 @@ fun restoreTournamentLobby(
         gameMode = runCatching { LobbyGameMode.valueOf(persistent.gameMode) }
             .getOrDefault(LobbyGameMode.TOURNAMENT),
         attackMode = runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(persistent.attackMode) }
-            .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE)
+            .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE),
+        randomTeams = persistent.randomTeams
     )
     // FFA in-flight state (last standings are deliberately not persisted — after a restart the
     // pod simply readies up for the next game).
@@ -153,6 +156,9 @@ fun restoreTournamentLobby(
         )
         lobby.players[playerId] = playerState
     }
+
+    // 2HG manual team assignment — restored after players so the validity filter keeps current ids.
+    lobby.setTeamAssignments(persistent.teamAssignments.mapKeys { EntityId(it.key) })
 
     // Restore state via internal method
     lobby.restoreFromPersistence(

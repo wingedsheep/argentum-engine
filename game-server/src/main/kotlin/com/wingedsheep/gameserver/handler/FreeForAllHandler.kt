@@ -87,13 +87,19 @@ class FreeForAllHandler(
         // CR 802 / 803 — the lobby's chosen attack rule applies to this multiplayer game.
         gameSession.attackMode = lobby.attackMode
 
-        // Two-Headed Giant (CR 810): run under the team format and assign the four seats to two
-        // teams of two. Team indices reference the add-player order below; GameInitializer seats
-        // teammates adjacently (CR 805.1). GameSession.teams flows into GameConfig.teams, which
-        // stamps a TeamComponent on each seat — the engine then shares life/turns/combat per team.
+        // Two-Headed Giant (CR 810): run under the team format and split the four seats into two
+        // teams of two — random by default (re-rolled each game), or the host's manual assignment.
+        // Team indices reference the add-player order below (same order used for the partition);
+        // GameInitializer seats teammates adjacently (CR 805.1). GameSession.teams flows into
+        // GameConfig.teams, which stamps a TeamComponent on each seat — the engine then shares
+        // life/turns/combat per team.
         if (lobby.isTwoHeadedGiant) {
             gameSession.engineFormat = com.wingedsheep.sdk.core.Format.TwoHeadedGiant()
-            gameSession.teams = listOf(listOf(0, 1), listOf(2, 3))
+            gameSession.teams = com.wingedsheep.gameserver.lobby.TwoHeadedGiantTeams.partition(
+                orderedPlayerIds = playerStates.map { it.identity.playerId },
+                randomTeams = lobby.randomTeams,
+                manualAssignment = lobby.teamAssignments,
+            )
         }
 
         for (playerState in playerStates) {

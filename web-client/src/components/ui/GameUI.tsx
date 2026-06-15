@@ -756,6 +756,23 @@ function LobbyOverlay({
   // Two-Headed Giant (CR 810): the pod mode that runs two teams of two off the same draft/sealed
   // build. Exactly four players; combat/attack rules are fixed (no per-creature attack picker).
   const is2hg = lobbyState.settings.gameMode === 'TWO_HEADED_GIANT'
+  // 2HG team setup: random by default, or host-assigned (playerId -> team, defaulting to join order).
+  const randomTeams = lobbyState.settings.randomTeams ?? true
+  const teamAssignments = lobbyState.settings.teamAssignments ?? {}
+  const playerTeam = (playerId: string, index: number): number =>
+    teamAssignments[playerId] ?? Math.floor(index / 2)
+  // Manual teams must be an even 2v2 to play as intended (the server otherwise re-balances).
+  const manualTeamsBalanced = lobbyState.players.length === 4 &&
+    [0, 1].every(t => lobbyState.players.filter((p, i) => playerTeam(p.playerId, i) === t).length === 2)
+  // Move one player to the other team, sending the full explicit assignment for all four seats.
+  const togglePlayerTeam = (playerId: string, index: number) => {
+    const flipped = playerTeam(playerId, index) === 0 ? 1 : 0
+    const next: Record<string, number> = {}
+    lobbyState.players.forEach((p, i) => {
+      next[p.playerId] = p.playerId === playerId ? flipped : playerTeam(p.playerId, i)
+    })
+    updateLobbySettings({ teamAssignments: next })
+  }
   // "Draft-shape" — anything that hands packs around at pick time. Commander Draft fits the
   // shape (same per-pick UI / timer / pack-passing) so it inherits Draft-only settings.
   const isAnyDraft = isDraft || isWinston || isGridDraft || isCommanderDraft
@@ -933,12 +950,43 @@ function LobbyOverlay({
                 )}
                 {is2hg && (
                   <div className={styles.variantCaption}>
-                    Four players in two teams of two (seats 1+2 vs 3+4). Each team shares one 30-life
-                    total, takes turns together, and attacks and blocks as one. Last team standing wins.
+                    Four players in two teams of two. Each team shares one 30-life total, takes turns
+                    together, and attacks and blocks as one. Last team standing wins.
                   </div>
                 )}
               </div>
             </div>
+            {/* Two-Headed Giant team setup (CR 810): random teams each game, or host-picked teams. */}
+            {is2hg && (
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Teams</span>
+                <div className={styles.variantGroup}>
+                  <div className={styles.settingsButtons}>
+                    <button
+                      onClick={() => updateLobbySettings({ randomTeams: true })}
+                      className={`${styles.settingsButton} ${randomTeams ? styles.settingsButtonActive : ''}`}
+                      title="Shuffle the four players into two teams of two when the game starts (re-rolled each game)"
+                    >
+                      Random
+                    </button>
+                    <button
+                      onClick={() => updateLobbySettings({ randomTeams: false })}
+                      className={`${styles.settingsButton} ${!randomTeams ? styles.settingsButtonActive : ''}`}
+                      title="Set the teams by hand — click each player's team chip below"
+                    >
+                      Choose teams
+                    </button>
+                  </div>
+                  <div className={styles.variantCaption}>
+                    {randomTeams
+                      ? 'Teams are randomised at game start, fresh every game.'
+                      : manualTeamsBalanced
+                        ? 'Click a player’s team chip below to move them between teams.'
+                        : 'Click each player’s team chip below — each team needs exactly two players.'}
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Free-for-All attack rule (CR 802/803) — only relevant once 3+ players share one table */}
             {isFfa && (
               <div className={styles.settingsRow}>
@@ -1420,26 +1468,50 @@ function LobbyOverlay({
                 <span className={styles.playerName}>
                   {player.playerName}
                 </span>
-                {/* Two-Headed Giant team chip — seats fill the two teams in join order (1+2, 3+4). */}
-                {is2hg && (() => {
-                  const team = Math.floor(i / 2)
+                {/* Two-Headed Giant team chip. Random mode: a neutral chip (teams decided at game
+                    start). Manual mode: the assigned team, clickable for the host to reassign. */}
+                {is2hg && randomTeams && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                      color: 'rgba(226, 232, 240, 0.7)',
+                      border: '1px solid rgba(148, 163, 184, 0.45)',
+                      background: 'rgba(148, 163, 184, 0.12)',
+                      borderRadius: 4,
+                      padding: '1px 6px',
+                    }}
+                  >
+                    Random
+                  </span>
+                )}
+                {is2hg && !randomTeams && (() => {
+                  const team = playerTeam(player.playerId, i)
                   const c = teamColor(team)
-                  return (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 800,
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                        color: c.bright,
-                        border: `1px solid ${c.base}`,
-                        background: c.soft,
-                        borderRadius: 4,
-                        padding: '1px 6px',
-                      }}
+                  const chipStyle = {
+                    fontSize: 10,
+                    fontWeight: 800,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase' as const,
+                    color: c.bright,
+                    border: `1px solid ${c.base}`,
+                    background: c.soft,
+                    borderRadius: 4,
+                    padding: '1px 6px',
+                  }
+                  const hostCanEdit = isWaiting && lobbyState.isHost
+                  return hostCanEdit ? (
+                    <button
+                      onClick={() => togglePlayerTeam(player.playerId, i)}
+                      style={{ ...chipStyle, cursor: 'pointer' }}
+                      title="Click to move this player to the other team"
                     >
                       Team {team + 1}
-                    </span>
+                    </button>
+                  ) : (
+                    <span style={chipStyle}>Team {team + 1}</span>
                   )
                 })()}
                 {player.isHost && (

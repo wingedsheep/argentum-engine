@@ -298,6 +298,12 @@ class TournamentLobby(
      * bracket (whose matches are always two-player). Defaults to [AttackMode.MULTIPLE].
      */
     var attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
+    /**
+     * Two-Headed Giant only (CR 810): when true (the default) the four seats are split into two
+     * random teams of two at game start, re-rolled each game. When false the host sets the teams
+     * by hand via [teamAssignments]. Ignored outside [gameMode] == TWO_HEADED_GIANT.
+     */
+    var randomTeams: Boolean = true,
 ) {
 
     /**
@@ -357,6 +363,23 @@ class TournamentLobby(
 
     /** Players indexed by player ID */
     val players = ConcurrentHashMap<EntityId, LobbyPlayerState>()
+
+    /**
+     * Two-Headed Giant manual team assignment: playerId -> team index (0 or 1). Only consulted when
+     * [randomTeams] is false. Keyed by player id (not seat) so it survives reordering, reconnects,
+     * and a player leaving/rejoining. Players missing here are balanced into the open team at game
+     * start (see [TwoHeadedGiantTeams.partition]).
+     */
+    @Volatile
+    var teamAssignments: Map<EntityId, Int> = emptyMap()
+        private set
+
+    /** Replace the manual 2HG team assignment, keeping only current players and valid team indices. */
+    fun setTeamAssignments(assignments: Map<EntityId, Int>) {
+        teamAssignments = assignments.filter { (id, team) ->
+            id in players.keys && team in 0 until TwoHeadedGiantTeams.TEAM_COUNT
+        }
+    }
 
     /** Tournament-level spectators (non-participants watching standings/matches) */
     val spectators = ConcurrentHashMap<EntityId, PlayerIdentity>()
@@ -1509,6 +1532,8 @@ class TournamentLobby(
                 aiAssistEnabled = aiAssistEnabled,
                 gameMode = gameMode.name,
                 attackMode = attackMode.name,
+                randomTeams = randomTeams,
+                teamAssignments = teamAssignments.mapKeys { it.key.value },
             ),
             isHost = isHost(forPlayerId)
         )

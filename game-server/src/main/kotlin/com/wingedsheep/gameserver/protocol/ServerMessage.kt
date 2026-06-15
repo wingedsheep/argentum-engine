@@ -461,6 +461,16 @@ sealed interface ServerMessage {
         val gameMode: String = "TOURNAMENT",
         /** Free-for-All attack rule (CR 802/803): "MULTIPLE", "LEFT", or "RIGHT". Ignored in tournament mode. */
         val attackMode: String = "MULTIPLE",
+        /**
+         * Two-Headed Giant only (CR 810): true = random teams each game (the default); false = host
+         * sets the teams via [teamAssignments]. Ignored outside Two-Headed Giant mode.
+         */
+        val randomTeams: Boolean = true,
+        /**
+         * Two-Headed Giant manual team assignment: playerId -> team index (0 or 1). Only meaningful
+         * when [randomTeams] is false. Empty = unset (host hasn't picked teams yet).
+         */
+        val teamAssignments: Map<String, Int> = emptyMap(),
     )
 
     /**

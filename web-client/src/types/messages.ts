@@ -1155,6 +1155,10 @@ export interface LobbySettings {
   readonly gameMode: LobbyGameMode
   /** Free-for-All attack rule (CR 802/803). Only meaningful when gameMode is FREE_FOR_ALL. */
   readonly attackMode: AttackMode
+  /** Two-Headed Giant: true = random teams each game (default); false = host-set teams. */
+  readonly randomTeams: boolean
+  /** Two-Headed Giant manual team assignment: playerId -> team index (0/1). Empty = unset. */
+  readonly teamAssignments: Readonly<Record<string, number>>
 }
 
 export type LobbyGameMode = 'TOURNAMENT' | 'FREE_FOR_ALL' | 'TWO_HEADED_GIANT'
@@ -2092,6 +2096,10 @@ export interface UpdateLobbySettingsMessage {
   readonly gameMode?: LobbyGameMode
   /** Free-for-All attack rule ('MULTIPLE' / 'LEFT' / 'RIGHT'). Omit to leave unchanged. */
   readonly attackMode?: AttackMode
+  /** Two-Headed Giant: true = random teams, false = host-set teams. Omit to leave unchanged. */
+  readonly randomTeams?: boolean
+  /** Two-Headed Giant team assignment: playerId -> team index (0/1). Full map; omit to leave unchanged. */
+  readonly teamAssignments?: Readonly<Record<string, number>>
 }
 
 // Tournament Client Messages
@@ -2321,6 +2329,8 @@ export function createUpdateLobbySettingsMessage(
     aiAssistEnabled?: boolean
     gameMode?: LobbyGameMode
     attackMode?: AttackMode
+    randomTeams?: boolean
+    teamAssignments?: Readonly<Record<string, number>>
   }
 ): UpdateLobbySettingsMessage {
   return { type: 'updateLobbySettings', ...settings }

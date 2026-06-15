@@ -266,6 +266,13 @@ sealed interface ClientMessage {
         val gameMode: String? = null,
         /** Free-for-All attack rule (CR 802/803): "MULTIPLE", "LEFT", or "RIGHT". Null = unchanged. */
         val attackMode: String? = null,
+        /** Two-Headed Giant: true = random teams each game, false = host-set teams. Null = unchanged. */
+        val randomTeams: Boolean? = null,
+        /**
+         * Two-Headed Giant manual team assignment: playerId -> team index (0 or 1). The full map is
+         * sent each time (not a delta). Null leaves the current assignment unchanged.
+         */
+        val teamAssignments: Map<String, Int>? = null,
     ) : ClientMessage
 
     /**

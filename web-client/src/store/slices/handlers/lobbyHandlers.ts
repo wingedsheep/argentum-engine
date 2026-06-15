@@ -22,7 +22,7 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
           lobbyId: msg.lobbyId,
           state: 'WAITING_FOR_PLAYERS',
           players: [],
-          settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, boosterDistribution: {}, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1, isPublic: false, deckSizeMin: 60, allowDuplicates: true, commanderPreset: 'BRAWL', chaosBoosters: false, bannedCardNames: [], aiAssistEnabled: false, gameMode: 'TOURNAMENT', attackMode: 'MULTIPLE' },
+          settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, boosterDistribution: {}, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1, isPublic: false, deckSizeMin: 60, allowDuplicates: true, commanderPreset: 'BRAWL', chaosBoosters: false, bannedCardNames: [], aiAssistEnabled: false, gameMode: 'TOURNAMENT', attackMode: 'MULTIPLE', randomTeams: true, teamAssignments: {} },
           isHost: true,
           draftState: null,
           winstonDraftState: null,
