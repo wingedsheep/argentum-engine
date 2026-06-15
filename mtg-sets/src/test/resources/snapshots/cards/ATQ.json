@@ -80,6 +80,53 @@
     "colorIdentityOverride": []
 }
 
+// Grapeshot Catapult
+{
+    "name": "Grapeshot Catapult",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{T}: This creature deals 1 damage to target creature with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature with flying"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:flying"
+                        },
+                        "id": "target creature with flying"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Dan Frazier",
+        "flavorText": "For years scholars debated whether these were Urza's or Mishra's creations. Recent research suggests they were invented by the brothers' original master, Tocasia, and that both used these devices.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c7a7348-c82e-453c-975c-e5365e152a3a.jpg?1562911063"
+    },
+    "colorIdentityOverride": []
+}
+
 // Jalum Tome
 {
     "name": "Jalum Tome",
