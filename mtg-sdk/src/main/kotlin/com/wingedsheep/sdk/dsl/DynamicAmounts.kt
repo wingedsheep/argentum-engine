@@ -260,6 +260,19 @@ object DynamicAmounts {
         DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT)
 
     // =========================================================================
+    // Spell-cast trigger values
+    // =========================================================================
+
+    /**
+     * "X" — the value chosen for `{X}` on the spell that fired a spell-cast trigger (CR 601.2b).
+     * Read inside the payoff of a `youCastSpell(requires = setOf(SpellCastPredicate.HasXInCost))`
+     * trigger; e.g. Geometer's Arthropod "look at the top X cards of your library." `0` outside a
+     * spell-cast trigger or when the spell had no {X}.
+     */
+    fun xValueOfTriggeringSpell(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL)
+
+    // =========================================================================
     // Prevention-reaction values
     // =========================================================================
 

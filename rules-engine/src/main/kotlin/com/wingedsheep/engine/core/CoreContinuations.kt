@@ -84,7 +84,10 @@ data class TriggeredAbilityContinuation(
     val triggerColorsSpentOnTriggeringSpell: Int? = null,
     /** Mana value of the spell that fired this trigger (Kellan, the Kid). Read via
      *  `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE`. Null for non-cast triggers. */
-    val triggerManaValueOfTriggeringSpell: Int? = null
+    val triggerManaValueOfTriggeringSpell: Int? = null,
+    /** Value chosen for {X} on the spell that fired this trigger (Geometer's Arthropod). Read via
+     *  `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL`. Null for non-cast / no-{X} triggers. */
+    val triggerXValueOfTriggeringSpell: Int? = null
 ) : ContinuationFrame
 
 /**

@@ -1937,6 +1937,7 @@ class StackResolver(
             triggerManaSpentOnTriggeringSpell = abilityComponent.triggerManaSpentOnTriggeringSpell,
             triggerColorsSpentOnTriggeringSpell = abilityComponent.triggerColorsSpentOnTriggeringSpell,
             triggerManaValueOfTriggeringSpell = abilityComponent.triggerManaValueOfTriggeringSpell,
+            triggerXValueOfTriggeringSpell = abilityComponent.triggerXValueOfTriggeringSpell,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
             chosenModes = abilityComponent.chosenModes,

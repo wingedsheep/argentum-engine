@@ -192,6 +192,13 @@ data class EffectContext(
      */
     val triggerManaValueOfTriggeringSpell: Int? = null,
     /**
+     * The value chosen for `{X}` on the spell that fired this trigger (CR 601.2b). Read by
+     * `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL` (Geometer's Arthropod). Distinct from
+     * [triggerManaValueOfTriggeringSpell] (printed mana value, where {X} counts as 0) and
+     * [triggerManaSpentOnTriggeringSpell] (total mana paid).
+     */
+    val triggerXValueOfTriggeringSpell: Int? = null,
+    /**
      * Number of cards actually looked at by the scry that fired this trigger. Read by
      * `ContextPropertyKey.TRIGGER_SCRY_COUNT` (Celeborn the Wise, Elrond Master of Healing).
      */

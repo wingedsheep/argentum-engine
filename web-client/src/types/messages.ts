@@ -848,6 +848,46 @@ export interface LegalActionInfo {
   readonly tapForPowerRequired?: number
   /** Creatures that can be tapped to pay this requirement */
   readonly tapForPowerCreatures?: readonly TapForPowerCreatureInfo[]
+  /**
+   * Cast-time enumeration for a choose-N modal spell (Spree / "choose one or more").
+   * Present on `CastSpellModal` actions. The client renders a single mode-selection panel
+   * from this payload, then submits `CastSpell` with `chosenModes` populated (targets are
+   * picked afterward on the battlefield, server-driven).
+   */
+  readonly modalEnumeration?: ModalLegalEnumerationInfo
+}
+
+/**
+ * Cast-time enumeration payload for a choose-N modal spell. Mirrors the backend
+ * `ModalLegalEnumerationInfo` (rules 700.2).
+ */
+export interface ModalLegalEnumerationInfo {
+  /** Maximum number of modes the player may choose. */
+  readonly chooseCount: number
+  /** Minimum number of modes that must be chosen (≥ 1 for Spree). */
+  readonly minChooseCount: number
+  /** When true, the same mode may be chosen more than once (Escalate-style repeat). */
+  readonly allowRepeat: boolean
+  /** One entry per declared mode, in printed order. */
+  readonly modes: readonly ModalEnumerationModeInfo[]
+  /** Mode indices that cannot currently be chosen (no legal target / unaffordable). */
+  readonly unavailableIndices: readonly number[]
+}
+
+/** A single mode offered for cast-time selection on a choose-N modal spell. */
+export interface ModalEnumerationModeInfo {
+  /** Printed mode index (0-based). */
+  readonly index: number
+  /** Rendered mode text, e.g. "+ {2} — Put two +1/+1 counters on target creature." */
+  readonly description: string
+  /** False when the mode has no legal target or the caster cannot pay its cost. */
+  readonly available: boolean
+  /** Extra mana this mode adds to the spell's cost, if any (e.g. "{2}"). */
+  readonly additionalManaCost?: string
+  /** Per-mode non-mana additional cost info when the mode overrides card-level costs. */
+  readonly additionalCostInfo?: AdditionalCostInfo
+  /** Target slots for this mode; empty if the mode has none. */
+  readonly targetRequirements?: readonly LegalActionTargetInfo[]
 }
 
 /**

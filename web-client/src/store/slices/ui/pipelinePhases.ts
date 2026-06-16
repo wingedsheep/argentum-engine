@@ -10,6 +10,7 @@ import type {
   PipelinePhase,
   PhaseResult,
   TargetingState,
+  ModalModeSelectionState,
   XSelectionState,
   BlightVariableSelectionState,
   ConvokeSelectionState,
@@ -26,6 +27,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 export interface PipelineStoreMethods {
+  startModalModeSelection: (state: ModalModeSelectionState) => void
   startXSelection: (state: XSelectionState) => void
   startBlightVariableSelection: (state: BlightVariableSelectionState) => void
   startConvokeSelection: (state: ConvokeSelectionState) => void
@@ -50,6 +52,19 @@ export interface ComputePhasesOptions {
 
 export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhasesOptions): PipelinePhase[] {
   const phases: PipelinePhase[] = []
+
+  // 0. Choose-N modal (Spree / "choose one or more"): the player picks the mode subset in a
+  //    single panel. This is the ONLY client phase — the additional cost depends on which
+  //    modes are chosen, and per-mode targeting happens on the battlefield afterward, so the
+  //    server drives targeting and mana payment once `chosenModes` is submitted. Return early
+  //    so no manaSource/targeting phase runs against the (incomplete) base cost.
+  if (
+    actionInfo.action.type === 'CastSpell' &&
+    actionInfo.modalEnumeration &&
+    actionInfo.modalEnumeration.chooseCount > 1
+  ) {
+    return [{ type: 'modalModes' }]
+  }
 
   // 1. Counter distribution
   //    - X cost with counter removal creatures (Remove X +1/+1 counters), OR
@@ -198,6 +213,14 @@ export function mergeResult(
   gameState: ClientGameState,
 ): GameAction {
   switch (result.type) {
+    case 'modalModes': {
+      if (action.type === 'CastSpell') {
+        // Targets are deferred to the engine's per-mode target pause, so submit modes only.
+        return { ...action, chosenModes: [...result.chosenModes] }
+      }
+      return action
+    }
+
     case 'counterDistribution': {
       if (action.type === 'ActivateAbility') {
         // Activated abilities only use this for `RemoveXPlusOnePlusOneCounters`,
@@ -447,6 +470,16 @@ export function enterPhase(
   gameState?: ClientGameState,
 ): void {
   switch (phase.type) {
+    case 'modalModes': {
+      store.startModalModeSelection({
+        actionInfo,
+        cardName: actionInfo.description.replace('Cast ', ''),
+        baseManaCost: actionInfo.manaCostString ?? '',
+        enumeration: actionInfo.modalEnumeration!,
+      })
+      break
+    }
+
     case 'counterDistribution': {
       const counterCreatures = actionInfo.additionalCostInfo!.counterRemovalCreatures!
       // Seed a zero allocation per (creature, counterType). When a creature

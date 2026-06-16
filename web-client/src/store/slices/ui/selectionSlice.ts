@@ -5,6 +5,7 @@
 import type {
   SliceCreator,
   EntityId,
+  ModalModeSelectionState,
   XSelectionState,
   BlightVariableSelectionState,
   ConvokeSelectionState,
@@ -31,6 +32,7 @@ import {
 // and confirmDecisionSelection (which are not part of the pipeline).
 
 export interface SelectionSliceState {
+  modalModeSelectionState: ModalModeSelectionState | null
   xSelectionState: XSelectionState | null
   blightVariableSelectionState: BlightVariableSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
@@ -44,6 +46,9 @@ export interface SelectionSliceState {
 }
 
 export interface SelectionSliceActions {
+  startModalModeSelection: (state: ModalModeSelectionState) => void
+  confirmModalModeSelection: (chosenModes: number[]) => void
+  cancelModalModeSelection: () => void
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void
   cancelXSelection: () => void
@@ -88,6 +93,7 @@ export interface SelectionSliceActions {
 export type SelectionSlice = SelectionSliceState & SelectionSliceActions
 
 export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => ({
+  modalModeSelectionState: null,
   xSelectionState: null,
   blightVariableSelectionState: null,
   convokeSelectionState: null,
@@ -98,6 +104,25 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   manaColorSelectionState: null,
   decisionSelectionState: null,
   manaSelectionState: null,
+
+  // Choose-N modal (Spree) mode selection — confirm advances the cast pipeline with the
+  // chosen mode subset; the panel component owns its own draft selection state.
+  startModalModeSelection: (modalModeSelectionState) => {
+    set({ modalModeSelectionState })
+  },
+
+  confirmModalModeSelection: (chosenModes) => {
+    const { modalModeSelectionState, pipelineState, advancePipeline } = get()
+    if (!modalModeSelectionState || !pipelineState) return
+    set({ modalModeSelectionState: null })
+    advancePipeline({ type: 'modalModes', chosenModes })
+  },
+
+  cancelModalModeSelection: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
+    set({ modalModeSelectionState: null })
+  },
 
   // X cost selection actions
   startXSelection: (xSelectionState) => {

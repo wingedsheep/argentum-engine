@@ -1542,7 +1542,8 @@ class ClientStateTransformer(
         triggerRecipientToughness = triggered.triggerRecipientToughness,
         triggerManaSpentOnTriggeringSpell = triggered.triggerManaSpentOnTriggeringSpell,
         triggerColorsSpentOnTriggeringSpell = triggered.triggerColorsSpentOnTriggeringSpell,
-        triggerManaValueOfTriggeringSpell = triggered.triggerManaValueOfTriggeringSpell
+        triggerManaValueOfTriggeringSpell = triggered.triggerManaValueOfTriggeringSpell,
+        triggerXValueOfTriggeringSpell = triggered.triggerXValueOfTriggeringSpell
     )
 
     /**

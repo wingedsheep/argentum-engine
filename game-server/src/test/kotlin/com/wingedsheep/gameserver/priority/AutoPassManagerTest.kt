@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.priority
 
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.ActivateAbility
@@ -237,6 +238,18 @@ class AutoPassManagerTest : FunSpec({
     )
 
     /**
+     * Crewing a Vehicle. Crew is an activated ability with no timing restriction (CR 702.122a /
+     * 117.1b), so it must stop the auto-passer in the same windows an instant would — but only
+     * when it's actually affordable (enough untapped power to pay the crew cost).
+     */
+    fun crewVehicleAction(playerId: EntityId, affordable: Boolean = true) = LegalActionInfo(
+        actionType = "CrewVehicle",
+        description = "Crew Mobile Homestead",
+        action = CrewVehicle(playerId, EntityId.generate(), emptyList()),
+        isAffordable = affordable
+    )
+
+    /**
      * A cast for an alternative cost (Sneak, evoke, flashback, …). The enumerators emit
      * `CastWithAlternativeCost` (and siblings) rather than `CastSpell`; the auto-pass logic must
      * still treat it as a castable spell so it stops in the window where it's legal.
@@ -402,6 +415,29 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
+
+        test("STOP during opponent's declare attackers when player can crew a Vehicle") {
+            // Crew is usable at instant speed (CR 702.122a / 117.1b), so the defending player must
+            // get the declare-attackers window even without a castable instant in hand.
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS, hasAttackers = true)
+            val actions = listOf(
+                passPriorityAction(player2),
+                crewVehicleAction(player2)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe false
+        }
+
+        test("Auto-pass during opponent's declare attackers when the only crew action is unaffordable") {
+            // All potential crewers are tapped → nothing to stop for.
+            val state = createMockState(player2, player1, Step.DECLARE_ATTACKERS, hasAttackers = true)
+            val actions = listOf(
+                passPriorityAction(player2),
+                crewVehicleAction(player2, affordable = false)
+            )
+
+            autoPassManager.shouldAutoPass(state, player2, actions) shouldBe true
         }
 
         test("Auto-pass during opponent's declare attackers with no instant-speed responses") {

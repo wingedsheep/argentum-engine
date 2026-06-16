@@ -492,6 +492,22 @@ private fun isYourTurnConditionDsl(condNode: JsonElement?): String? {
 }
 
 /**
+ * "as long as you gained life this turn" static gate — `PlayerPassesFilter(You, GainedLifeThisTurn)`
+ * with no count/amount sub-clause -> `Conditions.YouGainedLifeThisTurn`. Backs the **Infusion** ability
+ * word's static lord (Thornfist Striker). Only the bare You-scoped, no-amount shape renders; any other
+ * player scope or a quantified "gained N life" clause declines -> SCAFFOLD.
+ */
+private fun youGainedLifeConditionDsl(condNode: JsonElement?): String? {
+    val cond = condNode as? JsonObject ?: return null
+    if (cond.strField("_Condition") != "PlayerPassesFilter") return null
+    if (!jsonContains(cond, "_Player", "You")) return null
+    val players = (cond["args"].asArr?.getOrNull(1)) as? JsonObject ?: return null
+    // Must be exactly the bare GainedLifeThisTurn filter (no nested amount/count args).
+    if (players.strField("_Players") != "GainedLifeThisTurn" || players.size > 1) return null
+    return "Conditions.YouGainedLifeThisTurn"
+}
+
+/**
  * "you control N or more [filter]" condition (`PlayerPassesFilter(You, ControlsNum([Comparison
  * GreaterThanOrEqualTo Integer N], <filter>))`) -> `Conditions.YouControlAtLeast(N, <filter>)`, or null
  * when the player isn't You, the comparison isn't `>= N` (a fixed integer), or the filter doesn't render
@@ -734,10 +750,18 @@ internal fun EmitCtx.ifRuleBlock(rule: JsonObject): List<Stmt>? {
     //   If(IsPlayersTurn(You)) [ EachPermanentLayerEffect(<group>, [AddAbility(<keyword>) | AdjustPT]) ]
     // -> one `staticAbility { condition = Conditions.IsYourTurn; ability = <lord ability> }` per layer
     // effect, reusing the always-on lord renderer (staticLordBlock) but gated on the controller's turn.
-    // Only the "during YOUR turn" gate renders; any other turn scope declines (-> SCAFFOLD). The lord
-    // renderer itself still declines any group/ability it can't reproduce exactly.
+    // Thornfist Striker (Infusion): "Creatures you control get +1/+0 and have trample as long as you
+    // gained life this turn."
+    //   If(PlayerPassesFilter(You, GainedLifeThisTurn))
+    //     [ EachPermanentLayerEffect(creatures you control, [AdjustPT(1,0), AddAbility(Trample)]) ]
+    // -> the same gated lord, one row per layer effect, gated on Conditions.YouGainedLifeThisTurn.
+    // Only the "during YOUR turn" or "you gained life this turn" gates render; any other condition
+    // declines (-> SCAFFOLD). The lord renderer itself still declines any group/ability it can't
+    // reproduce exactly.
     if (innerRule.strField("_Rule") == "EachPermanentLayerEffect") {
-        val condDsl = isYourTurnConditionDsl(cond) ?: run { reasons.add("If"); return null }
+        val condDsl = isYourTurnConditionDsl(cond)
+            ?: youGainedLifeConditionDsl(cond)
+            ?: run { reasons.add("If"); return null }
         return staticLordBlock(innerRule, condition = condDsl)
     }
 
@@ -1367,6 +1391,20 @@ private fun EmitCtx.opusTriggerBlock(rule: JsonObject, oncePerTurn: Boolean, tri
     val elseActions = (ifArgs.getOrNull(2) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
     if (thenActions.isEmpty() || elseActions.isEmpty()) return null
 
+    // mtgish encodes the count on an Opus 5+ `PutNumberCountersOfTypeOnPermanent` bonus arm
+    // UNRELIABLY — it reuses the literal 5-mana threshold as the counter count rather than the
+    // printed value (verified wrong: Tackle Artist's IR says 5 where the oracle prints "two";
+    // Spectacular Skywhale's says 5 where the oracle prints "three"). We can't recover the true
+    // count from the IR, so decline this shape to SCAFFOLD rather than emit a confidently-wrong
+    // counter count ("render correctly or decline — never emit a lossy approximation").
+    if ((thenActions as List<JsonObject>?).orEmpty().any {
+            it.strField("_Action") == "PutNumberCountersOfTypeOnPermanent"
+        }
+    ) {
+        reasons.add("opus-counter-count")
+        return null
+    }
+
     // A spell-cast trigger's triggering entity is the spell, so any "that …" body reference resolves
     // against the caster — match the generic path's bookkeeping while rendering the two arms.
     val prev = triggeringEntityIsSpell
@@ -1379,6 +1417,31 @@ private fun EmitCtx.opusTriggerBlock(rule: JsonObject, oncePerTurn: Boolean, tri
         Assign("effect", base),
         Assign("insteadIfFiveOrMore", bonus),
     ))))
+}
+
+/**
+ * True iff a `TriggerA` rule has the Opus *structural* shape: a `WhenAPlayerCastsASpell(You, instant|
+ * sorcery)` trigger whose sole action is an `IfElse` gated on the 5-or-more-mana-spent condition. This
+ * is the recognition net [opusTriggerBlock] uses, minus the per-arm rendering. [triggerBlock] consults
+ * it so that when a card is unmistakably Opus but [opusTriggerBlock] *declines* (e.g. the unreliable
+ * `PutNumberCountersOfTypeOnPermanent` count), the whole card downgrades to SCAFFOLD rather than
+ * falling through to the generic trigger path and re-rendering the same wrong value.
+ */
+private fun EmitCtx.isOpusShaped(rule: JsonObject): Boolean {
+    val ruleArgs = rule["args"].asArr ?: return false
+    val trig = ruleArgs.getOrNull(0) as? JsonObject ?: return false
+    if (trig.strField("_Trigger") != "WhenAPlayerCastsASpell") return false
+    if (!jsonContains(trig, "_Player", "You")) return false
+    val spellFilter = trig["args"].asArr?.getOrNull(1) as? JsonObject ?: return false
+    if (spellFilter.strField("_Spells") != "Or") return false
+    val orTypes = spellFilter["args"].asArr?.filterIsInstance<JsonObject>()
+        ?.filter { it.strField("_Spells") == "IsCardtype" }
+        ?.mapNotNull { it["args"].asStr() }?.toSet() ?: return false
+    if (orTypes != setOf("Instant", "Sorcery")) return false
+    val (_, actions) = extractEnvelope(rule)
+    val ifElse = actions?.singleOrNull()?.takeIf { it.strField("_Action") == "IfElse" } ?: return false
+    val cond = ifElse["args"].asArr?.getOrNull(0) as? JsonObject ?: return false
+    return isFiveOrMoreManaSpentCondition(cond)
 }
 
 /**
@@ -1413,8 +1476,11 @@ internal fun EmitCtx.triggerBlock(rule: JsonObject, oncePerTurn: Boolean = false
 
     // Opus (Secrets of Strixhaven) — the `opus { }` ability-word builder. Recognise its exact structural
     // shape before the generic trigger path; "Opus" is a flavor ability word with no IR signal, so it is
-    // inferred from structure alone (then matched precisely so nothing else collapses).
+    // inferred from structure alone (then matched precisely so nothing else collapses). When the card is
+    // unmistakably Opus-shaped but the renderer declines (e.g. the unreliable counter-count arm), scaffold
+    // the whole card rather than letting the generic trigger path re-render the same wrong value.
     opusTriggerBlock(rule, oncePerTurn, triggerCondition)?.let { return it }
+    if (isOpusShaped(rule)) { reasons.add("opus"); return null }
 
     // A Mount's "while saddled" attack trigger nests the intervening-if (CR 603.4) *inside* the
     // TriggerA's trigger slot: `args[0]` is an `If { <gate> } <realTrigger>` node rather than a bare
@@ -2025,6 +2091,15 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         val argv = trig["args"].asArr
         val scope = castScope(argv?.getOrNull(0) as? JsonObject) ?: return null
         val spellsNode = argv?.getOrNull(1) as? JsonObject
+        // "a spell with {X} in its mana cost" (Geometer's Arthropod) — a bare HasXInCost filter,
+        // expressed as a cast-time `SpellCastPredicate.HasXInCost` (the X value of the triggering
+        // spell is read in the payoff via DynamicAmounts.xValueOfTriggeringSpell()). Only the You
+        // scope has the matching Triggers facade today; any other scope declines -> SCAFFOLD.
+        if (spellsNode?.strField("_Spells") == "HasXInCost") {
+            return if (scope == CastScope.YOU)
+                "Triggers.youCastSpell(requires = setOf(SpellCastPredicate.HasXInCost))"
+            else null
+        }
         // "an instant or sorcery spell that targets a creature" (Repartee — Forum Necroscribe,
         // Lecturing Scornmage): an And of the base spell-type filter + a `TargetsAPermanent`
         // clause. Recover the base category and a `targetsMatching(<filter>)` subfilter; the

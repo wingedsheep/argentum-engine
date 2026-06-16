@@ -1861,6 +1861,12 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
   700.2). Matches `SpellCastEvent.chosenModesCount > 0`, where the count is the size of
   `SpellOnStackComponent.chosenModes` (so Spree picking the same mode twice counts as
   two). Used by Riku of Many Paths: "Whenever you cast a modal spell, …".
+- `SpellCastPredicate.HasXInCost` — spell has `{X}` in its printed mana cost (CR 107.3).
+  A property of the cost, not the value chosen, so a spell cast with X=0 still satisfies
+  it. Matches `CardComponent.manaCost.hasX`. Read the announced X in the payoff via
+  `DynamicAmounts.xValueOfTriggeringSpell()` (→ `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL`).
+  Used by Geometer's Arthropod: "Whenever you cast a spell with {X} in its mana cost, look
+  at the top X cards of your library, …".
 
 Examples:
 
@@ -1884,6 +1890,11 @@ Triggers.youCastSpell(
 
 // "Whenever you cast a modal spell" (Riku of Many Paths)
 Triggers.youCastSpell(requires = setOf(SpellCastPredicate.IsModal))
+
+// "Whenever you cast a spell with {X} in its mana cost" (Geometer's Arthropod) —
+// then dig X cards: keep one, bottom the rest in a random order.
+Triggers.youCastSpell(requires = setOf(SpellCastPredicate.HasXInCost))
+// payoff count: DynamicAmounts.xValueOfTriggeringSpell()
 
 // "Whenever you cast a noncreature or Otter spell"
 Triggers.youCastSpell(
@@ -3417,6 +3428,12 @@ sibling effect that reads `DynamicAmount.EntityProperty(EntityReference.AmassedA
     `SpellCastEvent.manaValue`; `0` for non-cast triggers. Pair with
     `CollectionFilter.ManaValueAtMost(ContextProperty(TRIGGERING_SPELL_MANA_VALUE))` to bound a
     gathered collection by the triggering spell's mana value.
+  - `X_VALUE_OF_TRIGGERING_SPELL` — value chosen for `{X}` on the spell that fired the trigger
+    (CR 601.2b) — Geometer's Arthropod's "look at the top X cards of your library." Distinct from
+    `MANA_SPENT_ON_TRIGGERING_SPELL` (total mana paid) and `TRIGGERING_SPELL_MANA_VALUE` (printed
+    mana value, where {X} counts as 0). Populated from `SpellCastEvent.xValue`; `0` for non-cast /
+    no-{X} triggers. Pair with `SpellCastPredicate.HasXInCost`. Facade:
+    `DynamicAmounts.xValueOfTriggeringSpell()`.
   - `TRIGGER_SCRY_COUNT` — cards looked at by the scry that fired the trigger (Celeborn the
     Wise, Elrond Master of Healing). Equals the scry N parameter.
   - `TRIGGER_EXCESS_DAMAGE_AMOUNT` — damage past lethal in the trigger payload (CR 120.4a).
@@ -3581,6 +3598,22 @@ forced to `0` (the player may always decline); `chooseCount` becomes `min(eval, 
 If the evaluated cap is `0` the effect resolves as a no-op. Used by Riku of Many Paths,
 where the cap is `ContextProperty(MODES_CHOSEN_ON_TRIGGERING_SPELL)`. Equivalent raw shape:
 `ModalEffect(modes, chooseCount = modes.size, minChooseCount = 0, dynamicChooseCount = …)`.
+
+**Cast-time mode-selection UX (Spree / "choose one or more").** A choose-N modal *spell* cast
+by a human is presented as a **single mode-selection panel** (web client), not a sequential
+one-mode-at-a-time prompt. The enumerator emits one `CastSpellModal` legal action carrying a
+`modalEnumeration` payload (each mode's description, `+ {cost}`, availability, and target
+requirements); the client's cast pipeline opens the panel from that payload, lets the player
+toggle the mode subset (respecting `minChooseCount`/`chooseCount`, and a count stepper when
+`allowRepeat`), shows the live combined additional/total mana cost, and submits a `CastSpell`
+with `chosenModes` populated but **targets deferred**. The engine then drives per-mode
+on-battlefield target selection (`CastSpellHandler` pauses via the existing
+`CastModalTargetSelectionContinuation`) before cost payment — so `validate()`/`execute()` accept
+"modes chosen, targets deferred" as a legitimate intermediate cast state. Server-synthesized
+free casts (Cascade, Sunbird's Invocation) and the AI still use the sequential server-side
+mode-selection pause; choose-1 modal spells remain client-local `CastSpellMode` actions. No SDK
+change is needed to author a Spree card — it is a plain `ModalEffect` with per-mode
+`additionalManaCost` (see Trash the Town).
 
 ### Permanent enters-with-choice (Sieges)
 

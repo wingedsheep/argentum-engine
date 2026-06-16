@@ -154,6 +154,8 @@ export type {
   StateDeltaUpdateMessage,
   StateDelta,
   LegalActionInfo,
+  ModalLegalEnumerationInfo,
+  ModalEnumerationModeInfo,
   ConvokeCreatureInfo,
   WaterbendPermanentInfo,
   TapForPowerCreatureInfo,

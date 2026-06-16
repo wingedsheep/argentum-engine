@@ -402,6 +402,19 @@ sealed interface SpellCastPredicate {
     data object IsModal : SpellCastPredicate {
         override val description = "modal"
     }
+
+    /**
+     * The spell has `{X}` in its printed mana cost (CR 107.3) — "Whenever you cast a spell with
+     * {X} in its mana cost, …" (Geometer's Arthropod). This is a property of the cost, not the
+     * value chosen: a spell cast with X=0 still satisfies it. Pair with
+     * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL] to
+     * read the value X was set to.
+     */
+    @SerialName("SpellHasXInCost")
+    @Serializable
+    data object HasXInCost : SpellCastPredicate {
+        override val description = "with {X} in its mana cost"
+    }
 }
 
 // =============================================================================

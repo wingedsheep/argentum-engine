@@ -5,6 +5,7 @@ import { MulliganUI } from './components/mulligan/MulliganUI'
 import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
+import { ModalModeSelector } from './components/ui/ModalModeSelector'
 import { BlightVariableSelector } from './components/ui/BlightVariableSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { WaterbendSelector } from './components/ui/WaterbendSelector'
@@ -338,6 +339,9 @@ export default function App() {
 
       {/* Blight X variable additional cost overlay (e.g., Soul Immolation) */}
       {showGame && <BlightVariableSelector />}
+
+      {/* Choose-N modal (Spree / "choose one or more") mode-selection panel */}
+      {showGame && <ModalModeSelector />}
 
       {/* Convoke selection overlay (when casting spells with Convoke) */}
       {showGame && <ConvokeSelector />}

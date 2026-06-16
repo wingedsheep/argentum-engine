@@ -266,6 +266,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       pipelineState: null,
       targetingState: null,
       xSelectionState: null,
+      modalModeSelectionState: null,
       blightVariableSelectionState: null,
       convokeSelectionState: null,
       waterbendSelectionState: null,
@@ -282,6 +283,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
 function getStoreMethods(get: () => import('../types').GameStore): PipelineStoreMethods {
   const state = get()
   return {
+    startModalModeSelection: state.startModalModeSelection,
     startXSelection: state.startXSelection,
     startBlightVariableSelection: state.startBlightVariableSelection,
     startConvokeSelection: state.startConvokeSelection,

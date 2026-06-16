@@ -144,6 +144,9 @@ data class TriggeredAbilityOnStackComponent(
     /** Mana value (CR 202.3) of the spell that fired this trigger (Kellan, the Kid). Read via
      *  `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE`. Null for non-cast triggers. */
     val triggerManaValueOfTriggeringSpell: Int? = null,
+    /** Value chosen for {X} on the spell that fired this trigger (Geometer's Arthropod). Read via
+     *  `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL`. Null for non-cast / no-{X} triggers. */
+    val triggerXValueOfTriggeringSpell: Int? = null,
     // Modal fields — populated when this triggered ability is a copy of a modal spell (700.2g).
     // Copies inherit the original's chosen modes; targets either inherit too (StormCopy default)
     // or are re-chosen by the copy controller while modes stay fixed.

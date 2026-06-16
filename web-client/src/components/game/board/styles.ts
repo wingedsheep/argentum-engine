@@ -294,6 +294,78 @@ export const styles: Record<string, React.CSSProperties> = {
     overflowY: 'auto',
     justifyContent: 'center',
   } as React.CSSProperties,
+  // "· N plotted" sub-count in the Exile browser header.
+  exilePlottedCount: {
+    color: '#f5d76e',
+    fontWeight: 600,
+  } as React.CSSProperties,
+  // Plotted (CR 718) zone pile — gold-themed so it reads as a distinct, public threat
+  // separate from the generic (purple) exile pile.
+  plottedPile: {
+    position: 'relative',
+    overflow: 'hidden',
+    boxShadow: '0 0 10px rgba(245, 215, 110, 0.6)',
+    backgroundColor: '#2a2410',
+    border: '1px solid #c9a227',
+  } as React.CSSProperties,
+  plottedPileCount: {
+    background: 'linear-gradient(135deg, #c9a227, #f5d76e)',
+    color: '#1a1200',
+    fontWeight: 700,
+  } as React.CSSProperties,
+  plottedZoneLabel: {
+    color: '#f5d76e',
+    fontWeight: 700,
+  } as React.CSSProperties,
+  // Per-card "Plotted" badge inside the Plotted/Exile browser grids.
+  plottedGridBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    borderRadius: 4,
+    padding: '2px 6px',
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#1a1200',
+    background: 'linear-gradient(135deg, #c9a227, #f5d76e)',
+    border: '1px solid #fff3b0',
+    boxShadow: '0 0 6px rgba(245, 215, 110, 0.85)',
+    pointerEvents: 'none',
+  } as React.CSSProperties,
+  plottedOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(30, 22, 0, 0.9)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+  } as React.CSSProperties,
+  plottedBrowserContent: {
+    maxWidth: '90vw',
+    maxHeight: '80vh',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  } as React.CSSProperties,
+  plottedBrowserTitle: {
+    color: '#f5d76e',
+    margin: 0,
+    fontSize: 18,
+    fontWeight: 600,
+  } as React.CSSProperties,
+  plottedCloseButton: {
+    background: 'none',
+    border: '1px solid #c9a227',
+    color: '#f5d76e',
+    fontSize: 18,
+    cursor: 'pointer',
+    padding: '4px 10px',
+    borderRadius: 4,
+  } as React.CSSProperties,
   libraryOverlay: {
     position: 'fixed',
     top: 0,

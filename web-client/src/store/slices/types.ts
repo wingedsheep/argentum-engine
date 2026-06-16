@@ -351,6 +351,20 @@ export interface ConvokeSelectionState {
 }
 
 /**
+ * Mode-selection state for a choose-N modal (Spree / "choose one or more") spell. Drives the
+ * single-panel selector: the player toggles a subset of modes (respecting min/max and repeat
+ * rules) with a live combined-cost preview, then the cast pipeline submits `chosenModes`.
+ */
+export interface ModalModeSelectionState {
+  actionInfo: LegalActionInfo
+  cardName: string
+  /** The spell's base (printed) mana cost string, for the cost-total preview. */
+  baseManaCost: string
+  /** The cast-time modal enumeration (modes, costs, min/max, repeat) from the legal action. */
+  enumeration: import('../../types').ModalLegalEnumerationInfo
+}
+
+/**
  * Waterbend selection state (Avatar: The Last Airbender). Like Convoke but generic-only —
  * each tapped artifact/creature pays {1} of the generic cost, with no color choice.
  */
@@ -703,6 +717,7 @@ export interface DamageAnimation {
  * A phase in the action pipeline. Computed up front by computePhases().
  */
 export type PipelinePhase =
+  | { type: 'modalModes' }
   | { type: 'counterDistribution' }
   | { type: 'xSelection' }
   | { type: 'delve' }
@@ -720,6 +735,7 @@ export type PipelinePhase =
  * Result reported by a phase's confirm handler.
  */
 export type PhaseResult =
+  | { type: 'modalModes'; chosenModes: number[] }
   | {
       type: 'counterDistribution'
       xValue: number
@@ -946,6 +962,7 @@ export type GameStore = {
   targetingState: TargetingState | null
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
+  modalModeSelectionState: ModalModeSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
   waterbendSelectionState: WaterbendSelectionState | null
   tapForPowerSelectionState: TapForPowerSelectionState | null
@@ -1030,6 +1047,9 @@ export type GameStore = {
   startXSelection: (state: XSelectionState) => void
   updateXValue: (x: number) => void
   cancelXSelection: () => void
+  startModalModeSelection: (state: ModalModeSelectionState) => void
+  confirmModalModeSelection: (chosenModes: number[]) => void
+  cancelModalModeSelection: () => void
   confirmXSelection: () => void
   blightVariableSelectionState: BlightVariableSelectionState | null
   startBlightVariableSelection: (state: BlightVariableSelectionState) => void

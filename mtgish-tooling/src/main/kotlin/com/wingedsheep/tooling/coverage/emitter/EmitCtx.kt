@@ -276,6 +276,11 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
             return if (jsonContains(node["args"], "_Spell", "Trigger_ThatSpell"))
                 call("DynamicAmount.ContextProperty", arg("ContextPropertyKey.COLORS_SPENT_ON_TRIGGERING_SPELL"))
             else null
+        // "X" on a `WhenAPlayerCastsASpell(You, HasXInCost)` trigger — the value chosen for {X} on the
+        // triggering spell (Geometer's Arthropod's "look at the top X cards of your library"). Reads the
+        // triggering-spell X via the context key; the `Trigger_` prefix already scopes it to that spell.
+        "Trigger_ValueXOfThatSpell" ->
+            return call("DynamicAmounts.xValueOfTriggeringSpell")
         "PowerOfTheSacrificedCreature" -> return call("DynamicAmounts.sacrificedPower")
         // "the number of [filter] cards in your graveyard" (Rise of the Varmints' Varmint count). The
         // count's args are a `_CardsInGraveyard` filter — typically `And(IsCardtype Creature,

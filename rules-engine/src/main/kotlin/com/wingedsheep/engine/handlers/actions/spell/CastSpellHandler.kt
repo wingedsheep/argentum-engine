@@ -536,7 +536,17 @@ class CastSpellHandler(
             val faceScript = action.faceIndex?.let { cardDef.cardFaces.getOrNull(it)?.script }
             val effectiveScript = faceScript ?: cardDef.script
             val modalEffect = effectiveScript.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
-            val baseTargetReqs = if (action.chosenModes.isNotEmpty() && modalEffect != null) {
+            // A choose-N modal cast that arrives with modes chosen but targets deferred
+            // (the single-panel client mode selector submits `chosenModes` only) is target-
+            // validated later by the cast-time per-mode target pause in execute(); skip the
+            // top-level target check here so the deferred-targets action isn't rejected.
+            val modalTargetsDeferred = modalEffect != null &&
+                action.chosenModes.isNotEmpty() &&
+                action.targets.isEmpty() &&
+                action.modeTargetsOrdered.isEmpty()
+            val baseTargetReqs = if (modalTargetsDeferred) {
+                emptyList()
+            } else if (action.chosenModes.isNotEmpty() && modalEffect != null) {
                 // Modal spell with mode(s) chosen at cast time — validate against the union of per-mode requirements.
                 action.chosenModes.flatMap { modeIndex ->
                     modalEffect.modes.getOrNull(modeIndex)?.targetRequirements ?: emptyList()
@@ -1379,6 +1389,32 @@ class CastSpellHandler(
         val modalEffect = cardDef?.script?.spellEffect as? ModalEffect
         if (modalEffect != null && action.chosenModes.isEmpty() && modalEffect.chooseCount >= 1) {
             return pauseForCastTimeModeSelection(currentState, action, cardComponent, modalEffect)
+        }
+
+        // Per-mode target selection for a modal cast whose modes were chosen up front but
+        // whose targets were deferred to the engine — the single-panel client mode selector
+        // submits `chosenModes` only and lets the server drive on-battlefield targeting. This
+        // runs the same per-mode target flow the sequential mode-selection pause transitions
+        // into, then re-enters execute() with a fully-populated action so cost payment and
+        // stack placement happen exactly once. The choose-1 client path and AI supply flat
+        // `targets`, so they skip this and fall through to deriveModeTargetsFromFlat below.
+        if (modalEffect != null &&
+            action.chosenModes.isNotEmpty() &&
+            action.modeTargetsOrdered.isEmpty() &&
+            action.targets.isEmpty() &&
+            action.chosenModes.any { modalEffect.modes.getOrNull(it)?.targetRequirements?.isNotEmpty() == true }
+        ) {
+            return presentCastModalTargetDecision(
+                state = currentState,
+                cardId = action.cardId,
+                casterId = action.playerId,
+                cardName = cardComponent.name,
+                baseCastAction = action,
+                modes = modalEffect.modes,
+                chosenModeIndices = action.chosenModes,
+                resolvedModeTargets = emptyList(),
+                currentOrdinal = 0
+            )
         }
 
         // Capture the linked-exile granter (if any) before the cast removes the card from
