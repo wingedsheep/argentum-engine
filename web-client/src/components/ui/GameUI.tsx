@@ -763,6 +763,8 @@ function LobbyOverlay({
   const isTeamVsTeam = lobbyState.settings.gameMode === 'TEAM_VS_TEAM'
   // Any team mode shares the random/manual team-assignment controls below.
   const isTeamGame = is2hg || isTeamVsTeam
+  // Top-level mode axis: Tournament (1v1 bracket) vs Multiplayer (one shared game, picked by variant below).
+  const isMultiplayer = isFfa || isTeamGame
   // Both team modes split the pod into exactly two even teams; team size follows the player count.
   const teamSize = Math.max(1, Math.floor(lobbyState.players.length / 2))
   // Team setup: random by default, or host-assigned (playerId -> team, defaulting to join order).
@@ -928,63 +930,87 @@ function LobbyOverlay({
                 </button>
               </div>
             </div>
-            {/* Mode axis (orthogonal to format): bracket of 1v1 matches vs one multiplayer game */}
+            {/* Mode axis (orthogonal to format): a bracket of 1v1 matches (Tournament) vs a single
+                shared multiplayer game (Multiplayer). The multiplayer variant — Free-for-All, Two-Headed
+                Giant, or Team vs. Team — is picked in the sub-row that appears once Multiplayer is on. */}
             <div className={styles.settingsRow}>
               <span className={styles.settingsLabel}>Mode</span>
               <div className={styles.variantGroup}>
                 <div className={styles.settingsButtons}>
                   <button
                     onClick={() => updateLobbySettings({ gameMode: 'TOURNAMENT' })}
-                    className={`${styles.settingsButton} ${!isFfa && !isTeamGame ? styles.settingsButtonActive : ''}`}
+                    className={`${styles.settingsButton} ${!isMultiplayer ? styles.settingsButtonActive : ''}`}
                     title="Round-robin bracket of 1v1 matches"
                   >
                     Tournament
                   </button>
                   <button
-                    onClick={() => playerCount <= 6 && updateLobbySettings({ gameMode: 'FREE_FOR_ALL' })}
-                    disabled={playerCount > 6}
-                    className={`${styles.settingsButton} ${isFfa ? styles.settingsButtonActive : ''}`}
-                    title="One multiplayer game — everyone at the same table (2-6 players)"
+                    onClick={() => { if (!isMultiplayer) updateLobbySettings({ gameMode: 'FREE_FOR_ALL' }) }}
+                    className={`${styles.settingsButton} ${isMultiplayer ? styles.settingsButtonActive : ''}`}
+                    title="One shared game — Free-for-All, Two-Headed Giant, or Team vs. Team"
                   >
-                    Free-for-All
-                  </button>
-                  <button
-                    onClick={() => playerCount <= 4 && updateLobbySettings({ gameMode: 'TWO_HEADED_GIANT' })}
-                    disabled={playerCount > 4}
-                    className={`${styles.settingsButton} ${is2hg ? styles.settingsButtonActive : ''}`}
-                    title="2v2 teams — draft or seal, then play one team game (exactly 4 players)"
-                  >
-                    Two-Headed Giant
-                  </button>
-                  <button
-                    onClick={() => playerCount <= 8 && updateLobbySettings({ gameMode: 'TEAM_VS_TEAM' })}
-                    disabled={playerCount > 8}
-                    className={`${styles.settingsButton} ${isTeamVsTeam ? styles.settingsButtonActive : ''}`}
-                    title="Two even teams — 2v2, 3v3, or 4v4. Own life and own turns; last team standing wins."
-                  >
-                    Team vs. Team
+                    Multiplayer
                   </button>
                 </div>
-                {isFfa && (
+                {!isMultiplayer && (
                   <div className={styles.variantCaption}>
-                    One game, everyone at the same table (2-6 players). Last player standing wins.
-                  </div>
-                )}
-                {is2hg && (
-                  <div className={styles.variantCaption}>
-                    Four players in two teams of two. Each team shares one 30-life total, takes turns
-                    together, and attacks and blocks as one. Last team standing wins.
-                  </div>
-                )}
-                {isTeamVsTeam && (
-                  <div className={styles.variantCaption}>
-                    An even pod (4/6/8) split into two teams — 2v2, 3v3, or 4v4. Each player keeps their
-                    own 20 life and their own turn; players are knocked out one at a time. The last team
-                    with anyone standing wins.
+                    Round-robin bracket of 1v1 matches. Everyone plays everyone; most match wins takes it.
                   </div>
                 )}
               </div>
             </div>
+            {/* Multiplayer variant sub-row: only the three single-game modes, shown once Multiplayer is on. */}
+            {isMultiplayer && (
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Variant</span>
+                <div className={styles.variantGroup}>
+                  <div className={styles.settingsButtons}>
+                    <button
+                      onClick={() => playerCount <= 6 && updateLobbySettings({ gameMode: 'FREE_FOR_ALL' })}
+                      disabled={playerCount > 6}
+                      className={`${styles.settingsButton} ${isFfa ? styles.settingsButtonActive : ''}`}
+                      title="One multiplayer game — everyone at the same table (2-6 players)"
+                    >
+                      Free-for-All
+                    </button>
+                    <button
+                      onClick={() => playerCount <= 4 && updateLobbySettings({ gameMode: 'TWO_HEADED_GIANT' })}
+                      disabled={playerCount > 4}
+                      className={`${styles.settingsButton} ${is2hg ? styles.settingsButtonActive : ''}`}
+                      title="2v2 teams — draft or seal, then play one team game (exactly 4 players)"
+                    >
+                      Two-Headed Giant
+                    </button>
+                    <button
+                      onClick={() => playerCount <= 8 && updateLobbySettings({ gameMode: 'TEAM_VS_TEAM' })}
+                      disabled={playerCount > 8}
+                      className={`${styles.settingsButton} ${isTeamVsTeam ? styles.settingsButtonActive : ''}`}
+                      title="Two even teams — 2v2, 3v3, or 4v4. Own life and own turns; last team standing wins."
+                    >
+                      Team vs. Team
+                    </button>
+                  </div>
+                  {isFfa && (
+                    <div className={styles.variantCaption}>
+                      One game, everyone at the same table (2-6 players). Last player standing wins.
+                    </div>
+                  )}
+                  {is2hg && (
+                    <div className={styles.variantCaption}>
+                      Four players in two teams of two. Each team shares one 30-life total, takes turns
+                      together, and attacks and blocks as one. Last team standing wins.
+                    </div>
+                  )}
+                  {isTeamVsTeam && (
+                    <div className={styles.variantCaption}>
+                      An even pod (4/6/8) split into two teams — 2v2, 3v3, or 4v4. Each player keeps their
+                      own 20 life and their own turn; players are knocked out one at a time. The last team
+                      with anyone standing wins.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             {/* Team setup (2HG — CR 810; Team vs. Team — CR 808): random teams each game, or host-picked teams. */}
             {isTeamGame && (
               <div className={styles.settingsRow}>
