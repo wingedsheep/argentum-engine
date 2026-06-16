@@ -2120,6 +2120,7 @@ class TriggerDetector(
             val previousLoreCount = loreCount - event.amount
             val controllerId = container.get<ControllerComponent>()?.playerId
                 ?: cardComponent.ownerId ?: continue
+            val finalChapter = sagaChapters.maxOf { it.chapter }
 
             // Fire chapters that are newly reached by this counter addition
             for (chapter in sagaChapters.sortedBy { it.chapter }) {
@@ -2141,7 +2142,13 @@ class TriggerDetector(
                             sourceId = entityId,
                             sourceName = cardComponent.name,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext()
+                            triggerContext = TriggerContext(),
+                            // Mark this as a Saga chapter ability so a SagaChapterResolvedEvent is
+                            // emitted when it resolves (Tom Bombadil's "final chapter resolves" cue).
+                            sagaChapterInfo = SagaChapterInfo(
+                                chapterNumber = chapter.chapter,
+                                finalChapterNumber = finalChapter
+                            )
                         )
                     )
                 }

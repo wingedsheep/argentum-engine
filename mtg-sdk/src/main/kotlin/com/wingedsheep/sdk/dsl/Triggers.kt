@@ -1641,4 +1641,24 @@ object Triggers {
         event = ScriedEvent(Player.You),
         binding = TriggerBinding.ANY
     )
+
+    // =========================================================================
+    // Saga Chapter Resolution Triggers (CR 714)
+    // =========================================================================
+
+    /**
+     * Whenever the final chapter ability of a Saga you control resolves (Tom Bombadil). Fires after
+     * the Saga's last chapter ability resolves successfully. Pair with `oncePerTurn = true` on the
+     * triggered ability for "This ability triggers only once each turn."
+     */
+    val WheneverFinalChapterOfYourSagaResolves: TriggerSpec = TriggerSpec(
+        event = SagaChapterResolvedEvent(Player.You, finalChapterOnly = true),
+        binding = TriggerBinding.ANY
+    )
+
+    /** Whenever any chapter ability of a Saga you control resolves. */
+    val WheneverChapterOfYourSagaResolves: TriggerSpec = TriggerSpec(
+        event = SagaChapterResolvedEvent(Player.You, finalChapterOnly = false),
+        binding = TriggerBinding.ANY
+    )
 }

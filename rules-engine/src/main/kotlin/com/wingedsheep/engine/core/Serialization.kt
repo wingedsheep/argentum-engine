@@ -64,6 +64,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SpellCounteredEvent::class)
         subclass(SpellFizzledEvent::class)
         subclass(AbilityResolvedEvent::class)
+        subclass(SagaChapterResolvedEvent::class)
         subclass(AbilityFizzledEvent::class)
         subclass(AbilityAutoAnsweredEvent::class)
         subclass(AttackersDeclaredEvent::class)

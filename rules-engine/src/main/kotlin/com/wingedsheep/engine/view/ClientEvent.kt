@@ -1173,6 +1173,7 @@ is PermanentsSacrificedEvent -> {
             is LandTappedForManaEvent,
             is DecisionRequestedEvent,
             is AbilityResolvedEvent,
+            is SagaChapterResolvedEvent,
             is DiscardRequiredEvent,
             is LookedAtCardsEvent,
             is LibraryReorderedEvent,

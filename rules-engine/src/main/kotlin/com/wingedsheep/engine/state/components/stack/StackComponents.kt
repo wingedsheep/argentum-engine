@@ -158,7 +158,10 @@ data class TriggeredAbilityOnStackComponent(
      *  batch). Seeded into the resolving ability's pipeline under
      *  `PipelineState.TRIGGER_CAPTURED_COLLECTION` so a `ForEachInCollectionEffect` payoff can
      *  iterate them ("for each of them, create a tapped copy" — Kambal). Empty for non-batch triggers. */
-    val capturedEntityIds: List<EntityId> = emptyList()
+    val capturedEntityIds: List<EntityId> = emptyList(),
+    /** Set when this triggered ability is a Saga chapter ability; on resolution the engine emits a
+     *  SagaChapterResolvedEvent so "final chapter of a Saga resolves" triggers (Tom Bombadil) can fire. */
+    val sagaChapterInfo: com.wingedsheep.engine.event.SagaChapterInfo? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

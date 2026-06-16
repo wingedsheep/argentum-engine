@@ -14,6 +14,7 @@ import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.CommitCrimeEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.core.SagaChapterResolvedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.SpellCastEvent
@@ -506,6 +507,14 @@ class TriggerMatcher(
                         return false
                     }
                 }
+                true
+            }
+            is EventPattern.SagaChapterResolvedEvent -> {
+                if (event !is SagaChapterResolvedEvent) return false
+                // "of a Saga you control" — the resolving Saga's controller must match the
+                // observer (Tom's controller). Player.You is the only meaningful selector here.
+                if (!matchesPlayer(trigger.player, event.controllerId, controllerId)) return false
+                if (trigger.finalChapterOnly && !event.isFinalChapter) return false
                 true
             }
         }

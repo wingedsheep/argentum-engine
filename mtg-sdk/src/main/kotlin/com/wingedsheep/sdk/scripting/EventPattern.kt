@@ -1683,6 +1683,37 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             return if (newFilter !== filter) copy(filter = newFilter) else this
         }
     }
+
+    // =========================================================================
+    // Saga Chapter Resolution
+    // =========================================================================
+
+    /**
+     * Whenever a Saga chapter ability resolves. With [finalChapterOnly] = true (the default),
+     * only the Saga's *final* chapter ability matches — "Whenever the final chapter ability of a
+     * Saga you control resolves" (Tom Bombadil). With it false, any chapter ability matches.
+     *
+     * The Saga must be controlled by the trigger source's controller ([player] = Player.You).
+     * Saga chapter abilities are detected from lore-counter additions and put on the stack by the
+     * engine; when one resolves it emits a SagaChapterResolvedEvent that this pattern matches.
+     *
+     * Pair with `oncePerTurn = true` on the triggered ability for "This ability triggers only once
+     * each turn."
+     */
+    @SerialName("SagaChapterResolvedEvent")
+    @Serializable
+    data class SagaChapterResolvedEvent(
+        val player: Player = Player.You,
+        val finalChapterOnly: Boolean = true
+    ) : EventPattern {
+        override val description: String = buildString {
+            append("the ")
+            if (finalChapterOnly) append("final chapter ") else append("chapter ")
+            append("ability of a Saga ")
+            append(if (player == Player.You) "you control" else "${player.description} controls")
+            append(" resolves")
+        }
+    }
 }
 
 /**

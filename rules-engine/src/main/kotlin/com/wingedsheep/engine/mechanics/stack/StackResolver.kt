@@ -2003,12 +2003,26 @@ class StackResolver(
         // Remove the ability entity
         newState = newState.removeEntity(abilityId)
 
+        // A Saga chapter ability resolving emits SagaChapterResolvedEvent so "whenever the final
+        // chapter ability of a Saga you control resolves" triggers (Tom Bombadil) can detect it.
+        val sagaEvents = abilityComponent.sagaChapterInfo?.let { info ->
+            listOf(
+                SagaChapterResolvedEvent(
+                    sagaId = abilityComponent.sourceId,
+                    controllerId = abilityComponent.controllerId,
+                    chapterNumber = info.chapterNumber,
+                    finalChapterNumber = info.finalChapterNumber,
+                    isFinalChapter = info.isFinalChapter
+                )
+            )
+        } ?: emptyList()
+
         return ExecutionResult.success(
             newState,
             effectResult.events + AbilityResolvedEvent(
                 abilityComponent.sourceId,
                 abilityComponent.description
-            )
+            ) + sagaEvents
         )
     }
 

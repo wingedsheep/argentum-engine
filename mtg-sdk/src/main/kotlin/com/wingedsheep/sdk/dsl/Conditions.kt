@@ -273,6 +273,28 @@ object Conditions {
         )
 
     /**
+     * If the total number of [counterType] counters among permanents you control matching [filter]
+     * is at least [count]. Sums that counter kind across the whole group — three Sagas with one,
+     * two, and one lore counter total four. Used for Tom Bombadil ("As long as there are four or
+     * more lore counters among Sagas you control"). Pass [CounterTypeFilter.Any] to total every kind.
+     */
+    fun CounterKindAmongYouControlAtLeast(
+        count: Int,
+        counterType: CounterTypeFilter,
+        filter: GameObjectFilter
+    ): ConditionInterface =
+        Compare(
+            DynamicAmount.AggregateBattlefield(
+                player = Player.You,
+                filter = filter,
+                aggregation = Aggregation.SUM,
+                counterType = counterType
+            ),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
+
+    /**
      * If you control a creature with a specific keyword.
      */
     fun ControlCreatureWithKeyword(keyword: Keyword): ConditionInterface =

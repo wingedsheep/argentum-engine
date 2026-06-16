@@ -19,5 +19,24 @@ data class PendingTrigger(
      * removed from game state the moment this trigger fires (goes on the stack), so a later
      * matching event the same turn won't fire it again.
      */
-    val consumesDelayedTriggerId: String? = null
+    val consumesDelayedTriggerId: String? = null,
+    /**
+     * Set on Saga chapter abilities so that, when this ability resolves, the engine can emit a
+     * [com.wingedsheep.engine.core.SagaChapterResolvedEvent] (the cue for "whenever the final
+     * chapter ability of a Saga you control resolves" — Tom Bombadil).
+     */
+    val sagaChapterInfo: SagaChapterInfo? = null
 )
+
+/**
+ * Identifies a Saga chapter ability and which chapter it is, carried from trigger detection
+ * through stack resolution so a [com.wingedsheep.engine.core.SagaChapterResolvedEvent] can be
+ * emitted on resolution.
+ */
+@kotlinx.serialization.Serializable
+data class SagaChapterInfo(
+    val chapterNumber: Int,
+    val finalChapterNumber: Int
+) {
+    val isFinalChapter: Boolean get() = chapterNumber >= finalChapterNumber
+}

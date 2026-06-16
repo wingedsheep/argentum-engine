@@ -2158,6 +2158,16 @@ Triggers.youCastSpell(
   for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
   Automatically emitted by `Patterns.Library.scry(N)`; no card has to opt in.
 
+### Saga chapter resolution (CR 714)
+
+- `WheneverFinalChapterOfYourSagaResolves` — fires when the *final* chapter ability of a Saga you
+  control finishes resolving (Tom Bombadil). The engine detects Saga chapter abilities from
+  lore-counter additions, marks them, and emits `SagaChapterResolvedEvent` on resolution; this
+  trigger matches the ones flagged as the final chapter. Pair with `oncePerTurn = true` for "This
+  ability triggers only once each turn."
+- `WheneverChapterOfYourSagaResolves` — same, but matches *any* chapter ability's resolution
+  (`finalChapterOnly = false`).
+
 ### Sacrifice & counters
 
 - `YouSacrificeOneOrMore(filter?)` — you sac ≥1 matching.
@@ -3107,6 +3117,14 @@ answer it and would silently return `false`.
   and projection). Desugars to `Compare(AggregateBattlefield(You, filter, DISTINCT_COUNTER_TYPES),
   GTE, count)`. Used by Hundred-Battle Veteran ("three or more different kinds of counters among
   creatures you control").
+- `CounterKindAmongYouControlAtLeast(count, counterType, filter)` — true when the *total* number of
+  `counterType` counters (a `CounterTypeFilter`, e.g. `CounterTypeFilter.Named("lore")`, or `.Any`
+  to total every kind) among permanents you control matching `filter` is at least `count`. Sums the
+  kind across the whole group — three Sagas with one, two, and one lore counter total four.
+  Board-derived only (gates a `ConditionalStaticAbility`; evaluates identically in resolution and
+  projection). Desugars to `Compare(AggregateBattlefield(You, filter, SUM, counterType = …), GTE,
+  count)`. Used by Tom Bombadil ("As long as there are four or more lore counters among Sagas you
+  control, … hexproof and indestructible").
 - `TriggeringEntityHadCounters` — intervening-if for dies/leaves triggers: true when the triggering
   entity had ≥1 counter of *any* kind on it the moment it left the battlefield (reads the last-known
   total counter count, CR 603.10 / 603.6c). Resolution-only. Pair with `Triggers.YourCreatureDies` +
@@ -3509,8 +3527,8 @@ Numbers computed at resolution time.
 
 ### Battlefield aggregation
 
-- `AggregateBattlefield(player, filter, aggregation?, property?)` — aggregate over matching
-  permanents. `aggregation` defaults to `COUNT`; other modes: `MAX`/`MIN`/`SUM` over a
+- `AggregateBattlefield(player, filter, aggregation?, property?, counterType?)` — aggregate over
+  matching permanents. `aggregation` defaults to `COUNT`; other modes: `MAX`/`MIN`/`SUM` over a
   `property` (`POWER`/`TOUGHNESS`/`MANA_VALUE`), and the distinct-set counters
   `DISTINCT_TYPES`, `DISTINCT_COLORS`, `DISTINCT_NAMES`, `DISTINCT_BASIC_LAND_SUBTYPES`
   (Domain), `DISTINCT_COUNTER_TYPES` (the number of different kinds of counters present
@@ -3519,6 +3537,11 @@ Numbers computed at resolution time.
   "the number of different powers among creatures you control" via
   `aggregation = DISTINCT_VALUES, property = POWER`; two permanents sharing a value count once).
   Builder shortcut: `DynamicAmounts.battlefield(player, filter).distinctValues(CardNumericProperty.POWER)`.
+  When `counterType` (a `CounterTypeFilter`) is set with `SUM`/`MAX`/`MIN`, the per-permanent value
+  aggregated is the count of *that kind* of counter on it — i.e. "the total <kind> counters among
+  <filter>" (Tom Bombadil's lore-counter total; reach for it via
+  `Conditions.CounterKindAmongYouControlAtLeast`). `CounterTypeFilter.Any` totals every kind. Counters
+  are read from base state (layer-independent).
 - `AggregateZone(player, zone, filter?, aggregation?)` — count cards in a zone.
 - `CountPermanentsOfType(player, subtype)` — count by creature type.
 - `CountCreaturesYouControl` — shorthand for "your creatures".

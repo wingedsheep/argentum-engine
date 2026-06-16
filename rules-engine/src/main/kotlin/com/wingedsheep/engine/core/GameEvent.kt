@@ -488,6 +488,28 @@ data class AbilityResolvedEvent(
 ) : GameEvent
 
 /**
+ * A Saga's chapter ability resolved. Emitted by [com.wingedsheep.engine.mechanics.stack.StackResolver]
+ * when a triggered ability carrying saga-chapter metadata finishes resolving. [isFinalChapter] is
+ * true when [chapterNumber] equals the Saga's highest chapter number (CR 714) — the cue for
+ * "Whenever the final chapter ability of a Saga you control resolves" (Tom Bombadil).
+ *
+ * @property sagaId The Saga permanent whose chapter ability resolved.
+ * @property controllerId The Saga's controller (used to scope "Saga you control" triggers).
+ * @property chapterNumber Which chapter ability resolved.
+ * @property finalChapterNumber The Saga's highest chapter number.
+ * @property isFinalChapter Whether [chapterNumber] is the final chapter.
+ */
+@Serializable
+@SerialName("SagaChapterResolvedEvent")
+data class SagaChapterResolvedEvent(
+    val sagaId: EntityId,
+    val controllerId: EntityId,
+    val chapterNumber: Int,
+    val finalChapterNumber: Int,
+    val isFinalChapter: Boolean
+) : GameEvent
+
+/**
  * An ability fizzled (all targets became invalid).
  */
 @Serializable

@@ -76,6 +76,7 @@ enum class TriggerCategory {
     SCRIED,
     BECAME_SADDLED,
     BECOMES_ATTACHED,
+    SAGA_CHAPTER_RESOLVED,
 }
 
 /**
@@ -221,6 +222,7 @@ class TriggerIndex(
                 is SdkGameEvent.ScriedEvent -> SCRIED_LIST
                 is SdkGameEvent.BecameSaddledEvent -> BECAME_SADDLED_LIST
                 is SdkGameEvent.BecomesAttachedEvent -> BECOMES_ATTACHED_LIST
+                is SdkGameEvent.SagaChapterResolvedEvent -> SAGA_CHAPTER_RESOLVED_LIST
                 // These are handled by specialized detect methods, not the main loop
                 else -> emptyList()
             }
@@ -259,6 +261,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ScriedEvent -> SCRIED_LIST
             is com.wingedsheep.engine.core.BecameSaddledEvent -> BECAME_SADDLED_LIST
             is com.wingedsheep.engine.core.PermanentAttachedEvent -> BECOMES_ATTACHED_LIST
+            is com.wingedsheep.engine.core.SagaChapterResolvedEvent -> SAGA_CHAPTER_RESOLVED_LIST
             else -> emptyList()
         }
 
@@ -289,5 +292,6 @@ class TriggerIndex(
         private val SCRIED_LIST = listOf(TriggerCategory.SCRIED)
         private val BECAME_SADDLED_LIST = listOf(TriggerCategory.BECAME_SADDLED)
         private val BECOMES_ATTACHED_LIST = listOf(TriggerCategory.BECOMES_ATTACHED)
+        private val SAGA_CHAPTER_RESOLVED_LIST = listOf(TriggerCategory.SAGA_CHAPTER_RESOLVED)
     }
 }

@@ -719,7 +719,8 @@ class TriggerProcessor(
             triggerColorsSpentOnTriggeringSpell = trigger.triggerContext.colorsSpentOnTriggeringSpell,
             triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
             triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell,
-            capturedEntityIds = trigger.triggerContext.capturedEntityIds ?: emptyList()
+            capturedEntityIds = trigger.triggerContext.capturedEntityIds ?: emptyList(),
+            sagaChapterInfo = trigger.sagaChapterInfo
         )
 
         return stackResolver.putTriggeredAbility(

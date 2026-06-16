@@ -1575,3 +1575,38 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   activate the draw ability but can still tap for mana; Sharkey gains the draw ability (not the mana
   ability); and Sharkey pays the gained `{4}{U}` with five Mountains (all red) proving any mana type
   pays, drawing two and sacrificing itself.
+
+## Tom Bombadil (2026-06-16)
+
+- **Card:** {W}{U}{B}{R}{G} Legendary Creature — God Bard 4/4. Two clauses, both needing new
+  reusable SDK primitives (not card-specific hacks):
+  1. **"As long as there are four or more lore counters among Sagas you control, … hexproof and
+     indestructible."** Modeled as two `ConditionalStaticAbility`s (one per keyword) granting
+     `GrantKeyword(HEXPROOF / INDESTRUCTIBLE, GroupFilter.source())` gated on a new condition
+     `Conditions.CounterKindAmongYouControlAtLeast(count, counterType, filter)`. That condition
+     desugars to `Compare(AggregateBattlefield(You, filter, SUM, counterType = …), GTE, count)` —
+     which required extending `DynamicAmount.AggregateBattlefield` with a `counterType:
+     CounterTypeFilter?` field: when set, SUM/MAX/MIN aggregate the *count of that counter kind*
+     per permanent instead of a `CardNumericProperty`. Counters are read from base state
+     (layer-independent). Reusable for any "total <kind> counters among <filter>" card.
+  2. **"Whenever the final chapter ability of a Saga you control resolves, reveal cards from the top
+     of your library until you reveal a Saga card. Put that card onto the battlefield and the rest on
+     the bottom of your library in a random order. This ability triggers only once each turn."**
+     There was no event for a Saga chapter resolving. Added a new `EventPattern.SagaChapterResolvedEvent`
+     (SDK) + engine `SagaChapterResolvedEvent` GameEvent. The seam: `detectSagaChapterTriggers` now
+     tags each chapter `PendingTrigger` with a `SagaChapterInfo(chapterNumber, finalChapterNumber)`;
+     that flows through `TriggerProcessor.putTriggerOnStack` into `TriggeredAbilityOnStackComponent`;
+     `StackResolver.resolveTriggeredAbility` emits `SagaChapterResolvedEvent(isFinalChapter = …)` on
+     the success path (not on fizzle). `TriggerMatcher` + `TriggerIndex` (new `SAGA_CHAPTER_RESOLVED`
+     category) match it. Facades `Triggers.WheneverFinalChapterOfYourSagaResolves` /
+     `…ChapterOfYourSagaResolves`. The reveal half composes the existing GatherUntilMatch →
+     RevealCollection → two filtered MoveCollections pipeline (Saga → battlefield; rest → library
+     bottom, `CardOrder.Random`). "Only once each turn" reuses the existing `TriggeredAbility.oncePerTurn`.
+- **Modeled faithfully:** the trigger fires on resolution (not on chapter trigger), only for the
+  final chapter, only for Sagas you control, and at most once per turn. Fizzled chapters don't fire it.
+- **Touched:** `DynamicAmount.kt` (`counterType` field), `DynamicAmountEvaluator.kt` (`counterCountOf`
+  + SUM/MAX/MIN branches), `Conditions.kt` (facade), `EventPattern.kt` (SDK pattern), `Triggers.kt`
+  (facades), engine `GameEvent.kt` + `Serialization.kt` (`SagaChapterResolvedEvent`),
+  `PendingTrigger.kt` (`SagaChapterInfo`), `StackComponents.kt`, `TriggerDetector.kt`,
+  `TriggerProcessor.kt`, `StackResolver.kt`, `TriggerMatcher.kt`, `TriggerIndex.kt`, `TomBombadil.kt`
+  (card), SDK reference §12/§13/§8, LTR snapshot golden, backlog, `TomBombadilScenarioTest.kt`.

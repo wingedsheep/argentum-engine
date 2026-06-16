@@ -699,6 +699,11 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * @param filter Filter for which permanents to include
      * @param aggregation How to aggregate (COUNT, MAX, MIN, SUM)
      * @param property Which numeric property to aggregate (ignored for COUNT)
+     * @param counterType When set together with [Aggregation.SUM] (or MAX/MIN), the value aggregated
+     *   per matched permanent is the count of this kind of counter on it, rather than [property].
+     *   This expresses "the total number of <kind> counters among <filter> you control" — e.g. Tom
+     *   Bombadil's "four or more lore counters among Sagas you control". Takes precedence over
+     *   [property] when both are present.
      */
     @SerialName("AggregateBattlefield")
     @Serializable
@@ -707,7 +712,8 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
         val aggregation: Aggregation = Aggregation.COUNT,
         val property: CardNumericProperty? = null,
-        val excludeSelf: Boolean = false
+        val excludeSelf: Boolean = false,
+        val counterType: CounterTypeFilter? = null
     ) : DynamicAmount {
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
             val newFilter = filter.applyTextReplacement(replacer)
@@ -731,7 +737,9 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     append(pluralize(filter.description))
                 }
                 Aggregation.SUM -> {
-                    append("the total ${property?.description ?: "value"} of ")
+                    val what = counterType?.let { "${it.description} counters" } ?: (property?.description ?: "value")
+                    append("the total $what ")
+                    append(if (counterType != null) "among " else "of ")
                     if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
