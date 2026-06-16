@@ -148,12 +148,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 // the locked-in cost (e.g., The Dominion Bracelet — "{X} less, where X is this
                 // creature's power"). Then apply Forge Anew's free-first-equip discount, so the
                 // displayed cost and affordability reflect the {0} the player will actually pay.
-                val effectiveCost = context.castPermissionUtils.applyFreeFirstEquipDiscount(
-                    context.castPermissionUtils.applyEquipCostReduction(
-                        applyAbilityGenericCostReduction(rawCost, ability, state, entityId, playerId, context),
+                val effectiveCost = context.castPermissionUtils.relaxAbilityCostColorsIfAny(
+                    state, entityId,
+                    context.castPermissionUtils.applyFreeFirstEquipDiscount(
+                        context.castPermissionUtils.applyEquipCostReduction(
+                            applyAbilityGenericCostReduction(rawCost, ability, state, entityId, playerId, context),
+                            ability, state, playerId
+                        ),
                         ability, state, playerId
-                    ),
-                    ability, state, playerId
+                    )
                 )
 
                 // Description shown to the player. When the effective cost differs from the printed

@@ -16613,6 +16613,52 @@
     ]
 }
 
+// Sharkey, Tyrant of the Shire
+{
+    "name": "Sharkey, Tyrant of the Shire",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Avatar Rogue",
+    "oracleText": "Activated abilities of lands your opponents control can't be activated unless they're mana abilities.\nSharkey has all activated abilities of lands your opponents control except mana abilities.\nMana of any type can be spent to activate Sharkey's abilities.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": "land ctrl:opponent",
+                "nonManaAbilitiesOnly": true
+            },
+            {
+                "type": "GainActivatedAbilitiesOfPermanents",
+                "grantedTo": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "sourceFilter": "land ctrl:opponent"
+            },
+            {
+                "type": "SpendAnyManaTypeForActivatedAbilities",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0e446bd-8295-4fca-957a-e4710a15d8e8.jpg?1686970050"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Shelob's Ambush
 {
     "name": "Shelob's Ambush",

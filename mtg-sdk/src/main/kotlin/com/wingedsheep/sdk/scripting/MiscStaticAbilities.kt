@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
@@ -413,23 +414,101 @@ data object PreventCycling : StaticAbility {
  *
  * Used for Cursed Totem ("Activated abilities of creatures can't be activated") and
  * similar global denial effects (Damping Matrix, Pithing Needle's spiritual ancestor).
- * Both mana and non-mana activated abilities are blocked, including abilities granted
- * by static effects (e.g., basic-land mana abilities granted to creature-lands while
- * they are creatures).
+ * By default both mana and non-mana activated abilities are blocked, including abilities
+ * granted by static effects (e.g., basic-land mana abilities granted to creature-lands
+ * while they are creatures).
+ *
+ * When [nonManaAbilitiesOnly] is true, mana abilities are still allowed and only non-mana
+ * activated abilities are blocked — the "… can't be activated unless they're mana abilities"
+ * wording (Sharkey, Tyrant of the Shire on opponents' lands). Combine with
+ * [filter].opponentControls() to scope the lock to opponents' permanents.
  *
  * Loyalty abilities of planeswalkers and ability costs that only animate a noncreature
  * permanent (e.g., a Vehicle's Crew ability while it is still a Vehicle, not yet a
  * creature) are unaffected — once the source becomes a creature its activated abilities
  * are blocked too. This is enforced by filter-matching against projected state, so
  * type-changing effects flow through correctly.
+ *
+ * @property filter Which permanents' activated abilities are locked (matched via projected state).
+ * @property nonManaAbilitiesOnly When true, mana abilities are exempt; only non-mana abilities
+ *   are blocked. Defaults to false (block everything, the Cursed Totem shape).
  */
 @SerialName("PreventActivatedAbilities")
 @Serializable
 data class PreventActivatedAbilities(
-    val filter: GameObjectFilter
+    val filter: GameObjectFilter,
+    val nonManaAbilitiesOnly: Boolean = false
 ) : StaticAbility {
     override val description: String =
-        "Activated abilities of ${filter.description} can't be activated"
+        if (nonManaAbilitiesOnly)
+            "Activated abilities of ${filter.description} can't be activated unless they're mana abilities"
+        else "Activated abilities of ${filter.description} can't be activated"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Permanents matching [grantedTo] gain copies of the activated abilities of every permanent
+ * matching [sourceFilter] (CR 113.2; the copy uses the gaining permanent as its source, so
+ * "this permanent" / `SacrificeSelf` / `{T}` in a copied ability refer to the gainer).
+ *
+ * Models Sharkey, Tyrant of the Shire ("Sharkey has all activated abilities of lands your
+ * opponents control except mana abilities") and is the dynamic, copy-from-other-permanents
+ * sibling of [GrantActivatedAbility] (which grants one fixed authored ability). For Sharkey:
+ * `grantedTo = GroupFilter.source()`, `sourceFilter = GameObjectFilter.Land.opponentControls()`,
+ * `includeManaAbilities = false`.
+ *
+ * The engine recomputes the gained set continuously from projected state, so the gainer's
+ * abilities track opponents' lands entering/leaving the battlefield. Both the legal-action
+ * enumerator and [com.wingedsheep] ActivateAbilityHandler consult this when computing a
+ * permanent's activated abilities, alongside [GrantActivatedAbility].
+ *
+ * @property grantedTo Which permanents gain the abilities (use [GroupFilter.source] for "this
+ *   permanent", or a battlefield-scoped filter for a group).
+ * @property sourceFilter Which permanents' printed activated abilities are copied (matched via
+ *   projected state).
+ * @property includeManaAbilities When false (default), mana abilities are not copied — the
+ *   "except mana abilities" clause. Set true to copy every activated ability.
+ */
+@SerialName("GainActivatedAbilitiesOfPermanents")
+@Serializable
+data class GainActivatedAbilitiesOfPermanents(
+    val grantedTo: GroupFilter,
+    val sourceFilter: GameObjectFilter,
+    val includeManaAbilities: Boolean = false
+) : StaticAbility {
+    override val description: String =
+        "${grantedTo.description} ${if (grantedTo.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) "has" else "have"} all activated abilities of ${sourceFilter.description}${if (!includeManaAbilities) " except mana abilities" else ""}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newGrantedTo = grantedTo.applyTextReplacement(replacer)
+        val newSource = sourceFilter.applyTextReplacement(replacer)
+        return if (newGrantedTo !== grantedTo || newSource !== sourceFilter)
+            copy(grantedTo = newGrantedTo, sourceFilter = newSource) else this
+    }
+}
+
+/**
+ * Mana of any type can be spent to activate the activated abilities of permanents matching
+ * [filter] (CR 118.14 / 609.4b — colored, hybrid, Phyrexian, and colorless requirements in the
+ * ability's cost may be paid with mana of any color or colorless).
+ *
+ * Models Sharkey, Tyrant of the Shire ("Mana of any type can be spent to activate Sharkey's
+ * abilities") with `filter = GroupFilter.source()`. The relaxation is applied to the mana
+ * portion of the ability's cost only — non-mana cost components (tap, sacrifice, …) are
+ * untouched — and is honored by both affordability checks and the mana solver at payment time.
+ *
+ * @property filter Which permanents' activated-ability mana costs may be paid with any mana
+ *   type (use [GroupFilter.source] for "this permanent's abilities").
+ */
+@SerialName("SpendAnyManaTypeForActivatedAbilities")
+@Serializable
+data class SpendAnyManaTypeForActivatedAbilities(
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String =
+        "Mana of any type can be spent to activate ${filter.description}'s abilities"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

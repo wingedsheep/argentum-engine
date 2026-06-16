@@ -2566,9 +2566,25 @@ staticAbility {
 **Global denial statics** (no `filter`/`duration` block — they're singleton-style)
 
 - `PreventCycling` — "Players can't cycle cards." (Stabilizer)
-- `PreventActivatedAbilities(filter)` — activated abilities (mana + non-mana) of matching
-  permanents can't be activated; loyalty abilities and animation costs that haven't yet
-  produced a creature are unaffected. (Cursed Totem → `GameObjectFilter.Creature`)
+- `PreventActivatedAbilities(filter, nonManaAbilitiesOnly = false)` — activated abilities of
+  matching permanents can't be activated; loyalty abilities and animation costs that haven't yet
+  produced a creature are unaffected. By default both mana and non-mana abilities are blocked
+  (Cursed Totem → `GameObjectFilter.Creature`). With `nonManaAbilitiesOnly = true`, mana abilities
+  stay usable and only non-mana abilities are blocked — the "… can't be activated unless they're
+  mana abilities" wording (Sharkey, Tyrant of the Shire → `GameObjectFilter.Land.opponentControls()`).
+- `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities = false)` —
+  permanents matching `grantedTo` (a `GroupFilter`; use `GroupFilter.source()` for "this permanent")
+  gain copies of the activated abilities of every permanent matching `sourceFilter`. The copy uses
+  the gaining permanent as its source (CR 113.2), so a copied `SacrificeSelf`/`{T}` refers to the
+  gainer. The dynamic, copy-from-other-permanents sibling of `GrantActivatedAbility`. Mana abilities
+  are excluded unless `includeManaAbilities = true`. (Sharkey, Tyrant of the Shire — "Sharkey has all
+  activated abilities of lands your opponents control except mana abilities")
+- `SpendAnyManaTypeForActivatedAbilities(filter)` — mana of any type can be spent to pay the mana
+  portion of the activated-ability costs of permanents matching `filter` (a `GroupFilter`; use
+  `GroupFilter.source()` for "this permanent's abilities"). Relaxes colored/hybrid/Phyrexian/colorless
+  pips to generic per CR 118.14 / 609.4b; non-mana cost components are untouched. Honored by both
+  affordability checks and the mana solver. (Sharkey, Tyrant of the Shire — "Mana of any type can be
+  spent to activate Sharkey's abilities")
 - `PreventManaPoolEmptying` — mana pools don't empty between steps/phases. (Upwelling)
 - `NoMaximumHandSize` — controller has no hand-size limit. (Thought Vessel)
 - `DampLandManaProduction` — a land tapped for 2+ mana produces `{C}` instead. (Damping Sphere)

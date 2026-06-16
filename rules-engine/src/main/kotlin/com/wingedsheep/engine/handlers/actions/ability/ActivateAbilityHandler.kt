@@ -178,7 +178,7 @@ class ActivateAbilityHandler(
             // matching permanents — mana and non-mana alike. Loyalty abilities of
             // planeswalkers and Crew-style animation abilities are not blocked because the
             // filter (typically `Creature`) is matched in projected state.
-            if (castPermissionUtils.isActivationPrevented(state, action.sourceId)) {
+            if (castPermissionUtils.isActivationPrevented(state, action.sourceId, abilityIsManaAbility = ability.isManaAbility)) {
                 return "Activated abilities of this permanent can't be activated"
             }
 
@@ -204,12 +204,15 @@ class ActivateAbilityHandler(
         // "{X} less, where X is this creature's power"). Per Scryfall ruling, the reduced
         // cost is locked in here, before costs are paid. Then apply generic equip-cost reduction
         // (Éowyn) and finally Forge Anew's free-first-equip.
-        val effectiveCost = castPermissionUtils.applyFreeFirstEquipDiscount(
-            castPermissionUtils.applyEquipCostReduction(
-                applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+        val effectiveCost = castPermissionUtils.relaxAbilityCostColorsIfAny(
+            state, action.sourceId,
+            castPermissionUtils.applyFreeFirstEquipDiscount(
+                castPermissionUtils.applyEquipCostReduction(
+                    applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+                    ability, state, action.playerId
+                ),
                 ability, state, action.playerId
-            ),
-            ability, state, action.playerId
+            )
         )
         val effectiveTargetReqs = if (textReplacement != null) {
             ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
@@ -444,12 +447,16 @@ class ActivateAbilityHandler(
         // Apply ability-specific generic cost reduction (e.g., The Dominion Bracelet's
         // "{X} less, where X is this creature's power"). Locked in before payment. Then apply
         // generic equip-cost reduction (Éowyn) and Forge Anew's free-first-equip discount.
-        val effectiveCost = castPermissionUtils.applyFreeFirstEquipDiscount(
-            castPermissionUtils.applyEquipCostReduction(
-                applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+        // Finally relax colored requirements when "mana of any type can be spent" applies (Sharkey).
+        val effectiveCost = castPermissionUtils.relaxAbilityCostColorsIfAny(
+            state, action.sourceId,
+            castPermissionUtils.applyFreeFirstEquipDiscount(
+                castPermissionUtils.applyEquipCostReduction(
+                    applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
+                    ability, state, action.playerId
+                ),
                 ability, state, action.playerId
-            ),
-            ability, state, action.playerId
+            )
         )
 
         // -------------------------------------------------------------------
@@ -2195,6 +2202,11 @@ class ActivateAbilityHandler(
                 }
             }
         }
+
+        // GainActivatedAbilitiesOfPermanents (Sharkey): copies of opponents' lands' abilities, etc.
+        // Resolved by the shared helper so the enumerator and this handler agree on the gained set.
+        castPermissionUtils.getGainedAbilitiesOfPermanents(entityId, state)
+            .forEach { result.add(it.ability to it.granterId) }
 
         return result
     }

@@ -1535,3 +1535,43 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   opponent; the reflexive exiles a legal opponent-graveyard enchantment/instant/sorcery (MV ≤ that
   spell), copies it, and casts the copy free (a copied Divination draws two for the controller); a
   graveyard card with MV greater than the second spell is *not* a legal target.
+
+## Sharkey, Tyrant of the Shire (hard static-ability card, Gap 38)
+
+- **Three static abilities, each built reusably** rather than as one Sharkey-specific monolith:
+  - **Piece 1 — lock opponents' lands' non-mana abilities:** extended the existing
+    `PreventActivatedAbilities(filter)` with a `nonManaAbilitiesOnly: Boolean = false` flag.
+    `CastPermissionUtils.isActivationPrevented` now takes `abilityIsManaAbility`; a
+    `nonManaAbilitiesOnly` lock exempts mana abilities. Card uses
+    `PreventActivatedAbilities(GameObjectFilter.Land.opponentControls(), nonManaAbilitiesOnly = true)`.
+    Wired the flag through all three call sites: `ManaAbilityEnumerator` (passes `true`),
+    `ActivatedAbilityEnumerator` (default `false`), `ActivateAbilityHandler` (passes the ability's
+    own `isManaAbility`).
+  - **Piece 2 — Sharkey gains opponents' lands' non-mana abilities:** new
+    `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities)` static — the
+    dynamic, copy-from-other-permanents sibling of `GrantActivatedAbility` (which grants one fixed
+    authored ability). Resolved by a new shared helper
+    `CastPermissionUtils.getGainedAbilitiesOfPermanents`, consulted by both the enumerator path
+    (via `getStaticGrantedAbilitiesWithGranter`) and `ActivateAbilityHandler`'s duplicate of that
+    method, so legality and execution agree. Copies use the gainer (Sharkey) as source per CR 113.2,
+    so a copied `SacrificeSelf`/`{T}` refers to Sharkey. Battlefield reads go through projected state.
+  - **Piece 3 — any mana type pays Sharkey's abilities:** new
+    `SpendAnyManaTypeForActivatedAbilities(filter)` static. Reused the existing
+    `ManaCost.relaxColors()` (CR 118.14 / 609.4b — already used by Cruelclaw's Heist / Taster of
+    Wares at cast time) via a new `CastPermissionUtils.relaxAbilityCostColorsIfAny`, applied to the
+    ability's `effectiveCost` in both the enumerator (affordability) and the handler (payment). Only
+    the mana portion is relaxed; tap/sacrifice components are untouched.
+- **Modeled faithfully, nothing scoped out.** All three clauses behave per the Comprehensive Rules.
+  The gained ability tracks opponents' lands entering/leaving (recomputed from projected state each
+  query). `StaticAbilityHandler.convertStaticAbility` lists both new statics under its `-> null`
+  group (they're enforced in the activation path, not as layer continuous effects).
+- **Touched:** `MiscStaticAbilities.kt` (the three statics), `CastPermissionUtils.kt`
+  (`isActivationPrevented` flag, `getGainedAbilitiesOfPermanents`, `canSpendAnyManaTypeForAbilities`,
+  `relaxAbilityCostColorsIfAny`), `ManaAbilityEnumerator.kt`, `ActivatedAbilityEnumerator.kt`,
+  `ActivateAbilityHandler.kt`, `StaticAbilityHandler.kt`, `SharkeyTyrantOfTheShire.kt` (card), SDK
+  reference §9, LTR snapshot golden, backlog, `SharkeyTyrantOfTheShireScenarioTest.kt`.
+- **Test:** `SharkeyTyrantOfTheShireScenarioTest` against an opponent's Memorial to Genius
+  (`{T}: Add {U}` mana ability + `{4}{U},{T},Sac: Draw two` non-mana ability): the opponent can't
+  activate the draw ability but can still tap for mana; Sharkey gains the draw ability (not the mana
+  ability); and Sharkey pays the gained `{4}{U}` with five Mountains (all red) proving any mana type
+  pays, drawing two and sacrificing itself.
