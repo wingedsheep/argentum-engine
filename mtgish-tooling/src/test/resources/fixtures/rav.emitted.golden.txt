@@ -6953,7 +6953,7 @@ val PerilousForays = card("Perilous Forays") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}"), Costs.Sacrifice(GameObjectFilter.Creature))
         effect = Patterns.Library.searchLibrary(
-            filter = GameObjectFilter.BasicLand,
+            filter = GameObjectFilter.Land,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = true
         )

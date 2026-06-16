@@ -419,9 +419,13 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
             // grab isn't expressible by either facade, so scaffold that pairing.
             val flagBlob = compact(args)
             val entersTapped = "EntersTapped" in flagBlob
-            val counterNode = node.nodesTagged("EntersWithACounter")
+            val singleCounterNode = node.nodesTagged("EntersWithACounter")
                 .firstOrNull()?.get("args")
-            if (counterNode != null && (entersTapped || "EntersUnderPlayersControl" in flagBlob)) return@on null
+            val numberedCounterNode = node.nodesTagged("EntersWithNumberCounters")
+                .firstOrNull()
+            if ((singleCounterNode != null || numberedCounterNode != null) &&
+                (entersTapped || "EntersUnderPlayersControl" in flagBlob)
+            ) return@on null
             // "…to the battlefield attached to a creature you control" (One Last Job mode 3): an
             // EntersAttachedToAPermanent flag whose host filter is Creature + ControlledByAPlayer You.
             // Render the PutOntoBattlefieldAttachedToChosen facade (host chosen at resolution, default
@@ -442,16 +446,28 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
             val move = when {
                 "EntersUnderPlayersControl" !in flagBlob ->
                     if (entersTapped) call("Effects.PutOntoBattlefield", arg(Lit(tgt)), arg("tapped", "true"))
-                    else call("Effects.Move", arg(Lit(tgt)), arg("Zone.BATTLEFIELD"))
+                    else call("Effects.Move", arg(Lit(tgt)), arg("Zone.BATTLEFIELD"), arg("fromZone", "Zone.GRAVEYARD"))
                 entersTapped -> null
                 "\"You\"" in flagBlob -> call("Effects.PutOntoBattlefieldUnderYourControl", arg(Lit(tgt)))
                 else -> null
             } ?: return@on null
-            val counter = counterNode?.let { counterTypeDsl(it) }
-            return@on if (counterNode == null) move else {
-                if (counter == null) null else Composite(listOf(
+            val counterEffect = when {
+                singleCounterNode != null -> {
+                    val counter = counterTypeDsl(singleCounterNode) ?: return@on null
+                    call("AddCountersEffect", arg("counterType", counter), arg("count", "1"), arg("target", Lit(tgt)))
+                }
+                numberedCounterNode != null -> {
+                    val counterArgs = numberedCounterNode["args"].asArr ?: return@on null
+                    val count = findInteger(counterArgs.getOrNull(0)) as? Int ?: return@on null
+                    val counter = counterTypeDsl(counterArgs.getOrNull(1)) ?: return@on null
+                    call("AddCountersEffect", arg("counterType", counter), arg("count", "$count"), arg("target", Lit(tgt)))
+                }
+                else -> null
+            }
+            return@on if (counterEffect == null) move else {
+                Composite(listOf(
                     move,
-                    call("AddCountersEffect", arg("counterType", counter), arg("count", "1"), arg("target", Lit(tgt))),
+                    counterEffect,
                 ))
             }
         }

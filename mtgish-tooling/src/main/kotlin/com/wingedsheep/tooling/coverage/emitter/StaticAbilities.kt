@@ -163,6 +163,11 @@ internal fun EmitCtx.staticLordBlock(rule: JsonObject, condition: String? = null
                     // of the prowess trigger, which this generic AddAbility path doesn't model — decline to a
                     // scaffold (per "decline→SCAFFOLD, don't widen") rather than emit a confidently-wrong lord.
                     if (kw == "PROWESS") return scaffoldLord()
+                    // Ward always carries a cost (ward {N}, ward—pay life, …); a bare GrantKeyword(WARD)
+                    // silently drops it, granting a no-op ward. Faithfully granting it needs
+                    // GrantWard(WardCost.…), which this generic AddAbility lord path doesn't model — decline
+                    // to a scaffold (per "decline→SCAFFOLD, don't widen") rather than emit a costless ward.
+                    if (kw == "WARD") return scaffoldLord()
                     call("GrantKeyword", arg("Keyword.$kw"), arg(group))
                 }
             }
@@ -286,8 +291,9 @@ private fun EmitCtx.selfDynamicStatsBlock(rule: JsonObject): List<Stmt>? {
  * = …])` constructor expression for wrapping in `GrantActivatedAbility`. Reuses the same cost / target /
  * effect recovery as the card-body [activatedBlock], but in expression form: a chosen target becomes
  * `targetRequirement = <node>` and the effect references `EffectTarget.ContextTarget(0)` (the granted
- * ability has no card-body `target(...)` local to bind). The only activation modifier rendered is
- * `ActivateOnlyAsASorcery` -> `timing = TimingRule.SorcerySpeed`; any other modifier scaffolds.
+ * ability has no card-body `target(...)` local to bind). Mana grants are flagged as mana abilities. The
+ * only activation modifier rendered is `ActivateOnlyAsASorcery` -> `timing = TimingRule.SorcerySpeed`;
+ * any other modifier scaffolds.
  */
 internal fun EmitCtx.grantedActivatedAbilityExpr(rule: JsonObject): Dsl? {
     val costNode = (rule["args"] as? JsonArray)?.firstOrNull() as? JsonObject
@@ -306,9 +312,14 @@ internal fun EmitCtx.grantedActivatedAbilityExpr(rule: JsonObject): Dsl? {
         arg("id", "AbilityId.generate()"),
         arg("cost", cost),
     )
-    if (timing.isNotEmpty()) args.add(arg("timing", timing))
     args.add(arg("effect", effect))
     if (targetNode != null) args.add(arg("targetRequirement", targetNode))
+    if (isManaAbility(tvar, actions)) {
+        args.add(arg("isManaAbility", "true"))
+        args.add(arg("timing", "TimingRule.ManaAbility"))
+    } else if (timing.isNotEmpty()) {
+        args.add(arg("timing", timing))
+    }
     return Call("ActivatedAbility", args)
 }
 

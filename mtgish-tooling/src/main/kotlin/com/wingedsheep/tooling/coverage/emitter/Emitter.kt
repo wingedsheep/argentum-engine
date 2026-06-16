@@ -80,6 +80,16 @@ object Emitter {
             return incomplete(ctx, pre, header, body, scryfall, pkg)
         }
 
+        // Multi-faced cards (transform/MDFC/adventure/split) reach us with their faces' oracle text joined
+        // by a `\n//\n` separator (see Scryfall.cardMetadata). The bridge only sees the mtgish IR for the
+        // FRONT face, so a generic render would silently emit a single-faced card and drop the entire back
+        // face — exactly the lossy approximation the hard rules forbid. Decline unconditionally (even in
+        // partial mode) so these classify as SCAFFOLD/BLOCKED and get hand-authored instead.
+        if (ctx.oracleText?.contains("\n//\n") == true) {
+            ctx.reasons.add("multi-faced")
+            return incomplete(ctx, pre, header, body, scryfall, pkg)
+        }
+
         body.add(RawLine("    manaCost = \"${renderMana(card["ManaCost"])}\""))
         colorIdentityDsl(scryfall)?.let { body.add(RawLine("    colorIdentity = \"$it\"")) }
         body.add(RawLine("    typeLine = \"${renderTypeline(card["Typeline"])}\""))

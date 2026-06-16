@@ -1120,7 +1120,7 @@ internal fun EmitCtx.landSearchFilterExpr(filterNode: JsonElement?): Dsl {
     val blob = compact(filterNode)
     val oracle = oracleText?.lowercase() ?: ""
     return when {
-        "basic land" in oracle || "IsBasicLand" in blob -> Lit("GameObjectFilter.BasicLand")
+        "IsBasicLand" in blob || ("\"Basic\"" in blob && "\"Land\"" in blob) -> Lit("GameObjectFilter.BasicLand")
         "sorcery card" in oracle || "\"Sorcery\"" in blob -> Lit("GameObjectFilter.Sorcery")
         "instant card" in oracle || "\"Instant\"" in blob -> Lit("GameObjectFilter.Instant")
         // "an artifact card" (Fabricate) / "an enchantment card": a single positive cardtype with no
@@ -1130,6 +1130,7 @@ internal fun EmitCtx.landSearchFilterExpr(filterNode: JsonElement?): Dsl {
         ("\"Artifact\"" in blob) && "\"Creature\"" !in blob -> Lit("GameObjectFilter.Artifact")
         ("\"Enchantment\"" in blob) && "\"Creature\"" !in blob -> Lit("GameObjectFilter.Enchantment")
         "\"Land\"" in blob -> Lit("GameObjectFilter.Land")
+        "basic land" in oracle -> Lit("GameObjectFilter.BasicLand")
         "\"Creature\"" in blob || "creature" in oracle -> {
             var out: Dsl = Lit("GameObjectFilter.Creature")
             // "black and/or red creature" -> withAnyColor; a single colour -> withColor; fall back to the

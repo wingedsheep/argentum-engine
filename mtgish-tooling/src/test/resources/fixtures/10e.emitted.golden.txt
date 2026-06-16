@@ -3124,7 +3124,7 @@ val DoomedNecromancer = card("Doomed Necromancer") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap, Costs.SacrificeSelf)
         val t = target("target", TargetObject(filter = TargetFilter.CreatureInYourGraveyard))
-        effect = Effects.Move(t, Zone.BATTLEFIELD)
+        effect = Effects.Move(t, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
     }
     metadata {
         rarity = Rarity.RARE
@@ -5864,6 +5864,7 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 
@@ -5883,7 +5884,13 @@ val JoinerAdept = card("Joiner Adept") {
     toughness = 1
     staticAbility {
         ability = GrantActivatedAbility(
-            ability = ActivatedAbility(id = AbilityId.generate(), cost = Costs.Tap, effect = Effects.AddManaOfChoice()),
+            ability = ActivatedAbility(
+                id = AbilityId.generate(),
+                cost = Costs.Tap,
+                effect = Effects.AddManaOfChoice(),
+                isManaAbility = true,
+                timing = TimingRule.ManaAbility
+            ),
             filter = GroupFilter(GameObjectFilter.Land.youControl())
         )
     }
@@ -9576,7 +9583,7 @@ val ReyaDawnbringer = card("Reya Dawnbringer") {
         trigger = Triggers.YourUpkeep
         optional = true
         val t = target("target", TargetObject(filter = TargetFilter.CreatureInYourGraveyard))
-        effect = Effects.Move(t, Zone.BATTLEFIELD)
+        effect = Effects.Move(t, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
     }
     metadata {
         rarity = Rarity.RARE

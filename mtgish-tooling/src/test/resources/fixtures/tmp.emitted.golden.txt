@@ -6599,9 +6599,9 @@ val MindwhipSliver = card("Mindwhip Sliver") {
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = Costs.Composite(Costs.Mana("{2}"), Costs.SacrificeSelf),
-                timing = TimingRule.SorcerySpeed,
                 effect = Patterns.Hand.discardRandom(1, EffectTarget.ContextTarget(0)),
-                targetRequirement = TargetPlayer()
+                targetRequirement = TargetPlayer(),
+                timing = TimingRule.SorcerySpeed
             ),
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype(Subtype.SLIVER))
         )

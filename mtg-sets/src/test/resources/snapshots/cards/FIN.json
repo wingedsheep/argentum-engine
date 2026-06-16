@@ -1,3 +1,39 @@
+// A Realm Reborn
+{
+    "name": "A Realm Reborn",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Other permanents you control have \"{T}: Add one mana of any color.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "ability_1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "permanent ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Anna Podedworna",
+        "flavorText": "\"The Seventh Astral Era is come!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1af74e4-38d5-44b5-85e1-4d13f6970453.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Adventurer's Airship
 {
     "name": "Adventurer's Airship",
@@ -162,7 +198,8 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomSacrifice",
-                                "filter": "creature|artifact"
+                                "filter": "creature|artifact",
+                                "excludeSelf": true
                             }
                         }
                     ]
@@ -299,6 +336,87 @@
     ]
 }
 
+// Ashe, Princess of Dalmasca
+{
+    "name": "Ashe, Princess of Dalmasca",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Rebel Noble",
+    "oracleText": "Whenever Ashe attacks, look at the top five cards of your library. You may reveal an artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "artifact",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Yumi Yaoshida",
+        "flavorText": "\"I am simply myself. No more and no less. And I want only to be free.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffe0596f-ef99-4862-9386-0fe455259995.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Auron's Inspiration
 {
     "name": "Auron's Inspiration",
@@ -346,6 +464,201 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Baron, Airship Kingdom
+{
+    "name": "Baron, Airship Kingdom",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {U} or {R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "artist": "Rockey Chen",
+        "flavorText": "The advent of the airship marked the realization of Baron's dreams, but also the birth of its militarism.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e4bf840-802d-47d5-bffd-8ba495e19cf6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Battle Menu
+{
+    "name": "Battle Menu",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Attack — Create a 2/2 white Knight creature token.\n• Ability — Target creature gets +0/+4 until end of turn.\n• Magic — Destroy target creature with power 4 or greater.\n• Item — You gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Knight"
+                        ]
+                    },
+                    "description": "Attack — Create a 2/2 white Knight creature token"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Ability — Target creature gets +0/+4 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature pow>=4"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Magic — Destroy target creature with power 4 or greater"
+                },
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "description": "Item — You gain 4 life"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Mingchen Shen",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/240e1466-bd02-423d-b829-234dcd2bfab2.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Black Waltz No. 3
+{
+    "name": "Black Waltz No. 3",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Wizard",
+    "oracleText": "Flying, deathtouch\nWhenever you cast a noncreature spell, Black Waltz No. 3 deals 2 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Lordigan",
+        "flavorText": "\"You fool. Do I look like some lowly black mage soldier?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe86e41b-b0f6-4aa1-8827-c095c721f304.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -402,6 +715,108 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Call the Mountain Chocobo
+{
+    "name": "Call the Mountain Chocobo",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a Mountain card, reveal it, put it into your hand, then shuffle. Create a 2/2 green Bird creature token with \"Whenever a land you control enters, this token gets +1/+0 until end of turn.\"\nFlashback {5}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{5}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land Mountain"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "filter": "land ctrl:you",
+                                "to": "Battlefield"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2e1986c-2852-4843-bdc4-eddb727ba3d4.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -592,6 +1007,250 @@
     ]
 }
 
+// Choco-Comet
+{
+    "name": "Choco-Comet",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choco-Comet deals X damage to any target.\nCreate a 2/2 green Bird creature token with \"Whenever a land you control enters, this token gets +1/+0 until end of turn.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "filter": "land ctrl:you",
+                                "to": "Battlefield"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Fiona Hsieh",
+        "flavorText": "The other colorations of chocobo tend to be quite violent, giving rise to the saying: \"Yellow, best for riding; aught else, best be hiding.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d8d3903-a7f4-4cd8-8d29-b4a173e4fbb2.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chocobo Racetrack
+{
+    "name": "Chocobo Racetrack",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Artifact",
+    "oracleText": "Landfall — Whenever a land you control enters, create a 2/2 green Bird creature token with \"Whenever a land you control enters, this token gets +1/+0 until end of turn.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_2",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "filter": "land ctrl:you",
+                                "to": "Battlefield"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "UNCOMMON",
+        "artist": "Bachzim",
+        "flavorText": "\"No matter how you make your bet, you win some and you lose some. It all comes down to skill and luck.\"\n—Racing expert",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1565813b-6912-42f4-bae0-22136a2d6a92.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Circle of Power
+{
+    "name": "Circle of Power",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw two cards and you lose 2 life. Create a 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\"\nWizards you control get +1/+0 and gain lifelink until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Wizard"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_1",
+                            "trigger": {
+                                "type": "SpellCastEvent",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        "IsNoncreature"
+                                    ]
+                                }
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Wizard ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Josephine Chang",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c969bd0f-f174-4e2f-b95c-c9ccd5d0b8ba.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cloud of Darkness
 {
     "name": "Cloud of Darkness",
@@ -661,6 +1320,339 @@
         "BLACK",
         "GREEN"
     ]
+}
+
+// Coliseum Behemoth
+{
+    "name": "Coliseum Behemoth",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Trample\nWhen this creature enters, choose one —\n• Destroy target artifact or enchantment.\n• Draw a card.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact|enchantment"
+                                    }
+                                }
+                            ],
+                            "description": "Destroy target artifact or enchantment"
+                        },
+                        {
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Ryu Fujinaka",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/900206f1-7dd6-4db9-a430-73e560fd196b.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Combat Tutorial
+{
+    "name": "Combat Tutorial",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws two cards. Put a +1/+1 counter on up to one target creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t1"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Fang Xinyu",
+        "flavorText": "\"Clueless, aren't you? Good thing I'm here.\"\n—Lulu",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec195607-ac30-4931-acfd-f9d8ac8b047f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Coral Sword
+{
+    "name": "Coral Sword",
+    "manaCost": "{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Flash\nWhen this Equipment enters, attach it to target creature you control. That creature gains first strike until end of turn.\nEquipped creature gets +1/+0.\nEquip {1}",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Kiantoro",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13e81e32-7246-46b9-872e-cde77cedd197.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Cornered by Black Mages
+{
+    "name": "Cornered by Black Mages",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent sacrifices a creature of their choice.\nCreate a 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Wizard"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_1",
+                            "trigger": {
+                                "type": "SpellCastEvent",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        "IsNoncreature"
+                                    ]
+                                }
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Smirtouille",
+        "flavorText": "\"Kuja called them black mages, dark spawn of the mist.\"\n—The Soulcage",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/688fcf8a-0a44-416a-8086-83acf9a6fe69.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Crossroads Village
+{
+    "name": "Crossroads Village",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped. As it enters, choose a color.\n{T}: Add one mana of the chosen color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": "ManaColorSet.SourceChosenColor"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped",
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "artist": "Hristo D. Chukov",
+        "flavorText": "\"You've got to destroy the Dreadnought!\"\n—Bafsk resident",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64db46d4-f91f-49cc-971c-b8e19f0c4ea9.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Demon Wall
@@ -950,6 +1942,109 @@
     ]
 }
 
+// Fang, Fearless l'Cie
+{
+    "name": "Fang, Fearless l'Cie",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Whenever one or more cards leave your graveyard, you draw a card and you lose 1 life. This ability triggers only once each turn.\n(Melds with Vanille, Cheerful l'Cie.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "\"If I don't figure out our Focus soon... Vanille's gonna be a Cieʼth. I'll tear down the sky if it'll save her.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f73a5cbb-905f-4b99-8d23-9d1b6bd47ee8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Fate of the Sun-Cryst
+{
+    "name": "Fate of the Sun-Cryst",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets a tapped creature.\nDestroy target nonland permanent.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "target"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": "creature tapped"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Erikas Perl",
+        "flavorText": "\"You would have me destroy the Empire? Is this my duty? Is this what you want?\"\n—Ashelia B'nargin Dalmasca",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/900cdf11-b42e-4dcc-97c3-2e4d8e406a70.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gladiolus Amicitia
 {
     "name": "Gladiolus Amicitia",
@@ -1065,6 +2160,96 @@
     ]
 }
 
+// Gohn, Town of Ruin
+{
+    "name": "Gohn, Town of Ruin",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {B} or {G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "artist": "Salvatorre Zee Yazzie",
+        "flavorText": "\"They say that beyond the dunes is the Town of Ruin, but no one can even enter the desert to find out, let alone cross it.\"\n—Cid Previa",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99582781-613e-4a33-aec7-7569b4a961aa.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Gongaga, Reactor Town
+{
+    "name": "Gongaga, Reactor Town",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {R} or {G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "280",
+        "artist": "Le Vuong",
+        "flavorText": "\"The Shinra people told us that everyone would be happy once the reactor was built. But all it brought us was sadness...\"\n—Gongaga villager",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7beccfa6-3e4b-4460-954e-870cb39e462d.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Goobbue Gardener
 {
     "name": "Goobbue Gardener",
@@ -1094,6 +2279,112 @@
         "artist": "Janna Sophia",
         "flavorText": "The parasitic moss that grows in the folds of the goobbue's back is highly valued as an ingredient in various potions and medicines.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7c3544a-5dd5-423e-8a40-ac4803db8adc.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Guadosalam, Farplane Gateway
+{
+    "name": "Guadosalam, Farplane Gateway",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {G} or {U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "artist": "Vaigintas Pakenis",
+        "flavorText": "\"We Guado protect the Farplane so the dead can rest in peace.\"\n—Guadosalam citizen",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfcbc131-fd50-4908-b539-c8e52bb70c58.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
+    ]
+}
+
+// Gysahl Greens
+{
+    "name": "Gysahl Greens",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 2/2 green Bird creature token with \"Whenever a land you control enters, this token gets +1/+0 until end of turn.\"\nFlashback {6}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{6}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Bird"
+            ],
+            "triggeredAbilities": [
+                {
+                    "id": "ability_1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "land ctrl:you",
+                        "to": "Battlefield"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Andrea Tentori Montalto",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/020dee17-d85b-44c4-9faa-b1ef977956f4.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1252,6 +2543,51 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Insomnia, Crown City
+{
+    "name": "Insomnia, Crown City",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {W} or {B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "282",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"I need only know that you are ready to leave home behind,\" said King Regis.\n\"Don't know about you, but I'm ready as I'll ever be,\" replied Noctis.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07fca511-a65c-4779-82c0-9215b0dcd068.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -1461,6 +2797,92 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/4/04d327a3-1699-4556-b681-a957671ad142.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Locke Cole
+{
+    "name": "Locke Cole",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "Deathtouch, lifelink\nWhenever Locke Cole deals combat damage to a player, draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "AKAGI",
+        "flavorText": "\"As long as there are people who need to be protected, I'll keep on fighting!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/572feb8c-6976-40a8-8a34-b4db836cca56.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Loporrit Scout
@@ -1814,6 +3236,74 @@
     ]
 }
 
+// Mysidian Elder
+{
+    "name": "Mysidian Elder",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, create a 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Wizard"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_2",
+                            "trigger": {
+                                "type": "SpellCastEvent",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        "IsNoncreature"
+                                    ]
+                                }
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "David Astruga",
+        "flavorText": "\"Perhaps this is a test and you must prove yourself worthy.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bc39af4-be19-4889-b930-df7ebf7b9481.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Overkill
 {
     "name": "Overkill",
@@ -1855,6 +3345,143 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Queen Brahne
+{
+    "name": "Queen Brahne",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Noble",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever Queen Brahne attacks, create a 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Wizard"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_3",
+                            "trigger": {
+                                "type": "SpellCastEvent",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        "IsNoncreature"
+                                    ]
+                                }
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c38c98bb-74c9-460f-9997-ea5c5f922347.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rabanastre, Royal City
+{
+    "name": "Rabanastre, Royal City",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {R} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "287",
+        "artist": "Shahab Alizadeh",
+        "flavorText": "The town proper of Rabanastre is divided into four sections by the cardinal directions of the compass. The east and west are merchant districts, the streets lined with shops and stalls of every description.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c44c9bbe-f4c6-41cf-b3c3-b943f4011bc1.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
     ]
 }
 
@@ -2005,6 +3632,119 @@
     "colorIdentityOverride": []
 }
 
+// Rosa, Resolute White Mage
+{
+    "name": "Rosa, Resolute White Mage",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Noble Cleric",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nAt the beginning of combat on your turn, put a +1/+1 counter on target creature you control. It gains lifelink until end of turn. (Damage dealt by the creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "555",
+        "rarity": "RARE",
+        "artist": "Christian Angel",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c44e0ad6-9f44-4e4c-8c3b-3ee99409a740.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sabotender
+{
+    "name": "Sabotender",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Plant",
+    "oracleText": "Reach\nLandfall — Whenever a land you control enters, this creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Toni Infante",
+        "flavorText": "These strange, ambulatory cacti are commonly found in the Altepa Desert of the Kuzotz Region, and little regarding their way of life is known to science.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12df1295-8b08-4c8e-bac9-55b4f514c0be.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sazh's Chocobo
 {
     "name": "Sazh's Chocobo",
@@ -2024,7 +3764,7 @@
                     "filter": "land ctrl:you",
                     "to": "Battlefield"
                 },
-                "binding": "OTHER",
+                "binding": "ANY",
                 "effect": {
                     "type": "AddCounters",
                     "counterType": "+1/+1",
@@ -2095,6 +3835,119 @@
     ]
 }
 
+// Sharlayan, Nation of Scholars
+{
+    "name": "Sharlayan, Nation of Scholars",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {W} or {U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "artist": "David Frasheski",
+        "flavorText": "\"The Sharlayans were the keepers of wisdom both old and new. Their mastery over magic and aether was unsurpassed, and even the Garleans knew to fear them.\"\n—Minfilia Warde",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a745b5e-cdb8-4d05-ac5c-87be69536da6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Shinra Reinforcements
+{
+    "name": "Shinra Reinforcements",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, mill three cards and you gain 3 life. (To mill three cards, put the top three cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Airi Yoshihisa",
+        "flavorText": "\"End of the line, punk!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/7367b257-1a8c-4593-a307-7116e36e0342.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Starting Town
 {
     "name": "Starting Town",
@@ -2153,6 +4006,59 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc7d1912-7e27-49ef-bd98-375d975a42b0.jpg?1748706861"
     },
     "colorIdentityOverride": []
+}
+
+// The Crystal's Chosen
+{
+    "name": "The Crystal's Chosen",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create four 1/1 colorless Hero creature tokens. Then put a +1/+1 counter on each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Hero"
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "+1/+1",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Kotetsu Kinoshita",
+        "flavorText": "Within the light, the will of the crystal surged through them. They decided to accept their destiny. And so began a journey to dispel the darkness and return light to the world ...",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4df4373-0ee6-44e3-81c6-0881c070014c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Tidus, Blitzball Star
@@ -2365,6 +4271,46 @@
     ]
 }
 
+// Travel the Overworld
+{
+    "name": "Travel the Overworld",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Affinity for Towns (This spell costs {1} less to cast for each Town you control.)\nDraw four cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 4
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Town"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "flavorText": "\"My dad always wanted me to go out and travel the world. But it also feels like ... like the wind is calling me.\"\n—Bartz Klauser",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa5086e0-e2f2-498f-9035-1b31e1d21e0a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Traveling Chocobo
 {
     "name": "Traveling Chocobo",
@@ -2427,6 +4373,193 @@
     ]
 }
 
+// Treno, Dark City
+{
+    "name": "Treno, Dark City",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {U} or {B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "290",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"There aren't many nobles living here. The nights are long. It's a great place for thieves.\"\n—Marcus, Tantalus thief",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6285535-bc44-4274-a886-b14d7c7aaba8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Ultima Weapon
+{
+    "name": "Ultima Weapon",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Whenever equipped creature attacks, destroy target creature an opponent controls.\nEquipped creature gets +7/+7.\nEquip {7}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "target"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 7,
+                "toughnessBonus": 7
+            }
+        ]
+    },
+    "equipCost": "{7}",
+    "metadata": {
+        "collectorNumber": "563",
+        "rarity": "RARE",
+        "artist": "Fariba Khamseh",
+        "flavorText": "\"This will be the end of it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9162d08-a6ba-4e6e-b82c-9b092bd781dd.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ultimecia, Temporal Threat
+{
+    "name": "Ultimecia, Temporal Threat",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "When Ultimecia enters, tap all creatures your opponents control.\nWhenever a creature you control deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer",
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "556",
+        "rarity": "RARE",
+        "artist": "Bachzim",
+        "flavorText": "\"Ultimecia is a fearful sorceress. Her heart is filled with anger and hate.\"\n—Edea Kramer",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b64e4475-f1c6-4d85-b42f-6d84d06855bb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Undercity Dire Rat
 {
     "name": "Undercity Dire Rat",
@@ -2461,6 +4594,273 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Valkyrie Aerial Unit
+{
+    "name": "Valkyrie Aerial Unit",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nFlying\nWhen this creature enters, surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "surveiled"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "surveiled",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "toGraveyard",
+                            "storeRemainder": "toTop",
+                            "selectedLabel": "Put in graveyard",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toGraveyard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "artifact"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "hippo",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b40a055f-ea66-44d4-b058-a328a3d10994.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Vector, Imperial Capital
+{
+    "name": "Vector, Imperial Capital",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {B} or {R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "291",
+        "artist": "Lordigan",
+        "flavorText": "\"If we allow the Empire to continue expanding its Magitek arsenal... history's greatest mistake will be repeated.\"\n—Banon, Leader of the Returners",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10e5648e-4884-41e3-95f8-c76f6bca01e2.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// White Auracite
+{
+    "name": "White Auracite",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, exile target nonland permanent an opponent controls until this artifact leaves the battlefield.\n{T}: Add {W}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "target"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"She gave her life that we might defeat the Ascians. Her sacrifice must not be in vain.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2df6f515-9d21-4769-b1c4-c219611bccbb.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Windurst, Federation Center
+{
+    "name": "Windurst, Federation Center",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {G} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "292",
+        "artist": "Constantin Marin",
+        "flavorText": "The first Star Sibyl gained the powers of the stars and moon at Full Moon Fountain. She found the stars of hope from within the darkness, and led Windurst to glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c74024bd-b383-468d-9cf5-d112a29f6457.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
     ]
 }
 

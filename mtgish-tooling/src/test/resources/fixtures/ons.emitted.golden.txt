@@ -3778,7 +3778,7 @@ val DoomedNecromancer = card("Doomed Necromancer") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap, Costs.SacrificeSelf)
         val t = target("target", TargetObject(filter = TargetFilter.CreatureInYourGraveyard))
-        effect = Effects.Move(t, Zone.BATTLEFIELD)
+        effect = Effects.Move(t, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
     }
     metadata {
         rarity = Rarity.RARE
@@ -11880,7 +11880,7 @@ val SyphonSoul = card("Syphon Soul") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "Syphon Soul deals 2 damage to each other player. You gain life equal to the damage dealt this way."
-    // STRUCTURE needs human wiring: GainLife
+    // STRUCTURE needs human wiring: SpellDealsDamage
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "176"

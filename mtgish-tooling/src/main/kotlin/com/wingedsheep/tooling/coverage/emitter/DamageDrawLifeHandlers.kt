@@ -253,6 +253,15 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
  *  else (a named/opponent player recipient with no target binding, distributed, …) so the card scaffolds
  *  rather than deal damage to the wrong recipient. */
 internal fun EmitCtx.damageRecipientTarget(args: JsonElement?, tvar: String?): String? {
+    // "each opponent" recipient: `_DamageRecipient: EachPlayer` with a plural `_Players: Opponent` scope
+    // ("this token deals 1 damage to each opponent"). [findRef] only reads the SINGULAR `_Player`, so the
+    // plural scope yields no ref and [refTargetFromRef] would fall through to its `tvar` fallback — which,
+    // for a token's granted sub-ability (tvar = EffectTarget.Self), silently makes the token damage ITSELF
+    // instead of each opponent. Resolve the each-opponent scope here, before the ref fallback can misfire.
+    recipientNode(args)?.takeIf { it.strField("_DamageRecipient") == "EachPlayer" }?.let { recip ->
+        return if (jsonContains(recip["args"], "_Players", "Opponent")) "EffectTarget.PlayerRef(Player.EachOpponent)"
+        else null  // "each player" and other scopes have no exact single-target render — decline -> SCAFFOLD
+    }
     refTargetIn(args, "_DamageRecipient", tvar)?.let { return it }
     val recip = recipientNode(args) ?: return null
     return when (recip.strField("_DamageRecipient")) {
