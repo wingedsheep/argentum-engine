@@ -55,6 +55,33 @@ object PredefinedTokens {
     }
 
     /**
+     * Meteorite token — a colorless artifact (Roxanne, Starfall Savant) with:
+     * "When this token enters, it deals 2 damage to any target." and
+     * "{T}: Add one mana of any color."
+     */
+    val Meteorite = card("Meteorite") {
+        typeLine = "Artifact"
+
+        triggeredAbility {
+            trigger = Triggers.EntersBattlefield
+            val anyTarget = target("any target", Targets.Any)
+            effect = Effects.DealDamage(2, anyTarget, damageSource = EffectTarget.Self)
+            description = "When this token enters, it deals 2 damage to any target."
+        }
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddAnyColorMana(1)
+            manaAbility = true
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/0/0/00b41ca9-0bf0-41fc-af65-854e602ee007.jpg?1712317015"
+            artist = "Ina Wong"
+        }
+    }
+
+    /**
      * Food token — an artifact with:
      * "{2}, {T}, Sacrifice this artifact: You gain 3 life."
      */
@@ -72,6 +99,27 @@ object PredefinedTokens {
 
         metadata {
             imageUri = "https://cards.scryfall.io/normal/front/0/d/0dce2241-e58b-41d4-b57c-9794fc8ee004.jpg?1721425221"
+        }
+    }
+
+    /**
+     * Clue token — an artifact with:
+     * "{2}, Sacrifice this token: Draw a card."
+     * Created by the Investigate keyword action ([Effects.Investigate]).
+     */
+    val Clue = card("Clue") {
+        typeLine = "Artifact — Clue"
+
+        activatedAbility {
+            cost = Costs.Composite(
+                Costs.Mana("{2}"),
+                Costs.SacrificeSelf
+            )
+            effect = Effects.DrawCards(1)
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/7/6/764a906c-8b27-4ffa-bdc3-7825c6919d3e.jpg?1712316807"
         }
     }
 
@@ -349,7 +397,9 @@ object PredefinedTokens {
      */
     val allTokens: List<CardDefinition> = listOf(
         Treasure,
+        Meteorite,
         Food,
+        Clue,
         Lander,
         JustOneGlass,
         Map,

@@ -55,7 +55,8 @@
                     ]
                 },
                 "triggerCondition": {
-                    "type": "SourceMatches",
+                    "type": "EntityMatches",
+                    "entity": "Self",
                     "filter": "nontoken"
                 }
             }

@@ -5,23 +5,82 @@ package com.wingedsheep.tooling.coverage.bridge
 internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // Triggers — validated by a Triggers.* facade scan in a later phase.
     supported("WhenAPermanentEntersTheBattlefield", "trigger: ETB (Triggers.* scan validates in P1)")
+    // Batched ETB — "whenever one or more permanents [matching a filter] enter" fires once per event
+    // batch (Triggers.OneOrMorePermanentsEnter / OneOrMoreOpponentPermanentsEnter; controller scope
+    // you-control by default or .opponentControls(); the matching batch members are exposed to the
+    // payoff via the trigger.captured pipeline collection — Kambal, Profiteering Mayor).
+    supported("WhenAnyNumberOfPermanentsEnterTheBattlefield", "trigger: one or more permanents enter, batched (Triggers.OneOrMorePermanentsEnter / OneOrMoreOpponentPermanentsEnter)")
     supported("WhenACreatureOrPlaneswalkerDies", "trigger: dies")
     supported("WhenACreatureAttacks", "trigger: attacks")
+    // "Whenever you attack with one or more creatures [matching a filter]" — the batched declare-attackers
+    // trigger that fires once per combat when at least one attacker matches (Triggers.YouAttackWithFilter,
+    // Jolene Plundering Pugilist's "with power 4 or greater"). You scope only; the emitter recovers the
+    // attacker filter exactly or declines -> SCAFFOLD.
+    supported("WhenAPlayerAttacksWithAnyNumberOfCreatures", "trigger: you attack with one or more creatures matching a filter (Triggers.YouAttackWithFilter)")
     supported("WhenACreatureBlocks", "trigger: blocks (Ydwen Efreet)")
+    supported("WhenAPermanentBecomesTapped", "trigger: this permanent becomes tapped (Triggers.BecomesTapped — Wylie Duke, Atiin Hero)")
     supported("WhenACreatureDealsCombatDamageToAPlayer", "trigger: combat damage to player")
+    // "Whenever you sacrifice a/another [filter] …" — the batched sacrifice trigger that fires when a
+    // matching permanent you control is sacrificed (Triggers.YouSacrificeOneOrMore; the first matching
+    // sacrificed permanent is bound as the triggering entity so "its mana value / power" reads from LKI —
+    // Rakdos, the Muscle). You-scope; the emitter recovers the filter or declines -> SCAFFOLD.
+    supported("WhenAPlayerSacrificesAPermanent", "trigger: you sacrifice one or more matching permanents (Triggers.YouSacrificeOneOrMore)")
+    // "At the beginning of combat on your turn, …" (Triggers.BeginCombat — already scoped to your turn).
+    // Oko, the Ringleader's combat-begin copy. You-turn scope only; the emitter renders BeginCombat when
+    // the payoff is renderable (else SCAFFOLD).
+    supported("AtTheBeginningOfCombatDuringAPlayersTurn", "trigger: beginning of combat on your turn (Triggers.BeginCombat)")
     supported("WhenAPlayerCastsASpell", "trigger: a player casts a spell (Triggers.YouCastSpell / AnyPlayerCastsSpell / OpponentCastsSpell + type filters)")
+    supported("WhenAPlayerCastsTheirNthSpellInATurn", "trigger: you cast your Nth spell each turn (Triggers.NthSpellCast(N, Player.You) — Rodeo Pyromancers)")
+    // DELIBERATE DECLINE — Breeches, the Blastmaker. Its second-spell payoff (NthSpellCast above) is a
+    // `MayCost(sacrifice an artifact)`-gated `FlipACoin_OnWinAndLose` that sets up two reflexive (delayed)
+    // triggers — win: `CopySpellAndMayChooseNewTargets`, lose: deal that spell's mana value to any target.
+    // The win/lose coin branch + reflexive-trigger + copy-spell-with-new-targets cluster is exactly the
+    // value-selection / reflexive shape the module creator's note (mtgish-tooling/CLAUDE.md) says to leave
+    // BLOCKED rather than risk a confidently-wrong render. The tags FlipACoin_OnWinAndLose / ReflexiveTrigger
+    // / CopySpellAndMayChooseNewTargets stay unmapped on purpose; the hand-authored card + its scenario test
+    // (BreechesTheBlastmakerTest) is the ground truth.
     supported("AtTheBeginningOfAPlayersUpkeep", "trigger: upkeep (Triggers.YourUpkeep / EachUpkeep / EachOpponentUpkeep)")
     supported("AtTheBeginningOfAPlayersEndStep", "trigger: end step (Triggers.YourEndStep / EachEndStep)")
     // OTJ Plot (CR 718) — "When this card becomes plotted, …" (Triggers.BecomesPlotted, Aloe Alchemist).
     supported("WhenACardBecomesPlotted", "trigger: this card becomes plotted (Triggers.BecomesPlotted)")
     supported("WhenAPermanentBecomesTheTargetOfASpellOrAbility", "trigger: becomes target (Triggers.BecomesTargetByOpponent / BecomesTarget / CreatureYouControlBecomesTargetByOpponent)")
+    // OTJ Saddle (CR 702.171b) — "Whenever this creature becomes saddled for the first time each turn, …"
+    // (Triggers.becomesSaddled(firstTimeEachTurn = true), Stubborn Burrowfiend).
+    supported("WhenAPermanentBecomesSaddledForTheFirstTimeInATurn", "trigger: this permanent becomes saddled for the first time each turn (Triggers.becomesSaddled(firstTimeEachTurn = true))")
+    // "Whenever this Equipment/Aura becomes attached to a permanent, …" (CR 603.2e) — the new
+    // Triggers.becomesAttached. Capability-only: the renderable payoffs (Assimilation Aegis'
+    // copy-of-linked-exile, Eriette's gain-control "for as long as that Aura is attached") carry the
+    // attach-relative duration and exile linkage the emitter does NOT reconstruct, so it declines to
+    // SCAFFOLD per the creator's note (chosen/inherited-value shapes). Hand-authored card is ground truth.
+    supported("WhenAPermanentBecomesAttached", "trigger: an Aura/Equipment becomes attached (Triggers.becomesAttached) — capability only, emitter scaffolds")
+    // OTJ crime (CR 700.10) — "Whenever you commit a crime, …" (Triggers.YouCommitCrime, Marauding Sphinx).
+    supported("WhenAPlayerCommitsACrime", "trigger: you commit a crime (Triggers.YouCommitCrime)")
+    // "Whenever one or more cards leave your graveyard, …" — batching leave-graveyard trigger
+    // (Triggers.CardsLeaveYourGraveyard — Owlin Historian, Attuned Hunter). You-scoped + unfiltered only.
+    supported("WhenAnyNumberOfGraveyardCardsLeave", "trigger: one or more cards leave your graveyard (Triggers.CardsLeaveYourGraveyard)")
+    // "When this Aura/permanent is put into a graveyard from the battlefield, …" — the self LTB-to-
+    // graveyard trigger (Reach for the Sky's "draw a card"). Maps to Triggers.PutIntoGraveyardFromBattlefield;
+    // only the SELF (ThisPermanent), any-player shape renders (anything else scaffolds).
+    supported("WhenAPermanentIsPutIntoAPlayersGraveyard", "trigger: this permanent put into a graveyard from the battlefield (Triggers.PutIntoGraveyardFromBattlefield)")
 
     // Intervening-if conditions (CR 603.4) gating a TriggerI, plus the Mount "while saddled" gate. The
     // emitter renders the recognised shapes to `triggerCondition = Conditions.*`; an unrenderable
     // condition still scaffolds, so these are accepted as supported vocabulary (the emitter is the gate).
     supported("PermanentPassesFilter", "condition: a permanent matches a filter (e.g. ThisPermanent IsSaddled -> Conditions.SourceIsSaddled)")
     supported("PlayerPassesFilter", "condition: a player matches a filter (e.g. You HasntCastASpellThisTurn)")
+    // "an opponent matches [filter]" — APlayerPassesFilter(Opponent, …). Used by Claim Jumper's
+    // intervening-if "if an opponent controls more lands than you". The engine has
+    // Conditions.OpponentControlsMoreLands; the emitter declines the surrounding repeatable-search loop,
+    // so this is capability-only (-> SCAFFOLD).
+    supported("APlayerPassesFilter", "condition: a player (e.g. an opponent) matches a filter")
+    // "controls more [permanents] than [player]" -> Conditions.OpponentControlsMoreLands (for the
+    // Land/You scope). Capability vocabulary; the emitter declines the loop body that uses it.
+    supported("ControlsMorePermanentThanPlayer", "predicate: a player controls more [filter] than another (Opponent>You Lands -> Conditions.OpponentControlsMoreLands)")
     supported("IsSaddled", "predicate: this permanent is saddled (CR 702.171b)")
+    // "during your turn" — IsPlayersTurn(You) -> Conditions.IsYourTurn, the gate on Overzealous Muscle's
+    // "Whenever you commit a crime during your turn, …". Renders as a triggerCondition when it wraps a
+    // trigger (the emitter unwraps the If-gated trigger); any non-You scope declines -> SCAFFOLD.
+    supported("IsPlayersTurn", "condition: it's a given player's turn (You -> Conditions.IsYourTurn)")
     supported("HasntCastASpellThisTurn", "predicate: player hasn't cast a (filtered) spell this turn")
     // "you've cast another spell this turn" -> Conditions.YouCastSpellsThisTurn(atLeast = 2) at
     // resolution (the resolving spell is already recorded). The emitter renders the "Other ThisSpell"
@@ -34,6 +93,10 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // loot, rendered by the emitter as MayEffect(IfYouDoEffect(...)). Universal condition vocabulary.
     supported("CostWasPaid", "condition: the optional cost was paid (IfYouDoEffect linkage)")
     supported("WasCastFromTheirHand", "predicate: spell cast from the player's hand (fromZone = HAND)")
+    // The negation — "a spell from anywhere other than your hand" (Kellan, the Kid). Backed by
+    // SpellCastPredicate.CastFromZoneOtherThan(Zone.HAND). The trigger itself is coverable even
+    // though Kellan's free-cast-or-play-land body declines to SCAFFOLD in the emitter.
+    supported("WasntCastFromTheirHand", "predicate: spell cast from a zone other than the player's hand (CastFromZoneOtherThan(HAND))")
     // Source-relative Mount/Vehicle payoff filter: "a creature that crewed/saddled it this turn"
     // (Giant Beaver) -> GameObjectFilter.Creature.crewedOrSaddledSourceThisTurn().
     supported("SaddledPermanentThisTurn", "filter: a creature that saddled this permanent this turn (crewedOrSaddledSourceThisTurn)")
@@ -41,6 +104,10 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
 
     // Costs.
     supported("PayMana", "cost: pay mana (universal)")
+    // Planeswalker loyalty cost (CR 606) — the +N / -N ability activation cost. The engine models it
+    // via `loyaltyAbility(loyaltyChange) { }` with `startingLoyalty`. Oko, the Ringleader. The emitter
+    // declines the whole loyalty-ability envelope (Activated) -> SCAFFOLD, so this is capability-only.
+    supported("Loyalty", "cost: planeswalker loyalty +N/-N (loyaltyAbility(change) { })")
     supported("SacrificeAPermanent", "cost: sacrifice")
     supported("SacrificeNumberPermanents", "cost: sacrifice N")
     // "Pay N life" as an activation cost -> Costs.PayLife(n). The emitter renders fixed-integer amounts
@@ -62,4 +129,44 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     composed("CreatePreventDamageUntil", "PreventDamageShield (duration-scoped prevention)", composes = listOf("PreventDamageShield"))
     composed("CreateTriggerUntil", "CreateGlobalTriggeredAbility (duration)", composes = listOf("CreateGlobalTriggeredAbility"))
     composed("CreateFutureTrigger", "CreateDelayedTrigger", composes = listOf("CreateDelayedTrigger"))
+
+    // "If a triggered ability of a [filter] you control triggers, that ability triggers an additional
+    // time" (Annie Joins Up, Twinflame Travelers — CR 603.2d). A static doubler over a filtered group;
+    // emitter renders staticAbility { ability = AdditionalSourceTriggers(sourceFilter = …) }.
+    effect("AbilitiesTriggerAnAdditionalTime", "AdditionalSourceTriggers")
+
+    // "[Each player] can't cast more than N spell(s) each turn" (High Noon / Yawgmoth's Agenda) — the
+    // nested _PlayerEffect of a PlayerEffect / EachPlayerEffect static. Renders to
+    // `RestrictSpellsCastPerTurn(maxPerTurn = N, eachPlayer = <scope>)`.
+    effect("CantCastMoreThanNumberSpellsEachTurn", "RestrictSpellsCastPerTurn")
+
+    // "Spells your opponents cast from graveyards or from exile cost {2} more to cast" (Aven
+    // Interrupter) — the nested _PlayerEffect of an EachPlayerEffect{Opponent} static. Renders to
+    // `ModifySpellCost(target = SpellCostTarget.OpponentsCastFromZones(...), modification =
+    // IncreaseGeneric(N))`. The spell-zone selectors below carry the zone set.
+    effect("IncreaseSpellCost", "ModifySpellCost")
+    supported("WasCastFromExile", "spell selector: cast from exile (SpellCostTarget.*CastFromZones zone = EXILE)")
+    supported("WasCastFromAPlayersGraveyard", "spell selector: cast from a graveyard (SpellCostTarget.*CastFromZones zone = GRAVEYARD)")
+
+    // "Spells you cast from your graveyard or from exile cost {N} less" (Doc Aurlock, Grizzled
+    // Genius) — the nested _PlayerEffect of a controller-scoped PlayerEffect{You} static. Renders to
+    // `ModifySpellCost(target = SpellCostTarget.YouCastFromZones(GRAVEYARD, EXILE), modification =
+    // ReduceGeneric(N))`. The you-cast analogue of the IncreaseSpellCost/OpponentsCastFromZones
+    // shape above; the spell-zone selectors are shared.
+    effect("DecreaseSpellCost", "ModifySpellCost")
+    // "Plotting cards from your hand costs {N} less" (Doc Aurlock) — a controller-scoped player
+    // static over the Plot special action (CR 718). Renders to `ModifyPlotCost(target =
+    // PlotCostTarget.YouPlotFromHand, modification = ReduceGeneric(N))`.
+    effect("DecreasePlotFromHandCost", "ModifyPlotCost")
+
+    // Fblthp, Lost on the Range (CR 718) — top-of-library plot + look. Nested _PlayerEffect /
+    // _Rule capabilities of the controller-scoped statics.
+    supported("MayLookAtTopCardOfLibraryAnyTime", "player static: look at the top card of your library any time (LookAtTopOfLibrary)")
+    supported("MayPlotCardsFromTheTopOfTheirLibrary", "player static: plot cards from the top of your library (PlotFromTopOfLibrary)")
+    supported("TopCardOfPlayersLibraryEffect", "rule: the top card of your library has plot, plot cost = its mana cost (PlotFromTopOfLibrary)")
+
+    // Roxanne, Starfall Savant (CR 605) — "Whenever you tap an artifact token for mana, add one mana
+    // of any type that artifact token produced." A triggered mana ability; renders to the
+    // AdditionalManaOnSourceTap mirror static (color = null), the same shape as Lavaleaper's land mirror.
+    supported("WhenAPlayerTapsAPermanentForMana", "trigger: tap a permanent for mana → AdditionalManaOnSourceTap mirror static")
 }

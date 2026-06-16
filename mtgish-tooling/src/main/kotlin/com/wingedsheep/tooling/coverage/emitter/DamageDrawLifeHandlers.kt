@@ -21,7 +21,7 @@ import kotlinx.serialization.json.put
 /** Direct effects on life totals, damage, and the player's own cards (draw / discard / look). */
 internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers {
 
-    on("SpellDealsDamage", "PermanentDealsDamage") { _, args, tvar ->
+    on("SpellDealsDamage", "PermanentDealsDamage") { node, args, tvar ->
         val amt = amountExpr(args) ?: dynamicAmountExpr(amountNode(args)) ?: return@on null
         if (jsonContains(args, "_DamageRecipient", "EachPermanent")) {  // mass: deal N to each creature
             val filter = groupFilterExpr(args) ?: return@on null
@@ -41,6 +41,22 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
             return@on eachPermanent
         }
         val tgt = damageRecipientTarget(args, tvar) ?: return@on null
+        // For `PermanentDealsDamage`, the acting permanent (the first arg's `_Permanent` ref) is the
+        // damage source — when it's a bound target ("target creature you control … deals damage equal to
+        // its power", Burrog Barrage), thread it through `damageSource = …` so the damage is attributed
+        // correctly. `SpellDealsDamage` (the spell itself is the source) needs no source attribution.
+        if (node.strField("_Action") == "PermanentDealsDamage") {
+            val srcRef = (args.asArr?.firstOrNull() as? JsonObject)?.strField("_Permanent")
+            val src = if (srcRef != null) refTargetFromRef(srcRef, tvar) else null
+            // Only thread an EXPLICIT damage source — a BOUND TARGET other than the recipient (Burrog
+            // Barrage's "target creature you control … deals damage equal to its power"). The implicit
+            // `EffectTarget.Self` source (the acting permanent is `ThisPermanent`, the common Fire
+            // Imp / Fire Dragon shape) is the engine default and must NOT be emitted, or it diverges
+            // from golden trees that omit it.
+            if (src != null && src != tgt && src != "EffectTarget.Self") {
+                return@on call("DealDamageEffect", arg(amt), arg(Lit(tgt)), arg("damageSource", Lit(src)))
+            }
+        }
         call("DealDamageEffect", arg(amt), arg(Lit(tgt)))
     }
 
@@ -57,6 +73,17 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
         // The acting permanent is the trigger source; the golden models it as a plain DealDamageEffect to
         // the recipient (the damage-source attribution isn't carried), so render that and decline anything
         // we can't resolve to a recipient exactly.
+        val amt = amountExpr(args) ?: dynamicAmountExpr(amountNode(args)) ?: return@on null
+        val tgt = refTargetIn(args, "_DamageRecipient", tvar) ?: return@on null
+        call("DealDamageEffect", arg(amt), arg(Lit(tgt)))
+    }
+
+    on("ExiledCardDealsDamage") { _, args, tvar ->
+        // "it deals N damage to <recipient>" where "it" is the card sitting face up in exile (Longhorn
+        // Sharpshooter's "When this card becomes plotted, it deals 2 damage to any target"). The damage
+        // source is the plotted card; the engine attributes it via the ability source (the default), so —
+        // like HavePermanentDealDamage — the golden carries no damageSource. IR args are
+        // [<CardInExile>, N, <recipient>]. Render only a fixed amount + an exactly-resolvable recipient.
         val amt = amountExpr(args) ?: dynamicAmountExpr(amountNode(args)) ?: return@on null
         val tgt = refTargetIn(args, "_DamageRecipient", tvar) ?: return@on null
         call("DealDamageEffect", arg(amt), arg(Lit(tgt)))
@@ -105,7 +132,28 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
     }
 
     simple("CounterSpell", dsl = "CounterEffect()")
+    // "Copy target instant/sorcery spell, activated ability, or triggered ability. You may choose new
+    // targets for the copy." (Return the Favor mode 1). The four-way target is recovered by
+    // `Targets.InstantSorcerySpellOrAbility`; the effect copies whichever stack-object kind was chosen.
+    simple("CopySpellOrAbilityAndMayChooseNewTargets", dsl = "Effects.CopyTargetSpellOrAbility()")
+    // "Copy that spell" on a cast trigger — CopySpell(Trigger_ThatSpell) (Double Down). The copy is
+    // made of the triggering spell itself; copies of permanent spells become tokens (handled by the
+    // engine's copy executor). Only the triggering-spell subject renders; any other CopySpell subject
+    // (a chosen target, a stored spell) declines -> SCAFFOLD.
+    on("CopySpell") { node, _, _ ->
+        val subject = (node["args"] as? JsonObject)?.strField("_Spell")
+            ?: (node["args"].asArr?.firstOrNull() as? JsonObject)?.strField("_Spell")
+        if (subject == "Trigger_ThatSpell")
+            Lit("Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity)")
+        else null
+    }
+    // "Change the target of target spell or ability with a single target." (Return the Favor mode 2 /
+    // Willbender). Pairs with `Targets.SpellOrAbilityWithSingleTarget`.
+    simple("ChangeTargetsOfSpellOrAbility", dsl = "Effects.ChangeTarget()")
     simple("Shuffle", dsl = "ShuffleLibraryEffect()")
+    // Investigate (keyword action, CR 701.36): create a Clue token. Argument-free constant action
+    // (Malcolm, the Eyes — "investigate"). "Investigate N times" appears as N stacked actions.
+    simple("Investigate", dsl = "Effects.Investigate()")
     simple("TakeAnExtraTurn", dsl = "TakeExtraTurnEffect()")
     simple("DiscardACardAtRandom", dsl = "Patterns.Hand.discardRandom(1)")
 
@@ -205,6 +253,15 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
  *  else (a named/opponent player recipient with no target binding, distributed, …) so the card scaffolds
  *  rather than deal damage to the wrong recipient. */
 internal fun EmitCtx.damageRecipientTarget(args: JsonElement?, tvar: String?): String? {
+    // "each opponent" recipient: `_DamageRecipient: EachPlayer` with a plural `_Players: Opponent` scope
+    // ("this token deals 1 damage to each opponent"). [findRef] only reads the SINGULAR `_Player`, so the
+    // plural scope yields no ref and [refTargetFromRef] would fall through to its `tvar` fallback — which,
+    // for a token's granted sub-ability (tvar = EffectTarget.Self), silently makes the token damage ITSELF
+    // instead of each opponent. Resolve the each-opponent scope here, before the ref fallback can misfire.
+    recipientNode(args)?.takeIf { it.strField("_DamageRecipient") == "EachPlayer" }?.let { recip ->
+        return if (jsonContains(recip["args"], "_Players", "Opponent")) "EffectTarget.PlayerRef(Player.EachOpponent)"
+        else null  // "each player" and other scopes have no exact single-target render — decline -> SCAFFOLD
+    }
     refTargetIn(args, "_DamageRecipient", tvar)?.let { return it }
     val recip = recipientNode(args) ?: return null
     return when (recip.strField("_DamageRecipient")) {

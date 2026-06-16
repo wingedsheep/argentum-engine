@@ -385,6 +385,16 @@ function GameCardImpl({
   const isSelectedAsBlocker = isInBlockerMode && !!(combatState?.blockerAssignments[card.id]?.length)
   const isAttackingInBlockerMode = isInBlockerMode && opponentForCombat && combatState.attackingCreatures.includes(card.id)
   const isMustBeBlocked = isInBlockerMode && opponentForCombat && combatState.mustBeBlockedAttackers.includes(card.id)
+  // Multiplayer: an attacker in this combat that is attacking a *different*
+  // defender — you can't block it (CR 509.1b), so render it dimmed while you
+  // declare blocks. `attackingCreatures` is already scoped to attacks on the
+  // acting defender, so in a 2-player game this is never true.
+  const isBystanderAttacker = useGameStore((state) => {
+    if (!isInBlockerMode || !opponentForCombat) return false
+    if (combatState?.attackingCreatures.includes(card.id)) return false
+    const combat = (state.spectatingState?.gameState ?? state.gameState)?.combat
+    return combat?.attackers.some((a) => a.creatureId === card.id) ?? false
+  })
 
   // For attacker mode: check if this is an opponent's planeswalker that can be attacked
   const isValidPlaneswalkerTarget = isInAttackerMode && opponentForCombat && combatState.validAttackTargets.includes(card.id)
@@ -684,6 +694,19 @@ function GameCardImpl({
         const playerId = lifeEl.getAttribute('data-life-id')
         if (playerId) {
           setAttackTarget(draggingAttackerId, playerId as EntityId)
+          return
+        }
+      }
+
+      // Dropped anywhere on an opponent's board (the viewed board in multiplayer) or
+      // their rail chip → attack that player. Validated against the server's attack
+      // targets so a drop on a dead/invalid seat is a no-op.
+      const defenderEl = elementAtPoint.closest('[data-opponent-board], [data-rail-chip]')
+      if (defenderEl) {
+        const playerId = (defenderEl.getAttribute('data-opponent-board')
+          ?? defenderEl.getAttribute('data-rail-chip')) as EntityId | null
+        if (playerId && combatState?.validAttackTargets.includes(playerId)) {
+          setAttackTarget(draggingAttackerId, playerId)
         }
       }
     }
@@ -1150,7 +1173,7 @@ function GameCardImpl({
         boxShadow: card.isCommander && !faceDown
           ? `${boxShadow}, 0 0 6px 2px rgba(212, 175, 55, 0.6), 0 0 14px 4px rgba(212, 175, 55, 0.3)`
           : boxShadow,
-        opacity: isPhasedOut ? 0.4 : isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
+        opacity: isPhasedOut ? 0.4 : isBeingDragged ? 0.6 : isGhost ? 0.55 : isBystanderAttacker ? 0.45 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
         // Phased-out permanents (Rule 702.26) are treated as though they don't exist —
         // desaturate so they read as "not really there" while still showing the board slot.
         ...(isPhasedOut ? { filter: 'grayscale(0.7)' } : {}),
@@ -1415,6 +1438,13 @@ function GameCardImpl({
       {card.isPlotted && (
         <div style={styles.plottedBadge} title="Plotted (CR 718) — cast it for free on a later turn">
           Plotted
+        </div>
+      )}
+
+      {/* Prepared (Secrets of Strixhaven): a copy of this creature's prepare spell waits castable in exile */}
+      {card.isPrepared && (
+        <div style={styles.preparedBadge} title="Prepared (Secrets of Strixhaven) — cast a copy of its spell from exile; doing so unprepares it">
+          Prepared
         </div>
       )}
 

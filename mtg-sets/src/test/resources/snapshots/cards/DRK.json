@@ -21,6 +21,49 @@
     ]
 }
 
+// Fountain of Youth
+{
+    "name": "Fountain of Youth",
+    "manaCost": "{0}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: You gain 1 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Gelon",
+        "flavorText": "The Fountain had stood in the town square for centuries, but only the pigeons knew its secret.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b60eb23-cb9a-4203-86fb-60e47dbd870b.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Inferno
 {
     "name": "Inferno",

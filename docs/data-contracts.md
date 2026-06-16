@@ -129,6 +129,51 @@ Sent when the user interacts with the UI.
 }
 ```
 
+### B2. Persistent Yields (Client -> Server)
+
+MTGO-style per-ability yields (backlog §C). Keyed by the ability's **AbilityIdentity**
+(`cardDefinitionId` + `abilityId`), so a preference set once follows every current and future
+copy/instance of that card ability. The server applies the change to the immutable `GameState`
+(`yieldsByPlayer`), so it survives serialization and replays deterministically.
+
+```json
+{ "type": "setAbilityYield", "cardDefinitionId": "Soul Warden#ALA-25", "abilityId": "ability_42",
+  "kind": "ALWAYS_ANSWER_YES" }
+```
+
+`kind` ∈ `YIELD_UNTIL_END_OF_TURN` (auto-pass priority on this ability's stack objects until end of
+turn), `YIELD_WHOLE_GAME` (same, rest of game), `ALWAYS_ANSWER_YES` / `ALWAYS_ANSWER_NO`
+(auto-resolve the ability's optional "you may" may-question). Revoke with
+`{ "type": "clearAbilityYield", "cardDefinitionId": …, "abilityId": … }` or clear everything with
+`{ "type": "clearAllYields" }`.
+
+The viewer's own yields come back in the state update as `activeYields` (masked — a player never sees
+another player's yields), each `{ cardDefinitionId, abilityId, displayName, untilEndOfTurn,
+wholeGame, autoAnswer }`. A triggered/activated ability on the stack carries its `abilityIdentity`
+in its `ClientCard`, so the stack-item context menu can target it. When a yield auto-answers a
+may-question, the server emits an `abilityAutoAnswered` log event (shown only to the controller).
+
+### C. Connection Liveness (Client <-> Server)
+
+`{"type": "ping"}` (client) is always answered with `{"type": "pong"}` (server), regardless of
+authentication or game state. The client sends it when a backgrounded tab becomes visible while
+the socket still claims to be open: a socket can sit half-open after OS sleep without ever firing
+`close`, and a silent server (no message within 5s) tells the client to tear the socket down and
+reconnect. Any inbound message counts as proof of life, not just the pong.
+
+Related recovery contracts:
+
+- `{"type": "requestResync"}` (client) asks for a full `stateUpdate` instead of deltas — sent on
+  tab return and when a `stateVersion` gap is detected.
+- A `NOT_CONNECTED` error (server) means the socket is open but not associated with an
+  authenticated session (e.g. the server restarted). The client recovers by re-sending `connect`
+  with its stored token rather than surfacing the error.
+- `{"type": "sessionReplaced"}` (server) is sent to the *previous* socket when the same identity
+  (token) authenticates from a new socket — i.e. the player opened the game in another tab or
+  device. The server closes that socket right after sending; the receiving client stops all
+  auto-reconnect (reconnecting would steal the session straight back) and shows a takeover
+  overlay whose "Use here" button reclaims the session explicitly.
+
 ---
 
 ## 3. Drafting Payload (REST / HTTP)
@@ -160,6 +205,61 @@ Drafting is lower frequency, so standard HTTP JSON is used.
     ]
   }
 }
+
+## 3a. Set Catalog & Coverage (REST / HTTP)
+
+Set-level metadata for the deckbuilder, pickers, and the **Set Completion** view. Low frequency,
+plain HTTP JSON.
+
+**List sets** — `GET /api/sets` → `[{ "code", "name", "releaseDate" }]` (every catalogued set).
+**Booster-ready** — `GET /api/sets/booster-ready` → `[{ "setCode", "setName", "implementedCount", "incomplete" }]`
+(subset draftable for sealed/draft).
+
+**Set coverage** — `GET /api/sets/coverage` → per-set card-implementation coverage, newest release
+first. Powers the Set Completion grid (`/set-completion`). The headline `percent` is over the
+**booster (draft)** cards only — a set reads 100% once every boosterable card is implemented; the
+completionist extras are reported separately.
+
+```json
+[
+  { "code": "BLB", "name": "Bloomburrow", "releaseDate": "2024-08-02", "setType": "expansion",
+    "block": null, "implemented": 261, "total": 261, "extraImplemented": 18, "extraTotal": 18,
+    "percent": 100.0 }
+]
+```
+
+**Set detail** — `GET /api/sets/{code}/coverage` → one set's full canonical card list, split into
+`draft` / `extra`, each card marked. 404 if the code isn't a catalogued set with baked totals. Drives
+the click-through detail view.
+
+```json
+{ "code": "BLB", "name": "Bloomburrow", "releaseDate": "2024-08-02", "block": null,
+  "implemented": 261, "total": 261, "extraImplemented": 18, "extraTotal": 18, "percent": 100.0,
+  "draft": [{ "name": "Agate Assault", "implemented": true,
+              "imageUri": "https://cards.scryfall.io/normal/front/…jpg" }, ...],
+  "extra": [{ "name": "...", "implemented": false, "imageUri": "…" }, ...] }
+```
+
+**Implementation progress** — `GET /api/sets/progress` → the distinct-implemented-cards-over-time
+series (one cumulative point per calendar day since the project began), `[{ date, added, total }]`.
+Drives the chart behind the Set Completion overall-progress element. Git history isn't reachable at
+runtime, so `scripts/card-progress-graph` bakes the series (alongside the root
+`card-implementation-progress.html` + README SVG) into
+`game-server/.../resources/coverage/implementation-history.json`.
+
+The denominator (canonical booster + extra front-face card names) isn't knowable at runtime — it
+lives only in the local Scryfall cache. `scripts/gen-set-totals` bakes those canonical cards, split
+into `draft` (Scryfall `booster: true`) and `extra`, each `{ name, img }` (direct CDN art URL), into
+the committed `game-server/.../resources/coverage/set-totals.json` resource (same partitioning as
+`scripts/card-status`, so the numbers match the mtgish coverage TUI). Baking the art URL lets the
+detail view render set-specific images for *missing* cards too, without hammering the rate-limited
+Scryfall name-lookup API. At request time `SetCoverageService` joins that static denominator with the
+*live* card catalog: `implemented` is the count of a set's canonical names we've actually authored
+(`card` + `basicLand` + reprint `Printing` rows, front-faces) — an intersection, so it can never
+exceed the canonical count. A set with no booster (Commander / supplemental, every card
+`booster: false`) uses the whole set as the main pool, so its headline isn't a useless 0/0. Re-run
+`scripts/gen-set-totals` (after `scripts/card-status --refresh`) to refresh totals for new/spoiler
+sets.
 
 ## 3b. AI Assistance Payload (REST / HTTP)
 
@@ -205,6 +305,70 @@ The client splits `deckList` into non-land cards + basic-land counts and applies
 deckbuilder's `setDeck`. `lockedDeck` empty = build fresh; non-empty = keep those cards and only fill
 the rest (**heuristic** engine). The **draftsim** engine ignores `lockedDeck`/`targetSize` and always
 returns a fresh 40-card limited build (23 nonland + 17 lands), matching the original Auto-Build.
+
+## 3c. Free-for-All Lobby Mode (WebSocket)
+
+A lobby carries two orthogonal axes: the **format** (`SEALED` / `DRAFT` / `PREMADE_DECKS` / …,
+how the card pool is built) and a new **mode** (`gameMode`: `TOURNAMENT` or `FREE_FOR_ALL`, what
+happens once decks are in). `TOURNAMENT` runs the existing round-robin bracket of 2-player matches.
+`FREE_FOR_ALL` (CR 806) seats **every** lobby player (2–6) in **one** multiplayer `GameSession` —
+no rounds, no matches, no bracket. The two axes compose: any pool-building format + FFA = "draft (or
+sealed, or premade), then one N-player game".
+
+- **`CreateTournamentLobby` / `UpdateLobbySettings`** gain an optional `gameMode` (default
+  `TOURNAMENT`). `LobbySettings.gameMode` echoes it. Switching a lobby to `FREE_FOR_ALL` caps
+  `maxPlayers` at 6 and rejects AI seats (the built-in AI is 1v1-only; FFA pods are humans-only).
+  `TWO_HEADED_GIANT` and `TEAM_VS_TEAM` are the two **team** modes (see below); both also reject AI
+  seats and share the single-pod FFA lifecycle (one `GameSession`, play-again, standings).
+- **Attack rule.** The same two messages also carry an optional `attackMode` (default `MULTIPLE`),
+  echoed by `LobbySettings.attackMode`, choosing which opponents creatures may attack in the FFA
+  game (CR 802 / 803; CR 806.2b requires exactly one): `MULTIPLE` (any opponent), `LEFT`, or
+  `RIGHT` (only the neighbour in that seat direction). It threads to the engine via
+  `GameConfig.attackMode` → `GameState.attackMode`; the legal-action enumerator filters
+  `validAttackTargets` and the engine rejects an out-of-seat declaration. Ignored in `TOURNAMENT`
+  mode and in any two-player game (all three modes permit the sole opponent).
+- **Team modes — Two-Headed Giant (CR 810) and Team vs. Team (CR 808).** Both split the pod into two
+  even teams and share the same controls: an optional `randomTeams` (default **`true`**) and
+  `teamAssignments` (playerId → team index `0`/`1`, full map), echoed by `LobbySettings`.
+  `randomTeams = true` shuffles the seats into two even teams at game start, re-rolled each game;
+  `false` uses the host's `teamAssignments`. At start the server resolves the partition
+  (`EvenTeams.partition`): random, or the manual map balanced into even teams, falling back to
+  seat-order grouping if the manual assignment can't form two equal teams. The result flows to
+  `GameSession.teams` → `GameConfig.teams`. The two modes differ only in the engine `Format` chosen:
+  - `TWO_HEADED_GIANT` — exactly four players (`Format.TwoHeadedGiant`): teams share one 30-life
+    total, take shared turns, fight combined combat, and win/lose together.
+  - `TEAM_VS_TEAM` — an even pod of 4/6/8 (`Format.TeamVsTeam`, i.e. 2v2/3v3/4v4): **nothing is
+    shared** (CR 808.5). Each player keeps their own 20 life and their own turn, is eliminated
+    individually (CR 104.3b), and a team loses only once all its members have left (CR 104.2c).
+    `maxPlayers` caps at 8.
+
+  The seat roster (`PlayerSeatInfo`) carries `teamIndex` for grouping and a game-level
+  `teamSharedLife` flag (`true` for 2HG, `false` for Team vs. Team) so the client renders either a
+  single shared-life team header or per-player life. Ignored outside a team mode.
+- **Free mulligan.** A game that begins with more than two players (any FFA pod) uses the CR 800.6
+  multiplayer mulligan: a player's *first* mulligan is free — it bottoms 0 cards and doesn't count
+  toward the mulligan limit. This is engine-internal; the existing `MulliganDecision.cardsToPutOnBottom`
+  already reflects the discounted count, so no client change is needed. Two-player games are
+  unaffected (plain London Mulligan).
+- **Start.** When the last deck is submitted (or the host starts a premade FFA lobby), the server
+  creates one `GameSession` seating all players and broadcasts **`freeForAllGameStarting`**
+  `{ lobbyId, gameSessionId, gameNumber, players: PlayerSeatInfo[] }` — the FFA counterpart of
+  `tournamentMatchStarting`. Each recipient's roster flags its own seat (`isYou`); spectators get an
+  all-`isYou=false` roster. `GameStarted` + the mulligan flow follow exactly as in any game.
+- **Mid-game elimination.** Conceding (or a disconnect-forfeit) in a >2 pod concedes that seat and
+  the game **continues** for the rest (CR 800.4a). The conceding player gets a personal
+  **`playerEliminated`** `{ gameId, reason }` so their client shows defeat and returns to the pod
+  standings while the table plays on; everyone else sees the seat drop out via the normal state
+  rebroadcast (the eliminated player's `ClientPlayer.hasLost` is `true`). The game-wide `gameOver`
+  only fires when ≤1 player remains (CR 104.2a).
+- **Standings + play-again.** When the game ends, **`freeForAllGameComplete`**
+  `{ lobbyId, standings: FfaStandingInfo[], gamesPlayed }` reports the **elimination order** as
+  placements (`placement` 1 = winner, then last-eliminated, … back to first-eliminated). The pod
+  stays open: each player sends `readyForNextRound` ("Play Again") and, when all connected players
+  are ready, a new game (`gameNumber + 1`) starts with the same seats. Replays are saved per game as
+  usual and browsable via the lobby's replay endpoint.
+- Quick Game stays strictly 2-player (its `QuickGameLobby.MAX_PLAYERS` is untouched); FFA lives only
+  in the tournament-lobby infrastructure.
 
 ## 4. Scenario Builder Payload (REST / HTTP)
 

@@ -28,6 +28,8 @@ class FacadeBoundaryTest : FunSpec({
         Regex("""\bForEachInGroupEffect\s*\(""") to "Effects.ForEachInGroup(...)",
         Regex("""\bAdditionalCost\.[A-Z]""") to "Costs.additional.*",
         Regex("""\bPayCost\.[A-Z]""") to "Costs.pay.*",
+        Regex("""(?<!Conditions\.)\bEntityMatches\s*\(""") to
+            "Conditions.EntityMatches(...) (or Conditions.SourceMatches/TargetMatchesFilter/…)",
     )
 
     test("card definitions construct effects/costs via the Effects/Costs facades, not raw types") {

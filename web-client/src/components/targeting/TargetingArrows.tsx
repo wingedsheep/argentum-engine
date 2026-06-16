@@ -163,15 +163,32 @@ function findParentHost(cardId: EntityId, gameState: ClientGameState | null): En
 }
 
 /**
+ * Multiplayer: a card on a slid-away opponent board has an off-viewport anchor —
+ * remap it to its controller's rail chip (which carries `data-player-id`) so the
+ * arrow says "whose spell, at whom" instead of pointing off the screen edge.
+ * In a 2-player game nothing is off-screen and this is a no-op.
+ */
+function remapOffscreenAnchor(p: Point, cardId: EntityId, gameState: ClientGameState | null): Point {
+  if (!gameState || gameState.players.length <= 2) return p
+  if (p.x >= -4 && p.x <= window.innerWidth + 4) return p
+  const controller = gameState.cards[cardId]?.controllerId
+  if (!controller) return p
+  return getPlayerCenter(controller) ?? p
+}
+
+/**
  * Resolve a card to an arrow anchor point. Falls back to the card's parent host when the
  * attachment/linked-exile is collapsed and not rendered directly in the DOM — without the
  * fallback, arrows silently drop for targets inside a collapsed stack.
  */
 function resolveCardAnchor(cardId: EntityId, gameState: ClientGameState | null): Point | null {
   const direct = getCardCenter(cardId)
-  if (direct) return direct
+  if (direct) return remapOffscreenAnchor(direct, cardId, gameState)
   const parentId = findParentHost(cardId, gameState)
-  if (parentId) return getCardCenter(parentId)
+  if (parentId) {
+    const parent = getCardCenter(parentId)
+    if (parent) return remapOffscreenAnchor(parent, parentId, gameState)
+  }
   return null
 }
 
@@ -242,7 +259,8 @@ export function TargetingArrows() {
   const stackCards = useStackCards()
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const lastDamageDistribution = useGameStore((state) => state.lastDamageDistribution)
-  const gameState = useGameStore((state) => state.gameState)
+  // Spectator-aware: anchors must resolve against the state being rendered.
+  const gameState = useGameStore((state) => state.spectatingState?.gameState ?? state.gameState)
   const [arrows, setArrows] = useState<TargetArrow[]>([])
 
   // Hide arrows during full-screen overlay decisions (e.g., ChooseColorDecision)

@@ -113,6 +113,14 @@ class RawTerminal {
         }
     }
 
+    /**
+     * Discard any input bytes already sitting in the buffer. Used to drop a key-repeat backlog once a
+     * held scroll key has hit the top/bottom of a list, so the next real keypress isn't queued behind it.
+     */
+    fun drainInput() {
+        while (System.`in`.available() > 0) System.`in`.read()
+    }
+
     /** ESC was read; an arrow/nav key follows immediately, a lone ESC means "back". */
     private fun readEscape(): Key {
         Thread.sleep(2) // give the rest of the sequence time to arrive in the input buffer

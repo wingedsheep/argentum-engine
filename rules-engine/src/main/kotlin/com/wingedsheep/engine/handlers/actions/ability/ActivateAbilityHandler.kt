@@ -103,6 +103,13 @@ class ActivateAbilityHandler(
 ) : ActionHandler<ActivateAbility> {
     override val actionType: KClass<ActivateAbility> = ActivateAbility::class
 
+    /** The first [CostAtom.TapPermanents] atom anywhere in this cost, or null if it has none. */
+    private fun AbilityCost.firstTapPermanentsAtomOrNull(): CostAtom.TapPermanents? = when (this) {
+        is AbilityCost.Atom -> atom as? CostAtom.TapPermanents
+        is AbilityCost.Composite -> costs.firstNotNullOfOrNull { it.firstTapPermanentsAtomOrNull() }
+        else -> null
+    }
+
     override fun validate(state: GameState, action: ActivateAbility): String? {
         // `opponentTargetsChosen` is an internal resume marker for "… of an opponent's choice"
         // targets (Cuombajj Witches). Only the engine's resumer sets it, and the resumer re-enters
@@ -204,6 +211,30 @@ class ActivateAbilityHandler(
             ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
         } else {
             ability.targetRequirements
+        }
+
+        // Station-style multi-select batch (CR 702.184a): repeatCount > 1 over a tap-permanents
+        // cost means "queue one activation per chosen creature". Validate the batch is well-formed
+        // so a malformed action can't, e.g., tap one creature for three activations or reuse the
+        // same creature twice. Per-creature legality (untapped/controlled/filter) is re-checked at
+        // payment time in CostHandler.payTapPermanents for every slice.
+        if (action.repeatCount > 1) {
+            val tapAtom = effectiveCost.firstTapPermanentsAtomOrNull()
+            if (tapAtom != null) {
+                if (tapAtom.count != 1) {
+                    return "Batch activation is only supported for single-creature tap costs"
+                }
+                if (effectiveTargetReqs.isNotEmpty()) {
+                    return "Batch activation is not supported for abilities that require targets"
+                }
+                val tapped = action.costPayment?.tappedPermanents ?: emptyList()
+                if (tapped.size != action.repeatCount) {
+                    return "Batch tap-cost activation needs ${action.repeatCount} creatures, got ${tapped.size}"
+                }
+                if (tapped.toSet().size != tapped.size) {
+                    return "Cannot tap the same creature for more than one activation"
+                }
+            }
         }
 
         // Check timing for planeswalker abilities
@@ -361,7 +392,13 @@ class ActivateAbilityHandler(
                 return targetError
             }
         } else if (controllerTargetReqs.isNotEmpty() && action.targets.isEmpty()) {
-            return "This ability requires a target"
+            // An empty target list is only illegal when at least one controller-chosen
+            // requirement is mandatory. For an ability whose controller targets are all
+            // optional ("up to one target …", e.g. Boom Box), choosing no targets is a
+            // legal activation, so don't reject it here.
+            if (controllerTargetReqs.any { it.effectiveMinCount > 0 }) {
+                return "This ability requires a target"
+            }
         }
 
         return null
@@ -541,6 +578,63 @@ class ActivateAbilityHandler(
             }
         }
 
+        // -------------------------------------------------------------------
+        // Sacrifice cost-choice pause (legal-actions submission path).
+        //
+        // When the cost is `Sacrifice(filter, count, excludeSelf)` (Sage of
+        // Lat-Nam: "{T}, Sacrifice an artifact: Draw a card", Atog, Ashnod's
+        // Altar, …) and the player controls more matching permanents than the
+        // count, this is a real choice — the engine must pause and ask which
+        // permanent(s) to sacrifice, not fail with "Not enough sacrifice
+        // targets chosen" (an AI submitting a bare ActivateAbility with no
+        // sacrifice chosen would otherwise spin forever).
+        //
+        // Skipped when `sacrificedPermanents` is already pre-filled
+        // (engine-direct path and resumed-replay case) or when candidates <=
+        // count (no real choice — Part 2 / CostHandler auto-picks). Mirrors the
+        // ExileFromGraveyard pause block above.
+        // -------------------------------------------------------------------
+        val sacrificeCost = extractSacrificeCost(effectiveCost)
+        val alreadySacrificing = (action.costPayment?.sacrificedPermanents?.isNotEmpty() == true)
+        if (sacrificeCost != null && !alreadySacrificing) {
+            val sacrificeCandidates = costHandler
+                .findMatchingCardsUnified(state, state.getBattlefield(action.playerId), sacrificeCost.filter, action.playerId)
+                .let { if (sacrificeCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
+            if (sacrificeCandidates.size > sacrificeCost.count) {
+                val decisionId = java.util.UUID.randomUUID().toString()
+                val prompt = "Select ${sacrificeCost.count} permanent${if (sacrificeCost.count > 1) "s" else ""} to sacrifice for ${cardComponent.name}"
+                val decision = com.wingedsheep.engine.core.SelectCardsDecision(
+                    id = decisionId,
+                    playerId = action.playerId,
+                    prompt = prompt,
+                    context = com.wingedsheep.engine.core.DecisionContext(
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                    ),
+                    options = sacrificeCandidates,
+                    minSelections = sacrificeCost.count,
+                    maxSelections = sacrificeCost.count
+                )
+                val continuation = com.wingedsheep.engine.core.ActivateAbilitySacrificeContinuation(
+                    decisionId = decisionId,
+                    action = action,
+                    sacrificeCandidates = sacrificeCandidates,
+                    sacrificeCount = sacrificeCost.count
+                )
+                val pausedState = state
+                    .withPendingDecision(decision)
+                    .pushContinuation(continuation)
+                val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = action.playerId,
+                    decisionType = "SELECT_CARDS",
+                    prompt = prompt
+                )
+                return ExecutionResult.paused(pausedState, decision, listOf(event))
+            }
+        }
+
         val executeAbilityContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId)
 
         var currentState = state
@@ -627,12 +721,26 @@ class ActivateAbilityHandler(
             }
         }
 
+        // Station-style multi-select batch (CR 702.184a): when repeatCount > 1 over a single-
+        // creature tap cost, `tappedPermanents` holds one creature per queued activation. Each
+        // activation taps exactly its own creature, so slice the list — this activation gets the
+        // first creature; the repeat loop below consumes the rest one at a time. For every other
+        // ability (no tap cost, or repeatCount == 1) the slice is the whole list, unchanged.
+        val tapBatchAtom = if (action.repeatCount > 1) effectiveCost.firstTapPermanentsAtomOrNull() else null
+        val isTapBatch = tapBatchAtom != null && tapBatchAtom.count == 1 &&
+            (action.costPayment?.tappedPermanents?.size ?: 0) == action.repeatCount
+        val firstTapSlice = if (isTapBatch) {
+            listOf(action.costPayment!!.tappedPermanents.first())
+        } else {
+            action.costPayment?.tappedPermanents ?: emptyList()
+        }
+
         // Build cost payment choices from the action
         val costChoices = CostPaymentChoices(
             sacrificeChoices = action.costPayment?.sacrificedPermanents ?: emptyList(),
             discardChoices = action.costPayment?.discardedCards ?: emptyList(),
             exileChoices = action.costPayment?.exiledCards ?: emptyList(),
-            tapChoices = action.costPayment?.tappedPermanents ?: emptyList(),
+            tapChoices = firstTapSlice,
             bounceChoices = action.costPayment?.bouncedPermanents ?: emptyList(),
             xValue = xValue,
             counterRemovalChoices = action.costPayment?.counterRemovals ?: emptyMap(),
@@ -647,7 +755,7 @@ class ActivateAbilityHandler(
 
         // Mirror sacrifice snapshots for tapped-as-cost permanents — they may leave the
         // battlefield in response while the ability is on the stack.
-        val tappedTargetIds = action.costPayment?.tappedPermanents ?: emptyList()
+        val tappedTargetIds = firstTapSlice
         val tappedSnapshots = capturePermanentSnapshots(tappedTargetIds, currentState.projectedState)
 
         // When using Explicit payment, mana sources were already tapped above —
@@ -845,11 +953,9 @@ class ActivateAbilityHandler(
                     else -> finalEffect
                 }
             }
-            val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
             val context = EffectContext(
                 sourceId = action.sourceId,
                 controllerId = action.playerId,
-                opponentId = opponentId,
                 targets = action.targets,
                 // Thread the chosen X so X-based mana abilities produce the right amount
                 // ("{X}, {T}, Sacrifice this: Add X mana..." — Wizard's Rockets). Without
@@ -1098,9 +1204,12 @@ class ActivateAbilityHandler(
             effect = finalEffect,
             sacrificedPermanents = sacrificedSnapshots,
             xValue = action.xValue,
-            tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList(),
+            tappedPermanents = firstTapSlice,
             tappedPermanentSnapshots = tappedSnapshots,
-            descriptionOverride = ability.descriptionOverride
+            descriptionOverride = ability.descriptionOverride,
+            abilityIdentity = com.wingedsheep.sdk.scripting.AbilityIdentity(
+                cardComponent.cardDefinitionId, ability.id
+            )
         )
 
         // Apply text-changing effects to the target requirements for resolution-time re-validation
@@ -1141,9 +1250,17 @@ class ActivateAbilityHandler(
                     events.addAll(autoTapResult.events)
                 }
 
+                // Station-style batch: this activation taps the i-th chosen creature (1-indexed
+                // list, so iteration `i` consumes element `i - 1`). Other repeatable abilities
+                // (mana-only) carry no tap choices, so the slice is empty and the cost re-pays from
+                // mana as before. Snapshot the creature before it's tapped (Rule 112.7a) so
+                // DynamicAmount.StationCharge reads its power off this instance's own snapshot.
+                val repeatTapSlice = if (isTapBatch) listOf(action.costPayment!!.tappedPermanents[i - 1]) else emptyList()
+                val repeatTapSnapshots = capturePermanentSnapshots(repeatTapSlice, currentState.projectedState)
+
                 // Pay the cost
                 val repeatCostResult = costHandler.payAbilityCost(
-                    currentState, effectiveCost, action.sourceId, action.playerId, repeatPool, CostPaymentChoices(), executeAbilityContext
+                    currentState, effectiveCost, action.sourceId, action.playerId, repeatPool, CostPaymentChoices(tapChoices = repeatTapSlice), executeAbilityContext
                 )
                 if (!repeatCostResult.success) break // Can't pay — stop early
 
@@ -1171,8 +1288,12 @@ class ActivateAbilityHandler(
                     effect = finalEffect,
                     sacrificedPermanents = emptyList(),
                     xValue = action.xValue,
-                    tappedPermanents = emptyList(),
-                    descriptionOverride = ability.descriptionOverride
+                    tappedPermanents = repeatTapSlice,
+                    tappedPermanentSnapshots = repeatTapSnapshots,
+                    descriptionOverride = ability.descriptionOverride,
+                    abilityIdentity = com.wingedsheep.sdk.scripting.AbilityIdentity(
+                        cardComponent.cardDefinitionId, ability.id
+                    )
                 )
                 val repeatStackResult = stackResolver.putActivatedAbility(
                     currentState, repeatAbilityOnStack, action.targets,
@@ -1370,7 +1491,6 @@ class ActivateAbilityHandler(
         val reductionContext = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = null,
             targets = targets
         )
         val amount = DynamicAmountEvaluator().evaluate(state, reduction, reductionContext)
@@ -1552,7 +1672,8 @@ class ActivateAbilityHandler(
         return when (restriction) {
             is ActivationRestriction.AnyPlayerMay -> null // Not a restriction; handled in validate()
             is ActivationRestriction.OnlyDuringYourTurn -> {
-                if (state.activePlayerId != playerId) "This ability can only be activated during your turn"
+                // CR 805.5a — "your turn" is the active team's turn in Two-Headed Giant.
+                if (!state.isActiveTurnFor(playerId)) "This ability can only be activated during your turn"
                 else null
             }
             is ActivationRestriction.BeforeStep -> {
@@ -1571,11 +1692,9 @@ class ActivateAbilityHandler(
                 else null
             }
             is ActivationRestriction.OnlyIfCondition -> {
-                val opponentId = state.turnOrder.firstOrNull { it != playerId }
                 val context = EffectContext(
                     sourceId = sourceId,
                     controllerId = playerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = 0
                 )
@@ -1759,12 +1878,10 @@ class ActivateAbilityHandler(
                 // The controller of the enchanted land gets the mana
                 val landController = currentState.getEntity(sourceId)
                     ?.get<ControllerComponent>()?.playerId ?: controllerId
-                val opponentId = currentState.turnOrder.firstOrNull { it != landController }
 
                 val context = EffectContext(
                     sourceId = entityId,
                     controllerId = landController,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = null
                 )
@@ -1863,11 +1980,9 @@ class ActivateAbilityHandler(
                         currentState, currentState.projectedState, sourceId, onSourceTap.sourceFilter, filterContext
                     )) continue
 
-                val opponentId = currentState.turnOrder.firstOrNull { it != tappingPlayerId }
                 val effectContext = EffectContext(
                     sourceId = entityId,
                     controllerId = tappingPlayerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = null
                 )
@@ -2125,6 +2240,20 @@ class ActivateAbilityHandler(
         is AbilityCost.Atom -> (cost.atom as? CostAtom.ExileFrom)?.takeIf { it.zone == Zone.GRAVEYARD }
         is AbilityCost.Composite -> cost.costs.firstNotNullOfOrNull {
             ((it as? AbilityCost.Atom)?.atom as? CostAtom.ExileFrom)?.takeIf { ex -> ex.zone == Zone.GRAVEYARD }
+        }
+        else -> null
+    }
+
+    /**
+     * Pull the [CostAtom.Sacrifice] sub-cost out of an ability cost (top-level [AbilityCost.Atom] or
+     * inside a [AbilityCost.Composite]), or null if none. Used by the legal-actions submission path
+     * to detect that an activation needs to pause for a sacrifice-target selection when the player
+     * controls more matching permanents than the cost requires (Sage of Lat-Nam, Atog, …).
+     */
+    private fun extractSacrificeCost(cost: AbilityCost): CostAtom.Sacrifice? = when (cost) {
+        is AbilityCost.Atom -> cost.atom as? CostAtom.Sacrifice
+        is AbilityCost.Composite -> cost.costs.firstNotNullOfOrNull {
+            (it as? AbilityCost.Atom)?.atom as? CostAtom.Sacrifice
         }
         else -> null
     }

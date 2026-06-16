@@ -32,6 +32,7 @@ class LibraryExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         ShuffleLibraryExecutor(),
         GrantMayPlayFromExileExecutor(),
+        MakePlottedExecutor(),
         GrantPlayWithoutPayingCostExecutor(),
         GrantPlayWithCostIncreaseExecutor(),
         GrantPlayWithAdditionalCostExecutor(),

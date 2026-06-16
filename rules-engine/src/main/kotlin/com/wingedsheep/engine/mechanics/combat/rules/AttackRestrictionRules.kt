@@ -41,8 +41,12 @@ class MustBeCreatureAttackRule : AttackRestrictionRule {
  */
 class ControlledByAttackerRule : AttackRestrictionRule {
     override fun check(ctx: AttackCheckContext): String? {
+        // CR 805.10b — under shared team turns the attacking team's combined attack may include
+        // creatures controlled by any active-team member, so accept control by any teammate. Without
+        // shared team turns (Team vs. Team — CR 808.4, non-team games) only the active player attacks
+        // on their own turn, so sharedTurnTeam collapses to just the declaring player.
         val controller = ctx.projected.getController(ctx.attackerId)
-        if (controller != ctx.attackingPlayer) {
+        if (controller == null || controller !in ctx.state.sharedTurnTeam(ctx.attackingPlayer)) {
             val name = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
             return "You don't control $name"
         }
@@ -95,7 +99,7 @@ class DefenderAttackRule : AttackRestrictionRule {
         val cardComp = container.get<CardComponent>() ?: return errorMsg(ctx)
         val cardDef = ctx.cardRegistry.getCard(cardComp.cardDefinitionId) ?: return errorMsg(ctx)
 
-        val effectContext = EffectContext(sourceId = ctx.attackerId, controllerId = ctx.attackingPlayer, opponentId = null)
+        val effectContext = EffectContext(sourceId = ctx.attackerId, controllerId = ctx.attackingPlayer)
         val canAttackDespite = cardDef.staticAbilities
             .filterIsInstance<CanAttackDespiteDefender>()
             .filter { it.filter.scope is Scope.Self }
@@ -167,7 +171,6 @@ class CantAttackUnlessDefenderRule : AttackDefenderRule {
         val effectContext = EffectContext(
             sourceId = ctx.attackerId,
             controllerId = ctx.attackingPlayer,
-            opponentId = defendingPlayer
         )
         if (!conditionEvaluator.evaluate(ctx.state, restriction.condition, effectContext)) {
             return "${cardComponent.name} ${restriction.description}"
@@ -225,6 +228,30 @@ class CantBeAttackedWithoutDefenderRule : AttackDefenderRule {
     }
 }
 
+/**
+ * AttackMode (CR 802 / 803): when the game uses attack-left or attack-right, a creature may only
+ * attack the opponent in the adjacent seat (or a planeswalker/battle that opponent controls). The
+ * set of legal opponents is computed centrally by
+ * [com.wingedsheep.engine.mechanics.combat.CombatDefenders.legalDefendingPlayers], so this rule and
+ * the legal-action enumerator never disagree. A no-op under [com.wingedsheep.sdk.core.AttackMode.MULTIPLE]
+ * (and in any two-player game, where every mode permits the sole opponent).
+ */
+class AttackModeDefenderRule : AttackDefenderRule {
+    override fun check(ctx: AttackCheckContext, defenderId: EntityId): String? {
+        if (ctx.state.attackMode == com.wingedsheep.sdk.core.AttackMode.MULTIPLE) return null
+        val defendingPlayer = findDefendingPlayer(ctx, defenderId)
+        val legal = com.wingedsheep.engine.mechanics.combat.CombatDefenders
+            .legalDefendingPlayers(ctx.state, ctx.attackingPlayer)
+        if (defendingPlayer in legal) return null
+        val side = when (ctx.state.attackMode) {
+            com.wingedsheep.sdk.core.AttackMode.LEFT -> "the player to your left"
+            com.wingedsheep.sdk.core.AttackMode.RIGHT -> "the player to your right"
+            com.wingedsheep.sdk.core.AttackMode.MULTIPLE -> "an eligible player"
+        }
+        return "Can only attack $side"
+    }
+}
+
 // =========================================================================
 // Shared helpers
 // =========================================================================
@@ -252,5 +279,6 @@ fun defaultAttackRestrictionRules(): List<AttackRestrictionRule> = listOf(
 
 fun defaultAttackDefenderRules(): List<AttackDefenderRule> = listOf(
     CantAttackUnlessDefenderRule(),
-    CantBeAttackedWithoutDefenderRule()
+    CantBeAttackedWithoutDefenderRule(),
+    AttackModeDefenderRule()
 )

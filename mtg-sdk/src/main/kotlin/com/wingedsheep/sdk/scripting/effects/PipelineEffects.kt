@@ -215,6 +215,22 @@ sealed interface CardSource {
     data object LastKnownCombatPairedWithSource : CardSource {
         override val description: String = "creatures blocking or blocked by it"
     }
+
+    /**
+     * The creatures that saddled the effect's source this turn (CR 702.171c) — the union of every
+     * creature tapped to pay a Saddle ability's cost on this Mount, read off the source's
+     * `CrewSaddleContributorsComponent`. Restricted to creatures still on the battlefield, since a
+     * saddler that has since left can't be affected (the component records last-known crew/saddle
+     * contributors and is cleared at cleanup).
+     *
+     * Backs "exile … up to one creature that saddled it this turn" (Fortune, Loyal Steed): gather
+     * the saddlers, then [SelectFromCollectionEffect] picks up to one of them.
+     */
+    @SerialName("CreaturesThatSaddledSource")
+    @Serializable
+    data object CreaturesThatSaddledSource : CardSource {
+        override val description: String = "creatures that saddled it this turn"
+    }
 }
 
 /**
@@ -409,6 +425,27 @@ sealed interface SelectionRestriction {
     }
 
     /**
+     * Allows a selection to satisfy a lower minimum when the chosen cards include
+     * [requiredMatches] cards matching [filter]. This models "discard two cards unless
+     * you discard a creature card" as a single selection: normally two cards are
+     * required, but one selected creature card is enough.
+     *
+     * The executor computes the matching option IDs when it creates the decision;
+     * SubmitDecision validation then rejects a response that uses the lower count
+     * without including enough matching cards.
+     */
+    @SerialName("ReducedMinimumIfMatches")
+    @Serializable
+    data class ReducedMinimumIfMatches(
+        val reducedMinimum: Int,
+        val filter: GameObjectFilter,
+        val requiredMatches: Int = 1
+    ) : SelectionRestriction {
+        override val description: String =
+            "may select as few as $reducedMinimum if selecting $requiredMatches ${filter.description} card(s)"
+    }
+
+    /**
      * The selection is capped at the number of cards [payer] can afford to pay
      * [manaPerSelected] generic mana for: `floor(availableMana / manaPerSelected)`,
      * where available mana counts floating mana plus untapped sources. Pair it with
@@ -543,7 +580,7 @@ data class CaptureControllersEffect(
     val from: String,
     val storeAs: String
 ) : Effect {
-    override val description: String = "Capture the controllers of the $from cards"
+    override val description: String = "Capture the controllers of those cards"
 }
 
 /**
@@ -589,7 +626,7 @@ data class ForEachCapturedControllerEffect(
     val effects: List<Effect>
 ) : Effect {
     override val description: String = buildString {
-        append("For each player who controlled at least one of the $collection cards, ")
+        append("For each player who controlled at least one of those cards, ")
         append(effects.joinToString(". ") { it.description.replaceFirstChar { c -> c.lowercase() } })
     }
 
@@ -622,7 +659,7 @@ data class GatherSubtypesEffect(
     val from: String,
     val storeAs: String
 ) : Effect {
-    override val description: String = "gather subtypes of the $from entities"
+    override val description: String = "gather subtypes of those cards"
 }
 
 /**
@@ -685,7 +722,7 @@ data class RevealCollectionEffect(
     val fromZone: com.wingedsheep.sdk.core.Zone? = null,
     val toZone: com.wingedsheep.sdk.core.Zone? = null
 ) : Effect {
-    override val description: String = "Reveal the $from cards"
+    override val description: String = "Reveal those cards"
 }
 
 /**
@@ -748,7 +785,7 @@ data class SelectFromCollectionEffect(
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")
         append(selection.description.replaceFirstChar { it.uppercase() })
-        append(" from the $from cards")
+        append(" of those cards")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
@@ -863,8 +900,10 @@ data class MoveCollectionEffect(
     val markEnteredViaSourceAbility: Boolean = false
 ) : Effect {
     override val description: String = buildString {
-        if (revealed) append("Reveal and put") else append("Put")
-        append(" the $from cards ")
+        if (revealed) append("Reveal and put ") else append("Put ")
+        append("those cards ")
+        // `from` is an internal pipeline-collection key — never surface it to players.
+        append(if ((destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD) "onto " else "into ")
         append(destination.description)
     }
 }
@@ -1059,7 +1098,7 @@ data class GrantMayPlayFromExileEffect(
     val landEntersTapped: Boolean = false
 ) : Effect {
     override val description: String = buildString {
-        append("${expiry.description.replaceFirstChar { it.uppercase() }}, you may play the $from cards from exile")
+        append("${expiry.description.replaceFirstChar { it.uppercase() }}, you may play those cards from exile")
         if (condition != null) {
             append(" ")
             append(condition.description)
@@ -1067,6 +1106,36 @@ data class GrantMayPlayFromExileEffect(
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
         if (landEntersTapped) append(". Each land played this way enters tapped")
     }
+}
+
+/**
+ * Make every card in a named collection *plotted* (CR 718, Outlaws of Thunder Junction).
+ * The cards must already be in exile (chain after a [MoveCollectionEffect] to `Zone.EXILE`).
+ *
+ * For each card this stamps the plotted designation and grants a permanent "cast as a sorcery
+ * without paying its mana cost on a later turn" permission — the same state the Plot keyword's
+ * special action produces, expressed as an effect so cards like Make Your Own Luck ("you may
+ * exile a nonland card … it becomes plotted") can plot a card without the plot ability. Emits a
+ * `CardPlottedEvent` per card so "when this card becomes plotted" triggers fire.
+ *
+ * Unlike the Plot keyword, the source card need not itself have plot, and there is no plot cost
+ * to pay — the exile + selection is performed by the preceding pipeline steps.
+ *
+ * @property from Name of the collection containing the already-exiled card(s) to plot.
+ * @property ownerControls When true, the free-cast permission is granted to each card's *owner*
+ *   rather than the effect's controller. Use this for "exile target spell, it becomes plotted"
+ *   (Aven Interrupter), where the plotted card's owner — not the player who plotted it — may
+ *   later cast it (the card's own reminder text: "Its owner may cast it as a sorcery on a later
+ *   turn without paying its mana cost"). Defaults to controller-controls, matching the Plot
+ *   keyword and effects like Make Your Own Luck where you plot a card you own.
+ */
+@SerialName("MakePlotted")
+@Serializable
+data class MakePlottedEffect(
+    val from: String,
+    val ownerControls: Boolean = false
+) : Effect {
+    override val description: String = "Those cards become plotted"
 }
 
 /**
@@ -1101,11 +1170,11 @@ data class ConditionalOnCollectionEffect(
     override val description: String = buildString {
         val restrict = if (filter == GameObjectFilter.Companion.Any) "" else " ${filter.description}"
         if (minSize <= 1) {
-            append("If $collection contains a$restrict card, ")
+            append("If those cards include a$restrict card, ")
         } else if (countDistinctCardTypes) {
-            append("If $collection covers at least $minSize card types, ")
+            append("If those cards cover at least $minSize card types, ")
         } else {
-            append("If $collection has at least $minSize$restrict cards, ")
+            append("If those cards include at least $minSize$restrict cards, ")
         }
         append(ifNotEmpty.description.replaceFirstChar { it.lowercase() })
         if (ifEmpty != null) {
@@ -1138,7 +1207,7 @@ data class GrantPlayWithoutPayingCostEffect(
     val from: String
 ) : Effect {
     override val description: String =
-        "Until end of turn, you may play the $from cards without paying their mana costs"
+        "Until end of turn, you may play those cards without paying their mana costs"
 }
 
 /**
@@ -1160,7 +1229,7 @@ data class GrantPlayWithAdditionalCostEffect(
     val additionalCost: AdditionalCost
 ) : Effect {
     override val description: String =
-        "Until end of turn, casting the $from cards requires: ${additionalCost.description}"
+        "Until end of turn, casting those cards requires: ${additionalCost.description}"
 }
 
 /**
@@ -1184,7 +1253,7 @@ data class GrantPlayWithCostIncreaseEffect(
     val amount: Int
 ) : Effect {
     override val description: String =
-        "Each spell cast from $from costs {$amount} more to cast"
+        "Each of those spells costs {$amount} more to cast"
 }
 
 /**
@@ -1368,7 +1437,7 @@ data class FilterCollectionEffect(
     val storeMatching: String,
     val storeNonMatching: String? = null
 ) : Effect {
-    override val description: String = "Filter $from collection"
+    override val description: String = "Filter those cards"
 }
 
 /**
@@ -1387,7 +1456,7 @@ data class StoreNumberEffect(
     val name: String,
     val amount: DynamicAmount
 ) : Effect {
-    override val description: String = "Store ${amount.description} as $name"
+    override val description: String = "Note ${amount.description}"
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newAmount = amount.applyTextReplacement(replacer)
         return if (newAmount !== amount) copy(amount = newAmount) else this
@@ -1414,5 +1483,5 @@ data class StoreCardNameEffect(
     val from: String,
     val storeAs: String = "chosenCardName"
 ) : Effect {
-    override val description: String = "Note the name of the $from card"
+    override val description: String = "Note the name of that card"
 }

@@ -39,10 +39,13 @@ val RiskyMove = card("Risky Move") {
     triggeredAbility {
         trigger = Triggers.GainControlOfSelf
         val t = target("target", Targets.CreatureYouControl)
+        // "Choose ... an opponent" is a non-targeted choice; until the multiplayer
+        // choose-an-opponent flow exists (backlog/multiplayer.md), AnOpponent resolves
+        // to the first opponent in turn order — exact in two-player games.
         effect = FlipCoinEffect(
             lostEffect = GiveControlToTargetPlayerEffect(
                 permanent = t,
-                newController = EffectTarget.PlayerRef(Player.Opponent)
+                newController = EffectTarget.PlayerRef(Player.AnOpponent)
             )
         )
     }

@@ -198,6 +198,21 @@ sealed interface EffectTarget {
     }
 
     /**
+     * ATTACHED-TO TRIGGERING PERMANENT: the permanent that the triggering attachment (Aura/
+     * Equipment) became attached to. Only meaningful inside a
+     * [com.wingedsheep.sdk.scripting.EventPattern.BecomesAttachedEvent] trigger, where the
+     * triggering entity is the attachment and this resolves to the thing it attached to.
+     *
+     * Used by Eriette, the Beguiler ("gain control of that permanent") and Assimilation Aegis
+     * ("that creature becomes a copy …").
+     */
+    @SerialName("AttachedToTriggeringPermanent")
+    @Serializable
+    data object AttachedToTriggeringPermanent : EffectTarget {
+        override val description: String = "that permanent"
+    }
+
+    /**
      * CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage
      * currently being processed. Only meaningful inside a damage replacement
      * (e.g. [com.wingedsheep.sdk.scripting.RedirectDamage]); resolved by the damage

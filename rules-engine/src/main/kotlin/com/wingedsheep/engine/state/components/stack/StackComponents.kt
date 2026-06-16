@@ -95,6 +95,13 @@ data class TriggeredAbilityOnStackComponent(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /**
+     * Definition-scoped identity of the ability that put this object on the stack, shared by every
+     * copy of the same card and every future instance of it. Drives batch decisions and persistent
+     * yields (see [com.wingedsheep.sdk.scripting.AbilityIdentity]). Null for synthesized sources
+     * (e.g. spell copies on a fresh entity) that have no card definition behind them.
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     /** Optional human-readable description from `TriggeredAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
     val descriptionOverride: String? = null,
@@ -125,13 +132,27 @@ data class TriggeredAbilityOnStackComponent(
     val triggerScryCount: Int? = null,
     /** Damage past lethal dealt to the trigger's creature recipient (CR 120.4a). Null for non-damage triggers. */
     val triggerExcessDamageAmount: Int? = null,
+    /** Recipient creature's toughness when the triggering damage was dealt (CR 603.10 LKI). Read via
+     *  `ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS` (Taii Wakeen). Null for non-creature recipients. */
+    val triggerRecipientToughness: Int? = null,
+    /** Total mana spent to cast the spell that fired this trigger (Aberrant Manawurm, Expressive
+     *  Firedancer). Read via `ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL`. Null for non-cast triggers. */
+    val triggerManaSpentOnTriggeringSpell: Int? = null,
+    /** Mana value (CR 202.3) of the spell that fired this trigger (Kellan, the Kid). Read via
+     *  `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE`. Null for non-cast triggers. */
+    val triggerManaValueOfTriggeringSpell: Int? = null,
     // Modal fields — populated when this triggered ability is a copy of a modal spell (700.2g).
     // Copies inherit the original's chosen modes; targets either inherit too (StormCopy default)
     // or are re-chosen by the copy controller while modes stay fixed.
     val chosenModes: List<Int> = emptyList(),
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
     val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
-    val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap()
+    val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),
+    /** Entities a batch trigger captured (the matching permanents in a `PermanentsEnteredEvent`
+     *  batch). Seeded into the resolving ability's pipeline under
+     *  `PipelineState.TRIGGER_CAPTURED_COLLECTION` so a `ForEachInCollectionEffect` payoff can
+     *  iterate them ("for each of them, create a tapped copy" — Kambal). Empty for non-batch triggers. */
+    val capturedEntityIds: List<EntityId> = emptyList()
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }
@@ -153,7 +174,14 @@ data class ActivatedAbilityOnStackComponent(
     val tappedPermanentSnapshots: List<PermanentSnapshot> = emptyList(),
     /** Optional human-readable description from `ActivatedAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
-    val descriptionOverride: String? = null
+    val descriptionOverride: String? = null,
+    /**
+     * Definition-scoped identity of the activated ability, shared by every copy of the same card
+     * and every future instance of it. Drives batch decisions and persistent yields (see
+     * [com.wingedsheep.sdk.scripting.AbilityIdentity]). Null for synthesized abilities with no
+     * stable [com.wingedsheep.sdk.scripting.AbilityId] behind them (e.g. crew/saddle).
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

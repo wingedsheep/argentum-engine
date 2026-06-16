@@ -2598,6 +2598,42 @@
     ]
 }
 
+// Scion of the Wild
+{
+    "name": "Scion of the Wild",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Scion of the Wild's power and toughness are each equal to the number of creatures you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "It has a hundred thousand extinctions to avenge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feb05072-c619-4024-8ed8-440b01f73113.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Seismic Spike
 {
     "name": "Seismic Spike",

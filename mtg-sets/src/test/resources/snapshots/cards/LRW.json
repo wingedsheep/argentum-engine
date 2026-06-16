@@ -443,6 +443,57 @@
     ]
 }
 
+// Shimmering Grotto
+{
+    "name": "Shimmering Grotto",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "artist": "Alan Pollack",
+        "flavorText": "Once each year, the sun's rays reach the hidden chamber of Velis Vel, and the changelings congregate from afar to bathe in the ever-shifting light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5e85acc-ed12-4036-8193-739721c3e178.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Springleaf Drum
 {
     "name": "Springleaf Drum",

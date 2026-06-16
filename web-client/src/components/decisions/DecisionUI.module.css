@@ -82,6 +82,33 @@
   box-shadow: 0 4px 24px var(--color-target-shadow);
 }
 
+/* Drag handle for movable banners (lets the player pull the prompt off the
+ * opponent's board on small screens). pointer-events: auto so the handle stays
+ * grabbable even inside .sideBannerTarget, which is otherwise click-through. */
+.dragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--space-1) 0;
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-1) * -1);
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.dragHandleGrip {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-full, 9999px);
+  background-color: var(--color-target);
+  opacity: 0.6;
+}
+
+.dragHandle:hover .dragHandleGrip {
+  opacity: 0.9;
+}
+
 /* =========================================================================
  * Banner Card Image (source card shown in targeting banner)
  * ========================================================================= */

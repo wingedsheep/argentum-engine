@@ -21,7 +21,6 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardFromBattlefieldThisTurnMarker
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -136,6 +135,21 @@ class PredicateEvaluator {
         }
         if (predicate is CardPredicate.IsActivatedAbility) {
             return container.has<ActivatedAbilityOnStackComponent>()
+        }
+        // Composite predicates must recurse per-branch *before* the CardComponent null-check below,
+        // so a heterogeneous Or/And/Not whose branches mix spell predicates (need a CardComponent)
+        // with ability predicates (no CardComponent) evaluates each branch on its own terms. Without
+        // this, `Or(IsInstant, IsSorcery, IsActivatedOrTriggeredAbility)` would short-circuit to
+        // false for an ability on the stack (the whole composite bails at the missing CardComponent)
+        // — breaking "copy/counter target spell or ability" (Return the Favor, Stifle).
+        if (predicate is CardPredicate.Or) {
+            return predicate.predicates.any { matchesCardPredicate(state, projected, entityId, it, context) }
+        }
+        if (predicate is CardPredicate.And) {
+            return predicate.predicates.all { matchesCardPredicate(state, projected, entityId, it, context) }
+        }
+        if (predicate is CardPredicate.Not) {
+            return !matchesCardPredicate(state, projected, entityId, predicate.predicate, context)
         }
         // Stack-relative targeting predicate: read the stack entity's TargetsComponent
         // and match each chosen target against the subfilter. Works for both spells and
@@ -290,9 +304,15 @@ class PredicateEvaluator {
             }
             is CardPredicate.ManaValueAtMostEntityManaSpent -> {
                 val refEntityId = resolveEntityReference(predicate.reference, context) ?: return false
-                val manaSpent = manaSpentToCast(state, refEntityId)
+                val manaSpent = ManaSpentReader.totalSpent(state, refEntityId)
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc <= manaSpent
+            }
+            is CardPredicate.ManaValueAtMostColorsSpent -> {
+                val refEntityId = resolveEntityReference(predicate.reference, context) ?: return false
+                val colorsSpent = ManaSpentReader.distinctColorsSpent(state, refEntityId)
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                cmc <= colorsSpent
             }
             CardPredicate.ManaValueIsEven -> {
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
@@ -614,26 +634,6 @@ class PredicateEvaluator {
     /**
      * Resolve an EntityReference to an EntityId using the predicate context.
      */
-    /**
-     * Total mana actually spent to cast an entity. Reads the live [SpellOnStackComponent]
-     * buckets while the entity is still a spell on the stack, otherwise the
-     * [CastRecordComponent] snapshot stamped when it resolved onto the battlefield. Returns 0
-     * when neither is present (entity was put onto the battlefield without being cast, or is
-     * a copy created on the stack — no mana was spent in either case).
-     */
-    private fun manaSpentToCast(state: GameState, entityId: EntityId): Int {
-        val container = state.getEntity(entityId) ?: return 0
-        container.get<SpellOnStackComponent>()?.let { spell ->
-            return spell.manaSpentWhite + spell.manaSpentBlue + spell.manaSpentBlack +
-                spell.manaSpentRed + spell.manaSpentGreen + spell.manaSpentColorless
-        }
-        container.get<CastRecordComponent>()?.let { record ->
-            return record.whiteSpent + record.blueSpent + record.blackSpent +
-                record.redSpent + record.greenSpent + record.colorlessSpent
-        }
-        return 0
-    }
-
     private fun resolveEntityReference(ref: EntityReference, context: PredicateContext?): EntityId? {
         return when (ref) {
             is EntityReference.Source -> context?.sourceId
@@ -924,6 +924,7 @@ class PredicateEvaluator {
             // Entity-relative — no entity context for cast records
             is CardPredicate.ManaValueAtMostEntity -> false
             is CardPredicate.ManaValueAtMostEntityManaSpent -> false
+            is CardPredicate.ManaValueAtMostColorsSpent -> false
             CardPredicate.ManaValueIsEven -> record.manaValue % 2 == 0
             CardPredicate.ManaValueIsOdd -> record.manaValue % 2 != 0
 
@@ -1049,16 +1050,15 @@ data class PredicateContext(
          * Create from EffectContext for compatibility.
          */
         fun fromEffectContext(context: EffectContext): PredicateContext {
-            // Derive the concretely chosen player target from the effect's targets.
-            // Falls back to opponentId when no player target is present — preserves the
-            // historic behavior for cards that reference "target opponent" implicitly.
+            // "Target opponent" / "target player" predicates read the concretely chosen
+            // player target — never a turn-order-derived opponent.
             val chosenPlayerTarget = context.targets.firstNotNullOfOrNull { target ->
                 (target as? ChosenTarget.Player)?.playerId
             }
             return PredicateContext(
                 controllerId = context.controllerId,
-                targetOpponentId = context.opponentId,
-                targetPlayerId = chosenPlayerTarget ?: context.opponentId,
+                targetOpponentId = chosenPlayerTarget,
+                targetPlayerId = chosenPlayerTarget,
                 sourceId = context.sourceId,
                 triggeringEntityId = context.triggeringEntityId,
                 affectedEntityId = context.affectedEntityId,

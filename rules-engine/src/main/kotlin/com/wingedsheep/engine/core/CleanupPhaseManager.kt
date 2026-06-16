@@ -36,6 +36,7 @@ import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnCompone
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
@@ -338,6 +339,14 @@ class CleanupPhaseManager(
                     sourceId != null && newState.getBattlefield().contains(sourceId) &&
                         newState.getEntity(sourceId)?.has<TappedComponent>() == true
                 }
+                Duration.WhileSourceAttachedToAffected -> {
+                    // Keep if the source (Aura/Equipment) is still on the battlefield. The
+                    // per-affected "still attached to it" half is gated per-frame by StateProjector
+                    // and latched off by EndedDurationExpiryCheck; cleanup only drops it once the
+                    // source itself has left.
+                    val sourceId = floatingEffect.sourceId
+                    sourceId != null && newState.getBattlefield().contains(sourceId)
+                }
                 is Duration.WhileControlledByController -> true  // Gated at projection by controller; cleared on leaving play
                 is Duration.UntilAfterAffectedControllersNextUntap -> true  // Expires after affected entity's controller's untap
                 is Duration.UntilPhase -> true  // Handle in phase transitions
@@ -345,6 +354,25 @@ class CleanupPhaseManager(
             }
         }
         newState = newState.copy(floatingEffects = remainingEffects)
+
+        // 1a. Expire "yield until end of turn" preferences (backlog §C). Whole-game yields and
+        // auto-answers persist; only the per-turn auto-pass opt-in is cleared here at cleanup
+        // (CR 514), keeping the lifecycle replay-deterministic alongside the other end-of-turn resets.
+        newState = newState.clearUntilEndOfTurnYields()
+
+        // 1b. Expire temporary counter-placement modifiers (GrantCounterPlacementModifierEffect,
+        // e.g. Prairie Dog) whose duration ends at end of turn / end of combat. Longer durations
+        // (UntilYourNextTurn, Permanent, …) are kept and handled by their own expiry path.
+        val remainingCounterModifiers = newState.activeCounterPlacementModifiers.filter { modifier ->
+            when (modifier.duration) {
+                is Duration.EndOfTurn -> false
+                is Duration.EndOfCombat -> false
+                else -> true
+            }
+        }
+        if (remainingCounterModifiers.size != newState.activeCounterPlacementModifiers.size) {
+            newState = newState.copy(activeCounterPlacementModifiers = remainingCounterModifiers)
+        }
 
         // 2. Empty mana pools for all players (unless prevented by a static ability like Upwelling)
         if (!isManaPoolEmptyingPrevented(newState)) {
@@ -456,6 +484,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<LandsEnteredUnderControlThisTurnComponent>()) {
                     result = result.without<LandsEnteredUnderControlThisTurnComponent>()
+                }
+                if (result.has<PermanentsEnteredUnderControlThisTurnComponent>()) {
+                    result = result.without<PermanentsEnteredUnderControlThisTurnComponent>()
                 }
                 if (result.has<PutCounterOnCreatureThisTurnComponent>()) {
                     result = result.without<PutCounterOnCreatureThisTurnComponent>()
@@ -577,6 +608,15 @@ class CleanupPhaseManager(
                 grant.duration !is Duration.EndOfTurn
             }
             newState = newState.copy(grantedActivatedAbilities = remainingGrants)
+        }
+
+        // 7a. Expire granted static abilities (e.g. Full Steam Ahead's "can't be blocked by
+        // more than one creature") with EndOfTurn duration.
+        if (newState.grantedStaticAbilities.isNotEmpty()) {
+            val remainingGrants = newState.grantedStaticAbilities.filter { grant ->
+                grant.duration !is Duration.EndOfTurn
+            }
+            newState = newState.copy(grantedStaticAbilities = remainingGrants)
         }
 
         // 7b. Expire granted cast-keyword abilities (e.g. Songcrafter Mage's harmonize) with

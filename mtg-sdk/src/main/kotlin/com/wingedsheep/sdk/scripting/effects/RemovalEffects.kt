@@ -183,22 +183,39 @@ data class SacrificeTargetEffect(
 data class ForceSacrificeEffect(
     val filter: GameObjectFilter,
     val count: Int = 1,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
+    /**
+     * When non-null, the number of permanents to sacrifice is evaluated at resolution from
+     * this [DynamicAmount] instead of the fixed [count] (e.g. Rush of Dread's "sacrifices half
+     * the creatures they control, rounded up" via `Divide(AggregateBattlefield(...), Fixed(2))`).
+     * The fixed [count] is kept as the fallback for the common edict ("a creature") case so
+     * existing cards and their compiled snapshots are untouched.
+     */
+    val dynamicCount: DynamicAmount? = null
 ) : Effect {
     override val description: String = buildString {
         append(target.description)
         append(" sacrifices ")
-        if (count == 1) {
-            append("a ")
+        if (dynamicCount != null) {
+            append(dynamicCount.description)
+            append(" ")
+            append(filter.description)
+            append("s")
         } else {
-            append("$count ")
+            if (count == 1) {
+                append("a ")
+            } else {
+                append("$count ")
+            }
+            append(filter.description)
+            if (count != 1) append("s")
         }
-        append(filter.description)
-        if (count != 1) append("s")
     }
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newDynamicCount = dynamicCount?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newDynamicCount !== dynamicCount)
+            copy(filter = newFilter, dynamicCount = newDynamicCount) else this
     }
 }
 

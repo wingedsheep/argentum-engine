@@ -93,8 +93,25 @@ object Dashboard {
             val (rows, cols) = tty.size()
             ensureCurrentComputed(rows, cols)
             tty.render(buildFrame(rows, cols))
-            if (!handle(tty.readKey(), rows, cols)) break
+            val key = tty.readKey()
+            val wasFiltering = filtering
+            val before = scrollSnapshot()
+            if (!handle(key, rows, cols)) break
+            // A held scroll key that no longer moves the cursor has hit the top/bottom of the list.
+            // Drop the key-repeat backlog so the next real keypress responds immediately instead of
+            // draining one no-op per frame. (Skip while filtering — those keystrokes are text.)
+            if (!wasFiltering && isScrollKey(key) && scrollSnapshot() == before) tty.drainInput()
         }
+    }
+
+    /** The active mode's cursor/scroll positions — compared across a keypress to detect a no-op scroll. */
+    private fun scrollSnapshot(): List<Int> =
+        listOf(setSel, cardSel, reqScroll, crossSel, crossCardSel)
+
+    private fun isScrollKey(key: Key): Boolean = when (key) {
+        Key.Up, Key.Down, Key.PageUp, Key.PageDown, Key.Home, Key.End -> true
+        is Key.Char -> key.c == 'j' || key.c == 'k'
+        else -> false
     }
 
     /** First visit to a set blocks on analysis (and, on the very first, the 29MB IR) — show a frame. */

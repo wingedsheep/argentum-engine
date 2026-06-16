@@ -357,6 +357,22 @@ sealed interface SpellCastPredicate {
         }
     }
 
+    /**
+     * The spell was cast from a zone *other than* [zone] — the negation of [CastFromZone].
+     * Used for "whenever you cast a spell from anywhere other than your hand" (Kellan, the Kid):
+     * `CastFromZoneOtherThan(Zone.HAND)`. A spell with no recorded cast zone (synthetic / put
+     * directly on the stack) does not satisfy this — only an actual cast from a different known
+     * zone counts.
+     */
+    @SerialName("SpellCastFromZoneOtherThan")
+    @Serializable
+    data class CastFromZoneOtherThan(val zone: Zone) : SpellCastPredicate {
+        override val description = when (zone) {
+            Zone.HAND -> "from anywhere other than your hand"
+            else -> "from anywhere other than your ${zone.displayName.lowercase()}"
+        }
+    }
+
     /** The spell was cast with kicker (CR 702.32). */
     @SerialName("SpellWasKicked")
     @Serializable
@@ -426,5 +442,55 @@ sealed interface AttackPredicate {
     @Serializable
     data class AttackerCountAtLeast(val n: Int) : AttackPredicate {
         override val description = "with $n or more attackers"
+    }
+}
+
+// =============================================================================
+// Ability Target Match - constrains an activated ability by its chosen targets
+// =============================================================================
+
+/**
+ * A predicate over the set of targets an activated ability on the stack was given.
+ *
+ * Used by [com.wingedsheep.sdk.scripting.EventPattern.AbilityActivatedEvent.targetMatch] to express
+ * "Whenever you activate an ability that targets X" (Ertha Jo, Frontier Mentor — "...that targets a
+ * creature or player"). A constraint is satisfied when **at least one** of the ability's chosen
+ * targets matches it; a non-targeting ability (e.g. a tap-for-mana) never matches, so it doesn't
+ * fire the trigger.
+ *
+ * The match space is wider than [GameObjectFilter] because an ability can target a *player* as well
+ * as an object, and `GameObjectFilter` only describes objects. [AnyPlayer] covers the player half;
+ * [ObjectMatching] covers the object half; [AnyOf] composes them into heterogeneous unions such as
+ * "creature or player".
+ */
+@Serializable
+sealed interface AbilityTargetMatch {
+    val description: String
+
+    /** At least one chosen target is a player. */
+    @SerialName("AbilityTargetAnyPlayer")
+    @Serializable
+    data object AnyPlayer : AbilityTargetMatch {
+        override val description = "player"
+    }
+
+    /** At least one chosen target is an object matching [filter] (creature, permanent, …). */
+    @SerialName("AbilityTargetObjectMatching")
+    @Serializable
+    data class ObjectMatching(val filter: GameObjectFilter) : AbilityTargetMatch {
+        override val description = filter.description
+    }
+
+    /** At least one chosen target matches any of [options] (heterogeneous OR). */
+    @SerialName("AbilityTargetAnyOf")
+    @Serializable
+    data class AnyOf(val options: List<AbilityTargetMatch>) : AbilityTargetMatch {
+        override val description = options.joinToString(" or ") { it.description }
+    }
+
+    companion object {
+        /** "...that targets a creature or player." */
+        val CreatureOrPlayer: AbilityTargetMatch =
+            AnyOf(listOf(ObjectMatching(GameObjectFilter.Creature), AnyPlayer))
     }
 }

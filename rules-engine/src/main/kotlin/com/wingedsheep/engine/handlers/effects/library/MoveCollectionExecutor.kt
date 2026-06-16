@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.engine.state.components.stack.capturePermanentSnapshots
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -552,6 +553,17 @@ class MoveCollectionExecutor(
             )
         }
 
+        // CR 603.2e — the Aura "becomes attached" as it enters attached by this effect; emit so
+        // attachment triggers (Eriette, the Beguiler) fire on the effect-driven attach path too.
+        events.add(
+            com.wingedsheep.engine.core.PermanentAttachedEvent(
+                attachmentId = auraId,
+                attachmentName = cardName,
+                attachedToId = targetId,
+                controllerId = destPlayerId,
+            )
+        )
+
         return Pair(newState, events)
     }
 
@@ -736,7 +748,21 @@ class MoveCollectionExecutor(
             emptyMap()
         }
 
-        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections)
+        // Capture LKI snapshots of permanents sacrificed by this *effect* (Rule 608.2h) so a
+        // following pipeline/composite sibling can read the sacrificed permanent's P/T as it last
+        // existed — e.g. The Gitrog, Ravenous Ride: "draw X cards … where X is the sacrificed
+        // creature's power." Snapshots are taken from the pre-move projected state since the
+        // permanents have already left the battlefield by now. Mirrors the cost-sacrifice path.
+        val sacrificedSnapshots = if (moveType == MoveType.Sacrifice && cards.isNotEmpty()) {
+            capturePermanentSnapshots(cards, state.projectedState)
+        } else {
+            emptyList()
+        }
+
+        return EffectResult.success(newState, events).copy(
+            updatedCollections = updatedCollections,
+            updatedSacrificedPermanents = sacrificedSnapshots,
+        )
     }
 
     /**
@@ -752,24 +778,6 @@ class MoveCollectionExecutor(
         return null
     }
 
-    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): EntityId? {
-        return when (player) {
-            is Player.You -> context.controllerId
-            is Player.Opponent -> context.opponentId
-            is Player.TargetOpponent -> context.opponentId
-            is Player.TargetPlayer -> context.targets.firstOrNull()?.let { TargetResolutionUtils.run { it.toEntityId() } }
-            is Player.ContextPlayer -> context.positionalTarget(player.index)?.let { TargetResolutionUtils.run { it.toEntityId() } }
-            is Player.TriggeringPlayer -> context.triggeringEntityId
-            is Player.OwnerOf -> context.targets.firstOrNull()?.let {
-                val eid = TargetResolutionUtils.run { it.toEntityId() }
-                state.getEntity(eid)?.get<CardComponent>()?.ownerId
-            }
-            is Player.ControllerOf -> context.targets.firstOrNull()?.let {
-                val eid = TargetResolutionUtils.run { it.toEntityId() }
-                state.getEntity(eid)?.get<ControllerComponent>()?.playerId
-                    ?: state.getEntity(eid)?.get<CardComponent>()?.ownerId
-            }
-            else -> context.controllerId
-        }
-    }
+    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): EntityId? =
+        TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId
 }

@@ -2,11 +2,14 @@ package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
@@ -24,6 +27,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -41,6 +45,8 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
 
     override val effectType: KClass<CreateDelayedTriggerEffect> = CreateDelayedTriggerEffect::class
 
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+
     override fun execute(
         state: GameState,
         effect: CreateDelayedTriggerEffect,
@@ -53,7 +59,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
 
         // Bake in any context-dependent target references so the delayed trigger
         // has concrete entity IDs when it fires later.
-        val resolvedEffect = resolveContextTargets(effect.effect, context)
+        val resolvedEffect = resolveContextTargets(effect.effect, context, state)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
         // Long List of the Ents (LTR) needs "when you cast a creature spell of the type just
@@ -66,6 +72,13 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
         // For event-based delayed triggers, bake the watched target into a concrete
         // entity id so matching later is cheap and doesn't need the original context.
         val watchedEntityId = effect.watchedTarget?.let { context.resolveTarget(it) }
+
+        // Recipient-scoped delayed triggers ("…deals combat damage to *that player* this turn"):
+        // resolve the chosen recipient (e.g. ContextTarget(0) for the targeted opponent) into a
+        // concrete entity id now, while the originating context still knows who it is.
+        val watchedRecipientId = effect.watchedRecipient?.let {
+            context.resolvePlayerTarget(it) ?: context.resolveTarget(it)
+        }
 
         // For step-based delayed triggers that restrict to a specific player's turn (e.g.
         // Nafs Asp's "at the beginning of their next draw step"): resolve the player target
@@ -116,6 +129,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             controllerId = context.controllerId,
             trigger = resolvedTrigger,
             watchedEntityId = watchedEntityId,
+            watchedRecipientId = watchedRecipientId,
             expiry = if (effect.trigger != null) effect.expiry else null,
             fireOnce = effect.trigger != null && effect.fireOnce,
             notBeforeTurn = notBeforeTurn,
@@ -158,13 +172,29 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
     }
 
     /**
+     * Capture a [DynamicAmount] that reads from the *current* context (a target spell/permanent,
+     * the mana spent to cast it, etc.) into a [DynamicAmount.Fixed] literal, so the delayed
+     * trigger's effect carries the value forward to a later step when the originating context —
+     * and any referenced object — no longer exists. Already-fixed amounts are returned unchanged.
+     */
+    private fun snapshotAmount(
+        amount: DynamicAmount,
+        context: EffectContext,
+        state: GameState
+    ): DynamicAmount {
+        if (amount is DynamicAmount.Fixed) return amount
+        val value = dynamicAmountEvaluator.evaluate(state, amount, context)
+        return DynamicAmount.Fixed(value)
+    }
+
+    /**
      * Recursively substitute context-dependent target references with concrete SpecificEntity
      * references using the current execution context.
      *
      * This covers ContextTarget(n), Self, TriggeringEntity, and any other non-persistent
      * target types that won't be resolvable when the delayed trigger fires later.
      */
-    private fun resolveContextTargets(effect: Effect, context: EffectContext): Effect {
+    private fun resolveContextTargets(effect: Effect, context: EffectContext, state: GameState): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
                 val resolvedId = context.resolveTarget(effect.target)
@@ -192,6 +222,19 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 val resolvedId = context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
+            // A delayed trigger that adds mana "equal to" a value read from a context entity
+            // (e.g. Mana Sculpt: "{C} equal to the amount of mana spent to cast that spell, at the
+            // beginning of your next main phase") must capture that value NOW — the referenced
+            // spell/permanent is gone by the time the trigger fires, so a lazy read would yield 0.
+            // Snapshot the amount against the current context into a Fixed literal.
+            is AddManaEffect -> {
+                val snapshot = snapshotAmount(effect.amount, context, state)
+                if (snapshot !== effect.amount) effect.copy(amount = snapshot) else effect
+            }
+            is AddColorlessManaEffect -> {
+                val snapshot = snapshotAmount(effect.amount, context, state)
+                if (snapshot !== effect.amount) effect.copy(amount = snapshot) else effect
+            }
             is DealDamagePerEntityInZoneEffect -> {
                 // Resolve collection name to concrete entity IDs from the pipeline
                 val resolvedIds = effect.collectionName?.let { name ->
@@ -207,14 +250,14 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 )
             }
             is CompositeEffect -> effect.copy(
-                effects = effect.effects.map { resolveContextTargets(it, context) }
+                effects = effect.effects.map { resolveContextTargets(it, context, state) }
             )
             is GatedEffect -> {
                 // Former MayEffect shape: resolve ContextTargets inside the optional `then` payoff,
                 // exactly as MayEffect did. Other gate shapes (MayPay / WhenCondition) were never
                 // resolved here, so leave them untouched.
                 if (effect.gate is Gate.MayDecide && effect.otherwise == null) {
-                    val inner = resolveContextTargets(effect.then, context)
+                    val inner = resolveContextTargets(effect.then, context, state)
                     if (inner !== effect.then) effect.copy(then = inner) else effect
                 } else {
                     effect

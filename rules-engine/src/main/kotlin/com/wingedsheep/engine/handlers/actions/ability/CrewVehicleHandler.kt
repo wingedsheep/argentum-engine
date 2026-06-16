@@ -69,6 +69,15 @@ class CrewVehicleHandler(
             .firstOrNull { it.keyword == Keyword.CREW }
             ?: return "This permanent doesn't have crew"
 
+        // "Crew N. Activate only once each turn." (Luxurious Locomotive): block a second crew
+        // activation this turn. Vanilla Crew (onceEachTurn = false) has no such cap.
+        if (crewAbility.onceEachTurn) {
+            val crewActivations = vehicleContainer.get<CrewSaddleContributorsComponent>()?.crewActivations ?: 0
+            if (crewActivations >= 1) {
+                return "This Vehicle's crew ability can only be activated once each turn"
+            }
+        }
+
         if (action.crewCreatures.isEmpty()) {
             return "Must select at least one creature to crew"
         }
@@ -141,8 +150,13 @@ class CrewVehicleHandler(
         // Record the crew so Vehicle payoffs can read "creatures that crewed it this turn"
         // (e.g. Luxurious Locomotive). Union across activations within the turn.
         currentState = currentState.updateEntity(action.vehicleId) { c ->
-            val existing = c.get<CrewSaddleContributorsComponent>()?.creatureIds ?: emptySet()
-            c.with(CrewSaddleContributorsComponent(existing + action.crewCreatures))
+            val existing = c.get<CrewSaddleContributorsComponent>()
+            c.with(
+                CrewSaddleContributorsComponent(
+                    creatureIds = (existing?.creatureIds ?: emptySet()) + action.crewCreatures,
+                    crewActivations = (existing?.crewActivations ?: 0) + 1
+                )
+            )
         }
 
         // Create the crew ability effect: Vehicle becomes an artifact creature

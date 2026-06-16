@@ -301,7 +301,37 @@ enum class Keyword(val displayName: String) {
      * tutor up other Spider-related cards. Per CR 207.2c, ability words have no rules
      * meaning; the prefix is metadata only and does not modify resolution.
      */
-    FATEFUL_BITE("Fateful Bite");
+    FATEFUL_BITE("Fateful Bite"),
+
+    /**
+     * Prepared (Secrets of Strixhaven).
+     * Display keyword on a preparation card ([com.wingedsheep.sdk.model.CardLayout.PREPARE]):
+     * "This creature enters prepared." Display-only on the keyword — the behavior is driven by
+     * the PREPARE layout. When the creature becomes prepared (e.g. as it enters), its controller
+     * creates a copy of the card's prepare spell (`cardFaces[0]`) in exile that they may cast
+     * (paying that spell's cost); casting the copy unprepares the creature.
+     */
+    PREPARED("Prepared"),
+
+    /**
+     * Paradigm (Secrets of Strixhaven).
+     * Appears on Lesson spells. "Then exile this spell. After you first resolve a spell with this
+     * name, you may cast a copy of it from exile without paying its mana cost at the beginning of
+     * each of your first main phases." Display-only on the keyword — the behavior is driven by the
+     * spell's `paradigm` flag, which routes the spell to exile on resolution and tags it with the
+     * paradigm marker so the engine synthesizes the recurring free-recast ability
+     * ([com.wingedsheep.sdk.scripting.Paradigm.recastAbility]).
+     */
+    PARADIGM("Paradigm"),
+
+    /**
+     * Increment (Secrets of Strixhaven).
+     * "Whenever you cast a spell, if the amount of mana you spent is greater than this
+     * creature's power or toughness, put a +1/+1 counter on this creature."
+     * Wired via the `increment()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder],
+     * which attaches this display-only keyword plus the cast-spell triggered ability.
+     */
+    INCREMENT("Increment");
 
     companion object {
         fun fromString(value: String): Keyword? =

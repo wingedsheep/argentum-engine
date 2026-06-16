@@ -20,10 +20,13 @@ How it works:
     project's first commit through the latest, then the three `const DATES /
     TOTALS / ADDED` arrays in `card-implementation-progress.html` are rewritten
     in place (the page's stats and chart derive everything else from them).
+  - A static SVG rendering of the same chart is written to
+    `assets/card-implementation-progress.svg` so the README can embed it on
+    GitHub (where the interactive HTML page can't run).
 
 Usage:
-  scripts/card-progress-graph            # refresh the HTML in place
-  scripts/card-progress-graph --print    # print summary, don't write the HTML
+  scripts/card-progress-graph            # refresh the HTML + SVG in place
+  scripts/card-progress-graph --print    # print summary, don't write files
 """
 from __future__ import annotations
 
@@ -38,6 +41,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 DEFS = "mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
 HTML = REPO / "card-implementation-progress.html"
+SVG = REPO / "assets" / "card-implementation-progress.svg"
+# Server-readable copy of the same per-day series, so the Set Completion view can render
+# the progress chart live (GET /api/sets/progress). Git history isn't reachable at runtime,
+# so this baked resource is the data source — regenerate it alongside the HTML/SVG.
+JSON_RESOURCE = REPO / "game-server" / "src" / "main" / "resources" / "coverage" / "implementation-history.json"
 
 # `val Foo = card("Some Name") {` — the canonical definition opener.
 ADDED_RE = re.compile(r'^\+.*=\s*card\("((?:[^"\\]|\\.)*)"')
@@ -112,6 +120,90 @@ def rewrite_html(series: list[dict]) -> None:
     HTML.write_text(html, encoding="utf-8")
 
 
+def render_svg(series: list[dict]) -> str:
+    """Static SVG version of the HTML chart, suitable for embedding in the README."""
+    n = len(series)
+    totals = [s["total"] for s in series]
+    added = [s["added"] for s in series]
+    final, busiest = totals[-1], max(added)
+    active = sum(1 for a in added if a > 0)
+
+    vw, vh = 1000, 480
+    ml, mr, mt, mb = 78, 78, 92, 40
+    pw, ph = vw - ml - mr, vh - mt - mb
+    max_y = max(500, -(-final // 500) * 500)
+    step = next(s for s in (250, 500, 1000, 2000, 5000) if max_y / s <= 10)
+    add_max = max(50, -(-busiest // 50) * 50)
+    bar_frac = 0.45
+
+    def x(i: int) -> float:
+        return ml + pw * i / (n - 1)
+
+    def y(v: float) -> float:
+        return mt + ph - ph * v / max_y
+
+    def yr(v: float) -> float:
+        return mt + ph - ph * bar_frac * v / add_max
+
+    p = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {vw} {vh}" '
+        f'font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">',
+        '<defs>'
+        '<linearGradient id="gA" x1="0" y1="0" x2="0" y2="1">'
+        '<stop offset="0%" stop-color="#7c9cff" stop-opacity=".42"/>'
+        '<stop offset="55%" stop-color="#7c9cff" stop-opacity=".12"/>'
+        '<stop offset="100%" stop-color="#7c9cff" stop-opacity="0"/>'
+        '</linearGradient>'
+        '<linearGradient id="gS" x1="0" y1="0" x2="1" y2="0">'
+        '<stop offset="0%" stop-color="#56e0c2"/>'
+        '<stop offset="100%" stop-color="#7c9cff"/>'
+        '</linearGradient>'
+        '</defs>',
+        f'<rect width="{vw}" height="{vh}" rx="16" fill="#0a0c12"/>',
+        f'<text x="{ml}" y="40" fill="#e9edf6" font-size="21" font-weight="700">'
+        f'Card implementation progress</text>',
+        f'<text x="{ml}" y="64" fill="#8b93a7" font-size="13">'
+        f'{final:,} distinct cards · {series[0]["date"]} → {series[-1]["date"]} '
+        f'· {active} active days · busiest day +{busiest}</text>',
+        f'<rect x="{vw - mr - 318}" y="30" width="18" height="3" rx="1.5" fill="#7c9cff"/>'
+        f'<text x="{vw - mr - 294}" y="36" fill="#8b93a7" font-size="12">Total implemented</text>'
+        f'<rect x="{vw - mr - 158}" y="27" width="9" height="9" rx="2" fill="#56e0c2" opacity=".7"/>'
+        f'<text x="{vw - mr - 142}" y="36" fill="#8b93a7" font-size="12">Added per day</text>',
+    ]
+
+    for v in range(0, max_y + 1, step):
+        p.append(f'<line x1="{ml}" y1="{y(v):.1f}" x2="{vw - mr}" y2="{y(v):.1f}" stroke="#1a1f2c"/>')
+        p.append(f'<text x="{ml - 10}" y="{y(v) + 4:.1f}" fill="#9fb2ff" font-size="11" '
+                 f'text-anchor="end">{v:,}</text>')
+    rstep = add_max // 3
+    for v in range(0, add_max + 1, rstep):
+        p.append(f'<text x="{vw - mr + 10}" y="{yr(v) + 4:.1f}" fill="#56e0c2" font-size="11">{v:,}</text>')
+
+    last_month = ""
+    for i, s in enumerate(series):
+        m = s["date"][:7]
+        if m != last_month:
+            last_month = m
+            label = datetime.date.fromisoformat(s["date"]).strftime("%b")
+            p.append(f'<text x="{x(i):.1f}" y="{vh - 14}" fill="#5a6276" font-size="11" '
+                     f'text-anchor="middle">{label}</text>')
+
+    bw = max(1.4, pw / n * 0.55)
+    bars = "".join(
+        f'<rect x="{x(i) - bw / 2:.1f}" y="{yr(a):.1f}" width="{bw:.1f}" '
+        f'height="{mt + ph - yr(a):.1f}" fill="#56e0c2" opacity=".7"/>'
+        for i, a in enumerate(added) if a > 0
+    )
+    p.append(bars)
+
+    pts = " ".join(f"L {x(i):.1f} {y(t):.1f}" for i, t in enumerate(totals))
+    p.append(f'<path d="M {x(0):.1f} {y(0):.1f} {pts} L {x(n - 1):.1f} {y(0):.1f} Z" fill="url(#gA)"/>')
+    p.append(f'<path d="{pts.replace("L", "M", 1)}" fill="none" stroke="url(#gS)" '
+             f'stroke-width="2.5" stroke-linejoin="round"/>')
+    p.append("</svg>")
+    return "".join(p) + "\n"
+
+
 # Project bounds straight from git history.
 START = git("log", "--reverse", "--format=%aI").splitlines()[0][:10]
 END = git("log", "-1", "--format=%aI")[:10]
@@ -130,6 +222,11 @@ def main() -> None:
         return
     rewrite_html(series)
     print(f"wrote          : {HTML.relative_to(REPO)}")
+    SVG.write_text(render_svg(series), encoding="utf-8")
+    print(f"wrote          : {SVG.relative_to(REPO)}")
+    JSON_RESOURCE.parent.mkdir(parents=True, exist_ok=True)
+    JSON_RESOURCE.write_text(json.dumps(series, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"wrote          : {JSON_RESOURCE.relative_to(REPO)}")
 
 
 if __name__ == "__main__":

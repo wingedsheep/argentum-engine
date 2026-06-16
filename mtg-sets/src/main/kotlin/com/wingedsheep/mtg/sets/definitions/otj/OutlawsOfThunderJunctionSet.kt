@@ -16,10 +16,14 @@ object OutlawsOfThunderJunctionSet : MtgSet {
     override val code = "OTJ"
     override val displayName = "Outlaws of Thunder Junction"
     override val releaseDate = "2024-04-19"
-    override val incomplete = true
+    override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
+    }
+
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
     }
 
     override val printings: List<Printing> by lazy {

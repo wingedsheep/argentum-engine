@@ -39,9 +39,9 @@ object SneakWindow {
 
     /** The defending player has performed the declare-blockers turn-based action this combat. */
     private fun blockersDeclared(state: GameState, playerId: EntityId): Boolean =
-        state.getOpponent(playerId)?.let { defender ->
-            state.getEntity(defender)?.get<BlockersDeclaredThisCombatComponent>()
-        } != null
+        state.getOpponents(playerId).any { defender ->
+            state.getEntity(defender)?.get<BlockersDeclaredThisCombatComponent>() != null
+        }
 
     /**
      * Unblocked attackers [playerId] controls — the legal pool for the "return an unblocked

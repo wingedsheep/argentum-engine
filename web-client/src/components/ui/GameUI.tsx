@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useGameStore, type LobbyState, type TournamentState } from '@/store/gameStore.ts'
+import { useGameStore, type LobbyState, type TournamentState, type FfaState } from '@/store/gameStore.ts'
 import type { SealedCardInfo, TournamentFormat } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { teamColor } from '@/styles/seatColors'
 import { ManaCost } from './ManaSymbols'
 import { SetIcon } from './SetIcon'
 import { randomBackground } from '@/utils/background.ts'
@@ -13,6 +14,8 @@ import { useDeckLibrary, buildDraftedDeckSave, type SavedDeckEntry } from '@/sto
 import { DeckPicker } from './DeckPicker'
 import { BanListEditor } from './BanListEditor'
 import { SetPickerModal } from './SetPickerModal'
+import { JoinQrModal } from './JoinQrModal'
+import { buildJoinUrl } from '@/utils/joinLink'
 import { labelForFormat } from '@/utils/deckLegality'
 import styles from './GameUI.module.css'
 
@@ -75,11 +78,12 @@ export function GameUI() {
   const lastError = useGameStore((state) => state.lastError)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const tournamentState = useGameStore((state) => state.tournamentState)
+  const ffaState = useGameStore((state) => state.ffaState)
   const quickGameLobbyState = useGameStore((state) => state.quickGameLobbyState)
 
   // Don't show connection overlay if actively building deck (but show during 'waiting' phase)
-  // Exception: always show if tournamentState exists (for TournamentOverlay)
-  if (deckBuildingState && deckBuildingState.phase !== 'waiting' && !tournamentState) return null
+  // Exception: always show if tournamentState/ffaState exists (for the standings overlays)
+  if (deckBuildingState && deckBuildingState.phase !== 'waiting' && !tournamentState && !ffaState) return null
 
   // Quick-game lobby is its own dedicated overlay (deck picker lives inside it).
   if (quickGameLobbyState && !sessionId) return <QuickGameLobbyOverlay />
@@ -142,7 +146,8 @@ function ConnectionOverlay({
       // Create lobby with default settings - host can change in lobby
       createTournamentLobby(['ECL'], 'SEALED')
     } else {
-      // Quick games go through a real lobby; deck *and* set selection live inside it.
+      // Quick games go through a real lobby; deck/format/set selection (including the Momir Basic
+      // custom format) all live inside it.
       createQuickGameLobby(false)
     }
   }
@@ -249,8 +254,14 @@ function ConnectionOverlay({
 
   // Show tournament UI if we're in a tournament (even without lobbyState)
   const tournamentState = useGameStore((state) => state.tournamentState)
+  const ffaState = useGameStore((state) => state.ffaState)
   if (tournamentState) {
     return <TournamentOverlay tournamentState={tournamentState} />
+  }
+
+  // Show Free-for-All standings UI if the pod has started a game
+  if (ffaState) {
+    return <FreeForAllOverlay ffaState={ffaState} />
   }
 
   // Show lobby UI if we're in a lobby
@@ -349,7 +360,7 @@ function ConnectionOverlay({
                 </p>
               )}
 
-              {gameMode === 'normal' ? (
+              {gameMode !== 'tournament' ? (
                 <div className={styles.createButtonRow}>
                   <button
                     onClick={handleCreate}
@@ -411,6 +422,12 @@ function ConnectionOverlay({
                   className={styles.secondaryButton}
                 >
                   Scenario Builder
+                </button>
+                <button
+                  onClick={() => navigate('/set-completion')}
+                  className={styles.secondaryButton}
+                >
+                  Set Completion
                 </button>
                 {import.meta.env.DEV && (
                   <button
@@ -713,12 +730,18 @@ function LobbyOverlay({
   const aiEnabled = useGameStore((state) => state.aiEnabled)
   const updateLobbySettings = useGameStore((state) => state.updateLobbySettings)
   const tournamentState = useGameStore((state) => state.tournamentState)
+  const ffaState = useGameStore((state) => state.ffaState)
   const [copied, setCopied] = useState(false)
   const [showSetPicker, setShowSetPicker] = useState(false)
 
   // Show tournament standings when tournament is active
   if (tournamentState) {
     return <TournamentOverlay tournamentState={tournamentState} />
+  }
+
+  // Show Free-for-All standings once the pod has started a game
+  if (ffaState) {
+    return <FreeForAllOverlay ffaState={ffaState} />
   }
 
   const isWaiting = lobbyState.state === 'WAITING_FOR_PLAYERS'
@@ -731,6 +754,34 @@ function LobbyOverlay({
   const isCommanderSealed = format === 'COMMANDER_SEALED'
   const isAnyCommander = isCommanderDraft || isCommanderSealed
   const isPremade = format === 'PREMADE_DECKS'
+  const isFfa = lobbyState.settings.gameMode === 'FREE_FOR_ALL'
+  // Two-Headed Giant (CR 810): the pod mode that runs two teams of two off the same draft/sealed
+  // build. Exactly four players; combat/attack rules are fixed (no per-creature attack picker).
+  const is2hg = lobbyState.settings.gameMode === 'TWO_HEADED_GIANT'
+  // Team vs. Team (CR 808): two even teams (2v2 / 3v3 / 4v4). Like 2HG but nothing is shared —
+  // each player keeps their own life and turn, and is eliminated individually.
+  const isTeamVsTeam = lobbyState.settings.gameMode === 'TEAM_VS_TEAM'
+  // Any team mode shares the random/manual team-assignment controls below.
+  const isTeamGame = is2hg || isTeamVsTeam
+  // Both team modes split the pod into exactly two even teams; team size follows the player count.
+  const teamSize = Math.max(1, Math.floor(lobbyState.players.length / 2))
+  // Team setup: random by default, or host-assigned (playerId -> team, defaulting to join order).
+  const randomTeams = lobbyState.settings.randomTeams ?? true
+  const teamAssignments = lobbyState.settings.teamAssignments ?? {}
+  const playerTeam = (playerId: string, index: number): number =>
+    teamAssignments[playerId] ?? Math.floor(index / teamSize)
+  // Manual teams must be an even split into two equal teams (the server otherwise re-balances).
+  const manualTeamsBalanced = lobbyState.players.length >= 4 && lobbyState.players.length % 2 === 0 &&
+    [0, 1].every(t => lobbyState.players.filter((p, i) => playerTeam(p.playerId, i) === t).length === teamSize)
+  // Move one player to the other team, sending the full explicit assignment for every seat.
+  const togglePlayerTeam = (playerId: string, index: number) => {
+    const flipped = playerTeam(playerId, index) === 0 ? 1 : 0
+    const next: Record<string, number> = {}
+    lobbyState.players.forEach((p, i) => {
+      next[p.playerId] = p.playerId === playerId ? flipped : playerTeam(p.playerId, i)
+    })
+    updateLobbySettings({ teamAssignments: next })
+  }
   // "Draft-shape" — anything that hands packs around at pick time. Commander Draft fits the
   // shape (same per-pick UI / timer / pack-passing) so it inherits Draft-only settings.
   const isAnyDraft = isDraft || isWinston || isGridDraft || isCommanderDraft
@@ -746,6 +797,8 @@ function LobbyOverlay({
   const playerCheck = isWinston ? playerCount === 2
     : isGridDraft ? playerCount >= 2 && playerCount <= 4
     : isAnyCommander ? playerCount === 2
+    : is2hg ? playerCount === 4
+    : isTeamVsTeam ? playerCount >= 4 && playerCount % 2 === 0
     : playerCount >= 2
   // Premade format: no boosters generated, so set selection is optional. We do require every
   // connected player to have submitted a deck before the host can start.
@@ -797,7 +850,7 @@ function LobbyOverlay({
           </div>
           <h1 className={styles.lobbyTitle}>
             {isPremade
-              ? 'Premade Decks Tournament'
+              ? (is2hg ? 'Premade Decks Two-Headed Giant' : isTeamVsTeam ? 'Premade Decks Team vs. Team' : isFfa ? 'Premade Decks Free-for-All' : 'Premade Decks Tournament')
               : (lobbyState.settings.setNames.join(' + ') || 'Lobby')}
           </h1>
           <p className={styles.lobbySubtitle}>
@@ -818,27 +871,33 @@ function LobbyOverlay({
               if (isPremade) return 'Premade Decks · bring your own ≥40-card deck'
               return distText ?? `${lobbyState.settings.boosterCount} boosters per player`
             })()}
-            {(lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
+            {!isFfa && !isTeamGame && (lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
+            {isFfa && ' · Free-for-All'}
+            {is2hg && ' · Two-Headed Giant'}
+            {isTeamVsTeam && ' · Team vs. Team'}
           </p>
         </div>
 
-        {/* Invite code */}
-        <div
-          onClick={copyLobbyId}
-          className={`${styles.inviteBox} ${copied ? styles.inviteBoxCopied : ''}`}
-          style={{ alignSelf: 'stretch', justifyContent: 'space-between' }}
-        >
-          <div>
-            <div style={{ color: 'var(--text-disabled)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
-              Invite Code
+        {/* Invite code + scannable QR to pull another device straight into the lobby */}
+        <div style={{ alignSelf: 'stretch', display: 'flex', alignItems: 'stretch', gap: 8 }}>
+          <div
+            onClick={copyLobbyId}
+            className={`${styles.inviteBox} ${copied ? styles.inviteBoxCopied : ''}`}
+            style={{ flex: 1, marginBottom: 0, justifyContent: 'space-between' }}
+          >
+            <div>
+              <div style={{ color: 'var(--text-disabled)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
+                Invite Code
+              </div>
+              <div className={styles.inviteCode} data-testid="invite-code">
+                {lobbyState.lobbyId}
+              </div>
             </div>
-            <div className={styles.inviteCode} data-testid="invite-code">
-              {lobbyState.lobbyId}
-            </div>
+            <span className={`${styles.inviteCopyLabel} ${copied ? styles.inviteCopyLabelCopied : ''}`} style={{ flexShrink: 0, marginLeft: 12 }}>
+              {copied ? 'Copied!' : 'Copy'}
+            </span>
           </div>
-          <span className={`${styles.inviteCopyLabel} ${copied ? styles.inviteCopyLabelCopied : ''}`} style={{ flexShrink: 0, marginLeft: 12 }}>
-            {copied ? 'Copied!' : 'Copy'}
-          </span>
+          <JoinQrModal url={buildJoinUrl(lobbyState.lobbyId)} />
         </div>
 
         {/* Settings (host only) */}
@@ -869,6 +928,121 @@ function LobbyOverlay({
                 </button>
               </div>
             </div>
+            {/* Mode axis (orthogonal to format): bracket of 1v1 matches vs one multiplayer game */}
+            <div className={styles.settingsRow}>
+              <span className={styles.settingsLabel}>Mode</span>
+              <div className={styles.variantGroup}>
+                <div className={styles.settingsButtons}>
+                  <button
+                    onClick={() => updateLobbySettings({ gameMode: 'TOURNAMENT' })}
+                    className={`${styles.settingsButton} ${!isFfa && !isTeamGame ? styles.settingsButtonActive : ''}`}
+                    title="Round-robin bracket of 1v1 matches"
+                  >
+                    Tournament
+                  </button>
+                  <button
+                    onClick={() => playerCount <= 6 && updateLobbySettings({ gameMode: 'FREE_FOR_ALL' })}
+                    disabled={playerCount > 6}
+                    className={`${styles.settingsButton} ${isFfa ? styles.settingsButtonActive : ''}`}
+                    title="One multiplayer game — everyone at the same table (2-6 players)"
+                  >
+                    Free-for-All
+                  </button>
+                  <button
+                    onClick={() => playerCount <= 4 && updateLobbySettings({ gameMode: 'TWO_HEADED_GIANT' })}
+                    disabled={playerCount > 4}
+                    className={`${styles.settingsButton} ${is2hg ? styles.settingsButtonActive : ''}`}
+                    title="2v2 teams — draft or seal, then play one team game (exactly 4 players)"
+                  >
+                    Two-Headed Giant
+                  </button>
+                  <button
+                    onClick={() => playerCount <= 8 && updateLobbySettings({ gameMode: 'TEAM_VS_TEAM' })}
+                    disabled={playerCount > 8}
+                    className={`${styles.settingsButton} ${isTeamVsTeam ? styles.settingsButtonActive : ''}`}
+                    title="Two even teams — 2v2, 3v3, or 4v4. Own life and own turns; last team standing wins."
+                  >
+                    Team vs. Team
+                  </button>
+                </div>
+                {isFfa && (
+                  <div className={styles.variantCaption}>
+                    One game, everyone at the same table (2-6 players). Last player standing wins.
+                  </div>
+                )}
+                {is2hg && (
+                  <div className={styles.variantCaption}>
+                    Four players in two teams of two. Each team shares one 30-life total, takes turns
+                    together, and attacks and blocks as one. Last team standing wins.
+                  </div>
+                )}
+                {isTeamVsTeam && (
+                  <div className={styles.variantCaption}>
+                    An even pod (4/6/8) split into two teams — 2v2, 3v3, or 4v4. Each player keeps their
+                    own 20 life and their own turn; players are knocked out one at a time. The last team
+                    with anyone standing wins.
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Team setup (2HG — CR 810; Team vs. Team — CR 808): random teams each game, or host-picked teams. */}
+            {isTeamGame && (
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Teams</span>
+                <div className={styles.variantGroup}>
+                  <div className={styles.settingsButtons}>
+                    <button
+                      onClick={() => updateLobbySettings({ randomTeams: true })}
+                      className={`${styles.settingsButton} ${randomTeams ? styles.settingsButtonActive : ''}`}
+                      title="Shuffle the players into two even teams when the game starts (re-rolled each game)"
+                    >
+                      Random
+                    </button>
+                    <button
+                      onClick={() => updateLobbySettings({ randomTeams: false })}
+                      className={`${styles.settingsButton} ${!randomTeams ? styles.settingsButtonActive : ''}`}
+                      title="Set the teams by hand — click each player's team chip below"
+                    >
+                      Choose teams
+                    </button>
+                  </div>
+                  <div className={styles.variantCaption}>
+                    {randomTeams
+                      ? 'Teams are randomised at game start, fresh every game.'
+                      : manualTeamsBalanced
+                        ? 'Click a player’s team chip below to move them between teams.'
+                        : `Click each player’s team chip below — each team needs exactly ${teamSize} player${teamSize === 1 ? '' : 's'}.`}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Free-for-All attack rule (CR 802/803) — only relevant once 3+ players share one table */}
+            {isFfa && (
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Attack</span>
+                <div className={styles.variantGroup}>
+                  <div className={styles.settingsButtons}>
+                    {([
+                      ['MULTIPLE', 'Any opponent', 'Each creature may attack any opponent (CR 802)'],
+                      ['LEFT', 'Left only', 'Each creature may attack only the player to your left (CR 803)'],
+                      ['RIGHT', 'Right only', 'Each creature may attack only the player to your right (CR 803)'],
+                    ] as const).map(([mode, label, title]) => (
+                      <button
+                        key={mode}
+                        onClick={() => updateLobbySettings({ attackMode: mode })}
+                        className={`${styles.settingsButton} ${(lobbyState.settings.attackMode ?? 'MULTIPLE') === mode ? styles.settingsButtonActive : ''}`}
+                        title={title}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className={styles.variantCaption}>
+                    Who each creature may attack. "Left"/"right" follow the seating order.
+                  </div>
+                </div>
+              </div>
+            )}
             {isAnySealed && (() => {
               const caption = isCommanderSealed
                 ? 'Open Commander-shaped packs and build a 60-card deck around a commander from your pool. 1v1.'
@@ -1221,18 +1395,20 @@ function LobbyOverlay({
                 </div>
               </>
             )}
-            <div className={styles.settingsRow}>
-              <span className={styles.settingsLabel}>Games per matchup</span>
-              <select
-                value={lobbyState.settings.gamesPerMatch ?? 1}
-                onChange={(e) => updateLobbySettings({ gamesPerMatch: Number(e.target.value) })}
-                className={styles.settingsSelect}
-              >
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
+            {!isFfa && (
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Games per matchup</span>
+                <select
+                  value={lobbyState.settings.gamesPerMatch ?? 1}
+                  onChange={(e) => updateLobbySettings({ gamesPerMatch: Number(e.target.value) })}
+                  className={styles.settingsSelect}
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className={styles.settingsRow}>
               <span className={styles.settingsLabel}>Visibility</span>
               <div className={styles.settingsButtons}>
@@ -1321,6 +1497,53 @@ function LobbyOverlay({
                 <span className={styles.playerName}>
                   {player.playerName}
                 </span>
+                {/* Team-game (2HG / Team vs. Team) team chip. Random mode: a neutral chip (teams
+                    decided at game start). Manual mode: the assigned team, clickable for the host to
+                    reassign. */}
+                {isTeamGame && randomTeams && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                      color: 'rgba(226, 232, 240, 0.7)',
+                      border: '1px solid rgba(148, 163, 184, 0.45)',
+                      background: 'rgba(148, 163, 184, 0.12)',
+                      borderRadius: 4,
+                      padding: '1px 6px',
+                    }}
+                  >
+                    Random
+                  </span>
+                )}
+                {isTeamGame && !randomTeams && (() => {
+                  const team = playerTeam(player.playerId, i)
+                  const c = teamColor(team)
+                  const chipStyle = {
+                    fontSize: 10,
+                    fontWeight: 800,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase' as const,
+                    color: c.bright,
+                    border: `1px solid ${c.base}`,
+                    background: c.soft,
+                    borderRadius: 4,
+                    padding: '1px 6px',
+                  }
+                  const hostCanEdit = isWaiting && lobbyState.isHost
+                  return hostCanEdit ? (
+                    <button
+                      onClick={() => togglePlayerTeam(player.playerId, i)}
+                      style={{ ...chipStyle, cursor: 'pointer' }}
+                      title="Click to move this player to the other team"
+                    >
+                      Team {team + 1}
+                    </button>
+                  ) : (
+                    <span style={chipStyle}>Team {team + 1}</span>
+                  )
+                })()}
                 {player.isHost && (
                   <span className={styles.hostBadge}>Host</span>
                 )}
@@ -1355,7 +1578,7 @@ function LobbyOverlay({
               Waiting for players to join...
             </div>
           )}
-          {isWaiting && lobbyState.isHost && aiEnabled && playerCount < (isWinston ? 2 : isGridDraft ? 4 : (lobbyState.settings.maxPlayers || 8)) && (
+          {isWaiting && lobbyState.isHost && aiEnabled && !isFfa && playerCount < (isWinston ? 2 : isGridDraft ? 4 : (lobbyState.settings.maxPlayers || 8)) && (
             <button onClick={addAiToLobby} className={styles.addAiButton}>
               + Add AI Player
             </button>
@@ -1385,7 +1608,7 @@ function LobbyOverlay({
               }
               className={styles.startButton}
             >
-              {isAnyDraft ? 'Start Draft' : isPremade ? 'Start Tournament' : 'Start Game'}
+              {isAnyDraft ? 'Start Draft' : isPremade ? (isFfa ? 'Start Game' : 'Start Tournament') : 'Start Game'}
             </button>
           )}
           <button onClick={leaveLobby} className={styles.leaveButton}>
@@ -1511,6 +1734,208 @@ interface HoveredStanding {
   lifeDifferential: number | undefined
   tiebreakerReason: string | null | undefined
   rect: DOMRect
+}
+
+/**
+ * Free-for-All pod overlay — the FFA-mode counterpart of [TournamentOverlay]. Shown between
+ * games: standings of the last game (placement order), a "Play Again" ready loop, and the
+ * usual share/replays/deck/leave toolbar. During a game the board renders instead.
+ */
+function FreeForAllOverlay({ ffaState }: { ffaState: FfaState }) {
+  const playerId = useGameStore((state) => state.playerId)
+  const lobbyState = useGameStore((state) => state.lobbyState)
+  const deckBuildingState = useGameStore((state) => state.deckBuildingState)
+  const readyForNextRound = useGameStore((state) => state.readyForNextRound)
+  const unsubmitDeck = useGameStore((state) => state.unsubmitDeck)
+  const leaveTournament = useGameStore((state) => state.leaveTournament)
+  const spectateGame = useGameStore((state) => state.spectateGame)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [showReplays, setShowReplays] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
+
+  const shareLink = `${window.location.origin}/tournament/${ffaState.lobbyId}`
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareLink)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
+
+  const fetchPodGames = useCallback(async (): Promise<GameSummary[]> => {
+    const token = localStorage.getItem('argentum-token')
+    if (!token) throw new Error('No player token')
+    const res = await fetch(`/api/replays/tournament/${ffaState.lobbyId}`, {
+      headers: { 'X-Player-Token': token },
+    })
+    if (!res.ok) throw new Error(`Server error: ${res.status}`)
+    return await res.json() as GameSummary[]
+  }, [ffaState.lobbyId])
+
+  const fetchPodReplay = useCallback(async (gameId: string): Promise<ReplayData> => {
+    const token = localStorage.getItem('argentum-token')
+    if (!token) throw new Error('No player token')
+    const res = await fetch(`/api/replays/${gameId}?lobbyId=${ffaState.lobbyId}`, {
+      headers: { 'X-Player-Token': token },
+    })
+    if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
+    return await res.json() as ReplayData
+  }, [ffaState.lobbyId])
+
+  if (showReplays) {
+    return (
+      <ReplayViewer
+        fetchGames={fetchPodGames}
+        fetchReplay={fetchPodReplay}
+        onBack={() => setShowReplays(false)}
+      />
+    )
+  }
+
+  const isSpectator = !playerId || !lobbyState?.players.some((p) => p.playerId === playerId)
+  const gameInProgress = ffaState.currentGameSessionId != null
+  const isPlayerReady = playerId ? ffaState.readyPlayerIds.includes(playerId) : false
+  const readyCount = ffaState.readyPlayerIds.length
+  const totalPlayers = lobbyState?.players.filter((p) => p.isConnected).length
+    ?? ffaState.standings?.length ?? 0
+
+  return (
+    <div className={styles.tournamentOverlay}>
+      {/* ── Header ── */}
+      <div className={styles.trnHeader}>
+        <div className={styles.trnHeaderTop}>
+          <h1 className={styles.trnTitle}>Free-for-All</h1>
+          <span className={styles.trnRound}>
+            {gameInProgress
+              ? `Game ${ffaState.gameNumber} in progress`
+              : ffaState.gamesPlayed > 0
+                ? `After game ${ffaState.gamesPlayed}`
+                : 'Waiting to start'}
+          </span>
+        </div>
+        <div className={styles.trnToolbar}>
+          <button onClick={copyShareLink} className={styles.trnToolbarBtn}>
+            {linkCopied ? 'Copied!' : 'Share Link'}
+          </button>
+          {ffaState.gamesPlayed > 0 && (
+            <button onClick={() => setShowReplays(true)} className={styles.trnToolbarBtn}>
+              Replays
+            </button>
+          )}
+          {gameInProgress && isSpectator && ffaState.currentGameSessionId && (
+            <button
+              onClick={() => spectateGame(ffaState.currentGameSessionId!)}
+              className={styles.trnToolbarBtn}
+            >
+              Watch Game
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Action zone: play again / waiting ── */}
+      {!isSpectator && !gameInProgress && (
+        <div className={styles.trnActionZone}>
+          <div className={styles.trnReadyRow}>
+            <button
+              onClick={readyForNextRound}
+              disabled={isPlayerReady}
+              className={styles.readyButton}
+            >
+              {isPlayerReady ? '✓ Ready' : ffaState.gamesPlayed > 0 ? 'Play Again' : 'Ready'}
+            </button>
+            {!isPlayerReady && deckBuildingState && (
+              <button onClick={unsubmitDeck} className={styles.editDeckButton}>
+                Edit Deck
+              </button>
+            )}
+            <span className={styles.readyCount}>
+              {readyCount}/{totalPlayers} ready
+            </span>
+          </div>
+        </div>
+      )}
+      {gameInProgress && !isSpectator && (
+        <div className={`${styles.statusBoxWaiting} ${styles.trnSection}`}>
+          Game in progress...
+        </div>
+      )}
+
+      {/* ── Standings (placement order of the last game) ── */}
+      {ffaState.standings && (
+        <div className={`${styles.standingsTable} ${styles.trnSection}`}>
+          <table className={styles.standingsTableInner}>
+            <thead className={styles.standingsHeader}>
+              <tr>
+                <th className={styles.standingsTh}>#</th>
+                <th className={styles.standingsThLeft}>Player</th>
+                <th className={styles.standingsTh}>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ffaState.standings.map((standing) => {
+                const isMe = standing.playerId === playerId
+                return (
+                  <tr
+                    key={standing.playerId}
+                    className={`${styles.standingsRow} ${isMe ? styles.standingsRowMe : ''}`}
+                  >
+                    <td className={`${styles.standingsTd} ${styles.standingsRank} ${
+                      standing.placement === 1 ? styles.standingsRankFirst :
+                      standing.placement === 2 ? styles.standingsRankSecond :
+                      standing.placement === 3 ? styles.standingsRankThird : ''
+                    }`}>
+                      {standing.placement}
+                    </td>
+                    <td className={styles.standingsTdLeft} style={{ fontWeight: isMe ? 600 : 400 }}>
+                      <span className={styles.standingsPlayerName} title={standing.playerName}>
+                        {standing.playerName}
+                      </span>
+                      {isMe && <span className={styles.meIndicator}>(you)</span>}
+                    </td>
+                    <td className={styles.standingsTd}>
+                      {standing.placement === 1 ? 'Winner' : `${ordinal(standing.placement)} place`}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {!ffaState.standings && !gameInProgress && (
+        <div className={`${styles.statusBoxWaiting} ${styles.trnSection}`}>
+          Waiting for all players to be ready...
+        </div>
+      )}
+
+      {/* ── Leave ── */}
+      <div className={styles.trnSection} style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+        {!confirmLeave ? (
+          <button onClick={() => setConfirmLeave(true)} className={styles.leaveButton}>
+            Leave
+          </button>
+        ) : (
+          <>
+            <button onClick={leaveTournament} className={styles.leaveButton}>
+              Confirm Leave
+            </button>
+            <button onClick={() => setConfirmLeave(false)} className={styles.trnToolbarBtn}>
+              Cancel
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ordinal(n: number): string {
+  if (n % 100 >= 11 && n % 100 <= 13) return `${n}th`
+  switch (n % 10) {
+    case 1: return `${n}st`
+    case 2: return `${n}nd`
+    case 3: return `${n}rd`
+    default: return `${n}th`
+  }
 }
 
 function TournamentOverlay({

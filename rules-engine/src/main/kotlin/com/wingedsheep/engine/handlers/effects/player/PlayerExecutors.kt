@@ -39,6 +39,7 @@ class PlayerExecutors(
 
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AmassExecutor(effectExecutor),
+        AddAdditionalUpkeepStepsExecutor(),
         AddCombatPhaseExecutor(),
         AnyPlayerMayPayExecutor(executeEffect = effectExecutor),
         CantActivateLoyaltyAbilitiesExecutor(),

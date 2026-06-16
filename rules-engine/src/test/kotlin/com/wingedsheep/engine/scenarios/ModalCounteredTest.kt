@@ -5,7 +5,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.mtg.sets.definitions.ktk.cards.Cancel
+import com.wingedsheep.mtg.sets.definitions.tsp.cards.Cancel
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.BrigidsCommand
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step

@@ -35,8 +35,8 @@ val AlpharaelStonechosen = card("Alpharael, Stonechosen") {
         triggerCondition = Conditions.Void
         effect = Effects.LoseHalfLife(
             roundUp = true,
-            target = EffectTarget.PlayerRef(Player.Opponent),
-            lifePlayer = Player.Opponent
+            target = EffectTarget.PlayerRef(Player.DefendingPlayer),
+            lifePlayer = Player.DefendingPlayer
         )
         description = "Void — Whenever Alpharael attacks, if a nonland permanent left the battlefield this turn or a spell was warped this turn, defending player loses half their life, rounded up."
     }

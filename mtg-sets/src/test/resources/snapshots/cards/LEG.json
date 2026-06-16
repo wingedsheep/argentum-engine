@@ -126,6 +126,45 @@
     ]
 }
 
+// Relic Barrier
+{
+    "name": "Relic Barrier",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Tap target artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "292",
+        "rarity": "UNCOMMON",
+        "artist": "Harold McNeill",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c062cbae-ce5e-43be-9932-c81a0a3622e8.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Remove Soul
 {
     "name": "Remove Soul",
@@ -230,6 +269,62 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Vampire Bats
+{
+    "name": "Vampire Bats",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Bat",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\n{B}: This creature gets +1/+0 until end of turn. Activate no more than twice each turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    {
+                        "type": "MaxPerTurn",
+                        "count": 2
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Anson Maddocks",
+        "flavorText": "\"For something is amiss or out of place/ When mice with wings can wear a human face.\" —Theodore Roethke, \"The Bat\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a6a6f50-7b86-461e-80a7-e35d0e7cf52f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

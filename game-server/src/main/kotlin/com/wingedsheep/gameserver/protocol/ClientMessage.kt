@@ -146,7 +146,11 @@ sealed interface ClientMessage {
         val pickTimeSeconds: Int = 45,     // Draft only
         val isPublic: Boolean = false,
         /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Defaults off. */
-        val aiAssistEnabled: Boolean = false
+        val aiAssistEnabled: Boolean = false,
+        /** Lobby mode axis: "TOURNAMENT" (default) or "FREE_FOR_ALL" (one multiplayer game, 2-6 players). */
+        val gameMode: String = "TOURNAMENT",
+        /** Free-for-All attack rule (CR 802/803): "MULTIPLE" (default), "LEFT", or "RIGHT". */
+        val attackMode: String = "MULTIPLE",
     ) : ClientMessage
 
     /**
@@ -258,6 +262,17 @@ sealed interface ClientMessage {
         val bannedCardNames: List<String>? = null,
         /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Null = unchanged. */
         val aiAssistEnabled: Boolean? = null,
+        /** Lobby mode axis: "TOURNAMENT" or "FREE_FOR_ALL". Null = unchanged. */
+        val gameMode: String? = null,
+        /** Free-for-All attack rule (CR 802/803): "MULTIPLE", "LEFT", or "RIGHT". Null = unchanged. */
+        val attackMode: String? = null,
+        /** Two-Headed Giant: true = random teams each game, false = host-set teams. Null = unchanged. */
+        val randomTeams: Boolean? = null,
+        /**
+         * Two-Headed Giant manual team assignment: playerId -> team index (0 or 1). The full map is
+         * sent each time (not a delta). Null leaves the current assignment unchanged.
+         */
+        val teamAssignments: Map<String, Int>? = null,
     ) : ClientMessage
 
     /**
@@ -373,6 +388,32 @@ sealed interface ClientMessage {
     ) : ClientMessage
 
     /**
+     * Set a persistent per-ability yield (MTGO right-click yields — backlog §C). Keyed by the
+     * ability's [com.wingedsheep.sdk.scripting.AbilityIdentity] ([cardDefinitionId] + [abilityId]),
+     * so it applies to every current and future copy/instance of that card ability.
+     */
+    @Serializable
+    @SerialName("setAbilityYield")
+    data class SetAbilityYield(
+        val cardDefinitionId: String,
+        val abilityId: String,
+        val kind: com.wingedsheep.engine.state.YieldKind
+    ) : ClientMessage
+
+    /** Revoke every yield (auto-pass + auto-answer) the player holds against one ability. */
+    @Serializable
+    @SerialName("clearAbilityYield")
+    data class ClearAbilityYield(
+        val cardDefinitionId: String,
+        val abilityId: String
+    ) : ClientMessage
+
+    /** Clear all of the player's yields (the "Clear yields" control; MTGO `5`). */
+    @Serializable
+    @SerialName("clearAllYields")
+    data object ClearAllYields : ClientMessage
+
+    /**
      * Request to undo the last non-respondable action (e.g., play land, declare attackers).
      */
     @Serializable
@@ -387,6 +428,15 @@ sealed interface ClientMessage {
     @SerialName("requestResync")
     data object RequestResync : ClientMessage
 
+    /**
+     * Connection liveness probe. The server always answers with [ServerMessage.Pong],
+     * regardless of authentication or game state. Sent by the client when a backgrounded
+     * tab becomes visible again, to detect half-open sockets (e.g. after OS sleep).
+     */
+    @Serializable
+    @SerialName("ping")
+    data object Ping : ClientMessage
+
     // =========================================================================
     // Quick Game Lobby Messages
     // =========================================================================
@@ -398,7 +448,20 @@ sealed interface ClientMessage {
         val vsAi: Boolean = false,
         val setCode: String? = null,
         val isPublic: Boolean = false,
-        val format: com.wingedsheep.sdk.core.DeckFormat? = null
+        val format: com.wingedsheep.sdk.core.DeckFormat? = null,
+        /**
+         * When true the lobby plays the Momir Basic Vanguard format: no deckbuilding (fixed 60
+         * basics), avatar in the command zone, and the per-player [setCode] scopes the random
+         * creature pool. Mutually exclusive with [format] (the constructed-legality restriction).
+         */
+        val momirBasic: Boolean = false,
+        /**
+         * When true the lobby plays Two-Headed Giant (CR 810): four seats, two teams of two
+         * (seats 0+1 vs 2+3 in join order), shared life / turns / combat. Human-only — the
+         * built-in AI is not team-aware yet (Phase 8), so [vsAi] must be false. Mutually
+         * exclusive with [momirBasic].
+         */
+        val twoHeadedGiant: Boolean = false,
     ) : ClientMessage
 
     /** Join an existing quick-game lobby by its short code. */
@@ -456,8 +519,15 @@ sealed interface ClientMessage {
     /**
      * Set the deck-format restriction for the lobby (host-only). Null = no restriction.
      * Re-validates every player's submitted deck and un-readies anyone who becomes invalid.
+     *
+     * [momirBasic] is the "Momir Basic" entry in the same dropdown (its Custom-formats group):
+     * when true the lobby switches to deckbuilding-free Vanguard mode and [format] is ignored
+     * (forced null server-side); the two are mutually exclusive.
      */
     @Serializable
     @SerialName("setQuickGameLobbyFormat")
-    data class SetQuickGameLobbyFormat(val format: com.wingedsheep.sdk.core.DeckFormat?) : ClientMessage
+    data class SetQuickGameLobbyFormat(
+        val format: com.wingedsheep.sdk.core.DeckFormat?,
+        val momirBasic: Boolean = false,
+    ) : ClientMessage
 }

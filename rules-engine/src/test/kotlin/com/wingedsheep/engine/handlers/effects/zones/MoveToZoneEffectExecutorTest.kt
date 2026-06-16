@@ -76,7 +76,6 @@ class MoveToZoneEffectExecutorTest : FunSpec({
     fun context(targetId: EntityId, controllerId: EntityId) = EffectContext(
         sourceId = null,
         controllerId = controllerId,
-        opponentId = null,
         targets = listOf(ChosenTarget.Permanent(targetId))
     )
 
@@ -205,7 +204,6 @@ class MoveToZoneEffectExecutorTest : FunSpec({
         val ctx = EffectContext(
             sourceId = null,
             controllerId = playerId,
-            opponentId = null,
             targets = listOf(ChosenTarget.Permanent(cardId))
         )
 

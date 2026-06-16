@@ -64,6 +64,7 @@ object ReplacementEffectUtils {
 
         var modifiedCount = count
 
+        // 1. Static battlefield replacement effects (Hardened Scales, Doubling Season, …).
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
@@ -80,24 +81,7 @@ object ReplacementEffectUtils {
                 // Gate on "If YOU would put..." — skip when an opponent is the placer.
                 if (effect is DoubleCounterPlacement && effect.placedByYou && placerId != sourceControllerId) continue
 
-                // Check counter type filter
-                val counterTypeMatches = when (counterEvent.counterType) {
-                    is CounterTypeFilter.Any -> true
-                    is CounterTypeFilter.PlusOnePlusOne -> counterType == CounterType.PLUS_ONE_PLUS_ONE
-                    is CounterTypeFilter.MinusOneMinusOne -> counterType == CounterType.MINUS_ONE_MINUS_ONE
-                    is CounterTypeFilter.Loyalty -> counterType == CounterType.LOYALTY
-                    is CounterTypeFilter.Named -> {
-                        try {
-                            val namedType = CounterType.valueOf(
-                                (counterEvent.counterType as CounterTypeFilter.Named).name.uppercase().replace(' ', '_')
-                            )
-                            counterType == namedType
-                        } catch (_: IllegalArgumentException) {
-                            false
-                        }
-                    }
-                }
-                if (!counterTypeMatches) continue
+                if (!matchesCounterTypeFilter(counterEvent.counterType, counterType)) continue
 
                 // Check recipient filter
                 val recipientMatches = matchesRecipientFilter(
@@ -112,8 +96,41 @@ object ReplacementEffectUtils {
             }
         }
 
+        // 2. Temporary, duration-scoped, controller-scoped modifiers
+        //    (GrantCounterPlacementModifierEffect — e.g. Prairie Dog's {4}{W}).
+        //    These have no battlefield source permanent: the effect's stored controllerId IS
+        //    the "you" for both the recipient filter ("a creature you control") and the placer
+        //    gate (only the controller's own counter placements get the bonus).
+        for (modifier in state.activeCounterPlacementModifiers) {
+            if (placerId != modifier.controllerId) continue
+            if (!matchesCounterTypeFilter(modifier.counterType, counterType)) continue
+            // No battlefield source entity — pass the controller as the "source entity" so
+            // RecipientFilter.Self can't spuriously match, and the controller as controllerId.
+            val recipientMatches = matchesRecipientFilter(
+                modifier.recipient, state, targetId, modifier.controllerId, modifier.controllerId
+            )
+            if (!recipientMatches) continue
+            modifiedCount += modifier.modifier
+        }
+
         return modifiedCount.coerceAtLeast(0)
     }
+
+    /** Whether a [CounterTypeFilter] from a replacement/modifier matches the concrete [counterType] being placed. */
+    private fun matchesCounterTypeFilter(filter: CounterTypeFilter, counterType: CounterType): Boolean =
+        when (filter) {
+            is CounterTypeFilter.Any -> true
+            is CounterTypeFilter.PlusOnePlusOne -> counterType == CounterType.PLUS_ONE_PLUS_ONE
+            is CounterTypeFilter.MinusOneMinusOne -> counterType == CounterType.MINUS_ONE_MINUS_ONE
+            is CounterTypeFilter.Loyalty -> counterType == CounterType.LOYALTY
+            is CounterTypeFilter.Named -> {
+                try {
+                    counterType == CounterType.valueOf(filter.name.uppercase().replace(' ', '_'))
+                } catch (_: IllegalArgumentException) {
+                    false
+                }
+            }
+        }
 
     private fun matchesRecipientFilter(
         recipient: RecipientFilter,

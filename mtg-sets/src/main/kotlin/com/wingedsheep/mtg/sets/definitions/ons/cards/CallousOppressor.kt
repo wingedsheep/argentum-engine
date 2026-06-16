@@ -31,7 +31,7 @@ val CallousOppressor = card("Callous Oppressor") {
     oracleText = "You may choose not to untap Callous Oppressor during your untap step.\nAs Callous Oppressor enters the battlefield, an opponent chooses a creature type.\n{T}: Gain control of target creature that isn't of the chosen type for as long as Callous Oppressor remains tapped."
 
     flags(AbilityFlag.MAY_NOT_UNTAP)
-    replacementEffect(EntersWithChoice(ChoiceType.CREATURE_TYPE, chooser = com.wingedsheep.sdk.scripting.references.Player.Opponent))
+    replacementEffect(EntersWithChoice(ChoiceType.CREATURE_TYPE, chooser = com.wingedsheep.sdk.scripting.references.Player.AnOpponent))
 
     activatedAbility {
         cost = Costs.Tap

@@ -599,6 +599,30 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     else -> emptyList()
                 }
 
+                // Station-style multi-select shortcut (CR 702.184a): a single-creature tap cost
+                // with no chosen targets and a per-activation effect that stacks can be queued
+                // several times in one gesture — the player taps multiple distinct creatures and
+                // one activation per creature goes on the stack (each taps exactly its creature,
+                // each produces its own effect). This is a UX shortcut over repeated single
+                // activations, not a rules change. Restricted to `count == 1` so the client offers
+                // a plain 1..N creature pick (no multiple-of-count grouping); the once/max-per-turn
+                // and "effect must stack" guards mirror the mana repeat path above.
+                val tapBatchMaxActivations: Int = run {
+                    val atom = tapCost
+                    if (atom != null
+                        && atom.count == 1
+                        && tapTargets != null
+                        && tapTargets.size > 1
+                        && ability.targetRequirements.isEmpty()
+                        && effectStacksOnRepeat(ability.effect)
+                        && !ability.restrictions.any {
+                            it is ActivationRestriction.OncePerTurn || it is ActivationRestriction.Once ||
+                                it is ActivationRestriction.MaxPerTurn ||
+                                (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.OncePerTurn || r is ActivationRestriction.Once || r is ActivationRestriction.MaxPerTurn })
+                        }
+                    ) tapTargets.size else 1
+                }
+
                 // Build additional cost info for sacrifice, tap, bounce, or counter removal costs
                 val costInfo = buildAdditionalCostInfo(
                     ability, tapTargets, tapCost, hasTapXPermanentsCost,
@@ -608,7 +632,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     blightCost, blightCreatures,
                     discardCost, discardTargets,
                     craftCost, craftMaterials,
-                    exileCost, exileTargets
+                    exileCost, exileTargets,
+                    tapBatchMaxActivations
                 )
 
                 // Calculate X cost info for activated abilities with X in their mana cost
@@ -801,8 +826,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         val playerId = context.playerId
         val projected = context.projected
 
-        val opponentId = state.turnOrder.firstOrNull { it != playerId } ?: return
-        val opponentPermanents = projected.getBattlefieldControlledBy(opponentId)
+        val opponentPermanents = state.getOpponents(playerId)
+            .flatMap { projected.getBattlefieldControlledBy(it) }
 
         for (entityId in opponentPermanents) {
             val container = state.getEntity(entityId) ?: continue
@@ -931,7 +956,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         craftCost: AbilityCost.Craft? = null,
         craftMaterials: List<EntityId> = emptyList(),
         exileCost: CostAtom.ExileFrom? = null,
-        exileTargets: List<EntityId>? = null
+        exileTargets: List<EntityId>? = null,
+        tapBatchMaxActivations: Int = 1
     ): AdditionalCostData? {
         if (craftCost != null) {
             // Craft (CR 702.167) is handled exclusively: when a Composite cost contains a
@@ -956,6 +982,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 costType = "TapPermanents",
                 validTapTargets = tapTargets,
                 tapCount = tapCost.count,
+                tapBatchMaxActivations = tapBatchMaxActivations,
                 counterRemovalCreatures = counterRemovalCreatures
             )
         }
@@ -1129,7 +1156,6 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         val baseContext = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = null
         )
         val amount = if (ability.targetRequirements.isNotEmpty()) {
             maxReductionOverLegalTargets(reduction, ability, state, sourceId, controllerId, enumerationContext, evaluator)
@@ -1164,7 +1190,6 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             val targetContext = com.wingedsheep.engine.handlers.EffectContext(
                 sourceId = sourceId,
                 controllerId = controllerId,
-                opponentId = null,
                 targets = listOf(ChosenTarget.Permanent(targetId))
             )
             evaluator.evaluate(state, reduction, targetContext)

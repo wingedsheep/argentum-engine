@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.PreventCycling
@@ -59,16 +60,14 @@ class CastPermissionUtils(
     ): Boolean {
         return when (restriction) {
             is ActivationRestriction.AnyPlayerMay -> true
-            is ActivationRestriction.OnlyDuringYourTurn -> state.activePlayerId == playerId
+            is ActivationRestriction.OnlyDuringYourTurn -> state.isActiveTurnFor(playerId)
             is ActivationRestriction.BeforeStep -> state.step.ordinal < restriction.step.ordinal
             is ActivationRestriction.DuringPhase -> state.phase == restriction.phase
             is ActivationRestriction.DuringStep -> state.step == restriction.step
             is ActivationRestriction.OnlyIfCondition -> {
-                val opponentId = state.turnOrder.firstOrNull { it != playerId }
                 val context = EffectContext(
                     sourceId = sourceId,
                     controllerId = playerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = 0
                 )
@@ -108,11 +107,9 @@ class CastPermissionUtils(
     ): Boolean {
         if (restrictions.isEmpty()) return true
 
-        val opponentId = state.turnOrder.firstOrNull { it != playerId }
         val context = EffectContext(
             sourceId = null,
             controllerId = playerId,
-            opponentId = opponentId,
             targets = emptyList(),
             xValue = 0
         )
@@ -133,19 +130,38 @@ class CastPermissionUtils(
     }
 
     /**
-     * Whether [playerId] has already cast as many spells this turn as a permanent they
-     * control with [RestrictSpellsCastPerTurn] allows (e.g., Yawgmoth's Agenda: "You can't
-     * cast more than one spell each turn."). When several such permanents are in play, the
-     * most restrictive (smallest [RestrictSpellsCastPerTurn.maxPerTurn]) applies. Returns
-     * false when no such permanent is controlled.
+     * Whether [playerId] has already cast as many spells this turn as a [RestrictSpellsCastPerTurn]
+     * permanent allows. Two scopes are folded:
+     *
+     *  - **controller-scoped** ([RestrictSpellsCastPerTurn.eachPlayer] = false) — only counts
+     *    permanents [playerId] themselves controls (Yawgmoth's Agenda: "You can't cast more than
+     *    one spell each turn.").
+     *  - **global** ([RestrictSpellsCastPerTurn.eachPlayer] = true) — counts any such permanent
+     *    anywhere on the battlefield, binding every player (High Noon: "Each player can't cast
+     *    more than one spell each turn.").
+     *
+     * When several such permanents apply, the most restrictive (smallest
+     * [RestrictSpellsCastPerTurn.maxPerTurn]) applies. Returns false when no permanent restricts
+     * [playerId].
      */
     fun hasReachedSpellCastLimit(state: GameState, playerId: EntityId): Boolean {
         var limit: Int? = null
+        // Permanents the player controls restrict them whether eachPlayer is true or false.
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             for (sa in cardDef.script.staticAbilities) {
                 if (sa is RestrictSpellsCastPerTurn) {
+                    limit = minOf(limit ?: sa.maxPerTurn, sa.maxPerTurn)
+                }
+            }
+        }
+        // Global (eachPlayer) restrictions bind every player regardless of who controls them.
+        for (entityId in state.getBattlefield()) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (sa in cardDef.script.staticAbilities) {
+                if (sa is RestrictSpellsCastPerTurn && sa.eachPlayer) {
                     limit = minOf(limit ?: sa.maxPerTurn, sa.maxPerTurn)
                 }
             }
@@ -296,7 +312,6 @@ class CastPermissionUtils(
                     val ctx = EffectContext(
                         sourceId = permanentId,
                         controllerId = controller,
-                        opponentId = state.turnOrder.firstOrNull { it != controller }
                     )
                     if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
                 }
@@ -317,7 +332,7 @@ class CastPermissionUtils(
     private fun affectedPlayerMatches(affected: Player, controllerId: EntityId, castingPlayerId: EntityId): Boolean =
         when (affected) {
             is Player.You -> castingPlayerId == controllerId
-            is Player.Opponent, is Player.EachOpponent -> castingPlayerId != controllerId
+            is Player.EachOpponent -> castingPlayerId != controllerId
             is Player.Each, is Player.Any, is Player.ActivePlayerFirst -> true
             // Target-bound references (TargetPlayer, …) have no meaning for a continuous static.
             else -> false
@@ -358,6 +373,21 @@ class CastPermissionUtils(
         return null
     }
 
+    /**
+     * If [playerId] controls a permanent granting [PlotFromTopOfLibrary] (Fblthp), the filter the
+     * top card must match to be plottable from the library; null if no such permission is active.
+     */
+    fun getPlotFromTopOfLibraryFilter(state: GameState, playerId: EntityId): GameObjectFilter? {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (ability in cardDef.script.staticAbilities) {
+                if (ability is PlotFromTopOfLibrary) return ability.filter
+            }
+        }
+        return null
+    }
+
     fun getCastFromTopOfLibraryFilter(state: GameState, playerId: EntityId): GameObjectFilter? {
         var filter: GameObjectFilter? = null
         for (entityId in state.getBattlefield(playerId)) {
@@ -381,11 +411,9 @@ class CastPermissionUtils(
         val spellDef = spellCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val conditionalFlash = spellDef?.script?.conditionalFlash
         if (conditionalFlash != null) {
-            val opponentId = state.turnOrder.firstOrNull { it != spellOwner }
             val effectContext = EffectContext(
                 sourceId = spellCardId,
                 controllerId = spellOwner,
-                opponentId = opponentId
             )
             if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) {
                 return true
@@ -484,11 +512,9 @@ class CastPermissionUtils(
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
                         if (!predicate(ability.ability)) continue
-                        val opponentId = state.turnOrder.firstOrNull { it != playerId }
                         val context = com.wingedsheep.engine.handlers.EffectContext(
                             sourceId = entityId,
                             controllerId = playerId,
-                            opponentId = opponentId
                         )
                         if (conditionEvaluator.evaluate(state, ability.condition, context)) return true
                     }
@@ -585,11 +611,9 @@ class CastPermissionUtils(
                 for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                     if (ability is com.wingedsheep.sdk.scripting.ConditionalStaticAbility) {
                         if (ability.ability is MayPlayLandsFromGraveyard) {
-                            val opponentId = state.turnOrder.firstOrNull { it != playerId }
                             val context = com.wingedsheep.engine.handlers.EffectContext(
                                 sourceId = entityId,
                                 controllerId = playerId,
-                                opponentId = opponentId
                             )
                             if (conditionEvaluator.evaluate(state, ability.condition, context)) return true
                         }

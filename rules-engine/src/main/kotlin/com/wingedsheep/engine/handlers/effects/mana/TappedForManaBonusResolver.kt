@@ -140,7 +140,6 @@ class TappedForManaBonusResolver(
         EffectContext(
             sourceId = auraId,
             controllerId = controllerId,
-            opponentId = state.turnOrder.firstOrNull { it != controllerId },
             targets = emptyList(),
             xValue = null,
         )

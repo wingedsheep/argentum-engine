@@ -50,6 +50,43 @@ enum class TournamentFormat {
 }
 
 /**
+ * What happens when the lobby's pool-building phase finishes (the *mode* axis, orthogonal to the
+ * [TournamentFormat] *format* axis — any format composes with any mode).
+ */
+enum class LobbyGameMode {
+    /** Round-robin bracket of 2-player matches (the existing tournament flow). */
+    TOURNAMENT,
+
+    /**
+     * One multiplayer Free-for-All game (CR 806) seating every lobby player (2-6). No rounds, no
+     * matches, no bracket — when all decks are in, a single N-player [com.wingedsheep.gameserver.session.GameSession]
+     * starts. Standings are the elimination order; readying up afterwards starts a new game with
+     * the same pod ("play again").
+     */
+    FREE_FOR_ALL,
+
+    /**
+     * One Two-Headed Giant game (CR 810): exactly four lobby players in two teams of two. Shares
+     * the Free-for-All single-pod lifecycle (one [com.wingedsheep.gameserver.session.GameSession],
+     * play-again, standings) but stamps team assignment (seats [0,1] vs [2,3]) and the
+     * [com.wingedsheep.sdk.core.Format.TwoHeadedGiant] format at game start. Built from the same
+     * sealed/draft pool-building as any other mode.
+     */
+    TWO_HEADED_GIANT,
+
+    /**
+     * One Team vs. Team game (CR 808): an even number of lobby players (4/6/8) split into two teams
+     * of equal size — 2v2, 3v3, or 4v4. Shares the Free-for-All single-pod lifecycle and team
+     * assignment plumbing with [TWO_HEADED_GIANT], but runs under
+     * [com.wingedsheep.sdk.core.Format.TeamVsTeam]: each player keeps their own life total and takes
+     * their own turn (CR 808.5 / 808.4), and players are eliminated individually — a team loses only
+     * when all its members are out (CR 104.2c). The only thing teams share is who counts as an
+     * opponent and the last-team-standing win.
+     */
+    TEAM_VS_TEAM;
+}
+
+/**
  * Grid draft row/column selection.
  */
 enum class GridSelection {
@@ -260,7 +297,64 @@ class TournamentLobby(
      * assist endpoints. Defaults off; a host can switch it on to allow assistance.
      */
     var aiAssistEnabled: Boolean = false,
+    /**
+     * Mode axis: what the lobby does once decks are in. [LobbyGameMode.TOURNAMENT] runs the
+     * round-robin bracket; [LobbyGameMode.FREE_FOR_ALL] starts one multiplayer game seating
+     * everyone. Orthogonal to [format] — any pool-building format composes with either mode.
+     */
+    var gameMode: LobbyGameMode = LobbyGameMode.TOURNAMENT,
+    /**
+     * Which opponents creatures may attack in a Free-for-All game (CR 802 / 803; CR 806.2b requires
+     * exactly one). Only meaningful when [gameMode] is FREE_FOR_ALL — ignored by the tournament
+     * bracket (whose matches are always two-player). Defaults to [AttackMode.MULTIPLE].
+     */
+    var attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
+    /**
+     * Team games only (2HG / Team vs. Team): when true (the default) the seats are split into two
+     * even random teams at game start, re-rolled each game. When false the host sets the teams by
+     * hand via [teamAssignments]. Ignored outside a team [gameMode] (see [isTeamGame]).
+     */
+    var randomTeams: Boolean = true,
 ) {
+
+    /**
+     * True for a single-pod multiplayer game — Free-for-All *or* Two-Headed Giant. Both seat every
+     * lobby player in one [com.wingedsheep.gameserver.session.GameSession] and share the same pod
+     * lifecycle (game start, play-again, standings, reconnection, leave-conceding), so the routing
+     * branches keyed on this flag cover both. Use [isTwoHeadedGiant] for the team-specific bits.
+     */
+    val isFreeForAll: Boolean
+        get() = gameMode == LobbyGameMode.FREE_FOR_ALL ||
+            gameMode == LobbyGameMode.TWO_HEADED_GIANT ||
+            gameMode == LobbyGameMode.TEAM_VS_TEAM
+
+    /** True only for a Two-Headed Giant pod (CR 810): four seats, two teams, shared life/turns/combat. */
+    val isTwoHeadedGiant: Boolean get() = gameMode == LobbyGameMode.TWO_HEADED_GIANT
+
+    /** True only for a Team vs. Team pod (CR 808): an even count ≥ 4 in two equal teams, no sharing. */
+    val isTeamVsTeam: Boolean get() = gameMode == LobbyGameMode.TEAM_VS_TEAM
+
+    /**
+     * True for any team pod (2HG or Team vs. Team): seats are split into teams and team assignment
+     * (the [randomTeams] / [teamAssignments] controls) applies. Free-for-All is not a team game.
+     */
+    val isTeamGame: Boolean get() = isTwoHeadedGiant || isTeamVsTeam
+
+    // =========================================================================
+    // Free-for-All mode state (unused in TOURNAMENT mode)
+    // =========================================================================
+
+    /** Session id of the FFA game currently in progress, or null between games. */
+    @Volatile
+    var ffaGameSessionId: String? = null
+
+    /** Completed FFA games in this lobby (drives the "Game N" label in the play-again loop). */
+    @Volatile
+    var ffaGamesPlayed: Int = 0
+
+    /** Final standings of the most recent FFA game (placement order), for late joiners/reconnects. */
+    @Volatile
+    var ffaLastStandings: List<ServerMessage.FfaStandingInfo>? = null
 
     /**
      * Update the sets for this lobby. Can only be changed while waiting for players.
@@ -292,6 +386,23 @@ class TournamentLobby(
 
     /** Players indexed by player ID */
     val players = ConcurrentHashMap<EntityId, LobbyPlayerState>()
+
+    /**
+     * Manual team assignment for a team game (2HG / Team vs. Team): playerId -> team index (0 or 1).
+     * Only consulted when [randomTeams] is false. Keyed by player id (not seat) so it survives
+     * reordering, reconnects, and a player leaving/rejoining. Players missing here are balanced into
+     * the open team at game start (see [EvenTeams.partition]).
+     */
+    @Volatile
+    var teamAssignments: Map<EntityId, Int> = emptyMap()
+        private set
+
+    /** Replace the manual team assignment, keeping only current players and valid team indices. */
+    fun setTeamAssignments(assignments: Map<EntityId, Int>) {
+        teamAssignments = assignments.filter { (id, team) ->
+            id in players.keys && team in 0 until EvenTeams.DEFAULT_TEAM_COUNT
+        }
+    }
 
     /** Tournament-level spectators (non-participants watching standings/matches) */
     val spectators = ConcurrentHashMap<EntityId, PlayerIdentity>()
@@ -1442,6 +1553,10 @@ class TournamentLobby(
                 chaosBoosters = chaosBoosters,
                 bannedCardNames = bannedCardNames.sorted(),
                 aiAssistEnabled = aiAssistEnabled,
+                gameMode = gameMode.name,
+                attackMode = attackMode.name,
+                randomTeams = randomTeams,
+                teamAssignments = teamAssignments.mapKeys { it.key.value },
             ),
             isHost = isHost(forPlayerId)
         )

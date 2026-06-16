@@ -40,8 +40,9 @@ class SetLifeTotalExecutor(
         val events = mutableListOf<EngineGameEvent>()
 
         for (playerId in playerIds) {
-            val currentLife = newState.getEntity(playerId)?.get<LifeTotalComponent>()?.life
-                ?: continue
+            if (newState.getEntity(playerId)?.get<LifeTotalComponent>() == null) continue
+            // CR 810.9c — setting a player's life adjusts the team's shared total by the gain/loss.
+            val currentLife = newState.lifeTotal(playerId)
 
             val newLife = amountEvaluator.evaluate(newState, effect.amount, context)
 
@@ -53,9 +54,7 @@ class SetLifeTotalExecutor(
             }
 
             if (newLife != currentLife) {
-                newState = newState.updateEntity(playerId) { container ->
-                    container.with(LifeTotalComponent(newLife))
-                }
+                newState = newState.withLifeTotal(playerId, newLife)
 
                 val reason = if (newLife > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
                 events.add(LifeChangedEvent(playerId, currentLife, newLife, reason))

@@ -66,7 +66,7 @@ class LegalActionEnricher(
             totalDamageToDistribute = action.totalDamageToDistribute,
             minDamagePerTarget = action.minDamagePerTarget,
             autoTapPreview = action.autoTapPreview,
-            availableManaSources = if (action.autoTapPreview != null || action.hasConvoke || action.hasWaterbend || action.hasDelve || action.hasHarmonize) manaSourceInfos else null,
+            availableManaSources = if (shouldExposeManaSources(action)) manaSourceInfos else null,
             sourceZone = action.sourceZone,
             tapForPower = action.tapForPower,
             tapForPowerRequired = action.tapForPowerRequired,
@@ -76,6 +76,14 @@ class LegalActionEnricher(
             holdPriority = action.holdPriority
         )
     }
+
+    private fun shouldExposeManaSources(action: LegalAction): Boolean =
+        action.autoTapPreview != null ||
+            (action.hasXCost && action.manaCostString != null) ||
+            action.hasConvoke ||
+            action.hasWaterbend ||
+            action.hasDelve ||
+            action.hasHarmonize
 
     private fun ModalLegalEnumeration.toDto() = ModalLegalEnumerationInfo(
         chooseCount = chooseCount,
@@ -136,6 +144,7 @@ class LegalActionEnricher(
         sacrificeCount = sacrificeCount,
         validTapTargets = validTapTargets,
         tapCount = tapCount,
+        tapBatchMaxActivations = tapBatchMaxActivations,
         validDiscardTargets = validDiscardTargets,
         discardCount = discardCount,
         validBounceTargets = validBounceTargets,

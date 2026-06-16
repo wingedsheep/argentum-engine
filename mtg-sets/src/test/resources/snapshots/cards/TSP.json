@@ -1,3 +1,116 @@
+// Ancient Grudge
+{
+    "name": "Ancient Grudge",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact.\nFlashback {G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Jim Nelson",
+        "flavorText": "The time rifts remind Yavimaya of the enemies of its past and provide fresh fuel for its fires.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89cbad1f-4f16-4d5f-a485-5bf950565216.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Assassinate
+{
+    "name": "Assassinate",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target tapped creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Kev Walker",
+        "flavorText": "The rulers of old Dominaria kept assassins on retainer. However, the true loyalty of these master killers was always to their peers. This elite brotherhood survived the fall of the old royal order.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40b67839-622d-41c1-b9c7-1a26b021ec78.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Cancel
+{
+    "name": "Cancel",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Mark Poole",
+        "flavorText": "Fendros gasped as he watched the spell drip from the ends of his fingers. He moved his foot, afraid to disturb the spot where it lay slain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4e175f7-f649-451b-9ee5-ad1140b2e8a7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Terramorphic Expanse
 {
     "name": "Terramorphic Expanse",
@@ -61,4 +174,39 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd097ea2-0a1c-44a0-824b-d5373df513fb.jpg?1562948625"
     },
     "colorIdentityOverride": []
+}
+
+// Think Twice
+{
+    "name": "Think Twice",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card.\nFlashback {2}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 1
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Jim Nelson",
+        "flavorText": "\"Great books are meant to be read, then read again backwards or upside down!\"\n—Ettovard, Tolarian archivist",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/352d99db-de6d-4405-90ec-b144abbaa5a4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }

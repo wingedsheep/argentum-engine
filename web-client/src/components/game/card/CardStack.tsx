@@ -1,11 +1,19 @@
 import { memo } from 'react'
 import type { GroupedCard } from '@/store/selectors.ts'
+import { MAX_VISUAL_STACK_DEPTH } from '@/store/selectors.ts'
 import { useResponsiveContext } from '../board/shared'
 import { GameCard } from './GameCard'
 
 /**
  * Renders a group of identical cards as an overlapping stack.
- * Each card has its own data-card-id for targeting arrows.
+ * Each rendered card has its own data-card-id for targeting arrows.
+ *
+ * The number of *rendered* layers is capped at MAX_VISUAL_STACK_DEPTH: a group of
+ * N identical tokens paints at most that many peeked cards plus a "×N" count badge
+ * on the front card (GameCard renders it when count > 1), instead of one DOM node
+ * per token. This keeps a legitimately huge board (a horde of tokens) cheap to
+ * display. Members hidden behind the cap are still fully reachable for actions —
+ * the server sends per-entity legal actions and the group carries every id.
  */
 function CardStackImpl({
   group,
@@ -35,12 +43,19 @@ function CardStackImpl({
   // Calculate stack offset (how much each card is offset from the previous)
   const stackOffset = responsive.isMobile ? 12 : 18
 
-  // Calculate total width needed for the stack
-  // Use height for tapped cards since they rotate 90 degrees (visually wider)
-  const hasAnyTapped = group.cards.some(c => c.isTapped)
+  // Render at most MAX_VISUAL_STACK_DEPTH overlapping layers regardless of how
+  // many identical members the group has — the count badge conveys the true size.
+  const renderedCards = group.cards.slice(0, MAX_VISUAL_STACK_DEPTH)
+  // The group key guarantees every member shares the same tapped state, so the
+  // representative answers for the whole stack (O(1), avoids scanning a horde).
+  const hasAnyTapped = group.card.isTapped
   const cardWidth = hasAnyTapped ? responsive.battlefieldCardHeight : responsive.battlefieldCardWidth
-  const totalWidth = cardWidth + stackOffset * (group.count - 1)
+  const totalWidth = cardWidth + stackOffset * (renderedCards.length - 1)
   const stackHeight = responsive.battlefieldCardHeight  // Always use full height for consistent alignment
+  // Only badge the count when members are hidden behind the cap — small stacks
+  // that are fully visible look exactly as before.
+  const hasHiddenMembers = group.count > renderedCards.length
+  const frontIndex = renderedCards.length - 1
 
   return (
     <div
@@ -53,7 +68,7 @@ function CardStackImpl({
         transition: 'width 0.15s, height 0.15s',
       }}
     >
-      {group.cards.map((card, index) => (
+      {renderedCards.map((card, index) => (
         <div
           key={card.id}
           style={{
@@ -68,7 +83,7 @@ function CardStackImpl({
         >
           <GameCard
             card={card}
-            count={1}
+            count={hasHiddenMembers && index === frontIndex ? group.count : 1}
             faceDown={card.isFaceDown}
             interactive={interactive}
             battlefield

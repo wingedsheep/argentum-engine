@@ -2,6 +2,7 @@ package com.wingedsheep.tooling.coverage.emitter
 
 import com.wingedsheep.tooling.coverage.Dsl
 import com.wingedsheep.tooling.coverage.Lit
+import com.wingedsheep.tooling.coverage.amountNode
 import com.wingedsheep.tooling.coverage.arg
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.call
@@ -40,7 +41,7 @@ internal val playerContinuousHandlers: Map<String, ActionHandler> = actionHandle
         call("FlipCoinEffect", arg("lostEffect", edsl))
     }
 
-    on("EachPlayerAction") { node, _, _ -> renderEachPlayer(node) }
+    on("EachPlayerAction", "EachPlayerActions") { node, _, _ -> renderEachPlayer(node) }
     on("PlayerAction", "HavePlayerTakeAction") { node, _, tvar -> renderPlayerAction(node, tvar) }
 
     on("CreateReplaceWouldDealDamageUntil") { node, _, tvar ->
@@ -144,6 +145,22 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): Dsl? {
         val spec = createTokens?.get("args").asArr?.firstOrNull() as? JsonObject ?: return null
         return createTokenDsl(spec, controller = "EffectTarget.TargetController")
     }
+    // "that creature's controller loses N life" — ControllerOfPermanent(Ref_TargetPermanent) + LoseLife
+    // (Foolish Fate's Infusion drain). Like the controller-creates-tokens shape above, the destroyed
+    // permanent's controller resolves at resolution time via EffectTarget.TargetController. Only a fixed
+    // life amount renders; a derived/X amount declines -> SCAFFOLD.
+    if (jsonContains(node, "_Player", "ControllerOfPermanent") && jsonContains(node, "_Action", "LoseLife")) {
+        val loseLife = (args as? JsonArray)?.firstOrNull { it is JsonObject && it.containsKey("_Action") } as? JsonObject
+        val amt = amount(loseLife?.get("args")) ?: return null
+        return call("LoseLifeEffect", arg(Lit(amt)), arg("EffectTarget.TargetController"))
+    }
+    // A relational player ref — the OWNER/CONTROLLER of the targeted permanent — is only modeled for the
+    // specific shapes handled above (owner-gains-life, controller-creates-tokens, controller-loses-life).
+    // The generic path below resolves the acting player via refTarget, which mis-maps such a ref to the
+    // permanent's OWN bound target — e.g. aiming "then that player discards a card" at the bounced
+    // permanent rather than its owner (Compelling Deterrence). Decline (-> SCAFFOLD) rather than
+    // mis-attribute the action.
+    if (jsonContains(node, "_Player", "OwnerOfPermanent") || jsonContains(node, "_Player", "ControllerOfPermanent")) return null
     val inner = innerAction(node) ?: return null
     val ptv = refTarget(args, tvar)  // the player the action applies to
     when (inner.strField("_Action")) {
@@ -172,6 +189,13 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): Dsl? {
         }
         "DiscardACardAtRandom" -> {
             return if (ptv != null) call("Patterns.Hand.discardRandom", arg("1"), arg(Lit(ptv))) else call("Patterns.Hand.discardRandom", arg("1"))
+        }
+        "MillNumberCards" -> {
+            // "target player mills N cards" (Desperate Bloodseeker's enters trigger). The milled player
+            // is the bound target; the count is a fixed Integer or a recognised dynamic amount. An
+            // unrenderable count scaffolds rather than guessing.
+            val amt = amountExpr(inner["args"]) ?: dynamicAmountExpr(amountNode(inner["args"])) ?: return null
+            return if (ptv != null) call("Patterns.Library.mill", arg(amt), arg(Lit(ptv))) else call("Patterns.Library.mill", arg(amt))
         }
         "SkipAllCombatPhasesTheirNextTurn" -> {
             return if (ptv != null) call("SkipCombatPhasesEffect", arg(Lit(ptv))) else call("SkipCombatPhasesEffect")
@@ -218,11 +242,109 @@ internal fun EmitCtx.renderPlayerAction(node: JsonObject, tvar: String?): Dsl? {
 
 internal fun EmitCtx.renderEachPlayer(node: JsonObject): Dsl? {
     val blob = compact(node)
+    // "any number of target players each <action(s)>" — EachPlayerAction / EachPlayerActions whose
+    // player scope is Ref_TargetPlayers (the chosen targets of an AnyNumberOfTargetPlayers requirement,
+    // Tinybones Joins Up). This is NOT a static Player.Each fan-out — each affected player is a *target*,
+    // so it renders as ForEachTargetEffect over the chosen players, each inner action bound to
+    // EffectTarget.PlayerRef(Player.ContextPlayer(0)). Only the per-player actions we can render exactly
+    // (discard 1, mill 1, lose N) are supported; anything else declines (-> SCAFFOLD).
+    if (jsonContains(node, "_Players", "Ref_TargetPlayers")) {
+        renderForEachTargetPlayerBody(node)?.let { return it }
+        return null
+    }
     // "each player returns a permanent they control to its owner's hand" (Words of Wind's replacement).
     if (jsonContains(node, "_Players", "AnyPlayer") && "PutAPermanentIntoItsOwnersHand" in blob)
         return call("Effects.EachPlayerReturnPermanentToHand")
-    if (jsonContains(node, "_Players", "Opponent") && "Discard" in blob) return call("Patterns.Hand.eachOpponentDiscards", arg("1"))  // Noxious Toad
+    // Noxious Toad: `EachPlayerAction(Opponent, DiscardACard)` — the opponent's ONLY action is the
+    // discard. Arbiter of Woe is `EachPlayerActions(Opponent, [DiscardACard, LoseLife])`; collapsing to
+    // eachOpponentDiscards would silently drop the life loss, so inspect the opponent-scoped action
+    // list (args[1], a single action or a nested list) and render only when its sole action is the
+    // discard — otherwise decline (-> SCAFFOLD) rather than emit a lossy card.
+    if (jsonContains(node, "_Players", "Opponent") && "Discard" in blob) {
+        val opponentActions = when (val second = node["args"].asArr?.getOrNull(1)) {
+            is JsonArray -> second.filterIsInstance<JsonObject>()
+            is JsonObject -> listOf(second)
+            else -> emptyList()
+        }
+        return if (opponentActions.singleOrNull()?.strField("_Action") == "DiscardACard")
+            call("Patterns.Hand.eachOpponentDiscards", arg("1"))
+        else null
+    }
+    // "Each opponent sacrifices a <filter> of their choice" (Lorehold Charm). The sacrificing player
+    // chooses, scoped to every opponent via ForceSacrificeEffect over EffectTarget.PlayerRef(EachOpponent).
+    // Only a renderable filter and a count-of-one form render; anything else scaffolds.
+    if (jsonContains(node, "_Players", "Opponent") && jsonContains(node, "_Action", "SacrificeAPermanent")) {
+        val inner = node["args"].asArr?.filterIsInstance<JsonObject>()
+            ?.firstOrNull { it.strField("_Action") == "SacrificeAPermanent" } ?: return null
+        val filter = gameObjectFilterExpr(inner["args"]) ?: return null
+        return call("Effects.Sacrifice", arg("filter", filter), arg("target", "EffectTarget.PlayerRef(Player.EachOpponent)"))
+    }
+    // "each opponent loses N life" (Raven of Fell Omens). Only a fixed Integer amount renders, scoped to
+    // every opponent via EffectTarget.PlayerRef(Player.EachOpponent); a derived/X amount scaffolds.
+    if (jsonContains(node, "_Players", "Opponent") && jsonContains(node, "_Action", "LoseLife")) {
+        val inner = node["args"].asArr?.filterIsInstance<JsonObject>()
+            ?.firstOrNull { it.strField("_Action") == "LoseLife" } ?: return null
+        val amt = findInteger(inner["args"]) as? Int ?: return null
+        return call("Effects.LoseLife", arg("$amt"), arg("EffectTarget.PlayerRef(Player.EachOpponent)"))
+    }
+    // "each player loses N life" (Conciliator's Duelist). Like the opponent shape above but scoped to
+    // every player (controller included) via EffectTarget.PlayerRef(Player.Each); a derived/X amount scaffolds.
+    if (jsonContains(node, "_Players", "AnyPlayer") && jsonContains(node, "_Action", "LoseLife")) {
+        val inner = node["args"].asArr?.filterIsInstance<JsonObject>()
+            ?.firstOrNull { it.strField("_Action") == "LoseLife" } ?: return null
+        val amt = findInteger(inner["args"]) as? Int ?: return null
+        return call("Effects.LoseLife", arg("$amt"), arg("EffectTarget.PlayerRef(Player.Each)"))
+    }
+    // "each opponent mills N cards" (Deepmuck Desperado). Mill is a pipeline composite, so it can't be
+    // scoped via a PlayerRef target the way LoseLife/Sacrifice are — it is fanned over every opponent
+    // with ForEachPlayerEffect wrapping the standard mill pipeline. Only a fixed Integer count renders;
+    // a derived/X amount scaffolds rather than guessing.
+    if (jsonContains(node, "_Players", "Opponent") && jsonContains(node, "_Action", "MillNumberCards")) {
+        val inner = node["args"].asArr?.filterIsInstance<JsonObject>()
+            ?.firstOrNull { it.strField("_Action") == "MillNumberCards" } ?: return null
+        val amt = findInteger(inner["args"]) as? Int ?: return null
+        return call(
+            "ForEachPlayerEffect",
+            arg("players", "Player.EachOpponent"),
+            arg("effects", "Patterns.Library.mill($amt).effects"),
+        )
+    }
     if (jsonContains(node, "_Action", "DrawNumberCards") || jsonContains(node, "_GameNumber", "ValueX"))
         return call("Patterns.Hand.eachPlayerDrawsX", arg("includeController", "true"), arg("includeOpponents", "true"))
     return null
+}
+
+/**
+ * "any number of target players each <action(s)>" body → `ForEachTargetEffect(listOf(<per-player
+ * effects>))`. The acting players are the chosen targets (Ref_TargetPlayers), so each inner action is
+ * applied to `EffectTarget.PlayerRef(Player.ContextPlayer(0))` — the iterated target. Handles both the
+ * single-action `EachPlayerAction` (args = [players, action]) and the list `EachPlayerActions`
+ * (args = [players, [action, …]]). Only the per-player actions we can render exactly are supported
+ * (Tinybones Joins Up: "discard a card"; "mill a card and lose 1 life"); any other inner action
+ * declines so the card scaffolds rather than dropping a clause.
+ */
+internal fun EmitCtx.renderForEachTargetPlayerBody(node: JsonObject): Dsl? {
+    val args = node["args"].asArr ?: return null
+    // args[0] is the {_Players: Ref_TargetPlayers} scope; args[1] is a single action object or a list.
+    val second = args.getOrNull(1)
+    val innerActions: List<JsonObject> = when (second) {
+        is JsonArray -> second.filterIsInstance<JsonObject>()
+        is JsonObject -> listOf(second)
+        else -> return null
+    }
+    if (innerActions.isEmpty()) return null
+    val player = "EffectTarget.PlayerRef(Player.ContextPlayer(0))"
+    val effects = innerActions.map { action ->
+        when (action.strField("_Action")) {
+            "DiscardACard" -> call("Effects.Discard", arg("1"), arg(Lit(player)))
+            "MillACard" -> call("Patterns.Library.mill", arg("1"), arg(Lit(player)))
+            "LoseLife" -> {
+                val amt = amount(action["args"]) ?: return null
+                call("Effects.LoseLife", arg(Lit(amt)), arg(Lit(player)))
+            }
+            else -> return null
+        }
+    }
+    val list = call("listOf", *effects.map { arg(it) }.toTypedArray())
+    return call("ForEachTargetEffect", arg(list))
 }

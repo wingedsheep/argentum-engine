@@ -23,6 +23,7 @@ export type ClientEvent =
   | SpellCounteredEvent
   | AbilityTriggeredEvent
   | AbilityActivatedEvent
+  | AbilityAutoAnsweredEvent
   | PermanentTappedEvent
   | PermanentUntappedEvent
   | CounterAddedEvent
@@ -186,6 +187,15 @@ export interface AbilityActivatedEvent {
   readonly sourceId: EntityId
   readonly sourceName: string
   readonly abilityDescription: string
+  readonly description: string
+}
+
+/** A "you may" may-question was auto-resolved from the viewer's persistent yield (backlog §C). */
+export interface AbilityAutoAnsweredEvent {
+  readonly type: 'abilityAutoAnswered'
+  readonly sourceId: EntityId
+  readonly sourceName: string
+  readonly answer: boolean
   readonly description: string
 }
 

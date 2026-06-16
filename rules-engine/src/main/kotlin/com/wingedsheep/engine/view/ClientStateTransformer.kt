@@ -279,6 +279,9 @@ class ClientStateTransformer(
             }
         }
 
+        // Persistent yields are private to each player: only ever surface the viewer's own.
+        val activeYields = if (isSpectator) emptyList() else buildClientYields(state.yieldsFor(viewingPlayerId))
+
         return ClientGameState(
             viewingPlayerId = viewingPlayerId,
             cards = cards,
@@ -295,8 +298,28 @@ class ClientStateTransformer(
             voidActive = state.nonlandPermanentLeftBattlefieldThisTurn || state.spellWarpedThisTurn,
             youAreHijacking = youAreHijacking,
             youAreHijackedBy = youAreHijackedBy,
-            hotseat = hotseat
+            hotseat = hotseat,
+            activeYields = activeYields
         )
+    }
+
+    /**
+     * Flatten a player's [com.wingedsheep.engine.state.PlayerYields] into one [ClientYield] per
+     * ability identity, merging the auto-pass scopes and the auto-answer into a single display row.
+     * The display name is the card name carried in the definition id (`"Name#SET-123"` → `"Name"`).
+     */
+    private fun buildClientYields(yields: com.wingedsheep.engine.state.PlayerYields): List<ClientYield> {
+        val identities = yields.untilEndOfTurn + yields.wholeGame + yields.autoAnswer.keys
+        return identities.map { id ->
+            ClientYield(
+                cardDefinitionId = id.cardDefinitionId,
+                abilityId = id.abilityId.value,
+                displayName = id.cardDefinitionId.substringBefore("#"),
+                untilEndOfTurn = id in yields.untilEndOfTurn,
+                wholeGame = id in yields.wholeGame,
+                autoAnswer = yields.autoAnswer[id]
+            )
+        }
     }
 
     /**
@@ -362,8 +385,13 @@ class ClientStateTransformer(
             // affected player sees of their own hand. Spectators never gain visibility.
             // A non-spectator viewer also sees an opponent's hand while they control a
             // permanent that makes their opponents play with hands revealed (Seer's Vision).
+            // In Two-Headed Giant (CR 810.2b) teammates share strategy openly, so a player
+            // always sees their teammate's hand; [teammatesOf] is empty in non-team games, so
+            // this clause is inert for 2-player / Free-for-All. (Library stays hidden — teams
+            // share life and turns, not card knowledge of each other's library order.)
             Zone.HAND -> debugMode || zoneKey.ownerId == viewingPlayerId ||
                 (!isSpectator && state.actorFor(zoneKey.ownerId) == viewingPlayerId) ||
+                (!isSpectator && state.teammatesOf(viewingPlayerId).contains(zoneKey.ownerId)) ||
                 (!isSpectator && zoneKey.ownerId != viewingPlayerId &&
                     revealsOpponentHandsTo(state, viewingPlayerId))
             Zone.BATTLEFIELD,
@@ -515,7 +543,10 @@ class ClientStateTransformer(
                 isFaceDown = false,
                 targets = targets,
                 imageUri = sourceCard?.imageUri ?: cardDef?.metadata?.imageUri,
-                chosenX = activatedAbility.xValue
+                chosenX = activatedAbility.xValue,
+                abilityIdentity = activatedAbility.abilityIdentity?.let {
+                    ClientAbilityIdentity(it.cardDefinitionId, it.abilityId.value)
+                }
             )
         }
 
@@ -602,6 +633,9 @@ class ClientStateTransformer(
                 imageUri = sourceCard?.imageUri ?: cardDef?.metadata?.imageUri,
                 sourceZone = sourceZone,
                 chosenX = triggeredAbility.xValue,
+                abilityIdentity = triggeredAbility.abilityIdentity?.let {
+                    ClientAbilityIdentity(it.cardDefinitionId, it.abilityId.value)
+                },
                 copyIndex = triggeredAbility.copyIndex,
                 copyTotal = triggeredAbility.copyTotal,
                 chosenModeDescriptions = triggeredModeDescriptions,
@@ -966,8 +1000,20 @@ class ClientStateTransformer(
             ?.flatMap { it.subtypes }?.toSet()
             ?.takeIf { it.isNotEmpty() }
 
+        // A spell cast as a non-permanent secondary face (an Omen, an Adventure, or a split half) is
+        // — while it sits on the stack — that face, not the card's default permanent characteristics.
+        // Per [com.wingedsheep.sdk.model.CardLayout.OMEN]: "from every zone other than the stack the
+        // card is just the Dragon"; on the stack it's the Omen spell (e.g. Petty Revenge). Without
+        // this, casting the Omen showed the Dragon's name/type/text/P-T on the stack. We only swap in
+        // spell faces (instant/sorcery) — a modal-DFC permanent back keeps its own handling.
+        val castFace = if (zoneKey.zoneType == Zone.STACK) {
+            spellOnStack?.faceIndex
+                ?.let { cardDef?.cardFaces?.getOrNull(it) }
+                ?.takeIf { !it.typeLine.isPermanent }
+        } else null
+
         // Build type line string from TypeLine, using projected types/subtypes if available
-        val typeLine = cardComponent.typeLine
+        val typeLine = castFace?.typeLine ?: cardComponent.typeLine
         val projectedSubtypes = projectedValues?.subtypes?.toList()
         val displaySubtypes = projectedSubtypes ?: typeLine.subtypes.map { it.value }
         // When the projected subtypes contain every creature type — either via CHANGELING
@@ -1014,6 +1060,11 @@ class ClientStateTransformer(
         // client can badge them as plotted (otherwise indistinguishable from any other exiled card).
         val isPlotted = zoneKey.zoneType == Zone.EXILE && container.has<PlottedComponent>()
 
+        // Prepared permanents (Secrets of Strixhaven) carry a PreparedComponent while a copy of their
+        // prepare spell waits castable in exile; surface a flag so the client can badge the creature.
+        val isPrepared = zoneKey.zoneType == Zone.BATTLEFIELD &&
+            container.has<com.wingedsheep.engine.state.components.battlefield.PreparedComponent>()
+
         // Threshold-style progress badge: detect static abilities gated on
         // "controller's graveyard has at least N cards".
         val thresholdInfo = cardDef?.let { def ->
@@ -1034,16 +1085,17 @@ class ClientStateTransformer(
 
         return ClientCard(
             id = entityId,
-            name = cardComponent.name,
-            manaCost = cardComponent.manaCost.toString(),
-            manaValue = cardComponent.manaCost.cmc,
+            name = castFace?.name ?: cardComponent.name,
+            manaCost = (castFace?.manaCost ?: cardComponent.manaCost).toString(),
+            manaValue = (castFace?.manaCost ?: cardComponent.manaCost).cmc,
             typeLine = typeLineString,
             cardTypes = displayCardTypes.map { it.name }.toSet(),
             subtypes = displaySubtypes.toSet(),
-            colors = colors,
-            oracleText = cardComponent.oracleText,
-            power = power,
-            toughness = toughness,
+            colors = if (castFace != null) castFace.manaCost.colors else colors,
+            oracleText = castFace?.oracleText ?: cardComponent.oracleText,
+            // A non-permanent cast face (Omen/Adventure/split half) has no power/toughness.
+            power = if (castFace != null) null else power,
+            toughness = if (castFace != null) null else toughness,
             basePower = cardComponent.baseStats?.basePower,
             baseToughness = cardComponent.baseStats?.baseToughness,
             damage = damage,
@@ -1073,6 +1125,7 @@ class ClientStateTransformer(
             isFaceDown = isFaceDown,
             isSuspected = projectedValues?.isSuspected == true,
             isPlotted = isPlotted,
+            isPrepared = isPrepared,
             morphCost = if (isFaceDown && morphData != null) morphData.morphCost.description else null,
             targets = targets,
             imageUri = cardComponent.imageUri ?: cardDef?.metadata?.imageUri,
@@ -1266,7 +1319,6 @@ class ClientStateTransformer(
             val context = EffectContext(
                 sourceId = spellEntityId,
                 controllerId = spellOnStack.casterId,
-                opponentId = state.getOpponent(spellOnStack.casterId),
                 xValue = spellOnStack.xValue,
                 wasKicked = spellOnStack.wasKicked,
                 wasBlightPaid = spellOnStack.wasBlightPaid,
@@ -1335,7 +1387,6 @@ class ClientStateTransformer(
         val context = EffectContext(
             sourceId = spellEntityId,
             controllerId = spellOnStack.casterId,
-            opponentId = state.getOpponent(spellOnStack.casterId),
             xValue = spellOnStack.xValue,
             sacrificedPermanents = spellOnStack.sacrificedPermanents,
             exiledCardCount = spellOnStack.exiledCardCount,
@@ -1428,7 +1479,6 @@ class ClientStateTransformer(
         val context = EffectContext(
             sourceId = abilityEntityId,
             controllerId = activated.controllerId,
-            opponentId = state.getOpponent(activated.controllerId),
             xValue = activated.xValue,
             sacrificedPermanents = activated.sacrificedPermanents,
             tappedPermanents = activated.tappedPermanents,
@@ -1476,7 +1526,6 @@ class ClientStateTransformer(
     ): EffectContext = EffectContext(
         sourceId = abilityEntityId,
         controllerId = triggered.controllerId,
-        opponentId = state.getOpponent(triggered.controllerId),
         xValue = triggered.xValue,
         triggerDamageAmount = triggered.triggerDamageAmount,
         triggerCounterCount = triggered.triggerCounterCount,
@@ -1489,7 +1538,10 @@ class ClientStateTransformer(
         triggerLastKnownPower = triggered.lastKnownPower,
         triggerLastKnownToughness = triggered.lastKnownToughness,
         triggerScryCount = triggered.triggerScryCount,
-        triggerExcessDamageAmount = triggered.triggerExcessDamageAmount
+        triggerExcessDamageAmount = triggered.triggerExcessDamageAmount,
+        triggerRecipientToughness = triggered.triggerRecipientToughness,
+        triggerManaSpentOnTriggeringSpell = triggered.triggerManaSpentOnTriggeringSpell,
+        triggerManaValueOfTriggeringSpell = triggered.triggerManaValueOfTriggeringSpell
     )
 
     /**
@@ -1502,7 +1554,8 @@ class ClientStateTransformer(
     ): ClientPlayer {
         val container = state.getEntity(playerId)
         val playerComponent = container?.get<PlayerComponent>()
-        val lifeTotalComponent = container?.get<LifeTotalComponent>()
+        // CR 810.9a — a player's displayed life is the team's shared total in Two-Headed Giant.
+        val displayedLife = if (container?.get<LifeTotalComponent>() != null) state.lifeTotal(playerId) else null
         val landDropsComponent = container?.get<LandDropsComponent>()
         val manaPoolComponent = container?.get<ManaPoolComponent>()
 
@@ -1519,8 +1572,11 @@ class ClientStateTransformer(
             0
         }
 
-        // Check if player has lost (they're not the winner and game is over)
-        val hasLost = state.gameOver && state.winnerId != null && state.winnerId != playerId
+        // A player has lost when the engine has marked them (mid-game elimination in a
+        // multiplayer pod — drives the opponent-rail tombstone while the game continues),
+        // or at game end when someone else won (2-player degenerate case).
+        val hasLost = container?.has<PlayerLostComponent>() == true ||
+            (state.gameOver && state.winnerId != null && state.winnerId != playerId)
 
         // Mana pool is public information in MTG - show for all players
         val manaPool = if (manaPoolComponent != null) {
@@ -1554,7 +1610,7 @@ class ClientStateTransformer(
         return ClientPlayer(
             playerId = playerId,
             name = playerComponent?.name ?: "Unknown",
-            life = lifeTotalComponent?.life ?: 20,
+            life = displayedLife ?: 20,
             poisonCounters = container?.get<CountersComponent>()?.getCount(CounterType.POISON) ?: 0,
             handSize = handSize,
             librarySize = librarySize,
@@ -2517,7 +2573,6 @@ class ClientStateTransformer(
                 val context = com.wingedsheep.engine.handlers.EffectContext(
                     sourceId = null,
                     controllerId = controllerId,
-                    opponentId = state.turnOrder.firstOrNull { it != controllerId }
                 )
                 val evaluator = com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
                 val leftVal = evaluator.evaluate(state, condition.left, context)
@@ -2616,7 +2671,7 @@ class ClientStateTransformer(
 
         return ClientCombatState(
             attackingPlayerId = attackingPlayerId ?: state.activePlayerId ?: return null,
-            defendingPlayerId = defendingPlayerId ?: state.getOpponent(attackingPlayerId!!) ?: return null,
+            defendingPlayerId = defendingPlayerId ?: state.getOpponents(attackingPlayerId!!).firstOrNull() ?: return null,
             attackers = attackers,
             blockers = blockers
         )

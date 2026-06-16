@@ -52,7 +52,7 @@ val BezaTheBoundingSpring = card("Beza, the Bounding Spring") {
             )
         ) then ConditionalEffect(
             condition = Compare(
-                DynamicAmount.Count(Player.Opponent, Zone.HAND),
+                DynamicAmount.Count(Player.EachOpponent, Zone.HAND),
                 ComparisonOperator.GT,
                 DynamicAmount.Count(Player.You, Zone.HAND)
             ),

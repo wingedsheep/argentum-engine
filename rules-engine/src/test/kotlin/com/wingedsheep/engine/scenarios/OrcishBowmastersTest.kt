@@ -270,7 +270,7 @@ class OrcishBowmastersTest : FunSpec({
         driver.setLifeTotal(p1, 20)
         driver.setLifeTotal(p2, 20)
 
-        // p1 (the controller) draws two cards — Player.Opponent binding means no firing.
+        // p1 (the controller) draws two cards — Player.EachOpponent binding means no firing.
         val draw2 = driver.putCardInHand(p1, "Draw Two Test")
         driver.castSpell(p1, draw2)
         driver.bothPass()

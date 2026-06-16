@@ -2187,35 +2187,6 @@
     ]
 }
 
-// Cancel
-{
-    "name": "Cancel",
-    "manaCost": "{1}{U}{U}",
-    "typeLine": "Instant",
-    "oracleText": "Counter target spell.",
-    "script": {
-        "spellEffect": "Counter",
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": {},
-                    "zone": "Stack"
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "33",
-        "artist": "Slawomir Maniak",
-        "flavorText": "\"Even the greatest inferno begins as a spark. And anyone can snuff out a spark.\" —Chanyi, mistfire sage",
-        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f540dcb-8d0b-4d33-8c0d-893fa5db54eb.jpg?1562791164"
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Canyon Lurkers
 {
     "name": "Canyon Lurkers",
@@ -11251,7 +11222,7 @@
                             "filter": "creature",
                             "target": {
                                 "type": "PlayerRef",
-                                "player": "Opponent"
+                                "player": "TriggeringPlayer"
                             }
                         }
                     },

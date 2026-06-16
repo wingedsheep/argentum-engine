@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.core.GameLimits
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
@@ -111,16 +112,24 @@ class DynamicAmountEvaluator(
 
             is DynamicAmount.TotalManaSpent -> context.totalManaSpent
 
+            // Distinct colors of mana spent to cast the source (Converge / Sunburst). Read off
+            // the source entity's recorded payment via the shared reader so it resolves at ETB
+            // (EntersWithDynamicCounters) as well as mid-resolution; falls through to the context
+            // total being irrelevant — color breakdown only lives on the entity's components.
+            is DynamicAmount.DistinctColorsManaSpent ->
+                context.sourceId?.let { ManaSpentReader.distinctColorsSpent(state, it) } ?: 0
+
             is DynamicAmount.ManaSpentOnX -> context.manaSpentOnXByColor[amount.color] ?: 0
 
             is DynamicAmount.YourLifeTotal -> {
-                state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: 0
+                // CR 810.9a — an individual player's life total reads the team's shared total.
+                state.lifeTotal(context.controllerId)
             }
 
             is DynamicAmount.LifeTotal -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context)
                 val playerId = playerIds.firstOrNull() ?: return 0
-                state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+                state.lifeTotal(playerId)
             }
 
             is DynamicAmount.StartingLifeTotal -> {
@@ -153,15 +162,26 @@ class DynamicAmountEvaluator(
             }
 
             // Math operations — propagate [projectedState] so a mid-projection caller's
-            // intermediate snapshot survives nested aggregates.
+            // intermediate snapshot survives nested aggregates. Arithmetic is saturating
+            // (GameLimits.*Clamped): a "twice the number of X" / doubling chain must clamp at
+            // MAX_QUANTITY, never silently overflow `Int` to a negative value.
             is DynamicAmount.Add ->
-                evaluate(state, amount.left, context, projectedState) + evaluate(state, amount.right, context, projectedState)
+                GameLimits.addClamped(
+                    evaluate(state, amount.left, context, projectedState),
+                    evaluate(state, amount.right, context, projectedState)
+                )
 
             is DynamicAmount.Subtract ->
-                evaluate(state, amount.left, context, projectedState) - evaluate(state, amount.right, context, projectedState)
+                GameLimits.subClamped(
+                    evaluate(state, amount.left, context, projectedState),
+                    evaluate(state, amount.right, context, projectedState)
+                )
 
             is DynamicAmount.Multiply ->
-                evaluate(state, amount.amount, context, projectedState) * amount.multiplier
+                GameLimits.mulClamped(
+                    evaluate(state, amount.amount, context, projectedState),
+                    amount.multiplier
+                )
 
             is DynamicAmount.IfPositive ->
                 max(0, evaluate(state, amount.amount, context, projectedState))
@@ -386,6 +406,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    TurnTracker.CARDS_DRAWN -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                 }
             }
 
@@ -429,6 +454,22 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            is DynamicAmount.SubtypeEnteredUnderControlThisTurn -> {
+                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context)
+                val wanted = amount.subtype.value
+                val excludeId = if (amount.excludeTriggeringEntity) context.triggeringEntityId else null
+                playerIds.sumOf { playerId ->
+                    val entries = state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
+                        ?.entries
+                        ?: emptyList()
+                    entries.count { rec ->
+                        rec.entityId != excludeId &&
+                            rec.subtypes.any { it.equals(wanted, ignoreCase = true) }
+                    }
+                }
+            }
+
         }
     }
 
@@ -463,9 +504,15 @@ class DynamicAmountEvaluator(
 
         ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL -> context.triggerModesChosenCount ?: 0
 
+        ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL -> context.triggerManaSpentOnTriggeringSpell ?: 0
+
+        ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE -> context.triggerManaValueOfTriggeringSpell ?: 0
+
         ContextPropertyKey.TRIGGER_SCRY_COUNT -> context.triggerScryCount ?: 0
 
         ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT -> context.triggerExcessDamageAmount ?: 0
+
+        ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS -> context.triggerRecipientToughness ?: 0
 
         ContextPropertyKey.LINKED_EXILE_CARD_COUNT -> {
             val sourceId = context.sourceId
@@ -605,6 +652,12 @@ class DynamicAmountEvaluator(
             Aggregation.DISTINCT_COUNTER_TYPES -> matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
                 state.getEntity(entityId)?.get<CountersComponent>()?.counters?.keys ?: emptySet()
             }.size
+            Aggregation.DISTINCT_VALUES -> {
+                val prop = amount.property ?: return 0
+                matchingEntities.mapTo(mutableSetOf()) {
+                    resolveCardNumericProperty(state, projection, it, prop)
+                }.size
+            }
         }
     }
 
@@ -674,6 +727,12 @@ class DynamicAmountEvaluator(
                     state.getEntity(entityId)?.get<CountersComponent>()?.counters?.keys ?: emptySet()
                 }.size
             }
+            Aggregation.DISTINCT_VALUES -> {
+                val prop = amount.property ?: return 0
+                matchingEntities.mapTo(mutableSetOf()) {
+                    resolveCardNumericProperty(state, null, it, prop)
+                }.size
+            }
         }
     }
 
@@ -684,12 +743,12 @@ class DynamicAmountEvaluator(
     ): List<EntityId> {
         return when (player) {
             is Player.You -> listOf(context.controllerId)
-            is Player.Opponent -> state.turnOrder.filter { it != context.controllerId }
-            is Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
-            is Player.TargetOpponent -> listOfNotNull(context.opponentId)
-            is Player.TargetPlayer -> listOfNotNull(context.opponentId)
-            is Player.Each -> state.turnOrder
-            is Player.Any -> state.turnOrder
+            is Player.EachOpponent -> state.getOpponents(context.controllerId)
+            is Player.TargetOpponent, is Player.TargetPlayer -> listOfNotNull(
+                TargetResolutionUtils.resolvePlayerRef(player, context, state)
+            )
+            is Player.Each -> state.activePlayers
+            is Player.Any -> state.activePlayers
             is Player.ContextPlayer -> {
                 val target = context.positionalTarget(player.index) ?: return emptyList()
                 when (target) {
@@ -713,12 +772,15 @@ class DynamicAmountEvaluator(
                 listOfNotNull(context.triggeringPlayerId ?: context.triggeringEntityId)
             }
             is Player.ActivePlayerFirst -> {
-                val activePlayer = state.activePlayerId ?: return state.turnOrder
-                listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
+                val activePlayer = state.activePlayerId ?: return state.activePlayers
+                listOf(activePlayer) + state.activePlayers.filter { it != activePlayer }
             }
             is Player.Candidate -> listOfNotNull(context.candidatePlayerId)
             is Player.ChosenOpponent -> listOfNotNull(
                 context.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
+            )
+            is Player.AnOpponent, is Player.DefendingPlayer -> listOfNotNull(
+                TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
         }
     }
@@ -847,6 +909,21 @@ class DynamicAmountEvaluator(
             // honored. Falls back to the printed colors off the battlefield.
             is EntityNumericProperty.ColorCount ->
                 resolveColorCount(state, entityId, useProjected, explicitProjected)
+
+            // Excess damage (CR 120.4a) marked on the creature: max(0, marked − toughness).
+            // Amount-valued twin of the TargetMarkedDamageExceedsToughness condition — read it after
+            // a deal-damage step in the same composite (Hell to Pay's "excess damage dealt this
+            // way"). Off the battlefield / non-creature → 0.
+            is EntityNumericProperty.ExcessMarkedDamage -> {
+                if (entityId !in state.getBattlefield()) return 0
+                val projection = resolveProjection(state, explicitProjected)
+                if (!projection.isCreature(entityId)) return 0
+                val marked = state.getEntity(entityId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()
+                    ?.amount ?: 0
+                val toughness = projection.getToughness(entityId) ?: return 0
+                (marked - toughness).coerceAtLeast(0)
+            }
         }
     }
 
@@ -935,7 +1012,7 @@ class DynamicAmountEvaluator(
      */
     private fun basePowerOfPrintedCard(state: GameState, entityId: EntityId): Int {
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0
-        val ctx = EffectContext(sourceId = entityId, controllerId = card.ownerId ?: return 0, opponentId = null)
+        val ctx = EffectContext(sourceId = entityId, controllerId = card.ownerId ?: return 0)
         return when (val p = card.baseStats?.power) {
             is CharacteristicValue.Fixed -> p.value
             is CharacteristicValue.Dynamic -> evaluate(state, p.source, ctx)

@@ -35,21 +35,51 @@ class QuickGameLobby(
      * format's per-card legality. Null = no restriction (existing behaviour). Host-controlled.
      */
     @Volatile var format: DeckFormat? = null,
+    /**
+     * When true this is a Momir Basic lobby: no deckbuilding (every seat gets a fixed 60-basic
+     * deck), the avatar starts in the command zone, and the random creature pool is every creature
+     * across all sets. Host-controlled via the lobby's Format dropdown ("Momir Basic" lives under
+     * its Custom-formats group), so it can be toggled after creation. Mutually exclusive with
+     * [format].
+     */
+    @Volatile var momirBasic: Boolean = false,
+    /**
+     * When true this is a Two-Headed Giant lobby (CR 810): four seats forming two teams of two
+     * (join order 0+1 vs 2+3), played under [com.wingedsheep.sdk.core.Format.TwoHeadedGiant].
+     * Fixed at creation. Human-only (the built-in AI is not team-aware yet — Phase 8).
+     */
+    val twoHeadedGiant: Boolean = false,
 ) {
     val players: MutableList<QuickGameLobbyPlayer> = mutableListOf()
 
     @Volatile
     var started: Boolean = false
 
-    val isFull: Boolean get() = players.size >= MAX_PLAYERS
+    /** Seats this lobby fills before it can start: 4 for Two-Headed Giant, else the default 2. */
+    val maxPlayers: Int get() = if (twoHeadedGiant) TWO_HEADED_GIANT_PLAYERS else MAX_PLAYERS
+
+    val isFull: Boolean get() = players.size >= maxPlayers
 
     fun findPlayer(playerId: EntityId): QuickGameLobbyPlayer? =
         players.firstOrNull { it.playerId == playerId }
 
-    fun allReady(): Boolean = players.size == MAX_PLAYERS && players.all { it.ready }
+    fun allReady(): Boolean = players.size == maxPlayers && players.all { it.ready }
+
+    /**
+     * The team partition for [Format.TwoHeadedGiant], as seat indices into join order: seats 0+1
+     * are team 0, seats 2+3 team 1. Null in a non-2HG lobby (each player plays alone). Forwarded
+     * to [com.wingedsheep.gameserver.session.GameSession.teams] → `GameConfig.teams`.
+     */
+    fun teamAssignment(): List<List<Int>>? =
+        if (twoHeadedGiant) listOf(listOf(0, 1), listOf(2, 3)) else null
+
+    /** The team index of the seat at [seatIndex] (join order), or null in a non-2HG lobby. */
+    fun teamIndexOf(seatIndex: Int): Int? =
+        teamAssignment()?.indexOfFirst { seatIndex in it }?.takeIf { it >= 0 }
 
     companion object {
         const val MAX_PLAYERS = 2
+        const val TWO_HEADED_GIANT_PLAYERS = 4
 
         // Use the same UUID format as TournamentLobby so the join-code UX is consistent
         // across both flows (shared invite-box copy interaction).

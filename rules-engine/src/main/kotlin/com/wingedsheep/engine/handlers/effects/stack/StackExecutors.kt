@@ -14,6 +14,7 @@ class StackExecutors(
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         CounterEffectExecutor(amountEvaluator, cardRegistry),
+        ExileTargetSpellExecutor(cardRegistry),
         CounterAllOnStackExecutor(cardRegistry),
         WardCounterEffectExecutor(cardRegistry),
         ChangeSpellTargetExecutor(),
@@ -21,6 +22,7 @@ class StackExecutors(
         StormCopyEffectExecutor(cardRegistry),
         CopyTargetSpellExecutor(cardRegistry),
         CopyTargetTriggeredAbilityExecutor(cardRegistry),
+        CopyTargetSpellOrAbilityExecutor(cardRegistry),
         CopyNextSpellCastExecutor(),
         CopyEachSpellCastExecutor(),
         MakeNextSpellUncounterableExecutor(),
@@ -28,6 +30,7 @@ class StackExecutors(
         ChangeTriggeringObjectTargetsExecutor(),
         GrantKeywordToSpellExecutor(),
         MarkSpellExileWithCountersExecutor(),
+        MarkSpellPlotOnResolveExecutor(),
         ReturnSpellToOwnersHandExecutor(),
         DestroySourceOfTargetedAbilityExecutor()
     )

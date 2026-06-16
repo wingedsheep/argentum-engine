@@ -171,6 +171,7 @@ object CardLinter {
         put("FilterCollection" to "storeNonMatching", write(Space.COLLECTION))
         put("ExileLibraryUntilManaValue" to "storeAs", write(Space.COLLECTION))
         put("CopyCardIntoCollection" to "storeAs", write(Space.COLLECTION))
+        put("CastFromCollectionWithoutPayingCost" to "storeCastTo", write(Space.COLLECTION))
         put("CounterAllOnStack" to "storeCountAs", write(Space.COLLECTION))
         put("Behold" to "storeAs", write(Space.COLLECTION))
         put("BeholdOrPay" to "storeAs", write(Space.COLLECTION))
@@ -188,6 +189,7 @@ object CardLinter {
         for (type in listOf(
             "CaptureControllers", "GatherSubtypes", "RevealCollection", "SelectFromCollection",
             "ChoosePile", "MoveCollection", "GrantMayPlayFromExile", "GrantPlayWithoutPayingCost",
+            "MakePlotted",
             "GrantPlayWithAdditionalCost", "GrantPlayWithCostIncrease", "FilterCollection",
             "StoreCardName", "CastFromCollectionWithoutPayingCost",
             "CastAnyNumberFromCollectionWithoutPayingCost", "ExileFromStorage",
@@ -642,6 +644,20 @@ object CardLinter {
         obj[effectField]?.let { walk(it, child, state) }
     }
 
+    /**
+     * Entity roles `ConditionEvaluator.evaluateEntityMatches` dispatches. Any other
+     * `EffectTarget` inside an `EntityMatches` evaluates to a constant `false`, so the linter
+     * rejects it at card load. Extending the evaluator to a new role must extend this set.
+     */
+    private val supportedEntityMatchesRoles = setOf(
+        "Self",
+        "EnchantedPermanent",
+        "EnchantedCreature",
+        "EquippedCreature",
+        "ContextTarget",
+        "TriggeringEntity",
+    )
+
     /** Records this node's dataflow accesses and target references (not its children). */
     private fun visitNode(obj: JsonObject, scope: Scope, state: LintState) {
         val type = obj.typeName()
@@ -653,6 +669,24 @@ object CardLinter {
                 ?.let { scope.targetRefs.add(TargetRef(type, it, null)) }
             "BoundVariable" -> (obj["name"] as? JsonPrimitive)?.contentOrNull
                 ?.let { scope.targetRefs.add(TargetRef(type, null, it)) }
+            "EntityMatches" -> {
+                val role = when (val entity = obj["entity"]) {
+                    is JsonPrimitive -> entity.contentOrNull
+                    is JsonObject -> entity.typeName()
+                    else -> null
+                }
+                if (role !in supportedEntityMatchesRoles) {
+                    state.findings.add(
+                        CardValidationError.UnsupportedEntityMatchesRole(
+                            cardName = state.cardName,
+                            message = "'${state.cardName}': EntityMatches names entity role " +
+                                "'${role ?: "(none)"}', which the ConditionEvaluator doesn't dispatch — " +
+                                "the condition would silently evaluate to false. Supported roles: " +
+                                supportedEntityMatchesRoles.joinToString(", ") + ".",
+                        )
+                    )
+                }
+            }
         }
 
         for ((kind, spaceAndName) in implicitAccesses(type, obj)) {
@@ -717,10 +751,21 @@ object CardLinter {
             read.space == Space.CHOSEN && read.name == "chosenCreatureType" &&
                 "CREATURE_TYPE" in slots.declared
 
+        /**
+         * Collections the engine seeds for the ability before its effect runs, so a read with no
+         * in-card writer is correct, not a silent no-op. `trigger.captured` is the batch-trigger
+         * capture (the matching members of a `PermanentsEnteredEvent` batch — Kambal); the engine
+         * populates it when the triggered ability resolves.
+         */
+        fun engineSeeded(read: Access): Boolean =
+            read.space == Space.COLLECTION &&
+                read.name == com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION
+
         for (scope in state.scopes) {
             if (scope.collectionParent != null) continue // merged into parent already
             for (read in scope.reads) {
                 if (satisfiedBySlot(read)) continue
+                if (engineSeeded(read)) continue
                 val inScope = scope.writes.filter { matches(read, it) }
                 when {
                     inScope.any { it.pos <= read.pos } -> {}

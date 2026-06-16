@@ -112,7 +112,8 @@ class PreventDamageExecutor(
                 controllerId = controllerId,
                 sourceId = context.sourceId,
                 sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-                onPrevented = effect.onPrevented
+                onPrevented = effect.onPrevented,
+                preventDamage = effect.preventDamage
             )
             val newState = state.withPendingDecision(decision).pushContinuation(continuation)
             return EffectResult.paused(newState, decision)

@@ -132,6 +132,20 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
                 else all
             }
 
+            Duration.WhileSourceAttachedToAffected -> {
+                // "for as long as [the source Aura/Equipment] remains attached to it" — keep only
+                // affected entities the source is still attached to (CR 611.2b). The source leaving
+                // the battlefield, becoming unattached, or moving to a different host all drop it.
+                val sourceId = floating.sourceId
+                if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
+                else {
+                    val attachedTo = state.getEntity(sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                        ?.targetId
+                    all.filterTo(LinkedHashSet()) { it == attachedTo }
+                }
+            }
+
             else -> all
         }
     }

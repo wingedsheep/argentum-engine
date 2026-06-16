@@ -71,28 +71,44 @@ class EffectContinuationRunner(
 
             if (result.updatedCollections.isNotEmpty() ||
                 result.updatedSubtypeGroups.isNotEmpty() ||
+                result.updatedStoredNumbers.isNotEmpty() ||
                 result.updatedChosenValues.isNotEmpty()
             ) {
                 currentContext = currentContext.copy(
                     pipeline = currentContext.pipeline.copy(
                         storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections,
                         storedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups,
+                        storedNumbers = currentContext.pipeline.storedNumbers + result.updatedStoredNumbers,
                         chosenValues = currentContext.pipeline.chosenValues + result.updatedChosenValues
                     )
                 )
             }
+
+            // Thread sacrifice snapshots between resumed sibling effects so a later step can read
+            // the sacrificed permanent's last-known P/T via DynamicAmount.Sacrificed — e.g.
+            // The Gitrog, Ravenous Ride sacrifices a saddler (after a selection pause) and then
+            // draws/puts lands equal to its power. Mirrors CompositeEffectExecutor's threading.
+            if (result.updatedSacrificedPermanents.isNotEmpty()) {
+                currentContext = currentContext.copy(
+                    sacrificedPermanents = currentContext.sacrificedPermanents + result.updatedSacrificedPermanents
+                )
+            }
         }
 
-        // Return accumulated collections / subtype groups / chosen values so callers can propagate them
+        // Return accumulated collections / subtype groups / numbers / chosen values / sacrifices so callers can propagate them
         val accumulatedCollections = currentContext.pipeline.storedCollections - initialContext.pipeline.storedCollections.keys
         val accumulatedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups - initialContext.pipeline.storedSubtypeGroups.keys
+        val accumulatedStoredNumbers = currentContext.pipeline.storedNumbers - initialContext.pipeline.storedNumbers.keys
         val accumulatedChosenValues = currentContext.pipeline.chosenValues - initialContext.pipeline.chosenValues.keys
+        val accumulatedSacrificed = currentContext.sacrificedPermanents.drop(initialContext.sacrificedPermanents.size)
         return EffectResult(
             currentState,
             allEvents,
             updatedCollections = accumulatedCollections,
             updatedSubtypeGroups = accumulatedSubtypeGroups,
-            updatedChosenValues = accumulatedChosenValues
+            updatedStoredNumbers = accumulatedStoredNumbers,
+            updatedChosenValues = accumulatedChosenValues,
+            updatedSacrificedPermanents = accumulatedSacrificed
         )
     }
 }

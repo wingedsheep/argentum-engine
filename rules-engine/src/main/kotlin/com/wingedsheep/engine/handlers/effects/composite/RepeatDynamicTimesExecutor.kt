@@ -30,8 +30,20 @@ class RepeatDynamicTimesExecutor(
         effect: RepeatDynamicTimesEffect,
         context: EffectContext
     ): EffectResult {
-        val count = amountEvaluator.evaluate(state, effect.amount, context)
-        if (count <= 0) return EffectResult.success(state)
+        val evaluated = amountEvaluator.evaluate(state, effect.amount, context)
+        if (evaluated <= 0) return EffectResult.success(state)
+
+        // Cap the body count: this executor materializes one body per iteration *before* running
+        // them, so an unbounded dynamic count (e.g. doubled into the billions) would OOM building
+        // the list. Real "repeat N times" counts are tiny; only the pathological case is clamped.
+        val count = evaluated.coerceAtMost(com.wingedsheep.engine.core.GameLimits.MAX_REPEAT_ITERATIONS)
+        if (count < evaluated) {
+            System.err.println(
+                "RepeatDynamicTimesExecutor: requested $evaluated iterations exceeds " +
+                    "${com.wingedsheep.engine.core.GameLimits.MAX_REPEAT_ITERATIONS} — clamping " +
+                    "(likely a runaway dynamic amount)."
+            )
+        }
 
         val repeatedEffects = (1..count).map { effect.body }
         val compositeEffect = CompositeEffect(repeatedEffects)

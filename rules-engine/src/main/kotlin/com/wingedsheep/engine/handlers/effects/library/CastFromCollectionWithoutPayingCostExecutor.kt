@@ -70,7 +70,10 @@ class CastFromCollectionWithoutPayingCostExecutor(
         val cardId = cards.first()
         val controllerId = context.controllerId
 
-        var newState = state.updateEntity(cardId) { container ->
+        // payManaCost casts route through the normal cost (Kaervek, the Punisher — "you may cast
+        // the copy"); only the free-cast path stamps PlayWithoutPayingCostComponent. Both grant a
+        // MayPlayPermission so the card is castable from its current (e.g. exile) zone.
+        var newState = if (effect.payManaCost) state else state.updateEntity(cardId) { container ->
             container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
         }
         val (permId, stateWithPerm) = newState.newEntity()
@@ -137,6 +140,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                 decisionId = decisionId,
                 cardId = cardId,
                 casterId = controllerId,
+                storeCastTo = effect.storeCastTo,
             )
             val pausedState = newState
                 .pushContinuation(continuation)
@@ -158,7 +162,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
         }
 
         // No targets needed (or modal — CastSpellHandler will handle per-mode targets).
-        return invokeCast(newState, controllerId, cardId, emptyList())
+        return invokeCast(newState, controllerId, cardId, emptyList(), effect.storeCastTo)
     }
 
     private fun invokeCast(
@@ -166,6 +170,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
         casterId: EntityId,
         cardId: EntityId,
         targets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        storeCastTo: String?,
     ): EffectResult {
         val stateForCast = state.copy(priorityPlayerId = casterId)
         val castResult = castSpellHandlerProvider().execute(
@@ -177,15 +182,20 @@ class CastFromCollectionWithoutPayingCostExecutor(
             return EffectResult.success(state)
         }
 
+        // The cast initiated (synchronously or pausing for X / further input). Publish the cast
+        // card so an enclosing IfYouDoEffect can gate a follow-up on "if you do" (Kaervek).
+        val castCollections = storeCastTo?.let { mapOf(it to listOf(cardId)) } ?: emptyMap()
+
         if (castResult.pendingDecision != null) {
             return EffectResult.paused(
                 castResult.state,
                 castResult.pendingDecision,
                 castResult.events,
-            )
+            ).copy(updatedCollections = castCollections)
         }
 
         return EffectResult.success(castResult.state, castResult.events)
+            .copy(updatedCollections = castCollections)
     }
 
     companion object {

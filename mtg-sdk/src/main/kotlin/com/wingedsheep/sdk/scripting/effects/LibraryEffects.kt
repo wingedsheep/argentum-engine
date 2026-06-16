@@ -170,14 +170,32 @@ data class ExileLibraryUntilManaValueEffect(
  * `SelectFromCollectionEffect`(`ChooseUpTo(1)`, eligibility filter, `showAllCards = true`)
  * → `MoveCollectionEffect`(remainder → library bottom, `CardOrder.Random`) → this effect,
  * this primitive expresses Sunbird's-Invocation-shaped flows without a bespoke executor.
+ *
+ * **Paying the mana cost.** Set [payManaCost] to `true` for the "you may cast it" wording that
+ * *doesn't* say "without paying its mana cost" (Kaervek, the Punisher — "copy it. You may cast
+ * the copy."). The executor then grants only the [MayPlayPermission] that makes the card
+ * castable from its current zone and lets `CastSpellHandler` charge the normal cost (so an {X}
+ * spell prompts for X, Rule 601.2b). With the default `false` the card is also stamped
+ * `PlayWithoutPayingCostComponent` and cast for free.
+ *
+ * **Gating a follow-up on whether the cast happened.** Set [storeCastTo] to publish the cast
+ * card's id into that pipeline collection once the cast successfully initiates (synchronously or
+ * after a target / X pause). Pair it with `IfYouDoEffect(this, then, SuccessCriterion
+ * .CollectionNonEmpty(storeCastTo))` for "you may cast … . If you do, [then]" — the follow-up is
+ * skipped when the player declines or the cast can't be paid for (Kaervek's "If you do, you lose
+ * 2 life"). The collection is left empty when nothing was cast.
  */
 @SerialName("CastFromCollectionWithoutPayingCost")
 @Serializable
 data class CastFromCollectionWithoutPayingCostEffect(
     val from: String,
+    /** When true, the controller pays the spell's normal mana cost instead of casting for free. */
+    val payManaCost: Boolean = false,
+    /** When set, the cast card's id is published to this pipeline collection on a successful cast. */
+    val storeCastTo: String? = null,
 ) : Effect {
     override val description: String =
-        "Cast the $from card without paying its mana cost"
+        if (payManaCost) "Cast that card" else "Cast that card without paying its mana cost"
 }
 
 /**
@@ -208,7 +226,7 @@ data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
     val from: String,
 ) : Effect {
     override val description: String =
-        "Cast any number of the $from cards without paying their mana costs"
+        "Cast any number of those cards without paying their mana costs"
 }
 
 @SerialName("Cascade")

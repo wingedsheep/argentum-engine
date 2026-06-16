@@ -41,7 +41,6 @@ object PlayerTargetRestriction {
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = state.getOpponent(controllerId),
             candidatePlayerId = candidatePlayerId
         )
         return conditionEvaluator.evaluate(state, restriction, context)

@@ -47,7 +47,7 @@ class SaddleMountHandler(
 
         // "Activate only as a sorcery" (CR 702.171a)
         if (!state.step.isMainPhase || state.stack.isNotEmpty() ||
-            state.activePlayerId != action.playerId
+            !state.isActiveTurnFor(action.playerId)
         ) {
             return "Saddle can only be activated during your main phase while the stack is empty"
         }
@@ -137,8 +137,13 @@ class SaddleMountHandler(
         // Record the saddlers so Mount payoffs can read "creatures that saddled it this turn".
         // Union across activations: saddle may be activated again even while already saddled.
         currentState = currentState.updateEntity(action.mountId) { c ->
-            val existing = c.get<CrewSaddleContributorsComponent>()?.creatureIds ?: emptySet()
-            c.with(CrewSaddleContributorsComponent(existing + action.saddleCreatures))
+            val existing = c.get<CrewSaddleContributorsComponent>()
+            c.with(
+                CrewSaddleContributorsComponent(
+                    creatureIds = (existing?.creatureIds ?: emptySet()) + action.saddleCreatures,
+                    crewActivations = existing?.crewActivations ?: 0
+                )
+            )
         }
 
         // Put the saddle ability on the stack: this permanent becomes saddled until end of turn.

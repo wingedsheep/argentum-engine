@@ -67,7 +67,6 @@ object EntersWithCountersHelper {
                         val condContext = EffectContext(
                             sourceId = enteringEntityId,
                             controllerId = enteringControllerId,
-                            opponentId = newState.turnOrder.firstOrNull { it != enteringControllerId }
                         )
                         if (!conditionEvaluator.evaluate(newState, effect.condition!!, condContext)) continue
                     }
@@ -89,7 +88,6 @@ object EntersWithCountersHelper {
                     val context = EffectContext(
                         sourceId = enteringEntityId,
                         controllerId = enteringControllerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != enteringControllerId },
                         xValue = xValue
                     )
                     val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
@@ -151,7 +149,6 @@ object EntersWithCountersHelper {
                             val condContext = EffectContext(
                                 sourceId = sourceId,
                                 controllerId = sourceControllerId,
-                                opponentId = newState.turnOrder.firstOrNull { it != sourceControllerId }
                             )
                             if (!conditionEvaluator.evaluate(newState, effect.condition!!, condContext)) continue
                         }
@@ -174,7 +171,6 @@ object EntersWithCountersHelper {
                         val context = EffectContext(
                             sourceId = sourceId,
                             controllerId = sourceControllerId,
-                            opponentId = newState.turnOrder.firstOrNull { it != sourceControllerId }
                         )
                         val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
                         if (count > 0) {

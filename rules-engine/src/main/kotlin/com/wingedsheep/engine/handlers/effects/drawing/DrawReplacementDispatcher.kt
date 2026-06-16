@@ -166,7 +166,7 @@ class DrawReplacementDispatcher(
                 when (drawEvent.player) {
                     Player.Each -> return true
                     Player.You -> if (playerId == sourceControllerId) return true
-                    Player.Opponent, Player.EachOpponent -> if (sourceControllerId != null && playerId != sourceControllerId) return true
+                    Player.EachOpponent -> if (sourceControllerId != null && playerId != sourceControllerId) return true
                     else -> {}
                 }
             }
@@ -388,7 +388,7 @@ class DrawReplacementDispatcher(
                 val matchesPlayer = when (drawEvent.player) {
                     Player.Each -> true
                     Player.You -> sourceControllerId != null && playerId == sourceControllerId
-                    Player.Opponent, Player.EachOpponent ->
+                    Player.EachOpponent ->
                         sourceControllerId != null && playerId != sourceControllerId
                     else -> false
                 }
@@ -397,7 +397,6 @@ class DrawReplacementDispatcher(
                 val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                     sourceId = entityId,
                     controllerId = playerId,
-                    opponentId = state.getOpponent(playerId),
                 )
                 val restrictionsHold = effect.restrictions.all { restriction ->
                     conditionEvaluator.evaluate(state, restriction, effectContext)

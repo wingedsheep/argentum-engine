@@ -11,6 +11,8 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -25,8 +27,10 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
 import kotlin.reflect.KClass
 
@@ -54,29 +58,68 @@ class PlotCardHandler(
 ) : ActionHandler<PlotCard> {
     override val actionType: KClass<PlotCard> = PlotCard::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+    private val plotCostReducer =
+        com.wingedsheep.engine.mechanics.mana.PlotCostReducer(cardRegistry)
+
+    /**
+     * Where the card being plotted lives and what its plot cost is. Plot normally exiles a
+     * card *from hand* paying the Plot keyword's printed cost; Fblthp also lets the *top card
+     * of the library* be plotted at a cost equal to its mana cost
+     * ([PlotFromTopOfLibrary]). Resolving both up front keeps validate/execute zone-agnostic.
+     */
+    private data class PlotSource(val zone: Zone, val cost: ManaCost)
+
+    private fun resolvePlotSource(state: GameState, action: PlotCard): PlotSource? {
+        val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>() ?: return null
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
+
+        // Hand: the card's own Plot keyword, after any "plotting cards from your hand costs {N}
+        // less" reductions (Doc Aurlock, Grizzled Genius).
+        if (action.cardId in state.getZone(ZoneKey(action.playerId, Zone.HAND))) {
+            val plotAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Plot>().firstOrNull()
+                ?: return null
+            val reduced = plotCostReducer.effectivePlotCostFromHand(state, action.playerId, plotAbility.cost)
+            return PlotSource(Zone.HAND, reduced)
+        }
+
+        // Top of library: a battlefield [PlotFromTopOfLibrary] grant (Fblthp). The card must be
+        // the literal top card, match the grant's filter, and the plot cost is its mana cost.
+        val library = state.getLibrary(action.playerId)
+        if (library.firstOrNull() == action.cardId) {
+            val filter = state.getBattlefield(action.playerId).asSequence()
+                .mapNotNull { state.getEntity(it)?.get<CardComponent>() }
+                .mapNotNull { cardRegistry.getCard(it.cardDefinitionId) }
+                .flatMap { it.script.staticAbilities.asSequence() }
+                .filterIsInstance<PlotFromTopOfLibrary>()
+                .firstOrNull()?.filter
+                ?: return null
+            val matches = predicateEvaluator.matches(
+                state, state.projectedState, action.cardId, filter,
+                PredicateContext(controllerId = action.playerId)
+            )
+            if (!matches) return null
+            return PlotSource(Zone.LIBRARY, cardDef.manaCost)
+        }
+        return null
+    }
+
     override fun validate(state: GameState, action: PlotCard): String? {
         if (state.priorityPlayerId != action.playerId) {
             return "You don't have priority"
         }
         if (!state.step.isMainPhase || state.stack.isNotEmpty() ||
-            state.activePlayerId != action.playerId) {
+            !state.isActiveTurnFor(action.playerId)) {
             return "Plot can only be activated during your main phase while the stack is empty"
         }
 
         val container = state.getEntity(action.cardId)
             ?: return "Card not found: ${action.cardId}"
-        val cardComponent = container.get<CardComponent>()
+        container.get<CardComponent>()
             ?: return "Not a card: ${action.cardId}"
 
-        val handZone = ZoneKey(action.playerId, Zone.HAND)
-        if (action.cardId !in state.getZone(handZone)) {
-            return "Card is not in your hand"
-        }
-
-        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
-            ?: return "Card definition not found"
-        val plotAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Plot>().firstOrNull()
-            ?: return "This card doesn't have plot"
+        val source = resolvePlotSource(state, action)
+            ?: return "This card can't be plotted from its current zone"
 
         if (action.paymentStrategy is PaymentStrategy.Explicit) {
             for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
@@ -86,7 +129,7 @@ class PlotCardHandler(
                     return "Mana source is already tapped: $sourceId"
                 }
             }
-        } else if (!manaSolver.canPay(state, action.playerId, plotAbility.cost)) {
+        } else if (!manaSolver.canPay(state, action.playerId, source.cost)) {
             return "Not enough mana to plot this card"
         }
         return null
@@ -97,10 +140,9 @@ class PlotCardHandler(
             ?: return ExecutionResult.error(state, "Card not found")
         val cardComponent = container.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Not a card")
-        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
-            ?: return ExecutionResult.error(state, "Card definition not found")
-        val plotAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Plot>().firstOrNull()
-            ?: return ExecutionResult.error(state, "This card doesn't have plot")
+        val source = resolvePlotSource(state, action)
+            ?: return ExecutionResult.error(state, "This card can't be plotted from its current zone")
+        val plotCost = source.cost
 
         var currentState = state
         val events = mutableListOf<GameEvent>()
@@ -117,7 +159,7 @@ class PlotCardHandler(
             green = poolComponent.green,
             colorless = poolComponent.colorless
         )
-        val partialResult = pool.payPartial(plotAbility.cost)
+        val partialResult = pool.payPartial(plotCost)
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost
         val manaSpentFromPool = partialResult.manaSpent
@@ -184,16 +226,18 @@ class PlotCardHandler(
             )
         )
 
-        // Move card from hand → owner's exile (face-up; plotted cards are public).
-        val handZone = ZoneKey(action.playerId, Zone.HAND)
+        // Move card from its source zone (hand, or the top of the library for Fblthp) → owner's
+        // exile (face-up; plotted cards are public). The source zone is keyed under the acting
+        // player, who is the owner of their own hand/library.
+        val fromZoneKey = ZoneKey(action.playerId, source.zone)
         val exileZone = ZoneKey(ownerId, Zone.EXILE)
-        currentState = currentState.removeFromZone(handZone, action.cardId)
+        currentState = currentState.removeFromZone(fromZoneKey, action.cardId)
         currentState = currentState.addToZone(exileZone, action.cardId)
         events.add(
             ZoneChangeEvent(
                 entityId = action.cardId,
                 entityName = cardComponent.name,
-                fromZone = Zone.HAND,
+                fromZone = source.zone,
                 toZone = Zone.EXILE,
                 ownerId = ownerId
             )

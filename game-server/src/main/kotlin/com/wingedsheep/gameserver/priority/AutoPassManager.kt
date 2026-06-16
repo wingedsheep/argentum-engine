@@ -142,7 +142,24 @@ class AutoPassManager {
                 logger.debug("AUTO-PASS: Own spell/ability on top of stack")
                 return true
             } else {
-                // Opponent's item on top
+                // Opponent's item on top.
+                // Persistent yield (backlog §C): the player explicitly asked to stop being stopped
+                // by this ability, so auto-pass even though it's an opponent's object — an opt-in
+                // per-ability override of the usual "stop on opponent's stack item" rule. A
+                // holdPriority action (a response the player deliberately lined up) still wins, and
+                // this is one more pass reason layered on top of the meaningful-action filter, not
+                // a replacement for it.
+                val topContainer = state.getEntity(topOfStack)
+                val yieldedIdentity = topContainer?.get<TriggeredAbilityOnStackComponent>()?.abilityIdentity
+                    ?: topContainer?.get<ActivatedAbilityOnStackComponent>()?.abilityIdentity
+                if (yieldedIdentity != null &&
+                    state.isYieldingTo(playerId, yieldedIdentity) &&
+                    meaningfulActions.none { it.holdPriority }
+                ) {
+                    logger.debug("AUTO-PASS: Yielded to opponent's ability $yieldedIdentity")
+                    return true
+                }
+
                 // In Stops mode: always stop on opponent's stack items (regardless of type)
                 if (stopsMode) {
                     logger.debug("STOP (Stops mode): Opponent's spell/ability on stack")
@@ -174,8 +191,11 @@ class AutoPassManager {
             }
         }
 
-        // Determine if this is our turn or opponent's turn
-        val isMyTurn = state.activePlayerId == playerId
+        // Determine if this is our turn or opponent's turn. Team-aware (CR 805/810): in a shared
+        // Two-Headed Giant turn BOTH teammates are "on their turn", so the non-active-player
+        // teammate still stops in their own main phase instead of being auto-passed as if it were
+        // the opponents' turn. Reduces to `activePlayerId == playerId` in a non-team game.
+        val isMyTurn = state.isActiveTurnFor(playerId)
 
         // Check per-step stop overrides (only when stack is empty, which it is at this point)
         val relevantStops = if (isMyTurn) myTurnStops else opponentTurnStops
@@ -579,7 +599,8 @@ class AutoPassManager {
         }
 
         val currentStep = state.step
-        val isMyTurn = state.activePlayerId == playerId
+        // Team-aware (see the stop-decision above): a Two-Headed Giant teammate shares the turn.
+        val isMyTurn = state.isActiveTurnFor(playerId)
 
         // Special combat damage labels when there are attacking creatures
         val hasAttackers = state.getBattlefield().any { entityId ->

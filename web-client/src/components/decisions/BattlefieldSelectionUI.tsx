@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { DecisionSelectionState } from '@/store/slices'
 import type { SelectCardsDecision } from '@/types'
+import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
 
 /**
@@ -39,7 +40,18 @@ export function BattlefieldSelectionUI({
   const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
   const minSelections = decision.minSelections
   const maxSelections = decision.maxSelections
-  const canConfirm = selectedCount >= minSelections && selectedCount <= maxSelections
+  const selectedOptions = decisionSelectionState?.selectedOptions ?? []
+  const conditionalMinimums = decision.conditionalMinimums ?? []
+  const satisfiesConditionalMinimum = conditionalMinimums.some((minimum) => {
+    const matching = selectedOptions.filter((id) => minimum.matchingOptions.includes(id)).length
+    return selectedCount >= minimum.minimumSelections && matching >= minimum.requiredMatches
+  })
+  const requiredMinimum = conditionalMinimums.length > 0
+    ? Math.max(...conditionalMinimums.map((minimum) => minimum.requiredSelections))
+    : minSelections
+  const canConfirm = selectedCount >= minSelections &&
+    selectedCount <= maxSelections &&
+    (selectedCount >= requiredMinimum || satisfiesConditionalMinimum)
   const canSkip = minSelections === 0
 
   const handleConfirm = () => {
@@ -56,7 +68,7 @@ export function BattlefieldSelectionUI({
 
   // Side banner (similar to ChooseTargetsDecision)
   return (
-    <div className={styles.sideBannerSelection}>
+    <DraggableBanner className={styles.sideBannerSelection}>
       <div className={styles.bannerTitleSelection}>
         {decision.prompt}
       </div>
@@ -64,8 +76,13 @@ export function BattlefieldSelectionUI({
         {selectedCount > 0
           ? `${selectedCount} / ${maxSelections} selected`
           : 'Click cards to select'}
-        {minSelections > 0 && ` (min ${minSelections})`}
+        {conditionalMinimums.length > 0 ? ` (normally ${requiredMinimum})` : minSelections > 0 && ` (min ${minSelections})`}
       </div>
+      {conditionalMinimums.map((minimum) => (
+        <div key={`${minimum.requiredSelections}-${minimum.minimumSelections}-${minimum.requiredMatches}`} className={styles.hint}>
+          {minimum.description ?? `You may select ${minimum.minimumSelections} if it matches the requirement.`}
+        </div>
+      ))}
 
       {/* Confirm/Skip buttons */}
       <div className={styles.buttonContainerSmall}>
@@ -84,6 +101,6 @@ export function BattlefieldSelectionUI({
           </button>
         )}
       </div>
-    </div>
+    </DraggableBanner>
   )
 }

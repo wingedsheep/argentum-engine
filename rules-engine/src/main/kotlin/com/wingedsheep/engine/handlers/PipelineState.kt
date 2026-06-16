@@ -33,5 +33,14 @@ data class PipelineState(
 ) {
     companion object {
         val EMPTY = PipelineState()
+
+        /**
+         * Pipeline collection name under which a batch trigger seeds the entities it captured
+         * (the matching permanents in a `PermanentsEnteredEvent` batch). Aliases the SDK-side
+         * contract [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]
+         * so card definitions (which only see the SDK) and the engine name the same collection.
+         */
+        const val TRIGGER_CAPTURED_COLLECTION =
+            com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION
     }
 }

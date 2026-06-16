@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.zones
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -30,7 +31,7 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
         effect: ReturnCreaturesPutInGraveyardThisTurnEffect,
         context: EffectContext
     ): EffectResult {
-        val playerId = resolvePlayer(effect.player, context) ?: return EffectResult.success(state)
+        val playerId = resolvePlayer(effect.player, context, state) ?: return EffectResult.success(state)
         val graveyardKey = ZoneKey(playerId, Zone.GRAVEYARD)
         val graveyardIds = state.getZone(graveyardKey)
 
@@ -71,12 +72,6 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
         return EffectResult.success(newState, events)
     }
 
-    private fun resolvePlayer(player: Player, context: EffectContext) = when (player) {
-        is Player.You -> context.controllerId
-        is Player.Opponent -> context.opponentId
-        is Player.TargetOpponent -> context.opponentId
-        is Player.TargetPlayer -> context.opponentId
-        is Player.TriggeringPlayer -> context.triggeringEntityId
-        else -> context.controllerId
-    }
+    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState) =
+        TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId
 }

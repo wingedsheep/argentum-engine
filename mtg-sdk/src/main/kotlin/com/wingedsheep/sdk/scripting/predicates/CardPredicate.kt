@@ -356,6 +356,21 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
             "with mana value less than or equal to the mana spent to cast ${reference.description}"
     }
 
+    /**
+     * Mana value at most the number of distinct *colors* of mana spent to cast a referenced
+     * entity (0–5). Sibling of [ManaValueAtMostEntityManaSpent], but compares against the
+     * color *count* rather than the total mana — the **Converge** exile-by-color-count variant
+     * ("… mana value less than or equal to the number of colors of mana spent to cast this
+     * creature"). Resolves the reference and reads its recorded payment (live spell buckets or
+     * the resolved permanent's cast record); colorless is not a color and never contributes.
+     */
+    @SerialName("ManaValueAtMostColorsSpent")
+    @Serializable
+    data class ManaValueAtMostColorsSpent(val reference: EntityReference) : CardPredicate {
+        override val description: String =
+            "with mana value less than or equal to the number of colors of mana spent to cast ${reference.description}"
+    }
+
     @SerialName("ManaValueIsEven")
     @Serializable
     data object ManaValueIsEven : CardPredicate {

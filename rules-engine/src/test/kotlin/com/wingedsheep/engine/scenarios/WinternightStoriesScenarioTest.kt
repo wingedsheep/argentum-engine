@@ -2,8 +2,6 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CastSpell
-import com.wingedsheep.engine.core.ChooseOptionDecision
-import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
@@ -16,7 +14,6 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -53,18 +50,13 @@ class WinternightStoriesScenarioTest : FunSpec({
         ).isSuccess shouldBe true
         driver.bothPass()
 
-        // After drawing three, choose between "discard a creature card" and "discard two cards".
-        val choice = driver.pendingDecision as? ChooseOptionDecision
-        choice shouldNotBe null
-        val creatureOptionIndex = choice!!.options.indexOfFirst { it.contains("creature", ignoreCase = true) }
-        creatureOptionIndex shouldBeGreaterThan -1
-        driver.submitDecision(player, OptionChosenResponse(choice.id, creatureOptionIndex))
-
-        // Then pick which creature card to discard.
+        // After drawing three, a single discard decision: discard one creature card (the reduced
+        // count), or two cards otherwise. minSelections is 1 because a creature satisfies it; the
+        // creature cards are surfaced via conditionalMinimums.
         val discardDecision = driver.pendingDecision as? SelectCardsDecision
         discardDecision shouldNotBe null
         discardDecision!!.minSelections shouldBe 1
-        discardDecision.maxSelections shouldBe 1
+        discardDecision.maxSelections shouldBe 2
         val creatureCard = discardDecision.options.first { cardId ->
             driver.state.getEntity(cardId)?.get<CardComponent>()?.name == "Grizzly Bears"
         }

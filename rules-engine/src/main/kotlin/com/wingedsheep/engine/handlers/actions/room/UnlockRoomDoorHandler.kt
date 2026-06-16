@@ -50,7 +50,7 @@ class UnlockRoomDoorHandler(
         if (state.priorityPlayerId != action.playerId) {
             return "You don't have priority"
         }
-        if (state.activePlayerId != action.playerId) {
+        if (!state.isActiveTurnFor(action.playerId)) {
             return "You can only unlock doors during your own turn"
         }
         if (!state.step.isMainPhase) {

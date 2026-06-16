@@ -26,7 +26,8 @@ class DeclareBlockersHandler(
     override val actionType: KClass<DeclareBlockers> = DeclareBlockers::class
 
     override fun validate(state: GameState, action: DeclareBlockers): String? {
-        if (state.activePlayerId == action.playerId) {
+        // CR 805.10a — the active team is the attacking team; no member of it blocks.
+        if (state.isActiveTurnFor(action.playerId)) {
             return "You cannot declare blockers on your turn"
         }
         if (state.step != Step.DECLARE_BLOCKERS) {

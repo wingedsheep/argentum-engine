@@ -29,7 +29,7 @@ val CostOfBrilliance = card("Cost of Brilliance") {
     oracleText = "Target player draws two cards and loses 2 life. Put a +1/+1 counter on up to one target creature."
     spell {
         val t1 = target("t1", TargetPlayer())
-        val t2 = target("t2", TargetCreature(filter = TargetFilter.Creature))
+        val t2 = target("t2", TargetCreature(filter = TargetFilter.Creature, optional = true))
         effect = Effects.Composite(
             DrawCardsEffect(2, t1),
             LoseLifeEffect(2, t1),

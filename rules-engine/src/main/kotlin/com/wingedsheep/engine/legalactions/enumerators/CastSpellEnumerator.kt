@@ -1715,7 +1715,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             // affordability gate so "discard a card or pay 3 life" modes don't
                             // surface a Pay-3-Life action when the caster has fewer than 3 life
                             // (Bitter Triumph). Validation in CastSpellHandler still backstops.
-                            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+                            val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
                             if (life < atom.amount) canPayAdditionalCosts = false
                         }
                         else -> {}

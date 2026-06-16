@@ -44,20 +44,35 @@ class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBec
         val targetCard = state.getEntity(targetId)?.get<CardComponent>()
             ?: return EffectResult.success(state)
 
-        // Target must still be on the battlefield to serve as a copy source.
-        if (targetId !in state.getBattlefield()) {
+        // Target must still be on the battlefield to serve as a copy source — unless the effect
+        // allows a non-battlefield source (Lazav, Familiar Stranger copies a creature card it just
+        // exiled), in which case its copiable characteristics are read wherever it currently is.
+        if (!effect.sourceFromAnyZone && targetId !in state.getBattlefield()) {
             return EffectResult.success(state)
         }
 
-        val affected = BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state,
-            effect.filter.baseFilter,
-            context,
-            excludeSelfId = if (effect.filter.excludeSelf) context.sourceId else null
-        )
-            // "each OTHER … becomes a copy of that …" — the copy source keeps its own identity
-            // (and any counter just placed on it), so exclude the target from the affected set.
-            .filterNot { effect.excludeTarget && it == targetId }
+        val affectedTarget = effect.affected
+        val affected = if (affectedTarget != null) {
+            // "target permanent A becomes a copy of target permanent B" — the affected set is the
+            // single resolved [affected] target (Fleeting Reflection). Resolving to nothing is a
+            // no-op. Must still be on the battlefield to become a copy.
+            val affectedId = context.resolveTarget(affectedTarget, state)
+            if (affectedId == null || affectedId !in state.getBattlefield()) {
+                emptyList()
+            } else {
+                listOf(affectedId)
+            }
+        } else {
+            BattlefieldFilterUtils.findMatchingOnBattlefield(
+                state,
+                effect.filter.baseFilter,
+                context,
+                excludeSelfId = if (effect.filter.excludeSelf) context.sourceId else null
+            )
+                // "each OTHER … becomes a copy of that …" — the copy source keeps its own identity
+                // (and any counter just placed on it), so exclude the target from the affected set.
+                .filterNot { effect.excludeTarget && it == targetId }
+        }
 
         if (affected.isEmpty()) {
             return EffectResult.success(state)

@@ -47,7 +47,9 @@ enum class CounterType {
     HOPE,
     VERSE,
     INFLUENCE,
-    BURDEN
+    BURDEN,
+    LOOT,
+    WIND
 }
 
 /**
@@ -125,6 +127,19 @@ object Counters {
      * and damage trigger read; the engine has no inherent behavior tied to it.
      */
     const val BURDEN = "burden"
+
+    /**
+     * Loot counter (OTJ — Bandit's Haul). Passive storage counter with no inherent rule; the
+     * card's own abilities accumulate it (commit-a-crime trigger) and spend it (remove two as an
+     * activation cost to draw).
+     */
+    const val LOOT = "loot"
+
+    /**
+     * Wind counter (ARN — Cyclone). Passive counter accumulated each upkeep; the card reads the
+     * count to scale its pay-or-sacrifice cost and the damage it deals. No inherent rule.
+     */
+    const val WIND = "wind"
 
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.

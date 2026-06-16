@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.events.AbilityTargetMatch
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -661,7 +662,7 @@ object Triggers {
      * Whenever an opponent draws a card. Fires once per card an opponent draws (CR 121.2).
      */
     val OpponentDraws: TriggerSpec = TriggerSpec(
-        event = DrawEvent(Player.Opponent),
+        event = DrawEvent(Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 
@@ -671,7 +672,7 @@ object Triggers {
      * Orcish Bowmasters / A-Orcish Bowmasters.
      */
     val OpponentDrawsExceptFirstEachDrawStep: TriggerSpec = TriggerSpec(
-        event = DrawEvent(Player.Opponent, exceptFirstInDrawStep = true),
+        event = DrawEvent(Player.EachOpponent, exceptFirstInDrawStep = true),
         binding = TriggerBinding.ANY
     )
 
@@ -827,7 +828,7 @@ object Triggers {
     // -------------------------------------------------------------------------
     // Spell cast by another player (any player / an opponent).
     //
-    // `Player.Each` / `Player.Opponent` are matched at runtime by
+    // `Player.Each` / `Player.EachOpponent` are matched at runtime by
     // `TriggerMatcher.matchesPlayer`. Bind the payoff to the caster with
     // `Player.TriggeringPlayer`.
     // -------------------------------------------------------------------------
@@ -844,7 +845,7 @@ object Triggers {
      * Whenever an opponent casts a spell.
      */
     val OpponentCastsSpell: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(player = Player.Opponent),
+        event = SpellCastEvent(player = Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 
@@ -880,7 +881,7 @@ object Triggers {
         spellFilter: GameObjectFilter = GameObjectFilter.Any,
         requires: Set<SpellCastPredicate> = emptySet(),
     ): TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellFilter = spellFilter, player = Player.Opponent, requires = requires),
+        event = SpellCastEvent(spellFilter = spellFilter, player = Player.EachOpponent, requires = requires),
         binding = TriggerBinding.ANY
     )
 
@@ -892,7 +893,7 @@ object Triggers {
      * Whenever an opponent discards a card.
      */
     val AnyOpponentDiscards: TriggerSpec = TriggerSpec(
-        event = DiscardEvent(player = Player.Opponent),
+        event = DiscardEvent(player = Player.EachOpponent),
         binding = TriggerBinding.ANY
     )
 
@@ -913,7 +914,7 @@ object Triggers {
      * - "Whenever a player discards a card":
      *   `discards(player = Player.Each)`
      * - "Whenever an opponent discards a creature card":
-     *   `discards(player = Player.Opponent, cardFilter = GameObjectFilter.Creature)`
+     *   `discards(player = Player.EachOpponent, cardFilter = GameObjectFilter.Creature)`
      *
      * Note: fires once per card discarded — e.g. an opponent discarding 3 cards
      * in one resolution fires this 3 times. Mirrors how [YouDraw] handles
@@ -946,7 +947,26 @@ object Triggers {
      * activated abilities) do. Used for Flamescroll Celebrant.
      */
     val OpponentActivatesAbility: TriggerSpec = TriggerSpec(
-        event = AbilityActivatedEvent(player = Player.Opponent),
+        event = AbilityActivatedEvent(player = Player.EachOpponent),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you activate an ability that isn't a mana ability (CR 605 / 606).
+     */
+    val YouActivateAbility: TriggerSpec = TriggerSpec(
+        event = AbilityActivatedEvent(player = Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you activate an ability whose chosen targets satisfy [targetMatch] — e.g.
+     * [AbilityTargetMatch.CreatureOrPlayer] for Ertha Jo, Frontier Mentor's
+     * "Whenever you activate an ability that targets a creature or player". A non-targeting
+     * ability (a tap-for-mana, etc.) never matches.
+     */
+    fun youActivateAbilityTargeting(targetMatch: AbilityTargetMatch): TriggerSpec = TriggerSpec(
+        event = AbilityActivatedEvent(player = Player.You, targetMatch = targetMatch),
         binding = TriggerBinding.ANY
     )
 
@@ -1138,6 +1158,62 @@ object Triggers {
     val BecomesPlotted: TriggerSpec = TriggerSpec(
         event = BecomesPlottedEvent,
         binding = TriggerBinding.SELF
+    )
+
+    // =========================================================================
+    // Saddle Triggers (Outlaws of Thunder Junction)
+    // =========================================================================
+
+    /**
+     * Whenever this creature becomes saddled (CR 702.171b). SELF binding — fires for the Mount
+     * itself when its Saddle ability resolves. Used by Stubborn Burrowfiend: "Whenever this
+     * creature becomes saddled for the first time each turn, …".
+     *
+     * Pass [firstTimeEachTurn] to restrict to the first time it became saddled this turn (the
+     * default for the Burrowfiend wording); leave it false for an unqualified "becomes saddled".
+     * Use [becomesSaddled] for an ANY binding or a filtered "a [filter] becomes saddled" variant.
+     */
+    fun becomesSaddled(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        firstTimeEachTurn: Boolean = false,
+        binding: TriggerBinding = TriggerBinding.SELF,
+    ): TriggerSpec = TriggerSpec(
+        event = BecameSaddledEvent(filter = filter, firstTimeEachTurn = firstTimeEachTurn),
+        binding = binding
+    )
+
+    // =========================================================================
+    // Attachment Triggers
+    // =========================================================================
+
+    /**
+     * Whenever an Aura/Equipment becomes attached to a permanent (CR 603.2e).
+     *
+     * SELF binding (default) = "whenever this Equipment/Aura becomes attached to a creature"
+     * (Assimilation Aegis). Use [binding] = [TriggerBinding.ANY] with [attachmentController] =
+     * [Player.You] and an [attachmentFilter] for "whenever a [filter] you control becomes
+     * attached to …" (Eriette, the Beguiler).
+     *
+     * The triggering entity is the attachment; the permanent it attached to is reachable via
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent].
+     *
+     * @param attachmentFilter which attachment qualifies (e.g. Aura, Equipment).
+     * @param attachmentController who must control the attachment.
+     * @param attachedToFilter what the attachment must attach to (matched with the attachment as
+     *   the comparison reference for relative predicates, e.g. mana value at most the Aura's).
+     */
+    fun becomesAttached(
+        attachmentFilter: GameObjectFilter = GameObjectFilter.Any,
+        attachmentController: Player = Player.Any,
+        attachedToFilter: GameObjectFilter = GameObjectFilter.Any,
+        binding: TriggerBinding = TriggerBinding.SELF,
+    ): TriggerSpec = TriggerSpec(
+        event = BecomesAttachedEvent(
+            attachmentFilter = attachmentFilter,
+            attachmentController = attachmentController,
+            attachedToFilter = attachedToFilter,
+        ),
+        binding = binding
     )
 
     // =========================================================================
@@ -1367,14 +1443,32 @@ object Triggers {
     // =========================================================================
 
     /**
-     * Whenever one or more permanents matching a filter you control enter the battlefield.
-     * Batching trigger — fires at most once per event batch.
+     * Whenever one or more permanents matching [filter] enter the battlefield. Batching trigger —
+     * fires at most once per event batch regardless of how many entered (CR 603.3b).
+     *
+     * The [filter]'s controller predicate scopes which players' permanents count: no predicate
+     * (the default) means "you control" — the historical semantics — while `.opponentControls()`
+     * scopes to your opponents (Kambal, Profiteering Mayor). The matching members of the batch are
+     * exposed to the payoff as a pipeline collection, so a `ForEachInCollectionEffect(
+     * PipelineState.TRIGGER_CAPTURED_COLLECTION, …)` body can act on each — "for each of them,
+     * create a tapped copy of it."
      *
      * Example: "Whenever one or more noncreature, nonland permanents you control enter"
      * → OneOrMorePermanentsEnter(GameObjectFilter.Noncreature and GameObjectFilter.Nonland)
      */
     fun OneOrMorePermanentsEnter(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec = TriggerSpec(
         event = PermanentsEnteredEvent(filter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever one or more permanents matching [filter] that an opponent controls enter the
+     * battlefield. Same batching trigger as [OneOrMorePermanentsEnter] with the controller scope
+     * fixed to your opponents — "Whenever one or more tokens your opponents control enter"
+     * (Kambal, Profiteering Mayor).
+     */
+    fun OneOrMoreOpponentPermanentsEnter(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec = TriggerSpec(
+        event = PermanentsEnteredEvent(filter = filter.opponentControls()),
         binding = TriggerBinding.ANY
     )
 

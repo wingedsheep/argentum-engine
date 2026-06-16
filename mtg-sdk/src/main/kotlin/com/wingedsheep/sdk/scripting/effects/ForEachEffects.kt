@@ -99,6 +99,17 @@ sealed interface IterationSpace {
         }
         else -> this
     }
+
+    companion object {
+        /**
+         * Well-known [Collection] name under which a batch trigger seeds the entities it captured
+         * (the matching members of a `PermanentsEnteredEvent` batch). A payoff iterates them with
+         * `ForEachInCollectionEffect(IterationSpace.TRIGGER_CAPTURED_COLLECTION, body)` and a body
+         * that uses `EffectTarget.Self` — "for each of them, create a tapped copy of it" (Kambal,
+         * Profiteering Mayor). The engine seeds this collection when the triggered ability resolves.
+         */
+        const val TRIGGER_CAPTURED_COLLECTION = "trigger.captured"
+    }
 }
 
 /**

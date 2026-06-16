@@ -6,8 +6,6 @@ import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.scripting.effects.WinGameEffect
@@ -33,7 +31,11 @@ class WinGameExecutor : EffectExecutor<WinGameEffect> {
         val winnerId = context.resolvePlayerTarget(effect.target)
             ?: return EffectResult.error(state, "No target player for WinGameEffect")
 
-        val opponentIds = state.turnOrder.filter { it != winnerId }
+        // CR 810.8a — "if either player on a team wins, the entire team wins": only players on
+        // opposing teams lose, never the winner's teammate. getOpponents is team-aware (excludes the
+        // winner's whole team); in a non-team game it is every other player as before. The defeated
+        // opponents' own teammates are then marked by TeamLossPropagationCheck.
+        val opponentIds = state.getOpponents(winnerId)
         if (opponentIds.isEmpty()) return EffectResult.success(state)
 
         var newState = state
@@ -42,13 +44,8 @@ class WinGameExecutor : EffectExecutor<WinGameEffect> {
         for (opponentId in opponentIds) {
             val container = newState.getEntity(opponentId) ?: continue
             if (container.has<PlayerLostComponent>()) continue
-
-            val cantLose = newState.getBattlefield().any { entityId ->
-                val c = newState.getEntity(entityId) ?: return@any false
-                c.has<GrantsCantLoseGameComponent>() &&
-                    c.get<ControllerComponent>()?.playerId == opponentId
-            }
-            if (cantLose) continue
+            // CR 810.8a — a can't-lose grant controlled by any teammate protects the whole team.
+            if (com.wingedsheep.engine.mechanics.sba.player.playerCantLoseGame(newState, opponentId)) continue
 
             newState = newState.updateEntity(opponentId) { c ->
                 c.with(PlayerLostComponent(LossReason.CARD_EFFECT))

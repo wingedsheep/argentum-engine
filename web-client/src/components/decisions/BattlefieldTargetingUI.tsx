@@ -5,6 +5,7 @@ import type { EntityId, ChooseTargetsDecision } from '@/types'
 import { useResponsive } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { DecisionCardPreview } from './DecisionComponents'
+import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
 
 /**
@@ -106,7 +107,7 @@ export function BattlefieldTargetingUI({
   const promptText = targetReq?.description ?? decision.prompt
 
   return (
-    <div className={styles.sideBannerSelection}>
+    <DraggableBanner className={styles.sideBannerSelection}>
       {sourceImageUrl && (
         <img
           src={sourceImageUrl}
@@ -155,6 +156,6 @@ export function BattlefieldTargetingUI({
           </button>
         )}
       </div>
-    </div>
+    </DraggableBanner>
   )
 }

@@ -160,12 +160,16 @@ class RepeatWhileExecutor(
                     val evaluator = conditionEvaluator ?: com.wingedsheep.engine.handlers.ConditionEvaluator()
                     val shouldRepeat = evaluator.evaluate(state, repeatCondition.condition, context)
                     if (shouldRepeat) {
+                        // Deepen resolution depth per iteration so a WhileCondition that never goes
+                        // false is caught by the EffectExecutorRegistry depth guard (this recursion
+                        // is on the JVM call stack, not via pushContinuation) instead of overflowing
+                        // it. See GameLimits.MAX_RESOLUTION_DEPTH.
                         executeIteration(
                             state = state,
                             body = body,
                             repeatCondition = repeatCondition,
                             resolvedDeciderId = null,
-                            context = context,
+                            context = context.copy(resolutionDepth = context.resolutionDepth + 1),
                             sourceName = sourceName,
                             effectExecutor = effectExecutor,
                             priorEvents = priorEvents

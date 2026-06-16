@@ -5,6 +5,7 @@ import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.event.GlobalGrantedTriggeredAbility
 import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.event.GrantedKeywordAbility
+import com.wingedsheep.engine.event.GrantedStaticAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.sdk.core.Color
@@ -21,6 +22,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.GameRng
+import com.wingedsheep.sdk.scripting.AbilityIdentity
 import kotlinx.serialization.Serializable
 
 /**
@@ -85,6 +87,9 @@ data class GameState(
     /** Activated abilities granted to entities temporarily (e.g., Run Wild) */
     val grantedActivatedAbilities: List<GrantedActivatedAbility> = emptyList(),
 
+    /** Static abilities granted to entities temporarily (e.g., Full Steam Ahead) */
+    val grantedStaticAbilities: List<GrantedStaticAbility> = emptyList(),
+
     /** Cast-keyword abilities granted to card entities temporarily (e.g., Songcrafter Mage grants Harmonize) */
     val grantedKeywordAbilities: List<GrantedKeywordAbility> = emptyList(),
 
@@ -114,6 +119,20 @@ data class GameState(
 
     /** Whether a nonland permanent left the battlefield this turn (for the Void ability word). */
     val nonlandPermanentLeftBattlefieldThisTurn: Boolean = false,
+
+    /**
+     * Active temporary counter-placement *modifiers* — the duration-scoped, controller-scoped
+     * analogue of a battlefield [com.wingedsheep.sdk.scripting.ModifyCounterPlacement] replacement
+     * (Hardened Scales). Installed by
+     * [com.wingedsheep.sdk.scripting.effects.GrantCounterPlacementModifierEffect] (e.g. Prairie
+     * Dog's "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature
+     * you control, put that many plus one instead"). Consulted from the single counter-placement
+     * chokepoint
+     * ([com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers])
+     * and expired per-entry by `CleanupPhaseManager.cleanupEndOfTurn` (and re-cleared at each turn
+     * boundary as a safety net). See [ActiveCounterPlacementModifier].
+     */
+    val activeCounterPlacementModifiers: List<ActiveCounterPlacementModifier> = emptyList(),
 
     /**
      * Players (by entity id) who have committed a crime this turn (CR 700-level Outlaws of Thunder
@@ -158,6 +177,14 @@ data class GameState(
     val format: Format = Format.Standard,
 
     /**
+     * Which opponents a creature may attack in this game (CR 802 / 803). Chosen in the lobby for
+     * Free-for-All games (CR 806.2b requires exactly one of the three). Defaults to
+     * [AttackMode.MULTIPLE] so two-player games and existing callers are unaffected — in a
+     * two-player game all three modes behave identically.
+     */
+    val attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
+
+    /**
      * Cumulative combat damage dealt by each commander to each player, keyed by
      * `(commanderEntityId, defendingPlayerId)`. Populated by `CombatDamageManager` at the
      * `DamageDealtEvent` emission sites for combat damage to a player. Read by the
@@ -190,6 +217,17 @@ data class GameState(
      * byte-identical replays/parity. Live IDs look like `e0`, `e1`, … See [EntityId].
      */
     val nextEntityId: Long = 0L,
+
+    /**
+     * Per-player persistent "yield" preferences keyed by [com.wingedsheep.sdk.scripting.AbilityIdentity]
+     * (MTGO right-click yields — see `backlog/stack-collapse-and-batch-decisions.md` §C). Lives on
+     * [GameState] (not the server session) so it survives serialization, replays deterministically,
+     * and is naturally per-player-maskable. The `untilEndOfTurn` slice is cleared at every cleanup
+     * step (CR 514); `wholeGame` / `autoAnswer` persist for the whole game. Read by
+     * [com.wingedsheep.gameserver.priority.AutoPassManager] (auto-pass) and the may-question paths
+     * (auto-answer). Empty entries are pruned, so an absent key means "no yields".
+     */
+    val yieldsByPlayer: Map<EntityId, PlayerYields> = emptyMap(),
 ) {
     /**
      * Cached projection of the game state with all continuous effects (Rule 613) applied.
@@ -238,6 +276,65 @@ data class GameState(
     fun updateEntity(id: EntityId, update: (ComponentContainer) -> ComponentContainer): GameState {
         val existing = entities[id] ?: ComponentContainer.EMPTY
         return withEntity(id, update(existing))
+    }
+
+    // =========================================================================
+    // Persistent Yields (MTGO right-click yields — backlog §C)
+    // =========================================================================
+
+    /** [playerId]'s yield preferences, or [PlayerYields.EMPTY] if none. */
+    fun yieldsFor(playerId: EntityId): PlayerYields = yieldsByPlayer[playerId] ?: PlayerYields.EMPTY
+
+    /** True when [playerId] has asked to auto-pass priority on [identity]'s stack objects. */
+    fun isYieldingTo(playerId: EntityId, identity: AbilityIdentity): Boolean =
+        yieldsFor(playerId).isYieldingTo(identity)
+
+    /**
+     * [playerId]'s remembered may-question answer for [identity] (`true`/`false`), or null if the
+     * player hasn't set an auto-answer for this ability.
+     */
+    fun autoAnswerFor(playerId: EntityId, identity: AbilityIdentity): Boolean? =
+        yieldsFor(playerId).answerFor(identity)
+
+    /** Replace [playerId]'s yields, pruning the entry entirely when it becomes empty. */
+    private fun withYields(playerId: EntityId, yields: PlayerYields): GameState =
+        copy(yieldsByPlayer = if (yields.isEmpty) yieldsByPlayer - playerId else yieldsByPlayer + (playerId to yields))
+
+    /** Apply a [YieldKind] for [playerId] against [identity] (returns new state). */
+    fun withYield(playerId: EntityId, identity: AbilityIdentity, kind: YieldKind): GameState {
+        val current = yieldsFor(playerId)
+        val updated = when (kind) {
+            YieldKind.YIELD_UNTIL_END_OF_TURN -> current.copy(untilEndOfTurn = current.untilEndOfTurn + identity)
+            YieldKind.YIELD_WHOLE_GAME -> current.copy(wholeGame = current.wholeGame + identity)
+            YieldKind.ALWAYS_ANSWER_YES -> current.copy(autoAnswer = current.autoAnswer + (identity to true))
+            YieldKind.ALWAYS_ANSWER_NO -> current.copy(autoAnswer = current.autoAnswer + (identity to false))
+        }
+        return withYields(playerId, updated)
+    }
+
+    /** Remove every yield [playerId] holds against [identity] (revoke), returning new state. */
+    fun withoutYield(playerId: EntityId, identity: AbilityIdentity): GameState {
+        val current = yieldsFor(playerId)
+        return withYields(
+            playerId,
+            current.copy(
+                untilEndOfTurn = current.untilEndOfTurn - identity,
+                wholeGame = current.wholeGame - identity,
+                autoAnswer = current.autoAnswer - identity,
+            ),
+        )
+    }
+
+    /** Drop all of [playerId]'s yields (the "clear yields" control). */
+    fun withoutYields(playerId: EntityId): GameState = copy(yieldsByPlayer = yieldsByPlayer - playerId)
+
+    /** Clear every player's [PlayerYields.untilEndOfTurn] slice (turn-boundary cleanup, CR 514). */
+    fun clearUntilEndOfTurnYields(): GameState {
+        if (yieldsByPlayer.isEmpty()) return this
+        val cleared = yieldsByPlayer
+            .mapValues { (_, y) -> y.copy(untilEndOfTurn = emptySet()) }
+            .filterValues { !it.isEmpty }
+        return copy(yieldsByPlayer = cleared)
     }
 
     // =========================================================================
@@ -318,11 +415,228 @@ data class GameState(
     }
 
     /**
-     * Get opponent of a player (for 2-player games).
+     * Players still in the game, in turn order — excludes players who have lost or left
+     * (CR 800.4a keeps them in [turnOrder] for entity history; every iteration helper
+     * must skip them).
      */
-    fun getOpponent(playerId: EntityId): EntityId? {
-        return turnOrder.find { it != playerId }
+    val activePlayers: List<EntityId>
+        get() = turnOrder.filter {
+            getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+        }
+
+    /**
+     * Opponents of a player, in turn order, excluding players who have lost or left the
+     * game. There is deliberately no single-opponent helper: any code that needs one
+     * specific opponent must say which one (a chosen target, an iteration, or the
+     * per-creature defending player — CR 802.2a).
+     */
+    fun getOpponents(playerId: EntityId): List<EntityId> {
+        // CR 810: an opponent is a player on an opposing team, so exclude the player's whole team
+        // (themselves and any teammates), not just themselves. In a non-team game a player is its
+        // own team, so this is identical to "everyone but me".
+        val ownTeam = teamOf(playerId).toHashSet()
+        return activePlayers.filter { it !in ownTeam }
     }
+
+    // =========================================================================
+    // Teams (Two-Headed Giant and other team variants — CR 810)
+    //
+    // Team membership lives on the player entity as a
+    // [com.wingedsheep.engine.state.components.identity.TeamComponent]; these helpers are the
+    // single read surface for it. A player without that component is its own team, so every helper
+    // degrades to per-player behaviour in non-team formats — `teamOf(p) == [p]`,
+    // `teammatesOf(p) == []`, and `teams` is one singleton list per player. That is what keeps
+    // future team-aware turn/priority/combat/SBA code a no-op for ordinary games.
+    // =========================================================================
+
+    /**
+     * The game's teams, in turn order. Players sharing a `TeamComponent.teamIndex` are grouped into
+     * one list; a player without the component forms a singleton team. Teams appear in the order
+     * their first member appears in [turnOrder], and members keep turn order within a team. Includes
+     * players who have lost or left — filter with [teamActivePlayers] when liveness matters.
+     */
+    val teams: List<List<EntityId>>
+        get() {
+            val ordered = mutableListOf<MutableList<EntityId>>()
+            val byIndex = mutableMapOf<Int, MutableList<EntityId>>()
+            for (playerId in turnOrder) {
+                val idx = getEntity(playerId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.TeamComponent>()?.teamIndex
+                if (idx == null) {
+                    ordered.add(mutableListOf(playerId))
+                } else {
+                    val team = byIndex.getOrPut(idx) { mutableListOf<EntityId>().also { ordered.add(it) } }
+                    team.add(playerId)
+                }
+            }
+            return ordered
+        }
+
+    /**
+     * Every player on [playerId]'s team, including [playerId] itself, in turn order. Returns just
+     * `[playerId]` when it has no [com.wingedsheep.engine.state.components.identity.TeamComponent]
+     * (its own team). Includes lost/left teammates.
+     */
+    fun teamOf(playerId: EntityId): List<EntityId> {
+        val idx = getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.identity.TeamComponent>()?.teamIndex
+            ?: return listOf(playerId)
+        return turnOrder.filter {
+            getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.TeamComponent>()?.teamIndex == idx
+        }
+    }
+
+    /**
+     * [playerId]'s teammates — its team minus itself, in turn order. Empty in non-team formats.
+     */
+    fun teammatesOf(playerId: EntityId): List<EntityId> =
+        teamOf(playerId).filter { it != playerId }
+
+    /**
+     * Members of [playerId]'s team still in the game (not lost/left), in turn order. The team-level
+     * analogue of [activePlayers].
+     */
+    fun teamActivePlayers(playerId: EntityId): List<EntityId> =
+        teamOf(playerId).filter {
+            getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+        }
+
+    /**
+     * The players who act together as one side on the active player's turn — every still-in
+     * teammate in a shared-team-turns format (CR 805.4 / 805.10: untap, draw, attack, block as a
+     * unit), otherwise just [playerId] itself. This is the single read surface for "who collaborates
+     * this turn"; it degrades to `[playerId]` whenever [Format.sharesTeamTurns] is false (Free-for-All,
+     * **Team vs. Team**, 1v1, Commander), so a player on a Team-vs-Team team still untaps/draws/
+     * attacks/blocks strictly alone even though they have teammates.
+     */
+    fun sharedTurnTeam(playerId: EntityId): List<EntityId> =
+        if (format.sharesTeamTurns) teamActivePlayers(playerId) else listOf(playerId)
+
+    /**
+     * Teams with at least one player still in the game (not lost/left), in turn order. The
+     * team-level analogue of [activePlayers] — the game ends when only one of these remains
+     * (CR 810.8a). In a non-team game each player is its own team, so this mirrors [activePlayers].
+     */
+    val activeTeams: List<List<EntityId>>
+        get() = teams.filter { team ->
+            team.any { getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true }
+        }
+
+    /**
+     * The shared poison-counter total for [playerId]'s team (CR 810.10 — poison counters are placed
+     * on players individually but pooled by the team). Summed across all team members. For a player
+     * with no team this is just that player's own poison count.
+     */
+    fun teamPoison(playerId: EntityId): Int =
+        // Poison pools by team only when the team also shares its life total (CR 810.10 is part of
+        // the 2HG shared-pool rules). In Team vs. Team and every non-pooled format each player has
+        // their own poison total.
+        (if (format.sharesTeamLife) teamOf(playerId) else listOf(playerId)).sumOf { member ->
+            getEntity(member)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?.getCount(com.wingedsheep.sdk.core.CounterType.POISON) ?: 0
+        }
+
+    // =========================================================================
+    // Shared team turns (Two-Headed Giant — CR 805 / 810.2)
+    //
+    // A team takes ONE turn together (CR 805.4): both members untap and draw (805.4b), each may
+    // play a land (805.4c), and either may take sorcery-speed actions while it is the team's turn
+    // (805.5a — a player may act when their team has priority). The engine keeps a single
+    // [activePlayerId] (CR 805.9 — "active player" is one specific player), but turn *ownership* —
+    // "is it this player's turn?" — is a team question answered by [isActiveTurnFor]. Priority still
+    // cycles per player, so each teammate gets their own window and the phase advances only once
+    // everyone has passed; that already yields the shared-turn outcome.
+    // =========================================================================
+
+    /**
+     * True when it is [playerId]'s team's turn — i.e. [playerId] is on the active team. The
+     * team-aware replacement for `activePlayerId == playerId` at every turn-ownership / sorcery-speed
+     * gate. In a non-team game the active team is just the active player, so this reduces to equality.
+     */
+    fun isActiveTurnFor(playerId: EntityId): Boolean {
+        val active = activePlayerId ?: return false
+        // Only a shared-team-turns format (CR 805.5a) lets a teammate share turn ownership; in Team
+        // vs. Team (CR 808.4) and every non-team format the active turn belongs to one player.
+        return if (format.sharesTeamTurns) teamOf(active).contains(playerId) else active == playerId
+    }
+
+    /**
+     * The representative (first still-in member) of the team that takes its turn after [afterPlayer]'s
+     * team — the team-level analogue of [getNextPlayer]. Fully-eliminated teams are skipped. For a
+     * player with no team this is identical to [getNextPlayer]. Used by turn advancement so the turn
+     * passes to the next *team*, not to a teammate who shares the same turn (CR 805.4).
+     */
+    fun getNextTeam(afterPlayer: EntityId): EntityId {
+        // Without shared team turns (Team vs. Team — CR 808.4, Free-for-All, 1v1) each player takes
+        // their own turn, so the turn simply passes to the next still-in player.
+        if (!format.sharesTeamTurns) return getNextPlayer(afterPlayer)
+        val teamsList = teams
+        if (teamsList.isEmpty()) return afterPlayer
+        val curIdx = teamsList.indexOfFirst { afterPlayer in it }
+        val n = teamsList.size
+        for (step in 1..n) {
+            val team = teamsList[((curIdx + step) % n + n) % n]
+            val rep = team.firstOrNull {
+                getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+            }
+            if (rep != null) return rep
+        }
+        return afterPlayer
+    }
+
+    // =========================================================================
+    // Shared life total (Two-Headed Giant — CR 810.4 / 810.9)
+    //
+    // A team has ONE life total (CR 810.4); "if a cost or effect needs an individual player's life
+    // total, it uses the team's life total instead" (CR 810.9a). We model this by storing the single
+    // [LifeTotalComponent] for a team on a stable *canonical owner* — the first member of the team in
+    // turn order ([teamLifeOwnerOf]) — and resolving every life read/write to that owner.
+    //
+    // Every player still carries a [LifeTotalComponent] so player-detection (`has<LifeTotalComponent>`)
+    // and entity shape are unchanged; only the canonical owner's value is authoritative. A
+    // non-canonical teammate's component value is never read — all reads go through [lifeTotal] and
+    // all writes through [withLifeTotal] / [adjustLife], which target the owner. In a non-team game a
+    // player is its own team, so the owner is the player itself and these helpers are a pure pass-through.
+    // =========================================================================
+
+    /**
+     * The entity that holds [playerId]'s team's authoritative [LifeTotalComponent] — the first
+     * member of [teamOf] (stable across the game; team membership and turn order never change). For
+     * a player with no team this is the player itself.
+     */
+    fun teamLifeOwnerOf(playerId: EntityId): EntityId =
+        // Only a shared-life format (2HG — CR 810.4/810.9) routes every member's life to one
+        // canonical owner. Team vs. Team (CR 808.5) and every non-team format keep per-player life.
+        if (format.sharesTeamLife) teamOf(playerId).firstOrNull() ?: playerId else playerId
+
+    /**
+     * [playerId]'s life total — the team's shared total in a team game (CR 810.9a), the player's own
+     * total otherwise. Returns 0 if the owner somehow has no [LifeTotalComponent] (should not happen
+     * for a real player).
+     */
+    fun lifeTotal(playerId: EntityId): Int =
+        getEntity(teamLifeOwnerOf(playerId))
+            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+
+    /**
+     * Set [playerId]'s (team's) life total to [newLife], writing the canonical owner's component.
+     * Low-level — callers still emit the appropriate `LifeChangedEvent` (attributed to the
+     * individual player per CR 810.9) and run any prevention/replacement before computing [newLife].
+     */
+    fun withLifeTotal(playerId: EntityId, newLife: Int): GameState =
+        updateEntity(teamLifeOwnerOf(playerId)) { container ->
+            container.with(
+                com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife)
+            )
+        }
+
+    /**
+     * Convenience: adjust [playerId]'s (team's) life by [delta] (negative to lose), returning the new
+     * state. Equivalent to `withLifeTotal(playerId, lifeTotal(playerId) + delta)`.
+     */
+    fun adjustLife(playerId: EntityId, delta: Int): GameState =
+        withLifeTotal(playerId, lifeTotal(playerId) + delta)
 
     /**
      * Returns the player who currently has *input authority* for [playerId] — that is,
@@ -531,9 +845,22 @@ data class GameState(
 
     /**
      * Set the priority player (returns new state).
+     *
+     * CR 800.4a / 800.4j: priority that would be given to a player who has left the game
+     * passes instead to the next player still in the game. Routing every priority
+     * assignment through here means the rest of the engine never has to special-case a
+     * departed active player — a turn whose active player has left simply hands each
+     * priority window to the next remaining player.
      */
     fun withPriority(playerId: EntityId?): GameState =
-        copy(priorityPlayerId = playerId, priorityPassedBy = emptySet())
+        copy(priorityPlayerId = redirectPriorityIfLeft(playerId), priorityPassedBy = emptySet())
+
+    private fun redirectPriorityIfLeft(playerId: EntityId?): EntityId? {
+        if (playerId == null) return null
+        val hasLeft = getEntity(playerId)
+            ?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() == true
+        return if (hasLeft) getNextPlayer(playerId) else playerId
+    }
 
     /**
      * Record that a player passed priority (returns new state).
@@ -542,9 +869,11 @@ data class GameState(
         copy(priorityPassedBy = priorityPassedBy + playerId)
 
     /**
-     * Check if all players have passed priority.
+     * Check if all players still in the game have passed priority. Players who have
+     * left the game (CR 800.4a) never receive priority, so they are excluded — checking
+     * against the full [turnOrder] would deadlock a multiplayer game once a player leaves.
      */
-    fun allPlayersPassed(): Boolean = priorityPassedBy.containsAll(turnOrder)
+    fun allPlayersPassed(): Boolean = priorityPassedBy.containsAll(activePlayers)
 
     /**
      * Check if the engine is paused awaiting a decision.
@@ -629,11 +958,49 @@ data class GameState(
         copy(delayedTriggers = delayedTriggers.filter { it.id !in ids })
 
     /**
-     * Get the next player in turn order after the given player.
+     * Get the next player still in the game in turn order after the given player.
+     *
+     * Players who have left the game (CR 800.4a) are skipped: priority that would pass
+     * to a departed player goes to the next remaining player (CR 800.4a), and a turn a
+     * departed player would begin doesn't begin — the next remaining player's turn is
+     * next instead (CR 800.4k). If everyone else has left, returns [afterPlayer]
+     * (the game-end SBA resolves the single survivor).
      */
     fun getNextPlayer(afterPlayer: EntityId): EntityId {
-        val index = turnOrder.indexOf(afterPlayer)
-        return turnOrder[(index + 1) % turnOrder.size]
+        val size = turnOrder.size
+        if (size == 0) return afterPlayer
+        val start = turnOrder.indexOf(afterPlayer)
+        for (step in 1..size) {
+            val candidate = turnOrder[((start + step) % size + size) % size]
+            if (getEntity(candidate)
+                    ?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+            ) {
+                return candidate
+            }
+        }
+        return afterPlayer
+    }
+
+    /**
+     * Get the previous player still in the game in turn order before the given player — the
+     * mirror of [getNextPlayer], walking seats the other way. Players who have left the game
+     * (CR 800.4a) are skipped. Used by the attack-right option (CR 803.1b): the player to your
+     * right is the previous remaining seat in turn order. Returns [beforePlayer] if everyone
+     * else has left.
+     */
+    fun getPreviousPlayer(beforePlayer: EntityId): EntityId {
+        val size = turnOrder.size
+        if (size == 0) return beforePlayer
+        val start = turnOrder.indexOf(beforePlayer)
+        for (step in 1..size) {
+            val candidate = turnOrder[((start - step) % size + size) % size]
+            if (getEntity(candidate)
+                    ?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+            ) {
+                return candidate
+            }
+        }
+        return beforePlayer
     }
 
     companion object {
@@ -703,4 +1070,34 @@ data class CastSpellRecord(
     val paidWithTreasureMana: Boolean = false,
     val sourceEntityId: EntityId? = null,
     val castFromZone: Zone? = null,
+)
+
+/**
+ * A temporary, duration-scoped counter-placement *modifier* — the activated/spell-granted,
+ * time-bounded analogue of the static [com.wingedsheep.sdk.scripting.ModifyCounterPlacement]
+ * replacement (Hardened Scales). Created by
+ * [com.wingedsheep.sdk.scripting.effects.GrantCounterPlacementModifierEffect] and stored on
+ * [GameState.activeCounterPlacementModifiers].
+ *
+ * Controller-scoped exactly like the static version: [controllerId] is the player who controls
+ * the effect, and the [recipient] filter ("a creature you control") and the placer gate both
+ * resolve relative to *that* player — not to a battlefield permanent's controller. The entry is
+ * consulted from the single counter-placement chokepoint
+ * ([com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers])
+ * alongside the battlefield `ModifyCounterPlacement` scan, and is removed when [duration] expires
+ * (typically end of turn) by `CleanupPhaseManager.cleanupEndOfTurn`.
+ *
+ * @property modifier Additional counters placed (negative reduces; chokepoint floors at 0).
+ * @property controllerId The player who controls this modifier ("you").
+ * @property counterType Which counter kind the modifier applies to.
+ * @property recipient Which recipients the modifier applies to, relative to [controllerId].
+ * @property duration How long the modifier stays active.
+ */
+@Serializable
+data class ActiveCounterPlacementModifier(
+    val modifier: Int,
+    val controllerId: EntityId,
+    val counterType: com.wingedsheep.sdk.scripting.events.CounterTypeFilter,
+    val recipient: com.wingedsheep.sdk.scripting.events.RecipientFilter,
+    val duration: com.wingedsheep.sdk.scripting.Duration,
 )

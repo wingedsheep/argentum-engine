@@ -15,6 +15,7 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.WebSocketSession
 import java.util.concurrent.TimeUnit
 
@@ -122,7 +123,7 @@ class ConnectionHandler(
             }
         }
 
-        // Cancel in-game disconnect timer and notify opponent
+        // Cancel in-game disconnect timer and notify every opponent (2-player = the one opponent)
         if (identity.gameDisconnectTimer != null) {
             identity.gameDisconnectTimer?.cancel(false)
             identity.gameDisconnectTimer = null
@@ -131,19 +132,31 @@ class ConnectionHandler(
             if (gameSessionId != null) {
                 val gameSession = gameRepository.findById(gameSessionId)
                 if (gameSession != null) {
-                    val opponentId = gameSession.getOpponentId(identity.playerId)
-                    val opponentSession = if (opponentId != null) gameSession.getPlayerSession(opponentId) else null
-                    if (opponentSession?.isConnected == true) {
-                        sender.send(opponentSession.webSocketSession, ServerMessage.OpponentReconnected)
+                    gameSession.getOpponentIds(identity.playerId).forEach { opponentId ->
+                        val opponentSession = gameSession.getPlayerSession(opponentId)
+                        if (opponentSession?.isConnected == true) {
+                            sender.send(opponentSession.webSocketSession, ServerMessage.OpponentReconnected)
+                        }
                     }
                 }
             }
         }
 
+        // If the identity is still attached to a different live socket (same player opened
+        // another tab/device), tell that socket it lost the session and close it. Without
+        // this the old tab silently loses its mapping and every message it sends gets a
+        // confusing NOT_CONNECTED error — or worse, fights this socket for the session.
+        val replacedWs = identity.webSocketSession
         sessionRegistry.removeOldWsMapping(identity.token)
 
         identity.webSocketSession = session
         sessionRegistry.mapWsToToken(session.id, identity.token)
+
+        if (replacedWs != null && replacedWs.id != session.id && replacedWs.isOpen) {
+            logger.info("Session for ${identity.playerName} replaced by a new connection; notifying old socket ${replacedWs.id}")
+            sender.send(replacedWs, ServerMessage.SessionReplaced)
+            runCatching { replacedWs.close(CloseStatus.NORMAL) }
+        }
 
         val playerSession = PlayerSession(
             webSocketSession = session,
@@ -202,7 +215,7 @@ class ConnectionHandler(
             }
             "game" -> {
                 val gameSession = gameRepository.findById(gameSessionId!!)
-                logger.info("Reconnecting to game: found=${gameSession != null}, isStarted=${gameSession?.isStarted}, player1=${gameSession?.player1?.playerId?.value}, player2=${gameSession?.player2?.playerId?.value}")
+                logger.info("Reconnecting to game: found=${gameSession != null}, isStarted=${gameSession?.isStarted}, seats=${gameSession?.getPlayers()?.map { it.playerId.value }}")
                 if (gameSession != null) {
                     // Remove old player session if exists, then associate new one
                     if (gameSession.getPlayerSession(identity.playerId) != null) {
@@ -326,11 +339,13 @@ class ConnectionHandler(
                 if (gameSessionId != null) {
                     val gameSession = gameRepository.findById(gameSessionId)
                     if (gameSession != null && !gameSession.isGameOver()) {
-                        val opponentId = gameSession.getOpponentId(identity.playerId)
-                        val opponentSession = if (opponentId != null) gameSession.getPlayerSession(opponentId) else null
-                        if (opponentSession?.isConnected == true) {
-                            sender.send(opponentSession.webSocketSession,
-                                ServerMessage.OpponentDisconnected(secondsRemaining = GAME_DISCONNECT_SECONDS))
+                        // Notify every opponent that this seat dropped (2-player = the one opponent)
+                        gameSession.getOpponentIds(identity.playerId).forEach { opponentId ->
+                            val opponentSession = gameSession.getPlayerSession(opponentId)
+                            if (opponentSession?.isConnected == true) {
+                                sender.send(opponentSession.webSocketSession,
+                                    ServerMessage.OpponentDisconnected(secondsRemaining = GAME_DISCONNECT_SECONDS))
+                            }
                         }
 
                         identity.gameDisconnectTimer = sessionRegistry.disconnectScheduler.schedule({
@@ -397,14 +412,30 @@ class ConnectionHandler(
         if (gameSessionId != null) {
             val gameSession = gameRepository.findById(gameSessionId)
             if (gameSession != null) {
-                val opponentId = gameSession.getOpponentId(identity.playerId)
-                if (opponentId != null) {
-                    gameSession.playerConcedes(identity.playerId)
-                    handleGameOverCallback?.invoke(gameSession, GameOverReason.DISCONNECTION)
+                if (gameSession.getOpponentIds(identity.playerId).isNotEmpty()) {
+                    forfeitFromGame(gameSession, identity.playerId)
                 } else {
                     gameRepository.remove(gameSessionId)
                 }
             }
+        }
+    }
+
+    /**
+     * Forfeit [playerId] from [gameSession] on disconnect abandonment. Concedes the seat; if that
+     * ends the game (≤1 player remains, CR 104.2a) it is finalized, otherwise the game continues
+     * for the remaining seats (CR 800.4a) and we rebroadcast so they see the seat leave. In a
+     * 2-player game this always ends it — the degenerate case.
+     */
+    private fun forfeitFromGame(
+        gameSession: com.wingedsheep.gameserver.session.GameSession,
+        playerId: EntityId,
+    ) {
+        gameSession.playerConcedes(playerId)
+        if (gameSession.isGameOver()) {
+            handleGameOverCallback?.invoke(gameSession, GameOverReason.DISCONNECTION)
+        } else {
+            broadcastStateUpdateCallback?.invoke(gameSession, emptyList())
         }
     }
 
@@ -431,8 +462,7 @@ class ConnectionHandler(
         }
 
         logger.info("Game disconnect timeout for ${identity.playerName} — auto-conceding")
-        gameSession.playerConcedes(identity.playerId)
-        handleGameOverCallback?.invoke(gameSession, GameOverReason.DISCONNECTION)
+        forfeitFromGame(gameSession, identity.playerId)
     }
 
     /**
@@ -545,7 +575,8 @@ class ConnectionHandler(
 
         val gameSession = gameRepository.findById(gameSessionId)
         if (gameSession != null) {
-            val opponentId = gameSession.getOpponentId(playerSession.playerId)
+            // Anonymous (no-identity) disconnect path — these games are always 2-player.
+            val opponentId = gameSession.getOpponentIds(playerSession.playerId).firstOrNull()
             if (opponentId != null) {
                 val opponentSession = gameSession.getPlayerSession(opponentId)
                 if (opponentSession?.isConnected == true) {

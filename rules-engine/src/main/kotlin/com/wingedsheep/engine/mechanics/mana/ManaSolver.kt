@@ -1256,16 +1256,14 @@ class ManaSolver(
         restriction: ActivationRestriction
     ): Boolean = when (restriction) {
         is ActivationRestriction.AnyPlayerMay -> true
-        is ActivationRestriction.OnlyDuringYourTurn -> state.activePlayerId == playerId
+        is ActivationRestriction.OnlyDuringYourTurn -> state.isActiveTurnFor(playerId)
         is ActivationRestriction.BeforeStep -> state.step.ordinal < restriction.step.ordinal
         is ActivationRestriction.DuringPhase -> state.phase == restriction.phase
         is ActivationRestriction.DuringStep -> state.step == restriction.step
         is ActivationRestriction.OnlyIfCondition -> {
-            val opponentId = state.turnOrder.firstOrNull { it != playerId }
             val context = EffectContext(
                 sourceId = sourceId,
                 controllerId = playerId,
-                opponentId = opponentId,
                 targets = emptyList(),
                 xValue = 0
             )
@@ -1325,11 +1323,9 @@ class ManaSolver(
         playerId: EntityId
     ): Int {
         if (amount is DynamicAmount.Fixed) return amount.amount
-        val opponentId = state.turnOrder.firstOrNull { it != playerId }
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = playerId,
-            opponentId = opponentId,
             targets = emptyList(),
             xValue = null
         )
@@ -1412,12 +1408,10 @@ class ManaSolver(
 
                 val landController = state.getEntity(source.entityId)
                     ?.get<ControllerComponent>()?.playerId ?: playerId
-                val opponentId = state.turnOrder.firstOrNull { it != landController }
 
                 val context = EffectContext(
                     sourceId = entityId,
                     controllerId = landController,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = null
                 )
@@ -1490,11 +1484,9 @@ class ManaSolver(
                         state, state.projectedState, source.entityId, onSourceTap.sourceFilter, filterContext
                     )) continue
 
-                val opponentId = state.turnOrder.firstOrNull { it != tappingPlayerId }
                 val effectContext = EffectContext(
                     sourceId = entityId,
                     controllerId = tappingPlayerId,
-                    opponentId = opponentId,
                     targets = emptyList(),
                     xValue = null
                 )

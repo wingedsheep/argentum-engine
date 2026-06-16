@@ -18,15 +18,17 @@ import { getWebSocket } from '../shared'
 /**
  * The seat a combat declaration should be tagged with. Normally the connection's own seat;
  * in single-client hotseat the one connection declares for whichever seat the server is
- * asking — the active player for attackers, the defending player for blockers.
+ * asking — the acting seat recorded from the legal action, falling back to the active
+ * player for attackers / the (2-player) defending player for blockers.
  */
 function combatActingSeat(
-  mode: string,
+  combatState: { mode: string; actingSeat: EntityId | null },
   connectionSeat: EntityId,
   gameState: ClientGameState | null,
 ): EntityId {
   if (!gameState?.hotseat) return connectionSeat
-  if (mode === 'declareAttackers') return gameState.activePlayerId
+  if (combatState.actingSeat) return combatState.actingSeat
+  if (combatState.mode === 'declareAttackers') return gameState.activePlayerId
   return (
     gameState.combat?.defendingPlayerId ??
     gameState.players.find((p) => p.playerId !== gameState.activePlayerId)?.playerId ??
@@ -54,6 +56,12 @@ export interface CombatSliceActions {
   startCombat: (state: CombatState) => void
   toggleAttacker: (creatureId: EntityId) => void
   setAttackTarget: (attackerId: EntityId, targetId: EntityId) => void
+  /**
+   * Multiplayer defender pick: assign every currently selected attacker to
+   * [defenderId] (a player or planeswalker) and make it the sticky default for
+   * attackers selected afterwards. Driven by rail-chip / defender-pick clicks.
+   */
+  assignDefenderToSelectedAttackers: (defenderId: EntityId) => void
   assignBlocker: (blockerId: EntityId, attackerId: EntityId) => void
   removeBlockerAssignment: (blockerId: EntityId) => void
   clearBlockerAssignments: () => void
@@ -123,10 +131,13 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         ? state.combatState.selectedAttackers.filter((id) => id !== creatureId)
         : [...state.combatState.selectedAttackers, creatureId]
 
-      // Clean up attackerTargets if deselecting
+      // Clean up attackerTargets if deselecting; sticky-assign on select when a
+      // defender has already been picked this declaration (multiplayer).
       const newTargets = { ...state.combatState.attackerTargets }
       if (isSelected) {
         delete newTargets[creatureId]
+      } else if (state.combatState.stickyDefenderId && !newTargets[creatureId]) {
+        newTargets[creatureId] = state.combatState.stickyDefenderId
       }
 
       // Prune bands when an attacker is deselected: drop the creature from every band,
@@ -170,6 +181,29 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         combatState: {
           ...state.combatState,
           attackerTargets: newTargets,
+        },
+      }
+    })
+  },
+
+  assignDefenderToSelectedAttackers: (defenderId) => {
+    set((state) => {
+      if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
+        return state
+      }
+      const newTargets = { ...state.combatState.attackerTargets }
+      for (const attackerId of state.combatState.selectedAttackers) {
+        newTargets[attackerId] = defenderId
+      }
+      getWebSocket()?.send(createUpdateAttackerTargetsMessage(
+        [...state.combatState.selectedAttackers],
+        newTargets,
+      ))
+      return {
+        combatState: {
+          ...state.combatState,
+          attackerTargets: newTargets,
+          stickyDefenderId: defenderId,
         },
       }
     })
@@ -268,19 +302,25 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     const { combatState, playerId, gameState } = get()
     if (!combatState || !playerId) return
     // In hotseat the single connection declares for whichever seat the server is asking:
-    // the active player for attackers, the defending player for blockers.
-    const actingSeat = combatActingSeat(combatState.mode, playerId, gameState)
+    // the acting seat from the legal action (active player / defending player fallback).
+    const actingSeat = combatActingSeat(combatState, playerId, gameState)
 
     if (combatState.mode === 'declareAttackers') {
       if (!gameState) return
 
-      const opponent = gameState.players.find((p) => p.playerId !== actingSeat)
-      if (!opponent) return
+      // Default defender for attackers without an explicit assignment: the sticky
+      // defender (multiplayer pick), else the first opponent still in the game —
+      // which in a 2-player game is the sole opponent, as before.
+      const defaultDefender =
+        combatState.stickyDefenderId ??
+        gameState.players.find((p) => p.playerId !== actingSeat && !p.hasLost)?.playerId ??
+        gameState.players.find((p) => p.playerId !== actingSeat)?.playerId
+      if (!defaultDefender) return
 
       const attackers: Record<EntityId, EntityId> = {}
       for (const attackerId of combatState.selectedAttackers) {
-        // Use per-attacker target if set, otherwise default to opponent player
-        attackers[attackerId] = combatState.attackerTargets[attackerId] ?? opponent.playerId
+        // Use per-attacker target if set, otherwise default to the defender above
+        attackers[attackerId] = combatState.attackerTargets[attackerId] ?? defaultDefender
       }
 
       // Drop bands that no longer satisfy CR 702.22 (after attacker deselection /
@@ -337,7 +377,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
   cancelCombat: () => {
     const { combatState, playerId, gameState } = get()
     if (!combatState || !playerId) return
-    const actingSeat = combatActingSeat(combatState.mode, playerId, gameState)
+    const actingSeat = combatActingSeat(combatState, playerId, gameState)
 
     if (combatState.mode === 'declareAttackers') {
       const action = {

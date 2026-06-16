@@ -46,6 +46,16 @@ class PayDynamicManaCostExecutor(
             .resolvePlayerTarget(EffectTarget.PlayerRef(effect.payer), context, state)
             ?: context.controllerId
 
-        return payManaCostFromPool(state, playerId, ManaCost.parse("{$amount}"), cardRegistry)
+        return payManaCostFromPool(state, playerId, dynamicManaCost(amount, effect.color), cardRegistry)
+    }
+
+    companion object {
+        /**
+         * Build the [ManaCost] for a [PayDynamicManaCostEffect]: `amount` generic mana when
+         * [color] is null, or `amount` copies of the colored symbol (`{G}{G}…`) otherwise.
+         */
+        fun dynamicManaCost(amount: Int, color: com.wingedsheep.sdk.core.Color?): ManaCost =
+            if (color != null) ManaCost.parse("{${color.symbol}}".repeat(amount))
+            else ManaCost.parse("{$amount}")
     }
 }

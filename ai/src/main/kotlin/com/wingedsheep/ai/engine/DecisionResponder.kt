@@ -51,6 +51,7 @@ class DecisionResponder(
             is ChooseTargetsDecision -> respondTargets(state, decision, playerId)
             is SelectCardsDecision -> respondSelectCards(state, decision, playerId)
             is YesNoDecision -> respondYesNo(state, decision, playerId)
+            is BatchYesNoDecision -> respondBatchYesNo(state, decision, playerId)
             is ChooseModeDecision -> respondModes(state, decision, playerId)
             is ChooseColorDecision -> respondColor(state, decision, playerId)
             is ChooseNumberDecision -> respondNumber(state, decision, playerId)
@@ -159,7 +160,7 @@ class DecisionResponder(
         }
 
         // Players — prefer opponent
-        val isOpponent = targetId == state.getOpponent(playerId)
+        val isOpponent = targetId == state.soleOpponent(playerId)
         if (isOpponent) return 3.0
 
         return 0.0
@@ -232,6 +233,23 @@ class DecisionResponder(
         return YesNoResponse(decision.id, yesScore >= noScore)
     }
 
+    /**
+     * Batched "you may …" raised once for a run of identical optional triggers. The AI evaluates the
+     * two whole-run outcomes (yes-to-all vs no-to-all) and applies the better one to the entire run —
+     * the same value the AI would reach answering each instance the same way, in one decision.
+     */
+    private fun respondBatchYesNo(
+        state: GameState,
+        decision: BatchYesNoDecision,
+        playerId: EntityId
+    ): DecisionResponse {
+        val yesResult = simulator.simulateDecision(state, BatchYesNoResponse(decision.id, choice = true, applyToAll = true))
+        val noResult = simulator.simulateDecision(state, BatchYesNoResponse(decision.id, choice = false, applyToAll = true))
+        val yesScore = evaluateResult(yesResult, playerId)
+        val noScore = evaluateResult(noResult, playerId)
+        return BatchYesNoResponse(decision.id, choice = yesScore >= noScore, applyToAll = true)
+    }
+
     // ── Mode selection ───────────────────────────────────────────────────
 
     private fun respondModes(
@@ -301,7 +319,7 @@ class DecisionResponder(
         playerId: EntityId
     ): DecisionResponse {
         val projected = state.projectedState
-        val opponentId = state.getOpponent(playerId)
+        val opponentId = state.soleOpponent(playerId)
 
         val distribution = mutableMapOf<EntityId, Int>()
         var remaining = decision.totalAmount

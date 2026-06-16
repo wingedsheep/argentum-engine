@@ -112,11 +112,39 @@ class GatedEffectExecutor(
             ) {
                 return EffectResult.success(state)
             }
+            // A declared feasibility that isn't met means the may-action is impossible — the player
+            // "doesn't", so skip the prompt and run `otherwise` directly. This is the no-target
+            // analogue of a targeted "may" with no legal targets falling to its else branch (e.g.
+            // "you may sacrifice an artifact. If you don't, …" with no artifact taps you out).
+            gate.feasibility?.let { check ->
+                if (!checkFeasibility(state, context.controllerId, check)) {
+                    return effect.otherwise
+                        ?.let { effectExecutor(state, it, context) }
+                        ?: EffectResult.success(state)
+                }
+            }
         }
 
         val playerId = effect.decisionMaker
             ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
             ?: context.controllerId
+
+        // Persistent auto-answer yield (backlog §C): if the decision-maker has remembered a yes/no
+        // for this ability, resolve the "you may" question without prompting and run the matching
+        // branch. Scoped to Gate.MayDecide — the pure may-question — never a cost/pay gate, so a
+        // yield can never spend mana or make a resource decision on the player's behalf (§C.6).
+        if (gate is Gate.MayDecide) {
+            val identity = context.abilityIdentity
+            val auto = identity?.let { state.autoAnswerFor(playerId, it) }
+            if (auto != null) {
+                val sourceName = context.sourceId
+                    ?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "ability"
+                val note = AbilityAutoAnsweredEvent(context.sourceId ?: playerId, sourceName, playerId, auto)
+                val branch = if (auto) effect.then else effect.otherwise
+                val result = branch?.let { effectExecutor(state, it, context) } ?: EffectResult.success(state)
+                return result.copy(events = listOf(note) + result.events)
+            }
+        }
 
         // Gate.MayPay: don't offer an impossible "yes" — fall straight through to `otherwise`.
         if (gate is Gate.MayPay && !canAfford(state, playerId, gate.cost, context)) {
@@ -333,8 +361,11 @@ class GatedEffectExecutor(
         when (cost) {
             is PayManaCostEffect -> "Pay ${cost.cost}"
             is PayDynamicManaCostEffect -> {
-                val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context)
-                "Pay {$amount}"
+                // Match the `amount <= 0` short-circuit that `execute()` and `canAfford()` apply
+                // before building a ManaCost: a non-positive amount pays nothing, and guarding here
+                // also avoids `"{G}".repeat(negative)` throwing from inside label rendering.
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
+                "Pay ${PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)}"
             }
             else -> null
         }
@@ -350,10 +381,12 @@ class GatedEffectExecutor(
                 val payerId = TargetResolutionUtils
                     .resolvePlayerTarget(EffectTarget.PlayerRef(cost.payer), context, state)
                     ?: playerId
-                amount <= 0 || manaSolver.canPay(state, payerId, ManaCost.parse("{$amount}"))
+                amount <= 0 || manaSolver.canPay(
+                    state, payerId, PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)
+                )
             }
             is PayLifeEffect -> {
-                val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+                val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
                 life >= cost.amount
             }
             is CompositeEffect -> cost.effects.all { canAfford(state, playerId, it, context) }
@@ -440,7 +473,7 @@ class GatedEffectExecutor(
 
         SuccessCriterion.Auto.terminalCollectionMove(action)?.let { move ->
             val destination = move.destination as? CardDestination.ToZone ?: return GatedActionSnapshot()
-            val ownerId = resolvePlayer(destination.player, context) ?: return GatedActionSnapshot()
+            val ownerId = resolvePlayer(destination.player, context, state) ?: return GatedActionSnapshot()
             return zoneSnapshot(state, ownerId, destination.zone)
         }
 
@@ -464,15 +497,8 @@ class GatedEffectExecutor(
             destinationZonePreSize = state.zones[ZoneKey(ownerId, zone)]?.size ?: 0
         )
 
-    private fun resolvePlayer(player: Player, context: EffectContext): EntityId? = when (player) {
-        is Player.You -> context.controllerId
-        is Player.Opponent -> context.opponentId
-        is Player.TargetOpponent -> context.opponentId
-        is Player.TargetPlayer -> context.targets.firstOrNull()?.let { TargetResolutionUtils.run { it.toEntityId() } }
-        is Player.ContextPlayer -> context.positionalTarget(player.index)?.let { TargetResolutionUtils.run { it.toEntityId() } }
-        is Player.TriggeringPlayer -> context.triggeringEntityId
-        else -> context.controllerId
-    }
+    private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): EntityId? =
+        TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId
 
     companion object {
         /**

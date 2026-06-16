@@ -2,7 +2,6 @@ package com.wingedsheep.sdk.scripting.conditions
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -63,25 +62,6 @@ data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
 @Serializable
 data object EnchantedCreatureIsLegendary : Condition {
     override val description: String = "if enchanted creature is legendary"
-}
-
-/**
- * Condition: "if enchanted permanent matches [filter]".
- *
- * Resolves the source Aura's `AttachedToComponent` and checks the attached permanent
- * against a [GameObjectFilter] in projected state. The general-purpose counterpart to
- * [EnchantedCreatureHasSubtype] / [EnchantedCreatureIsLegendary]: works for color, type,
- * or any other filterable property. Used by Essence Leak ("as long as enchanted permanent
- * is red or green"). The attachment may be any permanent, not just a creature.
- */
-@SerialName("EnchantedPermanentMatches")
-@Serializable
-data class EnchantedPermanentMatches(val filter: GameObjectFilter) : Condition {
-    override val description: String = "if enchanted permanent is ${filter.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
 }
 
 /**
@@ -173,51 +153,15 @@ data object TriggeringSpellHasSingleTarget : Condition {
 }
 
 /**
- * Condition: "if it's a/an [filter] spell" — true iff the spell that triggered this ability
- * matches [filter]. Reads the triggering entity (the spell of a "whenever you cast a spell"
- * trigger) by its static card characteristics, so it stays correct even after the spell has
- * left the stack. Resolution-only.
- *
- * General intervening-if guard for "whenever you cast a spell, if it's a/an X ..." cards. Compose
- * with [PlayerCastSpellsThisTurn] for "first X spell this turn" payoffs — see
- * `Conditions.YouCastFirstSpellOfTypeThisTurn`, which ANDs this with
- * `Not(PlayerCastSpellsThisTurn(filter, atLeast = 2))` so the count machinery isn't duplicated.
- */
-@SerialName("TriggeringSpellMatchesFilter")
-@Serializable
-data class TriggeringSpellMatchesFilter(
-    val filter: GameObjectFilter
-) : Condition {
-    override val description: String = "if it's ${filter.description.ifEmpty { "a matching" }} spell"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-/**
- * Condition: "if [target] is [filter]"
- * Checks whether a context target matches a GameObjectFilter.
- * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."
- */
-@SerialName("TargetMatchesFilter")
-@Serializable
-data class TargetMatchesFilter(
-    val filter: GameObjectFilter,
-    val targetIndex: Int = 0
-) : Condition {
-    override val description: String = "if target matches $filter"
-}
-
-/**
  * Condition: "if [target] is a player".
  *
  * True when the context target at [targetIndex] is a player (rather than a permanent, spell, or
- * card). The companion [TargetMatchesFilter] only matches game objects and returns false for a
- * player target, so this is the dedicated check for "any target" effects whose follow-up applies
- * only when the chosen target was a player — e.g. Sonic Shrieker's "If a player is dealt damage
- * this way, they discard a card." Pair with [com.wingedsheep.sdk.scripting.targets.EffectTarget.ContextTarget]
- * to make that same player the subject of the follow-up.
+ * card). The companion `EntityMatches(ContextTarget(targetIndex), filter)` only matches game
+ * objects and returns false for a player target, so this is the dedicated check for "any target"
+ * effects whose follow-up applies only when the chosen target was a player — e.g. Sonic Shrieker's
+ * "If a player is dealt damage this way, they discard a card." Pair with
+ * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ContextTarget] to make that same player the
+ * subject of the follow-up.
  */
 @SerialName("TargetIsPlayer")
 @Serializable
@@ -225,6 +169,40 @@ data class TargetIsPlayer(
     val targetIndex: Int = 0
 ) : Condition {
     override val description: String = "if a player is dealt damage this way"
+}
+
+/**
+ * Condition: "if [target] is tapped".
+ *
+ * Resolves the context target at [targetIndex] to a battlefield permanent and returns true when it
+ * is currently tapped. Non-permanent targets and permanents that have left the battlefield return
+ * false defensively. Pairs with a [com.wingedsheep.sdk.scripting.effects.ConditionalEffect] to branch
+ * on a target's tapped state at resolution time — e.g. Shackle Slinger's "choose target creature an
+ * opponent controls. If it's tapped, put a stun counter on it. Otherwise, tap it."
+ */
+@SerialName("TargetIsTapped")
+@Serializable
+data class TargetIsTapped(
+    val targetIndex: Int = 0
+) : Condition {
+    override val description: String = "if it's tapped"
+}
+
+/**
+ * Condition: "if [target] is this permanent (the source)".
+ *
+ * True when the context target at [targetIndex] resolves to the same entity as the ability's
+ * source. Wrap in [com.wingedsheep.sdk.dsl.Conditions.Not] for "if it's a different permanent" /
+ * "another" wordings — e.g. Arid Archway's "If another Desert was returned this way" pairs
+ * `Not(TargetIsSource())` with a Desert-land filter check so returning the Archway itself doesn't
+ * count. Non-permanent targets return false.
+ */
+@SerialName("TargetIsSource")
+@Serializable
+data class TargetIsSource(
+    val targetIndex: Int = 0
+) : Condition {
+    override val description: String = "if it's this permanent"
 }
 
 /**

@@ -3,8 +3,8 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
-import com.wingedsheep.sdk.scripting.conditions.SourceMatches
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -46,7 +46,8 @@ object Suspend {
     const val PLAY_COLLECTION: String = "suspend_play"
 
     /** "this card has a time counter on it" — used as the intervening-if gate and the cast condition. */
-    private val hasTimeCounter = SourceMatches(
+    private val hasTimeCounter = EntityMatches(
+        EffectTarget.Self,
         GameObjectFilter.Any.copy(statePredicates = listOf(StatePredicate.HasCounter("TIME")))
     )
 

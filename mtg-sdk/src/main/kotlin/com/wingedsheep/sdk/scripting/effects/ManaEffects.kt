@@ -48,9 +48,17 @@ data class PayManaCostEffect(val cost: ManaCost) : Effect {
 data class PayDynamicManaCostEffect(
     val amount: DynamicAmount,
     val payer: com.wingedsheep.sdk.scripting.references.Player =
-        com.wingedsheep.sdk.scripting.references.Player.You
+        com.wingedsheep.sdk.scripting.references.Player.You,
+    /**
+     * When set, the evaluated [amount] is paid as that many copies of this colored symbol
+     * (e.g. `Color.GREEN` → `{G}{G}…`, for "pay {G} for each wind counter" — Cyclone). When null
+     * (the default) the amount is paid as generic mana (`{N}`).
+     */
+    val color: Color? = null
 ) : Effect {
-    override val description: String = "Pay {${amount.description}}"
+    override val description: String =
+        if (color != null) "Pay {${color.symbol}} for each (${amount.description})"
+        else "Pay {${amount.description}}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newAmount = amount.applyTextReplacement(replacer)

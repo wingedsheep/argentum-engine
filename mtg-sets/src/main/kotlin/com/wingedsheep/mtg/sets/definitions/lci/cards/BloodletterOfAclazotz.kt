@@ -36,7 +36,7 @@ val BloodletterOfAclazotz = card("Bloodletter of Aclazotz") {
         ModifyLifeLoss(
             multiplier = 2,
             restrictions = listOf(IsYourTurn),
-            appliesTo = EventPattern.LifeLossEvent(player = Player.Opponent),
+            appliesTo = EventPattern.LifeLossEvent(player = Player.EachOpponent),
         )
     )
 

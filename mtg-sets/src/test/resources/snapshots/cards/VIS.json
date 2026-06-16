@@ -23,6 +23,46 @@
     ]
 }
 
+// Cloud Elemental
+{
+    "name": "Cloud Elemental",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nThis creature can block only creatures with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Adam Rex",
+        "flavorText": "\"You know you've angered the gods when the clouds turn against you.\"\n—Sisay, Captain of the Weatherlight",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f2a5146-cf2e-40c0-b498-06e611343196.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Elven Cache
 {
     "name": "Elven Cache",
@@ -41,7 +81,7 @@
             {
                 "type": "TargetObject",
                 "filter": {
-                    "baseFilter": {},
+                    "baseFilter": "own:you",
                     "zone": "Graveyard"
                 },
                 "id": "target"
@@ -373,6 +413,83 @@
     ]
 }
 
+// Quicksand
+{
+    "name": "Quicksand",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}, Sacrifice this land: Target attacking creature without flying gets -1/-2 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "IsAttacking"
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "UNCOMMON",
+        "artist": "Roger Raupp",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11370658-8d80-4d2f-afa5-ec6df6dee369.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Simoon
 {
     "name": "Simoon",
@@ -577,5 +694,45 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Warrior's Honor
+{
+    "name": "Warrior's Honor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "D. Alexander Gregory",
+        "flavorText": "\"We are to be bound together as the reeds of a basket.\"\n—Asmira, Rashida, and Jabari, unity chant",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7babd273-3e20-4cf9-bf21-c602eb729fc5.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }

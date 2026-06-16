@@ -220,7 +220,6 @@ class OldManOfTheSeaScenarioTest : FunSpec({
         val ctx = EffectContext(
             sourceId = oldMan,
             controllerId = opponent,
-            opponentId = activePlayer,
         )
         driver.replaceState(
             driver.state.addFloatingEffect(
@@ -267,7 +266,7 @@ class OldManOfTheSeaScenarioTest : FunSpec({
         )
 
         // Temporary +2/+0 pump: power 2 → 4 > Old Man's 2. SBAs latch the steal off for good.
-        val ctx = EffectContext(sourceId = oldMan, controllerId = opponent, opponentId = activePlayer)
+        val ctx = EffectContext(sourceId = oldMan, controllerId = opponent)
         driver.replaceState(
             driver.state.addFloatingEffect(
                 layer = Layer.POWER_TOUGHNESS,
@@ -340,7 +339,6 @@ class OldManOfTheSeaScenarioTest : FunSpec({
         val ctx = EffectContext(
             sourceId = oldMan,
             controllerId = opponent,
-            opponentId = activePlayer,
         )
         driver.replaceState(
             driver.state.addFloatingEffect(

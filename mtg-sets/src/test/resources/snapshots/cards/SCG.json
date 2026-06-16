@@ -2245,7 +2245,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "SpellCastEvent",
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -4765,7 +4765,10 @@
                     "source": {
                         "type": "FromZone",
                         "zone": "Hand",
-                        "player": "Opponent",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "permanent an opponent controls"
+                        },
                         "filter": "artifact|creature|enchantment|land"
                     },
                     "storeAs": "put_candidates"
@@ -4780,7 +4783,7 @@
                             "amount": 1
                         }
                     },
-                    "chooser": "Opponent",
+                    "chooser": "ControllerOfSelection",
                     "storeSelected": "putting",
                     "prompt": "You may put an artifact, creature, enchantment, or land card from your hand onto the battlefield"
                 },
@@ -4790,7 +4793,10 @@
                     "destination": {
                         "type": "ToZone",
                         "zone": "Battlefield",
-                        "player": "Opponent"
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "permanent an opponent controls"
+                        }
                     }
                 }
             ]
@@ -7835,7 +7841,13 @@
             {
                 "id": "ability_1",
                 "trigger": "AttackEvent",
-                "effect": "CantCastSpells"
+                "effect": {
+                    "type": "CantCastSpells",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
             }
         ]
     },

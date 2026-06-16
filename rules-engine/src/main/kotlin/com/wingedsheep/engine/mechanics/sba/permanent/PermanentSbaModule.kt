@@ -11,6 +11,7 @@ class PermanentSbaModule(
 ) : StateBasedActionModule {
     override fun checks(): List<StateBasedActionCheck> = listOf(
         EndedDurationExpiryCheck(),
+        AttachedCopyExpiryCheck(),
         PlaneswalkerLoyaltyCheck(),
         LegendRuleCheck(decisionHandler),
         CounterAnnihilationCheck(),

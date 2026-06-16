@@ -120,6 +120,11 @@ class TargetRecoveryTest : StringSpec({
             "TargetSpell(filter = TargetFilter.SpellOnStack.withColor(Color.BLUE))"
     }
 
+    "targetExpr restricts a counter to a noncreature spell (Spell Pierce)" {
+        ctx.targetDsl(obj("""{"_Target":"TargetSpell","args":{"_Spells":"IsNonCardtype","args":"Creature"}}""")) shouldBe
+            "TargetSpell(filter = TargetFilter.NoncreatureSpellOnStack)"
+    }
+
     "targetExpr declines a spell whose filter is about what it targets, not its type (Confound)" {
         // "counter target spell that targets a creature": the nested IsCardtype describes the spell's
         // target, so it must not collapse to CreatureSpellOnStack ("a creature spell"). Decline -> SCAFFOLD.
@@ -237,6 +242,30 @@ class TargetRecoveryTest : StringSpec({
         ctx.creatureFilterDsl(dealtDamageGoblin).shouldBeNull()
     }
 
+    "creatureFilterDsl renders a non-outlaw creature via notAnyOfSubtypes (Shoot the Sheriff)" {
+        // "destroy target non-outlaw creature" — IsNonOutlaw excludes the five outlaw creature types at
+        // once; it must render the exact filter Targets.NonOutlawCreature compiles to, not drop to "creature".
+        val nonOutlaw = obj(
+            """{"_Permanents":"And","args":[""" +
+                """{"_Permanents":"IsNonOutlaw"},""" +
+                """{"_Permanents":"IsCardtype","args":"Creature"}]}""",
+        )
+        ctx.creatureFilterDsl(nonOutlaw) shouldBe
+            "TargetFilter(GameObjectFilter.Creature.notAnyOfSubtypes(Subtype.OUTLAW_TYPES))"
+    }
+
+    "creatureFilterDsl renders 'defending player controls' as opponentControls (Spring Splasher)" {
+        // "target creature defending player controls" in an attack trigger — a ControlledByPlayer clause
+        // bound to Trigger_DefendingPlayer (an opponent of the attacking source); must preserve the
+        // controller restriction rather than widen to any creature.
+        val defendingPlayer = obj(
+            """{"_Permanents":"And","args":[""" +
+                """{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByPlayer","args":{"_Player":"Trigger_DefendingPlayer"}}]}""",
+        )
+        ctx.creatureFilterDsl(defendingPlayer) shouldBe "TargetFilter.Creature.opponentControls()"
+    }
+
     "gameObjectFilterDsl renders an outlaw filter via withAnyOfSubtypes (Vial Smasher)" {
         // "another outlaw you control" — IsAnOutlaw must render the outlaw creature group, not widen to
         // any permanent.
@@ -248,13 +277,36 @@ class TargetRecoveryTest : StringSpec({
             "GameObjectFilter.Creature.withAnyOfSubtypes(Subtype.OUTLAW_TYPES).youControl()"
     }
 
-    "gameObjectFilterDsl declines a group controlled by a target player (Neutralize the Guards)" {
-        // "creatures target opponent controls get -1/-1" — the controller is the chosen Ref_TargetPlayer,
-        // which no static GroupFilter expresses; dropping it would debuff every creature on the battlefield.
+    "gameObjectFilterDsl binds a group controlled by a target player to ContextTarget(0) (Neutralize the Guards)" {
+        // "creatures target opponent controls get -1/-1" — the controller is the chosen Ref_TargetPlayer.
+        // The spell declares the player target in its first slot, so the controller predicate binds to
+        // ContextTarget(0) via .targetPlayerControls; dropping it would debuff every creature on the battlefield.
         val targetPlayersCreatures = obj(
             """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
                 """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"SinglePlayer","args":{"_Player":"Ref_TargetPlayer"}}}]}""",
         )
-        ctx.gameObjectFilterDsl(targetPlayersCreatures).shouldBeNull()
+        ctx.gameObjectFilterDsl(targetPlayersCreatures) shouldBe
+            "GameObjectFilter.Creature.targetPlayerControls(EffectTarget.ContextTarget(0))"
+    }
+
+    "gameObjectFilterDsl renders 'a player other than you' as opponentControls (Artistic Process)" {
+        // "each creature you DON'T control" — ControlledByAPlayer wrapping Other(You). The Other inverts
+        // the controller, so this must render opponentControls, NOT youControl (which would damage your
+        // own board instead of the opponent's).
+        val youDontControl = obj(
+            """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"Other","args":{"_Player":"You"}}}]}""",
+        )
+        ctx.gameObjectFilterDsl(youDontControl) shouldBe "GameObjectFilter.Creature.opponentControls()"
+    }
+
+    "gameObjectFilterDsl declines a cardtype union it can't express (Splatter Technique's creature+planeswalker)" {
+        // "each creature and planeswalker" — Or[Creature, Planeswalker]. There is no CreatureOrPlaneswalker
+        // GroupFilter, so keeping only the Creature half would silently drop planeswalkers. Decline instead.
+        val creatureOrPlaneswalker = obj(
+            """{"_Permanents":"Or","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"IsCardtype","args":"Planeswalker"}]}""",
+        )
+        ctx.gameObjectFilterDsl(creatureOrPlaneswalker).shouldBeNull()
     }
 })

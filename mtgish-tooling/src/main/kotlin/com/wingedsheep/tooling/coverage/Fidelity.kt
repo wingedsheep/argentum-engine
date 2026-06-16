@@ -367,18 +367,30 @@ object Fidelity {
             }
         }
         collect(root)
-        if (labels.isEmpty()) return root
-        val mapping: Map<String, String> =
-            if (labels.size == 1) mapOf(labels.first() to "target")
-            else labels.withIndex().associate { (i, l) -> l to "§T$i§" }
+        val mapping: Map<String, String> = when {
+            labels.isEmpty() -> emptyMap()
+            labels.size == 1 -> mapOf(labels.first() to "target")
+            else -> labels.withIndex().associate { (i, l) -> l to "§T$i§" }
+        }
+        // A target-requirement node carries an `id` (the binding key) and a target `type`. Its id is
+        // gameplay-relevant ONLY when some BoundVariable references it by name (handled via `mapping`);
+        // a requirement referenced positionally (`ContextTarget`/`ContextPlayer` index) leaves its id a
+        // pure decoration the golden author still names descriptively ("target player"). Collapse such an
+        // unreferenced id to "target" so [normalizeForFidelity] then drops it, matching the emitter's
+        // generic "target" (Desperate Bloodseeker). Never touches a referenced (`mapping`) id, so the
+        // multi-target binding-reorder check is preserved.
+        fun isTargetRequirementId(node: JsonObject): Boolean =
+            node.containsKey("id") && node["type"].asStr()?.contains("Target") == true
         fun rewrite(node: JsonElement): JsonElement = when (node) {
             is JsonArray -> JsonArray(node.map { rewrite(it) })
             is JsonObject -> {
                 val isBound = node["type"].asStr() == "BoundVariable"
+                val isReqNode = isTargetRequirementId(node)
                 JsonObject(node.entries.associate { (k, v) ->
                     when {
                         isBound && k == "name" -> k to (mapping[v.asStr()]?.let { JsonPrimitive(it) } ?: rewrite(v))
                         k == "id" && v.asStr() in mapping -> k to JsonPrimitive(mapping.getValue(v.asStr()!!))
+                        k == "id" && isReqNode -> k to JsonPrimitive("target")  // unreferenced binding key
                         else -> k to rewrite(v)
                     }
                 })
@@ -444,7 +456,10 @@ object Fidelity {
     // `imageUri` is purely cosmetic art (a created token's picture, like a card's), never a rules input —
     // the same reason `oracleText`/`metadata` are excluded. The emitter doesn't resolve a token's Scryfall
     // image, so a hand-authored card carrying it would diverge on art alone; ignore it like the others.
-    private val NON_GAMEPLAY_KEYS = setOf("metadata", "oracleText", "colorIdentityOverride", "imageUri")
+    // `descriptionOverride` is the human-readable rules-text override a hand-authored ability may carry
+    // (`description = "…"`); it's display-only (never a rules input, like `oracleText`), and the emitter
+    // doesn't synthesise per-ability prose — so ignore it rather than diverge on text alone.
+    private val NON_GAMEPLAY_KEYS = setOf("metadata", "oracleText", "colorIdentityOverride", "imageUri", "descriptionOverride")
 
     private fun JsonObject.isAbilityNode(): Boolean {
         return containsKey("effect") && (containsKey("trigger") || containsKey("cost"))

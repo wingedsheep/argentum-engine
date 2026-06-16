@@ -96,7 +96,7 @@ class CastFromZoneThisTurnTest : FunSpec({
         val opp = driver.player2
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val evaluator = ConditionEvaluator()
-        val ctx = EffectContext(sourceId = null, controllerId = you, opponentId = opp)
+        val ctx = EffectContext(sourceId = null, controllerId = you)
 
         // Cast a creature from the graveyard via forage — the only cast this turn.
         val adept = driver.putCreatureOnBattlefield(you, "Osteomancer Adept")
@@ -128,7 +128,7 @@ class CastFromZoneThisTurnTest : FunSpec({
         val you = driver.player1
         val opp = driver.player2
         val evaluator = ConditionEvaluator()
-        val ctx = EffectContext(sourceId = null, controllerId = you, opponentId = opp)
+        val ctx = EffectContext(sourceId = null, controllerId = you)
 
         val instant = TypeLine.parse("Instant")
         val creature = TypeLine.parse("Creature")
@@ -170,7 +170,7 @@ class CastFromZoneThisTurnTest : FunSpec({
         val you = driver.player1
         val opp = driver.player2
         val evaluator = ConditionEvaluator()
-        val ctx = EffectContext(sourceId = null, controllerId = you, opponentId = opp)
+        val ctx = EffectContext(sourceId = null, controllerId = you)
 
         // A face-down spell has no known characteristics (CR 708.2), but it was still cast from hand.
         val state = driver.state.copy(
@@ -201,7 +201,7 @@ class CastFromZoneThisTurnTest : FunSpec({
         val you = driver.player1
         val opp = driver.player2
         val evaluator = DynamicAmountEvaluator()
-        val ctx = EffectContext(sourceId = null, controllerId = you, opponentId = opp)
+        val ctx = EffectContext(sourceId = null, controllerId = you)
 
         val instant = TypeLine.parse("Instant")
         val state = driver.state.copy(

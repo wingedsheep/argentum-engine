@@ -68,16 +68,27 @@ class EffectExecutorRegistry(
         registerModule(LinkedExileExecutors())
         registerModule(RegenerationExecutors())
 
-        // Deferred initialization for recursive executors
-        compositeExecutors.initialize(::execute)
+        // Deferred initialization for recursive executors. They recurse through [recurse], which
+        // deepens [EffectContext.resolutionDepth] by one per nested sub-effect so [execute] can cap
+        // runaway recursion (see GameLimits.MAX_RESOLUTION_DEPTH).
+        compositeExecutors.initialize(::recurse)
         registerModule(compositeExecutors)
-        drawingExecutors.initialize(::execute)
+        drawingExecutors.initialize(::recurse)
         registerModule(drawingExecutors)
-        playerExecutors.initialize(::execute)
+        playerExecutors.initialize(::recurse)
         registerModule(playerExecutors)
-        chainExecutors.initialize(::execute)
+        chainExecutors.initialize(::recurse)
         registerModule(chainExecutors)
     }
+
+    /**
+     * Recursion entry point handed to composite/iteration executors. Deepens the resolution depth
+     * carried on the (immutable) [EffectContext] so the [execute] guard sees nesting/iteration
+     * grow. Using the context — not a mutable field on this shared registry — keeps the count
+     * correct under the AI's parallel state evaluation.
+     */
+    private fun recurse(state: GameState, effect: Effect, context: EffectContext): EffectResult =
+        execute(state, effect, context.copy(resolutionDepth = context.resolutionDepth + 1))
 
     /**
      * Register all executors from a module.
@@ -106,6 +117,22 @@ class EffectExecutorRegistry(
      */
     @Suppress("UNCHECKED_CAST")
     fun execute(state: GameState, effect: Effect, context: EffectContext): EffectResult {
+        // Resolution-depth backstop: a self-perpetuating effect loop (e.g. a RepeatWhileEffect whose
+        // condition never goes false) recurses through [recurse], deepening resolutionDepth each
+        // time. Bail before the JVM call stack does. Returning an error fizzles this branch of the
+        // resolution rather than crashing the game — the correct outcome for a degenerate loop.
+        if (context.resolutionDepth > com.wingedsheep.engine.core.GameLimits.MAX_RESOLUTION_DEPTH) {
+            System.err.println(
+                "EffectExecutorRegistry: resolution depth exceeded " +
+                    "${com.wingedsheep.engine.core.GameLimits.MAX_RESOLUTION_DEPTH} executing " +
+                    "${effect::class.simpleName} — aborting this effect branch (likely an unbounded " +
+                    "effect loop)."
+            )
+            return EffectResult.error(
+                state,
+                "Effect resolution depth exceeded; aborting to avoid stack overflow"
+            )
+        }
         val executor = executors[effect::class] as? EffectExecutor<Effect>
             ?: error(
                 "No executor registered for effect type ${effect::class.simpleName}. " +

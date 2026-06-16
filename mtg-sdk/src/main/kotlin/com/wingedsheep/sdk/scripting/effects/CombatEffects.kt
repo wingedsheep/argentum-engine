@@ -101,7 +101,15 @@ data class PreventDamageEffect(
     val sourceFilter: PreventionSourceFilter = PreventionSourceFilter.AnySource,
     val onPrevented: Effect? = null,
     val gainLifeFromColors: Set<Color> = emptySet(),
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    /**
+     * When false, the damage is **not** actually prevented — it is still dealt in full — but the
+     * shield is still consumed and the [onPrevented] reaction still fires with the captured amount.
+     * Models "the next time a source would deal damage to you, instead it still deals that damage
+     * and ~ deals that much to its controller" (Eye for an Eye). Only meaningful with a
+     * `ChosenSource` filter + an [onPrevented] reaction; defaults to true (ordinary prevention).
+     */
+    val preventDamage: Boolean = true
 ) : Effect {
     override val description: String = buildString {
         append("Prevent ")

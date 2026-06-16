@@ -98,7 +98,7 @@ class StormModalRetargetingTest : FunSpec({
                 spellEffect = DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller),
                 spellName = "Modal Storm"
             ),
-            EffectContext(sourceId = spellEntity, controllerId = p1, opponentId = null)
+            EffectContext(sourceId = spellEntity, controllerId = p1)
         )
 
         result.isPaused shouldBe true
@@ -139,7 +139,7 @@ class StormModalRetargetingTest : FunSpec({
                 spellEffect = DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller),
                 spellName = "Modal Storm"
             ),
-            EffectContext(sourceId = spellEntity, controllerId = p1, opponentId = null)
+            EffectContext(sourceId = spellEntity, controllerId = p1)
         )
 
         result.isSuccess shouldBe true

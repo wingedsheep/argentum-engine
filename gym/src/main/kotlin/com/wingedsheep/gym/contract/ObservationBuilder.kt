@@ -1,6 +1,8 @@
 package com.wingedsheep.gym.contract
 
 import com.wingedsheep.engine.core.AssignDamageDecision
+import com.wingedsheep.engine.core.BatchYesNoDecision
+import com.wingedsheep.engine.core.BatchYesNoResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.BudgetModalDecision
 import com.wingedsheep.engine.core.BudgetModalResponse
@@ -341,6 +343,16 @@ class ObservationBuilder(
                 val responses = listOf(
                     YesNoResponse(decision.id, true),
                     YesNoResponse(decision.id, false)
+                )
+                val view = baseView(decision, PendingDecisionKind.YES_NO, baseShape, structured = false)
+                view to ActionRegistry.ofDecisionResponses(responses)
+            }
+            is BatchYesNoDecision -> {
+                // Folded to two whole-run actions (yes-to-all / no-to-all); peel-off isn't an
+                // observation action. Reuses the YES_NO encoding kind.
+                val responses = listOf(
+                    BatchYesNoResponse(decision.id, choice = true, applyToAll = true),
+                    BatchYesNoResponse(decision.id, choice = false, applyToAll = true)
                 )
                 val view = baseView(decision, PendingDecisionKind.YES_NO, baseShape, structured = false)
                 view to ActionRegistry.ofDecisionResponses(responses)

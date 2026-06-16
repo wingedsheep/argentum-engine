@@ -65,6 +65,39 @@
     ]
 }
 
+// Cruel Edict
+{
+    "name": "Cruel Edict",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent sacrifices a creature of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Jeffrey R. Busch",
+        "flavorText": "\"Such a fragile organ, the brain.\"\n—Tojira, swamp queen",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6018d90-cfcc-4fb1-8ecd-4e0f1c71550d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Goblin Glider
 {
     "name": "Goblin Glider",
@@ -94,6 +127,26 @@
     ]
 }
 
+// Goblin Piker
+{
+    "name": "Goblin Piker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "DiTerlizzi",
+        "flavorText": "Once he'd worked out which end of the thing was sharp, he was promoted to guard duty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2786834d-dbda-40ce-82a4-e518cd554312.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Goblin Raider
 {
     "name": "Goblin Raider",
@@ -114,6 +167,75 @@
         "artist": "Matt Stawicki",
         "flavorText": "\"I seen lots o' fights. To win ya gotta bash hard and not get bashed back.\"\n—Goblin grunt",
         "imageUri": "https://cards.scryfall.io/normal/front/6/8/68fe9691-d788-42cb-8d13-005724939b62.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Magma Giant
+{
+    "name": "Magma Giant",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "When this creature enters, it deals 2 damage to each creature and each player.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Controller"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Michael Weaver",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92bec2e0-a016-42bd-85d9-fbb262998110.jpg"
     },
     "colorIdentityOverride": [
         "RED"
@@ -286,5 +408,29 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wild Griffin
+{
+    "name": "Wild Griffin",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Jeff Miracola",
+        "flavorText": "Two little goblins, out in the sun. Down came a griffin, and then there was one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3b6541a-cda3-4c8a-a5b0-1845169b9b71.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }

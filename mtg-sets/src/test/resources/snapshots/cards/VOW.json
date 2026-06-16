@@ -1,3 +1,121 @@
+// Ancestral Anger
+{
+    "name": "Ancestral Anger",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gains trample and gets +X/+0 until end of turn, where X is 1 plus the number of cards named Ancestral Anger in your graveyard.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "right": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "name:Ancestral Anger"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Randy Vargas",
+        "flavorText": "\"One vampire for every family member I've lost.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dee47ab-d603-4346-97f4-a25dc3f47765.jpg?1643590713"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dawnhart Disciple
+{
+    "name": "Dawnhart Disciple",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Whenever another Human you control enters, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Human ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Mila Pesic",
+        "flavorText": "\"Our coven finds strength in nature and purpose in serving our communities.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4bb669c-155e-4002-ba55-7e901760c0e8.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hullbreaker Horror
 {
     "name": "Hullbreaker Horror",
@@ -70,6 +188,46 @@
     ]
 }
 
+// Spore Crawler
+{
+    "name": "Spore Crawler",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "When this creature dies, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"Remember to come back in a few years when that fungus has died off. Then we'll see what's in the chest.\"\n—Old Rutstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/628dbc4c-3640-44a9-8439-873103989409.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thirst for Discovery
 {
     "name": "Thirst for Discovery",
@@ -88,89 +246,44 @@
                     }
                 },
                 {
-                    "type": "ChooseAction",
-                    "choices": [
+                    "type": "Composite",
+                    "effects": [
                         {
-                            "label": "Discard a basic land card",
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Hand",
-                                            "filter": "basicland"
-                                        },
-                                        "storeAs": "basicLands"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "basicLands",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "discarded",
-                                        "prompt": "Choose a basic land card to discard"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "discarded",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Graveyard"
-                                        },
-                                        "moveType": "Discard"
-                                    }
-                                ]
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
                             },
-                            "feasibilityCheck": {
-                                "type": "HasCardsInZone",
-                                "zone": "Hand",
-                                "filter": "basicland"
-                            }
+                            "storeAs": "hand"
                         },
                         {
-                            "label": "Discard two cards",
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Hand"
-                                        },
-                                        "storeAs": "hand"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "hand",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 2
-                                            }
-                                        },
-                                        "storeSelected": "discarded",
-                                        "prompt": "Choose 2 cards to discard"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "discarded",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Graveyard"
-                                        },
-                                        "moveType": "Discard"
-                                    }
-                                ]
-                            }
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard, or 1 basic land card",
+                            "restrictions": [
+                                {
+                                    "type": "ReducedMinimumIfMatches",
+                                    "reducedMinimum": 1,
+                                    "filter": "basicland"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
                         }
                     ]
                 }
@@ -183,6 +296,76 @@
         "artist": "Dominik Mayer",
         "flavorText": "\"This is your only warning, alchemist. The secrets of the sea are not yours to behold. Lord Krothuss will not be so merciful next time.\"\n—Runo Stromkirk",
         "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ea179e9-9c0d-46c1-9ee8-60be68e1f79c.jpg?1643588791"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wretched Throng
+{
+    "name": "Wretched Throng",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "When this creature dies, you may search your library for a card named Wretched Throng, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "name:Wretched Throng"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Filip Burburan",
+        "flavorText": "\"Oh no. Oh no. Oh no. Oh no, again!\"\n—Beltstad, cathar recruit, last words",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb3991f0-76b8-4f77-9d67-0e2b11fda750.jpg"
     },
     "colorIdentityOverride": [
         "BLUE"

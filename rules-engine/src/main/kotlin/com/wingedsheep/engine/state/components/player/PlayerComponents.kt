@@ -217,22 +217,32 @@ data class MulliganStateComponent(
      * Drained as the player resolves each prompt (yes = card moved to battlefield, no = card
      * stays in hand). The leyline phase for this player is "complete" once the list is empty.
      */
-    val pendingLeylineCardIds: List<EntityId> = emptyList()
+    val pendingLeylineCardIds: List<EntityId> = emptyList(),
+    /**
+     * Whether this player's *first* mulligan is free (CR 800.6). In a multiplayer game (a game
+     * that began with more than two players) the first mulligan a player takes doesn't count
+     * toward the number of cards they put on the bottom or the number of mulligans they may take;
+     * subsequent mulligans count as normal. Set once at game setup from the table size and carried
+     * through bottoming — see [GameInitializer]. False for two-player games (London Mulligan as-is).
+     */
+    val freeMulligan: Boolean = false
 ) : Component {
     companion object {
         const val STARTING_HAND_SIZE = 7
     }
 
     /**
-     * The number of cards this player must put on the bottom after keeping.
+     * The number of cards this player must put on the bottom after keeping. With [freeMulligan]
+     * (CR 800.6) the first mulligan is discounted, so an N-mulligan keep bottoms N−1 cards.
      */
-    val cardsToBottom: Int get() = mulligansTaken
+    val cardsToBottom: Int get() = if (freeMulligan) maxOf(0, mulligansTaken - 1) else mulligansTaken
 
     /**
-     * Check if the player can still mulligan (they can always mulligan until
-     * they would have to bottom more cards than they drew).
+     * Check if the player can still mulligan. A player can mulligan until keeping would force
+     * them to bottom their whole hand — so the cap is on [cardsToBottom], not the raw mulligan
+     * count. With [freeMulligan] the free first mulligan grants one extra mulligan before that cap.
      */
-    val canMulligan: Boolean get() = mulligansTaken < STARTING_HAND_SIZE && !hasKept
+    val canMulligan: Boolean get() = !hasKept && cardsToBottom < STARTING_HAND_SIZE
 
     /**
      * Record a mulligan taken.
@@ -264,6 +274,35 @@ data class MulliganStateComponent(
 data class AdditionalCombatPhasesComponent(
     val count: Int = 1
 ) : Component
+
+/**
+ * Component tracking additional upkeep steps to be inserted into the current turn
+ * (Obeka, Splitter of Seconds). Per CR 500.10, adding a step after a phase creates the
+ * beginning phase that normally contains that step directly after the specified phase, with
+ * its other steps (untap and draw) skipped. Per CR 500.8, these extra phases occur after the
+ * current phase, and after any extra combat phases added to the same point (CR 500.8: the most
+ * recently created phase occurs first — combat phases are created before the upkeep phases here,
+ * so combat happens first).
+ *
+ * The TurnManager drains this at the postcombat-main → end transition, *after* the
+ * additional-combat-phase check, redirecting into a fresh beginning phase whose only step is the
+ * upkeep step. The count is decremented each time an additional upkeep step begins.
+ *
+ * @param count Number of additional upkeep steps (beginning phases) remaining to insert
+ */
+@Serializable
+data class AdditionalUpkeepStepsComponent(
+    val count: Int = 1
+) : Component
+
+/**
+ * Marker placed on the active player while the game is inside an inserted additional upkeep step
+ * (see [AdditionalUpkeepStepsComponent]). It tells the TurnManager that advancing out of this
+ * upkeep step must skip the draw step and return to the postcombat main phase (CR 500.10), rather
+ * than following the normal upkeep → draw progression. Consumed when that redirect happens.
+ */
+@Serializable
+data object InAdditionalUpkeepStepComponent : Component
 
 /**
  * Marker component indicating that a player should skip all combat phases
@@ -318,6 +357,18 @@ data class PlayerLostComponent(
 ) : Component
 
 /**
+ * Marks that a player who lost the game has already had the "leaving the game"
+ * processing (CR 800.4a–c) applied — their owned objects removed, their stack objects
+ * cleared, and control effects involving them ended.
+ *
+ * A player carries [PlayerLostComponent] the instant they lose, but the leave-the-game
+ * cleanup is a separate step run once by [com.wingedsheep.engine.mechanics.sba.player.PlayerLeavesGameCheck].
+ * This marker is the idempotency guard so the SBA loop applies that cleanup exactly once.
+ */
+@Serializable
+data object PlayerLeftGameComponent : Component
+
+/**
  * Reason why a player lost the game.
  */
 @Serializable
@@ -329,6 +380,8 @@ enum class LossReason {
     CARD_EFFECT,
     /** Commander format: 21+ combat damage from a single commander (CR 903.10a). */
     COMMANDER_DAMAGE,
+    /** Two-Headed Giant: this player's team lost, so they lose with it (CR 810.8a). */
+    TEAM_DEFEATED,
 }
 
 /**
@@ -698,6 +751,36 @@ data class PermanentTypesEnteredBattlefieldThisTurnComponent(
  */
 @Serializable
 data class LandsEnteredUnderControlThisTurnComponent(val count: Int = 0) : Component
+
+/**
+ * One permanent that entered the battlefield under a player's control this turn, captured for
+ * subtype-keyed "for each [creature type] that entered the battlefield under your control this
+ * turn" counts (Geralf, the Fleshwright). [subtypes] is snapshotted from the **projected** state
+ * at the instant of entry, so a permanent that was a Zombie when it entered still counts even
+ * after it leaves the battlefield or loses the type (CR 603.10 last-known style — the entry event
+ * is what matters, not current state). [entityId] lets a triggered ability exclude the permanent
+ * that caused it to trigger ("each *other* Zombie", and simultaneous entries per the 2024-04-12
+ * ruling).
+ */
+@Serializable
+data class EnteredPermanentRecord(
+    val entityId: EntityId,
+    val subtypes: Set<String> = emptySet()
+)
+
+/**
+ * Tracks every permanent that entered the battlefield under this player's control during the
+ * current turn, with the subtypes each had at entry. Populated by `PermanentEntryTracker.record`
+ * (exactly once per ETB) and cleared at end of turn by [CleanupPhaseManager].
+ *
+ * Backs `DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity)`
+ * — "for each [other] [subtype] that entered the battlefield under your control this turn"
+ * (Geralf, the Fleshwright). Counts entries even if the permanent has since left or changed type.
+ */
+@Serializable
+data class PermanentsEnteredUnderControlThisTurnComponent(
+    val entries: List<EnteredPermanentRecord> = emptyList()
+) : Component
 
 /**
  * Marker component indicating that this player has put a counter on a creature this turn.

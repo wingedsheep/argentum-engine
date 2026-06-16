@@ -108,6 +108,26 @@ sealed interface EntityNumericProperty {
     data object ColorCount : EntityNumericProperty {
         override val description: String = "the number of its colors"
     }
+
+    /**
+     * The excess damage (CR 120.4a) currently marked on this entity: `max(0, marked − toughness)`,
+     * read from post-damage state. This is the amount-valued twin of the
+     * [com.wingedsheep.sdk.scripting.conditions.TargetMarkedDamageExceedsToughness] condition.
+     *
+     * Read it AFTER a deal-damage step in the same composite/pipeline resolution, so the marked
+     * damage in scope is the damage that step just dealt — e.g. Hell to Pay: "deals X damage to
+     * target creature. Create a number of tapped Treasure tokens equal to the amount of excess
+     * damage dealt to that creature this way." `EntityProperty(EntityReference.Target(0),
+     * ExcessMarkedDamage)`. CompositeEffect resolves sub-effects sequentially with no interleaved
+     * SBA pass, so for the canonical "deal N, then read excess" shape this equals "how much did
+     * that deal-damage step push the target past lethal" — there is no other source of marked
+     * damage in scope. Returns 0 if the entity is not a creature on the battlefield.
+     */
+    @SerialName("ExcessMarkedDamage")
+    @Serializable
+    data object ExcessMarkedDamage : EntityNumericProperty {
+        override val description: String = "the excess damage dealt to it this way"
+    }
 }
 
 /**

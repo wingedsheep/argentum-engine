@@ -1,3 +1,182 @@
+// Chittering Host
+{
+    "name": "Chittering Host",
+    "manaCost": "",
+    "typeLine": "Creature — Eldrazi Horror",
+    "oracleText": "Haste\nMenace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, other creatures you control get +1/+0 and gain menace until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "HASTE",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96b",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70b94f21-4f01-46f8-ad50-e2bb0b68ea33.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Drogskol Shieldmate
+{
+    "name": "Drogskol Shieldmate",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Spirit Soldier",
+    "oracleText": "Flash\nWhen this creature enters, other creatures you control get +0/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "\"I will join you so that you will not yet join me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/156b4bca-4145-472b-bf80-13edb0bef561.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Guardian of Pilgrims
+{
+    "name": "Guardian of Pilgrims",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "When this creature enters, target creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Noah Bradley",
+        "flavorText": "Immune to the physical warping caused by Emrakul, geists proved to be some of humanity's most important allies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a41b6ca9-1d6f-46ce-aba0-952871a10a4b.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ironclad Slayer
 {
     "name": "Ironclad Slayer",
@@ -41,6 +220,140 @@
         "artist": "Ryan Pancoast",
         "flavorText": "The best weapon is the one at hand.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/4/d413f69f-fe2d-4049-8640-178af7e927d9.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Noose Constrictor
+{
+    "name": "Noose Constrictor",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Reach\nDiscard a card: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"More rope may not be necessary.\"\n—Kep, Lunarch inquisitor",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/307329cd-a69b-4acf-bcba-83d8306fe7ee.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Olivia's Dragoon
+{
+    "name": "Olivia's Dragoon",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Berserker",
+    "oracleText": "Discard a card: This creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Chris Rallis",
+        "flavorText": "Displays of Voldaren bloodlust are not restricted to glamorous banquets and lavish parties.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/868067ce-3415-4239-b7c3-d3ad4c03fb8d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Subjugator Angel
+{
+    "name": "Subjugator Angel",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, tap all creatures your opponents control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "The remnants of Innistrad's corrupted angelic hosts collapsed to form the Flight of Nightmares.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af01371c-cd09-4882-9caf-04426dd4c965.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"

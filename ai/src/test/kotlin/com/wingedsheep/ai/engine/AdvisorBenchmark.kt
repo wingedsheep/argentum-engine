@@ -287,7 +287,7 @@ private fun playAdvisorGame(
                                 val sim = GameSimulator(registry)
                                 val la = sim.getLegalActions(state, prioId).find { it.actionType == "DeclareAttackers" }
                                 val mandatory = la?.mandatoryAttackers ?: emptyList()
-                                val opponentId = state.turnOrder.firstOrNull { it != prioId }
+                                val opponentId = state.getOpponents(prioId).firstOrNull()
                                 DeclareAttackers(prioId, if (mandatory.isNotEmpty() && opponentId != null) mandatory.associateWith { opponentId } else emptyMap())
                             }
                             else -> PassPriority(prioId)

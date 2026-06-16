@@ -4,6 +4,7 @@ import type { DecisionSelectionState } from '@/store/slices'
 import type { EntityId, ManaSourceOption, SelectManaSourcesDecision } from '@/types'
 import { parseManaCost } from '@/utils/manaCost'
 import { AbilityText } from '../ui/ManaSymbols'
+import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
 
 // Server serializes Color enums by name ("BLACK"), but cost symbols use pip letters ("B").
@@ -130,7 +131,7 @@ export function ManaSourceSelectionUI({
   }
 
   return (
-    <div className={styles.sideBannerSelection}>
+    <DraggableBanner className={styles.sideBannerSelection}>
       <div className={styles.bannerTitleSelection}>
         {decision.canDecline ? 'Activate Ability?' : 'Select Mana Sources'}
       </div>
@@ -190,6 +191,6 @@ export function ManaSourceSelectionUI({
           </>
         )}
       </div>
-    </div>
+    </DraggableBanner>
   )
 }

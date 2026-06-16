@@ -62,7 +62,7 @@ class Searcher(
         }
 
         // Depth 2+: model opponent's response
-        val opponentId = state.getOpponent(playerId) ?: return evaluator.evaluate(resultState, resultState.projectedState, playerId)
+        val opponentId = state.soleOpponent(playerId) ?: return evaluator.evaluate(resultState, resultState.projectedState, playerId)
 
         // Check if opponent can actually respond
         if (!canRespond(resultState, opponentId)) {
@@ -185,7 +185,7 @@ class Searcher(
             val score = if (remainingDepth <= 1 || nodesSearched >= config.maxNodes) {
                 evaluator.evaluate(result.state, result.state.projectedState, aiPlayerId)
             } else {
-                val opponentId = state.getOpponent(aiPlayerId)
+                val opponentId = state.soleOpponent(aiPlayerId)
                 if (opponentId != null && canRespond(result.state, opponentId)) {
                     opponentPly(result.state, aiPlayerId, opponentId, remainingDepth - 1, currentAlpha, beta)
                 } else {
@@ -266,7 +266,7 @@ class Searcher(
     ): Int {
         if (scoredCandidates.size <= 1) return 1
 
-        val opponentId = state.getOpponent(playerId)
+        val opponentId = state.soleOpponent(playerId)
 
         // Can opponent even respond? If not, deeper search is pointless.
         if (opponentId == null || !canRespond(state, opponentId)) return 1

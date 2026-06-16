@@ -43,11 +43,11 @@ class SpectatingHandler(
         ctx.broadcastSpectatorCount(gameSession)
 
         val playerNames = gameSession.getPlayerNames()
-        if (playerNames != null) {
+        if (playerNames.size >= 2) {
             ctx.sender.send(session, ServerMessage.SpectatingStarted(
                 gameSessionId = message.gameSessionId,
-                player1Name = playerNames.first,
-                player2Name = playerNames.second
+                player1Name = playerNames[0],
+                player2Name = playerNames[1]
             ))
         }
 
@@ -106,11 +106,11 @@ class SpectatingHandler(
         ctx.broadcastSpectatorCount(gameSession)
 
         val playerNames = gameSession.getPlayerNames()
-        if (playerNames != null) {
+        if (playerNames.size >= 2) {
             ctx.sender.send(session, ServerMessage.SpectatingStarted(
                 gameSessionId = gameSessionId,
-                player1Name = playerNames.first,
-                player2Name = playerNames.second
+                player1Name = playerNames[0],
+                player2Name = playerNames[1]
             ))
         }
 
@@ -194,15 +194,17 @@ class SpectatingHandler(
             val gameSessionId = match.gameSessionId ?: return@mapNotNull null
             val gameSession = ctx.gameRepository.findById(gameSessionId) ?: return@mapNotNull null
 
-            val playerNames = gameSession.getPlayerNames() ?: return@mapNotNull null
-            val lifeTotals = gameSession.getLifeTotals() ?: return@mapNotNull null
+            // ActiveMatchInfo is the tournament overview tile — tournament matches are 2-player.
+            val playerNames = gameSession.getPlayerNames()
+            val lifeTotals = gameSession.getLifeTotals()
+            if (playerNames.size < 2 || lifeTotals.size < 2) return@mapNotNull null
 
             ServerMessage.ActiveMatchInfo(
                 gameSessionId = gameSessionId,
-                player1Name = playerNames.first,
-                player2Name = playerNames.second,
-                player1Life = lifeTotals.first,
-                player2Life = lifeTotals.second
+                player1Name = playerNames[0],
+                player2Name = playerNames[1],
+                player1Life = lifeTotals[0],
+                player2Life = lifeTotals[1]
             )
         }
     }

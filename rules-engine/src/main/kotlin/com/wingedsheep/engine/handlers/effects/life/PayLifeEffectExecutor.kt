@@ -27,13 +27,14 @@ class PayLifeEffectExecutor : EffectExecutor<PayLifeEffect> {
     ): EffectResult {
         val playerId = context.controllerId
 
-        val currentLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life
-            ?: return EffectResult.error(state, "Player not found for life payment")
+        if (state.getEntity(playerId)?.get<LifeTotalComponent>() == null) {
+            return EffectResult.error(state, "Player not found for life payment")
+        }
+        // CR 810.9a — life paid as a cost comes out of the team's shared total.
+        val currentLife = state.lifeTotal(playerId)
 
         val newLife = currentLife - effect.amount
-        val newState = state.updateEntity(playerId) { container ->
-            container.with(LifeTotalComponent(newLife))
-        }
+        val newState = state.withLifeTotal(playerId, newLife)
 
         val events = listOf<EngineGameEvent>(
             LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.PAYMENT)

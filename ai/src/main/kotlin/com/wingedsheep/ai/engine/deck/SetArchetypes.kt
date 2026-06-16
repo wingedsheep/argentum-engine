@@ -238,6 +238,35 @@ object SetArchetypes {
                     "Take the board early with cheap creatures and pile on +1/+1 counters. Station synergies and counter payoffs build a sticky, go-tall-and-wide deck that's hard to climb back against."),
             )
         ),
+        "OTJ" to SetSynergies(
+            setCode = "OTJ",
+            setName = "Outlaws of Thunder Junction",
+            archetypes = listOf(
+                Archetype("Flash Plot", listOf(Color.WHITE, Color.BLUE),
+                    "Plot cards on your turn, then deploy flash creatures and tricks on the opponent's. A tempo deck that always keeps mana up and threatens free spells from exile."),
+                Archetype("Outlaw Attrition", listOf(Color.WHITE, Color.BLACK),
+                    "Grind the game out with efficient outlaws, premium removal, and incidental lifegain. A controlling midrange that trades resources and pulls ahead on value."),
+                Archetype("Mercenaries", listOf(Color.RED, Color.WHITE),
+                    "Go wide with Mercenary tokens and aggressive bodies, then convert the swarm to damage with go-wide payoffs and mass pump. A fast, token-fueled aggro deck.",
+                    creatureTypes = listOf("Mercenary")),
+                Archetype("Crime", listOf(Color.BLUE, Color.BLACK),
+                    "Commit crimes — target opponents and their stuff — to snowball value and disruption. A tempo-control deck that drains the opponent while answering their threats."),
+                Archetype("Spells Plot", listOf(Color.BLUE, Color.RED),
+                    "Cast a high volume of cheap instants and sorceries, plotting spells to fire off multiple per turn. Spell-velocity payoffs reward explosive double-spell turns."),
+                Archetype("Ramp Plot", listOf(Color.BLUE, Color.GREEN),
+                    "Ramp and discount plot cards to set up powerful future turns, then land the format's biggest threats ahead of schedule. A controlling midrange that out-values the table."),
+                Archetype("Outlaws", listOf(Color.BLACK, Color.RED),
+                    "The dedicated outlaw deck — Assassins, Mercenaries, Pirates, Rogues, and Warlocks trigger aggressive payoffs. Apply relentless pressure backed by burn and removal."),
+                Archetype("Graveyard Recursion", listOf(Color.BLACK, Color.GREEN),
+                    "Fill your graveyard and bring key creatures back for repeated value. A grindy midrange that trades all day and rebuilds from the yard with desert and recursion payoffs."),
+                Archetype("Mounts / Ferocious", listOf(Color.RED, Color.GREEN),
+                    "Ramp into big creatures with power 4 or greater, saddle your Mounts, and crash in. A ferocious aggro-midrange that overpowers opponents through raw size.",
+                    creatureTypes = listOf("Mount")),
+                Archetype("Mounts", listOf(Color.GREEN, Color.WHITE),
+                    "Saddle your Mounts to unlock powerful attack triggers, backed by removal like Throw from the Saddle. The format's premier midrange deck, going wide and tall at once.",
+                    creatureTypes = listOf("Mount")),
+            )
+        ),
     )
 
     /** Get archetypes for a specific set code, or null if not found. */

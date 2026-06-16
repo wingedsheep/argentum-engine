@@ -41,7 +41,6 @@ class AmassContinuationResumer(
             state = state,
             armyId = chosen,
             controllerId = continuation.controllerId,
-            opponentId = continuation.opponentId,
             subtype = continuation.subtype,
             amount = continuation.amount,
             sourceId = continuation.sourceId,

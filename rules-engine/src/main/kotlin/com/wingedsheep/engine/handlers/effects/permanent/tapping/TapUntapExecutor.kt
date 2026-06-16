@@ -37,6 +37,13 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
             return EffectResult.success(newState, listOfNotNull(event))
         }
 
+        // Only untapped permanents can be tapped (CR 701.21a). Tapping an
+        // already-tapped permanent is a no-op and must emit no TappedEvent,
+        // or "becomes tapped" triggers would fire on a non-transition (CR 603.2f).
+        if (state.getEntity(targetId)?.has<TappedComponent>() == true) {
+            return EffectResult.success(state)
+        }
+
         val newState = state.updateEntity(targetId) { it.with(TappedComponent) }
         return EffectResult.success(newState, listOf(TappedEvent(targetId, cardName)))
     }

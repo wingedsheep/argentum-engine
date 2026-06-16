@@ -1671,21 +1671,25 @@
                                 }
                             },
                             "then": {
-                                "type": "LoseLife",
-                                "amount": {
-                                    "type": "Divide",
-                                    "numerator": {
-                                        "type": "LifeTotal",
-                                        "player": "Opponent"
-                                    },
-                                    "denominator": {
-                                        "type": "Fixed",
-                                        "amount": 2
-                                    }
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "EachOpponent"
                                 },
-                                "target": {
-                                    "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                "body": {
+                                    "type": "LoseLife",
+                                    "amount": {
+                                        "type": "Divide",
+                                        "numerator": {
+                                            "type": "LifeTotal",
+                                            "player": "You"
+                                        },
+                                        "denominator": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "target": "Controller"
                                 }
                             }
                         }
@@ -6382,7 +6386,7 @@
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },
-                "binding": "ANY",
+                "binding": "OTHER",
                 "effect": {
                     "type": "Gated",
                     "gate": {
@@ -8252,7 +8256,8 @@
                 "condition": {
                     "type": "Not",
                     "condition": {
-                        "type": "SourceMatches",
+                        "type": "EntityMatches",
+                        "entity": "Self",
                         "filter": {
                             "statePredicates": [
                                 "HasDealtDamage"
@@ -11599,7 +11604,7 @@
                         }
                     ]
                 },
-                "descriptionOverride": "Flurry — Whenever you cast your second spell each turn, put 1 +1/+1 counter on this creature. Look at the top 1 cards of your library. Choose up to 1 from the scried cards. Put the toBottom cards a library (bottom). Put the toTop cards a library (top)."
+                "descriptionOverride": "Flurry — Whenever you cast your second spell each turn, put 1 +1/+1 counter on this creature. Look at the top 1 cards of your library. Choose up to 1 of those cards. Put those cards into a library (bottom). Put those cards into a library (top)."
             }
         ]
     },
@@ -19489,89 +19494,44 @@
                     }
                 },
                 {
-                    "type": "ChooseAction",
-                    "choices": [
+                    "type": "Composite",
+                    "effects": [
                         {
-                            "label": "Discard a creature card",
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Hand",
-                                            "filter": "creature"
-                                        },
-                                        "storeAs": "creatures"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "creatures",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "discarded",
-                                        "prompt": "Choose a creature card to discard"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "discarded",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Graveyard"
-                                        },
-                                        "moveType": "Discard"
-                                    }
-                                ]
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
                             },
-                            "feasibilityCheck": {
-                                "type": "HasCardsInZone",
-                                "zone": "Hand",
-                                "filter": "creature"
-                            }
+                            "storeAs": "hand"
                         },
                         {
-                            "label": "Discard two cards",
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Hand"
-                                        },
-                                        "storeAs": "hand"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "hand",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 2
-                                            }
-                                        },
-                                        "storeSelected": "discarded",
-                                        "prompt": "Choose 2 cards to discard"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "discarded",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Graveyard"
-                                        },
-                                        "moveType": "Discard"
-                                    }
-                                ]
-                            }
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard, or 1 creature card",
+                            "restrictions": [
+                                {
+                                    "type": "ReducedMinimumIfMatches",
+                                    "reducedMinimum": 1,
+                                    "filter": "creature"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
                         }
                     ]
                 }

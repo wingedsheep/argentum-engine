@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets
 
+import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -58,6 +59,31 @@ class MtgSetCatalogTest : FunSpec({
                         set.printings.isNotEmpty() ||
                         set.basicLands.isNotEmpty()
                     hasContent shouldBe true
+                }
+            }
+        }
+    }
+
+    // The orphaned-reprint trap: a set declares `Printing(...)` rows in its package (e.g. a reprint
+    // of a card whose canonical CardDefinition lives in an earlier set) but forgets to wire
+    // `override val printings by lazy { CardDiscovery.findPrintingsIn(CARDS_PACKAGE) }`. The rows
+    // then exist on disk but never reach MtgSet.printings — so PrintingRegistry, the deckbuilder's
+    // printing picker, sealed/draft, and the Set Completion coverage view all silently miss them.
+    // This caught ONS/LGN/MBS/ONE. Scanning each set's own package recursively (acceptPackages is
+    // recursive) finds every Printing in its subtree without assuming the `.cards` convention.
+    test("every Printing row in a set's package is exposed via MtgSet.printings") {
+        assertSoftly {
+            for (set in MtgSetCatalog.all) {
+                val declared = CardDiscovery.findPrintingsIn(set::class.java.packageName)
+                if (declared.isEmpty()) continue
+                val exposed = set.printings.toSet()
+                val orphaned = declared.filterNot { it in exposed }.map { it.name }.sorted()
+                withClue(
+                    "${set.code} (${set.displayName}) has Printing row(s) not wired into " +
+                        "MtgSet.printings: $orphaned — add " +
+                        "`override val printings by lazy { CardDiscovery.findPrintingsIn(CARDS_PACKAGE) }`"
+                ) {
+                    orphaned.shouldBeEmpty()
                 }
             }
         }

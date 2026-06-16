@@ -47,9 +47,12 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
 
         val controllerId = context.controllerId
 
-        // Read both values before making any changes (simultaneous exchange)
-        val currentLife = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life
-            ?: return EffectResult.success(state)
+        // Read both values before making any changes (simultaneous exchange).
+        // CR 810.9a — the player's life total is the team's shared total in Two-Headed Giant.
+        if (state.getEntity(controllerId)?.get<LifeTotalComponent>() == null) {
+            return EffectResult.success(state)
+        }
+        val currentLife = state.lifeTotal(controllerId)
 
         val projected = state.projectedState
         val currentPower = projected.getPower(creatureId)
@@ -73,9 +76,7 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
         val lifeSideBlocked = currentPower > currentLife &&
             DamageUtils.isLifeGainPrevented(newState, controllerId)
         if (currentPower != currentLife && !lifeSideBlocked) {
-            newState = newState.updateEntity(controllerId) { container ->
-                container.with(LifeTotalComponent(currentPower))
-            }
+            newState = newState.withLifeTotal(controllerId, currentPower)
 
             val reason = if (currentPower > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
             events.add(LifeChangedEvent(controllerId, currentLife, currentPower, reason))

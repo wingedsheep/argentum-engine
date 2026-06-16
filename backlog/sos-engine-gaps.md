@@ -55,7 +55,14 @@ What follows are the **genuine gaps** — elements no current SDK primitive expr
 
 ## Tier 1 — Headline mechanics (highest leverage)
 
-### 1. Prepared (38 cards) — ❌ **the big lift**
+### 1. Prepared (38 cards) — ✅ **DONE** (was: the big lift)
+
+> **Implemented.** `CardLayout.PREPARE` + `Keyword.PREPARED` + `prepare(name) { }` DSL; ETB marks the
+> permanent (`PreparedComponent`) and exiles a castable copy of the prepare spell (`PreparedSpellCopyComponent`
+> + a `MayPlayPermission`, exempt from the 707.10a phantom-copy SBA); casting the copy (face 0, from exile)
+> unprepares the creature and the copy ceases to exist; the copy is cleaned up if the source leaves.
+> Surfaced to the client as `ClientCard.isPrepared` (a "Prepared" badge) plus the castable exile copy.
+> Tests: `PrepareMechanicScenarioTest`. Cards so far: Adventurous Eater, Landscape Painter.
 
 New double-faced layout: **front = creature, back = instant/sorcery** (the backs are the Mystical-Archive
 all-stars — Ancestral Recall, Brainstorm, Lightning Bolt, Demonic Tutor, Reanimate, Swords to Plowshares, …).
@@ -96,7 +103,11 @@ and evaluates the filter against the targeted entities), then `flurry`-style `re
 `youCastSpell(instantOrSorcery, requires = TargetsMatch(Creature))` + the reminder-text prefix.
 → Graduation Day, Informed Inkwright, Inkshape Demonstrator, Rehearsed Debater, Stirring Hopesinger, …
 
-### 3. Opus (10 cards) — ❌ mana-spent payoff tier on a spell-cast trigger
+### 3. Opus (10 cards) — ✅ **DONE** (mana-spent payoff tier on a spell-cast trigger)
+
+> **Implemented.** The shared §8 primitive shipped, so Opus composes directly:
+> `ConditionalEffect(Compare(ContextProperty(MANA_SPENT_ON_TRIGGERING_SPELL), GTE, 5), big, small)`. An
+> `opus { }` ability-word builder exists (ability word — adds no keyword). Cards: Expressive Firedancer.
 
 *"Whenever you cast an instant or sorcery spell, **<effect>. If five or more mana was spent to cast that spell,
 <bigger effect> instead.**"* The trigger exists and `DynamicAmount.TotalManaSpent` exists — but it reads the mana
@@ -121,7 +132,15 @@ sibling card predicate `ManaValueAtMostColorsSpent` (the existing `ManaValueAtMo
 mana, not color count). Then a `converge { … }` builder.
 → Rancorous Archaic, Sundering Archaic, Transcendent Archaic, Magmablood Archaic, Together as One, Arcane Omens, …
 
-### 5. Increment (9 cards) — ❌ self-growing-by-mana-spent keyword
+### 5. Increment (9 cards) — ✅ **DONE** (self-growing-by-mana-spent keyword)
+
+> **Implemented.** `Keyword.INCREMENT` + the `increment()` `CardBuilder` DSL (`dsl/mechanics/IncrementDsl.kt`):
+> a `YouCastSpell` trigger whose intervening-if (CR 603.4) compares the triggering spell's mana spent
+> (`DynamicAmount.ContextProperty(MANA_SPENT_ON_TRIGGERING_SPELL)`, the §8 primitive) against
+> `Min(EntityProperty(Source, Power), EntityProperty(Source, Toughness))` with `GT`, then puts a +1/+1 counter
+> on the source. "greater than power or toughness" = greater than the *smaller* stat, hence `Min`; the bar is
+> read from projected P/T so it rises as the creature grows. Composition only — no new engine type. Tests:
+> `IncrementMechanicScenarioTest`. Cards so far: Cuboid Colony, Hungry Graffalon. mtgish bridge + emitter wired.
 
 *"Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or
 toughness, put a +1/+1 counter on this creature.)"* The trigger (`YouCastSpell`) and the comparison inputs both
@@ -164,10 +183,12 @@ for consistency, but it composes existing primitives.
 
 ## Tier 2 — Small recurring primitives
 
-8. **Triggering-spell mana-spent context value.** ❌ Shared dependency of **Opus (§3)** and **Increment (§5)**.
-   `TotalManaSpent` reads the *resolving* spell's mana; a triggered ability needs the *triggering* spell's mana spent.
-   Add it as a trigger-context property (the `SpellCastEvent.totalManaSpent` is already captured — just surface it to
-   the ability's `DynamicAmount`/`Condition` evaluation). One primitive, two mechanics.
+8. **Triggering-spell mana-spent context value.** ✅ **DONE.** Shared dependency of **Opus (§3)** and
+   **Increment (§5)**. `DynamicAmount.ContextProperty(ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL)` is
+   populated in `TriggerContext` from `SpellCastEvent.totalManaSpent`, threaded through the triggered-ability
+   component → `EffectContext.triggerManaSpentOnTriggeringSpell`, and read by `DynamicAmountEvaluator`. It also
+   resolves inside an intervening-if (`TriggerMatcher.filterByTriggerCondition` populates it), so it works in both
+   the resolving-effect and trigger-condition paths. One primitive, two mechanics.
 
 9. **Distinct-colors-of-mana-spent dynamic amount.** ❌ For **Converge (§4)**. `DynamicAmount.DistinctColorsManaSpent`
    + evaluator + (optional) `ManaValueAtMostColorsSpent` card predicate. (Sunburst-shaped; the per-permanent
@@ -209,10 +230,10 @@ for consistency, but it composes existing primitives.
 ## Recommended build order
 
 1. **Infusion** (✅ today) + **Lesson subtype** (§10) — warm-up; unlocks 12+ cards with zero or trivial engine work.
-2. **Triggering-spell mana-spent value (§8)** → unlocks **Opus (§3)** and **Increment (§5)** together (~19 cards).
+2. ✅ **Triggering-spell mana-spent value (§8)** → unlocks **Opus (§3)** and **Increment (§5)** together (~19 cards). **Done.**
 3. **Distinct-colors-spent (§9)** → **Converge (§4)** (~9 cards). **Repartee target-predicate (§2)** (~12 cards) in
    parallel — both are isolated SDK additions.
-4. **Prepared (§1)** — the big cross-layer feature (38 cards). Do it via the add-feature skill; it's the set's spine.
+4. ✅ **Prepared (§1)** — the big cross-layer feature (38 cards). **Done** (SDK→engine→DTO→client + tests).
 5. **Paradigm (§6)** — recurring free-cast + name gate (5 Lessons).
 6. **Tier-3 one-offs** (multi-turn skip §11, Grandeur §12) as Ral / Page come up.
 

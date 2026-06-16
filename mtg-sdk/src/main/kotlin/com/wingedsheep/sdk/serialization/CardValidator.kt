@@ -257,4 +257,15 @@ sealed interface CardValidationError {
         override val cardName: String,
         override val message: String
     ) : CardValidationError
+
+    /**
+     * An `EntityMatches` condition naming an entity role the `ConditionEvaluator` doesn't
+     * dispatch (anything outside Self / EnchantedPermanent / EnchantedCreature / EquippedCreature /
+     * ContextTarget / TriggeringEntity). The evaluator answers `false` for such a role, so the
+     * condition would be a silent constant — fail at card load instead.
+     */
+    data class UnsupportedEntityMatchesRole(
+        override val cardName: String,
+        override val message: String
+    ) : CardValidationError
 }

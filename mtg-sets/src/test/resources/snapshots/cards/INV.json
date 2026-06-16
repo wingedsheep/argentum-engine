@@ -3380,13 +3380,13 @@
                 },
                 "powerBonus": {
                     "type": "Count",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Swamp"
                 },
                 "toughnessBonus": {
                     "type": "Count",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Swamp"
                 }
@@ -4770,7 +4770,8 @@
                     }
                 },
                 "condition": {
-                    "type": "EnchantedPermanentMatches",
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
                     "filter": "permanent red|green"
                 }
             }
@@ -5140,7 +5141,7 @@
                             "type": "GatherCards",
                             "source": {
                                 "type": "ControlledPermanents",
-                                "player": "Opponent",
+                                "player": "TriggeringPlayer",
                                 "filter": "creature"
                             },
                             "storeAs": "creatures"
@@ -6754,7 +6755,7 @@
                     "type": "Not",
                     "condition": {
                         "type": "Exists",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "zone": "Battlefield",
                         "filter": "creature white|blue"
                     }
@@ -7011,7 +7012,11 @@
             "gate": {
                 "type": "Gate.WhenCondition",
                 "condition": {
-                    "type": "TargetMatchesFilter",
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
                     "filter": "creature white|blue"
                 }
             },
@@ -7646,13 +7651,13 @@
                 },
                 "powerBonus": {
                     "type": "Count",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Plains"
                 },
                 "toughnessBonus": {
                     "type": "Count",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Plains"
                 }
@@ -9670,7 +9675,8 @@
             {
                 "type": "CanAttackDespiteDefender",
                 "condition": {
-                    "type": "SourceMatches",
+                    "type": "EntityMatches",
+                    "entity": "Self",
                     "filter": {
                         "statePredicates": [
                             "HasAnyCounter"
@@ -11005,7 +11011,7 @@
                             "IsMulticolored"
                         ]
                     },
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -12657,7 +12663,7 @@
                     "type": "Not",
                     "condition": {
                         "type": "Exists",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "zone": "Battlefield",
                         "filter": "creature white|blue"
                     }
@@ -16006,7 +16012,7 @@
                     "filter": "creature",
                     "target": {
                         "type": "PlayerRef",
-                        "player": "Opponent"
+                        "player": "DefendingPlayer"
                     }
                 }
             }
@@ -17348,7 +17354,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }

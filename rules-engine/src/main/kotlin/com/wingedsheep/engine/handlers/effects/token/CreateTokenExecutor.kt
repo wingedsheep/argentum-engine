@@ -65,21 +65,50 @@ class CreateTokenExecutor(
         val baseCount = amountEvaluator.evaluate(state, effect.count, context)
         if (baseCount <= 0) return EffectResult.success(state)
 
-        // Resolve who receives the token — defaults to spell/ability controller
-        val controller = effect.controller
-        val tokenControllerId = if (controller != null) {
-            context.resolvePlayerTarget(controller, state)
-                ?: context.controllerId
-        } else {
-            context.controllerId
-        }
+        // Resolve who receives the token — defaults to the spell/ability controller. A
+        // multi-player reference ("each opponent creates ...") fans out: every resolved
+        // player creates their own token(s).
+        val tokenControllerIds = effect.controller
+            ?.let { context.resolvePlayerTargets(it, state) }
+            ?.takeIf { it.isNotEmpty() }
+            ?: listOf(context.controllerId)
 
+        var currentState = state
+        val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
+        val allCreatedTokens = mutableListOf<EntityId>()
+        for (tokenControllerId in tokenControllerIds) {
+            val result = createTokensFor(currentState, effect, context, baseCount, tokenControllerId)
+            if (result.error != null) return result
+            currentState = result.state
+            allEvents.addAll(result.events)
+            allCreatedTokens.addAll(result.updatedCollections[CREATED_TOKENS].orEmpty())
+        }
+        return EffectResult(
+            state = currentState,
+            events = allEvents,
+            updatedCollections = mapOf(CREATED_TOKENS to allCreatedTokens)
+        )
+    }
+
+    /** Create [baseCount] tokens (pre-replacement) under [tokenControllerId]'s control. */
+    private fun createTokensFor(
+        state: GameState,
+        effect: CreateTokenEffect,
+        context: EffectContext,
+        baseCount: Int,
+        tokenControllerId: EntityId
+    ): EffectResult {
         // Apply token-count replacements (Doubling Season / Exalted Sunborn,
         // and per-N modifiers) before downstream replacements get a look.
-        val count = TokenCreationReplacementHelper.applyCountReplacements(
+        val requestedCount = TokenCreationReplacementHelper.applyCountReplacements(
             state, tokenControllerId, baseCount
         )
-        if (count <= 0) return EffectResult.success(state)
+        if (requestedCount <= 0) return EffectResult.success(state)
+
+        // Structural cap: each token is a full ECS entity, so an unbounded doubler stack would
+        // allocate entities until the JVM OOMs. Clamp before the allocation loop — a board this
+        // large is already a decided game. See GameLimits.MAX_TOKENS_PER_EFFECT.
+        val count = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(requestedCount, "tokens")
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown)
         val replacementResult = TokenCreationReplacementHelper.checkReplacement(
@@ -149,8 +178,12 @@ class CreateTokenExecutor(
                 components.add(TappedComponent)
             }
             if (effect.attacking) {
-                // Token enters attacking — in 2-player games, the defender is the opponent
-                val defenderId = newState.getOpponent(tokenControllerId)
+                // Token enters attacking — it joins the attack of the source creature
+                // (CR 802.2a: defender per attacking creature), falling back to the sole
+                // active opponent outside combat-derived contexts.
+                val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                    .resolveDefendingPlayer(context, newState)
+                    ?: newState.getOpponents(tokenControllerId).firstOrNull()
                 if (defenderId != null) {
                     components.add(AttackingComponent(defenderId))
                 }

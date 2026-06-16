@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import kotlin.reflect.KClass
 
@@ -39,6 +40,14 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
 
+        // "Other players can't gain control of it" (Guardian Beast): a different player can't take
+        // control. The controller keeping control of their own permanent is a no-op anyway.
+        if (state.projectedState.hasKeyword(targetId, AbilityFlag.CANT_GAIN_CONTROL) &&
+            state.projectedState.getController(targetId) != context.controllerId
+        ) {
+            return EffectResult.success(state)
+        }
+
         val newControllerId = context.controllerId
 
         // Use projected controller so floating-effect-based control changes are respected
@@ -46,9 +55,18 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
             ?: targetContainer.get<ControllerComponent>()?.playerId
         if (currentControllerId == newControllerId) return EffectResult.success(state)
 
+        // "for as long as that Aura is attached to it" (Eriette): the control effect's duration
+        // tracks the *attachment* (the Aura/Equipment), not the card whose ability granted control.
+        // Source the floating effect from the triggering attachment so
+        // [Duration.WhileSourceAttachedToAffected] reads the right attachment's AttachedToComponent.
+        val floatingContext =
+            if (effect.duration == com.wingedsheep.sdk.scripting.Duration.WhileSourceAttachedToAffected) {
+                context.copy(sourceId = context.triggeringEntityId ?: context.sourceId)
+            } else context
+
         // Remove any previous Layer.CONTROL floating effects from the same source on the same target
         val filteredEffects = state.floatingEffects.filter { floating ->
-            !(floating.sourceId == context.sourceId &&
+            !(floating.sourceId == floatingContext.sourceId &&
               floating.effect.layer == Layer.CONTROL &&
               targetId in floating.effect.affectedEntities)
         }
@@ -60,7 +78,7 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
                 modification = SerializableModification.ChangeController(newControllerId),
                 affectedEntities = setOf(targetId),
                 duration = effect.duration,
-                context = context
+                context = floatingContext
             )
             .updateEntity(targetId) { it.with(SummoningSicknessComponent) }
             .let { clearRingBearerOnControlChange(it, targetId, newControllerId) }

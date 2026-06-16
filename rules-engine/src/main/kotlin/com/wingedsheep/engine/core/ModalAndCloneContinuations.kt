@@ -29,7 +29,6 @@ import kotlinx.serialization.Serializable
  * @property sourceName Name of the source for event messages
  * @property modes The full list of modes (indexed by original position)
  * @property xValue The X value if applicable
- * @property opponentId The opponent player ID
  * @property chooseCount Total modes to pick (1 for classic modal, 2+ for Commands)
  * @property selectedModeIndices Original mode indices already picked, in order
  * @property availableIndices Original mode indices still offered; null = all
@@ -47,7 +46,6 @@ data class ModalContinuation(
     val sourceName: String?,
     val modes: List<@Serializable Mode>,
     val xValue: Int? = null,
-    val opponentId: EntityId? = null,
     val triggeringEntityId: EntityId? = null,
     val chooseCount: Int = 1,
     /**
@@ -95,7 +93,6 @@ data class ModalPreChosenContinuation(
     val controllerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val opponentId: EntityId? = null,
     val xValue: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val remainingEntries: List<ModalPreChosenEntry>
@@ -112,7 +109,6 @@ data class ModalPreChosenContinuation(
  * @property sourceName Name of the source for event messages
  * @property effect The chosen mode's effect to execute
  * @property xValue The X value if applicable
- * @property opponentId The opponent player ID
  */
 @Serializable
 data class ModalTargetContinuation(
@@ -122,7 +118,6 @@ data class ModalTargetContinuation(
     val sourceName: String?,
     val effect: Effect,
     val xValue: Int? = null,
-    val opponentId: EntityId? = null,
     val targetRequirements: List<TargetRequirement> = emptyList(),
     /** Original modes list for cancelling back to mode selection */
     val modes: List<@Serializable Mode>? = null,
@@ -217,24 +212,28 @@ data class EntersWithChoiceSpellContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player makes an "as enters" choice for a land played directly to the battlefield.
+ * Resume after a player makes an "as enters" choice for a permanent put **directly** onto the
+ * battlefield (not cast as a spell) — a land played, or a token minted from a card definition
+ * (e.g. the Momir Basic avatar's random creature). Set up via
+ * [com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.pauseForEntersWithChoice].
  *
- * Unlike [EntersWithChoiceSpellContinuation] (used for spells), the land is already on
- * the battlefield when this continuation fires — it just needs the chosen value stored.
- * After storing, checks for chained choices (e.g., a land with both color and creature type),
- * and once the final choice resolves, fires triggers from the land entering (e.g. landfall).
+ * Unlike [EntersWithChoiceSpellContinuation] (used for spells), the permanent is already on the
+ * battlefield when this continuation fires — it just needs the chosen value stored. After storing,
+ * checks for chained choices (e.g. both color and creature type), and once the final choice
+ * resolves, fires the entry's ETB triggers off a synthesized [com.wingedsheep.engine.core.ZoneChangeEvent]
+ * (landfall, "when ~ enters", …).
  *
- * @property landId The land entity already on the battlefield
- * @property controllerId The player who played the land
+ * @property entityId The permanent already on the battlefield
+ * @property controllerId The player who controls it
  * @property choiceType What kind of choice was presented
  * @property creatureTypes For CREATURE_TYPE choices, the list of options presented
- * @property fromZone The zone the land was played from (needed to fire entry triggers
- *   after the final choice resolves)
+ * @property fromZone The zone the permanent came from (used to synthesize the entry event after
+ *   the final choice resolves); `null` for a freshly-minted token with no prior zone.
  */
 @Serializable
-data class EntersWithChoiceLandContinuation(
+data class EntersWithChoiceOnBattlefieldContinuation(
     override val decisionId: String,
-    val landId: EntityId,
+    val entityId: EntityId,
     val controllerId: EntityId,
     val choiceType: com.wingedsheep.sdk.scripting.ChoiceType,
     val creatureTypes: List<String> = emptyList(),
@@ -244,7 +243,10 @@ data class EntersWithChoiceLandContinuation(
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.BASIC_LAND_TYPE] choices, see
      *  [EntersWithChoiceSpellContinuation.landTypes]. */
     val landTypes: List<String> = emptyList(),
-    val fromZone: Zone = Zone.HAND
+    /** For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] choices, see
+     *  [EntersWithChoiceSpellContinuation.opponentIds]. */
+    val opponentIds: List<EntityId> = emptyList(),
+    val fromZone: Zone? = null
 ) : ContinuationFrame
 
 /**
@@ -350,7 +352,6 @@ data class DevourEntersContinuation(
  * @property modes The budget modes (cost + effect)
  * @property remainingBudget How many pawprints are left to spend
  * @property selectedModeIndices Mode indices selected so far, in order of selection
- * @property opponentId The opponent player ID
  */
 @Serializable
 data class BudgetModalContinuation(
@@ -361,7 +362,6 @@ data class BudgetModalContinuation(
     val modes: List<@Serializable BudgetMode>,
     val remainingBudget: Int,
     val selectedModeIndices: List<Int> = emptyList(),
-    val opponentId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -396,7 +396,6 @@ data class CreateTokenCopyOfChosenContinuation(
  * @property choices The feasible choices presented to the player (indices match the decision options)
  * @property targets Original targets from the effect context (preserved for ContextTarget resolution)
  * @property namedTargets Named targets from the pipeline state
- * @property opponentId The opponent player ID
  * @property triggeringEntityId The entity that triggered the ability
  */
 @Serializable
@@ -409,6 +408,5 @@ data class ChooseActionContinuation(
     val choices: List<@Serializable EffectChoice>,
     val targets: List<ChosenTarget> = emptyList(),
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val opponentId: EntityId? = null,
     val triggeringEntityId: EntityId? = null
 ) : ContinuationFrame

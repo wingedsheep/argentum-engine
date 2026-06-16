@@ -186,6 +186,7 @@ export type {
   OpponentDecisionStatus,
   SelectCardsDecision,
   YesNoDecision,
+  BatchYesNoDecision,
   ChooseTargetsDecision,
   TargetRequirementInfo,
   SearchLibraryDecision,
@@ -265,6 +266,13 @@ export type {
   TournamentResumedMessage,
   ReadyForNextRoundMessage,
   AddExtraRoundMessage,
+  // Free-for-All types
+  LobbyGameMode,
+  AttackMode,
+  FfaStandingInfo,
+  FreeForAllGameStartingMessage,
+  FreeForAllGameCompleteMessage,
+  PlayerEliminatedMessage,
   // Spectating types
   ActiveMatchInfo,
   ActiveMatchesMessage,
@@ -293,6 +301,10 @@ export type {
   SetFullControlMessage,
   SetPriorityModeMessage,
   SetStopOverridesMessage,
+  SetAbilityYieldMessage,
+  ClearAbilityYieldMessage,
+  ClearAllYieldsMessage,
+  YieldKind,
   StopOverrideInfo,
   PriorityModeValue,
   // Quick Game Lobby types
@@ -308,6 +320,9 @@ export type {
   SetQuickGameLobbyPublicMessage,
   SetQuickGameLobbyFormatMessage,
   OnlinePlayersCountMessage,
+  PingMessage,
+  PongMessage,
+  SessionReplacedMessage,
   DeckFormat,
 } from './messages'
 export {
@@ -398,6 +413,9 @@ export {
   createSetFullControlMessage,
   createSetPriorityModeMessage,
   createSetStopOverridesMessage,
+  createSetAbilityYieldMessage,
+  createClearAbilityYieldMessage,
+  createClearAllYieldsMessage,
   createRequestUndoMessage,
   createRequestResyncMessage,
   // Quick Game Lobby factories & guards

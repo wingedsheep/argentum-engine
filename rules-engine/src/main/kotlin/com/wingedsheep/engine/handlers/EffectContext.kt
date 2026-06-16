@@ -24,7 +24,14 @@ data class EffectContext(
     // --- Core ---
     val sourceId: EntityId?,
     val controllerId: EntityId,
-    val opponentId: EntityId?,
+    /**
+     * Definition-scoped identity of the triggered/activated ability currently resolving, copied
+     * from its stack component (see [com.wingedsheep.sdk.scripting.AbilityIdentity]). Lets a
+     * resolution-time may-question consult the controller's persistent auto-answer yields without
+     * re-deriving the key. Null for spell resolution and synthesized sources with no card
+     * definition (backlog §C).
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     /**
      * The player currently under consideration as a target, bound while evaluating a
      * `TargetPlayer.restriction` / `TargetOpponent.restriction` (CR 115). Resolves
@@ -166,6 +173,18 @@ data class EffectContext(
      */
     val triggerModesChosenCount: Int? = null,
     /**
+     * Total mana spent to cast the spell that fired this trigger. Read by
+     * `ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL` (Aberrant Manawurm, Expressive
+     * Firedancer). Distinct from [totalManaSpent], which is the *resolving object's own* cast.
+     */
+    val triggerManaSpentOnTriggeringSpell: Int? = null,
+    /**
+     * Mana value (CR 202.3) of the spell that fired this trigger. Read by
+     * `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE` (Kellan, the Kid). Distinct from
+     * [triggerManaSpentOnTriggeringSpell], which is the mana actually paid.
+     */
+    val triggerManaValueOfTriggeringSpell: Int? = null,
+    /**
      * Number of cards actually looked at by the scry that fired this trigger. Read by
      * `ContextPropertyKey.TRIGGER_SCRY_COUNT` (Celeborn the Wise, Elrond Master of Healing).
      */
@@ -175,6 +194,12 @@ data class EffectContext(
      * `ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT` (Fall of Cair Andros).
      */
     val triggerExcessDamageAmount: Int? = null,
+    /**
+     * The damage recipient creature's toughness at the instant the triggering damage was dealt
+     * (CR 603.10 LKI). Read by `ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS` (Taii Wakeen,
+     * Perfect Shot — "damage equal to that creature's toughness"). `null` for non-creature recipients.
+     */
+    val triggerRecipientToughness: Int? = null,
     // --- Choice state ---
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,
@@ -193,7 +218,18 @@ data class EffectContext(
     /** The entity being modified during continuous effect projection (for DynamicAmount evaluation) */
     val affectedEntityId: EntityId? = null,
     // --- Pipeline state ---
-    val pipeline: PipelineState = PipelineState.EMPTY
+    val pipeline: PipelineState = PipelineState.EMPTY,
+    // --- Safety ---
+    /**
+     * How many effect-executions deep this context is within a single resolution. Bumped by one
+     * each time [com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry] recurses into a
+     * sub-effect (composite / iteration / draw / chain executors), and per iteration by
+     * `RepeatWhileEffect`. The registry aborts the branch once this exceeds
+     * [com.wingedsheep.engine.core.GameLimits.MAX_RESOLUTION_DEPTH], so an unbounded effect loop
+     * fails closed instead of `StackOverflowError`. Lives on the (immutable) context rather than
+     * on the shared registry so it stays correct under the AI's parallel state evaluation.
+     */
+    val resolutionDepth: Int = 0
 ) {
     /**
      * Resolve a symbolic effect target to a concrete entity id using just the context.

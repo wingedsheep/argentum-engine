@@ -1,13 +1,16 @@
 package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
-import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Lavaborn Muse
@@ -29,10 +32,11 @@ val LavabornMuse = card("Lavaborn Muse") {
 
     triggeredAbility {
         trigger = Triggers.EachOpponentUpkeep
-        triggerCondition = Conditions.OpponentCardsInHandAtMost(2)
+        // "That player" is the player whose upkeep it is — bound by the step trigger.
+        triggerCondition = upkeepPlayerHandAtMost(2)
         effect = ConditionalEffect(
-            condition = Conditions.OpponentCardsInHandAtMost(2),
-            effect = Effects.DealDamage(3, EffectTarget.PlayerRef(Player.Opponent))
+            condition = upkeepPlayerHandAtMost(2),
+            effect = Effects.DealDamage(3, EffectTarget.PlayerRef(Player.TriggeringPlayer))
         )
     }
 
@@ -45,3 +49,10 @@ val LavabornMuse = card("Lavaborn Muse") {
         ruling("2004-10-04", "The number of cards in hand is checked both at the beginning of upkeep and when the triggered ability resolves.")
     }
 }
+
+/** "If that player has [count] or fewer cards in hand" — the player whose upkeep triggered. */
+private fun upkeepPlayerHandAtMost(count: Int) = Compare(
+    DynamicAmount.Count(Player.TriggeringPlayer, Zone.HAND),
+    ComparisonOperator.LTE,
+    DynamicAmount.Fixed(count)
+)

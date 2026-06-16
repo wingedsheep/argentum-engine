@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""
+Generate the committed canonical-totals resource that powers the Set Completion
+view (`GET /api/sets/coverage`).
+
+The running game server knows which cards we've *implemented* (from
+`MtgSetCatalog`) but has no idea how many cards a set canonically *has* — that
+denominator lives only in the local Scryfall cache that `scripts/card-status`
+populates. This script bakes those canonical totals into a classpath resource the
+server can read at runtime, so coverage % is always available without the server
+needing to talk to Scryfall.
+
+For each set we've catalogued (a `definitions/<code>/` folder with a `*Set.kt`):
+  - reads the set `code` and `displayName` from the Kotlin source
+  - loads the canonical card list from `~/.cache/scryfall/<code>.json`
+    (same cache `scripts/card-status` reads/writes)
+  - partitions canonical front-face names into draft (Scryfall `booster: true`)
+    and extras, deduping extras against draft — identical semantics to
+    `card-status`, so the numbers match the mtgish coverage TUI
+
+Output: `game-server/src/main/resources/coverage/set-totals.json`, an array of
+  { code, name, releaseDate, setType,
+    draft: [{ name, img }, ...], extra: [{ name, img }, ...] }
+draft = booster-relevant cards (Scryfall `booster: true`); extra = completionist
+exclusives (starter decks, bonus sheets, Special Guests). `img` is the set's
+Scryfall card image (direct CDN URL, normal size) so the detail view can render art
+for *missing* cards too without hammering the rate-limited Scryfall name-lookup API.
+The server intersects names with our implemented names per set, so "implemented" can
+never exceed the canonical count, and the headline % is over the booster (draft) cards.
+
+Usage:
+  scripts/gen-set-totals            # regenerate from the cache
+  scripts/gen-set-totals --refresh  # force re-fetch missing/stale sets from Scryfall first
+
+Run `scripts/card-status --refresh` first if your cache is stale or missing sets.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from datetime import date, timedelta
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFINITIONS_ROOT = REPO_ROOT / "mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
+OUTPUT = REPO_ROOT / "game-server/src/main/resources/coverage/set-totals.json"
+CACHE_ROOT = Path.home() / ".cache" / "scryfall"
+CACHE_SCHEMA_VERSION = 6
+REFRESH_WINDOW_DAYS = 30
+
+SET_CODE_RE = re.compile(r'override\s+val\s+code\s*=\s*"([^"]+)"')
+DISPLAY_NAME_RE = re.compile(r'override\s+val\s+displayName\s*=\s*"([^"]+)"')
+SKIP_FOLDERS = {"custom"}
+
+
+def front_face(name: str) -> str:
+    """Strip ` // back` suffix from DFC / adventure names (matches card-status)."""
+    return name.split(" // ", 1)[0].strip()
+
+
+def discover_sets() -> list[tuple[str, str]]:
+    """(code, displayName) for every catalogued set, mirroring scripts/card-status."""
+    out: list[tuple[str, str]] = []
+    for dir_ in sorted(DEFINITIONS_ROOT.iterdir()):
+        if not dir_.is_dir() or dir_.name in SKIP_FOLDERS:
+            continue
+        set_kt = next((p for p in dir_.glob("*Set.kt") if p.is_file()), None)
+        if set_kt is None:
+            continue
+        text = set_kt.read_text(encoding="utf-8")
+        m_code = SET_CODE_RE.search(text)
+        if not m_code:
+            print(f"warning: no `code` field in {set_kt.relative_to(REPO_ROOT)}", file=sys.stderr)
+            continue
+        m_name = DISPLAY_NAME_RE.search(text)
+        out.append((m_code.group(1), m_name.group(1) if m_name else m_code.group(1)))
+    return out
+
+
+def load_cache(code: str) -> dict | None:
+    path = CACHE_ROOT / f"{code.lower()}.json"
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if payload.get("_v") != CACHE_SCHEMA_VERSION:
+        print(f"warning: {code} cache is schema v{payload.get('_v')} (expected v{CACHE_SCHEMA_VERSION})",
+              file=sys.stderr)
+    return payload
+
+
+def is_stale(payload: dict) -> bool:
+    released = payload.get("released_at")
+    if not released:
+        return True
+    try:
+        return date.today() - date.fromisoformat(released) < timedelta(days=REFRESH_WINDOW_DAYS)
+    except ValueError:
+        return True
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--refresh", action="store_true",
+                        help="re-fetch missing/stale sets via scripts/card-status before generating")
+    args = parser.parse_args()
+
+    sets = discover_sets()
+    if not sets:
+        print("no catalogued sets found", file=sys.stderr)
+        return 1
+
+    if args.refresh:
+        missing = [code for code, _ in sets
+                   if not (CACHE_ROOT / f"{code.lower()}.json").is_file()
+                   or is_stale(load_cache(code) or {})]
+        if missing:
+            print(f"note: {len(missing)} set(s) missing/stale in cache: {' '.join(missing)}", file=sys.stderr)
+            print("      run `scripts/card-status --refresh` to populate them, then re-run.", file=sys.stderr)
+
+    entries = []
+    skipped = []
+    for code, name in sets:
+        payload = load_cache(code)
+        if payload is None:
+            skipped.append(code)
+            continue
+        cards = payload.get("cards", {})
+
+        def card_entries(names: set[str]) -> list[dict]:
+            out = []
+            for n in sorted(names):
+                meta = cards.get(n) or {}
+                out.append({"name": n, "img": meta.get("image_uri")})
+            return out
+
+        draft = {front_face(n) for n in payload.get("draft_names", [])}
+        extra = {front_face(n) for n in payload.get("extra_names", [])} - draft
+        entries.append({
+            "code": code,
+            "name": name,
+            "releaseDate": payload.get("released_at"),
+            "setType": payload.get("set_type"),
+            "draft": card_entries(draft),
+            "extra": card_entries(extra),
+        })
+
+    entries.sort(key=lambda e: ((e["releaseDate"] or ""), e["code"]), reverse=True)
+
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    total_cards = sum(len(e["draft"]) + len(e["extra"]) for e in entries)
+    with_img = sum(1 for e in entries for c in (e["draft"] + e["extra"]) if c["img"])
+    print(f"wrote {len(entries)} sets ({total_cards} canonical names, {with_img} with art) "
+          f"-> {OUTPUT.relative_to(REPO_ROOT)}")
+    if skipped:
+        print(f"skipped {len(skipped)} set(s) with no cache entry: {' '.join(sorted(skipped))}", file=sys.stderr)
+        print("  run `scripts/card-status --refresh` to populate the cache, then re-run.", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

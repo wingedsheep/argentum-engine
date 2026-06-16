@@ -44,7 +44,6 @@ class AmassExecutor(
         context: EffectContext
     ): EffectResult {
         val controllerId = context.controllerId
-        val opponentId = context.opponentId
         val subtype = effect.subtype
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
 
@@ -69,7 +68,7 @@ class AmassExecutor(
                 ?: return EffectResult.success(createResult.state, createResult.events)
 
             val applied = AmassResolution.applyToArmy(
-                createResult.state, tokenId, controllerId, opponentId, subtype, amount, context.sourceId, executeEffect
+                createResult.state, tokenId, controllerId, subtype, amount, context.sourceId, executeEffect
             )
             // Preserve the AmassedArmy pipeline entry produced by AmassResolution so a
             // composite "Amass X. Then [effect using amassed Army's power]" still threads
@@ -86,7 +85,7 @@ class AmassExecutor(
         // Exactly one Army → no choice to make.
         if (armies.size == 1) {
             return AmassResolution.applyToArmy(
-                state, armies.single(), controllerId, opponentId, subtype, amount, context.sourceId, executeEffect
+                state, armies.single(), controllerId, subtype, amount, context.sourceId, executeEffect
             )
         }
 
@@ -112,7 +111,6 @@ class AmassExecutor(
         val continuation = AmassContinuation(
             decisionId = decisionId,
             controllerId = controllerId,
-            opponentId = opponentId,
             subtype = subtype,
             amount = amount,
             sourceId = context.sourceId,

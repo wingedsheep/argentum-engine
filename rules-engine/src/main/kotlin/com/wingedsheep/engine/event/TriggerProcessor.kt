@@ -8,12 +8,17 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.abilityIdentityOf
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
+import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -73,7 +78,19 @@ class TriggerProcessor(
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
-        for ((index, trigger) in liveTriggers.withIndex()) {
+        var index = 0
+        while (index < liveTriggers.size) {
+            // Batch the may-question for a run of structurally identical optional ("you may …
+            // target …") triggers (MTGO's auto-stack-identical-triggers affordance). A run of ≥ 2
+            // is answered once with a BatchYesNoDecision instead of one yes/no per trigger; the
+            // remainder of the list resumes (and re-batches) after the answer.
+            val run = batchRunAt(currentState, liveTriggers, index)
+            if (run != null) {
+                val remainingTriggers = liveTriggers.drop(index + run.size)
+                return raiseBatchMayDecision(currentState, run, remainingTriggers, allEvents)
+            }
+
+            val trigger = liveTriggers[index]
             val result = processSingleTrigger(currentState, trigger)
 
             if (!result.isSuccess && !result.isPaused) {
@@ -115,9 +132,120 @@ class TriggerProcessor(
 
             currentState = result.newState
             allEvents.addAll(result.events)
+            index++
         }
 
         return ExecutionResult.success(currentState, allEvents)
+    }
+
+    /**
+     * Stable key for "the same batchable may-question": same controller + same definition-scoped
+     * [com.wingedsheep.sdk.scripting.AbilityIdentity]. Two such triggers share an identical "you may
+     * …" prompt (the prompt is the ability's static effect description, identical per identity), so
+     * one answer can cover both.
+     */
+    private data class BatchKey(
+        val controllerId: EntityId,
+        val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity,
+    )
+
+    /**
+     * The [BatchKey] for a trigger that would raise a put-on-stack may-question, or null if it is
+     * not batchable. A trigger is batchable iff it is an optional ("may") trigger that *also* targets
+     * (so the may-question is asked at put-on-stack time, the only point all simultaneous instances
+     * are in hand before priority — see backlog §B.4), it has a definition-scoped ability identity
+     * (synthesized sources like spell copies have none and are never grouped), and it would actually
+     * raise the question rather than fizzle for lack of legal targets.
+     */
+    private fun batchKeyOf(state: GameState, trigger: PendingTrigger): BatchKey? {
+        val ability = trigger.ability
+        val targetRequirement = ability.targetRequirement ?: return null
+        if (ability.effect.asMayDecide() == null) return null
+        val identity = state.abilityIdentityOf(trigger.sourceId, ability.id) ?: return null
+        // Mirror processMayThenTargetTrigger's fizzle guard: a trigger with no legal targets (for a
+        // mandatory-target requirement) fizzles without asking, so it must not join a batch.
+        val legalTargets = targetFinder.findLegalTargets(
+            state = state,
+            requirement = targetRequirement,
+            controllerId = trigger.controllerId,
+            sourceId = trigger.sourceId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId
+        )
+        if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) return null
+        return BatchKey(trigger.controllerId, identity)
+    }
+
+    /**
+     * The maximal contiguous run of batchable triggers starting at [index] that all share one
+     * [BatchKey], or null if fewer than two such triggers start there. Contiguous-only (matching the
+     * stack's LIFO order); a later identical run is re-batched when the remainder resumes.
+     */
+    private fun batchRunAt(
+        state: GameState,
+        triggers: List<PendingTrigger>,
+        index: Int
+    ): List<PendingTrigger>? {
+        val key = batchKeyOf(state, triggers[index]) ?: return null
+        var end = index + 1
+        while (end < triggers.size && batchKeyOf(state, triggers[end]) == key) {
+            end++
+        }
+        return if (end - index >= 2) triggers.subList(index, end).toList() else null
+    }
+
+    /**
+     * Raise one [BatchYesNoDecision] for a [run] of identical optional triggers, queueing
+     * [remainingTriggers] (the triggers after the run) beneath it so they resume in order once the
+     * batch is answered. The [BatchMayTriggerContinuation] carries the whole run; the resumer fans
+     * the single answer back out (see [BatchMayTriggerContinuation]).
+     */
+    private fun raiseBatchMayDecision(
+        state: GameState,
+        run: List<PendingTrigger>,
+        remainingTriggers: List<PendingTrigger>,
+        priorEvents: List<GameEvent>
+    ): ExecutionResult {
+        val first = run.first()
+        val ability = first.ability
+        val decisionId = "batch-may-${java.util.UUID.randomUUID()}"
+        val decision = BatchYesNoDecision(
+            id = decisionId,
+            playerId = first.controllerId,
+            prompt = ability.effect.description,
+            context = DecisionContext(
+                sourceId = first.sourceId,
+                sourceName = first.sourceName,
+                phase = DecisionPhase.RESOLUTION,
+                abilityIdentity = state.abilityIdentityOf(first.sourceId, ability.id)
+            ),
+            count = run.size
+        )
+
+        // Queue the triggers after the run first (deepest), then the batch frame on top, so the
+        // batch resolves before the trailing triggers (APNAP order preserved).
+        var stateWithContinuations = state.withPendingDecision(decision)
+        if (remainingTriggers.isNotEmpty()) {
+            stateWithContinuations = stateWithContinuations.pushContinuation(
+                PendingTriggersContinuation(
+                    decisionId = "pending-triggers-${java.util.UUID.randomUUID()}",
+                    remainingTriggers = remainingTriggers
+                )
+            )
+        }
+        stateWithContinuations = stateWithContinuations.pushContinuation(
+            BatchMayTriggerContinuation(decisionId = decisionId, triggers = run)
+        )
+
+        return ExecutionResult.paused(
+            stateWithContinuations,
+            decision,
+            priorEvents + DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = first.controllerId,
+                decisionType = "BATCH_YES_NO",
+                prompt = decision.prompt
+            )
+        )
     }
 
     /**
@@ -162,8 +290,38 @@ class TriggerProcessor(
             return processTargetedTrigger(currentState, trigger, targetRequirement)
         }
 
+        // A no-target "you may X. If you don't, Y" (optional + elseEffect) has no target-selection
+        // step to carry the decline through, so the targeted path's may/else handling never runs and
+        // both fields were silently dropped (the latent bug that made Yawgmoth Demon do nothing).
+        // Lower it into the unified GatedEffect(Gate.MayDecide) frame so GatedEffectExecutor owns the
+        // resolution-time yes/no and runs `elseEffect` on decline. Feasibility derived from the
+        // may-action lets an impossible "may" (e.g. "you may sacrifice an artifact" with no artifact)
+        // fall straight to the else with no prompt — the no-target analogue of "no legal targets → else".
+        val elseEffect = ability.elseEffect
+        if (ability.optional && elseEffect != null) {
+            val gated = GatedEffect(
+                gate = Gate.MayDecide(feasibility = impliedMayFeasibility(ability.effect)),
+                then = ability.effect,
+                otherwise = elseEffect
+            )
+            return putTriggerOnStack(currentState, trigger, emptyList(), gated)
+        }
+
         // No targets required - put directly on stack
         return putTriggerOnStack(currentState, trigger, emptyList())
+    }
+
+    /**
+     * The feasibility a no-target "may" action implies, so a "you may [action]. If you don't, …"
+     * trigger skips the prompt and runs its else branch when the action is impossible (the player
+     * can't, so they "don't"). A [SacrificeEffect] is always controller-self and needs the
+     * controller to control enough matching permanents; other actions (draw, gain life, add a
+     * counter) are always feasible (`null` → always prompt). Extend as further
+     * impossible-when-empty may-actions appear.
+     */
+    private fun impliedMayFeasibility(effect: Effect): FeasibilityCheck? = when (effect) {
+        is SacrificeEffect -> FeasibilityCheck.ControlsPermanentMatching(effect.filter, effect.count)
+        else -> null
     }
 
     /**
@@ -208,6 +366,19 @@ class TriggerProcessor(
         // The gated "may" effect's own text is the prompt (GatedEffect.description renders
         // "You may …" for a Gate.MayDecide).
         val sourceName = trigger.sourceName
+        val abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id)
+
+        // Persistent auto-answer yield (backlog §C): a remembered yes/no for this ability resolves
+        // the may-question without prompting. "Yes" still proceeds to per-instance target selection
+        // (only the yes/no is batched, never the targeting — §C.6); "no" skips the trigger.
+        abilityIdentity?.let { state.autoAnswerFor(trigger.controllerId, it) }?.let { auto ->
+            val note = AbilityAutoAnsweredEvent(trigger.sourceId, sourceName, trigger.controllerId, auto)
+            if (!auto) return ExecutionResult.success(state, listOf(note))
+            val innerEffect = ability.effect.asMayDecide()!!.then
+            val unwrappedTrigger = trigger.copy(ability = ability.copy(effect = innerEffect))
+            val result = processTargetedTrigger(state, unwrappedTrigger, targetRequirement)
+            return result.copy(events = listOf(note) + result.events)
+        }
 
         // Create yes/no decision
         val decisionResult = decisionHandler.createYesNoDecision(
@@ -216,7 +387,8 @@ class TriggerProcessor(
             sourceId = trigger.sourceId,
             sourceName = sourceName,
             prompt = ability.effect.description,
-            phase = DecisionPhase.RESOLUTION
+            phase = DecisionPhase.RESOLUTION,
+            abilityIdentity = abilityIdentity
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
@@ -298,7 +470,8 @@ class TriggerProcessor(
             prompt = "Pay $manaCost?",
             yesText = "Pay $manaCost",
             noText = "Don't pay",
-            phase = DecisionPhase.RESOLUTION
+            phase = DecisionPhase.RESOLUTION,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id)
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
@@ -392,11 +565,15 @@ class TriggerProcessor(
         // If the ability is optional (e.g., "you may"), allow selecting 0 targets to decline
         val requirementInfos = allRequirements.mapIndexed { index, req ->
             val effectiveMinTargets = if (ability.optional) 0 else req.effectiveMinCount
+            // "Any number of target ..." (unlimited) caps at however many legal targets exist,
+            // mirroring the cast-time path (TargetEnumerationUtils). Using req.count (always 1
+            // for an unlimited requirement) would wrongly clamp the decision to a single target.
+            val maxTargets = if (req.unlimited) (allLegalTargets[index]?.size ?: 0) else req.count
             TargetRequirementInfo(
                 index = index,
                 description = req.description,
                 minTargets = effectiveMinTargets,
-                maxTargets = req.count,
+                maxTargets = maxTargets,
                 sameOwner = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameOwner == true
             )
         }
@@ -412,7 +589,6 @@ class TriggerProcessor(
             val context = EffectContext(
                 sourceId = trigger.sourceId,
                 controllerId = trigger.controllerId,
-                opponentId = state.getOpponent(trigger.controllerId),
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
                 triggerDamageAmount = trigger.triggerContext.damageAmount,
@@ -427,7 +603,10 @@ class TriggerProcessor(
                 triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness,
                 triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
                 triggerScryCount = trigger.triggerContext.scryCount,
-                triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount
+                triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
+                triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
+                triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
+                triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell
             )
             ability.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
         } catch (_: Exception) {
@@ -456,6 +635,7 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = ability.effect,
             description = ability.description,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id),
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
@@ -473,7 +653,10 @@ class TriggerProcessor(
             triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
             enchantedCreatureLastKnownPower = trigger.triggerContext.enchantedCreatureLastKnownPower,
             triggerScryCount = trigger.triggerContext.scryCount,
-            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount
+            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
+            triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
+            triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
+            triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell
         )
 
         // Push the continuation onto the stack
@@ -507,6 +690,7 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = effectOverride ?: ability.effect,
             description = ability.description,
+            abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id),
             descriptionOverride = ability.descriptionOverride,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
@@ -525,7 +709,11 @@ class TriggerProcessor(
             triggerModesChosenCount = trigger.triggerContext.modesChosenCount,
             enchantedCreatureLastKnownPower = trigger.triggerContext.enchantedCreatureLastKnownPower,
             triggerScryCount = trigger.triggerContext.scryCount,
-            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount
+            triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
+            triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
+            triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
+            triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
+            capturedEntityIds = trigger.triggerContext.capturedEntityIds ?: emptyList()
         )
 
         return stackResolver.putTriggeredAbility(
@@ -617,7 +805,6 @@ class TriggerProcessor(
         val context = EffectContext(
             sourceId = trigger.sourceId,
             controllerId = trigger.controllerId,
-            opponentId = state.getOpponent(trigger.controllerId)
         )
         return DynamicAmountEvaluator().evaluate(state, resolvedAmount, context)
     }
@@ -668,7 +855,6 @@ class TriggerProcessor(
                     val context = EffectContext(
                         sourceId = trigger.sourceId,
                         controllerId = trigger.controllerId,
-                        opponentId = state.getOpponent(trigger.controllerId),
                         triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                         triggeringPlayerId = trigger.triggerContext.triggeringPlayerId
                     )

@@ -44,6 +44,7 @@ class CardDiscoveryTest : FunSpec({
         ktkPrintings.map { it.name } shouldContainExactlyInAnyOrder listOf(
             "Arc Lightning",
             "Bloodstained Mire",
+            "Cancel",
             "Crippling Chill",
             "Flooded Strand",
             "Incremental Growth",

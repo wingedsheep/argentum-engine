@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.special
 
+import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.actions.ActionHandlerModule
 
@@ -14,9 +15,11 @@ import com.wingedsheep.engine.handlers.actions.ActionHandlerModule
  * appropriate [DecisionResponse] subtype (`ModesChosenResponse`, `TargetsResponse`) — see
  * `handlers/actions/decision/SubmitDecisionHandler.kt`. There is no separate action type for them.
  */
-class SpecialActionsModule : ActionHandlerModule {
+class SpecialActionsModule(
+    private val services: EngineServices
+) : ActionHandlerModule {
     override fun handlers(): List<ActionHandler<*>> = listOf(
-        ConcedeHandler(),
+        ConcedeHandler(services.sbaChecker),
         ChooseManaColorHandler()
     )
 }

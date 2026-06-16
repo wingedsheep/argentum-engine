@@ -26,7 +26,7 @@ val CabalExecutioner = card("Cabal Executioner") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = ForceSacrificeEffect(GameObjectFilter.Creature, 1, EffectTarget.PlayerRef(Player.Opponent))
+        effect = ForceSacrificeEffect(GameObjectFilter.Creature, 1, EffectTarget.PlayerRef(Player.DefendingPlayer))
     }
 
     morph = "{3}{B}{B}"

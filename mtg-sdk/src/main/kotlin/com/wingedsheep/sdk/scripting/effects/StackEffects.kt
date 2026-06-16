@@ -207,6 +207,32 @@ data class CounterEffect(
     }
 }
 
+/**
+ * Exile target spell on the stack (CR 718 "exile target spell" — Aven Interrupter).
+ *
+ * Distinct from [CounterEffect] with [CounterDestination.Exile]: this is **not** a counter.
+ * It exiles the spell regardless of can't-be-countered (Aven Interrupter's ruling: "Spells that
+ * can't be countered can still be exiled. They won't resolve."), and it fires no
+ * "whenever a spell is countered" trigger. The spell still fails to resolve because it leaves
+ * the stack. The target is the chosen spell ([com.wingedsheep.sdk.dsl.Targets.Spell] supplies
+ * the requirement).
+ *
+ * @property makePlotted When true, the exiled card becomes *plotted* for its **owner** (CR 718.2):
+ *   it gains the plotted designation and a permanent free-cast-on-a-later-turn permission. Pairs
+ *   with [com.wingedsheep.sdk.scripting.effects.MakePlottedEffect]'s owner-controls semantics, but
+ *   reads its subject from the stack instead of a gathered collection.
+ */
+@SerialName("ExileTargetSpell")
+@Serializable
+data class ExileTargetSpellEffect(
+    val makePlotted: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Exile target spell")
+        if (makePlotted) append(". It becomes plotted")
+    }
+}
+
 // =============================================================================
 // Stack Effects — Counter All
 // =============================================================================
@@ -319,6 +345,21 @@ sealed interface WardCost {
     data class Sacrifice(val filter: GameObjectFilter) : WardCost {
         override val description: String = "a ${filter.description}"
     }
+
+    /**
+     * A ward cost made of two or more component costs that must *all* be paid — e.g.
+     * "Ward—{2}, Pay 2 life." (Gisa, the Hellraiser). The components are paid one at a time
+     * in order; declining or being unable to pay any one component counters the spell or
+     * ability (CR 702.21a — a single ward cost whose payment is composed of multiple parts).
+     *
+     * Nesting another [Composite] inside [parts] is not supported (and not needed by any
+     * printed card); keep [parts] a flat list of atomic ward costs.
+     */
+    @SerialName("WardCost.Composite")
+    @Serializable
+    data class Composite(val parts: List<WardCost>) : WardCost {
+        override val description: String = parts.joinToString(", ") { it.description }
+    }
 }
 
 /**
@@ -339,6 +380,7 @@ data class WardCounterEffect(
         is WardCost.Life -> "Counter it unless its controller pays ${cost.amount} life"
         is WardCost.Discard -> "Counter it unless its controller discards ${cost.description}"
         is WardCost.Sacrifice -> "Counter it unless its controller sacrifices ${cost.description}"
+        is WardCost.Composite -> "Counter it unless its controller pays ${cost.description}"
     }
 }
 
@@ -547,6 +589,26 @@ data class CopyTargetTriggeredAbilityEffect(
 }
 
 /**
+ * Copy target spell **or** ability on the stack, dispatching at resolution on the chosen
+ * object's kind: an instant/sorcery spell copies via the spell-copy path; an activated or
+ * triggered ability copies its ability-on-stack component. You may choose new targets for the
+ * copy (CR 707.10c). Generalizes [CopyTargetSpellEffect] and [CopyTargetTriggeredAbilityEffect]
+ * into the single "copy target spell or ability" clause (Return the Favor; the Fork/Twincast
+ * family extended to abilities). The target requirement decides which stack-object kinds are
+ * legal (e.g. [com.wingedsheep.sdk.dsl.Targets.InstantSorcerySpellOrAbility]); this effect copies
+ * whichever one the player chose.
+ *
+ * @property target The effect target referencing the spell or ability to copy (typically ContextTarget(0))
+ */
+@SerialName("CopyTargetSpellOrAbility")
+@Serializable
+data class CopyTargetSpellOrAbilityEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Copy target spell or ability"
+}
+
+/**
  * When you next cast a spell matching [spellFilter] this turn, copy that spell.
  * You may choose new targets for the copies.
  *
@@ -660,6 +722,31 @@ data class MarkSpellExileWithCountersEffect(
         if (count == 1) append("a $counterType counter") else append("$count $counterType counters")
         append(" on it instead of putting it into your graveyard as it resolves")
     }
+}
+
+/**
+ * Mark a spell on the stack so that, when it resolves, it is exiled instead of put into its
+ * owner's graveyard and **becomes plotted** (CR 718). The plot designation and free-cast-on-a-
+ * later-turn permission are granted only if the spell actually resolves into exile — if it is
+ * countered or otherwise fails to resolve, it goes to the graveyard normally (sibling of
+ * [MarkSpellExileWithCountersEffect], which carries the same `onlyIfResolved` semantics).
+ *
+ * Distinct from [ExileTargetSpellEffect]`(makePlotted = true)`: that one targets and removes a
+ * spell from the stack *now* (a non-counter removal); this one lets the spell resolve fully and
+ * only re-routes its post-resolution destination. Used by Lilah, Undefeated Slickshot: "exile
+ * that spell instead of putting it into your graveyard as it resolves. If you do, it becomes
+ * plotted."
+ *
+ * @property target The spell on the stack to mark (typically the triggering entity).
+ */
+@SerialName("MarkSpellPlotOnResolve")
+@Serializable
+data class MarkSpellPlotOnResolveEffect(
+    val target: com.wingedsheep.sdk.scripting.targets.EffectTarget = com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity,
+) : Effect {
+    override val description: String =
+        "Exile that spell instead of putting it into your graveyard as it resolves. " +
+            "If you do, it becomes plotted"
 }
 
 // =============================================================================

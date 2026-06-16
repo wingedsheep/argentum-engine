@@ -1,0 +1,38 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Wash Out"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Storm Crow"},
+      {"name": "Grizzly Bears"},
+      {"name": "Mons's Goblin Raiders"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Storm Crow"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Wind Drake"},
+      {"name": "Devoted Hero"},
+      {"name": "Bog Imp"},
+      {"name": "Llanowar Elves"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Grizzly Bears"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

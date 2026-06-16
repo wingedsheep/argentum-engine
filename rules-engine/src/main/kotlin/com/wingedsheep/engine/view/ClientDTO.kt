@@ -89,7 +89,42 @@ data class ClientGameState(
      * Distinct from [youAreHijacking], which is the per-turn Mindslaver effect; the two are
      * never set together.
      */
-    val hotseat: Boolean = false
+    val hotseat: Boolean = false,
+
+    /**
+     * The viewing player's active persistent yields (MTGO right-click yields — backlog §C). Masked
+     * per-player: only the viewer's own yields are ever included. Drives the "Active yields" panel
+     * (revoke / clear-all) and lets the client suppress re-prompting cues. Empty for spectators.
+     */
+    val activeYields: List<ClientYield> = emptyList()
+)
+
+/**
+ * Client-facing form of [com.wingedsheep.sdk.scripting.AbilityIdentity] — the stable
+ * (cardDefinitionId, abilityId) key an ability is yielded against (backlog §C).
+ */
+@Serializable
+data class ClientAbilityIdentity(
+    val cardDefinitionId: String,
+    val abilityId: String
+)
+
+/**
+ * One ability the viewing player has set a yield on, flattened from [PlayerYields] for display.
+ * Keyed by its [com.wingedsheep.sdk.scripting.AbilityIdentity] ([cardDefinitionId] + [abilityId]);
+ * [displayName] is the human-readable card name derived from the definition id.
+ */
+@Serializable
+data class ClientYield(
+    val cardDefinitionId: String,
+    val abilityId: String,
+    val displayName: String,
+    /** Auto-pass priority on this ability's stack objects until end of turn. */
+    val untilEndOfTurn: Boolean = false,
+    /** Auto-pass priority on this ability's stack objects for the rest of the game. */
+    val wholeGame: Boolean = false,
+    /** Remembered may-question answer (`true`=always yes, `false`=always no), or null if none. */
+    val autoAnswer: Boolean? = null
 )
 
 /**
@@ -219,6 +254,10 @@ data class ClientCard(
     /** Whether this card is plotted in exile (CR 718 — Plot keyword, castable for free on a later turn). Exile only. */
     val isPlotted: Boolean = false,
 
+    /** Whether this permanent is prepared (Secrets of Strixhaven — Prepared keyword): a copy of its
+     * prepare spell sits castable in its controller's exile until cast. Battlefield only. */
+    val isPrepared: Boolean = false,
+
     /** Morph cost for face-down creatures (only visible to controller) */
     val morphCost: String? = null,
 
@@ -245,6 +284,13 @@ data class ClientCard(
 
     /** Chosen X value for spells with X in their cost (only present on stack) */
     val chosenX: Int? = null,
+
+    /**
+     * For a triggered/activated ability on the stack: the definition-scoped identity of that
+     * ability (backlog §C). Lets the stack-item context menu offer "yield / always yes-no to this
+     * ability". Null for spells and for ability sources with no card definition.
+     */
+    val abilityIdentity: ClientAbilityIdentity? = null,
 
     /** Copy index for storm/copy effects on the stack (1, 2, 3...) */
     val copyIndex: Int? = null,

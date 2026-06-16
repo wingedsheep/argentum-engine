@@ -160,3 +160,69 @@
         "RED"
     ]
 }
+
+// Valorous Stance
+{
+    "name": "Valorous Stance",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)\n• Destroy target creature with toughness 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Target creature gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature tou>=4"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target creature with toughness 4 or greater"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "flavorText": "\"Every choice alters the path of fate.\"\n—Sarkhan Vol",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65998e94-15a0-41f1-8288-730b957f81df.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -84,6 +85,62 @@ data class BecomeCreatureEffect(
 }
 
 /**
+ * Target permanent becomes an artifact with a fixed set of card types and subtypes, optionally
+ * losing all other card types and abilities and gaining a single activated ability — modeled as
+ * continuous floating effects keyed to that entity (Layer 4 type/subtype, Layer 5 color, Layer 6
+ * "lose all abilities"), plus a [com.wingedsheep.sdk.scripting.ActivatedAbility] grant.
+ *
+ * The general "becomes a Treasure/Food/Clue/artifact" transform — name the mechanic, not the
+ * card. Vraska, the Silencer uses it to make a returned dead creature "a Treasure artifact with
+ * '{T}, Sacrifice this artifact: Add one mana of any color', and it loses all other card types"
+ * with [duration] = `Duration.Permanent`. Pair with a graveyard→battlefield return.
+ *
+ * Differs from [BecomeCreatureEffect] (which adds CREATURE + sets P/T): this *replaces* all card
+ * types with [cardTypes] and all subtypes with [subtypes] (CR 613.4 Layer 4 set effects), so the
+ * resulting permanent is exactly the named artifact, nothing more.
+ *
+ * @property target The permanent to transform
+ * @property cardTypes Card types to set, replacing all existing ones (e.g. `setOf("ARTIFACT")`)
+ * @property subtypes Subtypes to set, replacing all existing ones (e.g. `setOf("Treasure")`)
+ * @property colors Colors to set (`emptySet()` = colorless, the default; `null` = keep existing)
+ * @property loseAllAbilities Whether the permanent loses all printed/granted-via-projection abilities
+ * @property grantedAbility A single activated ability the transformed permanent gains (e.g. the
+ *   Treasure sac-for-mana ability). Granted via the durable granted-activated-ability record, so it
+ *   survives [loseAllAbilities] (which only strips projected abilities).
+ * @property duration How long the transform lasts (`Duration.Permanent` for an indefinite change
+ *   that ends only when the permanent leaves the battlefield)
+ */
+@SerialName("BecomeArtifact")
+@Serializable
+data class BecomeArtifactEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val cardTypes: Set<String> = setOf("ARTIFACT"),
+    val subtypes: Set<String> = emptySet(),
+    val colors: Set<com.wingedsheep.sdk.core.Color>? = emptySet(),
+    val loseAllAbilities: Boolean = true,
+    val grantedAbility: com.wingedsheep.sdk.scripting.ActivatedAbility? = null,
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} becomes ")
+        if (colors?.isEmpty() == true) append("a colorless ")
+        if (subtypes.isNotEmpty()) append(subtypes.joinToString(" "))
+        if (cardTypes.isNotEmpty()) {
+            if (subtypes.isNotEmpty()) append(" ")
+            append(cardTypes.joinToString(" ") { it.lowercase() })
+        }
+        grantedAbility?.let { append(" with \"${it.description}\"") }
+        if (loseAllAbilities) append(" and loses all other card types and abilities")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAbility = grantedAbility?.applyTextReplacement(replacer)
+        return if (newAbility !== grantedAbility) copy(grantedAbility = newAbility) else this
+    }
+}
+
+/**
  * Target permanent becomes saddled until end of turn (CR 702.171b). This is the resolving
  * effect of a Saddle ability: it stamps a transient "saddled" marker on the permanent (the
  * engine's `SaddledComponent`), which Mount payoffs read via `Conditions.SourceIsSaddled` /
@@ -160,6 +217,35 @@ data class AttachTargetEquipmentToCreatureEffect(
     val creatureTarget: EffectTarget = EffectTarget.ContextTarget(1)
 ) : Effect {
     override val description: String = "Attach ${equipmentTarget.description} to ${creatureTarget.description}"
+}
+
+/**
+ * Put a targeted Aura or Equipment card onto the battlefield **attached to a permanent the
+ * effect's controller chooses** at resolution. The card is the [target] (e.g. a targeted
+ * Aura/Equipment in a graveyard); the host is chosen as the effect resolves and is therefore
+ * NOT a target — only the host filter constrains it ([hostFilter], default "a creature you
+ * control"). Models "Return target Aura or Equipment card from your graveyard to the
+ * battlefield attached to a creature you control" (One Last Job, Brass Squire-shaped attaches).
+ *
+ * Unlike the [com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect] aura auto-attach
+ * (Rule 303.4f), which is Aura-only and uses the Aura's own enchant target, this effect
+ * works for both Auras and Equipment and lets the card restrict the host. Per the One Last
+ * Job ruling, the Aura/Equipment must be legally attachable to the chosen host:
+ *  - If a legal host exists, the controller chooses one and the card enters attached to it.
+ *  - If no legal host exists, an Equipment enters the battlefield unattached, while an Aura
+ *    can't enter (it stays in its current zone — Rule 303.4g).
+ *
+ * @property target The Aura or Equipment card to put onto the battlefield (e.g. a graveyard target).
+ * @property hostFilter Which permanents are eligible hosts (default: a creature you control).
+ */
+@SerialName("PutOntoBattlefieldAttachedToChosen")
+@Serializable
+data class PutOntoBattlefieldAttachedToChosenEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val hostFilter: GameObjectFilter = GameObjectFilter.Creature.youControl()
+) : Effect {
+    override val description: String =
+        "Put ${target.description} onto the battlefield attached to ${hostFilter.description}"
 }
 
 /**

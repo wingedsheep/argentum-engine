@@ -1,24 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
-import com.wingedsheep.sdk.scripting.effects.EffectChoice
-import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Winternight Stories — Tarkir: Dragonstorm #67
@@ -27,11 +13,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Draw three cards. Then discard two cards unless you discard a creature card.
  * Harmonize {4}{U}
  *
- * "Discard two cards unless you discard a creature card" is a player choice (CR 701.8): the
- * controller may instead discard a single creature card to satisfy the "unless". Modeled as
- * Draw 3, then [ChooseActionEffect] between "discard a creature card" — feasible only when a
- * creature card is in hand — and "discard two cards". With no creature card in hand, only the
- * "discard two cards" branch is feasible, matching the printed card.
+ * The discard instruction is one selection: a single creature card satisfies it, otherwise two
+ * cards must be selected.
  */
 val WinternightStories = card("Winternight Stories") {
     manaCost = "{2}{U}"
@@ -44,47 +27,7 @@ val WinternightStories = card("Winternight Stories") {
 
     spell {
         effect = Effects.DrawCards(3)
-            .then(
-                ChooseActionEffect(
-                    choices = listOf(
-                        EffectChoice(
-                            label = "Discard a creature card",
-                            effect = Effects.Composite(
-                                listOf(
-                                    GatherCardsEffect(
-                                        source = CardSource.FromZone(
-                                            Zone.HAND,
-                                            Player.You,
-                                            GameObjectFilter.Creature
-                                        ),
-                                        storeAs = "creatures"
-                                    ),
-                                    SelectFromCollectionEffect(
-                                        from = "creatures",
-                                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                        storeSelected = "discarded",
-                                        prompt = "Choose a creature card to discard"
-                                    ),
-                                    MoveCollectionEffect(
-                                        from = "discarded",
-                                        destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                                        moveType = MoveType.Discard
-                                    )
-                                )
-                            ),
-                            feasibilityCheck = FeasibilityCheck.HasCardsInZone(
-                                Zone.HAND,
-                                GameObjectFilter.Creature,
-                                1
-                            )
-                        ),
-                        EffectChoice(
-                            label = "Discard two cards",
-                            effect = Patterns.Hand.discardCards(2)
-                        )
-                    )
-                )
-            )
+            .then(Effects.DiscardUnlessMatching(2, GameObjectFilter.Creature))
     }
 
     keywordAbility(KeywordAbility.harmonize("{4}{U}"))

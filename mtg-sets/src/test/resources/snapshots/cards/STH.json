@@ -1,3 +1,51 @@
+// Bandage
+{
+    "name": "Bandage",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent the next 1 damage that would be dealt to any target this turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Rebecca Guay",
+        "flavorText": "Takara shook with guilt. She knew the last image her father had seen was her sword flashing toward him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79ed559a-9a88-43d2-85d1-4bbec038f71e.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Bottomless Pit
 {
     "name": "Bottomless Pit",
@@ -117,6 +165,35 @@
     ]
 }
 
+// Primal Rage
+{
+    "name": "Primal Rage",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control have trample. (A creature with trample can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Snõddy",
+        "flavorText": "\"Charge!\" A great cry went out, and countless elves and Vec soldiers charged up the mountain. Their fury and passion hid the fact that they were horribly outnumbered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e78026e4-edb8-4f55-bd80-4152f4dfb461.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Revenant
 {
     "name": "Revenant",
@@ -189,5 +266,95 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Sift
+{
+    "name": "Sift",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards, then discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Pete Venters",
+        "flavorText": "\"Twice I have let the Legacy slip away. Never again.\"\n—Karn, silver golem",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf5b23da-9ba8-4b43-a5c9-51e1fc253913.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Youthful Knight
+{
+    "name": "Youthful Knight",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Rebecca Guay",
+        "flavorText": "\"Let no child be without a sword. We will all fight, for if we fail, we will certainly all die.\"\n—Oracle en-Vec",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcd3b7a7-c5e8-4179-ade3-31625620f3a9.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }

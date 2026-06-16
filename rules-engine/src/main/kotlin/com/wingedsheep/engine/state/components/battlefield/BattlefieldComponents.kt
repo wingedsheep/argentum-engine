@@ -36,7 +36,16 @@ data object SummoningSicknessComponent : Component
  */
 @Serializable
 data class PhasedOutComponent(
-    val phasedOutByController: EntityId
+    val phasedOutByController: EntityId,
+    /**
+     * When non-null, this permanent was phased out "until [phaseInOnSourceLeaves] leaves the
+     * battlefield" (Oubliette). It does NOT phase in at its controller's untap step; instead the
+     * source's leaves-battlefield trigger ([com.wingedsheep.sdk.scripting.effects.PhaseInLinkedToSourceEffect])
+     * phases it back in. Null for ordinary phasing (phases in at the next untap, Rule 702.26a).
+     */
+    val phaseInOnSourceLeaves: EntityId? = null,
+    /** Tap this permanent when it phases back in (Oubliette: "Tap that creature as it phases in"). */
+    val tapOnPhaseIn: Boolean = false
 ) : Component
 
 /**
@@ -116,7 +125,13 @@ data object SaddledComponent : Component
  */
 @Serializable
 data class CrewSaddleContributorsComponent(
-    val creatureIds: Set<EntityId>
+    val creatureIds: Set<EntityId>,
+    /**
+     * How many times the *crew* ability has been activated on this permanent this turn. Used to
+     * enforce a "Crew N. Activate only once each turn." cap (Luxurious Locomotive). Saddle
+     * activations don't increment it. Reset with the rest of the component at end of turn.
+     */
+    val crewActivations: Int = 0
 ) : Component
 
 /**
@@ -127,6 +142,40 @@ data class CrewSaddleContributorsComponent(
  */
 @Serializable
 data object CastForImpendingComponent : Component
+
+/**
+ * Marks a creature permanent as prepared (Secrets of Strixhaven, [com.wingedsheep.sdk.model.CardLayout.PREPARE]).
+ *
+ * A creature with a prepare spell becomes prepared as it enters (per the "This creature enters
+ * prepared" keyword). When it becomes prepared, its controller creates a copy of the card's
+ * prepare spell ([com.wingedsheep.sdk.model.CardDefinition.cardFaces] index 0) in exile and may
+ * cast that copy (paying its cost). [exileCopyId] links to that exiled copy so it can be removed
+ * if the permanent stops being prepared or leaves the battlefield, and casting the copy removes
+ * this component (the creature stops being prepared).
+ *
+ * Transient engine state, not a copiable value (a copy of a prepared creature is not prepared).
+ * Naturally gone when the permanent leaves the battlefield (a fresh entity has no battlefield
+ * components); the linked exile copy is cleaned up by [com.wingedsheep.engine.core.StateBasedActionChecker]-adjacent
+ * cleanup when the source leaves.
+ */
+@Serializable
+data class PreparedComponent(
+    val exileCopyId: EntityId
+) : Component
+
+/**
+ * Marks an exiled card as the prepare-spell copy of a prepared permanent (Secrets of Strixhaven).
+ *
+ * [sourceId] is the prepared permanent on the battlefield. This copy is cast as the card's prepare
+ * spell — face index 0 of [com.wingedsheep.sdk.model.CardDefinition.cardFaces] — so the cast-from-exile
+ * enumerator emits the cast with `faceIndex = 0` and the prepare spell's cost/targets. Per the
+ * rulings, this copy persists in exile (it is not removed by the "copies in non-stack zones cease to
+ * exist" state-based action) for as long as the source is on the battlefield and prepared.
+ */
+@Serializable
+data class PreparedSpellCopyComponent(
+    val sourceId: EntityId
+) : Component
 
 /**
  * Marks an exiled card as suspended (CR 702.62). The marker — not the card's printed
@@ -140,6 +189,19 @@ data object CastForImpendingComponent : Component
  */
 @Serializable
 data object SuspendedComponent : Component
+
+/**
+ * Marks an exiled card as a Paradigm spell (Secrets of Strixhaven). Attached as a Paradigm spell
+ * lands in exile on its own resolution. While present on an exiled card,
+ * [com.wingedsheep.engine.event.TriggerAbilityResolver] grants it
+ * [com.wingedsheep.sdk.scripting.Paradigm.recastAbility] — the precombat-main trigger that lets the
+ * owner cast a free *copy* of the card each turn. The marker's presence is the gate: a Lesson exiled
+ * by some other effect (graveyard hate, opponent removal) carries no marker and so never recurs.
+ *
+ * Stripped when the card leaves exile by a non-cast path and when it leaves the battlefield.
+ */
+@Serializable
+data object ParadigmComponent : Component
 
 /**
  * Records the mana colors spent to cast this permanent.
@@ -235,7 +297,9 @@ data class CountersComponent(
 
     fun withAdded(type: CounterType, amount: Int): CountersComponent {
         val current = getCount(type)
-        return CountersComponent(counters + (type to current + amount))
+        // Saturating add: doubling a near-billion-counter permanent must clamp, never wrap to a
+        // negative `Int` (which would corrupt state silently). See GameLimits.
+        return CountersComponent(counters + (type to com.wingedsheep.engine.core.GameLimits.addClamped(current, amount)))
     }
 
     fun withRemoved(type: CounterType, amount: Int): CountersComponent {

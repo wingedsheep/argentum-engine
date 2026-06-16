@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.WarpGrants
 import com.wingedsheep.engine.handlers.EffectContext
@@ -162,7 +163,7 @@ class CastZoneResolver(
         if (!cardComponent.typeLine.isPermanent) return false
 
         // Only works on controller's turn
-        if (state.activePlayerId != playerId) return false
+        if (!state.isActiveTurnFor(playerId)) return false
 
         // Find a Muldrotha-like permanent with available permission for any of this card's types
         val permanentTypes = cardComponent.typeLine.cardTypes.filter { it.isPermanent }
@@ -193,7 +194,7 @@ class CastZoneResolver(
             val permDef = cardRegistry.getCard(permCard.cardDefinitionId) ?: continue
             for (sa in permDef.script.staticAbilities) {
                 if (sa !is MayCastFromGraveyard) continue
-                if (sa.duringYourTurnOnly && state.activePlayerId != playerId) continue
+                if (sa.duringYourTurnOnly && !state.isActiveTurnFor(playerId)) continue
                 if (predicateEvaluator.matches(
                         state, state.projectedState, cardId, sa.filter,
                         PredicateContext(controllerId = playerId)
@@ -205,8 +206,9 @@ class CastZoneResolver(
     }
 
     /**
-     * Check if a card in the graveyard has a Flashback keyword ability,
-     * allowing it to be cast from the graveyard for its flashback cost.
+     * Check if a card in the graveyard has a Flashback keyword ability — printed on the card or
+     * granted at runtime (Archmage's Newt) — allowing it to be cast from the graveyard for its
+     * flashback cost (and exiled on resolution).
      */
     fun hasFlashbackPermission(
         state: GameState,
@@ -216,8 +218,8 @@ class CastZoneResolver(
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         if (cardId !in state.getZone(graveyardZone)) return false
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
-        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
-        return cardDef.keywordAbilities.any { it is KeywordAbility.Flashback }
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        return FlashbackGrants.effectiveFlashback(state, cardId, cardDef) != null
     }
 
     /**
@@ -242,9 +244,8 @@ class CastZoneResolver(
      */
     fun getFlashbackCost(cardId: EntityId, state: GameState): com.wingedsheep.sdk.core.ManaCost? {
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
-        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
-        val flashback = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Flashback>().firstOrNull()
-        return flashback?.cost
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        return FlashbackGrants.effectiveFlashback(state, cardId, cardDef)?.cost
     }
 
     /**
@@ -321,11 +322,9 @@ class CastZoneResolver(
         val spellDef = spellCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val conditionalFlash = spellDef?.script?.conditionalFlash
         if (conditionalFlash != null) {
-            val opponentId = state.turnOrder.firstOrNull { it != spellOwner }
             val effectContext = EffectContext(
                 sourceId = spellCardId,
                 controllerId = spellOwner,
-                opponentId = opponentId
             )
             if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) {
                 return true
@@ -476,7 +475,7 @@ class CastZoneResolver(
                 .filterIsInstance<GrantMayCastFromLinkedExile>()
                 .firstOrNull() ?: continue
 
-            if (grantAbility.duringYourTurnOnly && state.activePlayerId != playerId) continue
+            if (grantAbility.duringYourTurnOnly && !state.isActiveTurnFor(playerId)) continue
 
             if (grantAbility.ownedByYou && cardComponent.ownerId != playerId) continue
 
@@ -508,11 +507,9 @@ class CastZoneResolver(
         controllerId: EntityId,
         amount: com.wingedsheep.sdk.scripting.values.DynamicAmount
     ): Int {
-        val opponentId = state.turnOrder.firstOrNull { it != controllerId }
         val context = EffectContext(
             sourceId = granterId,
             controllerId = controllerId,
-            opponentId = opponentId
         )
         return DynamicAmountEvaluator().evaluate(state, amount, context)
     }

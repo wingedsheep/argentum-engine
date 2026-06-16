@@ -1,23 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
-import com.wingedsheep.sdk.scripting.effects.EffectChoice
-import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.MoveType
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Thirst for Identity
@@ -26,8 +12,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *
  * Draw three cards. Then discard two cards unless you discard a creature card.
  *
- * Modeled as: Draw 3, then ChooseAction between "discard a creature card"
- * (feasible only if a creature card is in hand) and "discard two cards".
+ * The discard instruction is one selection: a single creature card satisfies it, otherwise two
+ * cards must be selected.
  */
 val ThirstForIdentity = card("Thirst for Identity") {
     manaCost = "{2}{U}"
@@ -37,47 +23,7 @@ val ThirstForIdentity = card("Thirst for Identity") {
 
     spell {
         effect = Effects.DrawCards(3)
-            .then(
-                ChooseActionEffect(
-                    choices = listOf(
-                        EffectChoice(
-                            label = "Discard a creature card",
-                            effect = Effects.Composite(
-                                listOf(
-                                    GatherCardsEffect(
-                                        source = CardSource.FromZone(
-                                            Zone.HAND,
-                                            Player.You,
-                                            GameObjectFilter.Creature
-                                        ),
-                                        storeAs = "creatures"
-                                    ),
-                                    SelectFromCollectionEffect(
-                                        from = "creatures",
-                                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                                        storeSelected = "discarded",
-                                        prompt = "Choose a creature card to discard"
-                                    ),
-                                    MoveCollectionEffect(
-                                        from = "discarded",
-                                        destination = CardDestination.ToZone(Zone.GRAVEYARD),
-                                        moveType = MoveType.Discard
-                                    )
-                                )
-                            ),
-                            feasibilityCheck = FeasibilityCheck.HasCardsInZone(
-                                Zone.HAND,
-                                GameObjectFilter.Creature,
-                                1
-                            )
-                        ),
-                        EffectChoice(
-                            label = "Discard two cards",
-                            effect = Patterns.Hand.discardCards(2)
-                        )
-                    )
-                )
-            )
+            .then(Effects.DiscardUnlessMatching(2, GameObjectFilter.Creature))
     }
 
     metadata {

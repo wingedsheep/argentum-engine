@@ -279,6 +279,24 @@ sealed interface SerializableModification {
     data class SetBasicLandTypes(val subtypes: Set<String>) : SerializableModification
 
     /**
+     * Replace ALL card types with the given set, leaving supertypes and subtypes intact
+     * (Layer 4). One-shot floating counterpart to the [com.wingedsheep.sdk.scripting.TransformPermanent]
+     * static ability's `setCardTypes`. Used by "becomes a [type] and loses all other card
+     * types" effects on a returned permanent — e.g. Vraska, the Silencer turning a dead
+     * creature into a Treasure artifact.
+     */
+    @Serializable
+    data class SetCardTypes(val types: Set<String>) : SerializableModification
+
+    /**
+     * Replace ALL subtypes with the given set (Layer 4). One-shot floating counterpart to
+     * [com.wingedsheep.sdk.scripting.TransformPermanent]'s `setSubtypes`. Pair with
+     * [SetCardTypes] for "becomes a colorless Treasure artifact" (Vraska, the Silencer).
+     */
+    @Serializable
+    data class SetAllSubtypes(val subtypes: Set<String>) : SerializableModification
+
+    /**
      * Add every creature type in addition to existing types, without granting the
      * Changeling keyword. Used by cards like Stalactite Dagger that say "is all
      * creature types" but don't print the Changeling keyword.
@@ -429,7 +447,13 @@ sealed interface SerializableModification {
     @Serializable
     data class PreventNextDamageFromChosenSourceShield(
         val damageSourceId: EntityId,
-        val linkId: String
+        val linkId: String,
+        /**
+         * When false, the chosen source's damage is not actually prevented — it is still dealt in
+         * full — but the shield is still consumed and its linked reaction still fires with the
+         * captured amount (Eye for an Eye). Defaults to true (ordinary deflection).
+         */
+        val preventDamage: Boolean = true
     ) : SerializableModification
 
     /**
@@ -447,6 +471,17 @@ sealed interface SerializableModification {
         val damageSourceId: EntityId,
         val gainLifeFromColors: Set<String> = emptySet()
     ) : SerializableModification
+
+    /**
+     * Turn-duration noncombat-damage amplification (CR 616): every source the effect's controller
+     * controls deals [bonus] additional noncombat damage to any permanent or player this turn.
+     * Combat damage is unaffected; there is no opponent restriction. Read directly during damage
+     * resolution by `DamageUtils.applyStaticDamageAmplification` (not a layer modification). The
+     * effect's [ActiveFloatingEffect.controllerId] identifies whose sources benefit. Installed by
+     * Taii Wakeen, Perfect Shot's "{X}, {T}" ability with [bonus] = the X paid.
+     */
+    @Serializable
+    data class AmplifyNoncombatDamage(val bonus: Int) : SerializableModification
 }
 
 /**
@@ -496,6 +531,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
     is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
     is SerializableModification.AddSubtype -> Modification.AddSubtype(subtype)
+    is SerializableModification.SetCardTypes -> Modification.SetCardTypes(types)
+    is SerializableModification.SetAllSubtypes -> Modification.SetAllSubtypes(subtypes)
     is SerializableModification.SetBasicLandTypes -> Modification.SetBasicLandTypes(subtypes)
     is SerializableModification.AddAllCreatureTypes -> Modification.AddAllCreatureTypes
     // SetCantAttack maps to the layer modification for "can't attack" projection
@@ -526,5 +563,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventNextDamageFromChosenSourceShield -> Modification.NoOp
     // PreventAllDamageFromSource doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventAllDamageFromSource -> Modification.NoOp
+    // AmplifyNoncombatDamage doesn't map to a layer modification - it's read during damage resolution directly
+    is SerializableModification.AmplifyNoncombatDamage -> Modification.NoOp
     is SerializableModification.RemoveAllAbilities -> Modification.RemoveAllAbilities
 }

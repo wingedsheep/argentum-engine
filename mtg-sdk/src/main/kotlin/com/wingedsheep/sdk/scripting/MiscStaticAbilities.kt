@@ -251,6 +251,39 @@ data object LookAtTopOfLibrary : StaticAbility {
 }
 
 /**
+ * You may **plot** (CR 718) the top card of your library if it matches [filter], paying a plot
+ * cost equal to its mana cost. The card's own printed plot cost, if any, is unaffected — this
+ * grants an *additional* way to plot it (CR 718; Fblthp's ruling: "you may plot that card using
+ * its own plot cost or the plot cost given to it by Fblthp").
+ *
+ * Models Fblthp, Lost on the Range: "The top card of your library has plot. The plot cost is
+ * equal to its mana cost. You may plot nonland cards from the top of your library." The two
+ * clauses combine to a single capability — plot the top card from the library (filtered to
+ * nonland, since plotting a land is meaningless) at its mana cost. Pairs with
+ * [LookAtTopOfLibrary] so the controller can see the card to decide.
+ *
+ * Enumerated by the plot legal-action enumerator and resolved by the plot handler, which moves
+ * the card from library → exile (instead of hand → exile) and plots it for its owner. Like the
+ * Plot keyword this is a sorcery-speed special action; the card cannot be cast the turn it
+ * becomes plotted.
+ *
+ * @property filter Which top-of-library cards are plottable this way (Fblthp: nonland).
+ */
+@SerialName("PlotFromTopOfLibrary")
+@Serializable
+data class PlotFromTopOfLibrary(
+    val filter: GameObjectFilter = GameObjectFilter.Nonland
+) : StaticAbility {
+    override val description: String =
+        "The top card of your library has plot. The plot cost is equal to its mana cost. " +
+            "You may plot ${filter.description} cards from the top of your library."
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Play with the top card of your library revealed (to all players), without granting any
  * permission to play it from there. Used for Goblin Spy.
  *

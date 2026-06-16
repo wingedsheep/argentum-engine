@@ -118,7 +118,7 @@ class LobbySharedContext(
             count = spectators.size,
             spectatorNames = spectators.map { it.playerName }
         )
-        listOfNotNull(gameSession.player1, gameSession.player2).forEach { player ->
+        gameSession.getPlayers().forEach { player ->
             val ws = player.webSocketSession
             if (ws.isOpen) {
                 sender.send(ws, message)

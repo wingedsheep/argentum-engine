@@ -12,6 +12,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.engine.view.LegalActionInfo
+import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 
@@ -78,6 +79,13 @@ class EngineAiPlayerController(
     }
 
     override fun decideMulligan(mulliganMessage: MulliganInfo): Boolean {
+        // Momir Basic: every deck is 60 basic lands and the avatar's only cost is generic {X}, so
+        // every opening hand is interchangeable — a mulligan can only shrink the hand (the London
+        // mulligan bottoms a card each time) without ever improving it. Always keep. Without this,
+        // the generic "6-7 lands is a flood → mulligan" heuristic below mulligans every all-lands
+        // Momir hand down to the forced keep at mulliganCount >= 2, leaving the AI on a 5-card hand.
+        if (gameStateProvider()?.format is Format.MomirBasic) return true
+
         val handSize = mulliganMessage.hand.size
         val mulliganCount = mulliganMessage.mulliganCount
 

@@ -1,3 +1,1124 @@
+// Amulet of Kroog
+{
+    "name": "Amulet of Kroog",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Prevent the next 1 damage that would be dealt to any target this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "any target"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Prevent the next 1 damage that would be dealt to any target this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Margaret Organ-Kean",
+        "flavorText": "Among the first allies Urza gained were the people of Kroog. As a sign of friendship, Urza gave the healers of the city potent amulets; afterwards, thousands journeyed to Kroog in hope of healing, greatly adding to the city's glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b094f8dd-0184-41a2-9767-e848a6e4eac1.jpg?1562932268"
+    },
+    "colorIdentityOverride": []
+}
+
+// Argivian Archaeologist
+{
+    "name": "Argivian Archaeologist",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "{W}{W}, {T}: Return target artifact card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target artifact card from your graveyard"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "target artifact card from your graveyard"
+                    }
+                ],
+                "descriptionOverride": "{W}{W}, {T}: Return target artifact card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "flavorText": "Fascinated by the lore of ancient struggles, the Archaeologist searches incessantly for remnants of an earlier, more powerful era.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce83a3cb-467d-44f6-a051-4855c8cf52a6.jpg?1562938661"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Argivian Blacksmith
+{
+    "name": "Argivian Blacksmith",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "{T}: Prevent the next 2 damage that would be dealt to target artifact creature this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact creature"
+                        },
+                        "id": "target artifact creature"
+                    }
+                ],
+                "descriptionOverride": "{T}: Prevent the next 2 damage that would be dealt to target artifact creature this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Kerstin Kaman",
+        "flavorText": "Through years of study and training, the Blacksmiths of Argive became adept at reassembling the mangled remains of the strange, mechanical creatures abounding in their native land.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f604338-5ee4-4c47-ad5a-5c805c96c8de.jpg?1562914930"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Argothian Pixies
+{
+    "name": "Argothian Pixies",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "This creature can't be blocked by artifact creatures.\nPrevent all damage that would be dealt to this creature by artifact creatures.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        "IsCreature"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": "RecipientSelf",
+                    "source": {
+                        "type": "SourceMatching",
+                        "filter": "artifact creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Amy Weber",
+        "flavorText": "After the rape of Argoth Forest during the rule of the artificers, the Pixies of Argoth bent their magic to more practical ends.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5712e87a-2381-4f5b-a853-6973841f9bf1.jpg?1562913202"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Argothian Treefolk
+{
+    "name": "Argothian Treefolk",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "Prevent all damage that would be dealt to this creature by artifact sources.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": "RecipientSelf",
+                    "source": {
+                        "type": "SourceMatching",
+                        "filter": "artifact"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Amy Weber",
+        "flavorText": "Haunting cries we hear in our dreams As the forest dies, a death from machines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8db8882e-4db6-4e3c-9e9e-8c71d557a071.jpg?1562924902"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Artifact Blast
+{
+    "name": "Artifact Blast",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target artifact spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact",
+                    "zone": "Stack"
+                },
+                "id": "artifact spell"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Mark Poole",
+        "flavorText": "The first line of defense against Urza and Mishra, the Artifact Blast achieved widespread fame until an unlucky mage discovered it was useless on the devices the brothers had already created.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1506d99d-7b2e-4101-84a5-c950dadb263a.jpg?1562899411"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ashnod's Altar
+{
+    "name": "Ashnod's Altar",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Sacrifice a creature: Add {C}{C}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "isManaAbility": true,
+                "descriptionOverride": "Sacrifice a creature: Add {C}{C}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdcccb0f-ce96-453b-9e82-41d87f52e58b.jpg?1562938535"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ashnod's Transmogrant
+{
+    "name": "Ashnod's Transmogrant",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Sacrifice this artifact: Put a +1/+1 counter on target nonartifact creature. That creature becomes an artifact in addition to its other types.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target nonartifact creature"
+                            }
+                        },
+                        {
+                            "type": "AddCardType",
+                            "cardType": "ARTIFACT",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target nonartifact creature"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature nonartifact"
+                        },
+                        "id": "target nonartifact creature"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice this artifact: Put a +1/+1 counter on target nonartifact creature. That creature becomes an artifact in addition to its other types."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "flavorText": "Ashnod found few willing to trade their humanity for the power she offered them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2aa5b289-36ba-49b1-a5ac-f23bf71f8241.jpg?1562904041"
+    },
+    "colorIdentityOverride": []
+}
+
+// Atog
+{
+    "name": "Atog",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Atog",
+    "oracleText": "Sacrifice an artifact: This creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Sacrifice an artifact: This creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2249fc40-4412-48fd-800a-7ea3678aee3f.jpg?1562902227"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Candelabra of Tawnos
+{
+    "name": "Candelabra of Tawnos",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{X}, {T}: Untap X target lands.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "dynamicMaxCount": "XValue"
+                    }
+                ],
+                "descriptionOverride": "{X}, {T}: Untap X target lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "flavorText": "Tawnos learned quickly from Urza that utter simplicity often led to wondrous, yet subtle utility.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35a335bf-7358-460f-b7c9-1e8bc4300f64.jpg?1562906316"
+    },
+    "colorIdentityOverride": []
+}
+
+// Citanul Druid
+{
+    "name": "Citanul Druid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Whenever an opponent casts an artifact spell, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Jeff A. Menges",
+        "flavorText": "Driven mad by the fall of Argoth, the Citanul Druids found peace only in battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8a130dc-3b1f-4fae-8459-b26bb5647fec.jpg?1562947598"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Clay Statue
+{
+    "name": "Clay Statue",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "{2}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Jesper Myrfors",
+        "flavorText": "Tawnos won fame as Urza's greatest assistant. After he created these warriors, Urza ended his apprenticeship, promoting him directly to the rank of master.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64975352-8d35-4d02-94ac-fa0c6ee12409.jpg?1562916020"
+    },
+    "colorIdentityOverride": []
+}
+
+// Coral Helm
+{
+    "name": "Coral Helm",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, Discard a card at random: Target creature gets +2/+2 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "random": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ],
+                "descriptionOverride": "{3}, Discard a card at random: Target creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c6df9db-0a46-40a5-ae9d-59f47dae9056.jpg?1562917718"
+    },
+    "colorIdentityOverride": []
+}
+
+// Crumble
+{
+    "name": "Crumble",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact. It can't be regenerated. That artifact's controller gains life equal to its mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaValue"
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBeRegenerated",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target artifact"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target artifact"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "target artifact"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Jesper Myrfors",
+        "flavorText": "The spirits of Argoth grant new life to those who repent the folly of enslaving their labors to devices.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2101f86-8d3c-4ba8-ac42-bd3df0644280.jpg?1562939468"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Detonate
+{
+    "name": "Detonate",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact with mana value X. It can't be regenerated. Detonate deals X damage to that artifact's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": "TargetController"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBeRegenerated",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "artifact with mana value X"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "artifact with mana value X"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsArtifact",
+                            "ManaValueEqualsX"
+                        ]
+                    }
+                },
+                "id": "artifact with mana value X"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Asplund-Faith",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffd7eb90-ae95-49df-898a-9510187bce1c.jpg?1562949167"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dragon Engine
+{
+    "name": "Dragon Engine",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{2}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Anson Maddocks",
+        "flavorText": "Those who believed the city of Kroog would never fall to Mishra's forces severely underestimated the might of his war machines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07793a71-1106-4303-b620-e403bd378020.jpg?1562896584"
+    },
+    "colorIdentityOverride": []
+}
+
+// Dwarven Weaponsmith
+{
+    "name": "Dwarven Weaponsmith",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "{T}, Sacrifice an artifact: Put a +1/+1 counter on target creature. Activate only during your upkeep.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0848d94a-2704-460f-986b-b192dd6d26b7.jpg?1562896790"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Feldon's Cane
+{
+    "name": "Feldon's Cane",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Exile this artifact: Shuffle your graveyard into your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "graveyardCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "graveyardCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Exile this artifact: Shuffle your graveyard into your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "flavorText": "Feldon found the first of these canes frozen in the Ronom Glacier.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb6af436-bcfd-4d47-a1aa-e84b587a725a.jpg?1562934632"
+    },
+    "colorIdentityOverride": []
+}
+
+// Gaea's Avenger
+{
+    "name": "Gaea's Avenger",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "Gaea's Avenger's power and toughness are each equal to 1 plus the number of artifacts your opponents control.",
+    "creatureStats": {
+        "power": {
+            "type": "DynamicWithOffset",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "EachOpponent",
+                "filter": "artifact"
+            },
+            "offset": 1
+        },
+        "toughness": {
+            "type": "DynamicWithOffset",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "EachOpponent",
+                "filter": "artifact"
+            },
+            "offset": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "flavorText": "After the destruction of Argoth, Gaea was willing to instill a portion of her own powers into some of her more vengeful followers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39d763bd-b0a9-46ba-bcd2-9304063446f2.jpg?1562907103"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Gate to Phyrexia
+{
+    "name": "Gate to Phyrexia",
+    "manaCost": "{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Sacrifice a creature: Destroy target artifact. Activate only during your upkeep and only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target artifact"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "target artifact"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "flavorText": "\"The warm rain of grease on my face immediately made it clear I had entered Phyrexia.\" —Jarsyl, Diary",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f372950-6693-4838-80ef-8fd9aa3e0349.jpg?1592364259"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Grapeshot Catapult
+{
+    "name": "Grapeshot Catapult",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{T}: This creature deals 1 damage to target creature with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature with flying"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:flying"
+                        },
+                        "id": "target creature with flying"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Dan Frazier",
+        "flavorText": "For years scholars debated whether these were Urza's or Mishra's creations. Recent research suggests they were invented by the brothers' original master, Tocasia, and that both used these devices.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c7a7348-c82e-453c-975c-e5365e152a3a.jpg?1562911063"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ivory Tower
+{
+    "name": "Ivory Tower",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, you gain X life, where X is the number of cards in your hand minus 4.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "Subtract",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you gain X life, where X is the number of cards in your hand minus 4."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Margaret Organ-Kean",
+        "flavorText": "Valuing scholarship above all else, the inhabitants of the Ivory Tower reward those who sacrifice power for knowledge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5f23039-45ca-4c15-af50-bfd40ea26453.jpg?1562929973"
+    },
+    "colorIdentityOverride": []
+}
+
 // Jalum Tome
 {
     "name": "Jalum Tome",
@@ -81,6 +1202,430 @@
     "colorIdentityOverride": []
 }
 
+// Mightstone
+{
+    "name": "Mightstone",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Attacking creatures get +1/+0.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "flavorText": "While exploring the sacred cave of Koilos with his brother Mishra and their master Tocasia, Urza fell behind in the Hall of Tagsin, where he discovered the remarkable Mightstone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b28ba599-5299-4831-a118-1712ada10ef6.jpg?1562932633"
+    },
+    "colorIdentityOverride": []
+}
+
+// Millstone
+{
+    "name": "Millstone",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Target player mills two cards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "target player"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Target player mills two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "flavorText": "More than one mage was driven insane by the sound of the Millstone relentlessly grinding away.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/107646bc-2181-49f4-8821-1eaa46291855.jpg?1562898439"
+    },
+    "colorIdentityOverride": []
+}
+
+// Mishra's Workshop
+{
+    "name": "Mishra's Workshop",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}{C}{C}. Spend this mana only to cast artifact spells.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "ARTIFACT"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}{C}{C}. Spend this mana only to cast artifact spells."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "flavorText": "Though he eventually came to despise Tocasia, Mishra listened well to her lessons on clarity of purpose. Unlike his brother, he focused his mind on a single goal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/135de5c7-6ac9-4b68-8f1a-97f120a4b125.jpg?1745319958"
+    },
+    "colorIdentityOverride": []
+}
+
+// Obelisk of Undoing
+{
+    "name": "Obelisk of Undoing",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{6}, {T}: Return target permanent you both own and control to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target permanent you both own and control"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControllerAnd",
+                                    "predicates": [
+                                        "OwnedByYou",
+                                        "ControlledByYou"
+                                    ]
+                                }
+                            }
+                        },
+                        "id": "target permanent you both own and control"
+                    }
+                ],
+                "descriptionOverride": "{6}, {T}: Return target permanent you both own and control to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Tom Wänerstrand",
+        "flavorText": "The Battle of Tomakul taught Urza not to rely on fickle reinforcements.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1ba61ccd-4429-4f7c-b9f3-30867878d88e.jpg?1562900796"
+    },
+    "colorIdentityOverride": []
+}
+
+// Onulet
+{
+    "name": "Onulet",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature dies, you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "flavorText": "An early inspiration for Urza, Tocasia's Onulets contained magical essences that could be cannibalized after they stopped functioning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d77fe8e2-8438-473e-ace5-01baddd2c4ed.jpg?1562940572"
+    },
+    "colorIdentityOverride": []
+}
+
+// Orcish Mechanics
+{
+    "name": "Orcish Mechanics",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Orc",
+    "oracleText": "{T}, Sacrifice an artifact: This creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "any target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "any target"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice an artifact: This creature deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e34fc6b-5f00-4a22-9ee2-afc1caf99961.jpg?1562914705"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ornithopter
+{
+    "name": "Ornithopter",
+    "manaCost": "{0}",
+    "typeLine": "Artifact Creature — Thopter",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Amy Weber",
+        "flavorText": "Many scholars believe that these creatures were the result of Urza's first attempt at mechanical life, perhaps created in his early days as an apprentice to Tocasia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59cc9bdb-7cf2-4795-bac7-ffff605c9eb0.jpg?1562913725"
+    },
+    "colorIdentityOverride": []
+}
+
+// Rakalite
+{
+    "name": "Rakalite",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}: Prevent the next 1 damage that would be dealt to any target this turn. Return this artifact to its owner's hand at the beginning of the next end step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "PreventDamageShield",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "any target"
+                    }
+                ],
+                "descriptionOverride": "{2}: Prevent the next 1 damage that would be dealt to any target this turn. Return this artifact to its owner's hand at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Rush",
+        "flavorText": "Urza was the first to understand that the war would not be lost for lack of power, but for lack of troops.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fd7c711-3ff4-4691-914f-242e6737066c.jpg?1562898310"
+    },
+    "colorIdentityOverride": []
+}
+
+// Reconstruction
+{
+    "name": "Reconstruction",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target artifact card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target artifact card from your graveyard"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target artifact card from your graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Anson Maddocks",
+        "flavorText": "Tedious research made the Sages of the College of Lat-Nam adept in repairing broken artifacts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1aa2d27b-cc25-4baa-86f4-4db45b30e2a4.jpg?1592254833"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sage of Lat-Nam
 {
     "name": "Sage of Lat-Nam",
@@ -128,6 +1673,605 @@
     ]
 }
 
+// Shatterstorm
+{
+    "name": "Shatterstorm",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all artifacts. They can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "noRegenerate": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "flavorText": "Chains of leaping fire and sizzling lightning laid waste the artificers' handiwork, sparing not a single device.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/0987461a-45c0-4956-8627-cd27a7e038d0.jpg?1562897000"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Staff of Zegon
+{
+    "name": "Staff of Zegon",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Target creature gets -2/-0 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ],
+                "descriptionOverride": "{3}, {T}: Target creature gets -2/-0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Mark Poole",
+        "flavorText": "Though Mishra was impressed by the staves Ashnod had created for Zegon's defense, he understood they only hinted at her full potential.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6bf858d-bba9-4a16-9045-55384b1de633.jpg?1562930132"
+    },
+    "colorIdentityOverride": []
+}
+
+// Strip Mine
+{
+    "name": "Strip Mine",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}, Sacrifice this land: Destroy target land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target land"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "target land"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice this land: Destroy target land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82a",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Gelon",
+        "flavorText": "Unlike previous conflicts, the war between Urza and Mishra made Dominia itself a casualty of war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7880157-7f27-4f1b-9cdc-ab36a6252376.jpg?1562943840"
+    },
+    "colorIdentityOverride": []
+}
+
+// Su-Chi
+{
+    "name": "Su-Chi",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature dies, add {C}{C}{C}{C}.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "When this creature dies, add {C}{C}{C}{C}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Rush",
+        "flavorText": "Flawed copies of relics from the Thran Empire, the Su-Chi were inherently unstable but provided useful knowledge for Tocasia's students.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a64d4f93-0c04-4078-aec0-7e9de92f260f.jpg?1562930042"
+    },
+    "colorIdentityOverride": []
+}
+
+// Tablet of Epityr
+{
+    "name": "Tablet of Epityr",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever an artifact you control is put into a graveyard from the battlefield, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Christopher Rush",
+        "flavorText": "Originally considered the work of Urza, this tablet was created by forgers seeking to imitate Urza's masterpieces.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d7a2718-301f-4191-b348-0c44c7c07d43.jpg?1562917978"
+    },
+    "colorIdentityOverride": []
+}
+
+// Tawnos's Wand
+{
+    "name": "Tawnos's Wand",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Target creature with power 2 or less can't be blocked this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature with power 2 or less"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow<=2"
+                        },
+                        "id": "target creature with power 2 or less"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Target creature with power 2 or less can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/978f09dd-121a-4da5-ba16-5c03fbdce084.jpg?1562927106"
+    },
+    "colorIdentityOverride": []
+}
+
+// Triskelion
+{
+    "name": "Triskelion",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature enters with three +1/+1 counters on it.\nRemove a +1/+1 counter from this creature: It deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostRemoveCounterFromSelf",
+                    "counterType": "+1/+1"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "any target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "any target"
+                    }
+                ],
+                "descriptionOverride": "Remove a +1/+1 counter from this creature: It deals 1 damage to any target."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "flavorText": "A brainchild of Tawnos, the Triskelion proved its versatility and usefulness in many of the later battles between the brothers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a79c99e1-722a-44b6-8fa3-2be3f0c193d8.jpg?1562930328"
+    },
+    "colorIdentityOverride": []
+}
+
+// Urza's Chalice
+{
+    "name": "Urza's Chalice",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a player casts an artifact spell, you may pay {1}. If you do, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts an artifact spell, you may pay {1}. If you do, you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Jeff A. Menges",
+        "flavorText": "When sorely wounded or tired, Urza would often retreat to the workshops of his apprentices. They were greatly amazed at how much better he looked each time he took a sip of water.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3728537-86d3-42be-9046-90bba1bfafc1.jpg?1562946411"
+    },
+    "colorIdentityOverride": []
+}
+
+// Urza's Mine
+{
+    "name": "Urza's Mine",
+    "manaCost": "",
+    "typeLine": "Land — Urza's Mine",
+    "oracleText": "{T}: Add {C}. If you control an Urza's Power-Plant and an Urza's Tower, add {C}{C} instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "land name:Urza's Power-Plant"
+                                },
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "land name:Urza's Tower"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. If you control an Urza's Power-Plant and an Urza's Tower, add {C}{C} instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83c",
+        "artist": "Anson Maddocks",
+        "flavorText": "Mines became common as cities during the days of the artificers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da68a5c0-84fe-4a8f-93b2-790eca3cc95c.jpg?1562941120"
+    },
+    "colorIdentityOverride": []
+}
+
+// Urza's Power Plant
+{
+    "name": "Urza's Power Plant",
+    "manaCost": "",
+    "typeLine": "Land — Urza's Power",
+    "oracleText": "{T}: Add {C}. If you control an Urza's Mine and an Urza's Tower, add {C}{C} instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "land name:Urza's Mine"
+                                },
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "land name:Urza's Tower"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. If you control an Urza's Mine and an Urza's Tower, add {C}{C} instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84a",
+        "artist": "Mark Tedin",
+        "flavorText": "Artifact construction required immense resources.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94896e0b-859c-47e4-bf27-35ed37b841e0.jpg?1562926427"
+    },
+    "colorIdentityOverride": []
+}
+
+// Urza's Tower
+{
+    "name": "Urza's Tower",
+    "manaCost": "",
+    "typeLine": "Land — Urza's Tower",
+    "oracleText": "{T}: Add {C}. If you control an Urza's Mine and an Urza's Power-Plant, add {C}{C}{C} instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "land name:Urza's Mine"
+                                },
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "land name:Urza's Power-Plant"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. If you control an Urza's Mine and an Urza's Power-Plant, add {C}{C}{C} instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85a",
+        "artist": "Mark Poole",
+        "flavorText": "Urza always put Tocasia's lessons on resource-gathering to effective use.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ed85655-fc59-4a57-bcf9-75e1899dff78.jpg?1562925143"
+    },
+    "colorIdentityOverride": []
+}
+
 // Wall of Spears
 {
     "name": "Wall of Spears",
@@ -148,6 +2292,116 @@
         "artist": "Sandra Everingham",
         "flavorText": "Even the most conservative generals revised their tactics after the Battle of Sarinth, during which a handful of peasant-pikemen held off a trio of rampaging Craw Wurms.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1dda179-c49a-4995-ba5a-db93ac43dbe7.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Weakstone
+{
+    "name": "Weakstone",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Attacking creatures get -1/-0.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Justin Hampton",
+        "flavorText": "During the brothers' childhood, Tocasia took them to explore the sacred cave of Koilos. There, in the Hall of Tagsin, Mishra discovered the mysterious weakstone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46adf48f-99d2-440e-9129-794584c1ea21.jpg?1562909619"
+    },
+    "colorIdentityOverride": []
+}
+
+// Yawgmoth Demon
+{
+    "name": "Yawgmoth Demon",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Phyrexian Demon",
+    "oracleText": "Flying, first strike\nAt the beginning of your upkeep, you may sacrifice an artifact. If you don't, tap this creature and it deals 2 damage to you.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "artifact"
+                },
+                "optional": true,
+                "elseEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Controller",
+                            "damageSource": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04bbd231-0d5f-4cbf-92a7-10d2c5c4b82c.jpg?1562895987"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Yotian Soldier
+{
+    "name": "Yotian Soldier",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Soldier",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Christopher Rush",
+        "flavorText": "After Kroog was destroyed while most of its defenders were at his side, Urza vowed that none of his allies would ever need to fear for their own defense again, even while laying siege to a city far from their homes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27cf53e3-76f6-4831-800e-1259394d779d.jpg?1562903450"
     },
     "colorIdentityOverride": []
 }

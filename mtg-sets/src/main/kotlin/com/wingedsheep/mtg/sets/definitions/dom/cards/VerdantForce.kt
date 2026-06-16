@@ -1,42 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Triggers
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
 
 /**
- * Verdant Force
- * {5}{G}{G}{G}
- * Creature — Elemental
- * 7/7
- * At the beginning of each upkeep, create a 1/1 green Saproling creature token.
+ * Verdant Force reprint in DOM.
+ *
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] lives in TMP's `cards/` package
+ * (the card's earliest real printing). This file contributes only the DOM-specific
+ * presentation row, surfaced via the set's `printings`.
  */
-val VerdantForce = card("Verdant Force") {
-    manaCost = "{5}{G}{G}{G}"
-    colorIdentity = "G"
-    typeLine = "Creature — Elemental"
-    power = 7
-    toughness = 7
-    oracleText = "At the beginning of each upkeep, create a 1/1 green Saproling creature token."
-
-    triggeredAbility {
-        trigger = Triggers.EachUpkeep
-        effect = Effects.CreateToken(
-            power = 1,
-            toughness = 1,
-            colors = setOf(Color.GREEN),
-            creatureTypes = setOf("Saproling"),
-            imageUri = "https://cards.scryfall.io/normal/front/e/6/e6544989-91b4-4db7-ad44-f1355f1d6e6b.jpg?1562540216"
-        )
-    }
-
-    metadata {
-        rarity = Rarity.RARE
-        collectorNumber = "187"
-        artist = "Viktor Titov"
-        flavorText = "\"The bower shuddered. The stillness broke. The scurf shifted, and a being emerged from the flowers and ferns.\""
-        imageUri = "https://cards.scryfall.io/normal/front/1/d/1d972f97-1945-440b-8bd3-63038db22257.jpg?1562732288"
-    }
-}
+val VerdantForceReprint = Printing(
+    oracleId = "7a21ea22-3cd7-4c11-8895-5943c0d93a0d",
+    name = "Verdant Force",
+    setCode = "DOM",
+    collectorNumber = "187",
+    artist = "Viktor Titov",
+    imageUri = "https://cards.scryfall.io/normal/front/1/d/1d972f97-1945-440b-8bd3-63038db22257.jpg",
+    releaseDate = "2018-04-27",
+    rarity = Rarity.RARE,
+)

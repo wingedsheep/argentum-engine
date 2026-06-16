@@ -1,4 +1,5 @@
 import { useGameStore, type LogEntry } from '@/store/gameStore.ts'
+import { seatColor } from '@/styles/seatColors'
 import React, { useState, useRef, useEffect } from 'react'
 
 /**
@@ -7,6 +8,15 @@ import React, { useState, useRef, useEffect } from 'react'
 export function GameLog() {
   const eventLog = useGameStore((state) => state.eventLog)
   const playerId = useGameStore((state) => state.playerId)
+  // Multiplayer: log entries take the actor's seat color ("who did that?" is the
+  // dominant question in a pod). 2-player keeps the classic cyan/orange split.
+  const players = useGameStore((state) => state.gameState?.players)
+  const isMulti = (players?.length ?? 0) > 2
+  const seatColorFor = (entryPlayerId: string | null): string | null => {
+    if (!isMulti || !players || !entryPlayerId || entryPlayerId === playerId) return null
+    const idx = players.findIndex((p) => p.playerId === entryPlayerId)
+    return idx >= 0 ? seatColor(idx).base : null
+  }
   const [expanded, setExpanded] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -41,14 +51,19 @@ export function GameLog() {
           <div style={styles.empty}>No events yet</div>
         )}
         {eventLog.map((entry, i) => (
-          <LogEntryRow key={i} entry={entry} isPlayer={entry.playerId === playerId} />
+          <LogEntryRow
+            key={i}
+            entry={entry}
+            isPlayer={entry.playerId === playerId}
+            seatColor={seatColorFor(entry.playerId)}
+          />
         ))}
       </div>
     </div>
   )
 }
 
-function LogEntryRow({ entry, isPlayer }: { entry: LogEntry; isPlayer: boolean }) {
+function LogEntryRow({ entry, isPlayer, seatColor }: { entry: LogEntry; isPlayer: boolean; seatColor: string | null }) {
   if (entry.type === 'turn') {
     return (
       <div style={styles.turnSeparator}>
@@ -63,7 +78,7 @@ function LogEntryRow({ entry, isPlayer }: { entry: LogEntry; isPlayer: boolean }
       ? '#888'
       : isPlayer
         ? '#5bc0de'
-        : '#e07050'
+        : seatColor ?? '#e07050'
 
   return (
     <div style={{ ...styles.entry, color }}>

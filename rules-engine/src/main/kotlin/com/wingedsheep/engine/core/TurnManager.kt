@@ -12,6 +12,8 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
+import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
+import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
@@ -106,7 +108,14 @@ class TurnManager(
             playersWhoCommittedCrimeThisTurn = emptySet(),
             lastCastSpellColors = null,
             lastCardDrawnThisTurnByPlayer = emptyMap(),
-            drawStepStartDrawCountByPlayer = emptyMap()
+            drawStepStartDrawCountByPlayer = emptyMap(),
+            // Safety net mirroring CleanupPhaseManager.cleanupEndOfTurn: any end-of-turn /
+            // end-of-combat counter-placement modifier still lingering at a turn boundary is
+            // dropped. Longer-lived durations (UntilYourNextTurn, Permanent) survive.
+            activeCounterPlacementModifiers = state.activeCounterPlacementModifiers.filter { modifier ->
+                modifier.duration !is com.wingedsheep.sdk.scripting.Duration.EndOfTurn &&
+                    modifier.duration !is com.wingedsheep.sdk.scripting.Duration.EndOfCombat
+            }
         )
 
         // Reset cards-drawn-this-turn count for ALL players (not just active player)
@@ -119,13 +128,16 @@ class TurnManager(
             }
         }
 
-        // Increment the active player's turn-taken counter. CR 500.11 / 614.10a
-        // make a skipped turn "proceed past as though it didn't exist", so a
-        // skipped turn should not count — the increment lives here, downstream of
-        // the SkipNextTurn consumption path that decides whether a turn runs at all.
-        newState = newState.updateEntity(playerId) { container ->
-            val prev = container.get<PlayerTurnsTakenComponent>() ?: PlayerTurnsTakenComponent()
-            container.with(prev.increment())
+        // Increment the turn-taken counter for every player on the active team. CR 500.11 / 614.10a
+        // make a skipped turn "proceed past as though it didn't exist", so a skipped turn should not
+        // count — the increment lives here, downstream of the SkipNextTurn consumption path. In a
+        // shared team turn (CR 805.4) both teammates are taking the turn, so both counters advance;
+        // in a non-team game (and in Team vs. Team, CR 808.4) this is just the active player.
+        for (member in newState.sharedTurnTeam(playerId)) {
+            newState = newState.updateEntity(member) { container ->
+                val prev = container.get<PlayerTurnsTakenComponent>() ?: PlayerTurnsTakenComponent()
+                container.with(prev.increment())
+            }
         }
 
         // Activate MustAttackPlayerComponent if present (Taunt effect)
@@ -173,6 +185,30 @@ class TurnManager(
             return endTurn(state)
         }
 
+        // Leaving an inserted additional upkeep step (Obeka, Splitter of Seconds). Per CR 500.10
+        // the extra beginning phase has only its upkeep step (its untap and draw steps are
+        // skipped), and the game then returns to the phase after which the steps were added — the
+        // postcombat main phase. The active player gets priority there; when they pass, the
+        // POSTCOMBAT_MAIN drain below inserts the next remaining additional upkeep step (if any).
+        if (currentStep == Step.UPKEEP &&
+            state.getEntity(activePlayer)?.has<InAdditionalUpkeepStepComponent>() == true
+        ) {
+            var redirectedState = state.updateEntity(activePlayer) { container ->
+                container.without<InAdditionalUpkeepStepComponent>()
+            }
+            redirectedState = redirectedState.copy(
+                step = Step.POSTCOMBAT_MAIN,
+                phase = Phase.POSTCOMBAT_MAIN,
+                priorityPassedBy = emptySet()
+            )
+            val events = mutableListOf<GameEvent>(
+                PhaseChangedEvent(Phase.POSTCOMBAT_MAIN),
+                StepChangedEvent(Step.POSTCOMBAT_MAIN)
+            )
+            redirectedState = redirectedState.withPriority(activePlayer)
+            return ExecutionResult.success(redirectedState, events)
+        }
+
         // Check for additional combat phases (Aggravated Assault, etc.)
         if (currentStep == Step.POSTCOMBAT_MAIN) {
             val additionalPhases = state.getEntity(activePlayer)?.get<AdditionalCombatPhasesComponent>()
@@ -194,6 +230,41 @@ class TurnManager(
                 val events = mutableListOf<GameEvent>(
                     PhaseChangedEvent(Phase.COMBAT),
                     StepChangedEvent(Step.BEGIN_COMBAT)
+                )
+
+                redirectedState = redirectedState.withPriority(activePlayer)
+                return ExecutionResult.success(redirectedState, events)
+            }
+
+            // No more additional combat phases — now drain any additional upkeep steps
+            // (Obeka, Splitter of Seconds). Per the card's rulings, extra combat phases (created
+            // earlier) happen before the extra beginning phases, which is why this check follows
+            // the combat-phase check above. Each remaining count inserts one fresh beginning phase
+            // whose only step is the upkeep step (untap and draw skipped); the
+            // InAdditionalUpkeepStepComponent marker makes the redirect at the top of advanceStep
+            // send the game back here after that upkeep step, draining the next one until the
+            // count is exhausted, after which the turn proceeds to the postcombat main phase.
+            val additionalUpkeeps = state.getEntity(activePlayer)?.get<AdditionalUpkeepStepsComponent>()
+            if (additionalUpkeeps != null && additionalUpkeeps.count > 0) {
+                var redirectedState = if (additionalUpkeeps.count <= 1) {
+                    state.updateEntity(activePlayer) { it.without<AdditionalUpkeepStepsComponent>() }
+                } else {
+                    state.updateEntity(activePlayer) { container ->
+                        container.with(AdditionalUpkeepStepsComponent(additionalUpkeeps.count - 1))
+                    }
+                }
+
+                redirectedState = redirectedState
+                    .updateEntity(activePlayer) { it.with(InAdditionalUpkeepStepComponent) }
+                    .copy(
+                        step = Step.UPKEEP,
+                        phase = Phase.BEGINNING,
+                        priorityPassedBy = emptySet()
+                    )
+
+                val events = mutableListOf<GameEvent>(
+                    PhaseChangedEvent(Phase.BEGINNING),
+                    StepChangedEvent(Step.UPKEEP)
                 )
 
                 redirectedState = redirectedState.withPriority(activePlayer)
@@ -296,10 +367,8 @@ class TurnManager(
                     }
                     newState = newState.copy(
                         step = Step.POSTCOMBAT_MAIN,
-                        phase = Phase.POSTCOMBAT_MAIN,
-                        priorityPlayerId = activePlayer,
-                        priorityPassedBy = emptySet()
-                    )
+                        phase = Phase.POSTCOMBAT_MAIN
+                    ).withPriority(activePlayer)
                     events.add(PhaseChangedEvent(Phase.POSTCOMBAT_MAIN))
                     events.add(StepChangedEvent(Step.POSTCOMBAT_MAIN))
                     return ExecutionResult.success(newState, events)
@@ -318,9 +387,16 @@ class TurnManager(
                 if (!hasAttackingCreatures(newState)) {
                     return advanceStep(newState.copy(step = Step.DECLARE_BLOCKERS))
                 }
-                val defendingPlayer = newState.turnOrder.firstOrNull { it != activePlayer }
+                // Each defending player declares blockers for the attackers aimed at them,
+                // in APNAP order (CR 509.1 / 101.4). Hand priority to the first defender; as
+                // each declares and passes, the priority round walks to the next defender
+                // (a defending player who hasn't declared can't pass — see PassPriorityHandler),
+                // and the step only advances to combat damage once every defender has declared.
+                val firstDefender = com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                    .defendingPlayersInApnapOrder(newState).firstOrNull()
+                    ?: newState.turnOrder.firstOrNull { it != activePlayer }
                     ?: activePlayer
-                newState = newState.withPriority(defendingPlayer)
+                newState = newState.withPriority(firstDefender)
             }
 
             Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
@@ -435,19 +511,25 @@ class TurnManager(
         val currentPlayer = state.activePlayerId
             ?: return ExecutionResult.error(state, "No active player")
 
-        // Get next player
-        var nextPlayer = state.getNextPlayer(currentPlayer)
-
         // Clean up end-of-turn effects
         var cleanedState = cleanupPhaseManager.cleanupEndOfTurn(state)
 
-        // Check if the next player should skip their turn (e.g., Last Chance effect)
-        val nextPlayerEntity = cleanedState.getEntity(nextPlayer)
-        if (nextPlayerEntity?.has<SkipNextTurnComponent>() == true) {
-            cleanedState = cleanedState.updateEntity(nextPlayer) { container ->
-                container.without<SkipNextTurnComponent>()
+        // The turn passes to the next *team* (CR 805.4) — both teammates share one turn, so we
+        // advance past the whole active team, not to a teammate. In a non-team game getNextTeam is
+        // identical to getNextPlayer.
+        var nextPlayer = cleanedState.getNextTeam(currentPlayer)
+
+        // Team-wide skip (CR 805.8): if any member of the side taking the next turn has a skip
+        // marker, that turn is skipped. Clear the marker from every such member and move on to the
+        // team after. With shared team turns this is the whole next team; in Team vs. Team / non-team
+        // games it is just the next player (sharedTurnTeam is a singleton there), so a skip is
+        // individual.
+        val nextTeam = cleanedState.sharedTurnTeam(nextPlayer)
+        if (nextTeam.any { cleanedState.getEntity(it)?.has<SkipNextTurnComponent>() == true }) {
+            for (member in nextTeam) {
+                cleanedState = cleanedState.updateEntity(member) { it.without<SkipNextTurnComponent>() }
             }
-            nextPlayer = cleanedState.getNextPlayer(nextPlayer)
+            nextPlayer = cleanedState.getNextTeam(nextPlayer)
         }
 
         // Start the new turn (sets step to UNTAP with no priority)
@@ -509,7 +591,7 @@ class TurnManager(
     fun canPlaySorcerySpeed(state: GameState, playerId: EntityId): Boolean {
         return state.step.allowsSorcerySpeed &&
             state.priorityPlayerId == playerId &&
-            state.activePlayerId == playerId &&
+            state.isActiveTurnFor(playerId) && // CR 805.5a — either teammate may act on the team's turn
             state.stack.isEmpty()
     }
 

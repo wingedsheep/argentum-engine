@@ -67,6 +67,15 @@ object DynamicAmounts {
 
         fun sumPower(): DynamicAmount =
             DynamicAmount.AggregateBattlefield(player, filter, Aggregation.SUM, CardNumericProperty.POWER)
+
+        /**
+         * The number of distinct values of [property] (power / toughness / mana value) among the
+         * matched permanents — e.g. `distinctValues(POWER)` for "the number of different powers
+         * among creatures you control" (Selvala, Eager Trailblazer). Two permanents sharing a
+         * value count once.
+         */
+        fun distinctValues(property: CardNumericProperty): DynamicAmount =
+            DynamicAmount.AggregateBattlefield(player, filter, Aggregation.DISTINCT_VALUES, property)
     }
 
     // =========================================================================
@@ -115,6 +124,13 @@ object DynamicAmounts {
         filter: GameObjectFilter = GameObjectFilter.Permanent
     ): DynamicAmount =
         DynamicAmount.AggregateBattlefield(player, filter, Aggregation.DISTINCT_COLORS)
+
+    /**
+     * The number of distinct colors of mana spent to cast the source spell (0–5).
+     * Backs the Converge ability word and the Sunburst counter rule. Colorless is not a
+     * color, so it never contributes.
+     */
+    fun colorsOfManaSpent(): DynamicAmount = DynamicAmount.DistinctColorsManaSpent
 
     fun creaturesYouControl(): DynamicAmount =
         battlefield(Player.You, GameObjectFilter.Creature).count()
@@ -189,11 +205,19 @@ object DynamicAmounts {
         DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Creature)
 
     // =========================================================================
+    // Hand counting
+    // =========================================================================
+
+    /** The number of cards in your hand (e.g. Stingerback Terror's "-1/-1 for each card in your hand"). */
+    fun cardsInYourHand(): DynamicAmount =
+        DynamicAmount.Count(Player.You, Zone.HAND)
+
+    // =========================================================================
     // Opponent-relative counting
     // =========================================================================
 
     fun creaturesAttackingYou(multiplier: Int = 1): DynamicAmount {
-        val base = battlefield(Player.Opponent, GameObjectFilter.Creature.attacking()).count()
+        val base = battlefield(Player.EachOpponent, GameObjectFilter.Creature.attacking()).count()
         return if (multiplier == 1) base else DynamicAmount.Multiply(base, multiplier)
     }
 
@@ -272,6 +296,21 @@ object DynamicAmounts {
      */
     fun landsEnteredUnderControlThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.LANDS_ENTERED_UNDER_CONTROL)
+
+    /**
+     * "The number of [other] [subtype]s that entered the battlefield under [player]'s control
+     * this turn" (Geralf, the Fleshwright — "each other Zombie that entered the battlefield under
+     * your control this turn"). Counts entries even after the permanent has left or changed type.
+     * Set [excludeTriggeringEntity] for "each *other*" — drops the permanent whose entry triggered
+     * the ability (and, for simultaneous entries, lets each entrant see the others per the
+     * 2024-04-12 ruling).
+     */
+    fun subtypeEnteredUnderControlThisTurn(
+        subtype: com.wingedsheep.sdk.core.Subtype,
+        player: Player = Player.You,
+        excludeTriggeringEntity: Boolean = false
+    ): DynamicAmount =
+        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity)
 
     /**
      * "The number of times [player] descended this turn" (CR 700.11) — count of

@@ -55,11 +55,42 @@ sealed interface ServerMessage {
     data class GameCreated(val sessionId: String) : ServerMessage
 
     /**
-     * Game is starting with both players connected.
+     * One seat in a game, from the perspective of a specific recipient. The seat list is the
+     * single N-player source of truth for "who is at this table" — a 2-player game is the
+     * degenerate case (one [isYou] seat + one opponent). [seatIndex] drives stable UI ordering
+     * and seat colors; it is the player's index in the engine's turn order.
+     */
+    @Serializable
+    data class PlayerSeatInfo(
+        val playerId: String,
+        val name: String,
+        val seatIndex: Int,
+        /** True for the recipient's own seat. Always false in spectator/replay rosters. */
+        val isYou: Boolean = false,
+        val isAi: Boolean = false,
+        /**
+         * Team membership for team variants (Two-Headed Giant — CR 810; Team vs. Team — CR 808).
+         * Seats sharing a [teamIndex] are teammates. Null in non-team games (every seat plays
+         * alone), so the 2-player / Free-for-All clients are unaffected; a team client groups and
+         * colors the rail by this index and treats the recipient's same-team, non-[isYou] seat as
+         * an ally.
+         */
+        val teamIndex: Int? = null,
+        /**
+         * True when teammates share one life total (2HG — CR 810.4). False for Team vs. Team
+         * (CR 808.5), where each player has their own life despite being on a team. Game-level (the
+         * same on every seat); lets the client render a shared-life team header vs. per-player life.
+         */
+        val teamSharedLife: Boolean = false,
+    )
+
+    /**
+     * Game is starting. Carries the full seat roster (turn order) from this recipient's
+     * perspective; the client derives "the opponent(s)" from the non-[PlayerSeatInfo.isYou] seats.
      */
     @Serializable
     @SerialName("gameStarted")
-    data class GameStarted(val opponentName: String) : ServerMessage
+    data class GameStarted(val players: List<PlayerSeatInfo>) : ServerMessage
 
     /**
      * Game was cancelled before it started (by the creator).
@@ -74,6 +105,9 @@ sealed interface ServerMessage {
      */
     @Serializable
     data class OpponentDecisionStatus(
+        /** The seat that is actually deciding. Lets the client attribute the decision in an
+         *  N-player pod (whose spinner to show); for 2-player it's simply "the opponent". */
+        val playerId: String,
         val decisionType: String,
         val displayText: String,
         val sourceName: String? = null
@@ -429,6 +463,20 @@ sealed interface ServerMessage {
          * When false the client hides the controls and the server rejects assist requests.
          */
         val aiAssistEnabled: Boolean = true,
+        /** Lobby mode axis: "TOURNAMENT" (bracket of 2-player matches) or "FREE_FOR_ALL" (one multiplayer game). */
+        val gameMode: String = "TOURNAMENT",
+        /** Free-for-All attack rule (CR 802/803): "MULTIPLE", "LEFT", or "RIGHT". Ignored in tournament mode. */
+        val attackMode: String = "MULTIPLE",
+        /**
+         * Two-Headed Giant only (CR 810): true = random teams each game (the default); false = host
+         * sets the teams via [teamAssignments]. Ignored outside Two-Headed Giant mode.
+         */
+        val randomTeams: Boolean = true,
+        /**
+         * Two-Headed Giant manual team assignment: playerId -> team index (0 or 1). Only meaningful
+         * when [randomTeams] is false. Empty = unset (host hasn't picked teams yet).
+         */
+        val teamAssignments: Map<String, Int> = emptyMap(),
     )
 
     /**
@@ -739,6 +787,63 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     // =========================================================================
+    // Free-for-All Mode Messages
+    // =========================================================================
+
+    /**
+     * One player's final placement in a Free-for-All game. Placement is 1-based: the winner is 1,
+     * the last player eliminated is 2, and so on back to the first elimination.
+     */
+    @Serializable
+    data class FfaStandingInfo(
+        val playerId: String,
+        val playerName: String,
+        val placement: Int,
+        val isConnected: Boolean = true,
+    )
+
+    /**
+     * A Free-for-All game is starting — the FFA-mode counterpart of [TournamentMatchStarting].
+     * Sent to every seated player (and lobby spectators, who can spectate via [gameSessionId]).
+     */
+    @Serializable
+    @SerialName("freeForAllGameStarting")
+    data class FreeForAllGameStarting(
+        val lobbyId: String,
+        val gameSessionId: String,
+        /** Number of this game within the pod's play-again loop (1-based). */
+        val gameNumber: Int,
+        /** Seat roster from the recipient's perspective (spectators get an all-`isYou=false` roster). */
+        val players: List<PlayerSeatInfo>,
+    ) : ServerMessage
+
+    /**
+     * A Free-for-All game finished. Standings are the elimination order (winner first). The pod
+     * stays open: readying up ([com.wingedsheep.gameserver.protocol.ClientMessage.ReadyForNextRound])
+     * starts a new game with the same players ("play again").
+     */
+    @Serializable
+    @SerialName("freeForAllGameComplete")
+    data class FreeForAllGameComplete(
+        val lobbyId: String,
+        val standings: List<FfaStandingInfo>,
+        val gamesPlayed: Int,
+    ) : ServerMessage
+
+    /**
+     * Personal notice that the recipient was eliminated from a multiplayer game that continues
+     * without them (e.g. they conceded a 4-player pod). The game-wide [GameOver] only arrives when
+     * the whole game ends; this lets the eliminated player's client show its defeat overlay and
+     * return to the lobby while the table plays on.
+     */
+    @Serializable
+    @SerialName("playerEliminated")
+    data class PlayerEliminated(
+        val gameId: String,
+        val reason: GameOverReason,
+    ) : ServerMessage
+
+    // =========================================================================
     // Spectating Messages
     // =========================================================================
 
@@ -789,6 +894,14 @@ sealed interface ServerMessage {
         val gameSessionId: String,
         /** Full ClientGameState for reusing GameBoard component (both hands masked) */
         val gameState: ClientGameState? = null,
+        /**
+         * N-player seat roster (turn order). The authoritative "who is at this table" list for
+         * spectators/replay; the per-player board state lives in [gameState] (already N-player).
+         * The [player1Id]/[player2Id]/[player1]/[player2] fields below are the legacy 2-player
+         * projection (first two seats), retained for the current spectator board, replay viewer,
+         * and the external `tournament-newspaper` tooling until the Phase 3 client migration.
+         */
+        val players: List<PlayerSeatInfo> = emptyList(),
         /** Player 1's entity ID */
         val player1Id: String? = null,
         /** Player 2's entity ID */
@@ -962,7 +1075,13 @@ sealed interface ServerMessage {
         val youPlayerId: EntityId,
         val canStart: Boolean,
         val isPublic: Boolean = false,
-        val format: com.wingedsheep.sdk.core.DeckFormat? = null
+        val format: com.wingedsheep.sdk.core.DeckFormat? = null,
+        /** True for a Momir Basic lobby: fixed 60-basic decks, no deckbuilding, [setCode] scopes the creature pool. */
+        val momirBasic: Boolean = false,
+        /** True for a Two-Headed Giant lobby (CR 810): four seats, two teams (see [QuickGameLobbyPlayerView.teamIndex]). */
+        val twoHeadedGiant: Boolean = false,
+        /** How many seats this lobby fills before it can start: 4 for Two-Headed Giant, else 2. */
+        val maxPlayers: Int = 2,
     ) : ServerMessage
 
     /**
@@ -981,7 +1100,13 @@ sealed interface ServerMessage {
         /** "random" if the player chose to defer to the server's random sealed pool. */
         val deckLabel: String,
         /** Per-player set choice for Random pools; null = "any set". */
-        val setCode: String? = null
+        val setCode: String? = null,
+        /**
+         * Team membership in a Two-Headed Giant lobby (CR 810): seats sharing a [teamIndex] are
+         * teammates. Derived from the seat's join order (0+1 = team 0, 2+3 = team 1). Null in a
+         * non-2HG lobby, so the existing 2-player overlay is unaffected.
+         */
+        val teamIndex: Int? = null,
     )
 
     /** The lobby has been closed (host left, AI failed to spin up, etc.). */
@@ -993,6 +1118,21 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("onlinePlayersCount")
     data class OnlinePlayersCount(val count: Int) : ServerMessage
+
+    /** Reply to [ClientMessage.Ping] — always sent, regardless of auth or game state. */
+    @Serializable
+    @SerialName("pong")
+    data object Pong : ServerMessage
+
+    /**
+     * Sent to a socket whose identity just authenticated from a *different* socket
+     * (the same player opened the game in another tab or device). The receiving
+     * client must stop auto-reconnecting — winning the session back is an explicit
+     * user action — and the server closes this socket right after sending.
+     */
+    @Serializable
+    @SerialName("sessionReplaced")
+    data object SessionReplaced : ServerMessage
 }
 
 @Serializable

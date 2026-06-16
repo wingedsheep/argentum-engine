@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.actions.decision
 
 import com.wingedsheep.engine.core.AssignDamageDecision
+import com.wingedsheep.engine.core.BatchYesNoDecision
+import com.wingedsheep.engine.core.BatchYesNoResponse
 import com.wingedsheep.engine.core.BudgetModalDecision
 import com.wingedsheep.engine.core.BudgetModalResponse
 import com.wingedsheep.engine.core.CancelDecisionResponse
@@ -75,6 +77,7 @@ object DecisionValidators {
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
             is SelectManaSourcesDecision -> validateManaSourcesSelection(response)
+            is BatchYesNoDecision -> validateBatchYesNo(response)
         }
     }
 
@@ -223,12 +226,31 @@ object DecisionValidators {
         if (response.selectedCards.size > decision.maxSelections) {
             return "Too many cards selected: maximum is ${decision.maxSelections}"
         }
+        val unmetConditionalMinimums = decision.conditionalMinimums.filter {
+            response.selectedCards.size < it.requiredSelections
+        }
+        if (unmetConditionalMinimums.isNotEmpty()) {
+            val satisfiesAlternative = unmetConditionalMinimums.any { minimum ->
+                val matchingCount = response.selectedCards.count { it in minimum.matchingOptions }
+                response.selectedCards.size >= minimum.minimumSelections && matchingCount >= minimum.requiredMatches
+            }
+            if (!satisfiesAlternative) {
+                return unmetConditionalMinimums.first().description ?: "Selection does not satisfy the conditional minimum"
+            }
+        }
         return null
     }
 
     private fun validateYesNo(response: DecisionResponse): String? {
         if (response !is YesNoResponse) {
             return "Expected yes/no response"
+        }
+        return null
+    }
+
+    private fun validateBatchYesNo(response: DecisionResponse): String? {
+        if (response !is BatchYesNoResponse) {
+            return "Expected batch yes/no response"
         }
         return null
     }

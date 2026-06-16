@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.persistence
 
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.gameserver.lobby.LobbyGameMode
 import com.wingedsheep.gameserver.lobby.LobbyPlayerState
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
@@ -61,7 +62,13 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         winstonSeenCardNames = winstonSeenCards.mapKeys { it.key.value }.mapValues { it.value.toList() },
         completedAt = completedAt,
         isPublic = isPublic,
-        aiAssistEnabled = aiAssistEnabled
+        aiAssistEnabled = aiAssistEnabled,
+        gameMode = gameMode.name,
+        attackMode = attackMode.name,
+        randomTeams = randomTeams,
+        teamAssignments = teamAssignments.mapKeys { it.key.value },
+        ffaGameSessionId = ffaGameSessionId,
+        ffaGamesPlayed = ffaGamesPlayed
     )
 }
 
@@ -96,8 +103,17 @@ fun restoreTournamentLobby(
         pickTimeSeconds = persistent.pickTimeSeconds,
         gamesPerMatch = persistent.gamesPerMatch,
         isPublic = persistent.isPublic,
-        aiAssistEnabled = persistent.aiAssistEnabled
+        aiAssistEnabled = persistent.aiAssistEnabled,
+        gameMode = runCatching { LobbyGameMode.valueOf(persistent.gameMode) }
+            .getOrDefault(LobbyGameMode.TOURNAMENT),
+        attackMode = runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(persistent.attackMode) }
+            .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE),
+        randomTeams = persistent.randomTeams
     )
+    // FFA in-flight state (last standings are deliberately not persisted — after a restart the
+    // pod simply readies up for the next game).
+    lobby.ffaGameSessionId = persistent.ffaGameSessionId
+    lobby.ffaGamesPlayed = persistent.ffaGamesPlayed
 
     val playerIdentities = mutableListOf<PlayerIdentity>()
 
@@ -140,6 +156,9 @@ fun restoreTournamentLobby(
         )
         lobby.players[playerId] = playerState
     }
+
+    // 2HG manual team assignment — restored after players so the validity filter keeps current ids.
+    lobby.setTeamAssignments(persistent.teamAssignments.mapKeys { EntityId(it.key) })
 
     // Restore state via internal method
     lobby.restoreFromPersistence(

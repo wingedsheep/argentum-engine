@@ -483,7 +483,7 @@ class CostPaymentService(private val services: EngineServices) {
         }
 
         private fun life(state: GameState, playerId: EntityId): Int =
-            state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+            state.lifeTotal(playerId) // CR 810.9a — team's shared total in Two-Headed Giant
 
         fun cardsInHand(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> {
             val context = PredicateContext(controllerId = playerId)

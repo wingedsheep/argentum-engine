@@ -1,20 +1,21 @@
 # Outlaws of Thunder Junction — Engine Gap Analysis
 
-Cross-reference of the **254 remaining (unimplemented) OTJ cards** against the engine's actual
-capabilities (SDK reference + source verification, June 2026). Generated to scope what must be
-built before the set can be completed.
+Historical cross-reference of the OTJ engine gaps against the engine's actual capabilities (SDK
+reference + source verification, June 2026). Kept as an implementation log now that the set is
+complete.
 
-**Status:** 17 / 271 implemented (6%). Card list from `scripts/card-status --list --set OTJ`.
+**Status: complete — 271 / 271 implemented, no missing cards.** Verified with
+`scripts/card-status --set OTJ`.
 Oracle text pulled from Scryfall (`set:otj unique:cards`, 276 printings → 271 unique cards + 5
 basics).
 
 ## Bottom line
 
-OTJ is built around a small set of named mechanics, **most of which the engine already supports**:
+OTJ is built around a small set of named mechanics, all of which are now covered well enough for the
+full set implementation:
 Plot, Spree, "commit a crime", the Outlaw creature-type group, Treasure, Crew, **and now Saddle /
-Mount** are all done. With Saddle landed, the overwhelming majority of the set is buildable today
-(standard creatures, removal, Deserts, Plot/Spree spells, crime payoffs, token-makers). What's left
-is a handful of small recurring primitives plus ~12 genuinely one-off cards.
+Mount** are all done. The notes below are retained as the historical gap breakdown that drove the
+implementation.
 
 ### Already supported — no new engine work
 
@@ -108,8 +109,10 @@ Tests: `CrewSaddleContributorsScenarioTest`.
 
 → Unblocks: Giant Beaver, Ornery Tumblewagg, Rambling Possum (saddlers get counters / bounce),
   The Gitrog Ravenous Ride & Calamity (consume the saddlers), **Luxurious Locomotive** (Treasure per
-  creature that crewed it this turn — note: dynamic-count Treasure creation is still Int-only; that
-  card additionally needs a dynamic `CreateTreasure` or a `CreateTokenEffect`-based Treasure).
+  creature that crewed it this turn — ✅ implemented: `Effects.CreateTreasure(count: DynamicAmount)`
+  already supports a dynamic count, and "Crew 1. Activate only once each turn." is now
+  `KeywordAbility.crew(1, onceEachTurn = true)`, enforced by the crew enumerator/handler via
+  `CrewSaddleContributorsComponent.crewActivations`). Tests: `OtjLuxuriousLocomotiveScenarioTest`.
 
 ### 3. `DynamicAmount` over spells cast this turn (filtered, per-player, exclude-self) — ✅ DONE
 
@@ -174,7 +177,28 @@ the narrower "cast, but for free" sense. Tests: `FreestriderCommandoScenarioTest
   batch "Satoru and/or one or more other nontoken creatures enter" once-per-turn trigger before it's
   buildable.
 
-### 6b. "Whenever one or more creatures you control die" batch trigger (once per batch)
+### 6b. "Whenever one or more creatures you control die" batch trigger (once per batch) — ✅ DONE
+
+**Implemented:** `EventPattern.CreaturesYouControlDiedEvent(filter, excludeSelf)` +
+`Triggers.OneOrMoreCreaturesYouControlDie(...)` facade, detected by
+`TriggerDetector.detectCreaturesDiedBatchTriggers` (a new `TriggerCategory.CREATURES_DIED_BATCH`):
+it groups battlefield→graveyard zone-change events by each dying creature's **last-known**
+controller (so dead tokens survive the 704.5s cleanup) and fires **once per controller per batch**
+— a board wipe that kills several of your creatures fires it once, not once per creature.
+`excludeSelf = true` models the "*other* creatures" wording. Per-event matching declines the event
+in `TriggerMatcher` (batch-handled separately). The detector also honours CR 603.10 "look back in
+time": a source that itself dies in the **same** batch as another qualifying creature still sees
+that death and fires (recovered from its last-known card definition), so a *non-self* payoff
+(draw / token / gain life) survives a board wipe that also kills the source — a per-self payoff like
+Vengeful Townsfolk's own +1/+1 is just a harmless no-op once it is in the graveyard. Tests:
+`VengefulTownsfolkScenarioTest` (board-wipe = one counter; single death; opponent's deaths; +
+source-dies-in-batch look-back, fires & does-not-fire-alone). Docs: card-sdk-language-reference §8.
+
+→ **Vengeful Townsfolk** built. Also the right home for other "one or more … die" payoffs (cf.
+  Scavenger's Talent / Spiteful Banditry, which lean on the `oncePerTurn` approximation because
+  their printed text *does* say "only once each turn").
+
+<details><summary>Original gap description</summary>
 
 The engine has per-creature dies triggers (`Triggers.YourCreatureDies`, ANY/OTHER binding, fires once
 **per dying creature**) and a once-per-*turn* gate (`oncePerTurn = true`), plus batch detectors for
@@ -197,37 +221,48 @@ with an OTHER-binding variant for "another creature(s)." Mirrors the existing
   Talent / Spiteful Banditry, which currently lean on the `oncePerTurn` approximation because their
   printed text *does* say "only once each turn").
 
-### 6. `CARDS_DRAWN` turn-tracker + characteristic-defining P/T from it
+</details>
 
-`TurnTracker` has no `CARDS_DRAWN` accumulator, so "power equal to the number of cards you've drawn
-this turn" can't be expressed. Add the tracker (engine accumulates on draw events) and read it via
-`DynamicAmount.TurnTracking` for a CDA power.
+### 6. `CARDS_DRAWN` turn-tracker + characteristic-defining P/T from it — ✅ DONE
 
-→ Duelist of the Mind.
+~~`TurnTracker` has no `CARDS_DRAWN` accumulator, so "power equal to the number of cards you've drawn
+this turn" can't be expressed.~~ RESOLVED — added `TurnTracker.CARDS_DRAWN`, backed by the existing
+`CardsDrawnThisTurnComponent` (no new accumulator needed — the engine already tracks per-turn draws
+and resets it at turn start). `DynamicAmountEvaluator` reads the component; the value feeds a CDA
+power via `dynamicPower = CharacteristicValue.dynamic(TurnTracking(You, CARDS_DRAWN))`.
+
+→ Duelist of the Mind (implemented).
 
 ---
 
 ## Tier 3 — One-off complex cards (each needs unique new functionality)
 
-7. **Copy an activated/triggered ability already on the stack.** Only `CopyTargetSpell` (+ a
-   triggered-ability copy) exists — no effect to copy a target **activated** ability, and no trigger
-   predicate for "an ability that targets a creature or player." Needs a `CopyTargetAbility` effect +
-   a targets-something trigger filter.
-   → **Ertha Jo, Frontier Mentor**; also the copy-activated-ability mode of **Return the Favor**.
+7. **Copy an activated/triggered ability already on the stack.** *(partly done)* The unified
+   `CopyTargetSpellOrAbilityEffect` (facade `Effects.CopyTargetSpellOrAbility`) now copies whichever
+   stack-object kind the single target resolved to — instant/sorcery spell, **activated ability**, or
+   triggered ability — via `Targets.InstantSorcerySpellOrAbility`; STACK targeting enumeration was
+   widened so an ability becomes a legal target when the filter names an ability predicate. This
+   closed the **Return the Favor** copy mode. ~~Still open for **Ertha Jo, Frontier Mentor**: a trigger
+   predicate for "an ability that targets a creature or player."~~ **DONE** — added
+   `Triggers.youActivateAbilityTargeting(AbilityTargetMatch)`; Ertha Jo implemented.
 
 8. **Aura "becomes attached" trigger + control-for-as-long-as-attached + MV-on-attach condition.**
    No "becomes attached" trigger event, no MV-comparison-on-attachment condition, and no control
    duration tied to "while this Aura remains attached." Three small new pieces.
    → **Eriette, the Beguiler**.
 
-9. **Characteristic-defining base P/T on a created token.** Token `dynamicPower/Toughness` are
+9. ~~**Characteristic-defining base P/T on a created token.** Token `dynamicPower/Toughness` are
    evaluated once at creation; there's no Layer-7b CDA "set base P/T = a dynamic count" granted to a
    token (here "= the number of lands you control", recomputed continuously).
-   → **Bonny Pall, Clearcutter** (the Beau token).
+   → **Bonny Pall, Clearcutter** (the Beau token).~~ **DONE** — added
+   `SetBasePowerToughnessDynamicStatic` (Layer 7b SET_VALUES) + `Modification.SetPowerToughnessDynamic`;
+   Bonny Pall implemented.
 
-10. **Additional upkeep steps inserted into the current turn.** Extra *combat* phases and extra
+10. ~~**Additional upkeep steps inserted into the current turn.** Extra *combat* phases and extra
     *turns* are supported, but not inserting N extra upkeep steps after the current phase.
-    → **Obeka, Splitter of Seconds**.
+    → **Obeka, Splitter of Seconds**.~~ **DONE** — added `Effects.AddAdditionalUpkeepSteps` +
+    `AdditionalUpkeepStepsComponent`; TurnManager drains the queue after the postcombat main phase.
+    Obeka implemented.
 
 11. **"Tap an artifact (token) for mana" trigger + reflexive same-type mana.** The tap-for-mana
     trigger is land-only (`LandTappedForMana`); needs generalization to artifact/permanent-tapped-for-mana
@@ -240,26 +275,34 @@ this turn" can't be expressed. Add the tracker (engine accumulates on draw event
     duration. The exile-on-ETB half is supported.
     → **Assimilation Aegis**.
 
-13. **Conditional attack-tax + a new block-tax static.** `AttackTax` exists but is unconditional and
-    defender-side. Archangel needs (a) the attack tax gated on "as long as this is untapped," and
-    (b) a brand-new **block-tax** ("creatures can't block unless their controller pays {1} each")
-    gated on "as long as this is attacking," with declare-blockers payment enforcement.
-    → **Archangel of Tithes**.
+13. ~~**Conditional attack-tax + a new block-tax static.**~~ RESOLVED — `AttackTax` gained an optional
+    `condition` gate (Archangel uses `Conditions.SourceIsUntapped`; it already protected the controller's
+    planeswalkers); added a new global **`BlockTax(amountPerBlocker, condition)`** static (Archangel uses
+    `Conditions.SourceIsAttacking`) evaluated in `BlockPhaseManager` and reusing the existing
+    declare-blockers tax-confirmation pause.
+    → **Archangel of Tithes** (implemented; canonical in ORI, reprint row in OTJ).
 
-14. **Group flicker (mass blink) + repeat-the-whole-effect X+1 times.** No group exile-and-return
-    effect and no generic "repeat this process X more times" loop wrapper.
-    → **Another Round**.
+14. ~~**Group flicker (mass blink) + repeat-the-whole-effect X+1 times.**~~ RESOLVED — no new SDK
+    needed. Composed from existing primitives: an `Effects.Pipeline { gather → chooseAnyNumber →
+    exile(linkToSource) → gather(FromLinkedExile) → move(battlefield, underOwnersControl) }` blink,
+    run once then `RepeatDynamicTimesEffect(amount = DynamicAmount.XValue, body = …)` for "X more times".
+    → **Another Round** (implemented).
 
-15. **Targeted reanimate-attached for Auras/Equipment.** Only `ReturnSelfToBattlefieldAttached`
-    (source = self) exists. This mode targets a *separate* graveyard Aura/Equipment and attaches it to
-    a chosen creature on arrival — a targeted reanimate-attached effect.
-    → **One Last Job** (third Spree mode only; modes 1–2 buildable).
+15. **Targeted reanimate-attached for Auras/Equipment.** ✅ DONE —
+    `Effects.PutOntoBattlefieldAttachedToChosen(target, hostFilter = Creature.youControl())` puts a
+    targeted graveyard Aura/Equipment onto the battlefield attached to a host the controller chooses at
+    resolution (host is NOT a target). Works for both Auras and Equipment, intersects an Aura's enchant
+    legality, and (per ruling) lets an Equipment enter unattached / an Aura stay back when no legal host
+    exists. Pausing executor + `PutOntoBattlefieldAttachedToChosenContinuation` reuse the
+    MoveCollection attach helper.
+    → **One Last Job** (all three Spree modes) — implemented.
 
-16. **Inline "excess damage dealt this way" captured within one resolving spell.** Excess damage is
-    only surfaced as a *trigger* payload (`DealsDamageEvent(requireExcess=true)`), not as a value
-    usable later in the same resolving spell. Needs a reflexive/stored excess amount feeding a
-    dynamic-count token create.
-    → **Hell to Pay** (tapped Treasures = excess damage dealt).
+16. **Inline "excess damage dealt this way" captured within one resolving spell.** ✅ DONE —
+    `EntityNumericProperty.ExcessMarkedDamage` reads `max(0, marked − toughness)` of a context target
+    post-damage (the amount-valued twin of the existing `TargetMarkedDamageExceedsToughness` condition).
+    Composite resolves with no interleaved SBA, so a `DealDamage → CreateTreasure(count = EntityProperty(
+    Target(0), ExcessMarkedDamage))` pipeline reads the just-dealt excess while the creature is still present.
+    → **Hell to Pay** (tapped Treasures = excess damage dealt) — implemented.
 
 17. **Condition on the type of a permanent sacrificed as an activated-ability cost.** No primitive
     exposes the identity/type of the cost-sacrificed permanent to a follow-up effect. Needs to record
@@ -276,9 +319,8 @@ this turn" can't be expressed. Add the tracker (engine accumulates on draw event
 
 1. ✅ **Saddle N + Mount** (Tier 1) — done.
 2. **Tier 2 shared primitives** — ✅ contributors-this-turn tracker (#2), ✅ spells-cast
-   `DynamicAmount` (#3), ✅ `fromHand` cast-zone flag (#4), ✅ cast-for-free condition (#5).
-   Remaining: `CARDS_DRAWN` (#6). Small, each unlocks a few scattered cards. **Next up: #6
-   (`CARDS_DRAWN`).**
+   `DynamicAmount` (#3), ✅ `fromHand` cast-zone flag (#4), ✅ cast-for-free condition (#5),
+   ✅ `CARDS_DRAWN` tracker (#6). All Tier-2 shared primitives done.
 3. **Tier-3 one-offs** as the relevant legendaries / rares come up — none block large numbers of
    cards; pick them off individually.
 

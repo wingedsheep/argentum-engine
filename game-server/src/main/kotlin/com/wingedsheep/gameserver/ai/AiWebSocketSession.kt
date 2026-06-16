@@ -162,7 +162,8 @@ class AiWebSocketSession(
             }
 
             is ServerMessage.GameStarted -> {
-                logger.info("AI received GameStarted: opponent={}", message.opponentName)
+                logger.info("AI received GameStarted: opponents={}",
+                    message.players.filter { !it.isYou }.map { it.name })
             }
 
             is ServerMessage.GameOver -> {

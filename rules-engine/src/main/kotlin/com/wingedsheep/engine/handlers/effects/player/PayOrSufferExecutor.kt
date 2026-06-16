@@ -365,9 +365,9 @@ class PayOrSufferExecutor(
         sourceName: String,
         controllerId: EntityId
     ): EffectResult {
-        // Check if player has enough life to pay (must have more than the cost)
-        val playerContainer = state.getEntity(controllerId)
-        val playerLife = playerContainer?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+        // Check if player has enough life to pay (must have more than the cost).
+        // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
+        val playerLife = state.lifeTotal(controllerId)
 
         // If player doesn't have enough life to pay and survive, execute suffer effect
         if (playerLife <= cost.amount) {
@@ -649,7 +649,7 @@ class PayOrSufferExecutor(
                 is CostAtom.Discard -> findValidCardsInHand(state, playerId, atom.filter).size >= atom.count
                 is CostAtom.Sacrifice -> findValidPermanentsOnBattlefield(state, playerId, atom.filter, sourceId).size >= atom.count
                 is CostAtom.PayLife -> {
-                    val life = state.getEntity(playerId)?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+                    val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
                     life > atom.amount
                 }
                 is CostAtom.Mana -> ManaSolver(cardRegistry).canPay(state, playerId, atom.cost)

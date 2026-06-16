@@ -32,7 +32,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class OpenLifeBidEffect(
     val onWin: Effect,
-    val participant: Player = Player.Opponent
+    val participant: Player = Player.AnOpponent
 ) : Effect {
     override val description: String =
         "You and ${participant.description} bid life. You start the bidding with a bid of 1. " +

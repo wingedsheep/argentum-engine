@@ -127,12 +127,17 @@ data class TargetPlayer(
 data class TargetOpponent(
     override val count: Int = 1,
     override val optional: Boolean = false,
+    override val unlimited: Boolean = false,
     override val id: String? = null,
     val restriction: Condition? = null,
     private val descriptionOverride: String? = null
 ) : TargetRequirement {
     override val description: String = descriptionOverride
-        ?: if (count == 1) "target opponent" else "target $count opponents"
+        ?: when {
+            unlimited -> "any number of target opponents"
+            count == 1 -> "target opponent"
+            else -> "target $count opponents"
+        }
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {
         val newRestriction = restriction?.applyTextReplacement(replacer)

@@ -41,6 +41,10 @@ data class ModifySpellCost(
             is SpellCostTarget.AnyCaster -> "${filterAdjective(target.filter)}$noun"
             is SpellCostTarget.OpponentsCastTargeting ->
                 "Spells your opponents cast that target ${target.targetFilter.description}"
+            is SpellCostTarget.OpponentsCastFromZones ->
+                "Spells your opponents cast from ${describeZones(target.zones)}"
+            is SpellCostTarget.YouCastFromZones ->
+                "Spells you cast from ${describeZones(target.zones)}"
             SpellCostTarget.FaceDownYouCast -> "Face-down creature spells you cast"
             SpellCostTarget.MorphActivation -> "All morph costs"
         }
@@ -50,6 +54,8 @@ data class ModifySpellCost(
             is CostModification.ReduceColored -> "cost ${modification.symbols} less to cast"
             is CostModification.ReduceColoredPerUnit ->
                 "cost ${modification.symbols} less to cast for each ${modification.countSource.description}"
+            is CostModification.ReduceColoredIfAnyTargetMatches ->
+                "cost ${modification.symbols} less to cast if it targets ${modification.filter.description}"
             is CostModification.IncreaseGeneric -> "cost {${modification.amount}} more"
             is CostModification.IncreaseColored -> "cost ${modification.symbols} more to cast"
             is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
@@ -75,6 +81,22 @@ data class ModifySpellCost(
     private fun filterAdjective(filter: GameObjectFilter): String {
         val desc = filter.description
         return if (desc.isBlank() || desc == "card") "" else "$desc "
+    }
+
+    // Phrase a set of cast-from zones the way the oracle text reads — "graveyards or from exile".
+    private fun describeZones(zones: Set<com.wingedsheep.sdk.core.Zone>): String {
+        val parts = zones.toList().sortedBy { it.ordinal }.map { zone ->
+            when (zone) {
+                com.wingedsheep.sdk.core.Zone.GRAVEYARD -> "graveyards"
+                com.wingedsheep.sdk.core.Zone.EXILE -> "exile"
+                else -> zone.displayName
+            }
+        }
+        return when (parts.size) {
+            0 -> ""
+            1 -> parts[0]
+            else -> parts.dropLast(1).joinToString(", ") + " or from " + parts.last()
+        }
     }
 
     private fun ordinal(n: Int): String = when (n) {
@@ -139,6 +161,28 @@ sealed interface SpellCostTarget {
     }
 
     /**
+     * Spells the source's controller casts **from one of [zones]**, matching [filter]
+     * (default: any spell). The you-cast analogue of [OpponentsCastFromZones].
+     *
+     * Used for Doc Aurlock, Grizzled Genius ("Spells you cast from your graveyard or from
+     * exile cost {2} less to cast") via
+     * `YouCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` paired with
+     * [CostModification.ReduceGeneric]. The cost calculator matches it only when the casting
+     * player controls the source and the spell is being cast from one of the named zones.
+     */
+    @SerialName("YouCastFromZones")
+    @Serializable
+    data class YouCastFromZones(
+        val zones: Set<com.wingedsheep.sdk.core.Zone>,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+    ) : SpellCostTarget {
+        override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Spells opponents of the source's controller cast that target one or more
      * permanents matching [targetFilter] relative to the source.
      *
@@ -158,6 +202,28 @@ sealed interface SpellCostTarget {
         override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
             val newFilter = targetFilter.applyTextReplacement(replacer)
             return if (newFilter !== targetFilter) copy(targetFilter = newFilter) else this
+        }
+    }
+
+    /**
+     * Spells opponents of the source's controller cast **from one of [zones]**, matching [filter]
+     * (default: any spell). The zone-of-cast analogue of [OpponentsCastTargeting].
+     *
+     * Used for Aven Interrupter ("Spells your opponents cast from graveyards or from exile cost
+     * {2} more to cast") via `OpponentsCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` paired
+     * with [CostModification.IncreaseGeneric]. The cost calculator matches it only when the
+     * casting player is an opponent of the source's controller and the spell is being cast from
+     * one of the named zones.
+     */
+    @SerialName("OpponentsCastFromZones")
+    @Serializable
+    data class OpponentsCastFromZones(
+        val zones: Set<com.wingedsheep.sdk.core.Zone>,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+    ) : SpellCostTarget {
+        override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
         }
     }
 
@@ -209,6 +275,33 @@ sealed interface CostModification {
         val symbols: String,
         val countSource: CostReductionSource,
     ) : CostModification
+
+    /**
+     * Remove specific colored mana [symbols] from the cost if the spell targets any object
+     * matching [filter]. The colored analogue of
+     * [CostReductionSource.FixedIfAnyTargetMatches] (which only reduces generic), and the
+     * reduction counterpart of [IncreaseGenericIfAnyTargetMatches].
+     *
+     * Used for cards like Brush Off ("This spell costs {1}{U} less to cast if it targets an
+     * instant or sorcery spell") — pair this `{U}` reduction with a
+     * `ReduceGenericBy(FixedIfAnyTargetMatches(1, filter))` for the `{1}` so both halves apply
+     * together once a matching target is chosen.
+     *
+     * At cast resolution, the reduction applies if any of the spell's chosen targets match.
+     * Like [CostReductionSource.FixedIfAnyTargetMatches], excess that cannot match is silently
+     * dropped (does NOT overflow to generic).
+     */
+    @SerialName("ReduceColoredIfAnyTargetMatches")
+    @Serializable
+    data class ReduceColoredIfAnyTargetMatches(
+        val symbols: String,
+        val filter: GameObjectFilter,
+    ) : CostModification {
+        override fun applyTextReplacement(replacer: TextReplacer): CostModification {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
 
     /** Increase generic mana by a fixed amount (tax effect). */
     @SerialName("IncreaseGeneric")
@@ -532,4 +625,58 @@ sealed interface CostReductionSource {
         override val description: String =
             "the number of ${filter.description} on the battlefield"
     }
+}
+
+/**
+ * Static ability that modifies the cost of the **Plot** special action (CR 718).
+ *
+ * Plot is not a spell, so [ModifySpellCost] does not touch it; this is its dedicated cost
+ * modifier. The engine's `PlotCostReducer` scans the battlefield for these and reduces the
+ * plot cost paid by [PlotEnumerator]/`PlotCardHandler`.
+ *
+ * Used for Doc Aurlock, Grizzled Genius ("Plotting cards from your hand costs {2} less") via
+ * `ModifyPlotCost(PlotCostTarget.YouPlotFromHand, CostModification.ReduceGeneric(2))`.
+ *
+ * @property target Which plots the modifier applies to.
+ * @property modification How the cost is changed (reuses the spell-cost [CostModification]
+ *           vocabulary; only generic reductions are currently meaningful for plot).
+ */
+@SerialName("ModifyPlotCost")
+@Serializable
+data class ModifyPlotCost(
+    val target: PlotCostTarget,
+    val modification: CostModification,
+) : StaticAbility {
+    override val description: String = buildString {
+        append(
+            when (target) {
+                PlotCostTarget.YouPlotFromHand -> "Plotting cards from your hand"
+            }
+        )
+        append(
+            when (val m = modification) {
+                is CostModification.ReduceGeneric -> " costs {${m.amount}} less"
+                is CostModification.IncreaseGeneric -> " costs {${m.amount}} more"
+                else -> " has a modified cost"
+            }
+        )
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newModification = modification.applyTextReplacement(replacer)
+        return if (newModification !== modification) copy(modification = newModification) else this
+    }
+}
+
+/**
+ * What a [ModifyPlotCost] applies to. Modeled as a sealed interface so future "plot from the top
+ * of your library" reductions (Fblthp-shaped) slot in as a new variant without changing the
+ * static-ability shape.
+ */
+@Serializable
+sealed interface PlotCostTarget {
+    /** Cards the source's controller plots from their hand (the printed Plot keyword cost). */
+    @SerialName("YouPlotFromHand")
+    @Serializable
+    data object YouPlotFromHand : PlotCostTarget
 }

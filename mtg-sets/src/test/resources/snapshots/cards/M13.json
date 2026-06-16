@@ -32,6 +32,42 @@
     ]
 }
 
+// Crusader of Odric
+{
+    "name": "Crusader of Odric",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Crusader of Odric's power and toughness are each equal to the number of creatures you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Komarck",
+        "flavorText": "\"We are Odric's sword. We strike without fear, for his mind has divined how our foe will be slain.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/295096bb-1857-4224-bc7b-307b38cfd338.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Murder
 {
     "name": "Murder",

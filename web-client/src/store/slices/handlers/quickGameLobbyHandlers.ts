@@ -10,7 +10,7 @@ type QuickGameLobbyHandlerKeys = 'onQuickGameLobbyState' | 'onQuickGameLobbyClos
 
 export function createQuickGameLobbyHandlers(
   set: SetState,
-  _get: GetState
+  get: GetState
 ): Pick<MessageHandlers, QuickGameLobbyHandlerKeys> {
   return {
     onQuickGameLobbyState: (msg) => {
@@ -20,10 +20,8 @@ export function createQuickGameLobbyHandlers(
     onQuickGameLobbyClosed: (msg) => {
       // Surface the close reason via the existing global error channel so the home screen
       // can render it like any other connection-time error message.
-      set({
-        quickGameLobbyState: null,
-        lastError: { message: msg.reason, code: ErrorCode.INVALID_ACTION, timestamp: Date.now() },
-      })
+      set({ quickGameLobbyState: null })
+      get().setError({ message: msg.reason, code: ErrorCode.INVALID_ACTION, timestamp: Date.now() })
     },
   }
 }

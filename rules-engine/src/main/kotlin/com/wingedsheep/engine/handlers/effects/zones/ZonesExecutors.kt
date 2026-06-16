@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
+import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
 import com.wingedsheep.engine.registry.CardRegistry
@@ -10,7 +11,8 @@ import com.wingedsheep.engine.registry.CardRegistry
  * adding or removing link bookkeeping.
  */
 class ZonesExecutors(
-    private val cardRegistry: CardRegistry
+    private val cardRegistry: CardRegistry,
+    private val targetFinder: TargetFinder = TargetFinder()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         MoveToZoneEffectExecutor(cardRegistry),
@@ -23,6 +25,7 @@ class ZonesExecutors(
         SacrificeTargetExecutor(),
         ReturnCreaturesPutInGraveyardThisTurnExecutor(),
         ReturnSelfToBattlefieldAttachedExecutor(cardRegistry),
+        PutOntoBattlefieldAttachedToChosenExecutor(cardRegistry, targetFinder),
         ExileOpponentsGraveyardsExecutor(),
         DestroyAllEquipmentOnTargetExecutor()
     )

@@ -212,7 +212,6 @@ class DrawReplacementContinuationResumer(
             val effectContext = EffectContext(
                 controllerId = playerId,
                 sourceId = continuation.sourceId,
-                opponentId = opponents.firstOrNull(),
                 targets = emptyList()
             )
             val effectResult = services.effectExecutorRegistry.execute(
@@ -352,7 +351,6 @@ class DrawReplacementContinuationResumer(
         val effectContext = EffectContext(
             controllerId = playerId,
             sourceId = continuation.sourceId,
-            opponentId = opponents.firstOrNull(),
             targets = chosenTargets,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets))
         )
@@ -423,7 +421,6 @@ class DrawReplacementContinuationResumer(
             val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                 controllerId = playerId,
                 sourceId = continuation.sourceId,
-                opponentId = opponents.firstOrNull(),
                 targets = emptyList()
             )
             val effectResult = services.effectExecutorRegistry.execute(

@@ -26,7 +26,7 @@ import io.kotest.core.spec.style.FunSpec
  * `DamageUtils` resolves the host's controller for every replacement scan; these tests steal
  * a replacement-effect permanent and assert the filter retargets to the thief. They cover the
  * two distinct comparison shapes:
- *  - `Player.You` / `Player.Opponent` against the losing player (`ModifyLifeLoss` — Bloodletter)
+ *  - `Player.You` / `Player.EachOpponent` against the losing player (`ModifyLifeLoss` — Bloodletter)
  *  - `RecipientFilter.You` against the damaged player (`PreventDamage`)
  */
 class ReplacementControllerProjectionTest : FunSpec({

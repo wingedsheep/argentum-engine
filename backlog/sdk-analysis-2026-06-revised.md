@@ -182,7 +182,21 @@ own "set-specific mechanics live in set-specific files" rule.
 4. End state: `CardBuilder.kt` shrinks toward the universal blocks, and "where do I add my
    mechanic's sugar" has a one-word answer.
 
-### 2.3 Condition hierarchy: stop the one-off accumulation — [MED]
+### 2.3 Condition hierarchy: stop the one-off accumulation — [MED] — ✅ DONE (PR #649)
+
+> Landed as `EntityMatches(entity: EffectTarget, filter)` (mtg-sdk) — the four near-clones
+> (`SourceMatches`, `EnchantedPermanentMatches`, `TargetMatchesFilter`,
+> `TriggeringSpellMatchesFilter`) are deleted and their `Conditions.*` facades now desugar to it,
+> so card sources are unchanged; the five cards importing the raw types moved to the facade. The
+> `ConditionEvaluator` dispatches one `EntityMatches` branch on the entity role to the
+> already-correct matching strategy: live predicate match for `Self` / enchanted-or-equipped
+> (dual-mode), chosen-target match for `ContextTarget` (resolution-only, player ⇒ false), and the
+> LKI cast-record match for `TriggeringEntity` (resolution-only) — preserving every prior behavior
+> (snapshot re-bless is the per-card review artifact). Parts 2 & 3 are forward-looking rules now
+> enforced by docs + the `add-feature` checklist: tracker-shaped checks route through `Compare` +
+> a tracked `DynamicAmount` (the LIFE_GAINED precedent), and set-mechanic conditions are quarantined
+> in mechanic-named files. The `CardLinter` now validates the `ContextTarget` index that
+> `TargetMatchesFilter` previously hid in a raw `targetIndex` field.
 
 **Problem.** 65 `Condition` subtypes, growing ~3-5 per set. Two anti-patterns: four near-clones of
 "entity X matches filter" (`SourceMatches`, `EnchantedPermanentMatches`, `TargetMatchesFilter`,

@@ -439,7 +439,7 @@ internal class CombatDamageManager(
             val isPlayer = container.get<LifeTotalComponent>() != null && container.get<CardComponent>() == null
             when {
                 isPlayer -> ResolutionDefender(defenderId, ResolutionTargetKind.PLAYER, "Player",
-                    container.get<LifeTotalComponent>()?.life)
+                    state.lifeTotal(defenderId)) // CR 810.9a — team's shared total
                 projected.isPlaneswalker(defenderId) -> ResolutionDefender(defenderId, ResolutionTargetKind.PLANESWALKER,
                     container.get<CardComponent>()?.name ?: "Planeswalker",
                     container.get<CountersComponent>()?.getCount(CounterType.LOYALTY))
@@ -816,12 +816,20 @@ internal class CombatDamageManager(
             return newState
         }
 
-        // Deflection shields (Deflecting Palm) — prevent + deal back to source's controller
-        val deflectResult = DamageUtils.checkDeflectDamageShield(newState, targetId, amplifiedAmount, sourceId)
-        if (deflectResult != null) {
-            newState = deflectResult.state
-            events.addAll(deflectResult.events)
-            return newState
+        // Deflection / reflection shields (Deflecting Palm prevents; Eye for an Eye reflects but
+        // lets the damage proceed).
+        when (val deflect = DamageUtils.checkDeflectDamageShield(newState, targetId, amplifiedAmount, sourceId)) {
+            is com.wingedsheep.engine.handlers.effects.DeflectOutcome.Prevented -> {
+                newState = deflect.result.state
+                events.addAll(deflect.result.events)
+                return newState
+            }
+            is com.wingedsheep.engine.handlers.effects.DeflectOutcome.Reflected -> {
+                newState = deflect.state
+                events.addAll(deflect.events)
+                // Damage is not prevented — fall through and keep applying it below.
+            }
+            null -> {}
         }
 
         // "Prevent all damage from chosen source" shields (Samite Ministration)
@@ -857,13 +865,13 @@ internal class CombatDamageManager(
         // player to lose that much life, so life-loss replacements (Bloodletter of
         // Aclazotz) modify the life total reduction here. Lifelink and tracking still
         // see the unmodified `effectiveAmount`.
-        val currentLife = newState.getEntity(targetId)?.get<LifeTotalComponent>()?.life ?: return newState
+        if (newState.getEntity(targetId)?.get<LifeTotalComponent>() == null) return newState
+        // CR 810.9 — combat damage applies to the team's shared life total.
+        val currentLife = newState.lifeTotal(targetId)
         var lifeLossAmount = DamageUtils.applyStaticLifeLossModification(newState, targetId, effectiveAmount)
         lifeLossAmount = DamageUtils.applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount)
         val newLife = currentLife - lifeLossAmount
-        newState = newState.updateEntity(targetId) { container ->
-            container.with(LifeTotalComponent(newLife))
-        }
+        newState = newState.withLifeTotal(targetId, newLife)
         newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveAmount)
 
         // Track combat damage: source dealt damage + dealt combat damage to player
@@ -1001,11 +1009,10 @@ internal class CombatDamageManager(
         val isPlaneswalker = !isPlayer && projected.isPlaneswalker(targetId)
 
         if (isPlayer) {
-            val currentLife = targetContainer.get<LifeTotalComponent>()?.life ?: return newState
+            // CR 810.9 — applies to the team's shared total (isPlayer already guards presence).
+            val currentLife = newState.lifeTotal(targetId)
             val newLife = currentLife - amount
-            newState = newState.updateEntity(targetId) { container ->
-                container.with(LifeTotalComponent(newLife))
-            }
+            newState = newState.withLifeTotal(targetId, newLife)
             newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount)
             // Track combat damage: source dealt damage + dealt combat damage to player
             if (sourceId in newState.getBattlefield()) {
@@ -1156,11 +1163,11 @@ internal class CombatDamageManager(
         val attackerController = projected.getController(sourceId) ?: return state
         if (attackerController == targetPlayerId) return state
 
-        val attackerControllerLife = state.getEntity(attackerController)?.get<LifeTotalComponent>()?.life ?: return state
+        if (state.getEntity(attackerController)?.get<LifeTotalComponent>() == null) return state
+        // CR 810.9 — applies to the attacking player's team's shared total.
+        val attackerControllerLife = state.lifeTotal(attackerController)
         val newLife = attackerControllerLife - originalAmount
-        var newState = state.updateEntity(attackerController) { container ->
-            container.with(LifeTotalComponent(newLife))
-        }
+        var newState = state.withLifeTotal(attackerController, newLife)
         newState = DamageUtils.trackDamageReceivedByPlayer(newState, attackerController, originalAmount)
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         events.add(DamageDealtEvent(sourceId, attackerController, originalAmount, true,

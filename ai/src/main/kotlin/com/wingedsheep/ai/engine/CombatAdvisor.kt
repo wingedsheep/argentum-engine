@@ -57,7 +57,7 @@ class CombatAdvisor(
             return DeclareAttackers(playerId, emptyMap())
         }
 
-        val opponentId = state.getOpponent(playerId) ?: defendingPlayers.first()
+        val opponentId = state.soleOpponent(playerId) ?: defendingPlayers.first()
         val opponentLife = state.getEntity(opponentId)?.get<LifeTotalComponent>()?.life ?: 20
         val opponentCreatures = CombatMath.getOpponentUntappedCreatures(state, projected, opponentId)
         val mandatory = legalAction.mandatoryAttackers ?: emptyList()
@@ -776,7 +776,7 @@ class CombatAdvisor(
         val baseScore = evaluator.evaluate(current, postProjected, playerId)
 
         // Estimate our next-turn attack potential: what damage can we push through?
-        val opponentId = state.getOpponent(playerId) ?: return baseScore
+        val opponentId = state.soleOpponent(playerId) ?: return baseScore
         val myAttackers = CombatMath.getCreaturesThatCanAttack(current, postProjected, playerId)
         val opponentBlockers = CombatMath.getOpponentUntappedCreatures(current, postProjected, opponentId)
         val ourDamageThrough = if (myAttackers.isNotEmpty()) {
@@ -820,7 +820,7 @@ class CombatAdvisor(
 
         // Next-turn check: after taking this damage, would opponent's next attack kill us?
         val lifeAfter = myLife - incomingDamage
-        val opponentId = state.getOpponent(playerId) ?: return false
+        val opponentId = state.soleOpponent(playerId) ?: return false
 
         // Our blockers next turn: untapped creatures that aren't currently assigned to block
         // (conservatively — some may die in this combat, but this is a fast heuristic)

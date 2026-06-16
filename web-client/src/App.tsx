@@ -14,6 +14,7 @@ import { DelveSelector } from './components/ui/DelveSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DisconnectCountdown } from './components/ui/DisconnectCountdown'
+import { SessionReplacedOverlay } from './components/ui/SessionReplacedOverlay'
 import { MatchIntroAnimation } from './components/animations/MatchIntroAnimation'
 import { StandaloneConcedeButton } from './components/game/overlay'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
@@ -26,7 +27,7 @@ import { randomBackground } from './utils/background'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
-import type { EntityId } from './types'
+import type { ClientAttacker, EntityId } from './types'
 import { GameOverReason } from './types'
 
 export default function App() {
@@ -40,11 +41,13 @@ export default function App() {
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const lobbyState = useGameStore((state) => state.lobbyState)
   const tournamentState = useGameStore((state) => state.tournamentState)
+  const ffaState = useGameStore((state) => state.ffaState)
   const spectatingState = useGameStore((state) => state.spectatingState)
   const matchIntro = useGameStore((state) => state.matchIntro)
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
   const spectateGame = useGameStore((state) => state.spectateGame)
+  const sessionReplaced = useGameStore((state) => state.sessionReplaced)
   const hasConnectedRef = useRef(false)
 
   // Dev deep-link: /?spectate=<gameSessionId> connects and auto-spectates that game,
@@ -67,16 +70,24 @@ export default function App() {
   )
 
   useEffect(() => {
-    // Only auto-connect if we already have a stored player name (returning user)
-    // Otherwise, GameUI will show the name entry screen first. A spectate deep-link
-    // connects under a throwaway name so a fresh dev browser can watch immediately.
-    const storedName = localStorage.getItem('argentum-player-name')
-    const name = storedName ?? (spectateParam ? `Spectator-${Math.floor(Math.random() * 9000 + 1000)}` : null)
-    if (name && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
+    if (connectionStatus !== 'disconnected' || hasConnectedRef.current) return
+    // Another tab/device owns the session; reconnecting here would steal it back.
+    // The SessionReplacedOverlay's "Use here" is the only way back in.
+    if (sessionReplaced) return
+    if (spectateParam) {
+      // Spectate deep-link: connect as an isolated, ephemeral spectator (no shared token/name) so
+      // it doesn't collide with the user's identity and each watch gets a fresh session.
       hasConnectedRef.current = true
-      connect(name)
+      connect(`Spectator-${Math.floor(Math.random() * 9000 + 1000)}`, { spectator: true })
+      return
     }
-  }, [connectionStatus, connect, spectateParam])
+    // Otherwise only auto-connect for a returning user with a stored name; new users see name entry.
+    const storedName = localStorage.getItem('argentum-player-name')
+    if (storedName) {
+      hasConnectedRef.current = true
+      connect(storedName)
+    }
+  }, [connectionStatus, connect, spectateParam, sessionReplaced])
 
   // Once connected, honor a /?spectate=<gameId> deep-link (fire once).
   useEffect(() => {
@@ -168,6 +179,8 @@ export default function App() {
       // Enter combat mode — pre-select mandatory attackers
       startCombat({
         mode: 'declareAttackers',
+        actingSeat: attackersAction?.action.type === 'DeclareAttackers' ? attackersAction.action.playerId : null,
+        stickyDefenderId: null,
         selectedAttackers: [...mandatoryAttackers],
         attackerTargets: {},
         validAttackTargets,
@@ -195,13 +208,24 @@ export default function App() {
       // Attacking creatures come from the server's authoritative combat state rather than
       // "the viewing player's opponent" — in single-client hotseat the seat we control (the
       // defender) can be the top row, so the attackers are the viewer's own creatures.
-      const attackingCreatures: EntityId[] = gameState?.combat?.attackers
-        .map((a) => a.creatureId) ?? []
+      // In multiplayer a defender may only block attackers attacking *them* or their
+      // planeswalkers (CR 509.1b) — scope to the acting defender's slice of the combat.
+      // In a 2-player game every attacker attacks the sole defender, so this keeps all.
+      const defendingSeat = blockersAction?.action.type === 'DeclareBlockers'
+        ? blockersAction.action.playerId
+        : null
+      const attacksSeat = (a: ClientAttacker): boolean => {
+        if (!defendingSeat) return true
+        if (a.attackingTarget.type === 'Player') return a.attackingTarget.playerId === defendingSeat
+        return gameState?.cards[a.attackingTarget.permanentId]?.controllerId === defendingSeat
+      }
+      const relevantAttackers = (gameState?.combat?.attackers ?? []).filter(attacksSeat)
+      const attackingCreatures: EntityId[] = relevantAttackers.map((a) => a.creatureId)
 
       // Find attackers that must be blocked by all (from combat state in game state)
-      const mustBeBlockedAttackers: EntityId[] = gameState?.combat?.attackers
+      const mustBeBlockedAttackers: EntityId[] = relevantAttackers
         .filter((a) => a.mustBeBlockedByAll)
-        .map((a) => a.creatureId) ?? []
+        .map((a) => a.creatureId)
 
       // Use server-provided mandatory blocker assignments (Provoke + MustBeBlockedByAll)
       const blockerAssignments: Record<EntityId, EntityId[]> = {}
@@ -219,6 +243,8 @@ export default function App() {
       // Enter combat mode
       startCombat({
         mode: 'declareBlockers',
+        actingSeat: blockersAction?.action.type === 'DeclareBlockers' ? blockersAction.action.playerId : null,
+        stickyDefenderId: null,
         selectedAttackers: [],
         attackerTargets: {},
         validAttackTargets: [],
@@ -239,7 +265,7 @@ export default function App() {
   // Show deck builder during building phase, or during submitted phase if no tournament yet
   // When tournament exists and deck is submitted, TournamentOverlay (in GameUI) handles UI
   const showDeckBuilder = deckBuildingState?.phase === 'building' ||
-    (deckBuildingState?.phase === 'submitted' && !tournamentState)
+    (deckBuildingState?.phase === 'submitted' && !tournamentState && !ffaState)
   const showDraftPick = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'DRAFT'
   const showWinstonDraft = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'WINSTON_DRAFT'
   const showGridDraft = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'GRID_DRAFT'
@@ -342,6 +368,9 @@ export default function App() {
 
       {/* Spectator view (when watching another game — skip when ReplayViewer handles its own UI) */}
       {spectatingState && !spectatingState.isReplay && <SpectatorGameBoard />}
+
+      {/* Session takeover overlay (this tab's identity connected from another tab/device) */}
+      <SessionReplacedOverlay />
     </div>
   )
 }
@@ -378,11 +407,9 @@ function GameOverlay() {
   const returnToMenu = useGameStore((state) => state.returnToMenu)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!lastError) return
-    const timer = setTimeout(clearError, 5000)
-    return () => clearTimeout(timer)
-  }, [lastError, clearError])
+  // Auto-dismiss is handled centrally in the store (setError schedules clearError), so it
+  // works on every route — not just where this overlay happens to be mounted. The × button
+  // below dismisses early.
 
   if (gameOverState) {
     // Use custom message if provided, otherwise fall back to standard reason

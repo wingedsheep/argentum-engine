@@ -54,8 +54,8 @@ val FlamescrollCelebrant = card("Flamescroll Celebrant") {
         spell {
             selfExile()
             effect = Effects.Composite(
-                Effects.CantCastSpells(EffectTarget.PlayerRef(Player.Opponent)),
-                Effects.CantActivateLoyaltyAbilities(EffectTarget.PlayerRef(Player.Opponent)),
+                Effects.CantCastSpells(EffectTarget.PlayerRef(Player.EachOpponent)),
+                Effects.CantActivateLoyaltyAbilities(EffectTarget.PlayerRef(Player.EachOpponent)),
             )
         }
     }

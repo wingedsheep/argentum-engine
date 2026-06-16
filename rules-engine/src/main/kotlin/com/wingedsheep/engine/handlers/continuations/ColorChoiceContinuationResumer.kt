@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.mana.AdditionalManaOnSourceTapMirror
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.withCastChoice
@@ -90,7 +91,19 @@ class ColorChoiceContinuationResumer(
         )
 
         if (effectResult.isPaused) return effectResult.toExecutionResult()
-        return checkForMore(effectResult.state, effectResult.events.toList())
+
+        // CR 605 mirror bonus: if the just-chosen mana came from tapping a permanent for mana
+        // (the continuation's source) and a battlefield `AdditionalManaOnSourceTap` mirror static
+        // (color = null) applies to that source for this tapper, add one mana of the chosen type.
+        // This is the any-color analogue of `ActivateAbilityHandler.resolveAdditionalManaOnSourceTap`
+        // — that path runs only for fixed/non-pausing producers (Lavaleaper's basic lands); an
+        // any-color producer (Roxanne's Meteorite, "{T}: Add one mana of any color") pauses for the
+        // color choice and resumes here, so the mirror must fire after the choice is known.
+        val mirrored = AdditionalManaOnSourceTapMirror.applyForResolvedTap(
+            services, effectResult.state, continuation.sourceId, continuation.controllerId, response.color
+        )
+        if (mirrored.isPaused) return mirrored
+        return checkForMore(mirrored.newState, effectResult.events.toList() + mirrored.events)
     }
 
     fun resumeChooseColorForTarget(

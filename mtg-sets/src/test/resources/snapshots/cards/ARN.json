@@ -755,6 +755,119 @@
     ]
 }
 
+// Cyclone
+{
+    "name": "Cyclone",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, put a wind counter on this enchantment, then sacrifice this enchantment unless you pay {G} for each wind counter on it. If you pay, this enchantment deals damage equal to the number of wind counters on it to each creature and each player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "wind",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "PayDynamicManaCost",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "wind"
+                                            }
+                                        }
+                                    },
+                                    "color": "GREEN"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Group",
+                                            "filter": {
+                                                "baseFilter": "creature"
+                                            }
+                                        },
+                                        "body": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": "Source",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": {
+                                                        "type": "Named",
+                                                        "name": "wind"
+                                                    }
+                                                }
+                                            },
+                                            "target": "Self"
+                                        }
+                                    },
+                                    {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Source",
+                                            "numericProperty": {
+                                                "type": "CounterCount",
+                                                "counterType": {
+                                                    "type": "Named",
+                                                    "name": "wind"
+                                                }
+                                            }
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "Each"
+                                        }
+                                    }
+                                ]
+                            },
+                            "otherwise": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a wind counter on this enchantment, then sacrifice this enchantment unless you pay {G} for each wind counter on it. If you pay, this enchantment deals damage equal to the number of wind counters on it to each creature and each player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f11684d6-5b74-47a7-a2d0-256c9e437aa6.jpg?1562940349"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dancing Scimitar
 {
     "name": "Dancing Scimitar",
@@ -810,7 +923,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -1284,7 +1397,8 @@
                         {
                             "type": "Not",
                             "condition": {
-                                "type": "SourceMatches",
+                                "type": "EntityMatches",
+                                "entity": "Self",
                                 "filter": {
                                     "statePredicates": [
                                         "AttackedThisTurn"
@@ -1295,7 +1409,8 @@
                         {
                             "type": "Not",
                             "condition": {
-                                "type": "SourceMatches",
+                                "type": "EntityMatches",
+                                "entity": "Self",
                                 "filter": {
                                     "statePredicates": [
                                         "EnteredThisTurn"
@@ -1373,6 +1488,38 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Eye for an Eye
+{
+    "name": "Eye for an Eye",
+    "manaCost": "{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "The next time a source of your choice would deal damage to you this turn, instead that source deals that much damage to you and Eye for an Eye deals that much damage to that source's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "sourceFilter": "ChosenSource",
+            "onPrevented": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "PREVENTED_DAMAGE_AMOUNT"
+                },
+                "target": "ControllerOfTriggeringEntity"
+            },
+            "preventDamage": false
+        }
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2933ca2a-097b-44f4-ae56-ad524d26fd06.jpg?1562902609"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1542,7 +1689,8 @@
                     }
                 },
                 "condition": {
-                    "type": "SourceMatches",
+                    "type": "EntityMatches",
+                    "entity": "Self",
                     "filter": "untapped"
                 }
             }
@@ -1555,6 +1703,103 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Guardian Beast
+{
+    "name": "Guardian Beast",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "As long as this creature is untapped, noncreature artifacts you control can't be enchanted, they have indestructible, and other players can't gain control of them. This effect doesn't remove Auras already attached to those artifacts.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_ENCHANTED",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_GAIN_CONTROL",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Ken Meyer, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9941f83b-2903-4eab-ac6d-5313e3978fa3.jpg?1562923479"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1787,7 +2032,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -2152,7 +2397,7 @@
                         },
                         "right": {
                             "type": "TurnTracking",
-                            "player": "Opponent",
+                            "player": "EachOpponent",
                             "tracker": "CREATURES_DIED"
                         }
                     },
@@ -2526,7 +2771,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -2844,6 +3089,56 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Oubliette
+{
+    "name": "Oubliette",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, target creature phases out until this enchantment leaves the battlefield. Tap that creature as it phases in this way. (Auras and Equipment phase out with it. While permanents are phased out, they're treated as though they don't exist.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PhaseOutUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    },
+                    "tapOnPhaseIn": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "creature"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": "PhaseInLinkedToSource"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30d1450f-2909-410e-9920-731278fa74de.jpg?1562904037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.evaluation
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.ai.engine.soleOpponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -27,7 +28,7 @@ import com.wingedsheep.sdk.model.EntityId
  */
 object LifeDifferential : BoardFeature {
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        val opponentId = state.getOpponent(playerId) ?: return 0.0
+        val opponentId = state.soleOpponent(playerId) ?: return 0.0
         val myLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
         val theirLife = state.getEntity(opponentId)?.get<LifeTotalComponent>()?.life ?: 0
         return lifeValue(myLife) - lifeValue(theirLife)
@@ -53,7 +54,7 @@ object LifeDifferential : BoardFeature {
  */
 object BoardPresence : BoardFeature {
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        val opponentId = state.getOpponent(playerId) ?: return 0.0
+        val opponentId = state.soleOpponent(playerId) ?: return 0.0
         return boardValue(state, projected, playerId) - boardValue(state, projected, opponentId)
     }
 
@@ -216,7 +217,7 @@ object BoardPresence : BoardFeature {
  */
 object CardAdvantage : BoardFeature {
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        val opponentId = state.getOpponent(playerId) ?: return 0.0
+        val opponentId = state.soleOpponent(playerId) ?: return 0.0
         val myCards = state.getZone(playerId, Zone.HAND).size
         val theirCards = state.getZone(opponentId, Zone.HAND).size
         return cardValue(myCards) - cardValue(theirCards)
@@ -245,7 +246,7 @@ object CardAdvantage : BoardFeature {
  */
 object ThreatAssessment : BoardFeature {
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        val opponentId = state.getOpponent(playerId) ?: return 0.0
+        val opponentId = state.soleOpponent(playerId) ?: return 0.0
 
         val myLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 20
         val theirLife = state.getEntity(opponentId)?.get<LifeTotalComponent>()?.life ?: 20
@@ -346,7 +347,7 @@ object ThreatAssessment : BoardFeature {
  */
 object Tempo : BoardFeature {
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        val opponentId = state.getOpponent(playerId) ?: return 0.0
+        val opponentId = state.soleOpponent(playerId) ?: return 0.0
 
         val myLands = countLands(state, projected, playerId)
         val theirLands = countLands(state, projected, opponentId)

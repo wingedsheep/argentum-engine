@@ -7,7 +7,7 @@ import type { EntityId } from '@/types'
 import type { ClientGameState, ClientEvent, LegalActionInfo, PendingDecision, OpponentDecisionStatus, PriorityModeValue, Step } from '@/types'
 import { trackEvent, setInGame } from '@/utils/analytics.ts'
 import { applyStateDelta } from '@/network/deltaApplicator.ts'
-import { getWebSocket, clearLobbyId } from '../shared'
+import { getWebSocket, clearLobbyId, requestReauth } from '../shared'
 import type { SetState, GetState } from './types'
 
 /**
@@ -60,6 +60,7 @@ function getEventLogType(eventType: string): 'action' | 'turn' | 'combat' | 'sys
     case 'creatureAttacked':
     case 'creatureBlocked': return 'combat'
     case 'abilityFizzled':
+    case 'abilityAutoAnswered':
     case 'gameEnded':
     case 'playerLost': return 'system'
     default: return 'action'
@@ -409,7 +410,7 @@ type GameplayHandlerKeys =
   | 'onGameCreated' | 'onGameStarted' | 'onGameCancelled'
   | 'onStateUpdate' | 'onStateDeltaUpdate'
   | 'onMulliganDecision' | 'onChooseBottomCards' | 'onMulliganComplete' | 'onWaitingForOpponentMulligan'
-  | 'onGameOver' | 'onError'
+  | 'onGameOver' | 'onPlayerEliminated' | 'onError'
 
 export function createGameplayHandlers(set: SetState, get: GetState): Pick<MessageHandlers, GameplayHandlerKeys> {
   return {
@@ -419,11 +420,26 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
     },
 
     onGameStarted: (msg) => {
-      trackEvent('game_started', { opponent_name: msg.opponentName })
+      // Derive "the opponent" from the seat roster — the first non-you seat. For 2-player this is
+      // the sole opponent; the N-player UI derives everything from gameState.players directly.
+      const opponentName = msg.players.find((p) => !p.isYou)?.name ?? 'Opponent'
+      trackEvent('game_started', { opponent_name: opponentName, seats: msg.players.length })
       setInGame(true)
 
-      // Clear spectating state — active game takes priority
+      // Clear spectating state — active game takes priority. Fresh game, fresh camera.
       set({ spectatingState: null })
+      get().resetBoardView()
+
+      // Two-Headed Giant (CR 810): the seat → team map only arrives here, in the game-start
+      // roster. Stamp it now (after resetBoardView clears it) so the team-grouped rail, team
+      // colors, ally board, and shared-life headers can read it for the whole game.
+      const seatTeams: Record<string, number> = {}
+      for (const p of msg.players) {
+        if (p.teamIndex != null) seatTeams[p.playerId] = p.teamIndex
+      }
+      // Shared life is a game-level fact (same on every seat); 2HG shares, Team vs. Team doesn't.
+      const sharedLife = msg.players.some((p) => p.teamSharedLife)
+      get().setSeatTeams(seatTeams, sharedLife)
 
       // Load persisted stop overrides and send to server
       try {
@@ -452,7 +468,7 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       if (tournamentState && playerId) {
         round = tournamentState.currentRound
         const playerStanding = tournamentState.standings.find((s) => s.playerId === playerId)
-        const opponentStanding = tournamentState.standings.find((s) => s.playerName === msg.opponentName)
+        const opponentStanding = tournamentState.standings.find((s) => s.playerName === opponentName)
         if (playerStanding) {
           playerRecord = `${playerStanding.wins}-${playerStanding.losses}${playerStanding.draws > 0 ? `-${playerStanding.draws}` : ''}`
         }
@@ -463,7 +479,7 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       set({
         matchIntro: {
           playerName,
-          opponentName: msg.opponentName,
+          opponentName,
           ...(round != null ? { round } : {}),
           ...(playerRecord != null ? { playerRecord } : {}),
           ...(opponentRecord != null ? { opponentRecord } : {}),
@@ -471,12 +487,12 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       })
 
       set((state) => ({
-        opponentName: msg.opponentName,
+        opponentName,
         mulliganState: null,
-        // Preserve the drafted deck in tournament mode so the player can still
+        // Preserve the drafted deck in tournament/FFA mode so the player can still
         // view or save it from the standings screen between rounds and after
         // the tournament completes.
-        deckBuildingState: state.tournamentState ? state.deckBuildingState : null,
+        deckBuildingState: state.tournamentState || state.ffaState ? state.deckBuildingState : null,
       }))
     },
 
@@ -494,11 +510,18 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
     },
 
     onStateUpdate: (msg) => {
+      // Once we've left the game (returnToMenu nulls sessionId — e.g. an eliminated FFA player
+      // who returned to the pod standings), ignore its ongoing broadcasts instead of being
+      // dragged back into the board. sessionId is always set at game start before any state
+      // flows, so this never drops a legitimate in-game update.
+      if (get().sessionId == null) return
       getWebSocket()?.onStateVersionReceived(msg.stateVersion)
       processStateUpdate(msg.state, msg, set, get)
     },
 
     onStateDeltaUpdate: (msg) => {
+      // See onStateUpdate: don't re-enter a game we've left (and don't request a resync for it).
+      if (get().sessionId == null) return
       const ws = getWebSocket()
       ws?.onStateVersionReceived(msg.stateVersion)
 
@@ -550,7 +573,10 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
     },
 
     onGameOver: (msg) => {
-      const { playerId } = get()
+      const { playerId, sessionId } = get()
+      // Ignore a game-over for a game we already left — e.g. an eliminated FFA player who
+      // returned to the lobby still holds a seat server-side and receives the final GameOver.
+      if (msg.gameId && sessionId !== msg.gameId) return
       const result: 'win' | 'lose' | 'draw' =
         msg.winnerId === null ? 'draw' : msg.winnerId === playerId ? 'win' : 'lose'
       trackEvent('game_over', { result, reason: msg.reason })
@@ -566,7 +592,29 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       })
     },
 
+    onPlayerEliminated: (msg) => {
+      // Personal elimination from a multiplayer game that continues without us (e.g. we
+      // conceded a 4-player pod). Show the defeat overlay; the table plays on.
+      if (msg.gameId !== get().sessionId) return
+      trackEvent('game_over', { result: 'lose', reason: msg.reason, eliminated: true })
+      setInGame(false)
+      set({
+        gameOverState: {
+          winnerId: null,
+          reason: msg.reason,
+          result: 'lose',
+          message: 'You are out of the game — the table plays on without you.',
+          gameId: msg.gameId,
+        },
+      })
+    },
+
     onError: (msg) => {
+      // NOT_CONNECTED means the server no longer recognizes this socket as an
+      // authenticated session (e.g. it restarted while the tab was backgrounded).
+      // Re-send the connect message with the stored token instead of surfacing the
+      // error — the server's reconnect path restores identity, game, and lobby state.
+      if (msg.code === 'NOT_CONNECTED' && requestReauth()) return
       if (msg.code === 'GAME_NOT_FOUND' || msg.message?.toLowerCase().includes('lobby')) {
         clearLobbyId()
       }
@@ -575,12 +623,10 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       // already been torn down. The GameOver message handles the real cleanup; no user
       // action is required and showing a toast here is confusing.
       if (msg.code === 'GAME_NOT_FOUND' && msg.message === 'Not in a game') return
-      set({
-        lastError: {
-          code: msg.code,
-          message: msg.message,
-          timestamp: Date.now(),
-        },
+      get().setError({
+        code: msg.code,
+        message: msg.message,
+        timestamp: Date.now(),
       })
     },
   }

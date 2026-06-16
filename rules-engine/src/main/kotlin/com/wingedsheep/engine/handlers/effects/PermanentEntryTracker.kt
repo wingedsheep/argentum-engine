@@ -1,8 +1,10 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
 import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentTypesEnteredBattlefieldThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.EntityId
 
@@ -43,6 +45,7 @@ object PermanentEntryTracker {
     fun record(state: GameState, controllerId: EntityId, entityId: EntityId): GameState {
         val cardTypes = projectedCardTypes(state, entityId)
         if (cardTypes.isEmpty()) return state
+        val subtypes = state.projectedState.getSubtypes(entityId)
         return state.updateEntity(controllerId) { container ->
             val typeMerged = run {
                 val existing = container.get<PermanentTypesEnteredBattlefieldThisTurnComponent>()
@@ -51,16 +54,28 @@ object PermanentEntryTracker {
                 if (merged == existing.cardTypes) container
                 else container.with(PermanentTypesEnteredBattlefieldThisTurnComponent(merged))
             }
+            // Per-permanent entry list, keyed by entityId so a (theoretical) double-record is
+            // idempotent. Backs subtype-keyed "for each [type] that entered this turn" counts.
+            val perPermanentMerged = run {
+                val existing = typeMerged.get<PermanentsEnteredUnderControlThisTurnComponent>()
+                    ?: PermanentsEnteredUnderControlThisTurnComponent()
+                if (existing.entries.any { it.entityId == entityId }) typeMerged
+                else typeMerged.with(
+                    PermanentsEnteredUnderControlThisTurnComponent(
+                        existing.entries + EnteredPermanentRecord(entityId, subtypes)
+                    )
+                )
+            }
             // Lands need a *count*, not just presence, for "for each land that entered
             // this turn" dynamic amounts (Bioengineered Future). Two unrelated lands
             // entering both bump the counter; the set-based type tracker above sees them
             // as a single LAND entry.
             if (CardType.LAND in cardTypes) {
-                val landExisting = typeMerged.get<LandsEnteredUnderControlThisTurnComponent>()
+                val landExisting = perPermanentMerged.get<LandsEnteredUnderControlThisTurnComponent>()
                     ?: LandsEnteredUnderControlThisTurnComponent()
-                typeMerged.with(LandsEnteredUnderControlThisTurnComponent(landExisting.count + 1))
+                perPermanentMerged.with(LandsEnteredUnderControlThisTurnComponent(landExisting.count + 1))
             } else {
-                typeMerged
+                perPermanentMerged
             }
         }
     }

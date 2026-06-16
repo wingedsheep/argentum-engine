@@ -39,8 +39,8 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
             ?: targetContainer?.get<CardComponent>()?.ownerId
             ?: return EffectResult.success(state) // Can't determine owner, effect fizzles
 
-        // Owner must have a life total
-        if (state.getEntity(ownerId)?.get<LifeTotalComponent>()?.life == null) {
+        // Owner must have a life total (presence check; the value is the team's shared total).
+        if (state.getEntity(ownerId)?.get<LifeTotalComponent>() == null) {
             return EffectResult.error(state, "Owner has no life total")
         }
 

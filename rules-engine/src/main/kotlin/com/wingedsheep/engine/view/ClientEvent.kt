@@ -242,6 +242,21 @@ sealed interface ClientEvent {
         }
     ) : ClientEvent
 
+    /**
+     * A "you may" may-question was auto-resolved from the viewer's persistent yield (backlog §C).
+     * Surfaced subtly in the log so the player knows the system acted for them.
+     */
+    @Serializable
+    @SerialName("abilityAutoAnswered")
+    data class AbilityAutoAnswered(
+        val sourceId: EntityId,
+        val sourceName: String,
+        val answer: Boolean,
+        override val description: String =
+            if (answer) "Auto-answered Yes to $sourceName (yield)"
+            else "Auto-answered No to $sourceName (yield)"
+    ) : ClientEvent
+
     // =========================================================================
     // State Change Events
     // =========================================================================
@@ -895,6 +910,17 @@ object ClientEventTransformer {
                 isYours = event.controllerId == viewingPlayerId
             )
 
+            // Only the controller (whose yield acted) sees the auto-answer note; it's their own
+            // private preference, so opponents get nothing.
+            is AbilityAutoAnsweredEvent ->
+                if (event.controllerId == viewingPlayerId) {
+                    ClientEvent.AbilityAutoAnswered(
+                        sourceId = event.sourceId,
+                        sourceName = event.sourceName,
+                        answer = event.answer
+                    )
+                } else null
+
             is TappedEvent -> ClientEvent.PermanentTapped(
                 permanentId = event.entityId,
                 permanentName = event.entityName
@@ -960,6 +986,10 @@ object ClientEventTransformer {
                 playerId = event.playerId,
                 reason = event.reason.name
             )
+
+            // The player-left cleanup is a consequence of the already-announced loss; the
+            // multiplayer board-teardown UX is Phase 3 of backlog/multiplayer.md.
+            is PlayerLeftGameEvent -> null
 
             is GameEndedEvent -> ClientEvent.GameEnded(
                 winnerId = event.winnerId
@@ -1173,6 +1203,10 @@ is PermanentsSacrificedEvent -> {
                 becameFullyUnlocked = event.becameFullyUnlocked,
                 isYours = event.controllerId == viewingPlayerId
             )
+
+            // Internal: drives "becomes attached" triggers; the attach itself is already
+            // reflected by the attachment's zone-change/move animation, so no separate client event.
+            is PermanentAttachedEvent -> null
 
             is TurnHijackedEvent,
             is CommitCrimeEvent,

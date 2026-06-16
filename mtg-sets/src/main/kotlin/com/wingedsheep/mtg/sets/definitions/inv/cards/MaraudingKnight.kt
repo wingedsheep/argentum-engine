@@ -34,12 +34,12 @@ val MaraudingKnight = card("Marauding Knight") {
         ability = GrantDynamicStatsEffect(
             filter = GroupFilter.source(),
             powerBonus = DynamicAmount.Count(
-                player = Player.Opponent,
+                player = Player.EachOpponent,
                 zone = Zone.BATTLEFIELD,
                 filter = GameObjectFilter.Land.withSubtype("Plains")
             ),
             toughnessBonus = DynamicAmount.Count(
-                player = Player.Opponent,
+                player = Player.EachOpponent,
                 zone = Zone.BATTLEFIELD,
                 filter = GameObjectFilter.Land.withSubtype("Plains")
             )

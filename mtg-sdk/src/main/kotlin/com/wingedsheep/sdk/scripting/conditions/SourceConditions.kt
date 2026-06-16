@@ -3,43 +3,17 @@ package com.wingedsheep.sdk.scripting.conditions
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
-// Source Matching Primitive
-// =============================================================================
-
-/**
- * Condition: the source permanent matches [filter].
- *
- * Generic source-state primitive that subsumes the older singleton conditions
- * (`SourceIsAttacking`, `SourceIsTapped`, `SourceHasSubtype`, `SourceHasKeyword`,
- * `SourceHasCounter`, etc.). The engine evaluates by running [filter] against
- * the source entity via the standard predicate evaluator — works in both
- * resolution and static-ability (projection) contexts.
- *
- * Card authors should prefer the `Conditions.*` DSL helpers, which build the
- * appropriate filter for common cases (`Conditions.SourceIsAttacking`,
- * `Conditions.SourceHasSubtype(Subtype.WALL)`, etc.).
- */
-@SerialName("SourceMatches")
-@Serializable
-data class SourceMatches(val filter: GameObjectFilter) : Condition {
-    override val description: String =
-        if (filter == GameObjectFilter.Any) "if this permanent matches"
-        else "if this ${filter.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Condition {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-// =============================================================================
 // Source Conditions
+//
+// "The source permanent matches [filter]" lives in the unified [EntityMatches]
+// condition (EntityMatchesCondition.kt) as `EntityMatches(EffectTarget.Self, filter)`,
+// reached through the `Conditions.SourceMatches` / `Conditions.SourceIs*` facade helpers.
 // =============================================================================
 
 /**
@@ -144,6 +118,22 @@ data object SourceIsModified : Condition {
 }
 
 /**
+ * Condition: "if you put a counter on this creature this turn".
+ *
+ * True iff one or more counters have been placed on the source permanent during the
+ * current turn — tracked by the per-permanent `ReceivedCountersThisTurnComponent`, which
+ * the counter-placement path stamps and the cleanup step clears each turn. Used by
+ * Secrets of Strixhaven's Fractal Tender end-step trigger ("if you put a counter on this
+ * creature this turn, …"), and reusable by any "if a counter was put on this permanent
+ * this turn" intervening-if.
+ */
+@SerialName("SourceReceivedCounterThisTurn")
+@Serializable
+data object SourceReceivedCounterThisTurn : Condition {
+    override val description: String = "you put a counter on this creature this turn"
+}
+
+/**
  * Condition: "If you cast this spell from your hand"
  * Used for Phage the Untouchable's ETB trigger condition.
  * Checks whether the source permanent was cast from the hand (as opposed to
@@ -193,6 +183,25 @@ data object WasCast : Condition {
 @Serializable
 data object NoManaSpentToCast : Condition {
     override val description: String = "it wasn't cast or no mana was spent to cast it"
+}
+
+/**
+ * Condition: "if none of them were cast or no mana was spent to cast them" — the batch-enters
+ * variant of [NoManaSpentToCast], evaluated over the permanents a batch trigger captured
+ * (the `PermanentsEnteredEvent` batch that caused the trigger, exposed at resolution as the
+ * `trigger.captured` pipeline collection) rather than the ability's own source.
+ *
+ * True iff **every** captured permanent satisfies [NoManaSpentToCast] (was put onto the
+ * battlefield without being cast, or was cast with zero total mana spent). An empty capture is
+ * vacuously true. Use as a resolution-time gate ([ConditionalEffect]) on a
+ * [com.wingedsheep.sdk.dsl.Triggers.OneOrMorePermanentsEnter] payoff — Satoru, the Infiltrator
+ * ("Whenever Satoru and/or one or more other nontoken creatures you control enter, if none of
+ * them were cast or no mana was spent to cast them, draw a card.").
+ */
+@SerialName("NoManaSpentToCastEntered")
+@Serializable
+data object NoManaSpentToCastEntered : Condition {
+    override val description: String = "none of them were cast or no mana was spent to cast them"
 }
 
 /**

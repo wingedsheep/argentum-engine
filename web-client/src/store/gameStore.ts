@@ -40,6 +40,7 @@ export type {
   WinstonDraftState,
   LobbyState,
   TournamentState,
+  FfaState,
   SpectatingState,
   LogEntry,
   DrawAnimation,

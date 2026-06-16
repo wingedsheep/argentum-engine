@@ -829,6 +829,42 @@ export const styles: Record<string, React.CSSProperties> = {
     right: 4,
     zIndex: 10,
   } as React.CSSProperties,
+  // "×N" pip on a collapsed pile of identical stack items
+  stackCountBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(100, 50, 150, 0.97)',
+    color: 'white',
+    padding: '2px 7px',
+    borderRadius: 10,
+    fontSize: 12,
+    fontWeight: 800,
+    letterSpacing: 0.3,
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.55)',
+    border: '1px solid rgba(190, 150, 230, 0.8)',
+    zIndex: 11,
+    pointerEvents: 'none',
+  } as React.CSSProperties,
+  // Small "⊟ N" chip on the first member of an expanded pile, click to re-collapse
+  stackCollapseChip: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(60, 40, 90, 0.92)',
+    color: '#e0d4f0',
+    padding: '2px 6px',
+    borderRadius: 4,
+    fontSize: 10,
+    fontWeight: 700,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(150, 100, 200, 0.5)',
+    cursor: 'pointer',
+    zIndex: 12,
+  } as React.CSSProperties,
   // Card preview styles
   cardPreviewOverlay: {
     position: 'fixed',
@@ -1560,6 +1596,27 @@ export const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none',
     zIndex: 6,
   } as React.CSSProperties,
+
+  // Prepared status (Secrets of Strixhaven) — a creature whose prepare-spell copy waits castable in exile.
+  preparedBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    borderRadius: 4,
+    padding: '1px 5px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 3,
+    fontWeight: 700,
+    fontSize: 10,
+    color: '#f3ecff',
+    background: 'linear-gradient(135deg, #5b3fb0, #8f6fe0)',
+    border: '1px solid #cdb8ff',
+    boxShadow: '0 0 6px rgba(143, 111, 224, 0.85)',
+    textShadow: 'none',
+    pointerEvents: 'none',
+    zIndex: 6,
+  } as React.CSSProperties,
 }
 
 /**
@@ -1574,6 +1631,8 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   VERSE: { bg: 'rgba(20, 50, 90, 0.95)', border: 'rgba(120, 180, 230, 0.6)', color: '#a0c8e8' },
   INFLUENCE: { bg: 'rgba(40, 20, 60, 0.95)', border: 'rgba(180, 130, 220, 0.6)', color: '#c898e0' },
   BURDEN: { bg: 'rgba(60, 25, 15, 0.95)', border: 'rgba(220, 160, 60, 0.7)', color: '#e8b860', glow: 'rgba(220, 160, 60, 0.6)' },
+  LOOT: { bg: 'rgba(70, 55, 15, 0.95)', border: 'rgba(230, 200, 90, 0.7)', color: '#e8cf68', glow: 'rgba(230, 200, 90, 0.55)' },
+  WIND: { bg: 'rgba(20, 60, 55, 0.95)', border: 'rgba(120, 220, 200, 0.6)', color: '#9ce0d0' },
 }
 
 const fallbackCounterPalette: CounterBadgePalette = { bg: 'rgba(40, 40, 40, 0.95)', border: 'rgba(180, 180, 180, 0.6)', color: '#e0e0e0' }

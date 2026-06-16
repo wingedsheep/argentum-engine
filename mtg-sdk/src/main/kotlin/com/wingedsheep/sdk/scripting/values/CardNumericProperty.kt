@@ -40,5 +40,12 @@ enum class Aggregation {
      * the same kind on several permanents still counts once. Used for "different kinds of
      * counters among <group>" (e.g. Hundred-Battle Veteran).
      */
-    DISTINCT_COUNTER_TYPES
+    DISTINCT_COUNTER_TYPES,
+    /**
+     * Count distinct values of the configured [CardNumericProperty] (power, toughness, or mana
+     * value) across all matched entities — e.g. "the number of different powers among creatures
+     * you control" (Selvala, Eager Trailblazer). Requires `property` to be set; two creatures with
+     * the same power count once.
+     */
+    DISTINCT_VALUES
 }

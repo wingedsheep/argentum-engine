@@ -64,7 +64,13 @@ enum class TurnTracker {
      * permanent cards put into the player's graveyard from any zone. Backs the descend
      * gate and the descend N / fathomless descent ability words.
      */
-    DESCENDED;
+    DESCENDED,
+    /**
+     * Number of cards the player has drawn this turn (CR 120). Backed by
+     * `CardsDrawnThisTurnComponent`, reset to 0 for every player at the start of each turn.
+     * Powers "equal to the number of cards you've drawn this turn" (Duelist of the Mind).
+     */
+    CARDS_DRAWN;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -82,6 +88,7 @@ enum class TurnTracker {
         FOOD_SACRIFICED -> "whether ${player.description} sacrificed a Food this turn"
         CARDS_LEFT_GRAVEYARD -> "the number of cards that left ${player.possessive} graveyard this turn"
         DESCENDED -> "the number of times ${player.description} descended this turn"
+        CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
     }
 }
 
@@ -96,6 +103,13 @@ enum class TurnTracker {
 enum class ContextPropertyKey(val description: String) {
     /** The amount of damage in the current trigger payload (Tephraderm, Wall of Hope, …). */
     TRIGGER_DAMAGE_AMOUNT("the damage dealt"),
+    /**
+     * The damage recipient creature's toughness at the instant the triggering damage was dealt
+     * (last-known information — the creature may have died from the same damage). Read by payoffs
+     * keyed on "damage equal to that creature's toughness" (Taii Wakeen, Perfect Shot). `null`/0
+     * when the recipient was not a creature.
+     */
+    TRIGGER_RECIPIENT_TOUGHNESS("that creature's toughness"),
     /**
      * The amount of damage prevented by a prevention shield's `onPrevented` reaction context
      * (New Way Forward, Deflecting Palm) — "that much" / "that many". Shares the trigger-amount
@@ -132,6 +146,23 @@ enum class ContextPropertyKey(val description: String) {
      * a mode for that spell, not the number of distinct modes").
      */
     MODES_CHOSEN_ON_TRIGGERING_SPELL("the number of times you chose a mode for that spell"),
+    /**
+     * Total mana spent to cast the spell that fired this trigger. Distinct from
+     * [DynamicAmount.TotalManaSpent], which reads the *current resolving object's* own cast —
+     * this reads the **triggering** spell's cast (a "Whenever you cast an instant or sorcery
+     * spell, …, where X is the amount of mana spent to cast that spell" payoff that lives on a
+     * separate permanent). Populated from `SpellCastEvent.totalManaSpent`. `0` when the trigger
+     * was not driven by a spell cast. Used by Aberrant Manawurm and Expressive Firedancer.
+     */
+    MANA_SPENT_ON_TRIGGERING_SPELL("the amount of mana spent to cast that spell"),
+    /**
+     * Mana value (CR 202.3) of the spell that fired this trigger. Distinct from
+     * [MANA_SPENT_ON_TRIGGERING_SPELL] (mana actually paid) — this reads the spell's printed
+     * mana value, unaffected by cost reductions / alternative costs. Populated from
+     * `SpellCastEvent.manaValue`; `0` when the trigger was not driven by a spell cast. Used by
+     * Kellan, the Kid — "a permanent spell with equal or lesser mana value."
+     */
+    TRIGGERING_SPELL_MANA_VALUE("the mana value of that spell"),
     /**
      * Number of cards actually looked at by the scry that fired this trigger. Equals the
      * scry N parameter unless the library held fewer cards. Read by "Whenever you scry,
@@ -195,7 +226,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * Examples:
      * ```kotlin
      * LifeTotal(Player.You)       // your life total
-     * LifeTotal(Player.Opponent)  // opponent's life total
+     * LifeTotal(Player.TargetOpponent)  // target opponent's life total
      * ```
      */
     @SerialName("LifeTotal")
@@ -342,6 +373,26 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of distinct *colors* of mana spent to cast the source spell (0–5).
+     *
+     * Backs the **Converge** ability word — "Converge — … for each color of mana spent to
+     * cast it" — and the classic **Sunburst** counter rule. Counts how many of the five
+     * colored buckets (W/U/B/R/G) recorded on the spell's stack object are non-zero; colorless
+     * is not a color (CR 105.1) and never contributes. As with [TotalManaSpent], mana spent on
+     * the `{X}` portion is already folded into those buckets, so it counts here too.
+     *
+     * Evaluated against the source entity's recorded payment, so it resolves correctly whether
+     * read while the spell is still on the stack or as the permanent enters (the dominant use:
+     * feeding `ReplacementEffect.EntersWithDynamicCounters`). A permanent put onto the
+     * battlefield without being cast spent no mana, so this is 0 for it.
+     */
+    @SerialName("DistinctColorsManaSpent")
+    @Serializable
+    data object DistinctColorsManaSpent : DynamicAmount {
+        override val description: String = "the number of colors of mana spent to cast this spell"
+    }
+
+    /**
      * Reference to a stored variable by name.
      * Used for effects that need to reference a previously computed/stored value.
      * Example: Scapeshift stores "sacrificedCount" and SearchLibrary reads it.
@@ -360,7 +411,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @SerialName("StoredCardManaValue")
     @Serializable
     data class StoredCardManaValue(val collectionName: String) : DynamicAmount {
-        override val description: String = "the mana value of the $collectionName card"
+        override val description: String = "the mana value of that card"
     }
 
     /**
@@ -414,7 +465,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
 
     /**
      * Multiply a dynamic amount by a fixed multiplier.
-     * Example: Multiply(AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()), 3)
+     * Example: Multiply(AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature.attacking()), 3)
      */
     @SerialName("Multiply")
     @Serializable
@@ -554,7 +605,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 Zone.BATTLEFIELD -> {
                     when (player) {
                         Player.You -> append("you control")
-                        Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                        Player.TargetOpponent -> append("${player.description} controls")
                         Player.Each -> append("on the battlefield")
                         else -> append("${player.description} controls")
                     }
@@ -654,11 +705,16 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
+                Aggregation.DISTINCT_VALUES -> {
+                    append("the number of different ${property?.description ?: "value"} among ")
+                    if (excludeSelf) append("other ")
+                    append(pluralize(filter.description))
+                }
             }
             append(" ")
             when (player) {
                 Player.You -> append("you control")
-                Player.Opponent, Player.TargetOpponent -> append("${player.description} controls")
+                Player.TargetOpponent -> append("${player.description} controls")
                 Player.Each -> append("on the battlefield")
                 else -> append("${player.description} controls")
             }
@@ -738,6 +794,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 }
                 Aggregation.DISTINCT_COUNTER_TYPES -> {
                     append("the number of different kinds of counters among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.DISTINCT_VALUES -> {
+                    append("the number of different ${property?.description ?: "value"} among ")
                     append(pluralize(filter.description))
                 }
             }
@@ -936,6 +996,37 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data object CreaturesThatCrewedOrSaddledThisTurn : DynamicAmount {
         override val description: String = "the number of creatures that crewed or saddled it this turn"
+    }
+
+    /**
+     * The number of permanents of creature [subtype] that entered the battlefield under
+     * [player]'s control this turn (counting even those that have since left or changed type —
+     * the entry event is what's tracked). When [excludeTriggeringEntity] is true, the permanent
+     * whose entry triggered the ability is not counted, giving "each *other* [subtype]" wording
+     * (Geralf, the Fleshwright). Simultaneous entries each see the others (2024-04-12 ruling).
+     *
+     * Backed by `PermanentsEnteredUnderControlThisTurnComponent`; the triggering entity is read
+     * from the resolution context's triggering-entity id.
+     */
+    @SerialName("SubtypeEnteredUnderControlThisTurn")
+    @Serializable
+    data class SubtypeEnteredUnderControlThisTurn(
+        val player: Player,
+        val subtype: com.wingedsheep.sdk.core.Subtype,
+        val excludeTriggeringEntity: Boolean = false
+    ) : DynamicAmount {
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
+            val new = replacer.replaceSubtype(subtype)
+            return if (new == subtype) this else copy(subtype = new)
+        }
+        override val description: String = buildString {
+            append("the number of ")
+            if (excludeTriggeringEntity) append("other ")
+            append(subtype.value)
+            append("s that entered the battlefield under ")
+            append(player.possessive)
+            append(" control this turn")
+        }
     }
 
 }

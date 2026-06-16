@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -44,7 +45,10 @@ object HandPatterns {
             }
             return CompositeEffect(listOf(
                 GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.Opponent),
+                    // TODO(multiplayer Phase 1, backlog/multiplayer.md): "each opponent discards,
+                    //  you draw per discard" needs cross-iteration count accumulation; until then
+                    //  this hits one opponent (identical in two-player games).
+                    source = CardSource.FromZone(Zone.HAND, Player.AnOpponent),
                     storeAs = "hand"
                 ),
                 SelectFromCollectionEffect(
@@ -56,7 +60,7 @@ object HandPatterns {
                 ),
                 MoveCollectionEffect(
                     from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player = Player.Opponent),
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player = Player.AnOpponent),
                     moveType = MoveType.Discard
                 ),
                 DrawCardsEffect(count = drawCount)
@@ -84,7 +88,63 @@ object HandPatterns {
         )
     }
 
-    fun discardCards(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect {
+    fun discardCards(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect =
+        discardCards(
+            DynamicAmount.Fixed(count),
+            target,
+            prompt = "Choose $count card${if (count != 1) "s" else ""} to discard",
+        )
+
+    /**
+     * Discard a [DynamicAmount] of cards (e.g. "discard X cards, where X is the number of colors
+     * of mana spent to cast this spell" — SOS Converge's Arcane Omens). Same Gather → Select →
+     * Move pipeline as the fixed-count overload; the count is resolved at the SelectFromCollection
+     * step.
+     */
+    fun discardCards(
+        count: DynamicAmount,
+        target: EffectTarget = EffectTarget.Controller,
+        prompt: String = "Choose cards to discard",
+    ): CompositeEffect {
+        val player = effectTargetToPlayer(target)
+        val chooser = effectTargetToChooser(target)
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.FromZone(Zone.HAND, player),
+                    storeAs = "hand"
+                ),
+                SelectFromCollectionEffect(
+                    from = "hand",
+                    selection = SelectionMode.ChooseExactly(count),
+                    chooser = chooser,
+                    storeSelected = "discarded",
+                    prompt = prompt
+                ),
+                MoveCollectionEffect(
+                    from = "discarded",
+                    destination = CardDestination.ToZone(Zone.GRAVEYARD, player),
+                    moveType = MoveType.Discard
+                )
+            )
+        )
+    }
+
+    /**
+     * Discard [count] cards, or satisfy the instruction by discarding fewer cards if
+     * the selection includes [requiredMatches] cards matching [unlessFilter].
+     *
+     * Models "discard two cards unless you discard a creature/basic land/artifact card"
+     * as one card-selection decision instead of a prior modal choice.
+     */
+    fun discardCardsUnlessMatching(
+        count: Int,
+        unlessFilter: GameObjectFilter,
+        target: EffectTarget = EffectTarget.Controller,
+        reducedCount: Int = 1,
+        requiredMatches: Int = 1,
+        prompt: String = "Choose $count cards to discard, or $reducedCount ${unlessFilter.description} card${if (reducedCount != 1) "s" else ""}"
+    ): CompositeEffect {
         val player = effectTargetToPlayer(target)
         val chooser = effectTargetToChooser(target)
         return CompositeEffect(
@@ -98,7 +158,14 @@ object HandPatterns {
                     selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
                     chooser = chooser,
                     storeSelected = "discarded",
-                    prompt = "Choose $count card${if (count != 1) "s" else ""} to discard"
+                    prompt = prompt,
+                    restrictions = listOf(
+                        SelectionRestriction.ReducedMinimumIfMatches(
+                            reducedMinimum = reducedCount,
+                            filter = unlessFilter,
+                            requiredMatches = requiredMatches
+                        )
+                    )
                 ),
                 MoveCollectionEffect(
                     from = "discarded",

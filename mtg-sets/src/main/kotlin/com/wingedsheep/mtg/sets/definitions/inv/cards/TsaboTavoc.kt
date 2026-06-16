@@ -36,7 +36,7 @@ val TsaboTavoc = card("Tsabo Tavoc") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = ForceSacrificeEffect(GameObjectFilter.Creature, 1, EffectTarget.PlayerRef(Player.Opponent))
+        effect = ForceSacrificeEffect(GameObjectFilter.Creature, 1, EffectTarget.PlayerRef(Player.DefendingPlayer))
     }
 
     activatedAbility {

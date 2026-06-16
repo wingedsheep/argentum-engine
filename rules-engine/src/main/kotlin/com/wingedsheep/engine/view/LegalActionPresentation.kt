@@ -175,6 +175,9 @@ data class AdditionalCostInfo(
     val sacrificeCount: Int = 1,
     val validTapTargets: List<EntityId> = emptyList(),
     val tapCount: Int = 0,
+    /** Station-style shortcut: when > 1, up to this many single-creature tap activations may be
+     *  queued in one gesture (select 1..N distinct creatures, one activation each). 1 = no batch. */
+    val tapBatchMaxActivations: Int = 1,
     val validDiscardTargets: List<EntityId> = emptyList(),
     val discardCount: Int = 0,
     val validBounceTargets: List<EntityId> = emptyList(),

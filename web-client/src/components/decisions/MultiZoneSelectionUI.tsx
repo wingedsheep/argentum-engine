@@ -63,9 +63,18 @@ export function MultiZoneSelectionUI({
 
   const hoveredCard = hoveredCardId ? gameState?.cards[hoveredCardId] : null
 
+  const conditionalMinimums = decision.conditionalMinimums ?? []
+  const satisfiesConditionalMinimum = conditionalMinimums.some((minimum) => {
+    const matching = selectedCards.filter((id) => minimum.matchingOptions.includes(id)).length
+    return selectedCards.length >= minimum.minimumSelections && matching >= minimum.requiredMatches
+  })
+  const requiredMinimum = conditionalMinimums.length > 0
+    ? Math.max(...conditionalMinimums.map((minimum) => minimum.requiredSelections))
+    : decision.minSelections
   const canConfirm =
     selectedCards.length >= decision.minSelections &&
-    selectedCards.length <= decision.maxSelections
+    selectedCards.length <= decision.maxSelections &&
+    (selectedCards.length >= requiredMinimum || satisfiesConditionalMinimum)
   const canSkip = decision.minSelections === 0
 
   // Calculate card size
@@ -153,13 +162,21 @@ export function MultiZoneSelectionUI({
       )}
 
       <p className={styles.hint}>
-        {decision.minSelections === decision.maxSelections
+        {conditionalMinimums.length > 0
+          ? `Selected: ${selectedCards.length} / ${requiredMinimum}; fewer is allowed if the selection matches the requirement`
+          : decision.minSelections === decision.maxSelections
           ? `Selected: ${selectedCards.length} / ${decision.minSelections}`
           : decision.minSelections === 0
             ? `Select up to ${decision.maxSelections}`
             : `Selected: ${selectedCards.length} / ${decision.minSelections} - ${decision.maxSelections}`
         }
       </p>
+
+      {conditionalMinimums.map((minimum) => (
+        <div key={`${minimum.requiredSelections}-${minimum.minimumSelections}-${minimum.requiredMatches}`} className={styles.hint}>
+          {minimum.description ?? `You may select ${minimum.minimumSelections} if it matches the requirement.`}
+        </div>
+      ))}
 
       {/* Zone groups */}
       <div className={styles.multiZoneContainer}>

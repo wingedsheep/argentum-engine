@@ -121,7 +121,8 @@ class DecisionHandler {
         prompt: String,
         yesText: String = "Yes",
         noText: String = "No",
-        phase: DecisionPhase = DecisionPhase.RESOLUTION
+        phase: DecisionPhase = DecisionPhase.RESOLUTION,
+        abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null
     ): ExecutionResult {
         val decision = YesNoDecision(
             id = generateDecisionId(),
@@ -130,7 +131,8 @@ class DecisionHandler {
             context = DecisionContext(
                 sourceId = sourceId,
                 sourceName = sourceName,
-                phase = phase
+                phase = phase,
+                abilityIdentity = abilityIdentity
             ),
             yesText = yesText,
             noText = noText

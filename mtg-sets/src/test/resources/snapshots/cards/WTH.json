@@ -1,3 +1,54 @@
+// Benalish Knight
+{
+    "name": "Benalish Knight",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFirst strike (This creature deals combat damage before creatures without first strike.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Zina Saunders",
+        "flavorText": "\"We called them 'armored lightning.'\"\n—Gerrard of the Weatherlight",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2c184bb-6c7d-4118-a111-ef27171cfee6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Bloodrock Cyclops
+{
+    "name": "Bloodrock Cyclops",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "This creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "artist": "Tom Wänerstrand",
+        "flavorText": "\"He's big an' dumb an' ready to fight. A lot like ol' Hornhead here.\"\n—Squee, goblin cabin hand, scouting report",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c642fd9-38f7-4029-ab93-e1dc5636c1ad.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Disrupt
 {
     "name": "Disrupt",
@@ -105,6 +156,105 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Hidden Horror
+{
+    "name": "Hidden Horror",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "When this creature enters, sacrifice it unless you discard a creature card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomDiscard",
+                            "filter": "creature"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Langley",
+        "flavorText": "Lifespans are measured by its dreadful length.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/885dc4c5-2ade-4497-b579-0307c67ac783.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mind Stone
+{
+    "name": "Mind Stone",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Adam Rex",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/162e81d3-6cd4-4cb8-8ed8-cfbd8d34ca71.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Sage Owl

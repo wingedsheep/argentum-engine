@@ -8,6 +8,12 @@ internal fun BridgeBuilder.keywords() {
     keyword("Vigilance", "VIGILANCE")
     keyword("Reach", "REACH")
     keyword("Defender", "DEFENDER")
+    // Intimidate (CR 702.13) — `Keyword.INTIMIDATE` exists in the SDK enum, so the PascalCase→enum
+    // auto-resolve would accept it, but the rules engine has NO block-evasion handling for it
+    // (BlockEvasionRules covers flying/fear/shadow/horsemanship/landwalk only). A bare or granted
+    // intimidate would compile, lint, and snapshot fine while doing nothing in combat — a silent
+    // no-op. Pin it blocking until the engine implements it; then delete this line.
+    unsupported("Intimidate", "Keyword.INTIMIDATE is enum-only — no BlockEvasionRules handling; implement intimidate block evasion (CR 702.13) to unlock")
     // Saddle N (CR 702.171) — a PARAMETERIZED keyword ability (the N count rides in the rule's args),
     // NOT a bare card keyword. It must be `supported`, not `keyword`: a `keyword` entry would make
     // `keywordLines` stamp a bare `keywords(Keyword.SADDLE)` on the card and drop the N, exactly the
@@ -16,6 +22,11 @@ internal fun BridgeBuilder.keywords() {
     // `keywordAbility(KeywordAbility.saddle(N))`; this `supported` entry only marks the capability as
     // covered (never blocking) so the probe doesn't report Saddle as a gap.
     supported("Saddle", "keyword ability: Saddle N -> keywordAbility(KeywordAbility.saddle(N)) (CR 702.171)")
+    // "Crew N. Activate only once each turn." (Luxurious Locomotive) — a PARAMETERIZED keyword ability
+    // like Saddle/Crew, so `supported` (not `keyword`) to avoid dropping the N. The emitter's
+    // `rname == "CrewOnceEachTurn"` branch renders `keywordAbility(KeywordAbility.crew(N, onceEachTurn = true))`;
+    // the engine enforces the once-per-turn cap in the crew enumerator/handler.
+    supported("CrewOnceEachTurn", "keyword ability: Crew N, activate only once each turn -> keywordAbility(KeywordAbility.crew(N, onceEachTurn = true))")
     // Firebending N (CR 702.189, Avatar: The Last Airbender) — a PARAMETERIZED keyword ability (the
     // N count rides in the rule's args as a nested _GameNumber:Integer, exactly like Saddle). Must be
     // `supported`, not `keyword`: a bare `keywords(Keyword.FIREBENDING)` would drop the N. The
@@ -23,6 +34,24 @@ internal fun BridgeBuilder.keywords() {
     // the integer case auto-renders, while "firebending X (X = its power)" carries an XValue node and
     // the emitter declines it (-> SCAFFOLD). This entry only marks the capability covered.
     supported("Firebending", "keyword ability: Firebending N -> keywordAbility(KeywordAbility.firebending(N)) (CR 702.189)")
+    // Increment (Secrets of Strixhaven) — a keyword whose whole mechanic is composed by the
+    // `increment()` CardBuilder helper: the display keyword plus a "whenever you cast a spell, if the
+    // mana you spent exceeds this creature's power or toughness, put a +1/+1 counter on it" triggered
+    // ability (intervening-if on EntityNumericProperty.ManaSpent). `composed`, not a bare keyword: a
+    // plain Keyword.INCREMENT stamp would drop the cast-spell trigger. The emitter's `rname ==
+    // "Increment"` branch renders the no-arg `increment()` builder call (the rule carries no args).
+    composed(
+        "Increment",
+        "keyword: increment() -> Keyword.INCREMENT + 'whenever you cast a spell, if mana spent > power or toughness, +1/+1 counter' trigger",
+        composes = listOf("AddCounters"),
+    )
+    // Ward (CR 702.21) — a PARAMETERIZED keyword ability: the cost rides in the rule's args
+    // (`Ward—Discard a card`, `Ward {2}`, `Ward—Pay N life`, `Ward—Sacrifice <filter>`). Like Saddle,
+    // it must be `supported`, not `keyword`: a bare `keywords(Keyword.WARD)` would drop the cost. The
+    // emitter's `rname == "Ward"` branch renders `keywordAbility(KeywordAbility.ward(...)/wardDiscard()/
+    // wardLife(N)/wardSacrifice(filter))` for the cost shapes it can express; richer/compound costs
+    // decline -> SCAFFOLD. This entry only marks the capability covered (never blocking).
+    supported("Ward", "keyword ability: Ward—<cost> (CR 702.21) -> keywordAbility(KeywordAbility.ward(...)/wardDiscard()/wardLife(N)/wardSacrifice(filter))")
 
     composed("Landwalk", "specific *WALK keywords (SWAMPWALK, FORESTWALK, ...)")
     // Equip is a keyword ability, but the engine has no `Keyword.EQUIP` enum member: `equipAbility(cost)`

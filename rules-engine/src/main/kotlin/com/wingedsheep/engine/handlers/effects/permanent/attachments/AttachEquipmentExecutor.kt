@@ -1,11 +1,14 @@
 package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.PermanentAttachedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import kotlin.reflect.KClass
 
@@ -60,6 +63,21 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
             container.with(AttachmentsComponent(updatedIds))
         }
 
-        return EffectResult.success(newState)
+        // CR 603.2e — emit a "becomes attached" event only when the equipment moved onto a *new*
+        // host (not when re-affirming an existing attachment), so attachment triggers fire at the
+        // right moment.
+        val events = if (currentAttachment?.targetId != targetId) {
+            val container = newState.getEntity(equipmentId)
+            listOf(
+                PermanentAttachedEvent(
+                    attachmentId = equipmentId,
+                    attachmentName = container?.get<CardComponent>()?.name ?: "Equipment",
+                    attachedToId = targetId,
+                    controllerId = container?.get<ControllerComponent>()?.playerId ?: context.controllerId,
+                )
+            )
+        } else emptyList()
+
+        return EffectResult.success(newState, events)
     }
 }

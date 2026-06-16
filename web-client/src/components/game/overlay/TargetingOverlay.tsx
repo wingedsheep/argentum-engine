@@ -3,6 +3,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import type { ClientCard, EntityId } from '@/types'
 import type { ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
+import { useDraggable } from '@/hooks/useDraggable.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError } from '../board/shared'
 import { styles } from '../board/styles'
@@ -445,6 +446,7 @@ export function TargetingOverlay() {
   const cancelTargeting = useGameStore((state) => state.cancelTargeting)
   const confirmTargeting = useGameStore((state) => state.confirmTargeting)
   const responsive = useResponsiveContext()
+  const draggable = useDraggable()
 
   const gameState = useGameStore((state) => state.gameState)
   const addTarget = useGameStore((state) => state.addTarget)
@@ -552,12 +554,41 @@ export function TargetingOverlay() {
       : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click an attacking creature you control' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
 
   return (
-    <div style={{
-      ...styles.targetingOverlay,
-      padding: responsive.isMobile ? '12px 16px' : '16px 24px',
-      borderColor: TARGET_COLOR,
-      pointerEvents: 'none',
-    }}>
+    <div
+      ref={draggable.ref}
+      style={{
+        ...styles.targetingOverlay,
+        ...draggable.style,
+        padding: responsive.isMobile ? '12px 16px' : '16px 24px',
+        borderColor: TARGET_COLOR,
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        aria-label="Drag to move"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          padding: '4px 0',
+          margin: '-8px 0 -4px',
+          cursor: draggable.isDragging ? 'grabbing' : 'grab',
+          touchAction: 'none',
+          pointerEvents: 'auto',
+        }}
+        {...draggable.handleProps}
+      >
+        <span
+          style={{
+            width: 36,
+            height: 4,
+            borderRadius: 9999,
+            backgroundColor: TARGET_COLOR,
+            opacity: draggable.isDragging ? 0.9 : 0.65,
+          }}
+        />
+      </div>
       {stepLabel && (
         <div style={{
           color: '#888',

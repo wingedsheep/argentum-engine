@@ -72,7 +72,7 @@ class CreatePredefinedTokenExecutor(
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
 
-        repeat(tokenCount) {
+        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens")) {
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
             createdTokenIds.add(tokenId)

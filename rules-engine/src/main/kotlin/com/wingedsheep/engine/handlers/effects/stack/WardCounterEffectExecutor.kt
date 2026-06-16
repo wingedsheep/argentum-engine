@@ -45,7 +45,16 @@ import kotlin.reflect.KClass
  *      standard discard pipeline (random or player's choice).
  *    - WardCost.Sacrifice → SelectCardsDecision over the controller's matching permanents
  *      (min 0, max N); selecting N pays and the spell resolves, declining counters it.
+ *    - WardCost.Composite → pay each component cost in order (CR 702.21a; "Ward—{2}, Pay 2
+ *      life"). Each component reuses the per-component flow above and carries the remaining
+ *      components so the resumer charges the next one after a successful payment. Declining or
+ *      being unable to pay any component counters the spell/ability immediately.
  *    If the controller can't possibly pay, counter immediately.
+ *
+ * The per-component handlers are reusable from
+ * [com.wingedsheep.engine.handlers.continuations.ManaPaymentContinuationResumer] (via
+ * [chargeWardCost]) so a composite cost can resume into its next component after each payment
+ * without re-deriving the ward source/controller context.
  */
 class WardCounterEffectExecutor(
     private val cardRegistry: CardRegistry
@@ -72,269 +81,345 @@ class WardCounterEffectExecutor(
             ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
             ?: return EffectResult.success(state)
 
-        return when (val cost = effect.cost) {
-            is WardCost.Mana -> handleManaCost(state, context, spellEntityId, container, payingPlayerId, cost.manaCost)
-            is WardCost.Life -> handleLifeCost(state, context, spellEntityId, container, payingPlayerId, cost.amount)
-            is WardCost.Discard -> handleDiscardCost(state, context, spellEntityId, container, payingPlayerId, cost.count, cost.random)
-            is WardCost.Sacrifice -> handleSacrificeCost(state, context, spellEntityId, container, payingPlayerId, cost.filter)
-        }
-    }
-
-    /**
-     * Ward—Sacrifice [filter] (e.g. "Sacrifice a Food").
-     *
-     * Valid sacrifice fodder is computed against projected state via
-     * [BattlefieldFilterUtils.findMatchingOnBattlefield], so subtypes granted by continuous
-     * effects (Ygra, Eater of All making every other creature a Food) count. If the paying
-     * player controls no qualifying permanent they cannot pay, so the spell is countered
-     * immediately. Otherwise they pick which permanent(s) to sacrifice (declining → counter).
-     */
-    private fun handleSacrificeCost(
-        state: GameState,
-        context: EffectContext,
-        spellEntityId: EntityId,
-        container: ComponentContainer,
-        payingPlayerId: EntityId,
-        filter: GameObjectFilter
-    ): EffectResult {
-        val count = 1
-        val validPermanents = BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state, filter.youControl(), PredicateContext(controllerId = payingPlayerId)
-        )
-
-        // Can't possibly pay → counter immediately.
-        if (validPermanents.size < count) {
-            return counterSpellOrAbility(state, spellEntityId, container)
-        }
-
-        val fodderLabel = filter.description
-        val prompt = "Sacrifice ${if (count == 1) "a" else "$count"} $fodderLabel or your spell will be countered"
-
-        val decisionResult = DecisionHandler().createCardSelectionDecision(
+        return chargeWardCost(
             state = state,
-            playerId = payingPlayerId,
-            sourceId = context.sourceId,
-            sourceName = "Ward",
-            prompt = prompt,
-            options = validPermanents,
-            minSelections = 0,
-            maxSelections = count,
-            ordered = false,
-            phase = DecisionPhase.RESOLUTION,
-            useTargetingUI = true
-        )
-
-        val continuation = CounterUnlessSacrificeContinuation(
-            decisionId = decisionResult.pendingDecision!!.id,
-            payingPlayerId = payingPlayerId,
+            cardRegistry = cardRegistry,
+            cost = effect.cost,
+            remainingParts = emptyList(),
             spellEntityId = spellEntityId,
-            filter = filter,
-            count = count,
+            container = container,
+            payingPlayerId = payingPlayerId,
+            wardSourceId = context.sourceId,
             controllerId = context.controllerId
-        )
-
-        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
-
-        return EffectResult.paused(
-            stateWithContinuation,
-            decisionResult.pendingDecision,
-            decisionResult.events
         )
     }
 
-    private fun handleDiscardCost(
-        state: GameState,
-        context: EffectContext,
-        spellEntityId: EntityId,
-        container: ComponentContainer,
-        payingPlayerId: EntityId,
-        count: Int,
-        random: Boolean
-    ): EffectResult {
-        // Not enough cards in hand → counter immediately.
-        // (The caster spends the spell as part of casting, so the spell itself is not in hand here.)
-        if (state.getHand(payingPlayerId).size < count) {
-            return counterSpellOrAbility(state, spellEntityId, container)
+    companion object {
+        /**
+         * Charge a single ward [cost] against [payingPlayerId], carrying [remainingParts] (the
+         * not-yet-paid components of an enclosing [WardCost.Composite]) so the continuation
+         * resumer can charge the next component once this one is paid. Pass `emptyList()` for an
+         * atomic (non-composite) ward cost.
+         *
+         * A [WardCost.Composite] unrolls into "charge `parts.first()` with `remainingParts =
+         * parts.drop(1)`". The components themselves must be atomic ward costs (the SDK forbids
+         * nesting another Composite).
+         */
+        fun chargeWardCost(
+            state: GameState,
+            cardRegistry: CardRegistry,
+            cost: WardCost,
+            remainingParts: List<WardCost>,
+            spellEntityId: EntityId,
+            container: ComponentContainer,
+            payingPlayerId: EntityId,
+            wardSourceId: EntityId?,
+            controllerId: EntityId?
+        ): EffectResult {
+            return when (cost) {
+                is WardCost.Mana -> handleManaCost(
+                    state, cardRegistry, spellEntityId, container, payingPlayerId,
+                    cost.manaCost, remainingParts, wardSourceId, controllerId
+                )
+                is WardCost.Life -> handleLifeCost(
+                    state, cardRegistry, spellEntityId, container, payingPlayerId,
+                    cost.amount, remainingParts, wardSourceId, controllerId
+                )
+                is WardCost.Discard -> handleDiscardCost(
+                    state, cardRegistry, spellEntityId, container, payingPlayerId,
+                    cost.count, cost.random, remainingParts, wardSourceId, controllerId
+                )
+                is WardCost.Sacrifice -> handleSacrificeCost(
+                    state, cardRegistry, spellEntityId, container, payingPlayerId,
+                    cost.filter, remainingParts, wardSourceId, controllerId
+                )
+                is WardCost.Composite -> {
+                    require(cost.parts.isNotEmpty()) { "WardCost.Composite must have at least one part" }
+                    chargeWardCost(
+                        state, cardRegistry, cost.parts.first(), cost.parts.drop(1) + remainingParts,
+                        spellEntityId, container, payingPlayerId, wardSourceId, controllerId
+                    )
+                }
+            }
         }
 
-        val cardsLabel = if (count == 1) "a card" else "$count cards"
-        val randomSuffix = if (random) " at random" else ""
-        val decisionId = java.util.UUID.randomUUID().toString()
-        val decision = YesNoDecision(
-            id = decisionId,
-            playerId = payingPlayerId,
-            prompt = "Discard $cardsLabel$randomSuffix or your spell will be countered",
-            context = DecisionContext(
-                sourceId = context.sourceId,
+        /**
+         * Ward—Sacrifice [filter] (e.g. "Sacrifice a Food").
+         *
+         * Valid sacrifice fodder is computed against projected state via
+         * [BattlefieldFilterUtils.findMatchingOnBattlefield], so subtypes granted by continuous
+         * effects (Ygra, Eater of All making every other creature a Food) count. If the paying
+         * player controls no qualifying permanent they cannot pay, so the spell is countered
+         * immediately. Otherwise they pick which permanent(s) to sacrifice (declining → counter).
+         */
+        private fun handleSacrificeCost(
+            state: GameState,
+            cardRegistry: CardRegistry,
+            spellEntityId: EntityId,
+            container: ComponentContainer,
+            payingPlayerId: EntityId,
+            filter: GameObjectFilter,
+            remainingParts: List<WardCost>,
+            wardSourceId: EntityId?,
+            controllerId: EntityId?
+        ): EffectResult {
+            val count = 1
+            val validPermanents = BattlefieldFilterUtils.findMatchingOnBattlefield(
+                state, filter.youControl(), PredicateContext(controllerId = payingPlayerId)
+            )
+
+            // Can't possibly pay → counter immediately.
+            if (validPermanents.size < count) {
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+            }
+
+            val fodderLabel = filter.description
+            val prompt = "Sacrifice ${if (count == 1) "a" else "$count"} $fodderLabel or your spell will be countered"
+
+            val decisionResult = DecisionHandler().createCardSelectionDecision(
+                state = state,
+                playerId = payingPlayerId,
+                sourceId = wardSourceId,
                 sourceName = "Ward",
-                phase = DecisionPhase.RESOLUTION
-            ),
-            yesText = "Discard $cardsLabel$randomSuffix",
-            noText = "Counter spell"
-        )
+                prompt = prompt,
+                options = validPermanents,
+                minSelections = 0,
+                maxSelections = count,
+                ordered = false,
+                phase = DecisionPhase.RESOLUTION,
+                useTargetingUI = true
+            )
 
-        val continuation = CounterUnlessDiscardContinuation(
-            decisionId = decisionId,
-            payingPlayerId = payingPlayerId,
-            spellEntityId = spellEntityId,
-            count = count,
-            random = random,
-            controllerId = context.controllerId
-        )
+            val continuation = CounterUnlessSacrificeContinuation(
+                decisionId = decisionResult.pendingDecision!!.id,
+                payingPlayerId = payingPlayerId,
+                spellEntityId = spellEntityId,
+                filter = filter,
+                count = count,
+                controllerId = controllerId,
+                remainingWardParts = remainingParts,
+                wardSourceId = wardSourceId
+            )
 
-        val stateWithDecision = state.withPendingDecision(decision)
-        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+            val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return EffectResult.paused(
-            stateWithContinuation,
-            decision,
-            listOf(
-                DecisionRequestedEvent(
-                    decisionId = decisionId,
-                    playerId = payingPlayerId,
-                    decisionType = "YES_NO",
-                    prompt = decision.prompt
+            return EffectResult.paused(
+                stateWithContinuation,
+                decisionResult.pendingDecision,
+                decisionResult.events
+            )
+        }
+
+        private fun handleDiscardCost(
+            state: GameState,
+            cardRegistry: CardRegistry,
+            spellEntityId: EntityId,
+            container: ComponentContainer,
+            payingPlayerId: EntityId,
+            count: Int,
+            random: Boolean,
+            remainingParts: List<WardCost>,
+            wardSourceId: EntityId?,
+            controllerId: EntityId?
+        ): EffectResult {
+            // Not enough cards in hand → counter immediately.
+            // (The caster spends the spell as part of casting, so the spell itself is not in hand here.)
+            if (state.getHand(payingPlayerId).size < count) {
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+            }
+
+            val cardsLabel = if (count == 1) "a card" else "$count cards"
+            val randomSuffix = if (random) " at random" else ""
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = YesNoDecision(
+                id = decisionId,
+                playerId = payingPlayerId,
+                prompt = "Discard $cardsLabel$randomSuffix or your spell will be countered",
+                context = DecisionContext(
+                    sourceId = wardSourceId,
+                    sourceName = "Ward",
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                yesText = "Discard $cardsLabel$randomSuffix",
+                noText = "Counter spell"
+            )
+
+            val continuation = CounterUnlessDiscardContinuation(
+                decisionId = decisionId,
+                payingPlayerId = payingPlayerId,
+                spellEntityId = spellEntityId,
+                count = count,
+                random = random,
+                controllerId = controllerId,
+                remainingWardParts = remainingParts,
+                wardSourceId = wardSourceId
+            )
+
+            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+            return EffectResult.paused(
+                stateWithContinuation,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = payingPlayerId,
+                        decisionType = "YES_NO",
+                        prompt = decision.prompt
+                    )
                 )
             )
-        )
-    }
-
-    private fun handleManaCost(
-        state: GameState,
-        context: EffectContext,
-        spellEntityId: EntityId,
-        container: ComponentContainer,
-        payingPlayerId: EntityId,
-        manaCostString: String
-    ): EffectResult {
-        val manaCost = ManaCost.parse(manaCostString)
-
-        val manaSolver = ManaSolver(cardRegistry)
-        if (!manaSolver.canPay(state, payingPlayerId, manaCost)) {
-            return counterSpellOrAbility(state, spellEntityId, container)
         }
 
-        val sources = manaSolver.findAvailableManaSources(state, payingPlayerId)
-        val sourceOptions = sources.map { source ->
-            ManaSourceOption(
-                entityId = source.entityId,
-                name = source.name,
-                producesColors = source.producesColors,
-                producesColorless = source.producesColorless,
-                requiresSacrifice = source.requiresSacrifice,
-                requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null
+        private fun handleManaCost(
+            state: GameState,
+            cardRegistry: CardRegistry,
+            spellEntityId: EntityId,
+            container: ComponentContainer,
+            payingPlayerId: EntityId,
+            manaCostString: String,
+            remainingParts: List<WardCost>,
+            wardSourceId: EntityId?,
+            controllerId: EntityId?
+        ): EffectResult {
+            val manaCost = ManaCost.parse(manaCostString)
+
+            val manaSolver = ManaSolver(cardRegistry)
+            if (!manaSolver.canPay(state, payingPlayerId, manaCost)) {
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+            }
+
+            val sources = manaSolver.findAvailableManaSources(state, payingPlayerId)
+            val sourceOptions = sources.map { source ->
+                ManaSourceOption(
+                    entityId = source.entityId,
+                    name = source.name,
+                    producesColors = source.producesColors,
+                    producesColorless = source.producesColorless,
+                    requiresSacrifice = source.requiresSacrifice,
+                    requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null
+                )
+            }
+
+            val solution = manaSolver.solve(state, payingPlayerId, manaCost)
+            val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = SelectManaSourcesDecision(
+                id = decisionId,
+                playerId = payingPlayerId,
+                prompt = "Pay $manaCost for ward or your spell will be countered",
+                context = DecisionContext(
+                    sourceId = wardSourceId,
+                    sourceName = "Ward",
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                availableSources = sourceOptions,
+                requiredCost = manaCost.toString(),
+                autoPaySuggestion = autoPaySuggestion,
+                canDecline = true
             )
-        }
 
-        val solution = manaSolver.solve(state, payingPlayerId, manaCost)
-        val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+            val continuation = CounterUnlessPaysManaSelectionContinuation(
+                decisionId = decisionId,
+                payingPlayerId = payingPlayerId,
+                spellEntityId = spellEntityId,
+                manaCost = manaCost,
+                availableSources = sourceOptions,
+                autoPaySuggestion = autoPaySuggestion,
+                controllerId = controllerId,
+                remainingWardParts = remainingParts,
+                wardSourceId = wardSourceId
+            )
 
-        val decisionId = java.util.UUID.randomUUID().toString()
-        val decision = SelectManaSourcesDecision(
-            id = decisionId,
-            playerId = payingPlayerId,
-            prompt = "Pay $manaCost for ward or your spell will be countered",
-            context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = "Ward",
-                phase = DecisionPhase.RESOLUTION
-            ),
-            availableSources = sourceOptions,
-            requiredCost = manaCost.toString(),
-            autoPaySuggestion = autoPaySuggestion,
-            canDecline = true
-        )
+            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        val continuation = CounterUnlessPaysManaSelectionContinuation(
-            decisionId = decisionId,
-            payingPlayerId = payingPlayerId,
-            spellEntityId = spellEntityId,
-            manaCost = manaCost,
-            availableSources = sourceOptions,
-            autoPaySuggestion = autoPaySuggestion,
-            controllerId = context.controllerId
-        )
-
-        val stateWithDecision = state.withPendingDecision(decision)
-        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
-
-        return EffectResult.paused(
-            stateWithContinuation,
-            decision,
-            listOf(
-                DecisionRequestedEvent(
-                    decisionId = decisionId,
-                    playerId = payingPlayerId,
-                    decisionType = "SELECT_MANA_SOURCES",
-                    prompt = decision.prompt
+            return EffectResult.paused(
+                stateWithContinuation,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = payingPlayerId,
+                        decisionType = "SELECT_MANA_SOURCES",
+                        prompt = decision.prompt
+                    )
                 )
             )
-        )
-    }
-
-    private fun handleLifeCost(
-        state: GameState,
-        context: EffectContext,
-        spellEntityId: EntityId,
-        container: ComponentContainer,
-        payingPlayerId: EntityId,
-        lifeCost: Int
-    ): EffectResult {
-        val currentLife = state.getEntity(payingPlayerId)?.get<LifeTotalComponent>()?.life ?: 0
-        if (currentLife < lifeCost) {
-            // Can't pay — counter immediately.
-            return counterSpellOrAbility(state, spellEntityId, container)
         }
 
-        val decisionId = java.util.UUID.randomUUID().toString()
-        val decision = YesNoDecision(
-            id = decisionId,
-            playerId = payingPlayerId,
-            prompt = "Pay $lifeCost life or your spell will be countered",
-            context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = "Ward",
-                phase = DecisionPhase.RESOLUTION
-            ),
-            yesText = "Pay $lifeCost life",
-            noText = "Counter spell"
-        )
+        private fun handleLifeCost(
+            state: GameState,
+            cardRegistry: CardRegistry,
+            spellEntityId: EntityId,
+            container: ComponentContainer,
+            payingPlayerId: EntityId,
+            lifeCost: Int,
+            remainingParts: List<WardCost>,
+            wardSourceId: EntityId?,
+            controllerId: EntityId?
+        ): EffectResult {
+            val currentLife = state.lifeTotal(payingPlayerId) // CR 810.9a — team's shared total
+            if (currentLife < lifeCost) {
+                // Can't pay — counter immediately.
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+            }
 
-        val continuation = CounterUnlessPaysLifeContinuation(
-            decisionId = decisionId,
-            payingPlayerId = payingPlayerId,
-            spellEntityId = spellEntityId,
-            lifeCost = lifeCost,
-            controllerId = context.controllerId
-        )
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = YesNoDecision(
+                id = decisionId,
+                playerId = payingPlayerId,
+                prompt = "Pay $lifeCost life or your spell will be countered",
+                context = DecisionContext(
+                    sourceId = wardSourceId,
+                    sourceName = "Ward",
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                yesText = "Pay $lifeCost life",
+                noText = "Counter spell"
+            )
 
-        val stateWithDecision = state.withPendingDecision(decision)
-        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+            val continuation = CounterUnlessPaysLifeContinuation(
+                decisionId = decisionId,
+                payingPlayerId = payingPlayerId,
+                spellEntityId = spellEntityId,
+                lifeCost = lifeCost,
+                controllerId = controllerId,
+                remainingWardParts = remainingParts,
+                wardSourceId = wardSourceId
+            )
 
-        return EffectResult.paused(
-            stateWithContinuation,
-            decision,
-            listOf(
-                DecisionRequestedEvent(
-                    decisionId = decisionId,
-                    playerId = payingPlayerId,
-                    decisionType = "YES_NO",
-                    prompt = decision.prompt
+            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+            return EffectResult.paused(
+                stateWithContinuation,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = payingPlayerId,
+                        decisionType = "YES_NO",
+                        prompt = decision.prompt
+                    )
                 )
             )
-        )
-    }
+        }
 
-    private fun counterSpellOrAbility(
-        state: GameState,
-        entityId: EntityId,
-        container: ComponentContainer
-    ): EffectResult {
-        val resolver = StackResolver(cardRegistry = cardRegistry)
-        return EffectResult.from(if (container.has<SpellOnStackComponent>()) {
-            resolver.counterSpell(state, entityId)
-        } else {
-            resolver.counterAbility(state, entityId)
-        })
+        private fun counterSpellOrAbility(
+            state: GameState,
+            cardRegistry: CardRegistry,
+            entityId: EntityId,
+            container: ComponentContainer
+        ): EffectResult {
+            val resolver = StackResolver(cardRegistry = cardRegistry)
+            return EffectResult.from(if (container.has<SpellOnStackComponent>()) {
+                resolver.counterSpell(state, entityId)
+            } else {
+                resolver.counterAbility(state, entityId)
+            })
+        }
     }
 }

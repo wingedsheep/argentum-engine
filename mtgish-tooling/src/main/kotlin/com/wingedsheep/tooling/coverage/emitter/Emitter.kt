@@ -80,6 +80,16 @@ object Emitter {
             return incomplete(ctx, pre, header, body, scryfall, pkg)
         }
 
+        // Multi-faced cards (transform/MDFC/adventure/split) reach us with their faces' oracle text joined
+        // by a `\n//\n` separator (see Scryfall.cardMetadata). The bridge only sees the mtgish IR for the
+        // FRONT face, so a generic render would silently emit a single-faced card and drop the entire back
+        // face — exactly the lossy approximation the hard rules forbid. Decline unconditionally (even in
+        // partial mode) so these classify as SCAFFOLD/BLOCKED and get hand-authored instead.
+        if (ctx.oracleText?.contains("\n//\n") == true) {
+            ctx.reasons.add("multi-faced")
+            return incomplete(ctx, pre, header, body, scryfall, pkg)
+        }
+
         body.add(RawLine("    manaCost = \"${renderMana(card["ManaCost"])}\""))
         colorIdentityDsl(scryfall)?.let { body.add(RawLine("    colorIdentity = \"$it\"")) }
         body.add(RawLine("    typeLine = \"${renderTypeline(card["Typeline"])}\""))
@@ -96,6 +106,23 @@ object Emitter {
         val plainKw = kw.filterNot { it == "PROWESS" }
         if (plainKw.isNotEmpty()) body.add(RawLine("    keywords(${plainKw.joinToString(", ") { "Keyword.$it" }})"))
         if ("PROWESS" in kw) body.add(RawLine("    prowess()"))
+
+        // Preparation card (Secrets of Strixhaven): `_OracleCard: "Preparer"` with a single
+        // AsPermanentEnters[EntersPrepared] rule and a sibling `Prepared` prepare spell. Emit the
+        // PREPARED keyword + a prepare("…") { spell { … } } block from the nested prepare card, and
+        // skip the AsPermanentEnters rule (the PREPARE layout already encodes "enters prepared").
+        // The whole card scaffolds if the prepare spell can't be rendered exactly.
+        val isPreparer = card.strField("_OracleCard") == "Preparer" && card["Prepared"] != null
+        if (isPreparer) {
+            body.add(RawLine("    keywords(Keyword.PREPARED)"))
+            val prepStmts = ctx.prepareBlock(card)
+            if (prepStmts == null) gap("Prepared")?.let { return it }
+            else body.addAll(prepStmts)
+            (card["Rules"].asArr ?: JsonArray(emptyList())).forEach { r ->
+                if ((r as? JsonObject)?.strField("_Rule") == "AsPermanentEnters") skipRules.add(r)
+            }
+            parts++
+        }
         val cardLevelLines = ctx.cardLevelCastEffectLines(card)
         if (cardLevelLines == null) gap("CastEffect")?.let { return it }
         else body.addAll(cardLevelLines.map { RawLine(it) })
@@ -114,6 +141,14 @@ object Emitter {
                 // renders rather than scaffolds; every other ability on an Aura still scaffolds.
                 if ((rn == "Activated" || rn == "ActivatedWithModifiers") &&
                     "SharesACreatureTypeWithPermanent" in compact(r)) return@forEach
+                // "When this Aura is put into a graveyard from the battlefield, …" (Reach for the Sky):
+                // a SELF leaves-to-graveyard trigger references the Aura itself, NOT its enchanted
+                // creature, so the generic trigger emitter renders it faithfully. Let it through (only
+                // the self put-into-graveyard shape; any other TriggerA on an Aura still scaffolds).
+                if (rn == "TriggerA" &&
+                    jsonContains(r, "_Trigger", "WhenAPermanentIsPutIntoAPlayersGraveyard") &&
+                    ctx.triggerBlock(r as JsonObject) != null
+                ) return@forEach
                 // In partial mode the offending ability becomes a located hole and is skipped in the
                 // main loop below (so the generic activated/trigger emitter doesn't render it wrongly).
                 gap("aura-with-$rn", addReason = "aura-with-$rn")?.let { return it }
@@ -121,8 +156,8 @@ object Emitter {
             }
         }
 
-        val handledRules = setOf("SpellActions", "TriggerA", "PermanentRuleEffect", "Flying", "Haste",
-            "Vigilance", "Reach", "Defender", "Landwalk", "FirstStrike", "Trample", "CastEffect")
+        val handledRules = setOf("SpellActions", "SpellActions_Spree", "TriggerA", "PermanentRuleEffect",
+            "Flying", "Haste", "Vigilance", "Reach", "Defender", "Landwalk", "FirstStrike", "Trample", "CastEffect")
         for (rule in (card["Rules"].asArr ?: JsonArray(emptyList()))) {
             if (rule !is JsonObject) continue
             if (rule in skipRules) continue  // already holed by the aura pre-check (partial mode)
@@ -138,19 +173,23 @@ object Emitter {
                     continue
                 }
                 rname == "SpellActions" -> block = ctx.spellBlock(card)
+                rname == "SpellActions_Spree" -> block = ctx.spreeSpellBlock(rule)
                 rname == "TriggerA" -> block = ctx.triggerBlock(rule)
                 rname == "TriggerI" -> block = ctx.triggerIBlock(rule)
                 rname == "TriggerOnceEachTurn" -> block = ctx.triggerBlock(rule, oncePerTurn = true)
                 rname == "PermanentRuleEffect" -> block = ctx.staticBlock(rule)
                 rname == "If" -> block = ctx.ifRuleBlock(rule)
                 rname == "PlayerEffect" -> block = ctx.playerEffectBlock(rule)
+                rname == "EachPlayerEffect" -> block = ctx.eachPlayerEffectBlock(rule)
                 rname == "EnchantPermanent" -> block = ctx.auraTargetBlock(rule)
                 rname == "PermanentLayerEffect" -> block = ctx.staticHostBlock(rule)
                 rname == "AsPermanentEnters" -> block = ctx.asEntersBlock(rule)
                 rname == "ReplaceAPlayerWouldCreateTokens" -> block = ctx.replaceTokenCreationBlock(card, rule)
                 rname == "EachPermanentLayerEffect" -> block = ctx.staticLordBlock(rule)
+                rname == "AbilitiesTriggerAnAdditionalTime" -> block = ctx.additionalSourceTriggersBlock(rule)
                 rname == "FromAnyZone" -> block = ctx.fromAnyZoneBlock(rule)
                 rname == "FromGraveyard" -> block = ctx.fromGraveyardBlock(rule)
+                rname == "FromHand" -> block = ctx.fromHandBlock(rule)
                 rname == "CDA_Power" -> block = ctx.cdaStatsBlock(card, rule)
                 rname == "CDA_Toughness" ->
                     if (jsonContains(card["Rules"], "_Rule", "CDA_Power")) continue  // emitted with CDA_Power
@@ -158,8 +197,22 @@ object Emitter {
                 rname == "Activated" || rname == "ActivatedWithModifiers" -> block = ctx.activatedBlock(rule)
                 rname == "Cycling" -> block = manaKeywordCost(rule)?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.cycling", arg("\"$it\"")))))) }
                 rname == "Morph" -> block = manaKeywordCost(rule)?.let { listOf(Assign("morph", Lit("\"$it\""))) }
+                // FlashForCasters (conditional flash, CR 702.8) — "<this> has flash as long as you
+                // control a [filter]" (Colossal Rattlewurm: "...as long as you control a Desert"). The
+                // condition rides as `PlayerPassesFilter(You, ControlsA(filter))`; render the card-level
+                // `conditionalFlash = Conditions.YouControl(<filter>)` assignment (identical tree to a
+                // raw `Exists(You, BATTLEFIELD, filter)`). Only the "you control a [filter]" shape the
+                // shared youControlConditionDsl can render exactly produces a line; any other condition
+                // declines -> SCAFFOLD rather than guess.
+                rname == "FlashForCasters" -> block = ctx.conditionalFlashLines(rule)
                 rname == "Flashback" -> block = manaKeywordCost(rule)?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.flashback", arg("\"$it\"")))))) }
                 rname == "Crew" -> block = rule["args"].asInt()?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.crew", arg("$it")))))) }
+                // "Crew N. Activate only once each turn." (Luxurious Locomotive) — CrewOnceEachTurn carries
+                // the crew power N. Renders `KeywordAbility.crew(N, onceEachTurn = true)`; the engine enforces
+                // the once-per-turn cap in the crew enumerator/handler.
+                rname == "CrewOnceEachTurn" -> block = rule["args"].asInt()?.let {
+                    listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.crew", arg("$it"), arg("onceEachTurn", "true"))))))
+                }
                 // Saddle N (CR 702.171) — a numeric keyword ability. mtgish shapes the count as a nested
                 // `_GameNumber: Integer` game number, so dig the integer out of the args (findInteger) rather
                 // than reading args directly as an Int. Renders `keywordAbility(KeywordAbility.saddle(N))`,
@@ -174,13 +227,12 @@ object Emitter {
                 // "firebending X (X = its power)" carries an XValue node -> findInteger returns "X" ->
                 // `as? Int` is null -> scaffold, rather than guessing.
                 rname == "Firebending" -> block = (findInteger(rule["args"]) as? Int)?.let { listOf(Eval(call("firebending", arg("$it")))) }
-                // Ward {cost} (CR 702.21) carries a `_Cost` arg. Only the pure-mana shape renders as
-                // `KeywordAbility.Ward(WardCost.Mana("{x}"))`; Ward—Pay life / Ward—Discard / other
-                // costs return null -> scaffold rather than drop the cost. A bare WARD enum keyword
-                // would lose the cost entirely, so this must never fall through to the keyword case.
-                rname == "Ward" -> block = manaKeywordCost(rule)?.let {
-                    listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.Ward", arg(call("WardCost.Mana", arg("\"$it\""))))))))
-                }
+                // Ward—<cost> (CR 702.21) carries a `_Cost` arg. `wardKeywordLine` renders the cost
+                // shapes the SDK exposes — mana (`Ward {x}`), discard-a-card, pay-N-life, sacrifice-a-
+                // <filter>; compound/dynamic costs return null -> scaffold rather than drop the cost. A
+                // bare WARD enum keyword would lose the cost entirely, so this must never fall through
+                // to the keyword case.
+                rname == "Ward" -> block = ctx.wardKeywordLine(rule)
                 // Plot {cost} (CR 718, OTJ) carries a `_Cost: PayMana` arg -> KeywordAbility.plot("{cost}").
                 // Pure-mana only; a non-mana plot cost (none printed) declines -> scaffold.
                 rname == "Plot" -> block = manaKeywordCost(rule)?.let {
@@ -195,6 +247,12 @@ object Emitter {
                 rname == "Affinity" -> block = ctx.affinityBlock(rule)
                 // Station keyword ability (CR 702.184a) — fully fixed, renders the no-arg builder.
                 rname == "Station" -> block = listOf(Eval(call("station")))
+                // Increment (Secrets of Strixhaven) — a keyword whose whole mechanic ("whenever you cast
+                // a spell, if the mana you spent exceeds this creature's power or toughness, +1/+1
+                // counter") is composed by the `increment()` CardBuilder helper. Like `station()` /
+                // `firebending(n)`, render the builder call directly rather than a bare keywordAbility
+                // (which would print the keyword but drop the cast-spell trigger). The rule carries no args.
+                rname == "Increment" -> block = listOf(Eval(call("increment")))
                 // {N+} station symbol that animates into a creature (CR 721.2b). Non-animating
                 // `StationCharged` (gating an activated/triggered ability) is left to the default
                 // branch → scaffold, since its payload is arbitrary.
@@ -214,7 +272,18 @@ object Emitter {
             body.addAll(block)
         }
 
-        if (!permanent && !jsonContains(card["Rules"], "_Rule", "SpellActions")) {
+        // Banishing Light / O-Ring: an `ExilePermanentUntil … UntilPermanentLeavesBattlefield` action
+        // (rendered above as `Effects.ExileUntilLeaves`) needs the paired "when this leaves, return the
+        // linked exiled card" trigger, which mtgish leaves implicit in the expiration. Synthesize it once
+        // here so the exile is reversible exactly as the hand-authored card wires it.
+        if (hasLinkedExileUntilLeaves(card)) {
+            body.addAll(linkedExileReturnTrigger())
+            parts++
+        }
+
+        if (!permanent && !jsonContains(card["Rules"], "_Rule", "SpellActions") &&
+            !jsonContains(card["Rules"], "_Rule", "SpellActions_Spree")
+        ) {
             gap("no-renderable-effect", addReason = "no-renderable-effect")?.let { return it }
         }
 

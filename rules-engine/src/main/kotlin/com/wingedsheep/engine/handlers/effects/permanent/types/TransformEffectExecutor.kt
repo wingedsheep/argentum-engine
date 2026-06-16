@@ -50,7 +50,7 @@ class TransformEffectExecutor(
             ?: return EffectResult.error(state, "Target entity not found")
 
         val dfc = container.get<DoubleFacedComponent>()
-            ?: return EffectResult.error(state, "Target is not a double-faced permanent")
+            ?: return EffectResult.success(state)
 
         // Rule 701.27a: transforming a DFC flips to the opposite face.
         val nextFace = when (dfc.currentFace) {

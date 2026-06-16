@@ -43,7 +43,6 @@ class PermanentLeftBattlefieldThisTurnConditionTest : FunSpec({
         val context = EffectContext(
             sourceId = null,
             controllerId = player,
-            opponentId = getOpponent(player),
             targets = emptyList(),
             xValue = 0
         )

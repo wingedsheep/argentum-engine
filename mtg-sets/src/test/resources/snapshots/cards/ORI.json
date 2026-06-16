@@ -1,3 +1,55 @@
+// Archangel of Tithes
+{
+    "name": "Archangel of Tithes",
+    "manaCost": "{1}{W}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nAs long as this creature is untapped, creatures can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.\nAs long as this creature is attacking, creatures can't block unless their controller pays {1} for each of those creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AttackTax",
+                "amountPerAttacker": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            },
+            {
+                "type": "BlockTax",
+                "amountPerBlocker": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1af50bf1-c51e-4592-86bf-4197ec85a45d.jpg?1562009225"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Eyeblight Assassin
 {
     "name": "Eyeblight Assassin",

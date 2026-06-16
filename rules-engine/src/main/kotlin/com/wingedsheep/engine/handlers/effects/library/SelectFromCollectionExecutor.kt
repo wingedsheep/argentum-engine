@@ -91,7 +91,7 @@ class SelectFromCollectionExecutor(
         // Resolve who makes the decision
         val decidingPlayerId = when (effect.chooser) {
             Chooser.Controller -> null // null = default to controller in createDecision
-            Chooser.Opponent -> context.opponentId
+            Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
                 ?: return EffectResult.error(state, "No opponent for Opponent chooser")
             Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
                 TargetResolutionUtils.run { it.toEntityId() }
@@ -173,7 +173,21 @@ class SelectFromCollectionExecutor(
                 } else {
                     val clamped = minOf(count, eligibleCards.size)
                     val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
-                    createDecision(state, context, effect, eligibleCards, clamped, clamped, decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable, controllerPermanentColors = controllerPermanentColors)
+                    val conditionalMinimums = conditionalMinimumsFor(state, context, effect.restrictions, eligibleCards, clamped)
+                    val minSelections = conditionalMinimums.minOfOrNull { it.minimumSelections } ?: clamped
+                    createDecision(
+                        state,
+                        context,
+                        effect,
+                        eligibleCards,
+                        minSelections,
+                        clamped,
+                        decidingPlayerId,
+                        allCards = cards,
+                        nonSelectableCards = nonSelectable,
+                        controllerPermanentColors = controllerPermanentColors,
+                        conditionalMinimums = conditionalMinimums
+                    )
                 }
             }
 
@@ -316,6 +330,7 @@ class SelectFromCollectionExecutor(
                             ?: emptySet()
                     }.toSet().size
                 }
+                is SelectionRestriction.ReducedMinimumIfMatches -> Int.MAX_VALUE
                 is SelectionRestriction.MaxAffordablePayment -> {
                     // Cap at what the payer could actually pay for: floor(available / per-card).
                     // Available mana counts floating mana plus untapped sources, matching the
@@ -349,7 +364,8 @@ class SelectFromCollectionExecutor(
         decidingPlayerId: EntityId? = null,
         allCards: List<EntityId> = cards,
         nonSelectableCards: List<EntityId> = emptyList(),
-        controllerPermanentColors: Set<com.wingedsheep.sdk.core.Color>? = null
+        controllerPermanentColors: Set<com.wingedsheep.sdk.core.Color>? = null,
+        conditionalMinimums: List<ConditionalSelectionMinimum> = emptyList()
     ): EffectResult {
         val playerId = decidingPlayerId ?: context.controllerId
         val decisionId = UUID.randomUUID().toString()
@@ -408,7 +424,8 @@ class SelectFromCollectionExecutor(
                             "compose a single cap instead."
                     }
                 }
-                .singleOrNull()?.max
+                .singleOrNull()?.max,
+            conditionalMinimums = conditionalMinimums
         )
 
         val continuation = SelectFromCollectionContinuation(
@@ -438,5 +455,31 @@ class SelectFromCollectionExecutor(
                 )
             )
         )
+    }
+
+    private fun conditionalMinimumsFor(
+        state: GameState,
+        context: EffectContext,
+        restrictions: List<SelectionRestriction>,
+        eligibleCards: List<EntityId>,
+        requiredSelections: Int
+    ): List<ConditionalSelectionMinimum> {
+        if (requiredSelections <= 0) return emptyList()
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        return restrictions.mapNotNull { restriction ->
+            val reduced = restriction as? SelectionRestriction.ReducedMinimumIfMatches ?: return@mapNotNull null
+            if (reduced.reducedMinimum >= requiredSelections) return@mapNotNull null
+            val matchingOptions = eligibleCards.filter { cardId ->
+                predicateEvaluator.matches(state, state.projectedState, cardId, reduced.filter, predicateContext)
+            }
+            if (matchingOptions.size < reduced.requiredMatches) return@mapNotNull null
+            ConditionalSelectionMinimum(
+                requiredSelections = requiredSelections,
+                minimumSelections = reduced.reducedMinimum,
+                matchingOptions = matchingOptions,
+                requiredMatches = reduced.requiredMatches,
+                description = reduced.description
+            )
+        }
     }
 }

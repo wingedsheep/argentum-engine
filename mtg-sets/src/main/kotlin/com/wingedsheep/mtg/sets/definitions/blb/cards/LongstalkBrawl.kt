@@ -52,7 +52,7 @@ val LongstalkBrawl = card("Longstalk Brawl") {
                     colors = setOf(Color.BLUE),
                     creatureTypes = setOf("Fish"),
                     tapped = true,
-                    controller = EffectTarget.PlayerRef(Player.EachOpponent),
+                    controller = EffectTarget.PlayerRef(Player.AnOpponent),
                     imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
                 )
                     .then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.ContextTarget(0)))

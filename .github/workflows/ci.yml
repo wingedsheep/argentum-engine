@@ -28,7 +28,36 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build and test
-        run: ./gradlew build
+        # Wrapped in a watchdog: if the build hasn't finished within the timeout it is almost
+        # certainly the intermittent ":game-server:build" hang where a forked test-worker JVM
+        # never terminates (a lingering non-daemon thread). Before killing it we dump the stacks
+        # of every live JVM (Gradle daemon + test workers) so the exact blocking thread is named
+        # in the log instead of inferred. See SchedulingConfig / SessionRegistry for prior fixes.
+        run: |
+          set -uo pipefail
+          JPS="${JAVA_HOME}/bin/jps"
+          JSTACK="${JAVA_HOME}/bin/jstack"
+          WATCHDOG_TIMEOUT=$((20 * 60))
+
+          ./gradlew build &
+          BUILD_PID=$!
+
+          (
+            sleep "${WATCHDOG_TIMEOUT}"
+            echo "::error::Build exceeded ${WATCHDOG_TIMEOUT}s — assuming the :game-server:build hang. Dumping JVM threads."
+            for pid in $("${JPS}" -q); do
+              echo "===================== jstack ${pid} ====================="
+              "${JSTACK}" -l "${pid}" 2>&1 || true
+            done
+            echo "::error::Killing hung build."
+            kill -9 "${BUILD_PID}" 2>/dev/null || true
+          ) &
+          WATCHDOG_PID=$!
+
+          wait "${BUILD_PID}"
+          STATUS=$?
+          kill "${WATCHDOG_PID}" 2>/dev/null || true
+          exit "${STATUS}"
 
       - name: Generate coverage report
         run: ./gradlew koverXmlReport

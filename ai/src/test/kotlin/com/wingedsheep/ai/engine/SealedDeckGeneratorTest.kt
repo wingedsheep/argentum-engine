@@ -77,7 +77,12 @@ class SealedDeckGeneratorTest : FunSpec({
         )
 
         shouldNotThrowAny {
-            repeat(200) { gen.generate(gen.randomSetCode()) }
+            repeat(200) {
+                // The Draftsim autobuilder path (or its heuristic fallback) must always yield a
+                // complete 40-card sealed deck. A synthetic set has no Draftsim ratings file, so this
+                // also exercises the rarity-ladder fallback inside the builder.
+                gen.generate(gen.randomSetCode()).values.sum() shouldBe 40
+            }
         }
     }
 

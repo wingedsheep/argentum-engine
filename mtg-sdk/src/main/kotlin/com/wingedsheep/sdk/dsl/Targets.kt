@@ -323,6 +323,15 @@ object Targets {
     )
 
     /**
+     * Target an instant spell, sorcery spell, activated ability, or triggered ability on the stack
+     * — the "copy target instant/sorcery spell, activated ability, or triggered ability" clause
+     * (Return the Favor). Pair with [com.wingedsheep.sdk.dsl.Effects.CopyTargetSpellOrAbility].
+     */
+    val InstantSorcerySpellOrAbility: TargetRequirement = TargetObject(
+        filter = TargetFilter.InstantSorcerySpellOrAbilityOnStack
+    )
+
+    /**
      * Target triggered ability you control on the stack.
      */
     val TriggeredAbilityYouControl: TargetRequirement = TargetObject(

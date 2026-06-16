@@ -108,16 +108,18 @@ class TournamentController(
                     val gameSessionId = match.gameSessionId ?: return@mapNotNull null
                     val session = gameRepository.findById(gameSessionId) ?: return@mapNotNull null
                     if (session.isGameOver()) return@mapNotNull null
-                    val names = session.getPlayerNames() ?: return@mapNotNull null
-                    val life = session.getLifeTotals() ?: return@mapNotNull null
+                    // Tournament matches are 2-player; the live tile shows the two seats.
+                    val names = session.getPlayerNames()
+                    val life = session.getLifeTotals()
+                    if (names.size < 2 || life.size < 2) return@mapNotNull null
                     LiveTournamentMatchDTO(
                         gameSessionId = gameSessionId,
                         lobbyId = lobby.lobbyId,
                         round = round,
-                        player1Name = names.first,
-                        player2Name = names.second,
-                        player1Life = life.first,
-                        player2Life = life.second,
+                        player1Name = names[0],
+                        player2Name = names[1],
+                        player1Life = life[0],
+                        player2Life = life[1],
                     )
                 }
             }

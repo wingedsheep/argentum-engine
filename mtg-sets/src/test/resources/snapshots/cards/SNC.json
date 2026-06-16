@@ -1,0 +1,77 @@
+// Fake Your Own Death
+{
+    "name": "Fake Your Own Death",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +2/+0 and gains \"When this creature dies, return it to the battlefield tapped under its owner's control and you create a Treasure token.\" (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "ability_1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Battlefield",
+                                    "placement": "Tapped"
+                                },
+                                {
+                                    "type": "CreatePredefinedToken",
+                                    "tokenType": "Treasure"
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control and you create a Treasure token."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Kari Christensen",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4e117a8-3291-4f9a-ab00-c820c8e2aa00.jpg?1664410943"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

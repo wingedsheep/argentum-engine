@@ -56,7 +56,6 @@ class ReturnLinkedExilePipelineTest : FunSpec({
     fun context() = EffectContext(
         sourceId = sourceId,
         controllerId = playerId,
-        opponentId = opponentId
     )
 
     fun createRegistry(): EffectExecutorRegistry {

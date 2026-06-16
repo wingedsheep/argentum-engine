@@ -1115,7 +1115,7 @@
                     "type": "DrawCards",
                     "count": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": "creature black"
                     }
                 }

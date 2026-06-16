@@ -37,8 +37,12 @@ class BecomeSaddledExecutor : EffectExecutor<BecomeSaddledEffect> {
         }
 
         val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "Unknown"
+        // First time saddled this turn iff it wasn't already saddled. SaddledComponent is set the
+        // first time and cleared only at the cleanup step (CR 702.171b), so a re-saddle in the same
+        // turn reports false — exactly the "for the first time each turn" intervening-if semantics.
+        val firstThisTurn = state.getEntity(targetId)?.has<SaddledComponent>() != true
         val newState = state.updateEntity(targetId) { it.with(SaddledComponent) }
 
-        return EffectResult.success(newState, listOf(BecameSaddledEvent(targetId, name)))
+        return EffectResult.success(newState, listOf(BecameSaddledEvent(targetId, name, firstThisTurn)))
     }
 }

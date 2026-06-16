@@ -15,12 +15,20 @@ import {
   createSetFullControlMessage,
   createSetPriorityModeMessage,
   createSetStopOverridesMessage,
+  createSetAbilityYieldMessage,
+  createClearAbilityYieldMessage,
+  createClearAllYieldsMessage,
   createRequestUndoMessage,
 
 } from '@/types'
-import type { Step, PriorityModeValue } from '@/types'
+import type { Step, PriorityModeValue, YieldKind } from '@/types'
 import { trackEvent } from '@/utils/analytics.ts'
 import { getWebSocket } from './shared'
+
+/** How long an error toast stays up before auto-dismissing. */
+const ERROR_AUTO_DISMISS_MS = 5000
+/** Pending auto-dismiss timer for the global error toast (module-scoped: one toast at a time). */
+let errorDismissTimer: ReturnType<typeof setTimeout> | null = null
 
 export interface GameplaySliceState {
   gameState: ClientGameState | null
@@ -56,6 +64,7 @@ export interface GameplaySliceActions {
   submitTargetsDecision: (selectedTargets: Record<number, readonly EntityId[]>) => void
   submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
   submitYesNoDecision: (choice: boolean) => void
+  submitBatchYesNoDecision: (choice: boolean, applyToAll: boolean) => void
   submitNumberDecision: (number: number) => void
   submitOptionDecision: (optionIndex: number) => void
   submitReplacementDecision: (fromIndex: number, toIndex: number) => void
@@ -76,9 +85,18 @@ export interface GameplaySliceActions {
   setFullControl: (enabled: boolean) => void
   cyclePriorityMode: () => void
   toggleStopOverride: (step: Step, isMyTurn: boolean) => void
+  setAbilityYield: (cardDefinitionId: string, abilityId: string, kind: YieldKind) => void
+  clearAbilityYield: (cardDefinitionId: string, abilityId: string) => void
+  clearAllYields: () => void
   requestUndo: () => void
   toggleAutoTap: () => void
   returnToMenu: () => void
+  /**
+   * Surface a global error toast. Auto-dismisses after a few seconds (a fresh error
+   * resets the timer). Route every error through this — setting `lastError` directly
+   * skips the auto-dismiss, leaving the toast stuck on routes where no component owns a timer.
+   */
+  setError: (error: ErrorState) => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
 }
@@ -118,6 +136,9 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   },
 
   joinGame: (sessionId, deckList) => {
+    // Track the joined session locally — the joiner only gets GameStarted (no session id),
+    // and onGameOver matches its gameId against this.
+    set({ sessionId })
     getWebSocket()?.send(createJoinGameMessage(sessionId, deckList))
   },
 
@@ -215,6 +236,26 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         type: 'YesNoResponse' as const,
         decisionId: pendingDecision.id,
         choice,
+      },
+    }
+    getWebSocket()?.send(createSubmitActionMessage(action))
+  },
+
+  submitBatchYesNoDecision: (choice, applyToAll) => {
+    const { pendingDecision, playerId } = get()
+    if (!pendingDecision || !playerId) return
+
+    const action = {
+      type: 'SubmitDecision' as const,
+      // Stamp the decision's owner, not the connection's own seat. Equal in normal play;
+      // in hotseat / Mindslaver control the one connection answers the other seat's
+      // decisions, and the engine requires SubmitDecision.playerId == pendingDecision.playerId.
+      playerId: pendingDecision.playerId,
+      response: {
+        type: 'BatchYesNoResponse' as const,
+        decisionId: pendingDecision.id,
+        choice,
+        applyToAll,
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))
@@ -494,9 +535,26 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     localStorage.setItem('argentum-stop-overrides', JSON.stringify(newOverrides))
   },
 
+  // Persistent per-ability yields (MTGO right-click yields — backlog §C). The server owns the
+  // authoritative yield state (on GameState); these just dispatch intent and the next state update
+  // reflects it in gameState.activeYields.
+  setAbilityYield: (cardDefinitionId, abilityId, kind) => {
+    getWebSocket()?.send(createSetAbilityYieldMessage(cardDefinitionId, abilityId, kind))
+  },
+
+  clearAbilityYield: (cardDefinitionId, abilityId) => {
+    getWebSocket()?.send(createClearAbilityYieldMessage(cardDefinitionId, abilityId))
+  },
+
+  clearAllYields: () => {
+    getWebSocket()?.send(createClearAllYieldsMessage())
+  },
+
   returnToMenu: () => {
     const state = get()
-    const isInTournament = state.tournamentState != null
+    // FFA pods keep their lobby context too — "Return to Menu" from the game-over (or
+    // eliminated) overlay drops back to the pod's standings screen, not the main menu.
+    const isInTournament = state.tournamentState != null || state.ffaState != null
     set({
       sessionId: null,
       opponentName: null,
@@ -542,7 +600,20 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     })
   },
 
+  setError: (error: ErrorState) => {
+    if (errorDismissTimer !== null) clearTimeout(errorDismissTimer)
+    set({ lastError: error })
+    errorDismissTimer = setTimeout(() => {
+      errorDismissTimer = null
+      set({ lastError: null })
+    }, ERROR_AUTO_DISMISS_MS)
+  },
+
   clearError: () => {
+    if (errorDismissTimer !== null) {
+      clearTimeout(errorDismissTimer)
+      errorDismissTimer = null
+    }
     set({ lastError: null })
   },
 

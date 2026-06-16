@@ -566,6 +566,16 @@ data class CreateDelayedTriggerEffect(
      */
     val watchedTarget: EffectTarget? = null,
     /**
+     * For event-based delayed triggers: scopes the trigger to events whose *recipient*
+     * (the damaged / targeted entity) is this target. Whereas [watchedTarget] narrows by
+     * the event's **source**, [watchedRecipient] narrows by the event's **recipient** — i.e.
+     * "whenever a creature you control deals combat damage to *that player* this turn"
+     * (Great Train Heist). Context references (e.g. ContextTarget(0) for the chosen opponent)
+     * are baked into a concrete entity id at creation time by CreateDelayedTriggerExecutor.
+     * Currently honored for [com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent].
+     */
+    val watchedRecipient: EffectTarget? = null,
+    /**
      * For event-based delayed triggers: when the ability is removed.
      */
     val expiry: DelayedTriggerExpiry = DelayedTriggerExpiry.EndOfTurn,

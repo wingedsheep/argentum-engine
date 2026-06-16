@@ -250,6 +250,15 @@ object ZoneTransitionService {
                     c.without<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>()
                 }
             }
+            // Likewise a Paradigm card that leaves exile by any non-cast path stops recurring —
+            // the marker is what the engine keys on, so drop it.
+            if (entityContainer != null &&
+                entityContainer.has<com.wingedsheep.engine.state.components.battlefield.ParadigmComponent>()
+            ) {
+                newState = newState.updateEntity(entityId) { c ->
+                    c.without<com.wingedsheep.engine.state.components.battlefield.ParadigmComponent>()
+                }
+            }
         }
 
         // 6. Remove from current zone

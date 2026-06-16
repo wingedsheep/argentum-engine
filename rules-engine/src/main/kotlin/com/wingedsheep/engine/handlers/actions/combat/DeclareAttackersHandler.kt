@@ -25,7 +25,9 @@ class DeclareAttackersHandler(
     override val actionType: KClass<DeclareAttackers> = DeclareAttackers::class
 
     override fun validate(state: GameState, action: DeclareAttackers): String? {
-        if (state.activePlayerId != action.playerId) {
+        // CR 805.10a/b — the whole active team is the attacking team, so either teammate may make
+        // the team's one combined attack declaration.
+        if (!state.isActiveTurnFor(action.playerId)) {
             return "You can only declare attackers on your turn"
         }
         if (state.step != Step.DECLARE_ATTACKERS) {

@@ -297,13 +297,13 @@ class CombatContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = null
         )
         newState = newState.addFloatingEffect(
             layer = Layer.ABILITY,
             modification = SerializableModification.PreventNextDamageFromChosenSourceShield(
                 damageSourceId = chosenSourceId,
-                linkId = delayedTriggerId
+                linkId = delayedTriggerId,
+                preventDamage = continuation.preventDamage
             ),
             affectedEntities = setOf(continuation.controllerId),
             duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
@@ -329,7 +329,6 @@ class CombatContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            opponentId = null
         )
         val modification = if (continuation.amount == null) {
             // Prevent all damage from the chosen source for the rest of the turn (Samite Ministration)

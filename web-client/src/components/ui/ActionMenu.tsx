@@ -276,7 +276,7 @@ function buildActionOptions(
     })
   }
 
-  // 7. Crew (for Vehicles)
+  // 7. Crew (for Vehicles) and Saddle (for Mounts) — both are tap-for-power keyword actions
   const crewActions = legalActions.filter((a) => a.action.type === 'CrewVehicle')
   crewActions.forEach((crewAction, index) => {
     options.push({
@@ -285,6 +285,18 @@ function buildActionOptions(
       manaCost: null,
       isAvailable: crewAction.isAffordable !== false,
       action: crewAction,
+      actionType: 'activate',
+    })
+  })
+
+  const saddleActions = legalActions.filter((a) => a.action.type === 'SaddleMount')
+  saddleActions.forEach((saddleAction, index) => {
+    options.push({
+      key: `saddle-${index}`,
+      label: saddleAction.description,
+      manaCost: null,
+      isAvailable: saddleAction.isAffordable !== false,
+      action: saddleAction,
       actionType: 'activate',
     })
   })

@@ -214,7 +214,13 @@ class AiGameManager(
         onActionReady: (EntityId, GameAction) -> Unit,
         onMulliganKeep: (EntityId) -> Unit,
         onMulliganTake: (EntityId) -> Unit,
-        onBottomCards: (EntityId, List<EntityId>) -> Unit
+        onBottomCards: (EntityId, List<EntityId>) -> Unit,
+        /**
+         * Fixed deck (card name → count) the AI must play instead of a generated sealed pool. Used
+         * by deckless formats such as Momir Basic, where every seat plays the same 60 basics.
+         * Null = the existing behaviour (generate a random sealed deck for [setCode]).
+         */
+        deckOverride: Map<String, Int>? = null,
     ): PlayerSession {
         require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true." }
 
@@ -234,8 +240,10 @@ class AiGameManager(
             onBottomCards = onBottomCards,
         )
 
-        // Quick games use a sealed deck — use same set as human player if provided
-        val aiDeck = if (setCode != null) deckGenerator.generate(setCode) else deckGenerator.generate()
+        // Deckless formats (Momir Basic) supply a fixed deck; otherwise quick games generate a
+        // sealed deck, using the same set as the human player when one was provided.
+        val aiDeck = deckOverride
+            ?: if (setCode != null) deckGenerator.generate(setCode) else deckGenerator.generate()
         gameSession.addPlayer(playerSession, aiDeck)
 
         // Give the AI knowledge of its deck composition

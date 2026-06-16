@@ -31,8 +31,11 @@ class PlayerLifeLossCheck : StateBasedActionCheck {
             if (container.has<PlayerLostComponent>()) continue
             if (playerCantLoseGame(state, playerId)) continue
 
-            val lifeComponent = container.get<LifeTotalComponent>() ?: continue
-            if (lifeComponent.life <= 0) {
+            // Presence guard stays per-player; the value is the team's shared total (CR 810.9c).
+            // Reading through the resolver means every member of a 0-life team is marked in this
+            // same pass — the principled single team-loss check is Phase 3.
+            if (container.get<LifeTotalComponent>() == null) continue
+            if (state.lifeTotal(playerId) <= 0) {
                 newState = newState.updateEntity(playerId) { c ->
                     c.with(PlayerLostComponent(LossReason.LIFE_ZERO))
                 }
@@ -45,9 +48,15 @@ class PlayerLifeLossCheck : StateBasedActionCheck {
 }
 
 internal fun playerCantLoseGame(state: GameState, playerId: EntityId): Boolean {
+    // CR 810.8a — "if an effect says a player can't lose the game, that player's team can't lose":
+    // a can't-lose grant controlled by any teammate protects the whole team. This team-wide reach
+    // only applies when players win/lose as a team (2HG); in Team vs. Team (CR 808) and non-team
+    // games the grant protects only its own controller.
+    val team = (if (state.format.playersWinLoseAsTeam) state.teamOf(playerId) else listOf(playerId))
+        .toHashSet()
     return state.getBattlefield().any { entityId ->
         val container = state.getEntity(entityId) ?: return@any false
         container.has<GrantsCantLoseGameComponent>() &&
-            container.get<ControllerComponent>()?.playerId == playerId
+            container.get<ControllerComponent>()?.playerId in team
     }
 }

@@ -251,7 +251,6 @@ class TypecycleCardHandler(
         val effectContext = EffectContext(
             sourceId = action.cardId,
             controllerId = action.playerId,
-            opponentId = currentState.getOpponent(action.playerId)
         )
 
         val searchResult = effectExecutorRegistry.execute(currentState, searchEffect, effectContext)

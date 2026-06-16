@@ -257,6 +257,41 @@
     ]
 }
 
+// Bottle Gnomes
+{
+    "name": "Bottle Gnomes",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Gnome",
+    "oracleText": "Sacrifice this creature: You gain 3 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "flavorText": "\"I am reminded of the fable of the silver egg. Its owner cracks it open to see what jewels it holds, only to discover a simple yellow yolk.\"\n—Karn, silver golem",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/645297d1-ee77-4879-83eb-8114fbabb9a4.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Caldera Lake
 {
     "name": "Caldera Lake",
@@ -1687,7 +1722,7 @@
                     "type": "GainLife",
                     "amount": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": "creature attacking"
                     }
                 }
@@ -1862,6 +1897,30 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/0/307f5d5e-3a4b-430e-8769-fb553216befa.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Pincher Beetles
+{
+    "name": "Pincher Beetles",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Shroud (This creature can't be the target of spells or abilities.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "SHROUD"
+    ],
+    "metadata": {
+        "collectorNumber": "244",
+        "artist": "Stephen Daniele",
+        "flavorText": "\"No fair! Since when does a bug get ta munch on me?\"\n—Squee, goblin cabin hand",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dba68902-1e05-414a-8c3d-1f97da61d09d.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Pine Barrens
@@ -2096,7 +2155,7 @@
                 "type": "CantAttackUnless",
                 "condition": {
                     "type": "Exists",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "zone": "Battlefield",
                     "filter": "land Island"
                 }
@@ -2111,6 +2170,74 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Skyshroud Ranger
+{
+    "name": "Skyshroud Ranger",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Ranger",
+    "oracleText": "{T}: You may put a land card from your hand onto the battlefield. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "land"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "artist": "Steve Luke",
+        "flavorText": "\"Just as you see the grave and remember the friend, I see this forest and remember Llanowar.\"\n—Mirri of the Weatherlight",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efe01296-2b8b-4cdf-a041-a08bebea9c29.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2280,6 +2407,53 @@
         "artist": "Gary Leach",
         "flavorText": "These are its last days. Better to grow broad and heavy. Better that the enemy is crushed beneath its carcass.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/3/2380ab8f-58d2-4e1c-a115-cd2615b5a871.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Verdant Force
+{
+    "name": "Verdant Force",
+    "manaCost": "{5}{G}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "At the beginning of each upkeep, create a 1/1 green Saproling creature token.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6544989-91b4-4db7-ad44-f1355f1d6e6b.jpg?1562540216"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "263",
+        "rarity": "RARE",
+        "artist": "DiTerlizzi",
+        "flavorText": "Burl, scurf, and bower\nBirth fern and flower.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29bd094c-fcc1-4abf-ba3e-03a5b9b6d1c2.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"

@@ -148,9 +148,16 @@ internal fun keywordLines(card: JsonObject, keywords: Set<String>): Set<String> 
         // Protection always carries a "from X" scope, so it renders as a scoped `keywordAbility(...)`
         // (see Emitter.protectionScopeDsl), never a bare `keywords(Keyword.PROTECTION)`.
         if (rname == "Protection") continue
+        // Increment's whole mechanic is composed by the `increment()` builder (Emitter `rname ==
+        // "Increment"`), which itself surfaces Keyword.INCREMENT. A bare `keywords(Keyword.INCREMENT)`
+        // here would both duplicate the keyword and drop the cast-spell trigger, so skip it.
+        if (rname == "Increment") continue
         val entry = Bridge.entry("_Rule", rname)
         val auto = pascalToUpperSnake(rname)
         if (entry is MappingEntry.Keyword) out.add(entry.tag)
+        // An `unsupported` pin (engine-inert keyword, e.g. Intimidate) must not fall through to the
+        // enum auto-resolve below — the enum member exists but rendering it would be a silent no-op.
+        else if (entry is MappingEntry.Unsupported) continue
         // Only a bare keyword rule (no args) is an intrinsic card keyword. A parameterized keyword rule
         // (Crew N, Flashback {cost}, …) carries args and is rendered as an explicit keywordAbility(...)
         // by the Emitter — stamping it bare here would drop its parameter (e.g. "Crew" without the N).

@@ -210,7 +210,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * Examples:
      * - "you would draw a card" → DrawEvent(player = Player.You)
-     * - "an opponent would draw" → DrawEvent(player = Player.Opponent)
+     * - "an opponent would draw" → DrawEvent(player = Player.EachOpponent)
      *
      * When [exceptFirstInDrawStep] is set, the first card the drawing player draws in
      * each of their own draw steps (CR 504.1's turn-based draw, normally) does **not**
@@ -869,6 +869,81 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a permanent becomes saddled (CR 702.171b) — a Saddle ability resolved on it.
+     *
+     * Binding SELF = "whenever this creature becomes saddled" (the Mount itself, Stubborn
+     * Burrowfiend); ANY = "whenever a [filter] becomes saddled". The Mount stays on the battlefield
+     * while saddled, so this matches in the regular battlefield trigger loop (unlike the
+     * exile-resident plotted/door designations).
+     *
+     * [firstTimeEachTurn] restricts to the first time the permanent became saddled this turn —
+     * Saddle may be activated again while already saddled, but the "first time each turn"
+     * intervening-if only fires on the first resolution per turn.
+     */
+    @SerialName("BecameSaddledEvent")
+    @Serializable
+    data class BecameSaddledEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val firstTimeEachTurn: Boolean = false
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(describeObjectForEvent(filter))
+            append(" becomes saddled")
+            if (firstTimeEachTurn) append(" for the first time each turn")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
+     * When an Aura, Equipment, or Fortification becomes attached to a permanent or player
+     * (CR 603.2e — "becomes" triggers fire only at the moment of attaching, not on a state that
+     * already exists, and not on phasing in/out per CR 702.26j).
+     *
+     * The triggering entity is the *attachment* (the aura/equipment that became attached); the
+     * permanent it attached to is carried as the attached-to entity in the trigger context
+     * ([com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent]).
+     *
+     * Binding SELF = "whenever this Equipment/Aura becomes attached to a creature" (Assimilation
+     * Aegis). Binding ANY with [attachmentFilter] / [attachmentController] = "whenever a [filter]
+     * you control becomes attached to …" (Eriette, the Beguiler).
+     *
+     * @property attachmentFilter restricts which attachment qualifies (e.g. Aura, Equipment).
+     * @property attachmentController restricts who must control the attachment (e.g. [Player.You]).
+     * @property attachedToFilter restricts what it must attach to (e.g. a nonland permanent an
+     *   opponent controls). The attached-to permanent is matched against this filter, with the
+     *   triggering attachment available as the comparison reference for relative predicates
+     *   (e.g. mana value at most the Aura's mana value).
+     */
+    @SerialName("BecomesAttachedEvent")
+    @Serializable
+    data class BecomesAttachedEvent(
+        val attachmentFilter: GameObjectFilter = GameObjectFilter.Any,
+        val attachmentController: Player = Player.Any,
+        val attachedToFilter: GameObjectFilter = GameObjectFilter.Any,
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(describeObjectForEvent(attachmentFilter))
+            if (attachmentController == Player.You) append(" you control")
+            append(" becomes attached")
+            if (attachedToFilter != GameObjectFilter.Any) {
+                append(" to ${describeObjectForEvent(attachedToFilter)}")
+            }
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newAttachment = attachmentFilter.applyTextReplacement(replacer)
+            val newAttachedTo = attachedToFilter.applyTextReplacement(replacer)
+            return if (newAttachment !== attachmentFilter || newAttachedTo !== attachedToFilter) {
+                copy(attachmentFilter = newAttachment, attachedToFilter = newAttachedTo)
+            } else this
+        }
+    }
+
+    /**
      * When a player chooses one or more targets.
      *
      * Fires when [player] casts a spell, activates an ability, or puts a triggered ability
@@ -1168,18 +1243,33 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * `AbilityActivatedEvent` for non-mana activated abilities — including planeswalker loyalty
      * abilities (CR 606), which are activated abilities. This template therefore matches exactly
      * "activates an ability that isn't a mana ability"; [player] scopes whose activations count
-     * ([Player.Opponent] for "an opponent activates …", [Player.You] for your own, etc.).
+     * ([Player.EachOpponent] for "an opponent activates …", [Player.You] for your own, etc.).
      *
      * Used by Flamescroll Celebrant: "Whenever an opponent activates an ability that isn't a mana
      * ability, this creature deals 1 damage to that player."
+     *
+     * [targetMatch] optionally narrows the trigger to abilities that target a particular kind of
+     * object or player. When non-null, the activated ability must have at least one chosen target
+     * satisfying it — a non-targeting ability never fires. Ertha Jo, Frontier Mentor uses
+     * [com.wingedsheep.sdk.scripting.events.AbilityTargetMatch.CreatureOrPlayer] for
+     * "Whenever you activate an ability that targets a creature or player".
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable
     data class AbilityActivatedEvent(
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val targetMatch: com.wingedsheep.sdk.scripting.events.AbilityTargetMatch? = null
     ) : EventPattern {
-        override val description: String =
-            "${player.description} activates an ability that isn't a mana ability"
+        override val description: String = buildString {
+            append(player.description)
+            append(" activates an ability that ")
+            if (targetMatch != null) {
+                append("targets a ")
+                append(targetMatch.description)
+            } else {
+                append("isn't a mana ability")
+            }
+        }
     }
 
     /**

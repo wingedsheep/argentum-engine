@@ -1,54 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.dmu.cards
 
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * Sulfurous Springs
- * Land
+ * Sulfurous Springs reprint in DMU.
  *
- * {T}: Add {C}.
- * {T}: Add {B} or {R}. This land deals 1 damage to you.
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] lives in ICE's `cards/` package
+ * (the card's earliest real printing). This file contributes only the DMU-specific
+ * presentation row, surfaced via the set's `printings`.
  */
-val SulfurousSprings = card("Sulfurous Springs") {
-    typeLine = "Land"
-    colorIdentity = "BR"
-    oracleText = "{T}: Add {C}.\n{T}: Add {B} or {R}. This land deals 1 damage to you."
-
-    activatedAbility {
-        cost = AbilityCost.Tap
-        effect = Effects.AddColorlessMana(1)
-        manaAbility = true
-        timing = TimingRule.ManaAbility
-    }
-
-    activatedAbility {
-        cost = AbilityCost.Tap
-        effect = Effects.AddMana(Color.BLACK)
-            .then(Effects.DealDamage(1, EffectTarget.PlayerRef(Player.You)))
-        manaAbility = true
-        timing = TimingRule.ManaAbility
-    }
-
-    activatedAbility {
-        cost = AbilityCost.Tap
-        effect = Effects.AddMana(Color.RED)
-            .then(Effects.DealDamage(1, EffectTarget.PlayerRef(Player.You)))
-        manaAbility = true
-        timing = TimingRule.ManaAbility
-    }
-
-    metadata {
-        rarity = Rarity.RARE
-        collectorNumber = "256"
-        artist = "Bruce Brenneise"
-        flavorText = "Everything is flammable in the Burning Isles, even the mana itself."
-        imageUri = "https://cards.scryfall.io/normal/front/d/f/dfd5450a-6490-417f-9aea-b6fca6f380d7.jpg?1673308373"
-    }
-}
+val SulfurousSpringsReprint = Printing(
+    oracleId = "f5c38c01-4a40-469f-91a0-7479daf4e8e7",
+    name = "Sulfurous Springs",
+    setCode = "DMU",
+    collectorNumber = "256",
+    artist = "Bruce Brenneise",
+    imageUri = "https://cards.scryfall.io/normal/front/d/f/dfd5450a-6490-417f-9aea-b6fca6f380d7.jpg",
+    releaseDate = "2022-09-09",
+    rarity = Rarity.RARE,
+)

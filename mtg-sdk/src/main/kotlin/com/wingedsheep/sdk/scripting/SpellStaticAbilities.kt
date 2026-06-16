@@ -255,24 +255,39 @@ data class MayCastFromGraveyard(
 }
 
 /**
- * The controller of a permanent with this static ability can't cast more than [maxPerTurn]
- * spell(s) each turn. The restriction is per controller — each player is limited only by the
- * permanents they control (Yawgmoth's Agenda: "You can't cast more than one spell each turn.").
+ * A per-turn cap on how many spells a player can cast, scoped along a single who-axis:
+ *
+ *  - [eachPlayer] = false (default) — the cap applies only to the permanent's **controller**
+ *    ("You can't cast more than one spell each turn." — Yawgmoth's Agenda). Each player is
+ *    limited only by the permanents they themselves control.
+ *  - [eachPlayer] = true — the cap is a global continuous restriction applying to **every
+ *    player** ("Each player can't cast more than one spell each turn." — High Noon). It is read
+ *    off any permanent on the battlefield with this ability, regardless of who controls it.
  *
  * Spells already cast earlier in the turn count, even if cast before this permanent entered
- * (per the Yawgmoth's Agenda ruling). The engine enforces this by comparing the controller's
+ * (per the Yawgmoth's Agenda ruling). The engine enforces this by comparing a player's
  * spells-cast-this-turn tally against [maxPerTurn] during cast-legality checks. Copies of
- * spells and activated/triggered abilities are not "cast" and do not count.
+ * spells and activated/triggered abilities are not "cast" and do not count. When several such
+ * permanents are in play, the most restrictive (smallest [maxPerTurn]) applies.
  *
- * @property maxPerTurn The maximum number of spells the controller may cast each turn.
+ * @property maxPerTurn The maximum number of spells a restricted player may cast each turn.
+ * @property eachPlayer Whether the restriction binds every player (true) or only the controller (false).
  */
 @SerialName("RestrictSpellsCastPerTurn")
 @Serializable
 data class RestrictSpellsCastPerTurn(
-    val maxPerTurn: Int = 1
+    val maxPerTurn: Int = 1,
+    val eachPlayer: Boolean = false
 ) : StaticAbility {
-    override val description: String =
-        "You can't cast more than $maxPerTurn spell${if (maxPerTurn == 1) "" else "s"} each turn"
+    override val description: String
+        get() {
+            val plural = if (maxPerTurn == 1) "" else "s"
+            return if (eachPlayer) {
+                "Each player can't cast more than $maxPerTurn spell$plural each turn"
+            } else {
+                "You can't cast more than $maxPerTurn spell$plural each turn"
+            }
+        }
 }
 
 /**
@@ -391,7 +406,7 @@ data class PlayersCantCastSpells(
     override val description: String = buildString {
         when (affected) {
             is Player.You -> append("You can't cast ")
-            is Player.Opponent, is Player.EachOpponent -> append("Your opponents can't cast ")
+            is Player.EachOpponent -> append("Your opponents can't cast ")
             else -> append("${affected.description.replaceFirstChar { it.uppercase() }} can't cast ")
         }
         append(if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells")

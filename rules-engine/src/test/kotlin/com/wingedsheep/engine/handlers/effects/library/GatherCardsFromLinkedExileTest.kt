@@ -41,7 +41,6 @@ class GatherCardsFromLinkedExileTest : FunSpec({
     fun context() = EffectContext(
         sourceId = sourceId,
         controllerId = playerId,
-        opponentId = opponentId
     )
 
     fun gatherEffect() = GatherCardsEffect(
@@ -184,7 +183,6 @@ class GatherCardsFromLinkedExileTest : FunSpec({
         val noSourceContext = EffectContext(
             sourceId = null,
             controllerId = playerId,
-            opponentId = opponentId
         )
 
         val result = executor.execute(state, gatherEffect(), noSourceContext)

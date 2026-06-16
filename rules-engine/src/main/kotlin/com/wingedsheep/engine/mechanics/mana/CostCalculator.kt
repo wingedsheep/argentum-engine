@@ -102,7 +102,7 @@ class CostCalculator(
 
         // Battlefield-sourced ModifySpellCost abilities.
         for ((sourceId, ability) in scanBattlefieldModifySpellCost(state)) {
-            if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets)) continue
+            if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone)) continue
             if (!gatingApplies(state, casterId, cardDef, ability)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets,
@@ -198,6 +198,7 @@ class CostCalculator(
         sourceId: EntityId,
         state: GameState,
         chosenTargets: List<EntityId> = emptyList(),
+        fromZone: Zone? = null,
     ): Boolean {
         return when (target) {
             SpellCostTarget.SelfCast -> false
@@ -209,6 +210,22 @@ class CostCalculator(
             is SpellCostTarget.AnyCaster -> matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState)
             is SpellCostTarget.OpponentsCastTargeting ->
                 opponentsCastTargetingMatches(state, casterId, sourceId, target.targetFilter, chosenTargets)
+            is SpellCostTarget.OpponentsCastFromZones -> {
+                // Source must be controlled by an opponent of the caster, the spell must be cast
+                // from one of the named zones, and the card must match the filter.
+                if (fromZone == null || fromZone !in target.zones) return false
+                val sourceController = state.projectedState.getController(sourceId) ?: return false
+                if (sourceController == casterId) return false
+                matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState)
+            }
+            is SpellCostTarget.YouCastFromZones -> {
+                // Source must be controlled by the caster, the spell must be cast from one of the
+                // named zones, and the card must match the filter (Doc Aurlock).
+                if (fromZone == null || fromZone !in target.zones) return false
+                val sourceController = state.projectedState.getController(sourceId) ?: return false
+                if (sourceController != casterId) return false
+                matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState)
+            }
             // FaceDown / Morph targets are spell-cast modifiers only when applied to a face-down cast.
             // calculateEffectiveCost is only called for face-up casts; face-down handling is in
             // calculateFaceDownCost / calculateMorphCostIncrease.
@@ -272,7 +289,7 @@ class CostCalculator(
                 // Player-scoped conditions ("during your turn", "you've cast another spell", ...)
                 // evaluate against the caster. The cost modifier's source is a non-spell permanent
                 // (or the spell card itself for SelfCast), neither of which the condition needs.
-                val ctx = EffectContext(sourceId = null, controllerId = casterId, opponentId = null)
+                val ctx = EffectContext(sourceId = null, controllerId = casterId)
                 conditionEvaluator.evaluate(state, gating.condition, ctx)
             }
         }
@@ -313,6 +330,15 @@ class CostCalculator(
                 val coloredSymbols = ManaCost.parse(modification.symbols).symbols
                     .filterIsInstance<ManaSymbol.Colored>()
                 repeat(units) { coloredSymbols.forEach(addColoredReductionWithOverflow) }
+            }
+            is CostModification.ReduceColoredIfAnyTargetMatches -> {
+                if (chosenTargets.isNotEmpty() &&
+                    anyTargetMatchesFilter(state, casterId, chosenTargets, modification.filter)
+                ) {
+                    ManaCost.parse(modification.symbols).symbols
+                        .filterIsInstance<ManaSymbol.Colored>()
+                        .forEach(addColoredReduction)
+                }
             }
             is CostModification.IncreaseGeneric -> addGenericIncrease(modification.amount)
             is CostModification.IncreaseColored -> {
@@ -897,6 +923,7 @@ class CostCalculator(
             // CostCalculator has no entity context; predicate has no static answer here.
             is CardPredicate.ManaValueAtMostEntity -> false
             is CardPredicate.ManaValueAtMostEntityManaSpent -> false
+            is CardPredicate.ManaValueAtMostColorsSpent -> false
             is CardPredicate.PowerGreaterThanEntity -> false
             is CardPredicate.PowerAtMostEntity -> false
             CardPredicate.ManaValueIsEven -> cardDef.manaCost.cmc % 2 == 0

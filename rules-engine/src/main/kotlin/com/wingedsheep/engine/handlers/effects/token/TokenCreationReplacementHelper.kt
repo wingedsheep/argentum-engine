@@ -95,9 +95,13 @@ object TokenCreationReplacementHelper {
             }
         }
 
-        var count = baseCount + modifier
+        // Saturating arithmetic: a stack of doublers (Doubling Season + Anointed Procession + …)
+        // multiplies geometrically, which would overflow `Int` to a negative count. Clamp instead
+        // (GameLimits); CreateTokenExecutor applies the structural MAX_TOKENS_PER_EFFECT cap before
+        // actually allocating entities.
+        var count = com.wingedsheep.engine.core.GameLimits.addClamped(baseCount, modifier)
         if (count <= 0) return 0
-        repeat(doublings) { count *= 2 }
+        repeat(doublings) { count = com.wingedsheep.engine.core.GameLimits.mulClamped(count, 2) }
         return count
     }
 
@@ -225,7 +229,10 @@ object TokenCreationReplacementHelper {
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
-        repeat(count) {
+        // Same structural cap as CreateTokenExecutor: copies are full entities too.
+        val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "token copies")
+
+        repeat(cappedCount) {
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
             val tokenCard = attachedCard.copy(ownerId = controllerId)

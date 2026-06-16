@@ -1,54 +1,22 @@
 package com.wingedsheep.mtg.sets.definitions.bro.cards
 
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * Battlefield Forge
- * Land
+ * Battlefield Forge reprint in BRO.
  *
- * {T}: Add {C}.
- * {T}: Add {R} or {W}. This land deals 1 damage to you.
+ * The canonical [com.wingedsheep.sdk.model.CardDefinition] lives in APC's `cards/` package
+ * (the card's earliest real printing). This file contributes only the BRO-specific
+ * presentation row, surfaced via the set's `printings`.
  */
-val BattlefieldForge = card("Battlefield Forge") {
-    typeLine = "Land"
-    colorIdentity = "WR"
-    oracleText = "{T}: Add {C}.\n{T}: Add {R} or {W}. This land deals 1 damage to you."
-
-    activatedAbility {
-        cost = AbilityCost.Tap
-        effect = Effects.AddColorlessMana(1)
-        manaAbility = true
-        timing = TimingRule.ManaAbility
-    }
-
-    activatedAbility {
-        cost = AbilityCost.Tap
-        effect = Effects.AddMana(Color.RED)
-            .then(Effects.DealDamage(1, EffectTarget.PlayerRef(Player.You)))
-        manaAbility = true
-        timing = TimingRule.ManaAbility
-    }
-
-    activatedAbility {
-        cost = AbilityCost.Tap
-        effect = Effects.AddMana(Color.WHITE)
-            .then(Effects.DealDamage(1, EffectTarget.PlayerRef(Player.You)))
-        manaAbility = true
-        timing = TimingRule.ManaAbility
-    }
-
-    metadata {
-        rarity = Rarity.RARE
-        collectorNumber = "257"
-        artist = "Thomas Stoop"
-        flavorText = "\"As Terisiare's mines ran dry, scrap metal became increasingly plentiful.\"\n—*The Antiquities War*"
-        imageUri = "https://cards.scryfall.io/normal/front/6/4/642584bb-7586-4796-9b94-f01ec5bd9e9f.jpg?1674422149"
-    }
-}
+val BattlefieldForgeReprint = Printing(
+    oracleId = "6b75b94e-83b7-457e-ac41-7ca90b5a59aa",
+    name = "Battlefield Forge",
+    setCode = "BRO",
+    collectorNumber = "257",
+    artist = "Thomas Stoop",
+    imageUri = "https://cards.scryfall.io/normal/front/6/4/642584bb-7586-4796-9b94-f01ec5bd9e9f.jpg",
+    releaseDate = "2022-11-18",
+    rarity = Rarity.RARE,
+)

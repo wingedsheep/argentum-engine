@@ -287,6 +287,7 @@ object ZoneMovementUtils {
             .without<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.CastForImpendingComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.ParadigmComponent>()
             // Note: CastRecordComponent is NOT stripped here — it needs to persist
             // for intervening-if checks on mana-spent-gated triggers that may still
             // be on the stack when the permanent leaves the battlefield (e.g., evoke).
@@ -567,9 +568,10 @@ object ZoneMovementUtils {
             if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state
 
             val cid = controllerId ?: return state
-            val opponentId = state.getOpponent(cid) ?: return state
-            return state.updateEntity(opponentId) { container ->
-                container.with(SkipNextTurnComponent)
+            return state.getOpponents(cid).fold(state) { acc, opponentId ->
+                acc.updateEntity(opponentId) { container ->
+                    container.with(SkipNextTurnComponent)
+                }
             }
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.AddCountersEffect && entityId != null) {

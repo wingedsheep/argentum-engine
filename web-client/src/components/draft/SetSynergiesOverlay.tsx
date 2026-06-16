@@ -570,6 +570,65 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  OTJ: {
+    setCode: 'OTJ',
+    setName: 'Outlaws of Thunder Junction',
+    archetypes: [
+      {
+        name: 'Flash Plot',
+        colors: ['W', 'U'],
+        description: "Plot cards on your turn, then deploy flash creatures and tricks on the opponent's. A tempo deck that always keeps mana up and threatens free spells from exile.",
+      },
+      {
+        name: 'Outlaw Attrition',
+        colors: ['W', 'B'],
+        description: 'Grind the game out with efficient outlaws, premium removal, and incidental lifegain. A controlling midrange that trades resources and pulls ahead on value.',
+      },
+      {
+        name: 'Mercenaries',
+        colors: ['R', 'W'],
+        creatureTypes: ['Mercenary'],
+        description: 'Go wide with Mercenary tokens and aggressive bodies, then convert the swarm to damage with go-wide payoffs and mass pump. A fast, token-fueled aggro deck.',
+      },
+      {
+        name: 'Crime',
+        colors: ['U', 'B'],
+        description: 'Commit crimes — target opponents and their stuff — to snowball value and disruption. A tempo-control deck that drains the opponent while answering their threats.',
+      },
+      {
+        name: 'Spells Plot',
+        colors: ['U', 'R'],
+        description: 'Cast a high volume of cheap instants and sorceries, plotting spells to fire off multiple per turn. Spell-velocity payoffs reward explosive double-spell turns.',
+      },
+      {
+        name: 'Ramp Plot',
+        colors: ['U', 'G'],
+        description: "Ramp and discount plot cards to set up powerful future turns, then land the format's biggest threats ahead of schedule. A controlling midrange that out-values the table.",
+      },
+      {
+        name: 'Outlaws',
+        colors: ['B', 'R'],
+        description: 'The dedicated outlaw deck — Assassins, Mercenaries, Pirates, Rogues, and Warlocks trigger aggressive payoffs. Apply relentless pressure backed by burn and removal.',
+      },
+      {
+        name: 'Graveyard Recursion',
+        colors: ['B', 'G'],
+        description: 'Fill your graveyard and bring key creatures back for repeated value. A grindy midrange that trades all day and rebuilds from the yard with desert and recursion payoffs.',
+      },
+      {
+        name: 'Mounts / Ferocious',
+        colors: ['R', 'G'],
+        creatureTypes: ['Mount'],
+        description: 'Ramp into big creatures with power 4 or greater, saddle your Mounts, and crash in. A ferocious aggro-midrange that overpowers opponents through raw size.',
+      },
+      {
+        name: 'Mounts',
+        colors: ['G', 'W'],
+        creatureTypes: ['Mount'],
+        description: 'Saddle your Mounts to unlock powerful attack triggers, backed by removal like Throw from the Saddle. The format\'s premier midrange deck, going wide and tall at once.',
+      },
+    ],
+  },
 }
 
 /**

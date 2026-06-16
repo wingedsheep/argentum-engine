@@ -1,3 +1,27 @@
+// Anaba Bodyguard
+{
+    "name": "Anaba Bodyguard",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "66a",
+        "artist": "Anson Maddocks",
+        "flavorText": "\"Not all Minotaurs are tribal. Some are freelance.\"\n—Eron the Relentless",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/882e3c69-dca7-4c0a-8f8c-984250e6a867.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Anaba Shaman
 {
     "name": "Anaba Shaman",

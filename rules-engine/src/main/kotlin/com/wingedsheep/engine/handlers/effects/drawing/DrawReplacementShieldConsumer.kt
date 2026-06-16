@@ -78,7 +78,6 @@ class DrawReplacementShieldConsumer(
         val context = EffectContext(
             controllerId = playerId,
             sourceId = mod.sourceId,
-            opponentId = newState.turnOrder.firstOrNull { it != playerId },
             targets = mod.targets,
             xValue = mod.xValue,
             pipeline = PipelineState(namedTargets = mod.namedTargets)

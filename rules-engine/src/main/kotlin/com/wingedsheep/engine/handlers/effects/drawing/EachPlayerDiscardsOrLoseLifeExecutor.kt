@@ -184,13 +184,13 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
 
             for ((playerId, discardedCreatureCard) in discardedCreature) {
                 if (!discardedCreatureCard) {
-                    val currentLife = currentState.getEntity(playerId)
-                        ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life
-                        ?: continue
+                    if (currentState.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>() == null
+                    ) continue
+                    // CR 810.9a — life loss applies to the team's shared total.
+                    val currentLife = currentState.lifeTotal(playerId)
                     val newLife = currentLife - lifeLoss
-                    currentState = currentState.updateEntity(playerId) { container ->
-                        container.with(com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife))
-                    }
+                    currentState = currentState.withLifeTotal(playerId, newLife)
                     events.add(
                         com.wingedsheep.engine.core.LifeChangedEvent(
                             playerId, currentLife, newLife,

@@ -15,7 +15,9 @@ import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.findInteger
+import com.wingedsheep.tooling.coverage.findRef
 import com.wingedsheep.tooling.coverage.jsonContains
+import com.wingedsheep.tooling.coverage.nodesTagged
 import com.wingedsheep.tooling.coverage.strField
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -29,6 +31,29 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         if (jsonContains(node, "_Permanents", "Ref_TargetPermanents")) {
             call("ForEachTargetEffect", arg(call("listOf", arg(call("Effects.Move", arg("EffectTarget.ContextTarget(0)"), arg("Zone.HAND"))))))
         } else null
+    }
+
+    // "Return up to N target … cards from your graveyard to your hand" (Pull from the Grave). The
+    // companion `UptoNumberTargetGraveyardCards` target slot is recovered in TargetRecovery; this action
+    // returns EACH chosen graveyard card to its owner's hand, one Move per target via ForEachTargetEffect.
+    // Only the chosen-targets form (`Ref_TargetGraveyardCards`) renders; anything else declines.
+    on("PutEachGraveyardCardIntoHand") { node, _, _ ->
+        if (jsonContains(node, "_CardsInGraveyard", "Ref_TargetGraveyardCards")) {
+            call("ForEachTargetEffect", arg(call("listOf", arg(call("Effects.Move", arg("EffectTarget.ContextTarget(0)"), arg("Zone.HAND"))))))
+        } else null
+    }
+
+    on("AttachPermanentToPermanent") { _, args, tvar ->
+        // "attach it to target …" — an Equipment/Aura attaching ITSELF to a chosen permanent. The
+        // engine idiom is `Effects.AttachEquipment(target)`, which always attaches the source. So this
+        // renders ONLY the self-attach shape: args[0] (the permanent being attached) must be a self-ref
+        // (`ThatEnteringPermanent` for an ETB "attach it to target creature you control", Thunder Lasso).
+        // Anything else (attaching a different permanent) declines -> SCAFFOLD.
+        val arr = args.asArr ?: return@on null
+        val subjectRef = findRef(arr.getOrNull(0)) ?: return@on null
+        if (subjectRef !in SELF_REFS) return@on null
+        val tgt = refTargetFromRef(findRef(arr.getOrNull(1)), tvar) ?: return@on null
+        call("Effects.AttachEquipment", arg(Lit(tgt)))
     }
 
     on("DestroyPermanent") { _, args, tvar ->
@@ -60,6 +85,78 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         call("Effects.Exile", arg(Lit(tgt)))
     }
 
+    // "exile target <permanent> until this <permanent> leaves the battlefield" — the Banishing Light /
+    // O-Ring shape (Mystical Tether, Lassoed by the Law). The action renders `Effects.ExileUntilLeaves`;
+    // the matching leaves-battlefield ReturnLinkedExile trigger is synthesized once at card assembly
+    // (see [linkedExileReturnTrigger] in Emitter). Only the `UntilPermanentLeavesBattlefield ThisPermanent`
+    // expiration — the only one the linked-exile return models — renders; any other expiration declines
+    // (-> SCAFFOLD) rather than emit an exile with the wrong / no return.
+    on("ExilePermanentUntil") { _, args, tvar ->
+        val a = args.asArr ?: return@on null
+        val tgt = refTarget(a.getOrNull(0), tvar) ?: refTarget(args, tvar) ?: return@on null
+        val expiration = a.getOrNull(1) as? JsonObject ?: return@on null
+        if (expiration.strField("_Expiration") != "UntilPermanentLeavesBattlefield") return@on null
+        if (!jsonContains(expiration, "_Permanent", "ThisPermanent")) return@on null
+        call("Effects.ExileUntilLeaves", arg(Lit(tgt)))
+    }
+
+    // "Exile the top card of your library." (the first half of the impulse-draw idiom — Irascible
+    // Wolverine, Alania's Pathmaker). The exiled card is stored under the shared "impulseExiled" key that
+    // the paired `CreatePlayerEffectUntil{MayPlayExiledCard(TheCardExiledThisWay)}` action reads to grant
+    // the may-play window (see TapLayerStateHandlers' CreatePlayerEffectUntil branch). The exile itself is
+    // the gather + move-to-exile atomic pair, matching `Patterns.Exile.impulse(1)`'s default storeAs key
+    // so the emitted tree is gameplay-equivalent to the hand-authored facade call.
+    on("ExileTopCardOfLibrary") { _, _, _ ->
+        Composite(listOf(
+            Lit("GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed(1)), storeAs = \"impulseExiled\")"),
+            Lit("MoveCollectionEffect(from = \"impulseExiled\", destination = CardDestination.ToZone(Zone.EXILE))"),
+        ))
+    }
+
+    // "Return the exiled card to the battlefield under its owner's control" (the second half of the
+    // exile-then-return idiom — Conciliator's Duelist, Parting Gust). `TheCardExiledThisWay` refers to
+    // the same bound target that was exiled earlier in the ability, so it resolves to the ability's
+    // bound `tvar`; a plain Move to the battlefield returns it under its owner's control (the default).
+    // Only the under-owner's-control form renders; an under-your-control / no-bound-target form declines.
+    on("PutExiledCardOntoBattlefield") { node, _, tvar ->
+        if (tvar == null) return@on null
+        if (!jsonContains(node, "_CardInExile", "TheCardExiledThisWay")) return@on null
+        val flagBlob = compact(node)
+        if ("EntersUnderPlayersControl" in flagBlob || "EntersUnderYourControl" in flagBlob) return@on null
+        // Under-owner's-control return. We render the bare return and the one extra enter flag we can
+        // express faithfully: a single fixed ±1/±1 counter on the returned card (Daydream's "with a
+        // +1/+1 counter on it"). A returned card isn't a permanent until it's back on the battlefield,
+        // so the counter is a chained AddCountersEffect after the Move (matching the hand-authored card),
+        // not an enters-with replacement. Any other extra flag — a dynamic/derived counter count,
+        // entering tapped, a non-±1/±1 counter kind — would be silently dropped, so decline -> SCAFFOLD.
+        if ("EntersWithNumberCounters" in flagBlob || "EntersTapped" in flagBlob) return@on null
+        val move = call("Effects.Move", arg(Lit(tvar)), arg("Zone.BATTLEFIELD"))
+        if ("EntersWithACounter" !in flagBlob) return@on move
+        // Pull the EntersWithACounter flag's counter node and render it (counterTypeDsl declines any
+        // non-±1/±1 PTCounter / unnamed kind, downgrading the card to SCAFFOLD rather than guessing).
+        val counterNode = node.nodesTagged("EntersWithACounter")
+            .firstOrNull()?.get("args") ?: return@on null
+        val counter = counterTypeDsl(counterNode) ?: return@on null
+        Composite(listOf(
+            move,
+            call("AddCountersEffect", arg("counterType", counter), arg("count", "1"), arg("target", Lit(tvar))),
+        ))
+    }
+
+    // "...at the beginning of the next end step" delayed trigger (the return half of exile-then-return).
+    // Renders only the next-end-step timing as a `CreateDelayedTriggerEffect(step = Step.END, …)`; the
+    // body is the normal action-list renderer sharing the ability's bound `tvar` so the exiled target
+    // returns. Any other future-trigger timing, or a body the renderer can't express, declines -> SCAFFOLD.
+    on("CreateFutureTrigger") { _, args, tvar ->
+        val a = args.asArr ?: return@on null
+        val timing = a.getOrNull(0) as? JsonObject ?: return@on null
+        if (timing.strField("_FutureTrigger") != "AtTheBeginningOfTheNextEndStep") return@on null
+        val actionsNode = a.getOrNull(1) as? JsonObject ?: return@on null
+        val inner = actionsNode["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
+        val body = renderEffectList(inner, tvar) ?: return@on null
+        call("CreateDelayedTriggerEffect", arg("step", "Step.END"), arg("effect", body))
+    }
+
     on("PutPermanentIntoItsOwnersHand") { _, args, tvar ->  // bounce
         val tgt = refTarget(args, tvar) ?: return@on null
         call("Effects.Move", arg(Lit(tgt)), arg("Zone.HAND"))
@@ -80,6 +177,17 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         }
     }
 
+    on("ExchangeControl") { _, args, _ ->
+        // "Exchange control of two target permanents" (Shifting Grift). The IR carries two permanent
+        // refs (Ref_TargetPermanent1 / Ref_TargetPermanent2) — resolve each to its bound target. Both
+        // must resolve (the two-target context, e.g. a Spree mode), else decline -> SCAFFOLD.
+        val arr = args.asArr?.filterIsInstance<JsonObject>() ?: return@on null
+        if (arr.size != 2) return@on null
+        val t1 = refTargetFromRef(arr[0].strField("_Permanent"), null) ?: return@on null
+        val t2 = refTargetFromRef(arr[1].strField("_Permanent"), null) ?: return@on null
+        call("Effects.ExchangeControl", arg(Lit(t1)), arg(Lit(t2)))
+    }
+
     on("SacrificePermanent") { _, args, _ ->  // "sacrifice ~" (Blistering Firecat's end-step sacrifice)
         if (jsonContains(args, "_Permanent", "ThisPermanent")) Lit("SacrificeSelfEffect") else null
     }
@@ -88,7 +196,13 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         // A player-directed sacrifice ("that player sacrifices …") arrives wrapped in a PlayerAction and is
         // handled there; the bare effect sacrifices via the controller, so render SacrificeEffect(filter).
         val filter = gameObjectFilterExpr(args) ?: return@on null
-        call("SacrificeEffect", arg(filter))
+        // "sacrifice a creature OTHER THAN this creature" (Demonic Taskmaster): the filter carries an
+        // `Other(ThisPermanent)` self-exclusion that gameObjectFilterExpr drops. SacrificeEffect models it
+        // with `excludeSource = true`; render it so the source isn't a legal sacrifice (else we'd widen).
+        val excludeSource = jsonContains(args, "_Permanents", "Other") &&
+            jsonContains(args, "_Permanent", "ThisPermanent")
+        if (excludeSource) call("SacrificeEffect", arg(filter), arg("excludeSource", "true"))
+        else call("SacrificeEffect", arg(filter))
     }
 
     on("ShuffleGraveyardCardIntoLibrary") { _, args, tvar ->  // e.g. Alabaster Dragon
@@ -101,14 +215,74 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
     }
 
     // Inline `If{cond}[effects]` action (inside an ActionList) -> a `ConditionalEffect`. Renders only the
-    // one condition shape we can express faithfully: "if [the targeted permanent] had mana value N or
-    // less" (`PermanentPassesFilter(Ref_TargetPermanent, ManaValueIs(LessThanOrEqualTo Integer N))`),
-    // mapped to `Conditions.TargetSpellManaValueAtMost(DynamicAmount.Fixed(N))` — Consuming Ashes'
-    // "Exile target creature. If it had mana value 3 or less, surveil 2." Any other condition / target
-    // index / comparator declines (-> SCAFFOLD) rather than widening.
+    // condition shapes we can express faithfully:
+    //  - "if [the targeted permanent] had mana value N or less"
+    //    (`PermanentPassesFilter(Ref_TargetPermanent, ManaValueIs(LessThanOrEqualTo Integer N))`) ->
+    //    `Conditions.TargetSpellManaValueAtMost(DynamicAmount.Fixed(N))` — Consuming Ashes' "Exile target
+    //    creature. If it had mana value 3 or less, surveil 2."
+    //  - "if you control a <filter>" (`PlayerPassesFilter(You, ControlsA(<filter>))`) ->
+    //    `Conditions.YouControl(<filter>)` via [actionConditionDsl] — Failed Fording's "Return target
+    //    nonland permanent to its owner's hand. If you control a Desert, surveil 1."
+    // Any other condition / target index / comparator declines (-> SCAFFOLD) rather than widening.
     on("If") { node, args, tvar ->
         val a = args.asArr ?: return@on null
         val cond = a.getOrNull(0) as? JsonObject ?: return@on null
+        val inner = (a.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return@on null
+        // "If a permanent was returned this way, [do X]" (Nurturing Pixie) — the `up to one target …
+        // return to hand` idiom gates a follow-up on whether the optional target was actually returned.
+        // The engine expresses "the optional target still exists / was acted on" as
+        // `Conditions.TargetMatchesFilter(<zone-agnostic type filter>)` (the moved card still matches its
+        // type line after going to hand). Render only the bare `AnyPermanent` filter -> Permanent, and
+        // only when the ability has a bound target (the "this way" subject); a narrower/other filter, or
+        // no bound target, declines -> SCAFFOLD rather than emit a wrong gate.
+        if (cond.strField("_Condition") == "APermanentWasPutIntoHandThisWay") {
+            if (tvar == null) return@on null
+            if (cond["args"].strField("_Permanents") != "AnyPermanent") return@on null
+            val edsl = renderEffectList(inner, tvar) ?: return@on null
+            return@on call(
+                "ConditionalEffect",
+                arg("condition", call("Conditions.TargetMatchesFilter", arg("GameObjectFilter.Permanent"))),
+                arg("effect", edsl),
+            )
+        }
+        // "if you control a <filter>" — a resolution-time state test over your own board.
+        if (cond.strField("_Condition") == "PlayerPassesFilter") {
+            val condDsl = actionConditionDsl(cond) ?: return@on null
+            val edsl = renderEffectList(inner, tvar) ?: return@on null
+            return@on call(
+                "ConditionalEffect",
+                arg("condition", Lit(condDsl)),
+                arg("effect", edsl),
+            )
+        }
+        // "If [N] or more mana was spent to cast that spell, [do X]" (Expressive Firedancer) — a
+        // `SpellPassesFilter(Trigger_ThatSpell, AnAmountOfManaWasSpentToCastIt{>= N})` gate on the
+        // triggering spell's mana. Renders a `Compare(ContextProperty(MANA_SPENT_ON_TRIGGERING_SPELL),
+        // >=, Fixed(N))`. Only the triggering spell + a `GreaterThanOrEqualTo` Integer compare render;
+        // any other spell subject / comparator declines -> SCAFFOLD rather than misread the threshold.
+        if (cond.strField("_Condition") == "SpellPassesFilter") {
+            val cargs = cond["args"].asArr ?: return@on null
+            if ((cargs.getOrNull(0) as? JsonObject)?.strField("_Spell") != "Trigger_ThatSpell") return@on null
+            val spellFilter = cargs.getOrNull(1) as? JsonObject ?: return@on null
+            if (spellFilter.strField("_Spells") != "AnAmountOfManaWasSpentToCastIt") return@on null
+            val cmp = spellFilter["args"] as? JsonObject ?: return@on null
+            if (cmp.strField("_Comparison") != "GreaterThanOrEqualTo") return@on null
+            val n = (cmp["args"].asInt()) ?: ((cmp["args"] as? JsonObject)?.get("args").asInt()) ?: return@on null
+            val edsl = renderEffectList(inner, tvar) ?: return@on null
+            return@on call(
+                "ConditionalEffect",
+                arg(
+                    "condition",
+                    call(
+                        "Compare",
+                        arg(call("DynamicAmount.ContextProperty", arg("ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL"))),
+                        arg("ComparisonOperator.GTE"),
+                        arg(call("DynamicAmount.Fixed", arg("$n"))),
+                    ),
+                ),
+                arg("effect", edsl),
+            )
+        }
         if (cond.strField("_Condition") != "PermanentPassesFilter") return@on null
         val condArgs = cond["args"].asArr ?: return@on null
         // Subject must be the first targeted permanent (Ref_TargetPermanent / Ref_TargetPermanent1).
@@ -119,7 +293,6 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         val cmp = filter["args"] as? JsonObject ?: return@on null
         if (cmp.strField("_Comparison") != "LessThanOrEqualTo") return@on null
         val n = (cmp["args"].asInt()) ?: ((cmp["args"] as? JsonObject)?.get("args").asInt()) ?: return@on null
-        val inner = (a.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return@on null
         val edsl = renderEffectList(inner, tvar) ?: return@on null
         call(
             "ConditionalEffect",
@@ -164,6 +337,31 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         else call("Patterns.Library.mill", arg(amt))
     }
 
+    // "You may return any number of [filter] to their owner's hand" (Rambling Possum: "any number of
+    // creatures that saddled it this turn"). Modeled as the Gather → ChooseAnyNumber → toHand pipeline:
+    // gather the matching battlefield permanents into a collection, let the controller select any subset
+    // on the battlefield (useTargetingUI), and move them — a battlefield→HAND move routes each permanent
+    // to its owner's hand. Emitted as the raw pipeline-step trio with the deterministic `gathered0` /
+    // `selected1` slot keys the inline `Effects.Pipeline { }` builder produces, so the serialized tree
+    // matches the hand-authored card. The filter must render exactly (gameObjectFilterExpr declines an
+    // unrenderable one -> SCAFFOLD) rather than widen the group to every permanent.
+    on("ReturnAnyNumberOfPermanentsToTheirOwnersHands") { _, args, _ ->
+        val filter = gameObjectFilterDsl(args) ?: return@on null
+        // Wrap the three steps in an explicit `Effects.Composite(...)` call (not a `Composite` Dsl node,
+        // which `renderEffectList` would splice flat into the surrounding effect list). The inline
+        // `Effects.Pipeline { }` builder the hand-authored card uses produces exactly this nested
+        // Composite of the same three steps with the `gathered0` / `selected1` slot keys.
+        call(
+            "Effects.Composite",
+            arg(Lit("GatherCardsEffect(CardSource.BattlefieldMatching($filter), storeAs = \"gathered0\")")),
+            arg(Lit(
+                "SelectFromCollectionEffect(from = \"gathered0\", selection = SelectionMode.ChooseAnyNumber, " +
+                    "storeSelected = \"selected1\", useTargetingUI = true)"
+            )),
+            arg(Lit("MoveCollectionEffect(from = \"selected1\", destination = CardDestination.ToZone(Zone.HAND))")),
+        )
+    }
+
     on("ReturnGraveyardCardToHand") { _, args, _ ->
         // "Return this card from your graveyard to your hand" (Gangrenous Goliath's graveyard ability). Only
         // the self (this graveyard card) form renders; a chosen graveyard-card target scaffolds.
@@ -196,6 +394,14 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
     on("SearchLibrary") { _, args, _ -> renderSearch(args) }
     on("LookAtTheTopNumberCardsOfLibrary", "LookAtTheTopNumberCardsOfPlayersLibrary") { node, args, tvar -> renderLook(node, args, tvar) }
 
+    on("PutGraveyardCardOnBottomOfLibrary") { _, args, tvar ->
+        // "Put target card from your graveyard on the bottom of your library" (Tomb Trawler). The
+        // target graveyard card is already recovered into the bound `tvar`; a plain Move to the bottom
+        // of the library expresses it. Self ("this card from your graveyard") falls back to Self.
+        val tgt = refTarget(args, tvar) ?: "EffectTarget.Self"
+        call("Effects.Move", arg(Lit(tgt)), arg("Zone.LIBRARY"), arg("ZonePlacement.Bottom"))
+    }
+
     on("PutGraveyardCardOntoBattlefield", "PutGraveyardCardIntoHand",
         "ReturnDeadGraveyardCardToTopOfLibrary", "PutPermanentOnTopOfOwnersLibrary") { node, args, tvar ->
         val a = node.strField("_Action")
@@ -208,11 +414,61 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
             // "onto the battlefield under your control" (Ashen Powder) carries an EntersUnderPlayersControl
             // flag — a plain Move would (wrongly) return it under its owner's control. Render the
             // control-grabbing put; under another player's control isn't expressible, so scaffold.
+            // An EntersTapped flag ("…to the battlefield tapped", Teacher's Pest) needs the
+            // PutOntoBattlefield facade (Move can't carry `tapped`); combining tapped with a control
+            // grab isn't expressible by either facade, so scaffold that pairing.
             val flagBlob = compact(args)
-            return@on when {
-                "EntersUnderPlayersControl" !in flagBlob -> call("Effects.Move", arg(Lit(tgt)), arg("Zone.BATTLEFIELD"))
+            val entersTapped = "EntersTapped" in flagBlob
+            val singleCounterNode = node.nodesTagged("EntersWithACounter")
+                .firstOrNull()?.get("args")
+            val numberedCounterNode = node.nodesTagged("EntersWithNumberCounters")
+                .firstOrNull()
+            if ((singleCounterNode != null || numberedCounterNode != null) &&
+                (entersTapped || "EntersUnderPlayersControl" in flagBlob)
+            ) return@on null
+            // "…to the battlefield attached to a creature you control" (One Last Job mode 3): an
+            // EntersAttachedToAPermanent flag whose host filter is Creature + ControlledByAPlayer You.
+            // Render the PutOntoBattlefieldAttachedToChosen facade (host chosen at resolution, default
+            // filter "a creature you control"). Only that exact host shape renders; any other host
+            // (tapped pairing, a different filter) declines -> SCAFFOLD.
+            if ("EntersAttachedToAPermanent" in flagBlob) {
+                // The host filter must be exactly "a creature you control" (the facade's default host).
+                // A companion EntersUnderPlayersControl(You) flag is redundant here — attaching to a
+                // creature you control already enters the card under your control — so it's allowed; any
+                // OTHER control grant or a tapped pairing declines -> SCAFFOLD.
+                val attachesToOwnCreature = "\"Creature\"" in flagBlob &&
+                    "ControlledByAPlayer" in flagBlob && "\"You\"" in flagBlob
+                val controlOk = "EntersUnderPlayersControl" !in flagBlob || "\"You\"" in flagBlob
+                return@on if (attachesToOwnCreature && controlOk && !entersTapped)
+                    call("Effects.PutOntoBattlefieldAttachedToChosen", arg(Lit(tgt)))
+                else null
+            }
+            val move = when {
+                "EntersUnderPlayersControl" !in flagBlob ->
+                    if (entersTapped) call("Effects.PutOntoBattlefield", arg(Lit(tgt)), arg("tapped", "true"))
+                    else call("Effects.Move", arg(Lit(tgt)), arg("Zone.BATTLEFIELD"), arg("fromZone", "Zone.GRAVEYARD"))
+                entersTapped -> null
                 "\"You\"" in flagBlob -> call("Effects.PutOntoBattlefieldUnderYourControl", arg(Lit(tgt)))
                 else -> null
+            } ?: return@on null
+            val counterEffect = when {
+                singleCounterNode != null -> {
+                    val counter = counterTypeDsl(singleCounterNode) ?: return@on null
+                    call("AddCountersEffect", arg("counterType", counter), arg("count", "1"), arg("target", Lit(tgt)))
+                }
+                numberedCounterNode != null -> {
+                    val counterArgs = numberedCounterNode["args"].asArr ?: return@on null
+                    val count = findInteger(counterArgs.getOrNull(0)) as? Int ?: return@on null
+                    val counter = counterTypeDsl(counterArgs.getOrNull(1)) ?: return@on null
+                    call("AddCountersEffect", arg("counterType", counter), arg("count", "$count"), arg("target", Lit(tgt)))
+                }
+                else -> null
+            }
+            return@on if (counterEffect == null) move else {
+                Composite(listOf(
+                    move,
+                    counterEffect,
+                ))
             }
         }
         val zone = mapOf(
@@ -229,10 +485,21 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
 
 internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     val blob = compact(args)
-    // A destination CHOICE ("put it into your hand or graveyard") or a destination we don't model
-    // (graveyard) can't be rendered as a single fixed SearchDestination — scaffold rather than silently
-    // pick one arm (Dina's Guidance).
-    if ("ChooseAnAction" in blob || "PutFoundCardsIntoGraveyard" in blob) return null
+    // A destination CHOICE ("put it into your hand or graveyard") can't be rendered as a single fixed
+    // SearchDestination — scaffold rather than silently pick one arm (Dina's Guidance). The fixed
+    // "...into your graveyard" destination (Lively Dirge mode 1) IS modeled — `SearchDestination.GRAVEYARD`
+    // below — and only reaches here when it's *not* wrapped in a ChooseAnAction choice.
+    if ("ChooseAnAction" in blob) return null
+    // A CONDITIONAL destination ("If a creature died this turn, you may put that card onto the
+    // battlefield instead" — Caravan Vigil's morbid rider): an `If`/`MayPutFoundCardsOntoBattlefield`
+    // search action. The fixed-destination render would silently pick one arm (and the May-substring
+    // even satisfies the BATTLEFIELD check below, upgrading the card to strictly-stronger-than-printed).
+    // Decline -> SCAFFOLD rather than drop the condition and the choice.
+    if (jsonContains(args, "_SearchLibraryAction", "If") || "MayPutFoundCardsOntoBattlefield" in blob) return null
+    // "put it onto the battlefield ATTACHED TO target player" (Bitterheart Witch's Curse tutor): an
+    // EntersAttachedTo* enter-flag searchLibrary has no attach parameter for — the Aura would enter
+    // unattached and the declared target would be dead weight. Decline -> SCAFFOLD.
+    if ("EntersAttachedTo" in blob) return null
     // "with different names" (Three Dreams) is a group constraint searchLibrary can't enforce — it would
     // silently let the search grab duplicates. Decline rather than drop the restriction.
     if ("DifferentNames" in blob) return null
@@ -250,8 +517,25 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     // filter can't express — it would silently widen to GameObjectFilter.Any. Decline -> SCAFFOLD rather
     // than search for any card.
     if ("IsSpellType" in blob) return null
+    // "search for an Equipment card" (Steelshaper's Gift): an artifact-subtype (IsArtifactType) the
+    // land/type search filter can't express — it falls through to GameObjectFilter.Any, silently dropping
+    // the subtype. "...artifact card with mana value 1 or less" (Trinket Mage): a ManaValueIs cap the
+    // search filter drops, widening the tutor to any artifact. Decline (-> SCAFFOLD) for either rather
+    // than emit a too-broad search.
+    if ("IsArtifactType" in blob || "ManaValueIs" in blob) return null
+    // A graveyard destination renders as `SearchDestination.GRAVEYARD` only for a *pure* search-to-
+    // graveyard (Lively Dirge: find → put into graveyard → shuffle). When the graveyard arm is one half
+    // of a split — a player chooses some found cards (`APlayerChoosesAFoundCard`) and those go to hand
+    // (`PutChosenFoundCardsIntoHand`) while the *rest* go to the graveyard (Intuition) — a single fixed
+    // destination would silently drop the choice and the hand split, emitting a strictly different card.
+    // Decline -> SCAFFOLD rather than approximate.
+    if ("PutFoundCardsIntoGraveyard" in blob &&
+        ("APlayerChoosesAFoundCard" in blob || "PutChosenFoundCardsIntoHand" in blob ||
+            "PutFoundCardsIntoHand" in blob || "SetAside" in blob)
+    ) return null
     val dest = when {
         "PutFoundCardsOntoBattlefield" in blob -> "BATTLEFIELD"
+        "PutFoundCardsIntoGraveyard" in blob -> "GRAVEYARD"
         "PutFoundCardsIntoHand" in blob -> "HAND"
         "PutSetAsideCardsOnTopOfLibrary" in blob || "OnTopOfLibrary" in blob -> "TOP_OF_LIBRARY"
         else -> "HAND"
@@ -391,6 +675,48 @@ internal fun EmitCtx.renderLook(node: JsonObject, args: JsonElement?, tvar: Stri
             ),
         ))
     }
+    // "Look at the top N. You may put a <type> card from among them onto the battlefield tapped. Put the
+    // rest on the BOTTOM of your library in a random order." (Freestrider Lookout). Same filtered-may-keep /
+    // bottom shape as the reveal-to-hand variant above, but the kept card enters the battlefield tapped
+    // instead of going to hand. Only EntersTapped is renderable; any other enter flag scaffolds. Render only
+    // when the type filter translates faithfully.
+    if ("MayPutACardOfTypeOntoTheBattlefield" in blob &&
+        "PutTheRemainingCardsOnTheBottomOfLibraryInARandomOrder" in blob
+    ) {
+        val n = findInteger(node) ?: return null
+        val putAction = node.field("args").asArr?.getOrNull(1).asArr?.firstOrNull {
+            it.strField("_LookAtTopOfLibraryAction") == "MayPutACardOfTypeOntoTheBattlefield"
+        } as? JsonObject ?: return null
+        val putArgs = putAction.field("args").asArr ?: return null
+        val flagNames = (putArgs.getOrNull(1) as? JsonArray)
+            ?.mapNotNull { (it as? JsonObject)?.strField("_EnterFlag") } ?: emptyList()
+        // Only the tapped enter state renders; any other flag (or none we recognise) scaffolds.
+        if (flagNames != listOf("EntersTapped")) return null
+        val pred = cardsPredicateDsl(putArgs.getOrNull(0)) ?: return null
+        return Composite(listOf(
+            Lit("GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed($n)), storeAs = \"looked\")"),
+            Raw(
+                "SelectFromCollectionEffect(\n" +
+                    "                from = \"looked\",\n" +
+                    "                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),\n" +
+                    "                filter = GameObjectFilter(cardPredicates = listOf($pred)),\n" +
+                    "                storeSelected = \"kept\",\n" +
+                    "                storeRemainder = \"rest\",\n" +
+                    "                showAllCards = true,\n" +
+                    "                selectedLabel = \"Put onto the battlefield\",\n" +
+                    "                remainderLabel = \"Put on bottom\"\n" +
+                    "            )",
+            ),
+            Lit("MoveCollectionEffect(from = \"kept\", destination = CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped))"),
+            Raw(
+                "MoveCollectionEffect(\n" +
+                    "                from = \"rest\",\n" +
+                    "                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),\n" +
+                    "                order = CardOrder.Random\n" +
+                    "            )",
+            ),
+        ))
+    }
     // "Look at the top X cards ... Put one of them into your hand and the rest on the bottom of your
     // library in a random order." (Pillage the Bog). One generic card kept to hand, the remainder
     // bottomed at random — and the look count may be dynamic ("twice the number of lands you control").
@@ -408,6 +734,49 @@ internal fun EmitCtx.renderLook(node: JsonObject, args: JsonElement?, tvar: Stri
             arg("restDestination", "CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)"),
             arg("restOrder", "CardOrder.Random"),
         )
+    }
+    // "Look at the top N. You may exile a nonland card from among them. If you do, it becomes plotted.
+    // Put the rest into your hand." (Make Your Own Luck). The IR is a `MayExileACardOfType` (filter) +
+    // `CreateExiledCardEffect[IsPlotted]` + `PutRemainingCardsInHand` sub-action triple. Render the
+    // atomic gather -> choose-up-to-split(filter) -> exile -> MakePlotted -> rest-to-hand pipeline.
+    // Only the nonland filter and the IsPlotted exiled-card effect are renderable here; any other
+    // filter or exiled-card effect declines (-> SCAFFOLD) rather than drop a constraint. Plotting
+    // a card with no plot cost has no cast-time-X / additional-cost hazard, so a complete render is safe.
+    if ("MayExileACardOfType" in blob && "IsPlotted" in blob && "PutRemainingCardsInHand" in blob) {
+        val n = findInteger(node) ?: return null
+        val subActions = node.field("args").asArr?.getOrNull(1).asArr ?: return null
+        // Decline if the exiled-card effect is anything other than the lone IsPlotted designation.
+        val exiledEffects = subActions
+            .firstOrNull { it.strField("_LookAtTopOfLibraryAction") == "CreateExiledCardEffect" }
+            ?.field("args").asArr?.getOrNull(1).asArr
+            ?.mapNotNull { (it as? JsonObject)?.strField("_ExiledCardEffect") } ?: return null
+        if (exiledEffects != listOf("IsPlotted")) return null
+        // Render the exile filter. Only "nonland" (IsNonCardtype Land) is supported here.
+        val exileFilterNode = subActions
+            .firstOrNull { it.strField("_LookAtTopOfLibraryAction") == "MayExileACardOfType" }
+            ?.field("args") as? JsonObject ?: return null
+        val filterExpr = when {
+            exileFilterNode.strField("_Cards") == "IsNonCardtype" &&
+                exileFilterNode.field("args").asStr() == "Land" -> "GameObjectFilter.Nonland"
+            else -> return null
+        }
+        return Composite(listOf(
+            Lit("GatherCardsEffect(CardSource.TopOfLibrary(DynamicAmount.Fixed($n)), storeAs = \"looked\")"),
+            Raw(
+                "SelectFromCollectionEffect(\n" +
+                    "                from = \"looked\",\n" +
+                    "                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),\n" +
+                    "                filter = $filterExpr,\n" +
+                    "                storeSelected = \"toPlot\",\n" +
+                    "                storeRemainder = \"toHand\",\n" +
+                    "                selectedLabel = \"Exile and plot\",\n" +
+                    "                remainderLabel = \"Put into hand\"\n" +
+                    "            )",
+            ),
+            Lit("MoveCollectionEffect(from = \"toPlot\", destination = CardDestination.ToZone(Zone.EXILE))"),
+            Lit("MakePlottedEffect(from = \"toPlot\")"),
+            Lit("MoveCollectionEffect(from = \"toHand\", destination = CardDestination.ToZone(Zone.HAND))"),
+        ))
     }
     // "Look at the top N, put some into your hand" — only a fixed look/keep count renders this way.
     val look = findInteger(node)

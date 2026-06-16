@@ -33,15 +33,21 @@ mtgish-tooling dashboard  # interactive TUI (probe + autogen + a cross-set capab
 Two layers guard against a bridge/handler change silently altering emitted cards:
 
 - **`EmitterGoldenTest`** (in-suite, runs in `just test`) — the FAST, hermetic net. For each
-  calibrated set it re-emits every card from a committed slice and diffs a committed golden of the
+  committed-fixture set it re-emits every card from a committed slice and diffs a committed golden of the
   emitter's output. No network, no 29 MB IR download, no Gradle compile — a drift fails with the exact
   card and first divergent line. The vendored inputs live under
   `src/test/resources/fixtures/<code>.fixture.json` (the front-faced card list plus each card's mtgish
-  IR node and trimmed Scryfall metadata) next to `<code>.emitted.golden.txt`.
+  IR node and trimmed Scryfall metadata) next to `<code>.emitted.golden.txt`. The test auto-discovers
+  every `*.fixture.json` in that dir, so vendoring a new set (`just coverage-fixtures <CODE>`) extends
+  the net with no code change. Currently committed: POR, ONS, TMP, CHK, RAV, ISD, INR, 10E, EOE — a
+  broad mechanical spread (every emitted card pinned per set, scaffolds included, so any handler/bridge
+  change that shifts output anywhere surfaces as a per-card diff). Unlike the deep gate this pins the
+  emitter's *current* output regardless of fidelity, so a set need not be 0-mismatch to be vendored here.
 - **`just coverage-verify[-all]`** (out-of-suite) — the DEEP gate: emit → compile in an isolated
   Gradle source set → gameplay-tree diff the serialised cards vs golden. `coverage-verify-all` runs the
-  golden test first, then the gate for every set currently at 0-mismatch (extend the loop in the
-  recipe as sets converge).
+  golden test first, then the gate for every set currently at 0-mismatch (POR, ISD). Extend the loop in
+  the recipe as more sets converge — run `just coverage-verify <CODE>` and add it only when it reports
+  `GATE PASS` with non-zero coverage (a `0/0` all-reprint set passes vacuously and adds nothing).
 
 Re-bless after an intentional change (deterministic — uses the CLI, not `-DupdateSnapshots`, which
 Gradle's configuration cache stale-caches for this module):
@@ -128,6 +134,9 @@ Mapping kinds:
 - `composed`: mtgish action is expressible by existing Argentum primitives.
 - `envelope`: structural IR node whose nested children carry the real capability.
 - `supported`: accepted non-effect capability, such as trigger/cost vocabulary.
+- `unsupported`: SDK-visible but engine-inert — pins a tag that would otherwise auto-resolve to a
+  silent no-op (e.g. `Keyword.INTIMIDATE` exists in the enum but has no engine handling), so the
+  card BLOCKS instead; the note names the engine work that unlocks it.
 
 `effect`/`keyword` tags are validated against a live scan of the SDK source, so a typo or a renamed
 SerialName surfaces as a coverage gap rather than rotting silently.

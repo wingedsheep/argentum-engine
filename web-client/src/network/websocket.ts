@@ -7,19 +7,25 @@ export interface WebSocketConfig {
   onMessage: (message: ServerMessage) => void
   onStatusChange: (status: ConnectionStatus) => void
   onError: (error: Event) => void
-  reconnectAttempts?: number
   reconnectDelay?: number
 }
+
+/** Reconnect backoff is capped here; the client never stops retrying on its own. */
+const MAX_RECONNECT_DELAY_MS = 30_000
+
+/** How long after a ping probe before a silent server means the socket is half-open. */
+const LIVENESS_TIMEOUT_MS = 5_000
 
 /**
  * WebSocket manager for game server communication.
  *
  * Handles:
  * - Connection lifecycle
- * - Automatic reconnection
+ * - Automatic reconnection (exponential backoff capped at 30s, retries indefinitely)
  * - Message serialization/deserialization
  * - Connection status tracking
- * - Visibility change detection (tab switch resync)
+ * - Tab visibility / network-online recovery: reconnects a dead socket immediately and
+ *   probes an apparently-open one with a ping to detect half-open sockets after OS sleep
  * - State version gap detection
  */
 export class GameWebSocket {
@@ -33,12 +39,17 @@ export class GameWebSocket {
   private lastStateVersion: number | null = null
   /** Whether resync has already been requested (debounce) */
   private resyncRequested = false
-  /** Bound handler for cleanup */
+  /** Bound handlers for cleanup */
   private visibilityHandler: (() => void) | null = null
+  private onlineHandler: (() => void) | null = null
+
+  /** Timestamp of the last message received from the server (liveness signal). */
+  private lastMessageAt = 0
+  /** Pending liveness verdict after a ping probe. */
+  private livenessTimeout: ReturnType<typeof setTimeout> | null = null
 
   constructor(config: WebSocketConfig) {
     this.config = {
-      reconnectAttempts: 5,
       reconnectDelay: 1000,
       ...config,
     }
@@ -53,13 +64,17 @@ export class GameWebSocket {
       return
     }
 
+    // Drop a stale CONNECTING/CLOSING socket so its late events can't fire against
+    // the new connection.
+    this.discardSocket()
+
     this.isIntentionallyClosed = false
     this.config.onStatusChange('connecting')
 
     try {
       this.ws = new WebSocket(this.config.url)
       this.setupEventHandlers()
-      this.setupVisibilityHandler()
+      this.setupRecoveryHandlers()
     } catch (error) {
       console.error('Failed to create WebSocket:', error)
       this.config.onStatusChange('disconnected')
@@ -73,16 +88,31 @@ export class GameWebSocket {
   disconnect(): void {
     this.isIntentionallyClosed = true
     this.cancelReconnect()
-    this.teardownVisibilityHandler()
-
-    if (this.ws) {
-      this.ws.close(1000, 'Client disconnected')
-      this.ws = null
-    }
+    this.cancelLivenessCheck()
+    this.teardownRecoveryHandlers()
+    // Detach handlers before closing: a message already queued on this socket must not
+    // dispatch after we've decided the connection is over.
+    this.discardSocket()
 
     this.lastStateVersion = null
     this.resyncRequested = false
     this.config.onStatusChange('disconnected')
+  }
+
+  /**
+   * Tear down the current socket (if any) and reconnect immediately, resetting backoff.
+   * Used when an external signal (tab visible, network back online, failed liveness
+   * probe) tells us the connection is dead or suspect — waiting out a backoff timer
+   * or trusting `readyState` would leave the user staring at a broken session.
+   */
+  forceReconnect(reason: string): void {
+    if (this.isIntentionallyClosed) return
+    console.log(`[WebSocket] Forcing reconnect: ${reason}`)
+    this.cancelReconnect()
+    this.cancelLivenessCheck()
+    this.reconnectCount = 0
+    this.discardSocket()
+    this.connect()
   }
 
   /**
@@ -149,11 +179,13 @@ export class GameWebSocket {
       this.reconnectCount = 0
       this.lastStateVersion = null
       this.resyncRequested = false
+      this.lastMessageAt = Date.now()
       this.config.onStatusChange('connected')
     }
 
     this.ws.onclose = (event) => {
       console.log('WebSocket closed:', event.code, event.reason)
+      this.cancelLivenessCheck()
       this.config.onStatusChange('disconnected')
 
       if (!this.isIntentionallyClosed) {
@@ -167,6 +199,7 @@ export class GameWebSocket {
     }
 
     this.ws.onmessage = (event) => {
+      this.lastMessageAt = Date.now()
       try {
         const message = JSON.parse(event.data as string) as ServerMessage
         this.config.onMessage(message)
@@ -176,43 +209,96 @@ export class GameWebSocket {
     }
   }
 
-  /**
-   * Listen for tab visibility changes. When the tab becomes visible again,
-   * request a resync to recover any messages missed while backgrounded.
-   */
-  private setupVisibilityHandler(): void {
-    this.teardownVisibilityHandler()
-    this.visibilityHandler = () => {
-      if (document.visibilityState === 'visible' && this.isConnected()) {
-        console.log('[WebSocket] Tab became visible, requesting resync')
-        this.requestResync()
-      }
+  /** Detach handlers from the current socket and close it without status side effects. */
+  private discardSocket(): void {
+    const old = this.ws
+    if (!old) return
+    this.ws = null
+    old.onopen = null
+    old.onclose = null
+    old.onerror = null
+    old.onmessage = null
+    try {
+      old.close()
+    } catch {
+      // Already closed/closing — nothing to do.
     }
-    document.addEventListener('visibilitychange', this.visibilityHandler)
   }
 
-  private teardownVisibilityHandler(): void {
+  /**
+   * Listen for tab visibility changes and the network coming back online.
+   *
+   * On either signal: if the socket is dead, reconnect immediately (background-tab timer
+   * throttling can leave a scheduled reconnect pending long after the network is back).
+   * If the socket claims to be open on tab return, request a resync to recover missed
+   * messages — and verify the connection is actually alive with a ping probe, since a
+   * socket can sit half-open after OS sleep without ever firing `close`.
+   */
+  private setupRecoveryHandlers(): void {
+    this.teardownRecoveryHandlers()
+    this.visibilityHandler = () => {
+      if (document.visibilityState !== 'visible' || this.isIntentionallyClosed) return
+      if (!this.isConnected()) {
+        this.forceReconnect('tab became visible while disconnected')
+        return
+      }
+      console.log('[WebSocket] Tab became visible, requesting resync')
+      this.requestResync()
+      this.startLivenessCheck()
+    }
+    this.onlineHandler = () => {
+      if (this.isIntentionallyClosed || this.isConnected()) return
+      this.forceReconnect('network came back online')
+    }
+    document.addEventListener('visibilitychange', this.visibilityHandler)
+    window.addEventListener('online', this.onlineHandler)
+  }
+
+  private teardownRecoveryHandlers(): void {
     if (this.visibilityHandler) {
       document.removeEventListener('visibilitychange', this.visibilityHandler)
       this.visibilityHandler = null
     }
+    if (this.onlineHandler) {
+      window.removeEventListener('online', this.onlineHandler)
+      this.onlineHandler = null
+    }
+  }
+
+  /**
+   * Send a ping and reconnect if the server stays silent. Any inbound message counts
+   * as proof of life, not just the pong.
+   */
+  private startLivenessCheck(): void {
+    if (this.livenessTimeout) return
+    const probeSentAt = Date.now()
+    this.send({ type: 'ping' })
+    this.livenessTimeout = setTimeout(() => {
+      this.livenessTimeout = null
+      if (this.lastMessageAt < probeSentAt) {
+        this.forceReconnect('no server response to liveness probe')
+      }
+    }, LIVENESS_TIMEOUT_MS)
+  }
+
+  private cancelLivenessCheck(): void {
+    if (this.livenessTimeout) {
+      clearTimeout(this.livenessTimeout)
+      this.livenessTimeout = null
+    }
   }
 
   private scheduleReconnect(): void {
-    const maxAttempts = this.config.reconnectAttempts ?? 5
+    if (this.reconnectTimeout) return
+
     const delay = this.config.reconnectDelay ?? 1000
-
-    if (this.reconnectCount >= maxAttempts) {
-      console.log('Max reconnection attempts reached')
-      return
-    }
-
     this.reconnectCount++
-    const backoffDelay = delay * Math.pow(2, this.reconnectCount - 1)
+    const backoffDelay = Math.min(delay * Math.pow(2, this.reconnectCount - 1), MAX_RECONNECT_DELAY_MS)
 
-    console.log(`Reconnecting in ${backoffDelay}ms (attempt ${this.reconnectCount}/${maxAttempts})`)
+    console.log(`Reconnecting in ${backoffDelay}ms (attempt ${this.reconnectCount})`)
 
     this.reconnectTimeout = setTimeout(() => {
+      this.reconnectTimeout = null
       this.connect()
     }, backoffDelay)
   }

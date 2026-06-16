@@ -29,7 +29,7 @@ object Registry {
 
     // --- import resolution: symbol -> package, from a live scan of the SDK source (anti-rot) -----
     private val DECL = Regex(
-        """^(?:public\s+|internal\s+)?(?:sealed\s+|abstract\s+|open\s+|data\s+|value\s+)?""" +
+        """^(?:public\s+|internal\s+)?(?:const\s+)?(?:sealed\s+|abstract\s+|open\s+|data\s+|value\s+)?""" +
             // The `(?:Receiver\.)*` segment skips an extension's receiver type so e.g.
             // `fun GameObjectFilter.namedFromVariable(...)` is indexed under `namedFromVariable`, not the
             // receiver `GameObjectFilter` — otherwise the receiver (which actually lives in another

@@ -35,6 +35,9 @@ import type {
   PlayerReadyForRoundMessage,
   TournamentCompleteMessage,
   TournamentResumedMessage,
+  FreeForAllGameStartingMessage,
+  FreeForAllGameCompleteMessage,
+  PlayerEliminatedMessage,
   ActiveMatchesMessage,
   SpectatorStateUpdateMessage,
   SpectatingStartedMessage,
@@ -97,6 +100,10 @@ export interface MessageHandlers {
   onPlayerReadyForRound: (message: PlayerReadyForRoundMessage) => void
   onTournamentComplete: (message: TournamentCompleteMessage) => void
   onTournamentResumed: (message: TournamentResumedMessage) => void
+  // Free-for-All handlers
+  onFreeForAllGameStarting: (message: FreeForAllGameStartingMessage) => void
+  onFreeForAllGameComplete: (message: FreeForAllGameCompleteMessage) => void
+  onPlayerEliminated: (message: PlayerEliminatedMessage) => void
   // Spectating handlers
   onActiveMatches: (message: ActiveMatchesMessage) => void
   onSpectatorStateUpdate: (message: SpectatorStateUpdateMessage) => void
@@ -116,6 +123,10 @@ export interface MessageHandlers {
   onQuickGameLobbyClosed: (message: QuickGameLobbyClosedMessage) => void
   // Presence handlers
   onOnlinePlayersCount: (message: OnlinePlayersCountMessage) => void
+  // Liveness handlers
+  onPong: () => void
+  // Session takeover handlers
+  onSessionReplaced: () => void
 }
 
 /**
@@ -237,6 +248,16 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
     case 'tournamentResumed':
       handlers.onTournamentResumed(message)
       break
+    // Free-for-All messages
+    case 'freeForAllGameStarting':
+      handlers.onFreeForAllGameStarting(message)
+      break
+    case 'freeForAllGameComplete':
+      handlers.onFreeForAllGameComplete(message)
+      break
+    case 'playerEliminated':
+      handlers.onPlayerEliminated(message)
+      break
     // Spectating messages
     case 'activeMatches':
       handlers.onActiveMatches(message)
@@ -280,6 +301,12 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'onlinePlayersCount':
       handlers.onOnlinePlayersCount(message)
+      break
+    case 'pong':
+      handlers.onPong()
+      break
+    case 'sessionReplaced':
+      handlers.onSessionReplaced()
       break
     default: {
       // TypeScript exhaustiveness check

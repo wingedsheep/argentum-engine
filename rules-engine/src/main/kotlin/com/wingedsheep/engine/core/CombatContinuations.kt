@@ -113,7 +113,9 @@ data class DeflectDamageSourceChoiceContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     /** Arbitrary follow-up effect run when the chosen source's damage is prevented (null = pure prevention). */
-    val onPrevented: Effect? = null
+    val onPrevented: Effect? = null,
+    /** When false, the chosen source's damage is not prevented — it still hits, the reaction still fires (Eye for an Eye). */
+    val preventDamage: Boolean = true
 ) : ContinuationFrame
 
 /**

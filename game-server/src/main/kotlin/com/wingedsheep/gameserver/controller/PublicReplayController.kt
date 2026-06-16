@@ -41,8 +41,8 @@ class PublicReplayController(
 
         val response = PublicReplayResponse(
             gameId = record.gameId,
-            player1Name = record.player1Name,
-            player2Name = record.player2Name,
+            player1Name = record.players.getOrNull(0)?.name ?: "",
+            player2Name = record.players.getOrNull(1)?.name ?: "",
             winnerName = record.winnerName,
             startedAt = record.startedAt.toString(),
             endedAt = record.endedAt.toString(),

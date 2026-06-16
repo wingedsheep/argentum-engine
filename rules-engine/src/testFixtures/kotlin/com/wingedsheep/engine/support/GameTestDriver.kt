@@ -665,6 +665,42 @@ class GameTestDriver {
     }
 
     /**
+     * Put a specific card face-up into a player's exile zone (test helper).
+     * Creates a new card entity from the registry, owned by [playerId], and adds it to
+     * that player's exile zone with no [com.wingedsheep.engine.state.components.identity.FaceDownComponent]
+     * (so it reads as face-up). Used to set up "a face-up exiled card they own" scenarios.
+     */
+    fun putCardInExile(playerId: EntityId, cardName: String): EntityId {
+        val cardDef = cardRegistry.requireCard(cardName)
+        val cardId = EntityId.generate()
+
+        val cardComponent = CardComponent(
+            cardDefinitionId = cardDef.name,
+            name = cardDef.name,
+            manaCost = cardDef.manaCost,
+            typeLine = cardDef.typeLine,
+            oracleText = cardDef.oracleText,
+            baseStats = cardDef.creatureStats,
+            baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
+            colors = cardDef.colors,
+            ownerId = playerId,
+            spellEffect = cardDef.spellEffect,
+        )
+
+        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+            cardComponent,
+            com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
+            ControllerComponent(playerId)
+        )
+
+        _state = _state.withEntity(cardId, container)
+        _state = _state.addToZone(ZoneKey(playerId, Zone.EXILE), cardId)
+
+        return cardId
+    }
+
+    /**
      * Put a specific card on top of a player's library (test helper).
      * Creates a new card entity from the registry and prepends it to the library.
      */
@@ -1244,6 +1280,19 @@ class GameTestDriver {
         return submitDecision(
             playerId,
             YesNoResponse(decision.id, choice)
+        )
+    }
+
+    /**
+     * Submit a response to a batched may-question ([BatchYesNoDecision]). [applyToAll] resolves the
+     * whole run with [choice]; otherwise it peels one instance and the batch re-raises for the rest.
+     */
+    fun submitBatchYesNo(playerId: EntityId, choice: Boolean, applyToAll: Boolean): ExecutionResult {
+        val decision = pendingDecision as? BatchYesNoDecision
+            ?: throw IllegalStateException("No pending BatchYesNoDecision")
+        return submitDecision(
+            playerId,
+            BatchYesNoResponse(decision.id, choice = choice, applyToAll = applyToAll)
         )
     }
 

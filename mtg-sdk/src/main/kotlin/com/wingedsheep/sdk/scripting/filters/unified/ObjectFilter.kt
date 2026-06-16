@@ -208,6 +208,21 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.IsNonartifact
     )
 
+    /** Exclude creatures ("noncreature artifact", e.g. Guardian Beast). */
+    fun notCreature() = copy(
+        cardPredicates = cardPredicates + CardPredicate.Not(CardPredicate.IsCreature)
+    )
+
+    /**
+     * Restrict to spells/abilities on the stack that target at least one object matching
+     * [subfilter]. Used for "an instant or sorcery spell that targets a creature" (Repartee —
+     * Forum Necroscribe, Lecturing Scornmage) and "target spell that targets a land you control"
+     * (Teferi's Response). Player targets are skipped (CR — they have no game-object filter).
+     */
+    fun targetsMatching(subfilter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.TargetsMatching(subfilter)
+    )
+
     /** Add a keyword requirement */
     fun withKeyword(keyword: Keyword) = copy(
         cardPredicates = cardPredicates + CardPredicate.HasKeyword(keyword)
@@ -261,6 +276,11 @@ data class GameObjectFilter(
     /** Mana value at most the mana actually spent to cast a referenced entity (source, etc.) */
     fun manaValueAtMostEntityManaSpent(reference: EntityReference) = copy(
         cardPredicates = cardPredicates + CardPredicate.ManaValueAtMostEntityManaSpent(reference)
+    )
+
+    /** Mana value at most the number of colors of mana spent to cast a referenced entity (Converge). */
+    fun manaValueAtMostColorsSpent(reference: EntityReference) = copy(
+        cardPredicates = cardPredicates + CardPredicate.ManaValueAtMostColorsSpent(reference)
     )
 
     /** Mana value is even (zero is even). */
@@ -341,6 +361,11 @@ data class GameObjectFilter(
     /** Must not be a token */
     fun nontoken() = copy(
         cardPredicates = cardPredicates + CardPredicate.IsNontoken
+    )
+
+    /** Must be a token */
+    fun token() = copy(
+        cardPredicates = cardPredicates + CardPredicate.IsToken
     )
 
     /** Must not be of the creature type chosen on the source permanent */

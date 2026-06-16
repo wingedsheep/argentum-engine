@@ -39,8 +39,8 @@ class EbonbladeReaperTest : FunSpec({
             trigger = Triggers.DealsCombatDamageToPlayer
             effect = Effects.LoseHalfLife(
                 roundUp = true,
-                target = EffectTarget.PlayerRef(Player.Opponent),
-                lifePlayer = Player.Opponent
+                target = EffectTarget.PlayerRef(Player.DefendingPlayer),
+                lifePlayer = Player.DefendingPlayer
             )
         }
 

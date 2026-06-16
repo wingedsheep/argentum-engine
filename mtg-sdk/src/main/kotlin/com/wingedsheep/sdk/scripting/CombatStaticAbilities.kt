@@ -246,15 +246,67 @@ data class CantBlockUnless(
  * (e.g., [com.wingedsheep.sdk.dsl.DynamicAmounts.domain] for "{X} where X is your
  * domain"). Evaluated with the source permanent's controller as "you".
  *
+ * An optional [condition] gates the whole tax on the source permanent's state — evaluated
+ * with the source permanent as "you"/source. Used for Archangel of Tithes
+ * ("As long as this creature is untapped, …") via [com.wingedsheep.sdk.dsl.Conditions.SourceIsUntapped].
+ * When null (the default) the tax is always active (Ghostly Prison, Propaganda, Windborn Muse).
+ *
  * @property amountPerAttacker Generic mana to pay per attacking creature.
+ * @property condition Optional gate on the source's state; tax is inactive when it fails.
  */
 @SerialName("AttackTax")
 @Serializable
 data class AttackTax(
-    val amountPerAttacker: DynamicAmount
+    val amountPerAttacker: DynamicAmount,
+    val condition: Condition? = null,
 ) : StaticAbility {
-    override val description: String =
-        "Creatures can't attack you unless their controller pays {${amountPerAttacker.description}} for each creature they control that's attacking you"
+    override val description: String = buildString {
+        if (condition != null) append("As long as ${condition.description}, ")
+        append("creatures can't attack you")
+        if (condition != null) append(" or planeswalkers you control")
+        append(" unless their controller pays {${amountPerAttacker.description}} for each ")
+        append(if (condition != null) "of those creatures" else "creature they control that's attacking you")
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newCondition !== condition) copy(condition = newCondition) else this
+    }
+}
+
+/**
+ * Creatures can't block unless their controller pays generic mana for each blocking creature.
+ * The defending side of Archangel of Tithes' second ability
+ * ("creatures can't block unless their controller pays {1} for each of those creatures").
+ *
+ * Unlike [AttackTax] (a defender-side restriction tied to who is being attacked), this is a
+ * *global* restriction: while any permanent with this ability — whose optional [condition]
+ * holds — is on the battlefield, every declared blocker is taxed [amountPerBlocker]. Multiple
+ * sources stack additively. Mirrors the per-creature block-tax pause already used for
+ * [com.wingedsheep.sdk.scripting.effects.GrantAttackBlockTaxPerCreatureTypeEffect].
+ *
+ * An optional [condition] gates the tax on the source permanent's state, evaluated with the
+ * source permanent as "you"/source. Archangel of Tithes uses
+ * [com.wingedsheep.sdk.dsl.Conditions.SourceIsAttacking] ("As long as this creature is attacking, …").
+ * When null (the default) the tax is always active.
+ *
+ * @property amountPerBlocker Generic mana to pay per blocking creature.
+ * @property condition Optional gate on the source's state; tax is inactive when it fails.
+ */
+@SerialName("BlockTax")
+@Serializable
+data class BlockTax(
+    val amountPerBlocker: DynamicAmount,
+    val condition: Condition? = null,
+) : StaticAbility {
+    override val description: String = buildString {
+        if (condition != null) append("As long as ${condition.description}, ")
+        append("creatures can't block unless their controller pays {${amountPerBlocker.description}} for each ")
+        append(if (condition != null) "of those creatures" else "creature they control that's blocking")
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newCondition !== condition) copy(condition = newCondition) else this
+    }
 }
 
 /**

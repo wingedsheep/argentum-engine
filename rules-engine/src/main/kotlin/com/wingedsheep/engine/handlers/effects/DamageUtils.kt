@@ -58,6 +58,20 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
+ * Outcome of a chosen-source deflection/reflection shield matching an incoming damage instance.
+ * [Prevented] short-circuits damage application with the given result (Deflecting Palm). [Reflected]
+ * fires the linked reaction but lets the damage proceed (Eye for an Eye) — the caller merges
+ * [state]/[events] and keeps applying the damage.
+ */
+sealed interface DeflectOutcome {
+    data class Prevented(val result: EffectResult) : DeflectOutcome
+    data class Reflected(
+        val state: GameState,
+        val events: List<com.wingedsheep.engine.core.GameEvent>
+    ) : DeflectOutcome
+}
+
+/**
  * Utility functions for dealing damage, applying damage prevention/amplification/redirection,
  * tracking damage for triggers, and checking life gain prevention.
  */
@@ -178,11 +192,19 @@ object DamageUtils {
             if (counterResult != null) return counterResult
         }
 
+        // Events from a reflect shield (Eye for an Eye) that fired but let the damage proceed.
+        var reflectEvents: List<EngineGameEvent> = emptyList()
         if (!cantBePrevented) {
-            // Check for deflection shields (Deflecting Palm) — prevent + deal back to source's controller
+            // Check for deflection/reflection shields (Deflecting Palm, Eye for an Eye).
             if (sourceId != null) {
-                val deflectResult = checkDeflectDamageShield(newState, targetId, effectiveAmount, sourceId)
-                if (deflectResult != null) return deflectResult
+                when (val deflect = checkDeflectDamageShield(newState, targetId, effectiveAmount, sourceId)) {
+                    is DeflectOutcome.Prevented -> return deflect.result
+                    is DeflectOutcome.Reflected -> {
+                        newState = deflect.state
+                        reflectEvents = deflect.events
+                    }
+                    null -> {}
+                }
 
                 // Check for "prevent all damage from chosen source" shields (Samite Ministration)
                 val preventFromSourceResult = checkPreventFromSourceShield(newState, targetId, effectiveAmount, sourceId)
@@ -193,9 +215,10 @@ object DamageUtils {
             newState = shieldState
             effectiveAmount = reducedAmount
         }
-        if (effectiveAmount <= 0) return EffectResult.success(newState)
+        if (effectiveAmount <= 0) return EffectResult.success(newState, reflectEvents)
 
         val events = mutableListOf<EngineGameEvent>()
+        events.addAll(reflectEvents)
         // Excess damage (CR 120.4a) is only computed below for the non-wither creature
         // branch — planeswalker (above loyalty), battle (above defense), and wither (damage
         // dealt as -1/-1 counters) paths are not yet modelled and stay at 0 here.
@@ -209,14 +232,15 @@ object DamageUtils {
             // to lose that much life, so life-loss replacements (Bloodletter of Aclazotz)
             // modify the life total reduction here. Lifelink and other damage-based effects
             // below still see the unmodified `effectiveAmount`, matching the official ruling.
+            // CR 810.9 (Two-Headed Giant): damage happens to the player individually but the
+            // result applies to the team's shared life total, so read/write through the resolver.
+            val currentLife = newState.lifeTotal(targetId)
             var lifeLossAmount = applyStaticLifeLossModification(newState, targetId, effectiveAmount)
-            lifeLossAmount = applyLifeLossFloors(newState, targetId, lifeComponent.life, lifeLossAmount)
-            val newLife = lifeComponent.life - lifeLossAmount
-            newState = newState.updateEntity(targetId) { container ->
-                container.with(LifeTotalComponent(newLife))
-            }
+            lifeLossAmount = applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount)
+            val newLife = currentLife - lifeLossAmount
+            newState = newState.withLifeTotal(targetId, newLife)
             newState = trackDamageReceivedByPlayer(newState, targetId, effectiveAmount)
-            events.add(LifeChangedEvent(targetId, lifeComponent.life, newLife, LifeChangeReason.DAMAGE))
+            events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
@@ -289,7 +313,11 @@ object DamageUtils {
         // battlefield, so recipient-based triggers match even if it dies to this damage (LKI).
         val targetControllerId = projected.getController(targetId)
         val targetWasCreature = projected.isCreature(targetId)
-        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer, targetWasFaceDown = targetIsFaceDown, targetControllerId = targetControllerId, targetWasCreature = targetWasCreature, excessAmount = creatureExcessDamage))
+        // Capture the recipient creature's toughness as it last existed (CR 603.10) — read from the
+        // ORIGINAL state's projection, before this damage marked the creature / SBAs could move it.
+        // Read by "damage equal to that creature's toughness" triggers (Taii Wakeen).
+        val targetToughnessAtDamage = if (targetWasCreature) projected.getToughness(targetId) else null
+        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer, targetWasFaceDown = targetIsFaceDown, targetControllerId = targetControllerId, targetWasCreature = targetWasCreature, excessAmount = creatureExcessDamage, targetToughnessAtDamage = targetToughnessAtDamage))
 
         // Lifelink: if the source has lifelink, its controller gains life equal to the damage dealt
         // (CR 120.3f / 702.15b). The lifelink damage causes a life-gain event, so ModifyLifeGain
@@ -388,17 +416,17 @@ object DamageUtils {
         reason: LifeChangeReason,
         applyLifeLossModification: Boolean = false,
     ): Pair<GameState, LifeChangedEvent?> {
-        val currentLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life
-            ?: return state to null
+        // Presence guard stays per-player (every player carries a LifeTotalComponent); the value,
+        // however, is the team's shared total (CR 810.9a) — read/write via the resolver.
+        if (state.getEntity(playerId)?.get<LifeTotalComponent>() == null) return state to null
+        val currentLife = state.lifeTotal(playerId)
         val lossAmount = if (applyLifeLossModification) {
             applyStaticLifeLossModification(state, playerId, amount)
         } else {
             amount
         }
         val newLife = currentLife - lossAmount
-        var newState = state.updateEntity(playerId) { container ->
-            container.with(LifeTotalComponent(newLife))
-        }
+        var newState = state.withLifeTotal(playerId, newLife)
         newState = markLifeLostThisTurn(newState, playerId)
         return newState to LifeChangedEvent(playerId, currentLife, newLife, reason)
     }
@@ -437,12 +465,11 @@ object DamageUtils {
             amount
         }
         if (gainAmount <= 0) return state to null
-        val currentLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life
-            ?: return state to null
+        // Presence guard stays per-player; the value is the team's shared total (CR 810.9a).
+        if (state.getEntity(playerId)?.get<LifeTotalComponent>() == null) return state to null
+        val currentLife = state.lifeTotal(playerId)
         val newLife = currentLife + gainAmount
-        var newState = state.updateEntity(playerId) { container ->
-            container.with(LifeTotalComponent(newLife))
-        }
+        var newState = state.withLifeTotal(playerId, newLife)
         newState = markLifeGainedThisTurn(newState, playerId, gainAmount)
         return newState to LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN)
     }
@@ -560,10 +587,8 @@ object DamageUtils {
                 when (lifeGainEvent.player) {
                     Player.Each, Player.Any -> return true
                     Player.You -> if (playerId == sourceControllerId) return true
-                    // Player.EachOpponent reads identically to Player.Opponent here — both mean
-                    // "scope this prevention to opponents of the replacement's host controller".
-                    // Used by Gríma Wormtongue (LTR): "Your opponents can't gain life."
-                    Player.Opponent, Player.EachOpponent ->
+                    // "Your opponents can't gain life." — Gríma Wormtongue (LTR).
+                    Player.EachOpponent ->
                         if (playerId != sourceControllerId) return true
                     else -> {}
                 }
@@ -850,7 +875,7 @@ object DamageUtils {
         targetId: EntityId,
         damageAmount: Int,
         sourceId: EntityId
-    ): EffectResult? {
+    ): DeflectOutcome? {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
             val mod = effect.effect.modification
             mod is SerializableModification.PreventNextDamageFromChosenSourceShield &&
@@ -862,22 +887,26 @@ object DamageUtils {
         val shield = state.floatingEffects[shieldIndex]
         val mod = shield.effect.modification as SerializableModification.PreventNextDamageFromChosenSourceShield
 
-        // Consume the shield (one damage instance prevented) and announce the prevention so the
-        // linked delayed triggered ability fires on the stack.
+        // Consume the shield (one damage instance) and announce it so the linked delayed triggered
+        // ability fires on the stack with the captured amount.
         val updatedEffects = state.floatingEffects.toMutableList()
         updatedEffects.removeAt(shieldIndex)
         val newState = state.copy(floatingEffects = updatedEffects)
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name
-        return EffectResult.success(
-            newState,
-            listOf(DamagePreventedEvent(
-                sourceId = sourceId,
-                recipientId = targetId,
-                amount = damageAmount,
-                linkId = mod.linkId,
-                sourceName = sourceName
-            ))
+        val event = DamagePreventedEvent(
+            sourceId = sourceId,
+            recipientId = targetId,
+            amount = damageAmount,
+            linkId = mod.linkId,
+            sourceName = sourceName
         )
+        // preventDamage = true (Deflecting Palm): damage is prevented — short-circuit. preventDamage
+        // = false (Eye for an Eye): the reaction fires but the damage still proceeds.
+        return if (mod.preventDamage) {
+            DeflectOutcome.Prevented(EffectResult.success(newState, listOf(event)))
+        } else {
+            DeflectOutcome.Reflected(newState, listOf(event))
+        }
     }
 
     /**
@@ -981,7 +1010,6 @@ object DamageUtils {
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = sourceControllerId,
-                        opponentId = state.turnOrder.firstOrNull { it != sourceControllerId },
                     )
                     if (effect.restrictions.any { !conditionEvaluator.evaluate(state, it, context) }) continue
                 }
@@ -1215,6 +1243,23 @@ object DamageUtils {
             }
         }
 
+        // Turn-duration noncombat-damage amplification (Taii Wakeen, Perfect Shot): every source
+        // the effect's controller controls deals +bonus noncombat damage to any permanent or
+        // player this turn (CR 616). No opponent restriction — applies to the controller's own
+        // permanents too. Multiple installs stack additively.
+        if (sourceId != null && !isCombatDamage) {
+            val sourceController = projected.getController(sourceId)
+                ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            if (sourceController != null) {
+                for (floating in state.floatingEffects) {
+                    val mod = floating.effect.modification
+                    if (mod !is com.wingedsheep.engine.mechanics.layers.SerializableModification.AmplifyNoncombatDamage) continue
+                    if (floating.controllerId != sourceController) continue
+                    amplifiedAmount += mod.bonus
+                }
+            }
+        }
+
         // Cap damage replacements (Divine Presence): clamp the would-be amount to a maximum.
         // Applied last so it caps the fully-amplified amount. Capping is a replacement, so
         // prevention shields still apply afterward to the capped amount.
@@ -1356,18 +1401,16 @@ object DamageUtils {
                 val playerMatches = when (pattern.player) {
                     Player.Each, Player.Any -> true
                     Player.You -> losingPlayerId == sourceControllerId
-                    Player.Opponent, Player.EachOpponent -> losingPlayerId != sourceControllerId
+                    Player.EachOpponent -> losingPlayerId != sourceControllerId
                     else -> false
                 }
                 if (!playerMatches) continue
 
                 val restrictions = restrictionsOf(effect)
                 if (restrictions.isNotEmpty()) {
-                    val opponentId = state.turnOrder.firstOrNull { it != sourceControllerId }
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = sourceControllerId,
-                        opponentId = opponentId,
                     )
                     if (restrictions.any { !conditionEvaluator.evaluate(state, it, context) }) continue
                 }

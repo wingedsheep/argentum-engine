@@ -26,7 +26,7 @@ val BlessedReversal = card("Blessed Reversal") {
     spell {
         effect = GainLifeEffect(
             DynamicAmount.Multiply(
-                DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature.attacking()),
+                DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature.attacking()),
                 3
             )
         )

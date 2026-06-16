@@ -37,6 +37,7 @@ class LibraryAndZoneContinuationResumer(
         resumer(ChoosePileContinuation::class, ::resumeChoosePile),
         resumer(SelectTargetPipelineContinuation::class, ::resumeSelectTargetPipeline),
         resumer(MoveCollectionAuraTargetContinuation::class, ::resumeMoveCollectionAuraTarget),
+        resumer(PutOntoBattlefieldAttachedToChosenContinuation::class, ::resumePutOntoBattlefieldAttachedToChosen),
         resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom),
         resumer(CascadeMayCastContinuation::class, ::resumeCascadeMayCast),
         resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
@@ -366,6 +367,45 @@ class LibraryAndZoneContinuationResumer(
         return checkForMore(newState, moveEvents)
     }
 
+    /**
+     * Resume after the controller chooses a host for a card put onto the battlefield attached to
+     * a chosen permanent (One Last Job mode 3). Moves the Aura/Equipment to the battlefield under
+     * the controller's control and attaches it to the chosen host, reusing the permanent-agnostic
+     * [com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor.moveAuraToBattlefield].
+     */
+    fun resumePutOntoBattlefieldAttachedToChosen(
+        state: GameState,
+        continuation: PutOntoBattlefieldAttachedToChosenContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected targets response for attach-host selection")
+        }
+
+        val hostIds = response.selectedTargets[0] ?: emptyList()
+        if (hostIds.isEmpty()) {
+            // No host chosen — leave the card where it is (mode does nothing).
+            return checkForMore(state, emptyList())
+        }
+        val hostId = hostIds.first()
+
+        // Host must still be on the battlefield.
+        if (!state.getBattlefield().contains(hostId)) {
+            return checkForMore(state, emptyList())
+        }
+
+        val executor = com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor(
+            cardRegistry = services.cardRegistry,
+            targetFinder = services.targetFinder
+        )
+        val (newState, events) = executor.moveAuraToBattlefield(
+            state, continuation.cardId, hostId, continuation.controllerId
+        )
+
+        return checkForMore(newState, events)
+    }
+
     fun resumeSelectFromCollection(
         state: GameState,
         continuation: SelectFromCollectionContinuation,
@@ -428,6 +468,7 @@ class LibraryAndZoneContinuationResumer(
                             // A typeless land can't be kept; a typed land needs all its types free.
                             types.isNotEmpty() && types.none { it in claimedLandTypes }
                         }
+                        is SelectionRestriction.ReducedMinimumIfMatches -> true
                         is SelectionRestriction.MaxAffordablePayment ->
                             // A pure count cap, already folded into the decision's maxSelections
                             // at decision-build time and enforced by response validation; game
@@ -464,6 +505,9 @@ class LibraryAndZoneContinuationResumer(
                             }
                             is SelectionRestriction.OnePerBasicLandType -> {
                                 claimedLandTypes += basicLandTypesOf(cardId)
+                            }
+                            is SelectionRestriction.ReducedMinimumIfMatches -> {
+                                // Response validation enforces the conditional minimum.
                             }
                             is SelectionRestriction.MaxAffordablePayment -> {
                                 // Count cap — no per-card bookkeeping (see the accept check above).
@@ -813,15 +857,22 @@ class LibraryAndZoneContinuationResumer(
             return checkForMore(state, emptyList())
         }
 
+        // The cast initiated. Publish the cast card so an enclosing IfYouDoEffect frame beneath
+        // (Kaervek's "If you do, you lose 2 life") sees a non-empty collection.
+        val castCollections = continuation.storeCastTo?.let { mapOf(it to listOf(continuation.cardId)) }
+            ?: emptyMap()
+
         if (castResult.pendingDecision != null) {
+            val exposed = exposeCollectionsToNextFrame(castResult.state, castCollections)
             return ExecutionResult.paused(
-                castResult.state,
+                exposed,
                 castResult.pendingDecision,
                 castResult.events,
             )
         }
 
-        return checkForMore(castResult.state, castResult.events)
+        val exposed = exposeCollectionsToNextFrame(castResult.state, castCollections)
+        return checkForMore(exposed, castResult.events)
     }
 
     /**

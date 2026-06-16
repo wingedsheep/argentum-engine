@@ -49,6 +49,10 @@ data class TriggeredAbilityContinuation(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /** Definition-scoped identity of the triggered ability (see
+     *  [com.wingedsheep.sdk.scripting.AbilityIdentity]); preserved across target selection so the
+     *  stack object built on resume carries it. Null for sources with no card definition. */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,
@@ -68,7 +72,16 @@ data class TriggeredAbilityContinuation(
     /** Cards looked at by the scry that fired this trigger (CR 701.18). Null for non-scry triggers. */
     val triggerScryCount: Int? = null,
     /** Damage past lethal dealt to the trigger's creature recipient (CR 120.4a). Null for non-damage triggers. */
-    val triggerExcessDamageAmount: Int? = null
+    val triggerExcessDamageAmount: Int? = null,
+    /** Recipient creature's toughness when the triggering damage was dealt (CR 603.10 LKI). Read via
+     *  `ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS` (Taii Wakeen). Null for non-creature recipients. */
+    val triggerRecipientToughness: Int? = null,
+    /** Total mana spent to cast the spell that fired this trigger (Aberrant Manawurm, Expressive
+     *  Firedancer). Read via `ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL`. Null for non-cast triggers. */
+    val triggerManaSpentOnTriggeringSpell: Int? = null,
+    /** Mana value of the spell that fired this trigger (Kellan, the Kid). Read via
+     *  `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE`. Null for non-cast triggers. */
+    val triggerManaValueOfTriggeringSpell: Int? = null
 ) : ContinuationFrame
 
 /**
@@ -96,6 +109,10 @@ data class TriggerDamageDistributionContinuation(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /** Definition-scoped identity of the triggered ability (see
+     *  [com.wingedsheep.sdk.scripting.AbilityIdentity]); preserved across damage distribution so
+     *  the stack object built on resume carries it. Null for sources with no card definition. */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,
@@ -289,6 +306,26 @@ data class MayTriggerContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller answers a [com.wingedsheep.engine.core.BatchYesNoDecision] raised on
+ * behalf of a run of structurally identical optional ("you may … target …") triggers.
+ *
+ * The run shares one may-question; on resume the answer is fanned back out:
+ *  - "yes to all" unwraps the may-gate on every trigger in [triggers] and processes them as ordinary
+ *    targeted triggers (each then chooses its own target via the existing per-trigger machinery);
+ *  - "no to all" drops the whole run;
+ *  - a peel-off answer ("yes/no to this one") resolves [triggers].first() that way and re-runs the
+ *    rest (which re-batch if still ≥ 2), so the player can change their mind partway.
+ *
+ * Triggers after the run are queued separately as a [PendingTriggersContinuation] beneath this frame
+ * when the batch is raised, so they resume in APNAP order regardless of the answer.
+ */
+@Serializable
+data class BatchMayTriggerContinuation(
+    override val decisionId: String,
+    val triggers: List<PendingTrigger>,
+) : ContinuationFrame
+
+/**
  * One snapshotted iteration item of a [com.wingedsheep.sdk.scripting.effects.ForEachEffect].
  * The variant corresponds to (but is deliberately decoupled from) the effect's
  * [com.wingedsheep.sdk.scripting.effects.IterationSpace]: targets iterate [OfTarget],
@@ -350,7 +387,6 @@ data class ForEachContinuation(
  * @property sourceId The spell/ability that caused this effect
  * @property sourceName Name of the source for display
  * @property controllerId The controller of the effect
- * @property opponentId The opponent (for effect context)
  * @property xValue The X value (if applicable)
  * @property targets The chosen targets (for effect context)
  * @property phase Current phase of the repeat loop

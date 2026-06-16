@@ -551,7 +551,8 @@ class CostHandler(
     ): Boolean = when (atom) {
         is CostAtom.Mana -> canPayManaCost(manaPool, atom.cost, abilityContext)
         is CostAtom.PayLife -> {
-            val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
+            // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
+            val life = state.lifeTotal(controllerId)
             // CR 119.4 — a player may pay life only if their life total is >= the payment.
             // Paying down to exactly 0 is legal; the state-based action checker handles the loss.
             life >= atom.amount
@@ -655,7 +656,26 @@ class CostHandler(
         controllerId: EntityId,
         manaPool: ManaPool,
     ): CostPaymentResult {
-        val toSacrificeList = sacrificeChoices.take(requiredCount)
+        // When no choice was supplied, auto-pick from the legal candidates — but ONLY when the
+        // choice is forced (candidates <= requiredCount). When candidates > requiredCount it's a
+        // real choice that ActivateAbilityHandler pauses for; we should never silently take the
+        // first N. This mirrors exileCardsFromZone's auto-pick for empty exile choices, and lets
+        // the forced case (e.g. exactly one artifact) resolve without a decision while breaking the
+        // AI's infinite "Not enough sacrifice targets chosen" loop.
+        val toSacrificeList = if (sacrificeChoices.isEmpty()) {
+            val candidates = findMatchingCardsUnified(state, state.getBattlefield(controllerId), filter, controllerId)
+                .let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
+            if (candidates.size < requiredCount) {
+                return CostPaymentResult.failure("Not enough sacrifice targets chosen (need $requiredCount, got ${candidates.size})")
+            }
+            if (candidates.size > requiredCount) {
+                // A real choice reached the cost path with no selection — fail rather than guess.
+                return CostPaymentResult.failure("Not enough sacrifice targets chosen (need $requiredCount, got 0)")
+            }
+            candidates.take(requiredCount)
+        } else {
+            sacrificeChoices.take(requiredCount)
+        }
         if (toSacrificeList.size < requiredCount) {
             return CostPaymentResult.failure("Not enough sacrifice targets chosen (need $requiredCount, got ${toSacrificeList.size})")
         }
@@ -802,7 +822,8 @@ class CostHandler(
                 is CostAtom.Discard ->
                     findMatchingCardsUnified(state, state.getZone(ZoneKey(controllerId, Zone.HAND)), atom.filter, controllerId).size >= atom.count
                 is CostAtom.PayLife -> {
-                    val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
+                    // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
+                    val life = state.lifeTotal(controllerId)
                     // CR 119.4 — a player may pay life only if their life total is >= the payment.
                     life >= atom.amount
                 }

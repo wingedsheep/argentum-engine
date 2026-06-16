@@ -28,29 +28,41 @@ class SpectatorStateBuilder(
     private val cardRegistry: CardRegistry,
     private val stateTransformer: ClientStateTransformer
 ) {
+    /**
+     * Build a spectator view of an N-player game. [players] is every seated player in turn order;
+     * [seatRoster] is the lightweight seat list echoed to the client. The heavy per-player board
+     * state rides in the embedded [ClientGameState] (already N-player); the [SpectatorStateUpdate]'s
+     * `player1`/`player2` legacy fields are the first two seats, kept for the current spectator
+     * board, replay viewer, and the external `tournament-newspaper` tooling.
+     */
     fun buildState(
         state: GameState,
-        p1: PlayerSession,
-        p2: PlayerSession,
+        players: List<PlayerSession>,
+        seatRoster: List<ServerMessage.PlayerSeatInfo>,
         sessionId: String
     ): ServerMessage.SpectatorStateUpdate {
-        // Build full ClientGameState with both hands masked for GameBoard reuse
-        val spectatorClientState = buildClientGameState(state, p1.playerId, p2.playerId)
+        require(players.size >= 2) { "Spectator state needs at least 2 seated players" }
+        val p1 = players[0]
+        val p2 = players[1]
+
+        // Build full ClientGameState with every player's hand masked for GameBoard reuse
+        val spectatorClientState = buildClientGameState(state, players.map { it.playerId })
 
         // Build decision status if there's a pending decision
         val decisionStatus = state.pendingDecision?.let { decision ->
-            val decidingPlayer = if (decision.playerId == p1.playerId) p1 else p2
+            val decidingPlayer = players.firstOrNull { it.playerId == decision.playerId } ?: p1
             createDecisionStatus(decision, decidingPlayer.playerName)
         }
 
         return ServerMessage.SpectatorStateUpdate(
             gameSessionId = sessionId,
             gameState = spectatorClientState,
+            players = seatRoster,
             player1Id = p1.playerId.value,
             player2Id = p2.playerId.value,
             player1Name = p1.playerName,
             player2Name = p2.playerName,
-            // Legacy fields for backward compatibility
+            // Legacy fields for backward compatibility (first two seats)
             player1 = buildPlayerState(state, p1),
             player2 = buildPlayerState(state, p2),
             currentPhase = state.phase.name,
@@ -66,6 +78,7 @@ class SpectatorStateBuilder(
             is SelectCardsDecision -> "Selecting cards"
             is ChooseTargetsDecision -> "Choosing targets"
             is YesNoDecision -> "Making a choice"
+            is BatchYesNoDecision -> "Making a choice"
             is ChooseModeDecision -> "Choosing mode"
             is ChooseColorDecision -> "Choosing a color"
             is ChooseNumberDecision -> "Choosing a number"
@@ -92,17 +105,14 @@ class SpectatorStateBuilder(
 
     private fun buildClientGameState(
         state: GameState,
-        player1Id: EntityId,
-        player2Id: EntityId
+        playerIds: List<EntityId>
     ): ClientGameState {
-        // Use player1's perspective as the "viewing player" for the transform,
-        // then mask player1's hand as well
-        val baseState = stateTransformer.transform(state, player1Id, isSpectator = true)
+        // Use the first seat's perspective as the "viewing player" for the transform,
+        // then mask every player's hand (spectators can't see any hand contents)
+        val baseState = stateTransformer.transform(state, playerIds.first(), isSpectator = true)
 
-        // Filter out hand cards from the cards map (spectators can't see either player's hand)
-        val player1Hand = state.getHand(player1Id).toSet()
-        val player2Hand = state.getHand(player2Id).toSet()
-        val allHandCards = player1Hand + player2Hand
+        // Filter out hand cards from the cards map (spectators can't see any player's hand)
+        val allHandCards = playerIds.flatMap { state.getHand(it) }.toSet()
         val visibleCards = baseState.cards.filterKeys { it !in allHandCards }
 
         // Update zones to hide hand contents but keep sizes

@@ -1,0 +1,59 @@
+// Icatian Priest
+{
+    "name": "Icatian Priest",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{1}{W}{W}: Target creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Tucker",
+        "flavorText": "\"May you be strong and valiant, to defeat the enemies of the pure.\"\n—\"Leitbur's Prayer\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7690cdd-6610-4310-9e93-60dc4db2ae8d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

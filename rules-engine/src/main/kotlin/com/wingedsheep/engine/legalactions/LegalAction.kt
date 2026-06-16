@@ -257,6 +257,15 @@ data class AdditionalCostData(
     val sacrificeCount: Int = 1,
     val validTapTargets: List<EntityId> = emptyList(),
     val tapCount: Int = 0,
+    /**
+     * Station-style multi-select shortcut (CR 702.184a). When > 1, this single-creature
+     * (`tapCount == 1`) tap cost belongs to a no-target, stacking activated ability that may be
+     * activated several times in one gesture: the player selects 1..[tapBatchMaxActivations]
+     * distinct creatures and the engine queues one activation per creature (each taps exactly its
+     * creature). 1 means "no batch" — the cost is paid by tapping exactly [tapCount] creatures for
+     * a single activation, the prior behaviour.
+     */
+    val tapBatchMaxActivations: Int = 1,
     val validDiscardTargets: List<EntityId> = emptyList(),
     val discardCount: Int = 0,
     val validBounceTargets: List<EntityId> = emptyList(),

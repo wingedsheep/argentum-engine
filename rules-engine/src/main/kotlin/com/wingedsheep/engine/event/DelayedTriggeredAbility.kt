@@ -40,6 +40,14 @@ data class DelayedTriggeredAbility(
      * matches this id.
      */
     val watchedEntityId: EntityId? = null,
+    /**
+     * For event-based delayed triggers: scopes the trigger to events whose *recipient*
+     * (the damaged/targeted entity) matches this id. Whereas [watchedEntityId] narrows by the
+     * event's source, this narrows by the event's recipient — e.g. "whenever a creature you
+     * control deals combat damage to *that player* this turn" (Great Train Heist). Baked from
+     * [com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect.watchedRecipient].
+     */
+    val watchedRecipientId: EntityId? = null,
     /** For event-based delayed triggers: the expiry rule. */
     val expiry: DelayedTriggerExpiry? = null,
     /**

@@ -240,6 +240,8 @@ private fun randomDecisionResponse(decision: PendingDecision, rng: Random): Deci
 
         is YesNoDecision -> YesNoResponse(decision.id, rng.nextBoolean())
 
+        is BatchYesNoDecision -> BatchYesNoResponse(decision.id, choice = rng.nextBoolean(), applyToAll = true)
+
         is ChooseReplacementDecision -> {
             val fromIndex = rng.nextInt(decision.fromOptions.size)
             val allowed = decision.allowedToByFrom.getOrNull(fromIndex)

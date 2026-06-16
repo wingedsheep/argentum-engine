@@ -117,6 +117,11 @@ data class PlayWithCostIncreaseComponent(
  *   it actually lands in exile, so the UI can show the exiled cards tethered under
  *   the source permanent (e.g. Goliath Daydreamer's "exile that card with a dream
  *   counter on it" pile). Only applied when the spell actually resolves into exile.
+ * @param makePlotted When true, the card becomes *plotted* (CR 718) for its owner once it lands
+ *   in exile — the same effect as [com.wingedsheep.sdk.scripting.effects.MakePlottedEffect], but
+ *   applied to a self-cast spell as it resolves rather than to a targeted spell. Used by Lilah,
+ *   Undefeated Slickshot: "exile that spell instead of putting it into your graveyard as it
+ *   resolves. If you do, it becomes plotted." Only applied when the card actually lands in exile.
  */
 @Serializable
 data class ExileAfterResolveComponent(
@@ -128,5 +133,6 @@ data class ExileAfterResolveComponent(
      * to resolve, Goliath Daydreamer's first ability won't exile it."
      */
     val onlyIfResolved: Boolean = false,
-    val linkedSourceId: EntityId? = null
+    val linkedSourceId: EntityId? = null,
+    val makePlotted: Boolean = false
 ) : Component

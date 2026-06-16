@@ -1,6 +1,9 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Counters
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -145,7 +148,7 @@ data class AddCountersToCollectionEffect(
     val count: Int = 1
 ) : Effect {
     override val description: String =
-        "Put $count $counterType counter${if (count != 1) "s" else ""} on each permanent in $collectionName"
+        "Put $count $counterType counter${if (count != 1) "s" else ""} on each of those permanents"
 }
 
 /**
@@ -211,4 +214,59 @@ data class DistributeCountersAmongTargetsEffect(
 ) : Effect {
     override val description: String =
         "Distribute $totalCounters $counterType counter${if (totalCounters != 1) "s" else ""} among targets"
+}
+
+/**
+ * Install a temporary, duration-scoped counter-placement-*modifier* replacement effect,
+ * controlled by the resolving ability's controller.
+ *
+ * This is the activated/spell-granted, time-bounded analogue of the static
+ * [com.wingedsheep.sdk.scripting.ModifyCounterPlacement] replacement (Hardened Scales,
+ * Winding Constrictor). Where `ModifyCounterPlacement` lives on a permanent for as long as
+ * that permanent is on the battlefield, this effect records a modifier in a turn-scoped store
+ * on the game state, controller-scoped exactly like the static version: while it is active, if
+ * the *controller* would put counters matching [counterType] on a recipient matching [recipient]
+ * (resolved relative to that controller — e.g. "a creature you control" means a creature the
+ * controller controls), [modifier] additional counters are placed instead.
+ *
+ * The store is consulted from the single counter-placement chokepoint, so every counter-adding
+ * effect (AddCounters, AddDynamicCounters, Explore, enters-with-counters, proliferate-driven,
+ * move-counters, …) honors it automatically. The modifier expires per [duration]
+ * (typically [Duration.EndOfTurn]) via the normal end-of-turn cleanup.
+ *
+ * General by construction — parameterized over [modifier] (positive or negative), [duration],
+ * [counterType] and [recipient]. The defaults reproduce the most common case ("+1/+1 counters
+ * on a creature you control, until end of turn"), which is what Prairie Dog's
+ * "{4}{W}: Until end of turn, if you would put one or more +1/+1 counters on a creature you
+ * control, put that many plus one +1/+1 counters on it instead" needs.
+ *
+ * Examples:
+ * - Prairie Dog (OTJ): `GrantCounterPlacementModifierEffect()` — +1, EndOfTurn, +1/+1, creature you control.
+ * - A hypothetical "until end of turn, put one fewer counter…": `modifier = -1`.
+ *
+ * @property modifier Additional counters placed (negative reduces; the chokepoint floors the
+ *        resulting count at 0).
+ * @property duration How long the modifier stays active (default [Duration.EndOfTurn]).
+ * @property counterType Which counter kind the modifier applies to (default +1/+1).
+ * @property recipient Which recipients the modifier applies to, resolved relative to the
+ *        controller (default "a creature you control").
+ */
+@SerialName("GrantCounterPlacementModifier")
+@Serializable
+data class GrantCounterPlacementModifierEffect(
+    val modifier: Int = 1,
+    val duration: Duration = Duration.EndOfTurn,
+    val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
+    val recipient: RecipientFilter = RecipientFilter.CreatureYouControl
+) : Effect {
+    override val description: String = buildString {
+        val durationText = if (duration == Duration.Permanent) "" else "${duration.description.replaceFirstChar { it.uppercase() }}, "
+        append(durationText)
+        append("if you would put one or more ${counterType.description} counters on ${recipient.description}, ")
+        if (modifier >= 0) {
+            append("put that many plus $modifier ${counterType.description} counter${if (modifier != 1) "s" else ""} on it instead")
+        } else {
+            append("put that many minus ${-modifier} ${counterType.description} counter${if (-modifier != 1) "s" else ""} on it instead")
+        }
+    }
 }

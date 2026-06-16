@@ -16,6 +16,7 @@ import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
+import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.SneakWindow
 import com.wingedsheep.engine.mechanics.WarpGrants
@@ -380,8 +381,8 @@ class CastSpellHandler(
         } else if (faceManaCostOverride != null && cardDef != null) {
             costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, faceManaCostOverride, action.playerId)
         } else if (action.useAlternativeCost && cardDef != null) {
-            // Check flashback cost first (card in graveyard with Flashback keyword)
-            val flashbackAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Flashback>().firstOrNull()
+            // Check flashback cost first (printed on the card, or granted at runtime by Archmage's Newt).
+            val flashbackAbility = FlashbackGrants.effectiveFlashback(state, action.cardId, cardDef)
             // Harmonize may be printed on the card or granted at runtime (Songcrafter Mage).
             val harmonizeAbility = HarmonizeGrants.effectiveHarmonize(state, action.cardId, cardDef)
             // Each branch is gated by [CastSpell.altAllows] so an explicit player choice (e.g.
@@ -439,7 +440,7 @@ class CastSpellHandler(
                 cardDef,
                 action.playerId,
                 action.targets.map { it.toEntityId() },
-                fromZone = if (hasCommanderCast) Zone.COMMAND else null,
+                fromZone = if (hasCommanderCast) Zone.COMMAND else castSourceZone(state, action.cardId),
             )
         } else {
             cardComponent.manaCost
@@ -617,8 +618,7 @@ class CastSpellHandler(
                 state, action.playerId, action.targets
             )
             if (additionalLifeCost > 0) {
-                val currentLife = state.getEntity(action.playerId)
-                    ?.get<LifeTotalComponent>()?.life ?: 0
+                val currentLife = state.lifeTotal(action.playerId) // CR 810.9a — team's shared total
                 if (currentLife < additionalLifeCost) {
                     return "Not enough life to pay additional life cost ($additionalLifeCost life required)"
                 }
@@ -766,16 +766,21 @@ class CastSpellHandler(
     }
 
     /**
-     * True if the spell is being cast from exile via a [com.wingedsheep.engine.state.permissions.MayPlayPermission]
-     * that allows mana of any type to be spent. The card must currently be in some exile
-     * zone (the card's owner's, which may be an opponent — e.g. Taster of Wares leaves the
-     * exiled card in the revealing player's exile), an active permission must be granted
-     * to the casting player with its condition gate open, and the `withAnyManaType` flag
-     * must be set on at least one of those active permissions.
+     * True if the spell is being cast via a [com.wingedsheep.engine.state.permissions.MayPlayPermission]
+     * that allows mana of any type to be spent. The card must currently be in a zone a may-play
+     * permission can grant casting from — exile (the card's owner's, which may be an opponent —
+     * e.g. Taster of Wares leaves the exiled card in the revealing player's exile) or a graveyard
+     * (per-card grants that leave the card in the graveyard — e.g. Tinybones, the Pickpocket lets
+     * you cast a targeted nonland permanent card from the damaged player's graveyard). An active
+     * permission must be granted to the casting player with its condition gate open, and the
+     * `withAnyManaType` flag must be set on at least one of those active permissions.
      */
     private fun isCastWithAnyManaType(state: GameState, action: CastSpell): Boolean {
-        val inExile = state.turnOrder.any { ownerId -> action.cardId in state.getZone(ZoneKey(ownerId, Zone.EXILE)) }
-        if (!inExile) return false
+        val inGrantableZone = state.turnOrder.any { ownerId ->
+            action.cardId in state.getZone(ZoneKey(ownerId, Zone.EXILE)) ||
+                action.cardId in state.getZone(ZoneKey(ownerId, Zone.GRAVEYARD))
+        }
+        if (!inGrantableZone) return false
         return state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator)
             .any { it.withAnyManaType }
     }
@@ -785,6 +790,23 @@ class CastSpellHandler(
 
     private fun isCastFromHand(state: GameState, cardId: EntityId): Boolean =
         state.turnOrder.any { ownerId -> cardId in state.getZone(ZoneKey(ownerId, Zone.HAND)) }
+
+    /**
+     * The zone the card is being cast from, used to apply cast-from-zone cost modifiers
+     * (e.g. Aven Interrupter's "spells your opponents cast from graveyards or exile cost {2}
+     * more"). A spell card still occupies its source zone when the cost is computed during
+     * cast validation/execution (it hasn't moved to the stack yet). Stack means it's already
+     * being moved; returns null then. Commander casts are handled separately via the
+     * dedicated `Zone.COMMAND` flag.
+     */
+    private fun castSourceZone(state: GameState, cardId: EntityId): Zone? {
+        for (ownerId in state.turnOrder) {
+            for (zone in listOf(Zone.HAND, Zone.GRAVEYARD, Zone.EXILE, Zone.LIBRARY)) {
+                if (cardId in state.getZone(ZoneKey(ownerId, zone))) return zone
+            }
+        }
+        return null
+    }
 
     private fun validateConspire(
         state: GameState,
@@ -821,11 +843,9 @@ class CastSpellHandler(
         restrictions: List<CastRestriction>,
         playerId: EntityId
     ): String? {
-        val opponentId = state.turnOrder.firstOrNull { it != playerId }
         val context = EffectContext(
             sourceId = null,
             controllerId = playerId,
-            opponentId = opponentId,
             targets = emptyList(),
             xValue = 0
         )
@@ -1068,8 +1088,7 @@ class CastSpellHandler(
                         }
                     }
                     is CostAtom.PayLife -> {
-                        val currentLife = state.getEntity(action.playerId)
-                            ?.get<LifeTotalComponent>()?.life ?: 0
+                        val currentLife = state.lifeTotal(action.playerId) // CR 810.9a — team's shared total
                         // CR 119.4 — you can't pay life unless you have at least that much
                         if (currentLife < atom.amount) {
                             return "Not enough life to pay ${atom.amount} life"
@@ -1302,8 +1321,7 @@ class CastSpellHandler(
                 }
                 is AdditionalCost.PayLifePerTarget -> {
                     val required = additionalCost.amountPerTarget * action.targets.size
-                    val currentLife = state.getEntity(action.playerId)
-                        ?.get<LifeTotalComponent>()?.life ?: 0
+                    val currentLife = state.lifeTotal(action.playerId) // CR 810.9a — team's shared total
                     // CR 119.4 — you can't pay life unless you have at least that much
                     if (currentLife < required) {
                         return "Not enough life to pay $required life for ${action.targets.size} targets"
@@ -1383,8 +1401,8 @@ class CastSpellHandler(
         } else if (faceManaCostOverrideExecute != null && cardDef != null) {
             costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, faceManaCostOverrideExecute, action.playerId)
         } else if (action.useAlternativeCost && cardDef != null) {
-            // Check flashback cost first
-            val flashbackAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Flashback>().firstOrNull()
+            // Check flashback cost first (printed on the card, or granted at runtime by Archmage's Newt).
+            val flashbackAbility = FlashbackGrants.effectiveFlashback(currentState, action.cardId, cardDef)
             // Harmonize may be printed on the card or granted at runtime (Songcrafter Mage).
             val harmonizeAbility = HarmonizeGrants.effectiveHarmonize(currentState, action.cardId, cardDef)
             // Branches gated by [CastSpell.altAllows] — mirrors validate(); honors the player's
@@ -1447,7 +1465,7 @@ class CastSpellHandler(
                 cardDef,
                 action.playerId,
                 action.targets.map { it.toEntityId() },
-                fromZone = if (castingFromCommand) Zone.COMMAND else null,
+                fromZone = if (castingFromCommand) Zone.COMMAND else castSourceZone(currentState, action.cardId),
             )
         } else {
             cardComponent.manaCost
@@ -1593,12 +1611,9 @@ class CastSpellHandler(
                 else -> continue
             }
             if (lifeToPay == 0) continue
-            val playerEntity = currentState.getEntity(action.playerId)
-            val currentLife = playerEntity?.get<LifeTotalComponent>()?.life ?: 0
+            val currentLife = currentState.lifeTotal(action.playerId) // CR 810.9a — team's shared total
             val newLife = currentLife - lifeToPay
-            currentState = currentState.updateEntity(action.playerId) { c ->
-                c.with(LifeTotalComponent(newLife))
-            }
+            currentState = currentState.withLifeTotal(action.playerId, newLife)
             currentState = DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
             events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.PAYMENT))
         }
@@ -2073,12 +2088,9 @@ class CastSpellHandler(
 
         // Pay additional life cost (e.g., Festival of Embers graveyard casting)
         if (action.graveyardLifeCost > 0) {
-            val currentLife = currentState.getEntity(action.playerId)
-                ?.get<LifeTotalComponent>()?.life ?: 0
+            val currentLife = currentState.lifeTotal(action.playerId) // CR 810.9a — team's shared total
             val newLife = currentLife - action.graveyardLifeCost
-            currentState = currentState.updateEntity(action.playerId) { container ->
-                container.with(LifeTotalComponent(newLife))
-            }
+            currentState = currentState.withLifeTotal(action.playerId, newLife)
             events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
             currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
         }
@@ -2091,12 +2103,9 @@ class CastSpellHandler(
                 currentState, action.playerId, action.targets
             )
             if (additionalLifeCost > 0) {
-                val currentLife = currentState.getEntity(action.playerId)
-                    ?.get<LifeTotalComponent>()?.life ?: 0
+                val currentLife = currentState.lifeTotal(action.playerId) // CR 810.9a — team's shared total
                 val newLife = currentLife - additionalLifeCost
-                currentState = currentState.updateEntity(action.playerId) { container ->
-                    container.with(LifeTotalComponent(newLife))
-                }
+                currentState = currentState.withLifeTotal(action.playerId, newLife)
                 events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.PAYMENT))
                 currentState = DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
             }
@@ -2259,7 +2268,6 @@ class CastSpellHandler(
             val captureContext = EffectContext(
                 sourceId = action.cardId,
                 controllerId = action.playerId,
-                opponentId = currentState.turnOrder.firstOrNull { it != action.playerId },
                 targets = emptyList(),
                 xValue = 0
             )

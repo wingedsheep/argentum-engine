@@ -4,7 +4,17 @@ package com.wingedsheep.tooling.coverage.bridge
  *  their nested nodes. ("ignore" in the legacy JSON.) */
 internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("SpellActions", "envelope: 'this spell does X'")
+    // Spree (CR 702.166, Outlaws of Thunder Junction): "choose one or more additional costs". The rule
+    // is a structural wrapper over its SpreeAction modes (each a PayMana cost + nested actions); the
+    // real capability lives in those nested actions. The emitter renders it as a `ModalEffect` with
+    // per-mode `additionalManaCost`, `minChooseCount = 1` (Explosive Derailment, Caught in the Crossfire).
+    envelope("SpellActions_Spree", "envelope: Spree — choose one or more additional-cost modes")
     envelope("CastEffect", "envelope: on-cast actions")
+    // "[that spell] does X" / "as it resolves, …" — a one-shot effect attached to a spell on the
+    // stack. The real capability is the nested _SpellEffect / _ResolveAction (e.g. Lilah, Undefeated
+    // Slickshot's AsResolves -> ExileResolvingSpellAndPlotIt). Both are structural wrappers.
+    envelope("CreateSpellEffect", "envelope: a one-shot effect on a spell (capability is the nested _SpellEffect)")
+    envelope("AsResolves", "envelope: an as-it-resolves effect on a spell (capability is the nested _ResolveAction)")
     envelope("PermanentRuleEffect", "envelope: static ability")
     envelope("TriggerA", "envelope: triggered ability (cond in _Trigger)")
     // TriggerI — a triggered ability with an intervening-if condition (CR 603.4): args are
@@ -15,8 +25,16 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("TriggerOnceEachTurn", "envelope: triggered ability that triggers only once each turn")
     envelope("Activated", "envelope: activated ability")
     envelope("ActivatedWithModifiers", "envelope: activated ability")
+    // Zone-scoped activated abilities: the inner Activated rule carries the real capability; the
+    // wrapper only sets the ability's `activateFromZone` (Zone.HAND / Zone.GRAVEYARD).
+    envelope("FromHand", "envelope: activated ability used from hand (activateFromZone = Zone.HAND)")
+    envelope("FromGraveyard", "envelope: activated ability used from graveyard (activateFromZone = Zone.GRAVEYARD)")
     envelope("And", "envelope: cost/action conjunction")
-    envelope("If", "conditional envelope")
+    // A resolution-time intervening-if (`If[cond, [then]]` inside a spell/ability ActionList) realises as
+    // a `ConditionalEffect` -> `GatedEffect(gate = WhenCondition)` (SerialName "Gated") in our trees, the
+    // same compiled shape as a "you may" gate; so the conditional envelope composes the Gated capability
+    // (Foolish Fate's "if you gained life this turn …", Burrog Barrage's "+1/+0 if you've cast …").
+    envelope("If", "conditional envelope", composes = listOf("Gated"))
 
     // The "you may / unless / if you do" gate cluster (Lesson 1). A "you may [effect]" realises as a
     // `GatedEffect(gate = MayDecide)` (SerialName "Gated") in our trees, so the gate envelope composes it.
@@ -35,6 +53,12 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("EachPlayerAction", "envelope: APNAP each-player")
     envelope("EachPlayerActions", "envelope: APNAP each-player (plural)")
     envelope("HavePlayerTakeAction", "envelope: delegated action")
+
+    // A global, every-player continuous static ("Each player can't cast more than one spell each
+    // turn", High Noon). The real capability is the nested _PlayerEffect; the emitter's
+    // eachPlayerEffectBlock renders the shapes it can express exactly (the spell-count cap ->
+    // `RestrictSpellsCastPerTurn(eachPlayer = true)`) and scaffolds the rest.
+    envelope("EachPlayerEffect", "envelope: global every-player static (capability is the _PlayerEffect)")
 
     // Aura / host-permanent continuous effects. `EnchantPermanent` declares the aura's enchant
     // restriction — a universal capability (the engine supports auras). `PermanentLayerEffect` wraps
@@ -65,7 +89,11 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("CreateEachPermanentRuleEffectUntil", "envelope: continuous rule, each")
     envelope("CreatePlayerEffectUntil", "envelope: player-scoped continuous effect")
     envelope("CreatePermanentLayerEffect", UNIVERSAL)
-    envelope("CreatePermanentRuleEffectUntil", UNIVERSAL)
+    // A continuous rule until end of turn. The nested `_PermanentRule` is the real capability: CantBlock /
+    // CantAttack render to `CantBlockEffect` (SerialName "CantBlockTargetCreatures") / `CantAttackEffect`
+    // (Duel Tactics' "it can't block this turn"), and the can't-be-blocked rules to keyword grants.
+    envelope("CreatePermanentRuleEffectUntil", UNIVERSAL,
+        composes = listOf("CantBlockTargetCreatures", "CantAttack"))
 
     // Cross-set "may" / choice / branch envelopes surfaced by calibration on later sets.
     envelopes("PlayerMayAction", "PlayerMayCost", note = UNIVERSAL, composes = listOf("May"))
@@ -75,6 +103,19 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     envelope("ChooseACreatureType", UNIVERSAL)
     envelope("ChooseAColor", UNIVERSAL)
     envelope("IfElse", UNIVERSAL)
+
+    // Loop / repeat control-flow. The capability is the nested action body + a repeat count; the engine
+    // expresses bounded repeats via `RepeatDynamicTimesEffect` and "repeat until a condition" via a
+    // `RepeatWhileEffect`. These are STRUCTURAL — the real capability is the nested actions, scored on
+    // their own. The emitter declines (a loop's exact bound — "X more times" vs "once" vs "while" — is
+    // card-specific around the engine's still-rough cast-time X / extra-cost handling), so cards using
+    // them stay SCAFFOLD even though the capability is present.
+    //   - "… Then repeat this process X more times." (Another Round) — a count-bounded repeat.
+    envelope("RepeatableActionsNumTimes", "envelope: repeat a sequence N times (RepeatDynamicTimesEffect)", composes = listOf("RepeatDynamicTimes"))
+    //   - "… Then if [cond], repeat this process [once]." (Claim Jumper) — a do-once-then-repeat loop.
+    envelope("RepeatableActions", "envelope: repeatable action sequence (RepeatDynamicTimes / RepeatWhile)", composes = listOf("RepeatDynamicTimes", "RepeatWhile"))
+    //   - The "repeat this process" loop-back marker inside a RepeatableActions body.
+    supported("RepeatThisProcess", "loop-back marker inside a repeatable action sequence")
     // "[Effect]. [Bigger effect] instead if you controlled a [filter] as you cast this spell" — the OTJ
     // cast-time condition capture (CR 601.2i). Structural: the capability is the nested condition
     // (PlayerPassesFilter) and the two branch effects, scored on their own. The engine freezes the

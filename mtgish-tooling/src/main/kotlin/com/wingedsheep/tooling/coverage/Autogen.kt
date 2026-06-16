@@ -34,8 +34,14 @@ import java.util.Locale
  * human-authored card whose scenario test passes. Deliberately NOT a card loader.
  */
 object Autogen {
-    private fun genPackage(setCode: String) = "com.wingedsheep.mtg.sets.generated.${setCode.lowercase()}.cards"
-    private fun draftPackage(setCode: String) = "com.wingedsheep.mtg.sets.definitions.${setCode.lowercase()}.cards"
+    // A Kotlin package segment starting with a digit (e.g. set code "5DN" -> "5dn") is not a valid
+    // bare identifier and must be backtick-escaped, matching how the promoted cards declare it.
+    private fun packageSegment(setCode: String): String {
+        val seg = setCode.lowercase()
+        return if (seg.firstOrNull()?.isDigit() == true) "`$seg`" else seg
+    }
+    private fun genPackage(setCode: String) = "com.wingedsheep.mtg.sets.generated.${packageSegment(setCode)}.cards"
+    private fun draftPackage(setCode: String) = "com.wingedsheep.mtg.sets.definitions.${packageSegment(setCode)}.cards"
     private fun sourceFileName(name: String) = asciiIdentifier(name) + ".kt"
 
     private fun isBasicLand(card: JsonObject): Boolean {

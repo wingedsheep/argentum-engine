@@ -12,6 +12,9 @@ try {
   // git may not be available (e.g. Docker build)
 }
 
+// Backend the dev server proxies to — override when the game server runs on a non-default port.
+const gameServerUrl = process.env.GAME_SERVER_URL || 'http://localhost:8080'
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -26,12 +29,12 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/game': {
-        target: 'http://localhost:8080',
+        target: gameServerUrl,
         ws: true,
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://localhost:8080',
+        target: gameServerUrl,
         changeOrigin: true,
       },
     },

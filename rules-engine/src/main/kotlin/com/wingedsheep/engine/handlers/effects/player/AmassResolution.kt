@@ -29,13 +29,12 @@ object AmassResolution {
         state: GameState,
         armyId: EntityId,
         controllerId: EntityId,
-        opponentId: EntityId?,
         subtype: String,
         amount: Int,
         sourceId: EntityId?,
         executeEffect: (GameState, Effect, EffectContext) -> EffectResult
     ): EffectResult {
-        val context = EffectContext(sourceId = sourceId, controllerId = controllerId, opponentId = opponentId)
+        val context = EffectContext(sourceId = sourceId, controllerId = controllerId)
         var newState = state
         val events = mutableListOf<GameEvent>()
 

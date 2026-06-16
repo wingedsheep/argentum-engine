@@ -68,7 +68,6 @@ class DescendTrackerTest : FunSpec({
         val context = EffectContext(
             sourceId = null,
             controllerId = controller,
-            opponentId = getOpponent(controller),
             targets = emptyList(),
             xValue = 0
         )

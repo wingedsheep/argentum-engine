@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.mtg.sets.definitions.dmu.cards.AdarkarWastes
+import com.wingedsheep.mtg.sets.definitions.ice.cards.AdarkarWastes
 import com.wingedsheep.mtg.sets.definitions.ons.cards.EssenceFracture
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step

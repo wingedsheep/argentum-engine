@@ -14,7 +14,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -90,8 +90,20 @@
                 "spellEffect": {
                     "type": "Composite",
                     "effects": [
-                        "CantCastSpells",
-                        "CantActivateLoyaltyAbilities"
+                        {
+                            "type": "CantCastSpells",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "CantActivateLoyaltyAbilities",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
                     ]
                 },
                 "selfExileOnResolve": true

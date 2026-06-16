@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -118,6 +119,18 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 ControllerComponent(controllerId),
                 SummoningSicknessComponent
             )
+
+            // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
+            // with the same face up as the source.
+            chosenContainer.get<DoubleFacedComponent>()?.let { sourceDfc ->
+                container = container.with(
+                    DoubleFacedComponent(
+                        frontCardDefinitionId = sourceDfc.frontCardDefinitionId,
+                        backCardDefinitionId = sourceDfc.backCardDefinitionId,
+                        currentFace = sourceDfc.currentFace
+                    )
+                )
+            }
 
             // Add static abilities from the card definition
             if (staticAbilityHandler != null) {

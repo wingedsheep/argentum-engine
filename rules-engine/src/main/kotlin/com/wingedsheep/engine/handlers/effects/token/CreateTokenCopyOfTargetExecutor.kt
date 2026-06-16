@@ -75,7 +75,7 @@ class CreateTokenCopyOfTargetExecutor(
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         val createdTokens = mutableListOf<EntityId>()
 
-        repeat(count) {
+        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")) {
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
             val op = effect.overridePower
@@ -109,13 +109,16 @@ class CreateTokenCopyOfTargetExecutor(
             // creature (e.g. an animated permanent exiled and reverted to its printed type) still
             // enters tapped but never attacking — see Mardu Siegebreaker's rulings.
             if (effect.attacking && tokenCard.typeLine.isCreature) {
-                val defenderId = newState.getOpponent(controllerId)
+                // The token joins the source's attack (CR 802.2a) — see CreateTokenExecutor.
+                val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                    .resolveDefendingPlayer(context, newState)
+                    ?: newState.getOpponents(controllerId).firstOrNull()
                 if (defenderId != null) {
                     components.add(AttackingComponent(defenderId))
                 }
             }
-            // CR 701.53d / TDFC token rules: a copy of a transforming permanent is itself a
-            // transforming permanent and enters with the same face up as the source. Counters
+            // CR 707.8a: a token copy of a double-faced permanent has both faces and enters
+            // with the same face up as the source. Counters
             // are intentionally not copied (handled by the absence of CountersComponent copy
             // throughout this executor).
             targetContainer.get<DoubleFacedComponent>()?.let { sourceDfc ->

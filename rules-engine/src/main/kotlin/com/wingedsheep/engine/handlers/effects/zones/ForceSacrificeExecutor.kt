@@ -30,7 +30,9 @@ import kotlin.reflect.KClass
  * - The Eldest Reborn: "Each opponent sacrifices a creature or planeswalker."
  */
 class ForceSacrificeExecutor(
-    private val decisionHandler: DecisionHandler = DecisionHandler()
+    private val decisionHandler: DecisionHandler = DecisionHandler(),
+    private val dynamicAmountEvaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator =
+        com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
 ) : EffectExecutor<ForceSacrificeEffect> {
 
     override val effectType: KClass<ForceSacrificeEffect> = ForceSacrificeEffect::class
@@ -45,7 +47,15 @@ class ForceSacrificeExecutor(
             return EffectResult.error(state, "No valid player for force sacrifice")
         }
 
-        return processPlayers(state, playerIds, effect.filter, effect.count, context.sourceId)
+        // A dynamic count ("sacrifices half the creatures they control, rounded up") is evaluated
+        // once at resolution; otherwise fall back to the fixed edict count. The amount is resolved
+        // against the same context so a per-target reference (e.g. Player.ContextPlayer / TargetOpponent)
+        // counts the chosen player's permanents.
+        val count = effect.dynamicCount
+            ?.let { dynamicAmountEvaluator.evaluate(state, it, context) }
+            ?: effect.count
+
+        return processPlayers(state, playerIds, effect.filter, count, context.sourceId)
     }
 
     /**

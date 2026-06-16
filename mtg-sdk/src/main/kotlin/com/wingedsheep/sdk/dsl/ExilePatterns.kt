@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
@@ -90,6 +91,31 @@ object ExilePatterns {
             destination = CardDestination.ToZone(Zone.HAND),
             unlinkFromSource = true
         )
+    ))
+
+    /**
+     * Impulse draw: exile the top [count] cards of your library, then grant permission to play
+     * those cards until [expiry] (default end of turn). The played cards still cost their mana;
+     * for the "play it without paying its mana cost" variant compose with
+     * [GrantPlayWithoutPayingCostEffect] (see [shuffleAndExileTopPlayFree]).
+     *
+     * Named MTG mechanic ("impulse draw") with multiple users — Irascible Wolverine (1),
+     * Annie Flash, the Veteran (2), etc.
+     */
+    fun impulse(
+        count: Int = 1,
+        expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
+        storeAs: String = "impulseExiled"
+    ): Effect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+            storeAs = storeAs
+        ),
+        MoveCollectionEffect(
+            from = storeAs,
+            destination = CardDestination.ToZone(Zone.EXILE)
+        ),
+        GrantMayPlayFromExileEffect(storeAs, expiry)
     ))
 
     fun shuffleAndExileTopPlayFree(): Effect = CompositeEffect(listOf(

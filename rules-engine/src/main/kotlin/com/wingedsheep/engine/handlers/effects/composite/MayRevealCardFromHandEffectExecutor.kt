@@ -52,7 +52,9 @@ class MayRevealCardFromHandEffectExecutor(
         val predicateContext = PredicateContext(
             controllerId = revealer,
             sourceId = context.sourceId,
-            targetOpponentId = context.opponentId,
+            targetOpponentId = context.targets.firstNotNullOfOrNull {
+                (it as? com.wingedsheep.engine.state.components.stack.ChosenTarget.Player)?.playerId
+            },
         )
         val eligible = handCards.filter { cardId ->
             predicateEvaluator.matches(state, state.projectedState, cardId, effect.filter, predicateContext)

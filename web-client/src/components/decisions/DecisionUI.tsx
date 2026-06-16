@@ -9,6 +9,7 @@ import { OrderBlockersUI } from './OrderBlockersUI'
 import { CombatDamageAssignmentModal } from './CombatDamageAssignmentModal'
 import { CombatResolutionBoard } from './CombatResolutionBoard'
 import { YesNoDecisionUI } from './YesNoDecisionUI'
+import { BatchYesNoDecisionUI } from './BatchYesNoDecisionUI'
 import { ChooseNumberDecisionUI } from './ChooseNumberDecisionUI'
 import { ChooseOptionDecisionUI } from './ChooseOptionDecisionUI'
 import { ChooseReplacementDecisionUI } from './ChooseReplacementDecisionUI'
@@ -123,6 +124,29 @@ export function DecisionUI() {
     return (
       <div className={styles.overlay}>
         <YesNoDecisionUI
+          decision={pendingDecision}
+          gameState={gameState}
+          onMinimize={() => setDecisionMinimized(true)}
+        />
+      </div>
+    )
+  }
+
+  // Handle BatchYesNoDecision (one yes/no covering N identical optional triggers)
+  if (pendingDecision.type === 'BatchYesNoDecision') {
+    if (decisionMinimized) {
+      return (
+        <button
+          className={styles.floatingReturnButton}
+          onClick={() => setDecisionMinimized(false)}
+        >
+          Return to decision
+        </button>
+      )
+    }
+    return (
+      <div className={styles.overlay}>
+        <BatchYesNoDecisionUI
           decision={pendingDecision}
           gameState={gameState}
           onMinimize={() => setDecisionMinimized(true)}

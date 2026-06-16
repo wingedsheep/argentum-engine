@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
 import kotlin.reflect.KClass
@@ -59,6 +60,15 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
 
         // If both creatures already have the same controller, no-op
         if (controller1 == controller2) return EffectResult.success(state)
+
+        // "Other players can't gain control of it" (Guardian Beast): an exchange would hand each
+        // permanent to a different player, so if either side can't be gained control of, the whole
+        // exchange fails to happen.
+        if (state.projectedState.hasKeyword(target1Id, AbilityFlag.CANT_GAIN_CONTROL) ||
+            state.projectedState.hasKeyword(target2Id, AbilityFlag.CANT_GAIN_CONTROL)
+        ) {
+            return EffectResult.success(state)
+        }
 
         // Capture the base timestamp before threading state so that +1 is stable
         val baseTimestamp = state.timestamp

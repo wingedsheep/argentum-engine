@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -360,7 +361,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.STEP)) {
             for (ability in entry.abilities) {
                 if (ability.activeZone != Zone.BATTLEFIELD) continue
-                if (matcher.matchesStepTrigger(ability.trigger, step, entry.controllerId, activePlayerId)) {
+                if (matcher.matchesStepTrigger(ability.trigger, step, entry.controllerId, state)) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -384,7 +385,7 @@ class TriggerDetector(
                     if (ability.activeZone != Zone.BATTLEFIELD) continue
                     val trigger = ability.trigger as? EventPattern.StepEvent ?: continue
                     if (step != trigger.step) continue
-                    if (matcher.matchesPlayerForStep(trigger.player, enchantedController, activePlayerId)) {
+                    if (matcher.matchesPlayerForStep(trigger.player, enchantedController, state)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -413,7 +414,7 @@ class TriggerDetector(
                     val ownerId = cardComponent.ownerId
                         ?: container.get<OwnerComponent>()?.playerId
                         ?: continue
-                    if (matcher.matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
+                    if (matcher.matchesStepTrigger(ability.trigger, step, ownerId, state)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -441,7 +442,7 @@ class TriggerDetector(
                     val ownerId = cardComponent.ownerId
                         ?: container.get<OwnerComponent>()?.playerId
                         ?: continue
-                    if (matcher.matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
+                    if (matcher.matchesStepTrigger(ability.trigger, step, ownerId, state)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -460,7 +461,7 @@ class TriggerDetector(
         // (e.g., Dimensional Breach creates a permanent global upkeep trigger)
         for (global in state.globalGrantedTriggeredAbilities) {
             val ability = global.ability
-            if (matcher.matchesStepTrigger(ability.trigger, step, global.controllerId, activePlayerId)) {
+            if (matcher.matchesStepTrigger(ability.trigger, step, global.controllerId, state)) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,
@@ -599,7 +600,7 @@ class TriggerDetector(
             for (delayed in eventBased) {
                 if (delayed.fireOnce && delayed.id in firedOnceIds) continue
                 val spec = delayed.trigger ?: continue
-                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.id, delayed.sourceId, delayed.controllerId, state)) continue
+                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state)) continue
                 if (delayed.fireOnce) firedOnceIds.add(delayed.id)
                 triggers.add(
                     PendingTrigger(
@@ -640,6 +641,7 @@ class TriggerDetector(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
         event: EngineGameEvent,
         watchedEntityId: EntityId?,
+        watchedRecipientId: EntityId?,
         delayedId: String,
         sourceId: EntityId,
         controllerId: EntityId,
@@ -662,6 +664,9 @@ class TriggerDetector(
             is com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent -> {
                 if (event !is com.wingedsheep.engine.core.DamageDealtEvent) return false
                 if (watchedEntityId != null && event.sourceId != watchedEntityId) return false
+                // Recipient-scoped ("…to *that player* this turn"): the damaged entity must be
+                // the baked recipient. The spec's recipient filter still applies on top.
+                if (watchedRecipientId != null && event.targetId != watchedRecipientId) return false
                 matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId)
             }
             // "When damage is prevented this way": fires only for this delayed trigger's own
@@ -1444,8 +1449,14 @@ class TriggerDetector(
         entityId: EntityId,
         filter: GameObjectFilter
     ): Boolean {
+        // Tokens aren't cards (CR 111.6), so a token put into a graveyard never satisfies a
+        // "one or more [permanent] cards are put into your graveyard" trigger — even though it
+        // momentarily occupies the graveyard zone before CR 704.5s/111.7 sweeps it away (which
+        // is also why it can still be present here at trigger-detection time).
+        val entity = state.getEntity(entityId) ?: return false
+        if (entity.has<TokenComponent>()) return false
         if (filter == GameObjectFilter.Any) return true
-        val cardComponent = state.getEntity(entityId)?.get<CardComponent>() ?: return false
+        val cardComponent = entity.get<CardComponent>() ?: return false
         return filter.cardPredicates.all { predicate ->
             when (predicate) {
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
@@ -1511,21 +1522,27 @@ class TriggerDetector(
                 val controllerId = entry.controllerId
                 val controllerEvents = sacrificeByController[controllerId] ?: continue
 
-                // Check if any of the sacrificed permanents match the filter
-                val hasMatch = controllerEvents.any { event ->
-                    event.permanentIds.any { permanentId ->
+                // Find the matching sacrificed permanents. The first match is bound as the
+                // triggering entity so payoffs can read "its mana value / power" off the
+                // sacrificed creature (e.g. Rakdos, the Muscle — "exile cards equal to its mana
+                // value"). Characteristics like mana value survive in the graveyard via the
+                // card's CardComponent; P/T payoffs should use a captured snapshot instead.
+                val matchingSacrificed = controllerEvents.flatMap { event ->
+                    event.permanentIds.filter { permanentId ->
                         sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)
                     }
                 }
 
-                if (hasMatch) {
+                if (matchingSacrificed.isNotEmpty()) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
                             sourceId = entry.entityId,
                             sourceName = entry.cardComponent.name,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext()
+                            triggerContext = TriggerContext(
+                                triggeringEntityId = matchingSacrificed.first()
+                            )
                         )
                     )
                 }
@@ -1730,6 +1747,11 @@ class TriggerDetector(
         }
     }
 
+    private data class CreatureDeathInfo(
+        val entityId: EntityId,
+        val typeLine: com.wingedsheep.sdk.core.TypeLine?
+    )
+
     /**
      * Detect "whenever one or more [other] creatures you control die" batching triggers
      * (e.g., Vengeful Townsfolk).
@@ -1744,6 +1766,11 @@ class TriggerDetector(
      * since the creature has already left the battlefield. The creature's type line comes from
      * [ZoneChangeEvent.lastKnownTypeLine] so it survives the 704.5s token cleanup that can remove
      * a dead token from the graveyard in the same pass.
+     *
+     * Two source populations are considered: permanents that survived the batch (taken from the
+     * post-batch battlefield index) and — for Rule 603.10 "look back in time" — a source that
+     * itself died in this same batch, recovered from its last-known card definition since it is no
+     * longer on the battlefield (mirrors [DeathAndLeaveTriggerDetector.detectSimultaneousDeathTriggers]).
      */
     private fun detectCreaturesDiedBatchTriggers(
         state: GameState,
@@ -1751,11 +1778,8 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>,
         index: TriggerIndex
     ) {
-        if (index.getEntitiesForCategory(TriggerCategory.CREATURES_DIED_BATCH).isEmpty()) return
-
         // Collect creature deaths (battlefield → graveyard), grouped by last-known controller.
-        data class DeathInfo(val entityId: EntityId, val typeLine: com.wingedsheep.sdk.core.TypeLine?)
-        val deathsByController = mutableMapOf<EntityId, MutableList<DeathInfo>>()
+        val deathsByController = mutableMapOf<EntityId, MutableList<CreatureDeathInfo>>()
         for (event in events) {
             if (event !is ZoneChangeEvent) continue
             if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
@@ -1764,51 +1788,105 @@ class TriggerDetector(
             if (typeLine?.isCreature != true) continue
             val controllerId = event.lastKnownController ?: event.ownerId
             deathsByController.getOrPut(controllerId) { mutableListOf() }
-                .add(DeathInfo(event.entityId, typeLine))
+                .add(CreatureDeathInfo(event.entityId, typeLine))
         }
         if (deathsByController.isEmpty()) return
 
+        // (1) Sources that survived the batch — taken from the (post-batch) battlefield index.
         for (entry in index.getEntitiesForCategory(TriggerCategory.CREATURES_DIED_BATCH)) {
             for (ability in entry.abilities) {
-                val trigger = ability.trigger
-                if (trigger !is EventPattern.CreaturesYouControlDiedEvent) continue
+                fireCreaturesDiedBatchTrigger(
+                    ability = ability,
+                    sourceId = entry.entityId,
+                    sourceName = entry.cardComponent.name,
+                    controllerId = entry.controllerId,
+                    deathsByController = deathsByController,
+                    triggers = triggers
+                )
+            }
+        }
 
-                val controllerId = entry.controllerId
-                val controllerDeaths = deathsByController[controllerId] ?: continue
+        // (2) Rule 603.10 "look back in time": a source that itself died in this same batch must
+        // still see the *other* creatures that died alongside it. The index is built from the
+        // current (post-batch) battlefield, so such a source is absent from it — recover its
+        // abilities from its last-known card definition, exactly as detectSimultaneousDeathTriggers
+        // does for the per-creature path. (For Vengeful Townsfolk the on-self +1/+1 is a harmless
+        // no-op once it is in the graveyard, but a non-self payoff — draw a card, make a token,
+        // deal damage — would otherwise be silently dropped on a board wipe that also kills it.)
+        for (event in events) {
+            if (event !is ZoneChangeEvent) continue
+            if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
+            // Still on the battlefield → already covered by the index path above.
+            if (event.entityId in state.getBattlefield()) continue
+            val container = state.getEntity(event.entityId)
+            // Face-down permanents have no abilities (Rule 708.2).
+            if (container?.has<FaceDownComponent>() == true) continue
+            val cardDefId = container?.get<CardComponent>()?.cardDefinitionId
+                ?: event.lastKnownCardDefinitionId ?: continue
+            val controllerId = event.lastKnownController ?: event.ownerId
+            val sourceName = container?.get<CardComponent>()?.name ?: event.entityName
+            for (ability in abilityResolver.getTriggeredAbilities(event.entityId, cardDefId, state)) {
+                if (ability.trigger !is EventPattern.CreaturesYouControlDiedEvent) continue
+                fireCreaturesDiedBatchTrigger(
+                    ability = ability,
+                    sourceId = event.entityId,
+                    sourceName = sourceName,
+                    controllerId = controllerId,
+                    deathsByController = deathsByController,
+                    triggers = triggers
+                )
+            }
+        }
+    }
 
-                // "one or more *other* creatures you control die" excludes the source's own death.
-                val relevantDeaths = if (trigger.excludeSelf) {
-                    controllerDeaths.filter { it.entityId != entry.entityId }
-                } else {
-                    controllerDeaths
-                }
-                if (relevantDeaths.isEmpty()) continue
+    /**
+     * Evaluate a single "whenever one or more [filtered] creatures you control die" ability
+     * against the batch of deaths grouped by controller, firing it at most once. Shared by the
+     * surviving-source (battlefield index) and dead-source (Rule 603.10 look-back) paths.
+     */
+    private fun fireCreaturesDiedBatchTrigger(
+        ability: TriggeredAbility,
+        sourceId: EntityId,
+        sourceName: String,
+        controllerId: EntityId,
+        deathsByController: Map<EntityId, List<CreatureDeathInfo>>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val trigger = ability.trigger
+        if (trigger !is EventPattern.CreaturesYouControlDiedEvent) return
 
-                val hasMatch = relevantDeaths.any { info ->
-                    trigger.filter.cardPredicates.all { predicate ->
-                        when (predicate) {
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                                info.typeLine?.isCreature == true
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                                info.typeLine?.hasSubtype(predicate.subtype) == true
-                            else -> true
-                        }
-                    }
-                }
+        val controllerDeaths = deathsByController[controllerId] ?: return
 
-                if (hasMatch) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext()
-                        )
-                    )
+        // "one or more *other* creatures you control die" excludes the source's own death.
+        val relevantDeaths = if (trigger.excludeSelf) {
+            controllerDeaths.filter { it.entityId != sourceId }
+        } else {
+            controllerDeaths
+        }
+        if (relevantDeaths.isEmpty()) return
+
+        val hasMatch = relevantDeaths.any { info ->
+            trigger.filter.cardPredicates.all { predicate ->
+                when (predicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                        info.typeLine?.isCreature == true
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                        info.typeLine?.hasSubtype(predicate.subtype) == true
+                    else -> true
                 }
             }
         }
+        if (!hasMatch) return
+
+        triggers.add(
+            PendingTrigger(
+                ability = ability,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                triggerContext = TriggerContext()
+            )
+        )
     }
 
     /**
@@ -1824,56 +1902,87 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>,
         index: TriggerIndex
     ) {
-        // Collect all zone changes to battlefield, grouped by controller
-        data class EnterInfo(val entityId: EntityId, val cardComponent: CardComponent, val isToken: Boolean)
-        val entersByController = mutableMapOf<EntityId, MutableList<EnterInfo>>()
+        // Collect all permanents that entered the battlefield this batch, with their controller.
+        data class EnterInfo(
+            val entityId: EntityId,
+            val cardComponent: CardComponent,
+            val isToken: Boolean,
+            val controllerId: EntityId
+        )
+        val enters = mutableListOf<EnterInfo>()
         for (event in events) {
             if (event is ZoneChangeEvent && event.toZone == Zone.BATTLEFIELD) {
                 val entity = state.getEntity(event.entityId) ?: continue
                 val card = entity.get<CardComponent>() ?: continue
                 val isToken = entity.has<TokenComponent>()
                 val controllerId = entity.get<ControllerComponent>()?.playerId ?: event.ownerId
-                entersByController.getOrPut(controllerId) { mutableListOf() }
-                    .add(EnterInfo(event.entityId, card, isToken))
+                enters.add(EnterInfo(event.entityId, card, isToken, controllerId))
             }
         }
-        if (entersByController.isEmpty()) return
+        if (enters.isEmpty()) return
+
+        fun matchesCardPredicates(info: EnterInfo, filter: GameObjectFilter): Boolean =
+            filter.cardPredicates.all { predicate ->
+                when (predicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> info.cardComponent.typeLine.isCreature
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature -> !info.cardComponent.typeLine.isCreature
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland -> !info.cardComponent.typeLine.isLand
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonartifact -> !info.cardComponent.typeLine.isArtifact
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> info.cardComponent.typeLine.isPermanent
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> info.cardComponent.typeLine.hasSubtype(predicate.subtype)
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> info.cardComponent.typeLine.isArtifact
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment -> info.cardComponent.typeLine.isEnchantment
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken -> info.isToken
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken -> !info.isToken
+                    else -> true
+                }
+            }
 
         for (entry in index.getEntitiesForCategory(TriggerCategory.PERMANENTS_ENTERED_BATCH)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
                 if (trigger !is EventPattern.PermanentsEnteredEvent) continue
 
-                val controllerId = entry.controllerId
-                val controllerEnters = entersByController[controllerId] ?: continue
-
-                // Check if any entering permanent matches the filter
-                val hasMatch = controllerEnters.any { info ->
-                    trigger.filter.cardPredicates.all { predicate ->
-                        when (predicate) {
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> info.cardComponent.typeLine.isCreature
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature -> !info.cardComponent.typeLine.isCreature
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland -> !info.cardComponent.typeLine.isLand
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonartifact -> !info.cardComponent.typeLine.isArtifact
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> info.cardComponent.typeLine.isPermanent
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> info.cardComponent.typeLine.hasSubtype(predicate.subtype)
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> info.cardComponent.typeLine.isArtifact
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment -> info.cardComponent.typeLine.isEnchantment
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken -> info.isToken
-                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken -> !info.isToken
-                            else -> true
+                val observerId = entry.controllerId
+                // The filter's controller predicate scopes which players' permanents count.
+                // No predicate defaults to "you control" (the historical PermanentsEnteredEvent
+                // semantics — "one or more permanents you control enter"); ControlledByOpponent
+                // scopes to the observer's opponents (Kambal); ControlledByAny / others fall back
+                // to the shared three-valued fold against the observer.
+                val controllerPredicate = trigger.filter.controllerPredicate
+                fun controllerMatches(enterControllerId: EntityId): Boolean = when (controllerPredicate) {
+                    null, com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou ->
+                        enterControllerId == observerId
+                    com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
+                        enterControllerId in state.getOpponents(observerId)
+                    else -> controllerPredicate.evaluateWith { leaf ->
+                        when (leaf) {
+                            com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou ->
+                                enterControllerId == observerId
+                            com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
+                                enterControllerId in state.getOpponents(observerId)
+                            else -> null
                         }
                     }
                 }
 
-                if (hasMatch) {
+                // The permanents in this batch matching both the card filter and the controller
+                // scope — these "caused" the trigger and are exposed to the payoff (CR 603.3b
+                // groups them into a single batch trigger).
+                val matching = enters.filter { info ->
+                    controllerMatches(info.controllerId) && matchesCardPredicates(info, trigger.filter)
+                }
+
+                if (matching.isNotEmpty()) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
                             sourceId = entry.entityId,
                             sourceName = entry.cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext()
+                            controllerId = observerId,
+                            triggerContext = TriggerContext(
+                                capturedEntityIds = matching.map { it.entityId }
+                            )
                         )
                     )
                 }
@@ -2204,10 +2313,9 @@ class TriggerDetector(
                     is AdditionalAttackTriggers -> ability
                     is ConditionalStaticAbility ->
                         (ability.ability as? AdditionalAttackTriggers)?.takeIf {
-                            val opponentId = state.turnOrder.firstOrNull { it != controllerId }
                             conditionEvaluator.evaluate(
                                 state, ability.condition,
-                                EffectContext(sourceId = permanentId, controllerId = controllerId, opponentId = opponentId)
+                                EffectContext(sourceId = permanentId, controllerId = controllerId)
                             )
                         }
                     else -> null

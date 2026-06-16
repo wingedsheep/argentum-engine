@@ -26,5 +26,18 @@ enum class AbilityFlag(val displayName: String) {
     CANT_RECEIVE_COUNTERS("Can't have counters put on it"),
 
     // ── Sacrifice restriction flags ─────────────────────────────
-    CANT_BE_SACRIFICED("Can't be sacrificed")
+    CANT_BE_SACRIFICED("Can't be sacrificed"),
+
+    // ── Aura / control restriction flags ────────────────────────
+    /**
+     * Auras can't be put onto this permanent (CR 303.4). Enforced at Aura-cast target legality
+     * in TargetValidator. Granted by effects like Guardian Beast.
+     */
+    CANT_BE_ENCHANTED("Can't be enchanted"),
+
+    /**
+     * Other players can't gain control of this permanent. Enforced in the control-change executors
+     * (gain / exchange / by-most). Granted by effects like Guardian Beast.
+     */
+    CANT_GAIN_CONTROL("Can't be gained control of")
 }

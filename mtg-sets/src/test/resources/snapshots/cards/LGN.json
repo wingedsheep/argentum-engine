@@ -3404,7 +3404,7 @@
                     "operator": "GT",
                     "right": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": "creature"
                     }
                 }
@@ -3421,7 +3421,7 @@
                     "operator": "GT",
                     "right": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": "creature"
                     }
                 }
@@ -4325,7 +4325,7 @@
                             "type": "Compare",
                             "left": {
                                 "type": "Count",
-                                "player": "Opponent",
+                                "player": "TriggeringPlayer",
                                 "zone": "Hand"
                             },
                             "operator": "LTE",
@@ -4343,7 +4343,7 @@
                         },
                         "target": {
                             "type": "PlayerRef",
-                            "player": "Opponent"
+                            "player": "TriggeringPlayer"
                         }
                     }
                 },
@@ -4351,7 +4351,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "Count",
-                        "player": "Opponent",
+                        "player": "TriggeringPlayer",
                         "zone": "Hand"
                     },
                     "operator": "LTE",
@@ -7009,7 +7009,7 @@
                     "type": "Not",
                     "condition": {
                         "type": "Exists",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "zone": "Battlefield",
                         "filter": "creature"
                     }

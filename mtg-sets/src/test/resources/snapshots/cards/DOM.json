@@ -394,7 +394,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": {
                                 "cardPredicates": [
                                     "IsLegendary"
@@ -1235,7 +1239,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": {
                                 "cardPredicates": [
                                     "IsLegendary"
@@ -5515,7 +5523,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "AggregateBattlefield",
-                        "player": "Opponent",
+                        "player": "EachOpponent",
                         "filter": {
                             "statePredicates": [
                                 {
@@ -14259,53 +14267,6 @@
     },
     "colorIdentityOverride": [
         "RED"
-    ]
-}
-
-// Verdant Force
-{
-    "name": "Verdant Force",
-    "manaCost": "{5}{G}{G}{G}",
-    "typeLine": "Creature — Elemental",
-    "oracleText": "At the beginning of each upkeep, create a 1/1 green Saproling creature token.",
-    "creatureStats": {
-        "power": 7,
-        "toughness": 7
-    },
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "ability_1",
-                "trigger": {
-                    "type": "StepEvent",
-                    "step": "UPKEEP",
-                    "player": "Each"
-                },
-                "binding": "ANY",
-                "effect": {
-                    "type": "CreateToken",
-                    "power": 1,
-                    "toughness": 1,
-                    "colors": [
-                        "GREEN"
-                    ],
-                    "creatureTypes": [
-                        "Saproling"
-                    ],
-                    "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6544989-91b4-4db7-ad44-f1355f1d6e6b.jpg?1562540216"
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "187",
-        "rarity": "RARE",
-        "artist": "Viktor Titov",
-        "flavorText": "\"The bower shuddered. The stillness broke. The scurf shifted, and a being emerged from the flowers and ferns.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d972f97-1945-440b-8bd3-63038db22257.jpg?1562732288"
-    },
-    "colorIdentityOverride": [
-        "GREEN"
     ]
 }
 

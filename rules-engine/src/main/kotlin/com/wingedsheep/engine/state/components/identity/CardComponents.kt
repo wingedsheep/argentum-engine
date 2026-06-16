@@ -85,6 +85,22 @@ data class CopyOfComponent(
 data object RevertCopyAtEndOfTurnComponent : Component
 
 /**
+ * Marks a permanent whose current copy identity lasts only "for as long as [attachmentId] remains
+ * attached to it" (Assimilation Aegis: "for as long as this Equipment remains attached to it, that
+ * creature becomes a copy …"). The pre-copy snapshot lives on the entity's
+ * [CopyOfComponent.originalCardComponent].
+ *
+ * A state-based check ([com.wingedsheep.engine.mechanics.sba.permanent.AttachedCopyExpiryCheck])
+ * reverts the copy — restoring the snapshot and dropping both this marker and the
+ * `CopyOfComponent` — the moment the [attachmentId] permanent is no longer attached to this entity
+ * (the Equipment detached, moved to another creature, or left the battlefield) (CR 611.2b).
+ */
+@Serializable
+data class CopyWhileAttachedComponent(
+    val attachmentId: com.wingedsheep.sdk.model.EntityId
+) : Component
+
+/**
  * Marks a spell as uncounterable.
  * Applied to entities whose card definition has cantBeCountered = true,
  * or granted by permanents like Root Sliver.

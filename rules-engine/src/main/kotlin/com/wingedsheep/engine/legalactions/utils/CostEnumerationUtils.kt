@@ -520,7 +520,11 @@ class CostEnumerationUtils(
         var maxX = if (manaCost != null && manaCost.hasX) {
             val availableSources = manaSolver.getAvailableManaCount(state, playerId, precomputedSources)
             val fixedCost = manaCost.cmc
-            (availableSources - fixedCost).coerceAtLeast(0)
+            // Each X symbol is charged once, so a cost like {X}{X}{X} (Momir) consumes 3 mana per
+            // point of X — divide the spare mana by the number of X symbols, not just subtract the
+            // fixed part. xCount is 1 for the common single-{X} case, so this is a no-op there.
+            val xSymbols = manaCost.xCount.coerceAtLeast(1)
+            ((availableSources - fixedCost).coerceAtLeast(0)) / xSymbols
         } else {
             Int.MAX_VALUE
         }
@@ -573,7 +577,7 @@ class CostEnumerationUtils(
             else -> false
         }
         if (hasPayXLife) {
-            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+            val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
             maxX = minOf(maxX, life.coerceAtLeast(0))
         }
 

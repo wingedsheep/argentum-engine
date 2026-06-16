@@ -230,11 +230,9 @@ class MulliganHandler(
             ))
         }
 
-        // Clear the mulligan count so we know cards have been bottomed
-        val clearedMullState = MulliganStateComponent(
-            mulligansTaken = 0,  // Reset after bottoming
-            hasKept = true
-        )
+        // Clear the mulligan count so we know cards have been bottomed. Preserve hasKept and the
+        // freeMulligan flag (copy, don't rebuild) so the rule state isn't silently dropped.
+        val clearedMullState = mullState.copy(mulligansTaken = 0)
         newState = newState.updateEntity(playerId) { container ->
             container.with(clearedMullState)
         }
@@ -248,12 +246,14 @@ class MulliganHandler(
     fun createMulliganDecision(state: GameState, playerId: EntityId): SelectCardsDecision {
         val mullState = getMulliganState(state, playerId)
         val hand = state.getHand(playerId)
-        val bottomCount = mullState.mulligansTaken + 1
+        // Cards bottomed if the player keeps this hand now. Honors the free first mulligan
+        // (CR 800.6) via MulliganStateComponent.cardsToBottom.
+        val bottomCount = mullState.cardsToBottom
 
         return SelectCardsDecision(
             id = "mulligan-${playerId.value}",
             playerId = playerId,
-            prompt = if (mullState.mulligansTaken == 0) {
+            prompt = if (bottomCount == 0) {
                 "Keep hand or mulligan?"
             } else {
                 "Keep hand (bottom $bottomCount) or mulligan?"

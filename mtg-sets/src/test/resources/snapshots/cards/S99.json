@@ -87,6 +87,33 @@
     ]
 }
 
+// Tidings
+{
+    "name": "Tidings",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw four cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 4
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "flavorText": "\"Many wearing rapiers are afraid of goose-quills.\"\n—William Shakespeare, Hamlet",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fcb93dc-503e-45fa-99da-1597a8a0ab4e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Vizzerdrix
 {
     "name": "Vizzerdrix",

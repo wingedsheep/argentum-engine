@@ -1,5 +1,6 @@
 import { useGameStore } from '@/store/gameStore.ts'
 import type { ChooseTargetsDecision } from '@/types'
+import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
 
 /**
@@ -18,7 +19,7 @@ export function PlayerTargetingUI({
   }
 
   return (
-    <div className={styles.sideBannerTarget}>
+    <DraggableBanner className={styles.sideBannerTarget}>
       <div className={styles.bannerTitle}>
         Choose Target
       </div>
@@ -35,6 +36,6 @@ export function PlayerTargetingUI({
           </button>
         </div>
       )}
-    </div>
+    </DraggableBanner>
   )
 }

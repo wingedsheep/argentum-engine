@@ -27,6 +27,37 @@ export function setMessageHandlers(handlers: MessageHandlers | null): void {
 }
 
 // ============================================================================
+// Re-authentication
+// ============================================================================
+
+// Registered by connectionSlice when it opens a connection. Re-sends the connect
+// message (with the stored token) over the current socket — used to recover when the
+// server answers NOT_CONNECTED because it no longer recognizes this socket as an
+// authenticated session (e.g. after a server restart).
+let reauthHandler: (() => void) | null = null
+let lastReauthAt = 0
+
+const REAUTH_DEBOUNCE_MS = 5_000
+
+export function setReauthHandler(handler: (() => void) | null): void {
+  reauthHandler = handler
+  lastReauthAt = 0
+}
+
+/**
+ * Re-send the connect message if a handler is registered. Returns true when a
+ * re-auth is in flight (just sent or sent within the debounce window).
+ */
+export function requestReauth(): boolean {
+  if (!reauthHandler) return false
+  const now = Date.now()
+  if (now - lastReauthAt < REAUTH_DEBOUNCE_MS) return true
+  lastReauthAt = now
+  reauthHandler()
+  return true
+}
+
+// ============================================================================
 // Deck Building State Persistence
 // ============================================================================
 

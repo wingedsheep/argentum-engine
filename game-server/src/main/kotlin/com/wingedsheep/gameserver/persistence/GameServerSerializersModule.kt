@@ -31,6 +31,7 @@ val gameServerSerializersModule = SerializersModule {
         subclass(ClientEvent.SpellCountered::class)
         subclass(ClientEvent.AbilityTriggered::class)
         subclass(ClientEvent.AbilityActivated::class)
+        subclass(ClientEvent.AbilityAutoAnswered::class)
         subclass(ClientEvent.PermanentTapped::class)
         subclass(ClientEvent.PermanentUntapped::class)
         subclass(ClientEvent.PermanentPhasedOut::class)

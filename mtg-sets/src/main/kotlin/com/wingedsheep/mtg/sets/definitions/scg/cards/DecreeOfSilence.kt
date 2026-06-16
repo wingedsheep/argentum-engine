@@ -40,7 +40,7 @@ val DecreeOfSilence = card("Decree of Silence") {
     // Ability 1: Whenever an opponent casts a spell, counter that spell + depletion counter + sacrifice check
     triggeredAbility {
         trigger = TriggerSpec(
-            event = EventPattern.SpellCastEvent(player = Player.Opponent),
+            event = EventPattern.SpellCastEvent(player = Player.EachOpponent),
             binding = TriggerBinding.ANY
         )
         effect = Effects.CounterTriggeringSpell()

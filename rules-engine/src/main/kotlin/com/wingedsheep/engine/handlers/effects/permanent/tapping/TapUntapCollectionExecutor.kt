@@ -36,19 +36,20 @@ class TapUntapCollectionExecutor : EffectExecutor<TapUntapCollectionEffect> {
         for (entityId in entityIds) {
             val container = currentState.getEntity(entityId) ?: continue
             val cardName = container.get<CardComponent>()?.name ?: "Permanent"
+            val alreadyTapped = container.has<TappedComponent>()
 
-            currentState = currentState.updateEntity(entityId) { c ->
-                if (effect.tap) {
-                    c.with(TappedComponent)
-                } else {
-                    c.without<TappedComponent>()
-                }
+            if (effect.tap) {
+                // Only untapped permanents can be tapped (CR 701.21a); tapping an
+                // already-tapped permanent is a no-op that emits no TappedEvent, so
+                // "becomes tapped" triggers don't fire on a non-transition (CR 603.2f).
+                if (alreadyTapped) continue
+                currentState = currentState.updateEntity(entityId) { it.with(TappedComponent) }
+                events.add(TappedEvent(entityId, cardName))
+            } else {
+                if (!alreadyTapped) continue
+                currentState = currentState.updateEntity(entityId) { it.without<TappedComponent>() }
+                events.add(UntappedEvent(entityId, cardName))
             }
-
-            events.add(
-                if (effect.tap) TappedEvent(entityId, cardName)
-                else UntappedEvent(entityId, cardName)
-            )
         }
 
         return EffectResult.success(currentState, events)

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.ActivateAbilityChooseXContinuation
 import com.wingedsheep.engine.core.ActivateAbilityExileFromGraveyardContinuation
+import com.wingedsheep.engine.core.ActivateAbilitySacrificeContinuation
 import com.wingedsheep.engine.core.ActivateAbilityTapXTargetsContinuation
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ChooseNumberDecision
@@ -45,7 +46,8 @@ class ActivateAbilityXCostContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ActivateAbilityChooseXContinuation::class, ::resumeChooseX),
         resumer(ActivateAbilityTapXTargetsContinuation::class, ::resumeTapXTargets),
-        resumer(ActivateAbilityExileFromGraveyardContinuation::class, ::resumeExileFromGraveyard)
+        resumer(ActivateAbilityExileFromGraveyardContinuation::class, ::resumeExileFromGraveyard),
+        resumer(ActivateAbilitySacrificeContinuation::class, ::resumeSacrifice)
     )
 
     private fun resumeChooseX(
@@ -139,6 +141,38 @@ class ActivateAbilityXCostContinuationResumer(
         val replay = action.copy(
             costPayment = (action.costPayment ?: AdditionalCostPayment())
                 .copy(exiledCards = response.selectedCards)
+        )
+        return handler.execute(state, replay)
+    }
+
+    /**
+     * Resume after the player picks which permanents to sacrifice for a `Sacrifice` activated-ability
+     * cost (Sage of Lat-Nam etc.). Re-enters the handler with the chosen permanents filled into
+     * `costPayment.sacrificedPermanents`; CostHandler then sacrifices exactly those.
+     */
+    private fun resumeSacrifice(
+        state: GameState,
+        continuation: ActivateAbilitySacrificeContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card-selection response for ActivateAbility Sacrifice")
+        }
+        if (response.selectedCards.size != continuation.sacrificeCount) {
+            return ExecutionResult.error(
+                state,
+                "Expected ${continuation.sacrificeCount} permanents to sacrifice, got ${response.selectedCards.size}"
+            )
+        }
+        if (response.selectedCards.any { it !in continuation.sacrificeCandidates }) {
+            return ExecutionResult.error(state, "Selected permanent is not in the list of valid sacrifice candidates")
+        }
+
+        val action = continuation.action
+        val replay = action.copy(
+            costPayment = (action.costPayment ?: AdditionalCostPayment())
+                .copy(sacrificedPermanents = response.selectedCards)
         )
         return handler.execute(state, replay)
     }

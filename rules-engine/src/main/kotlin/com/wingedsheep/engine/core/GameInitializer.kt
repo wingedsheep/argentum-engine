@@ -64,6 +64,24 @@ data class GameConfig(
     val format: Format = Format.Standard,
 
     /**
+     * Which opponents creatures may attack (CR 802 / 803). Defaults to [AttackMode.MULTIPLE].
+     * Set by the Free-for-All lobby (CR 806.2b); irrelevant in two-player games.
+     */
+    val attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
+
+    /**
+     * Team assignment for team variants (Two-Headed Giant — CR 810). Each entry is one team: a
+     * list of indices into [players]. When supplied, every listed player is stamped with a
+     * [com.wingedsheep.engine.state.components.identity.TeamComponent] carrying its team's index.
+     * The indices must partition [players] exactly — every player appears in exactly one team.
+     *
+     * Null (the default) means no teams: every player is its own team and no component is stamped,
+     * so Standard / Commander / FFA games are unaffected. Phase 1 only stamps membership; shared
+     * life, shared turns, and combined combat come in later phases.
+     */
+    val teams: List<List<Int>>? = null,
+
+    /**
      * Seed for the game's deterministic RNG (turn order, library shuffles, coin flips, every
      * "at random" choice). When null, the initializer draws a fresh seed from entropy so live
      * play stays random — but the chosen seed is always recorded on [InitializationResult.seed],
@@ -141,7 +159,7 @@ class GameInitializer(
         // is recorded on the result so the game is reproducible later. This clock read is the one
         // sanctioned non-determinism boundary — once seeded, the engine is a pure function again.
         val resolvedSeed: Long = config.seed ?: System.nanoTime()
-        var state = GameState(format = config.format, rng = GameRng.seeded(resolvedSeed))
+        var state = GameState(format = config.format, attackMode = config.attackMode, rng = GameRng.seeded(resolvedSeed))
         val playerIds = mutableListOf<EntityId>()
 
         // Validate Commander-format prerequisites up front. Each player must designate a
@@ -160,10 +178,22 @@ class GameInitializer(
             }
         }
 
-        // Format-driven starting life. Commander overrides the per-player default of 20 so callers
-        // don't have to remember to set startingLife = 40 alongside format = Commander.
+        // Momir Basic gives every player the same Vanguard avatar in the command zone; fail fast
+        // if the registry can't resolve it rather than mid-init.
+        if (config.format is Format.MomirBasic) {
+            cardRegistry.requireCard(config.format.avatarCardName)
+        }
+
+        // Format-driven starting life. Commander / Momir Basic override the per-player default of
+        // 20 so callers don't have to remember to set startingLife alongside the format.
         val formatStartingLife: Int? = when (val f = config.format) {
             is Format.Commander -> f.startingLife
+            is Format.MomirBasic -> f.startingLife
+            // 2HG shares one 30-life total per team (CR 810.4). The shared pool arrives in a later
+            // phase; for now each player is initialized to the team's starting value.
+            is Format.TwoHeadedGiant -> f.startingLife
+            // Team vs. Team (CR 808): each player has their own starting life total (no shared pool).
+            is Format.TeamVsTeam -> f.startingLife
             else -> null
         }
 
@@ -186,15 +216,55 @@ class GameInitializer(
                 PlayerTurnsTakenComponent(count = 0),
                 MulliganStateComponent(
                     mulligansTaken = 0,
-                    hasKept = config.skipMulligans  // Auto-keep if skipping mulligans
+                    hasKept = config.skipMulligans,  // Auto-keep if skipping mulligans
+                    // CR 800.6: in a multiplayer game (began with >2 players) the first mulligan
+                    // is free. Two-player games keep the plain London Mulligan.
+                    freeMulligan = config.players.size > 2
                 )
             )
 
             state = state.withEntity(playerId, playerContainer)
         }
 
-        // 2. Set turn order
-        val shuffledOrder = if (config.startingPlayerIndex != null) {
+        // 1b. Stamp team membership (Two-Headed Giant and other team variants — CR 810). Each entry
+        // in config.teams is a team of indices into config.players; the indices must partition the
+        // player list exactly. A player without a team entry is implicitly its own team (see
+        // GameState.teamOf), so non-team formats pass null here and stamp nothing.
+        config.teams?.let { teams ->
+            require(teams.flatten().sorted() == config.players.indices.toList()) {
+                "GameConfig.teams must partition all ${config.players.size} player indices exactly once, got: $teams"
+            }
+            teams.forEachIndexed { teamIndex, memberIndices ->
+                for (memberIndex in memberIndices) {
+                    val pid = playerIds[memberIndex]
+                    state = state.updateEntity(pid) { container ->
+                        container.with(
+                            com.wingedsheep.engine.state.components.identity.TeamComponent(teamIndex)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 2. Set turn order. In a team game with shared team turns (CR 805.1) the members of each
+        // team must sit in adjacent seats, so the order is built team-by-team — teammates are never
+        // interleaved; only the order *between* teams is chosen or randomized (CR 805.3, which team
+        // goes first). [config.startingPlayerIndex] selects the starting team (the team containing
+        // that player). Non-team games shuffle individual players exactly as before.
+        val teams = config.teams
+        val shuffledOrder: List<EntityId> = if (teams != null) {
+            val teamMemberIds = teams.map { members -> members.map { playerIds[it] } }
+            val startTeam = config.startingPlayerIndex
+                ?.let { sp -> teams.indexOfFirst { sp in it }.takeIf { it >= 0 } }
+            val orderedTeams = if (startTeam != null) {
+                teamMemberIds.subList(startTeam, teamMemberIds.size) + teamMemberIds.subList(0, startTeam)
+            } else {
+                val (shuffled, shuffledState) = state.nextRandom { shuffle(teamMemberIds) }
+                state = shuffledState
+                shuffled
+            }
+            orderedTeams.flatten()
+        } else if (config.startingPlayerIndex != null) {
             val idx = config.startingPlayerIndex
             playerIds.subList(idx, playerIds.size) + playerIds.subList(0, idx)
         } else {
@@ -241,6 +311,20 @@ class GameInitializer(
                 state = state.withEntity(cardId, cardContainer)
                 state = state.addToZone(ZoneKey(playerId, Zone.COMMAND), cardId)
                 commanderEntityIds.add(cardId)
+            }
+
+            // Momir Basic: place this player's Vanguard avatar in the command zone. It never enters
+            // the battlefield or stack — it grants its activated ability from the command zone (CR
+            // for Vanguard avatars), surfaced by CommandZoneAbilityEnumerator.
+            (config.format as? Format.MomirBasic)?.let { momir ->
+                val avatarDef = cardRegistry.requireCard(momir.avatarCardName)
+                val (avatarId, stateWithAvatar) = state.newEntity()
+                state = stateWithAvatar
+                val avatarContainer = createCardEntity(avatarDef, playerId).with(
+                    com.wingedsheep.engine.state.components.identity.VanguardAvatarComponent(ownerId = playerId)
+                )
+                state = state.withEntity(avatarId, avatarContainer)
+                state = state.addToZone(ZoneKey(playerId, Zone.COMMAND), avatarId)
             }
 
             // Prefer rich [CardEntry] iteration when the deck has it; fall back to the legacy
@@ -311,97 +395,7 @@ class GameInitializer(
         cardDef: CardDefinition,
         ownerId: EntityId,
         printingRef: PrintingRef? = null,
-    ): ComponentContainer {
-        val protections = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Protection>()
-        val protectionColors = protections.flatMap { p ->
-            when (val s = p.scope) {
-                is ProtectionScope.Color -> listOf(s.color)
-                is ProtectionScope.Colors -> s.colors
-                else -> emptyList()
-            }
-        }.toSet()
-        val protectionSubtypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Subtype)?.subtype
-        }.toSet()
-        val protectionSupertypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Supertype)?.supertype
-        }.toSet()
-
-        // Resolve the chosen printing (if pinned by the deck entry) so we can stamp the
-        // printing's art onto the per-entity CardComponent. When no override resolves, we
-        // fall back to the canonical CardDefinition metadata — the legacy behaviour.
-        val printing = printingRef?.let { printingRegistry?.getPrinting(it) }
-
-        // Use Name#SetCode-CollectorNumber as the definition ID when available, so that
-        // cards with the same name but different art variants (basic lands across sets)
-        // resolve back to the correct CardDefinition via CardRegistry.
-        // SetCode is included to avoid collisions between sets that share collector numbers
-        // (e.g., Khans and Dominaria both use 250-269 for basic lands). Honour the chosen
-        // printing's set/CN when one was pinned — this keeps cardDefinitionId stable for
-        // copy/clone effects that round-trip through CardRegistry.
-        val effectiveSetCode = printing?.setCode ?: cardDef.setCode
-        val effectiveCollectorNumber = printing?.collectorNumber ?: cardDef.metadata.collectorNumber
-        val definitionId = effectiveCollectorNumber?.let { cn ->
-            if (effectiveSetCode != null) "${cardDef.name}#$effectiveSetCode-$cn"
-            else "${cardDef.name}#$cn"
-        } ?: cardDef.name
-
-        var container = ComponentContainer.of(
-            CardComponent(
-                cardDefinitionId = definitionId,
-                name = cardDef.name,
-                manaCost = cardDef.manaCost,
-                typeLine = cardDef.typeLine,
-                oracleText = cardDef.oracleText,
-                baseStats = cardDef.creatureStats,
-                baseKeywords = cardDef.keywords,
-                baseFlags = cardDef.flags,
-                colors = cardDef.colors,
-                ownerId = ownerId,
-                spellEffect = cardDef.spellEffect,
-                imageUri = printing?.imageUri ?: cardDef.metadata.imageUri,
-                backFaceImageUri = printing?.backFaceImageUri
-                    ?: cardDef.backFace?.metadata?.imageUri
-                    // Modal DFC backs aren't a separate CardDefinition; their art rides on the face.
-                    ?: cardDef.cardFaces.firstOrNull { it.imageUri != null }?.imageUri,
-                hasNonManaActivatedAbility = cardDef.hasNonManaActivatedAbility,
-            ),
-            OwnerComponent(ownerId),
-            ControllerComponent(ownerId)
-        )
-
-        if (cardDef.script.cantBeCountered) {
-            container = container.with(CantBeCounteredComponent)
-        }
-
-        if (cardDef.keywordAbilities.any { it is KeywordAbility.Morph }) {
-            container = container.with(HasMorphAbilityComponent)
-        }
-
-        if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty() || protectionSupertypes.isNotEmpty()) {
-            container = container.with(ProtectionComponent(protectionColors, protectionSubtypes, protectionSupertypes))
-        }
-
-        val hexproofFromColors = cardDef.keywordAbilities
-            .filterIsInstance<KeywordAbility.Hexproof>()
-            .mapNotNull { (it.scope as? ProtectionScope.Color)?.color }
-            .toSet()
-        if (hexproofFromColors.isNotEmpty()) {
-            container = container.with(HexproofFromColorComponent(hexproofFromColors))
-        }
-
-        // Toxic N (702.164). Multiple instances stack per Rule 702.164b — sum across
-        // any printed Toxic abilities so the projector can emit a single TOXIC_<n>.
-        val toxicAmount = cardDef.keywordAbilities
-            .filterIsInstance<KeywordAbility.Numeric>()
-            .filter { it.keyword == Keyword.TOXIC }
-            .sumOf { it.n }
-        if (toxicAmount > 0) {
-            container = container.with(ToxicComponent(toxicAmount))
-        }
-
-        return container
-    }
+    ): ComponentContainer = CardEntityFactory.create(cardDef, ownerId, printingRef, printingRegistry)
 
     /**
      * Shuffle a player's library.

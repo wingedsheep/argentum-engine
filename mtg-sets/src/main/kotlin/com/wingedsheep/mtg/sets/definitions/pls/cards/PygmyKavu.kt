@@ -31,7 +31,7 @@ val PygmyKavu = card("Pygmy Kavu") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = DrawCardsEffect(
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature.withColor(Color.BLACK))
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature.withColor(Color.BLACK))
         )
     }
     metadata {

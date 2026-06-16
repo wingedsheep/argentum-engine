@@ -171,6 +171,108 @@
     ]
 }
 
+// Merfolk Looter
+{
+    "name": "Merfolk Looter",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "{T}: Draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Ron Spencer",
+        "flavorText": "In the depths of Rootwater, salvage and sewage differ only in texture.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fbb1c41-388f-4ff2-af37-ad64a0f4618e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mirri, Cat Warrior
+{
+    "name": "Mirri, Cat Warrior",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "First strike, forestwalk, vigilance (This creature deals combat damage before creatures without first strike, it can't be blocked as long as defending player controls a Forest, and attacking doesn't cause this creature to tap.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "FORESTWALK",
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Daren Bader",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d1682dd-5a99-4bee-a2c2-c8735047e1a9.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nausea
 {
     "name": "Nausea",
@@ -208,6 +310,78 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Paladin en-Vec
+{
+    "name": "Paladin en-Vec",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike, protection from black and from red (This creature deals combat damage before creatures without first strike. It can't be blocked, targeted, dealt damage, or enchanted by anything black or red.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLACK"
+            }
+        },
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "RED"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Randy Elliott",
+        "flavorText": "\"Our belief shall be the lance that pierces Volrath's heart.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf1ea89d-4b9d-455f-a7f4-a26026e0c272.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Robe of Mirrors
+{
+    "name": "Robe of Mirrors",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature (Target a creature as you cast this. This card enters attached to that creature.)\nEnchanted creature has shroud. (It can't be the target of spells or abilities.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SHROUD"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "John Matson",
+        "flavorText": "\"Does this make me look fat?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/371720a2-ec3f-43a5-9551-c018e164e79f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -309,6 +483,47 @@
     ]
 }
 
+// Soul Warden
+{
+    "name": "Soul Warden",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever another creature enters, you gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Randy Gallegos",
+        "flavorText": "Count carefully the souls and see that none are lost.\n—Vec teaching",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5ee24ee-4d28-4634-bd43-90eff15c16dd.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Standing Troops
 {
     "name": "Standing Troops",
@@ -327,6 +542,56 @@
         "artist": "Daren Bader",
         "flavorText": "The less you have, the harder you fight for it.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/135e258a-71d8-45dd-9307-91111aa34bde.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Treasure Hunter
+{
+    "name": "Treasure Hunter",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "When this creature enters, you may return target artifact card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Hand"
+                },
+                "optional": true,
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Rex",
+        "flavorText": "\"What separates junk from treasure is imagination.\"\n—Hanna, Weatherlight navigator",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06452630-621b-498e-8f25-ecfe544d4213.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"

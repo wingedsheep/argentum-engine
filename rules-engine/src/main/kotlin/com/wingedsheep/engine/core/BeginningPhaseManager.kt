@@ -44,13 +44,21 @@ class BeginningPhaseManager(
     fun performUntapStep(state: GameState): ExecutionResult {
         val activePlayer = state.activePlayerId
             ?: return ExecutionResult.error(state, "No active player")
+        // CR 805.4 — in a shared team turn both teammates untap (and phase in / lose summoning
+        // sickness) together. Without shared team turns (Team vs. Team — CR 808.4, non-team games)
+        // only the active player untaps on their own turn.
+        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()
 
         val events = mutableListOf<GameEvent>()
         var newState = state
 
-        // Phase in permanents that phased out under the active player's control
-        // (Rule 702.26e: this happens during the untap step, before untapping).
-        newState = phaseInPermanents(newState, activePlayer, events)
+        // Phase in permanents that phased out under each active-team member's control. In a shared
+        // team turn both teammates phase in together (CR 805.4); for a non-team game the active
+        // team is just the active player. This happens during the untap step, before untapping
+        // (Rule 702.26a).
+        for (member in activeTeam) {
+            newState = phaseInPermanents(newState, member, events)
+        }
 
         // Check if the player has a SkipUntapComponent
         val skipUntap = newState.getEntity(activePlayer)?.get<SkipUntapComponent>()
@@ -59,9 +67,9 @@ class BeginningPhaseManager(
         // Recomputed from newState so just-phased-in permanents are visible.
         val projected = newState.projectedState
 
-        // Find all tapped permanents controlled by the active player
+        // Find all tapped permanents controlled by the active team (CR 805.4)
         val permanentsToUntap = newState.entities.filter { (entityId, container) ->
-            projected.getController(entityId) == activePlayer &&
+            projected.getController(entityId) in activeTeam &&
                 container.has<TappedComponent>()
         }.keys.filter { entityId ->
             // If there's a skip untap component, check if this permanent should be skipped
@@ -143,7 +151,7 @@ class BeginningPhaseManager(
         // or UntapFilteredDuringOtherUntapSteps (e.g., Ivorytusk Fortress)
         val projectedForSeedborn = newState.projectedState
         for (playerId in newState.turnOrder) {
-            if (playerId == activePlayer) continue
+            if (playerId in activeTeam) continue // active team already untapped above (CR 805.4)
 
             var untapAll = false
             val filteredUntapFilters = mutableListOf<GameObjectFilter>()
@@ -194,10 +202,11 @@ class BeginningPhaseManager(
         // Remove WhileSourceTapped floating effects whose source is no longer tapped
         newState = cleanupPhaseManager.cleanupWhileSourceTappedEffects(newState)
 
-        // Remove summoning sickness from all creatures the player controls (using projected state)
+        // Remove summoning sickness from all creatures the active team controls (CR 805.4 — both
+        // teammates' creatures lose summoning sickness on the team's turn; projected state).
         val projectedAfterUntap = newState.projectedState
         val creaturesToRefresh = newState.entities.filter { (entityId, container) ->
-            projectedAfterUntap.getController(entityId) == activePlayer &&
+            projectedAfterUntap.getController(entityId) in activeTeam &&
                 container.has<SummoningSicknessComponent>()
         }.keys
 
@@ -244,7 +253,10 @@ class BeginningPhaseManager(
         events: MutableList<GameEvent>
     ): GameState {
         val toPhaseIn = state.allBattlefieldEntities().filter { entityId ->
-            state.getEntity(entityId)?.get<PhasedOutComponent>()?.phasedOutByController == activePlayer
+            val phased = state.getEntity(entityId)?.get<PhasedOutComponent>()
+            // Permanents phased out "until source leaves" (Oubliette) don't phase in at untap —
+            // they wait for the source's leaves-battlefield trigger.
+            phased?.phasedOutByController == activePlayer && phased.phaseInOnSourceLeaves == null
         }
 
         var newState = state

@@ -98,7 +98,7 @@ sealed interface EntityReference {
         val collectionName: String,
         val index: Int = 0,
     ) : EntityReference {
-        override val description: String = "the chosen $collectionName"
+        override val description: String = "the chosen card"
     }
 
     /**

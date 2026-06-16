@@ -108,6 +108,8 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
           return a.sourceId === cardId
         case 'CrewVehicle':
           return a.vehicleId === cardId
+        case 'SaddleMount':
+          return a.mountId === cardId
         case 'UnlockRoomDoor':
           return a.roomId === cardId
         default:
@@ -176,6 +178,8 @@ function getActionCardId(action: GameAction): EntityId | null {
       return action.sourceId
     case 'CrewVehicle':
       return action.vehicleId
+    case 'SaddleMount':
+      return action.mountId
     case 'UnlockRoomDoor':
       return action.roomId
     default:

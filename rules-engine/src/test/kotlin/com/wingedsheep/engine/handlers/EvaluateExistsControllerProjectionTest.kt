@@ -61,7 +61,6 @@ class EvaluateExistsControllerProjectionTest : FunSpec({
     fun contextFor(controllerId: EntityId, opponentId: EntityId) = EffectContext(
         sourceId = null,
         controllerId = controllerId,
-        opponentId = opponentId,
     )
 
     val youControlACreature = Exists(

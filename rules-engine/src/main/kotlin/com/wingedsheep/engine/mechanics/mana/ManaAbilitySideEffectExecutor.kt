@@ -47,7 +47,6 @@ class ManaAbilitySideEffectExecutor(
      * @param sourceId Permanent that was tapped.
      * @param producedColor Color the source produced for the payment, or null for colorless.
      * @param controllerId Player who controls the source / paid the cost.
-     * @param opponentId The opposing player (for `Player.Opponent`-shaped targets).
      */
     /**
      * Tap every source in [solution] (emitting [TappedEvent]) and run any
@@ -63,7 +62,6 @@ class ManaAbilitySideEffectExecutor(
     ): Pair<GameState, List<GameEvent>> {
         var currentState = state
         val events = mutableListOf<GameEvent>()
-        val opponentId = currentState.turnOrder.firstOrNull { it != controllerId }
         for (source in solution.sources) {
             currentState = currentState.updateEntity(source.entityId) { c ->
                 c.with(TappedComponent)
@@ -76,7 +74,6 @@ class ManaAbilitySideEffectExecutor(
                 sourceId = source.entityId,
                 producedColor = production?.color,
                 controllerId = controllerId,
-                opponentId = opponentId
             )
             currentState = after
             events.addAll(sideEvents)
@@ -89,7 +86,6 @@ class ManaAbilitySideEffectExecutor(
         sourceId: EntityId,
         producedColor: Color?,
         controllerId: EntityId,
-        opponentId: EntityId?
     ): Pair<GameState, List<GameEvent>> {
         val card = state.getEntity(sourceId)?.get<CardComponent>()
             ?: return state to emptyList()
@@ -106,7 +102,6 @@ class ManaAbilitySideEffectExecutor(
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            opponentId = opponentId
         )
 
         var currentState = state

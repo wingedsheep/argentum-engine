@@ -55,6 +55,10 @@ export type ServerMessage =
   | PlayerReadyForRoundMessage
   | TournamentCompleteMessage
   | TournamentResumedMessage
+  // Free-for-All Messages
+  | FreeForAllGameStartingMessage
+  | FreeForAllGameCompleteMessage
+  | PlayerEliminatedMessage
   // Spectating Messages
   | ActiveMatchesMessage
   | SpectatorStateUpdateMessage
@@ -74,6 +78,10 @@ export type ServerMessage =
   | QuickGameLobbyClosedMessage
   // Presence
   | OnlinePlayersCountMessage
+  // Liveness
+  | PongMessage
+  // Session takeover
+  | SessionReplacedMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -108,11 +116,36 @@ export interface GameCreatedMessage {
 }
 
 /**
- * Game is starting with both players connected.
+ * One seat in a game, from the recipient's perspective. The seat list is the N-player source of
+ * truth; a 2-player game is the degenerate case (one `isYou` seat + one opponent).
+ */
+export interface PlayerSeatInfo {
+  readonly playerId: string
+  readonly name: string
+  readonly seatIndex: number
+  readonly isYou: boolean
+  readonly isAi: boolean
+  /**
+   * Team membership for a team variant (Two-Headed Giant — CR 810; Team vs. Team — CR 808): seats
+   * sharing a `teamIndex` are teammates. Null/undefined in non-team games. Only sent in this
+   * game-start roster, so the client persists the seat→team map for the whole game.
+   */
+  readonly teamIndex?: number | null
+  /**
+   * True when teammates share one life total (2HG). False for Team vs. Team, where teammates each
+   * have their own life. Game-level (the same on every seat); lets the rail choose a shared-life
+   * team header vs. per-player life.
+   */
+  readonly teamSharedLife?: boolean
+}
+
+/**
+ * Game is starting. Carries the full seat roster (turn order) from this recipient's perspective;
+ * derive "the opponent(s)" from the non-`isYou` seats.
  */
 export interface GameStartedMessage {
   readonly type: 'gameStarted'
-  readonly opponentName: string
+  readonly players: readonly PlayerSeatInfo[]
 }
 
 /**
@@ -127,6 +160,8 @@ export interface GameCancelledMessage {
  * Sent to the non-deciding player so they know the opponent is making a choice.
  */
 export interface OpponentDecisionStatus {
+  /** The seat actually deciding (lets an N-player pod show whose spinner). */
+  readonly playerId: string
   readonly decisionType: string
   readonly displayText: string
   readonly sourceName?: string | null
@@ -313,6 +348,16 @@ export interface SelectCardsDecision extends PendingDecisionBase {
    * UI tracks the running total and disables cards whose mana value would push it over.
    */
   readonly maxTotalManaValue?: number | null
+  /** Conditional lower minimums for choices like "select two unless one matches this subset". */
+  readonly conditionalMinimums?: readonly ConditionalSelectionMinimum[]
+}
+
+export interface ConditionalSelectionMinimum {
+  readonly requiredSelections: number
+  readonly minimumSelections: number
+  readonly matchingOptions: readonly EntityId[]
+  readonly requiredMatches: number
+  readonly description?: string | null
 }
 
 /**
@@ -636,11 +681,26 @@ export interface BudgetModalDecision extends PendingDecisionBase {
 }
 
 /**
+ * One yes/no raised for a run of N identical optional ("you may …") triggers, answered once
+ * instead of N times. The response carries both the yes/no `choice` and `applyToAll`:
+ * apply-to-all resolves the whole run; otherwise it peels one instance and the batch re-raises for
+ * the rest. See `backlog/stack-collapse-and-batch-decisions.md` §B.
+ */
+export interface BatchYesNoDecision extends PendingDecisionBase {
+  readonly type: 'BatchYesNoDecision'
+  /** How many identical instances one "to all" answer covers (≥ 2). */
+  readonly count: number
+  readonly yesText: string
+  readonly noText: string
+}
+
+/**
  * Union of all pending decision types.
  */
 export type PendingDecision =
   | SelectCardsDecision
   | YesNoDecision
+  | BatchYesNoDecision
   | ChooseTargetsDecision
   | SearchLibraryDecision
   | ReorderLibraryDecision
@@ -851,6 +911,13 @@ export interface AdditionalCostInfo {
   readonly sacrificeCount?: number
   readonly validTapTargets?: readonly EntityId[]
   readonly tapCount?: number
+  /**
+   * Station-style multi-select shortcut (CR 702.184a). When > 1, this single-creature tap cost
+   * belongs to a no-target, stacking ability that may be activated several times in one gesture:
+   * select 1..tapBatchMaxActivations distinct creatures and one activation per creature is queued
+   * (repeatCount = number selected). 1 / absent means the normal "tap exactly tapCount" behaviour.
+   */
+  readonly tapBatchMaxActivations?: number
   readonly validDiscardTargets?: readonly EntityId[]
   readonly discardCount?: number
   readonly validBounceTargets?: readonly EntityId[]
@@ -1100,7 +1167,23 @@ export interface LobbySettings {
   readonly bannedCardNames: readonly string[]
   /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). */
   readonly aiAssistEnabled: boolean
+  /** Lobby mode axis: bracket of 2-player matches vs one multiplayer Free-for-All game. */
+  readonly gameMode: LobbyGameMode
+  /** Free-for-All attack rule (CR 802/803). Only meaningful when gameMode is FREE_FOR_ALL. */
+  readonly attackMode: AttackMode
+  /** Two-Headed Giant: true = random teams each game (default); false = host-set teams. */
+  readonly randomTeams: boolean
+  /** Two-Headed Giant manual team assignment: playerId -> team index (0/1). Empty = unset. */
+  readonly teamAssignments: Readonly<Record<string, number>>
 }
+
+export type LobbyGameMode = 'TOURNAMENT' | 'FREE_FOR_ALL' | 'TWO_HEADED_GIANT' | 'TEAM_VS_TEAM'
+
+/**
+ * Free-for-All attack rule (CR 802/803): 'MULTIPLE' = attack any opponent; 'LEFT'/'RIGHT' =
+ * attack only the neighbour in that seat direction. Two-player games behave identically for all.
+ */
+export type AttackMode = 'MULTIPLE' | 'LEFT' | 'RIGHT'
 
 export type TournamentFormat =
   | 'SEALED'
@@ -1351,6 +1434,46 @@ export interface TournamentResumedMessage {
 }
 
 // ============================================================================
+// Free-for-All Mode Messages
+// ============================================================================
+
+/** One player's final placement in a Free-for-All game (1 = winner). */
+export interface FfaStandingInfo {
+  readonly playerId: string
+  readonly playerName: string
+  readonly placement: number
+  readonly isConnected: boolean
+}
+
+/** A Free-for-All game is starting — the FFA counterpart of `tournamentMatchStarting`. */
+export interface FreeForAllGameStartingMessage {
+  readonly type: 'freeForAllGameStarting'
+  readonly lobbyId: string
+  readonly gameSessionId: string
+  readonly gameNumber: number
+  readonly players: readonly PlayerSeatInfo[]
+}
+
+/** A Free-for-All game finished; standings are the elimination order (winner first). */
+export interface FreeForAllGameCompleteMessage {
+  readonly type: 'freeForAllGameComplete'
+  readonly lobbyId: string
+  readonly standings: readonly FfaStandingInfo[]
+  readonly gamesPlayed: number
+}
+
+/**
+ * Personal notice: you were eliminated from a multiplayer game that continues without you
+ * (e.g. you conceded a 4-player pod). The game-wide `gameOver` only arrives when the whole
+ * game ends.
+ */
+export interface PlayerEliminatedMessage {
+  readonly type: 'playerEliminated'
+  readonly gameId: string
+  readonly reason: GameOverReason
+}
+
+// ============================================================================
 // Spectating Messages
 // ============================================================================
 
@@ -1430,7 +1553,9 @@ export interface SpectatorStateUpdateMessage {
   readonly gameSessionId: string
   /** Full ClientGameState for reusing GameBoard component (both hands masked) */
   readonly gameState?: ClientGameState | null
-  /** Player 1's entity ID */
+  /** N-player seat roster (turn order). The per-player board state lives in `gameState`. */
+  readonly players?: readonly PlayerSeatInfo[]
+  /** Player 1's entity ID (legacy 2-player projection = first seat) */
   readonly player1Id?: string | null
   /** Player 2's entity ID */
   readonly player2Id?: string | null
@@ -1583,10 +1708,15 @@ export type ClientMessage =
   | SetFullControlMessage
   | SetPriorityModeMessage
   | SetStopOverridesMessage
+  | SetAbilityYieldMessage
+  | ClearAbilityYieldMessage
+  | ClearAllYieldsMessage
   // Undo
   | RequestUndoMessage
   // Resync
   | RequestResyncMessage
+  // Liveness
+  | PingMessage
   // Quick Game Lobby Messages
   | CreateQuickGameLobbyMessage
   | JoinQuickGameLobbyMessage
@@ -1901,6 +2031,8 @@ export interface CreateTournamentLobbyMessage {
   readonly maxPlayers: number
   readonly pickTimeSeconds: number
   readonly isPublic: boolean
+  /** Lobby mode axis. Omit for the default bracket tournament. */
+  readonly gameMode?: LobbyGameMode
 }
 
 export interface JoinLobbyMessage {
@@ -1976,6 +2108,14 @@ export interface UpdateLobbySettingsMessage {
   readonly bannedCardNames?: readonly string[]
   /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Omit to leave unchanged. */
   readonly aiAssistEnabled?: boolean
+  /** Lobby mode axis ('TOURNAMENT' / 'FREE_FOR_ALL'). Omit to leave unchanged. */
+  readonly gameMode?: LobbyGameMode
+  /** Free-for-All attack rule ('MULTIPLE' / 'LEFT' / 'RIGHT'). Omit to leave unchanged. */
+  readonly attackMode?: AttackMode
+  /** Two-Headed Giant: true = random teams, false = host-set teams. Omit to leave unchanged. */
+  readonly randomTeams?: boolean
+  /** Two-Headed Giant team assignment: playerId -> team index (0/1). Full map; omit to leave unchanged. */
+  readonly teamAssignments?: Readonly<Record<string, number>>
 }
 
 // Tournament Client Messages
@@ -2062,6 +2202,38 @@ export interface SetStopOverridesMessage {
 }
 
 /**
+ * A persistent per-ability yield kind (MTGO right-click yields). Serialized as the engine
+ * YieldKind enum name.
+ */
+export type YieldKind =
+  | 'YIELD_UNTIL_END_OF_TURN'
+  | 'YIELD_WHOLE_GAME'
+  | 'ALWAYS_ANSWER_YES'
+  | 'ALWAYS_ANSWER_NO'
+
+/**
+ * Set a persistent yield on an ability, keyed by its AbilityIdentity (cardDefinitionId + abilityId).
+ */
+export interface SetAbilityYieldMessage {
+  readonly type: 'setAbilityYield'
+  readonly cardDefinitionId: string
+  readonly abilityId: string
+  readonly kind: YieldKind
+}
+
+/** Revoke every yield held against one ability. */
+export interface ClearAbilityYieldMessage {
+  readonly type: 'clearAbilityYield'
+  readonly cardDefinitionId: string
+  readonly abilityId: string
+}
+
+/** Clear all of the player's yields. */
+export interface ClearAllYieldsMessage {
+  readonly type: 'clearAllYields'
+}
+
+/**
  * Request to undo the last non-respondable action.
  */
 export interface RequestUndoMessage {
@@ -2076,6 +2248,15 @@ export interface RequestResyncMessage {
   readonly type: 'requestResync'
 }
 
+/**
+ * Connection liveness probe. The server always answers with a pong, regardless of
+ * authentication or game state. Sent when a backgrounded tab becomes visible again,
+ * to detect half-open sockets (e.g. after OS sleep).
+ */
+export interface PingMessage {
+  readonly type: 'ping'
+}
+
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
   setCodes: readonly string[],
@@ -2083,9 +2264,10 @@ export function createCreateTournamentLobbyMessage(
   boosterCount: number = 6,
   maxPlayers: number = 8,
   pickTimeSeconds: number = 45,
-  isPublic: boolean = false
+  isPublic: boolean = false,
+  gameMode: LobbyGameMode = 'TOURNAMENT'
 ): CreateTournamentLobbyMessage {
-  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic }
+  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode }
 }
 
 // Backwards compatibility alias
@@ -2161,6 +2343,10 @@ export function createUpdateLobbySettingsMessage(
     chaosBoosters?: boolean
     bannedCardNames?: readonly string[]
     aiAssistEnabled?: boolean
+    gameMode?: LobbyGameMode
+    attackMode?: AttackMode
+    randomTeams?: boolean
+    teamAssignments?: Readonly<Record<string, number>>
   }
 ): UpdateLobbySettingsMessage {
   return { type: 'updateLobbySettings', ...settings }
@@ -2215,6 +2401,25 @@ export function createSetPriorityModeMessage(mode: PriorityModeValue): SetPriori
 
 export function createSetStopOverridesMessage(myTurnStops: readonly string[], opponentTurnStops: readonly string[]): SetStopOverridesMessage {
   return { type: 'setStopOverrides', myTurnStops, opponentTurnStops }
+}
+
+export function createSetAbilityYieldMessage(
+  cardDefinitionId: string,
+  abilityId: string,
+  kind: YieldKind,
+): SetAbilityYieldMessage {
+  return { type: 'setAbilityYield', cardDefinitionId, abilityId, kind }
+}
+
+export function createClearAbilityYieldMessage(
+  cardDefinitionId: string,
+  abilityId: string,
+): ClearAbilityYieldMessage {
+  return { type: 'clearAbilityYield', cardDefinitionId, abilityId }
+}
+
+export function createClearAllYieldsMessage(): ClearAllYieldsMessage {
+  return { type: 'clearAllYields' }
 }
 
 export function createRequestUndoMessage(): RequestUndoMessage {
@@ -2357,6 +2562,8 @@ export interface QuickGameLobbyStateMessage {
   readonly canStart: boolean
   readonly isPublic: boolean
   readonly format?: DeckFormat | null
+  /** True for a Momir Basic lobby: no deckbuilding, set scopes the creature pool. */
+  readonly momirBasic?: boolean
 }
 
 export interface QuickGameLobbyClosedMessage {
@@ -2369,12 +2576,31 @@ export interface OnlinePlayersCountMessage {
   readonly count: number
 }
 
+/**
+ * Reply to a ping liveness probe — always sent, regardless of auth or game state.
+ */
+export interface PongMessage {
+  readonly type: 'pong'
+}
+
+/**
+ * This socket's identity just authenticated from a different socket (the player opened
+ * the game in another tab or device). The server closes this socket right after sending;
+ * the client must stop auto-reconnecting — taking the session back is an explicit user
+ * action (the "Use here" button).
+ */
+export interface SessionReplacedMessage {
+  readonly type: 'sessionReplaced'
+}
+
 export interface CreateQuickGameLobbyMessage {
   readonly type: 'createQuickGameLobby'
   readonly vsAi?: boolean
   readonly setCode?: string
   readonly isPublic?: boolean
   readonly format?: DeckFormat
+  /** Create a Momir Basic lobby: fixed 60-basic decks, avatar in the command zone, set scopes the creature pool. */
+  readonly momirBasic?: boolean
 }
 
 export interface JoinQuickGameLobbyMessage {
@@ -2415,6 +2641,8 @@ export interface SetQuickGameLobbyPublicMessage {
 export interface SetQuickGameLobbyFormatMessage {
   readonly type: 'setQuickGameLobbyFormat'
   readonly format: DeckFormat | null
+  /** True selects the Momir Basic custom format (mutually exclusive with `format`). */
+  readonly momirBasic?: boolean
 }
 
 export function createCreateQuickGameLobbyMessage(
@@ -2422,6 +2650,7 @@ export function createCreateQuickGameLobbyMessage(
   setCode?: string,
   isPublic?: boolean,
   format?: DeckFormat,
+  momirBasic?: boolean,
 ): CreateQuickGameLobbyMessage {
   return {
     type: 'createQuickGameLobby',
@@ -2429,6 +2658,7 @@ export function createCreateQuickGameLobbyMessage(
     ...(setCode ? { setCode } : {}),
     ...(isPublic ? { isPublic } : {}),
     ...(format ? { format } : {}),
+    ...(momirBasic ? { momirBasic } : {}),
   }
 }
 export function createJoinQuickGameLobbyMessage(lobbyId: string): JoinQuickGameLobbyMessage {
@@ -2460,8 +2690,11 @@ export function createSetQuickGameLobbySetCodeMessage(setCode: string | null): S
 export function createSetQuickGameLobbyPublicMessage(isPublic: boolean): SetQuickGameLobbyPublicMessage {
   return { type: 'setQuickGameLobbyPublic', isPublic }
 }
-export function createSetQuickGameLobbyFormatMessage(format: DeckFormat | null): SetQuickGameLobbyFormatMessage {
-  return { type: 'setQuickGameLobbyFormat', format }
+export function createSetQuickGameLobbyFormatMessage(
+  format: DeckFormat | null,
+  momirBasic?: boolean,
+): SetQuickGameLobbyFormatMessage {
+  return { type: 'setQuickGameLobbyFormat', format, ...(momirBasic ? { momirBasic } : {}) }
 }
 
 export function isQuickGameLobbyStateMessage(msg: ServerMessage): msg is QuickGameLobbyStateMessage {

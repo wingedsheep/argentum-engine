@@ -103,4 +103,6 @@ export const counterManaClass: Record<string, string> = {
   VERSE: 'counter-verse',
   INFLUENCE: 'counter-devotion',
   BURDEN: 'counter-doom',
+  LOOT: 'counter-charge',
+  WIND: 'counter-vortex',
 }

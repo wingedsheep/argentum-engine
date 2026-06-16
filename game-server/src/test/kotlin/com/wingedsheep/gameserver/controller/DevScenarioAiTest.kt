@@ -99,8 +99,7 @@ class DevScenarioAiTest(
         // AI is associated into GameSession.players right away (so broadcastStateUpdate
         // reaches it); the human seat only enters players when their WebSocket connects.
         val gameSession = gameRepository.findById(sessionId).shouldNotBeNull()
-        gameSession.player1?.playerId shouldBe player2Id
-        gameSession.player2?.playerId shouldBe null
+        gameSession.getPlayers().map { it.playerId } shouldBe listOf(player2Id)
 
         // Human identity is pre-registered with its returned token so the WS handshake
         // resolves it; the AI has its own synthetic token registered via SessionRegistry.register.

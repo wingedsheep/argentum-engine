@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 /**
  * Executor for [PhaseOutEffect] (Rule 702.26).
  *
- * Marks the target permanent — and, by indirect phasing (Rule 702.26j), everything
+ * Marks the target permanent — and, by indirect phasing (Rule 702.26g), everything
  * attached to it — with [PhasedOutComponent]. The phased-out permanents are then
  * hidden by [GameState.getBattlefield], so they stop existing for projection, combat,
  * targeting, triggers, and state-based actions until `BeginningPhaseManager` phases

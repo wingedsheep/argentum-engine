@@ -3,6 +3,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import type { EntityId, PendingDecision } from '@/types'
 import { useResponsive, calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { DecisionCardPreview } from './DecisionComponents'
 import styles from './RevealedCardsUI.module.css'
 
 /**
@@ -65,6 +66,7 @@ export function RevealedCardsUI() {
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsive()
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [isHoveringSource, setIsHoveringSource] = useState(false)
   const [minimized, setMinimized] = useState(false)
 
   // Determine which reveal mode is active
@@ -180,6 +182,8 @@ export function RevealedCardsUI() {
             src={sourceCardImageUrl}
             alt={sourceCardName!}
             className={styles.sourceCard}
+            onMouseEnter={() => setIsHoveringSource(true)}
+            onMouseLeave={() => setIsHoveringSource(false)}
           />
         )}
         <h2 className={styles.title}>{title}</h2>
@@ -266,7 +270,10 @@ export function RevealedCardsUI() {
           OK
         </button>
       </div>
-      {/* Card preview is handled by the global CardPreview component in GameBoard */}
+      {/* Revealed card previews are handled by the global CardPreview component in GameBoard. */}
+      {isHoveringSource && sourceCardName && !responsive.isMobile && (
+        <DecisionCardPreview cardName={sourceCardName} />
+      )}
     </div>
   )
 }

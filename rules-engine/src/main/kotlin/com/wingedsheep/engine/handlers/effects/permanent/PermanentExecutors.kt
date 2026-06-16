@@ -7,8 +7,10 @@ import com.wingedsheep.engine.handlers.effects.ExecutorModule
 import com.wingedsheep.engine.handlers.effects.permanent.ExploreEffectExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityToGroupExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantFlashbackExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantHarmonizeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantKeywordExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantStaticAbilityExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantToEnchantedCreatureTypeGroupExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantTriggeredAbilityExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.IncrementAbilityResolutionCountExecutor
@@ -29,6 +31,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.counters.AddDynamicCoun
 import com.wingedsheep.engine.handlers.effects.permanent.counters.MoveAllLastKnownCountersExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.DistributeCountersAmongTargetsExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.DoubleCountersExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.counters.GrantCounterPlacementModifierExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.DistributeCountersFromSelfExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.ProliferateExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveAllCountersExecutor
@@ -43,6 +46,8 @@ import com.wingedsheep.engine.handlers.effects.permanent.stats.ModifyStatsExecut
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerToughnessExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseOutExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseOutUntilLeavesExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.phasing.PhaseInLinkedToSourceExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapUntapCollectionExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.tapping.TapUntapExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.AddCardTypeExecutor
@@ -50,6 +55,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.AddCreatureTypeEx
 import com.wingedsheep.engine.handlers.effects.permanent.types.AddSubtypeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.AnimateLandExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeChosenManaColorExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeArtifactExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCreatureExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCreatureTypeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeSaddledExecutor
@@ -60,6 +66,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.LoseAllCreatureTy
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeColorExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeColorToChosenExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeGroupColorExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCopyOfLinkedExileExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.EachPermanentBecomesCopyOfTargetExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetCreatureSubtypesExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetGroupCreatureSubtypesExecutor
@@ -98,6 +105,7 @@ class PermanentExecutors(
         MoveAllLastKnownCountersExecutor(),
         AddCountersToCollectionExecutor(),
         DoubleCountersExecutor(),
+        GrantCounterPlacementModifierExecutor(),
         RemoveCountersExecutor(),
         RemoveAnyNumberOfCountersExecutor(),
         RemoveAllCountersExecutor(),
@@ -116,6 +124,7 @@ class PermanentExecutors(
         AddSubtypeExecutor(),
         SetLandTypeExecutor(),
         AnimateLandExecutor(),
+        BecomeArtifactExecutor(),
         BecomeChosenManaColorExecutor(),
         BecomeCreatureExecutor(),
         BecomeSaddledExecutor(),
@@ -127,6 +136,7 @@ class PermanentExecutors(
         ChangeColorToChosenExecutor(),
         ChangeGroupColorExecutor(),
         EachPermanentBecomesCopyOfTargetExecutor(),
+        BecomeCopyOfLinkedExileExecutor(),
         LoseAllCreatureTypesExecutor(),
         SetCreatureSubtypesExecutor(),
         SetGroupCreatureSubtypesExecutor(),
@@ -145,8 +155,10 @@ class PermanentExecutors(
         // abilities
         GrantActivatedAbilityExecutor(),
         GrantActivatedAbilityToGroupExecutor(),
+        GrantFlashbackExecutor(),
         GrantHarmonizeExecutor(),
         GrantKeywordExecutor(),
+        GrantStaticAbilityExecutor(),
         RemoveKeywordExecutor(),
         GrantToEnchantedCreatureTypeGroupExecutor(),
         GrantTriggeredAbilityExecutor(),
@@ -159,6 +171,8 @@ class PermanentExecutors(
         TapUntapCollectionExecutor(),
         // phasing
         PhaseOutExecutor(),
+        PhaseOutUntilLeavesExecutor(),
+        PhaseInLinkedToSourceExecutor(),
         // protection
         ChooseColorThenExecutor(decisionHandler),
         GrantHexproofFromChosenColorExecutor(),

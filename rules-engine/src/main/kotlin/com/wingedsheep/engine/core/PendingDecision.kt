@@ -50,7 +50,17 @@ data class DecisionContext(
     val inlineOnTrigger: Boolean = false,
 
     /** Resolved effect description for display (e.g., "-6/-6 until end of turn") */
-    val effectHint: String? = null
+    val effectHint: String? = null,
+
+    /**
+     * Definition-scoped identity of the ability that raised this decision, when it was raised by a
+     * triggered or activated ability of a card. Lets the client offer "always yes/no to this
+     * ability" and the engine match the answer against every current and future instance of the
+     * same ability (persistent yields / batch decisions — see
+     * [com.wingedsheep.sdk.scripting.AbilityIdentity]). Null for decisions not tied to a single
+     * card ability.
+     */
+    val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null
 )
 
 /**
@@ -169,8 +179,19 @@ data class SelectCardsDecision(
      * UI is expected to disable cards whose mana value would push the running total
      * over the cap; the server also trims oversubmits in selection order.
      */
-    val maxTotalManaValue: Int? = null
+    val maxTotalManaValue: Int? = null,
+    /** Conditional lower minimums for decisions like "discard two unless one is a creature". */
+    val conditionalMinimums: List<ConditionalSelectionMinimum> = emptyList()
 ) : PendingDecision
+
+@Serializable
+data class ConditionalSelectionMinimum(
+    val requiredSelections: Int,
+    val minimumSelections: Int,
+    val matchingOptions: List<EntityId>,
+    val requiredMatches: Int = 1,
+    val description: String? = null
+)
 
 /**
  * Player must make a yes/no decision (may abilities).
@@ -188,6 +209,36 @@ data class YesNoDecision(
     val noText: String = "No",
     /** Optional hint text shown below the prompt (e.g., keyword reminder text) */
     val hint: String? = null
+) : PendingDecision
+
+/**
+ * A single yes/no decision raised once on behalf of N simultaneous, structurally identical
+ * optional triggers (same controller + same [DecisionContext.abilityIdentity]) so the controller
+ * answers the repeated "you may …" once instead of N times — Magic Online's "auto-stack identical
+ * triggers" affordance (see `backlog/stack-collapse-and-batch-decisions.md` §B).
+ *
+ * The answer is a [BatchYesNoResponse] carrying both `choice` (yes/no) and `applyToAll`:
+ *  - `applyToAll = true` resolves the whole run of [count] instances with `choice`.
+ *  - `applyToAll = false` peels one instance off (answered with `choice`) and re-raises the batch
+ *    for the remaining `count - 1` — "this one, then ask me about the rest".
+ *
+ * Only the *yes/no* is batched. Per-instance target selection still happens individually after a
+ * "yes" (a swarm of identical pingers shares the may-question but each still picks its own target),
+ * so this never makes a meaningful target/ordering choice on the player's behalf.
+ */
+@Serializable
+@SerialName("BatchYesNoDecision")
+data class BatchYesNoDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    /** How many identical instances this one answer can cover. Always ≥ 2 when raised. */
+    val count: Int,
+    /** What "yes" means (for UI button text) */
+    val yesText: String = "Yes",
+    /** What "no" means (for UI button text) */
+    val noText: String = "No",
 ) : PendingDecision
 
 /**
@@ -537,6 +588,21 @@ data class CardsSelectedResponse(
 data class YesNoResponse(
     override val decisionId: String,
     val choice: Boolean
+) : DecisionResponse
+
+/**
+ * Response to [BatchYesNoDecision].
+ *
+ * @property choice the yes/no answer applied to the peeled instance (or whole run).
+ * @property applyToAll when true, [choice] resolves every instance the batch covers; when false,
+ *   it resolves a single instance and the batch re-raises for the rest.
+ */
+@Serializable
+@SerialName("BatchYesNoResponse")
+data class BatchYesNoResponse(
+    override val decisionId: String,
+    val choice: Boolean,
+    val applyToAll: Boolean,
 ) : DecisionResponse
 
 /**

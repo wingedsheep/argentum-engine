@@ -64,7 +64,7 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
         trigger = Triggers.YourEndStep
         triggerCondition = Compare(
             left = DynamicAmount.AggregateBattlefield(
-                player = Player.Opponent,
+                player = Player.EachOpponent,
                 filter = GameObjectFilter.Any.withCounter(Counters.AIM),
                 aggregation = Aggregation.COUNT
             ),

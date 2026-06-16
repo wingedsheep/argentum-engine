@@ -92,7 +92,7 @@
                 ],
                 "appliesTo": {
                     "type": "LifeLossEvent",
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 }
             }
         ]

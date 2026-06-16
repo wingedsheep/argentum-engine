@@ -25,7 +25,7 @@ val Ahriman = card("Ahriman") {
     toughness = 2
     keywords(Keyword.FLYING, Keyword.DEATHTOUCH)
     activatedAbility {
-        cost = Costs.Composite(Costs.Mana("{3}"), Costs.Sacrifice(GameObjectFilter.CreatureOrArtifact))
+        cost = Costs.Composite(Costs.Mana("{3}"), Costs.SacrificeAnother(GameObjectFilter.CreatureOrArtifact))
         effect = DrawCardsEffect(1)
     }
     metadata {

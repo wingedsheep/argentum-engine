@@ -2,7 +2,7 @@
 
 **Set Size:** 78 cards
 **Release Date:** December 17, 1993
-**Implemented:** 67 / 78
+**Implemented:** 74 / 78
 | Color | Count |
 |-------|-------|
 | White | 11 |
@@ -18,7 +18,7 @@
 - [x] Abu Ja'far
 - [x] Army of Allah
 - [x] Camel
-- [ ] Eye for an Eye
+- [x] Eye for an Eye
 - [x] Jihad
 - [x] King Suleiman
 - [x] Moorish Cavalry
@@ -40,12 +40,12 @@
 - [x] Cuombajj Witches
 - [x] El-Hajjâj
 - [x] Erg Raiders
-- [ ] Guardian Beast
+- [x] Guardian Beast
 - [x] Hasran Ogress
 - [x] Junún Efreet
 - [x] Juzám Djinn
 - [x] Khabál Ghoul
-- [ ] Oubliette
+- [x] Oubliette
 - [x] Sorceress Queen
 - [x] Stone-Throwing Devils
 - [x] Aladdin
@@ -55,17 +55,17 @@
 - [x] Desert Nomads
 - [x] Hurr Jackal
 - [x] Kird Ape
-- [ ] Magnetic Mountain
+- [x] Magnetic Mountain
 - [x] Mijae Djinn
 - [x] Rukh Egg
 - [x] Ydwen Efreet
-- [ ] Cyclone
+- [x] Cyclone
 - [x] Desert Twister
 - [x] Drop of Honey
 - [x] Erhnam Djinn
 - [x] Ghazbán Ogre
 - [x] Ifh-Bíff Efreet
-- [ ] Metamorphosis
+- [x] Metamorphosis
 - [x] Nafs Asp
 - [x] Sandstorm
 - [x] Singing Tree

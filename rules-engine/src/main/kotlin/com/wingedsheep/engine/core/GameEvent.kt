@@ -165,18 +165,31 @@ data class DamageDealtEvent(
      * `DealsDamageEvent(requireExcess = true)` and by payoffs that read
      * `ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT`.
      */
-    val excessAmount: Int = 0
+    val excessAmount: Int = 0,
+    /**
+     * The recipient creature's toughness at the instant the damage was dealt (CR 603.10 last-known
+     * information), captured before state-based actions can move a lethally-damaged creature to the
+     * graveyard. Read by triggers keyed on "damage equal to that creature's toughness" (Taii Wakeen,
+     * Perfect Shot) via `ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS`. `null` for players,
+     * planeswalkers, and events emitted before this was captured.
+     */
+    val targetToughnessAtDamage: Int? = null
 ) : GameEvent
 
 /**
- * A "prevent the next damage from a chosen source" shield prevented an instance of damage
- * (Deflecting Palm, New Way Forward). Emitted when such a shield fires; carries [linkId] so the
- * shield's own delayed triggered ability ("When damage is prevented this way, …") fires on the
- * stack and reads [amount] (the prevented amount) and [sourceId] (whose controller to hit).
+ * A "next damage from a chosen source" shield fired on an instance of damage (Deflecting Palm,
+ * New Way Forward, Eye for an Eye). Carries [linkId] so the shield's own delayed triggered ability
+ * ("When damage is prevented this way, …") fires on the stack and reads [amount] (the captured
+ * amount) and [sourceId] (whose controller to hit).
  *
- * @property sourceId The source whose damage was prevented
+ * NOTE: despite the name, this fires even when the damage is NOT prevented — a `preventDamage = false`
+ * shield (Eye for an Eye) still emits this to fire its reaction while letting the damage proceed in
+ * full. It is internal (no client event, no generic trigger matches it — only the linked delayed
+ * trigger keyed by [linkId]), so the misnomer has no observable effect.
+ *
+ * @property sourceId The source whose damage triggered the shield
  * @property recipientId The protected player the shield was attached to
- * @property amount The amount of damage prevented
+ * @property amount The captured damage amount
  * @property linkId The id of the delayed triggered ability linked to this shield
  */
 @Serializable
@@ -323,7 +336,15 @@ data class SpellCastEvent(
      * `ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL` for cards like Riku of Many
      * Paths whose triggered ability scales by the cast's mode count.
      */
-    val chosenModesCount: Int = 0
+    val chosenModesCount: Int = 0,
+    /**
+     * Mana value of the cast spell (CR 202.3), captured at cast time. Distinct from
+     * [totalManaSpent] (actual mana paid, which can differ with cost reductions, alternative
+     * costs, or X). Feeds `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE` so payoffs that key
+     * off "a spell with equal or lesser mana value" (Kellan, the Kid) read the printed value of
+     * the spell that fired the trigger, not the mana spent on it.
+     */
+    val manaValue: Int = 0
 ) : GameEvent
 
 /**
@@ -439,6 +460,21 @@ data class AbilityFizzledEvent(
     val sourceId: EntityId,
     val description: String,
     val reason: String
+) : GameEvent
+
+/**
+ * An optional ("you may") ability's may-question was resolved automatically from the controller's
+ * persistent auto-answer yield instead of prompting (MTGO "Always yes/no" — backlog §C). Emitted so
+ * the controller sees in the log that the system acted for them; it carries no rules effect of its
+ * own (the chosen branch's own events follow when [answer] is true).
+ */
+@Serializable
+@SerialName("AbilityAutoAnsweredEvent")
+data class AbilityAutoAnsweredEvent(
+    val sourceId: EntityId,
+    val sourceName: String,
+    val controllerId: EntityId,
+    val answer: Boolean
 ) : GameEvent
 
 /**
@@ -612,13 +648,46 @@ data class TappedEvent(
 
 /**
  * A permanent became saddled (CR 702.171b) — a Saddle ability resolved. Lets animations and
- * any future "whenever this becomes saddled" triggers react instead of the state changing silently.
+ * "whenever this becomes saddled" triggers react instead of the state changing silently.
+ *
+ * [firstThisTurn] is true when the permanent was not already saddled when this Saddle ability
+ * resolved — i.e. this is the first time it became saddled this turn. Saddle may be activated
+ * again while a permanent is already saddled (CR 702.171a/b), and the SaddledComponent persists
+ * until the cleanup step, so a second activation in the same turn reports false. Drives the
+ * "becomes saddled for the first time each turn" intervening-if (Stubborn Burrowfiend).
  */
 @Serializable
 @SerialName("BecameSaddledEvent")
 data class BecameSaddledEvent(
     val entityId: EntityId,
-    val entityName: String
+    val entityName: String,
+    val firstThisTurn: Boolean = true
+) : GameEvent
+
+/**
+ * An Aura, Equipment, or Fortification became attached to a permanent (CR 603.2e). Emitted only
+ * at the moment of attaching — when the attachment moves onto a new host — not when an
+ * already-attached state persists, and not on phasing in/out (CR 702.26j). Emitted from every
+ * attach site: aura ETB onto its enchant target (StackResolver), equip resolution
+ * (AttachEquipmentExecutor), and an aura moved onto the battlefield attached by an effect
+ * (MoveCollectionExecutor).
+ *
+ * Drives the "becomes attached" trigger family
+ * ([com.wingedsheep.sdk.scripting.EventPattern.BecomesAttachedEvent]): Assimilation Aegis
+ * ("whenever this Equipment becomes attached to a creature") and Eriette, the Beguiler
+ * ("whenever an Aura you control becomes attached to a … permanent an opponent controls").
+ *
+ * @property attachmentId the aura/equipment that became attached (the triggering entity).
+ * @property attachedToId the permanent it became attached to.
+ * @property controllerId the controller of the attachment.
+ */
+@Serializable
+@SerialName("PermanentAttachedEvent")
+data class PermanentAttachedEvent(
+    val attachmentId: EntityId,
+    val attachmentName: String,
+    val attachedToId: EntityId,
+    val controllerId: EntityId,
 ) : GameEvent
 
 /**
@@ -859,6 +928,8 @@ enum class GameEndReason {
     DRAW,
     /** Commander format: 21+ combat damage from a single commander (CR 903.10a). */
     COMMANDER_DAMAGE,
+    /** Two-Headed Giant: a player lost with their team (CR 810.8a). */
+    TEAM_DEFEATED,
     /** Rule 104.4c — SBAs never stabilized, treated as an unbreakable infinite loop. */
     INFINITE_LOOP,
     UNKNOWN
@@ -873,6 +944,20 @@ data class PlayerLostEvent(
     val playerId: EntityId,
     val reason: GameEndReason,
     val message: String? = null
+) : GameEvent
+
+/**
+ * A player left the game and their "leaving the game" processing (CR 800.4a–c) was
+ * applied: all objects they owned left the game, their stack objects were removed, and
+ * control effects involving them ended. In a multiplayer pod the game continues for the
+ * remaining players. [removedObjectCount] is informational (for logs / animation).
+ */
+@Serializable
+@SerialName("PlayerLeftGameEvent")
+data class PlayerLeftGameEvent(
+    val playerId: EntityId,
+    val reason: GameEndReason,
+    val removedObjectCount: Int
 ) : GameEvent
 
 // =============================================================================

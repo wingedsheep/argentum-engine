@@ -313,5 +313,150 @@ class StationMechanicTest : ScenarioTestBase() {
                 }
             }
         }
+
+        // The multi-select shortcut: a single gesture taps several creatures and queues one station
+        // activation per creature on the stack (each taps exactly its creature). This is purely a
+        // convenience over activating station repeatedly — the resulting game state is identical to
+        // doing it one creature at a time, so it is modelled on the existing `repeatCount`
+        // batch-activation path rather than a rules change.
+        context("Station multi-select shortcut") {
+
+            test("the legal action advertises a batch cap equal to the number of tappable creatures") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Wedgelight Rammer", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Spined Wurm", summoningSickness = false) // 5/4
+                    .withCardOnBattlefield(1, "Test Bulwark", summoningSickness = false) // 1/5
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val rammer = game.findPermanent("Wedgelight Rammer")!!
+                val stationAction = game.getLegalActions(1).single {
+                    (it.action as? ActivateAbility)?.let { a -> a.sourceId == rammer } == true
+                }
+                withClue("two other untapped creatures ⇒ up to two activations can be queued at once") {
+                    stationAction.additionalCostInfo?.tapBatchMaxActivations shouldBe 2
+                }
+            }
+
+            test("selecting two creatures queues two station activations, each charging by its own creature's power") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Wedgelight Rammer", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Spined Wurm", summoningSickness = false) // power 5
+                    .withCardOnBattlefield(1, "Test Bulwark", summoningSickness = false) // power 1
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val rammer = game.findPermanent("Wedgelight Rammer")!!
+                val wurm = game.findPermanent("Spined Wurm")!!
+                val wall = game.findPermanent("Test Bulwark")!!
+
+                val result = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = rammer,
+                        abilityId = stationAbilityId("Wedgelight Rammer"),
+                        costPayment = AdditionalCostPayment(tappedPermanents = listOf(wurm, wall)),
+                        repeatCount = 2
+                    )
+                )
+                withClue("batch station activation should succeed: ${result.error}") { result.error shouldBe null }
+                withClue("one ability per chosen creature is on the stack") { game.state.stack.size shouldBe 2 }
+                withClue("both chosen creatures are tapped to pay") {
+                    game.state.getEntity(wurm)?.has<TappedComponent>() shouldBe true
+                    game.state.getEntity(wall)?.has<TappedComponent>() shouldBe true
+                }
+
+                game.resolveStack()
+
+                // 5 (Wurm) + 1 (Bulwark) = 6. A single shared snapshot would give 10 or 2; the
+                // distinct total proves each queued activation read its own creature's power.
+                withClue("charge = sum of each tapped creature's power (5 + 1)") {
+                    game.state.getEntity(rammer)?.get<CountersComponent>()?.getCount(CounterType.CHARGE) shouldBe 6
+                }
+            }
+
+            test("picking a single creature still works while the batch shortcut is available (back-compat)") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Wedgelight Rammer", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Spined Wurm", summoningSickness = false) // power 5
+                    .withCardOnBattlefield(1, "Test Bulwark", summoningSickness = false) // power 1
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val rammer = game.findPermanent("Wedgelight Rammer")!!
+                val wurm = game.findPermanent("Spined Wurm")!!
+                val wall = game.findPermanent("Test Bulwark")!!
+
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = rammer,
+                        abilityId = stationAbilityId("Wedgelight Rammer"),
+                        costPayment = AdditionalCostPayment(tappedPermanents = listOf(wurm))
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+
+                game.state.getEntity(rammer)?.get<CountersComponent>()?.getCount(CounterType.CHARGE) shouldBe 5
+                withClue("the unchosen creature is left untapped") {
+                    game.state.getEntity(wall)?.has<TappedComponent>() shouldBe false
+                }
+            }
+
+            test("a batch whose creature count does not match repeatCount is rejected") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Wedgelight Rammer", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Spined Wurm", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Test Bulwark", summoningSickness = false)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val rammer = game.findPermanent("Wedgelight Rammer")!!
+                val wurm = game.findPermanent("Spined Wurm")!!
+
+                val result = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = rammer,
+                        abilityId = stationAbilityId("Wedgelight Rammer"),
+                        costPayment = AdditionalCostPayment(tappedPermanents = listOf(wurm)), // only 1
+                        repeatCount = 2 // but asked for 2 activations
+                    )
+                )
+                withClue("one creature can't pay for two activations") { result.error shouldNotBe null }
+            }
+
+            test("a batch cannot tap the same creature for more than one activation") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Wedgelight Rammer", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Spined Wurm", summoningSickness = false)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val rammer = game.findPermanent("Wedgelight Rammer")!!
+                val wurm = game.findPermanent("Spined Wurm")!!
+
+                val result = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = rammer,
+                        abilityId = stationAbilityId("Wedgelight Rammer"),
+                        costPayment = AdditionalCostPayment(tappedPermanents = listOf(wurm, wurm)),
+                        repeatCount = 2
+                    )
+                )
+                withClue("the same creature can't be tapped twice in one batch") { result.error shouldNotBe null }
+            }
+        }
     }
 }

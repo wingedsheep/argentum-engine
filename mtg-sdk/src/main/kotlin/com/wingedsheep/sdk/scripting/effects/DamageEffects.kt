@@ -68,6 +68,41 @@ data class DealDamageEffect(
 }
 
 /**
+ * Install a turn-duration (until end of turn) replacement effect that increases the amount of
+ * *noncombat* damage every source the controller controls would deal to any permanent or player
+ * (CR 616 — a damage-amount replacement; combat damage is unaffected).
+ *
+ * The bonus is resolved once at resolution (typically [DynamicAmount.XValue] from an `{X}` cost)
+ * and baked into the floating effect, so it reads the same amount for every damage instance the
+ * rest of the turn. Multiple activations stack — each installs its own additive bonus.
+ *
+ * Taii Wakeen, Perfect Shot: "{X}, {T}: If a source you control would deal noncombat damage to a
+ * permanent or player this turn, it deals that much damage plus X instead."
+ *
+ * Modelled as its own effect (not the opponent-only, permanent-tied
+ * [com.wingedsheep.sdk.scripting.NoncombatDamageBonus] static) because it (a) is turn-duration,
+ * (b) applies to *any* recipient — no opponent restriction — and (c) takes a dynamic bonus.
+ */
+@SerialName("AmplifyNoncombatDamageThisTurn")
+@Serializable
+data class AmplifyNoncombatDamageThisTurnEffect(
+    val bonus: DynamicAmount
+) : Effect {
+    override val description: String =
+        "Until end of turn, if a source you control would deal noncombat damage to a permanent or " +
+            "player, it deals that much damage plus ${bonus.description} instead"
+
+    override fun runtimeDescription(resolver: (DynamicAmount) -> Int): String =
+        "Until end of turn, if a source you control would deal noncombat damage to a permanent or " +
+            "player, it deals that much damage plus ${resolver(bonus)} instead"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newBonus = bonus.applyTextReplacement(replacer)
+        return if (newBonus !== bonus) copy(bonus = newBonus) else this
+    }
+}
+
+/**
  * Deal damage to multiple targets, dividing the total as you choose.
  * Used for cards like Forked Lightning ("4 damage divided among 1-3 targets").
  *

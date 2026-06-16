@@ -25,12 +25,16 @@ import type {
   PlayerStandingInfo,
   MatchResultInfo,
   ActiveMatchInfo,
+  FfaStandingInfo,
+  LobbyGameMode,
+  AttackMode,
   SpectatorPlayerState,
   SealedCardInfo,
   Step,
   AvailableSet,
   QuickGameLobbyStateMessage,
   DeckFormat,
+  YieldKind,
 } from '@/types'
 import type { ConnectionStatus } from '@/network/websocket.ts'
 import type { CounterRemovalCreatureInfo, SpectatorCombatState, SpectatorDecisionStatus } from '@/types/messages.ts'
@@ -115,6 +119,20 @@ export interface TargetingState {
  */
 export interface CombatState {
   mode: 'declareAttackers' | 'declareBlockers'
+  /**
+   * The seat this declaration is being made for, from the legal action's
+   * `playerId`. Matters in multiplayer: a hotseat connection declares for the
+   * acting seat, and a defender's blocks are scoped to the attackers attacking
+   * *them* (CR 509.1b). Null when unknown (legacy 2-player fallbacks apply).
+   */
+  actingSeat: EntityId | null
+  /**
+   * Multiplayer declare-attackers: the last defender the player assigned —
+   * newly selected attackers default to it (sticky assignment). Null until the
+   * first defender pick; never set in 2-player games (the sole opponent is the
+   * implicit default).
+   */
+  stickyDefenderId: EntityId | null
   /** Selected attackers (creature IDs) */
   selectedAttackers: readonly EntityId[]
   /** Attack target per attacker: attacker ID -> defender ID (player or planeswalker). If absent, defaults to opponent player. */
@@ -556,6 +574,23 @@ export interface TournamentState {
 }
 
 /**
+ * Free-for-All pod state (the FFA-mode counterpart of [TournamentState]). Created when the
+ * first FFA game starts and lives for the lifetime of the pod's play-again loop.
+ */
+export interface FfaState {
+  lobbyId: string
+  /** Session id of the running game, or null between games. */
+  currentGameSessionId: string | null
+  /** Number of the running/next game in the play-again loop (1-based). */
+  gameNumber: number
+  /** Final standings of the last completed game (placement order), or null before game 1 ends. */
+  standings: readonly FfaStandingInfo[] | null
+  gamesPlayed: number
+  /** Players who are ready for the next game ("play again"). */
+  readyPlayerIds: readonly string[]
+}
+
+/**
  * State for spectating a game.
  */
 export interface SpectatingState {
@@ -732,7 +767,9 @@ export type GameStore = {
   aiEnabled: boolean
   availableSets: readonly AvailableSet[]
   onlinePlayers: number | null
-  connect: (playerName: string) => void
+  /** True when another tab/device took over this identity; auto-reconnect is stopped. */
+  sessionReplaced: boolean
+  connect: (playerName: string, options?: { spectator?: boolean }) => void
   disconnect: () => void
   setPendingTournamentId: (lobbyId: string | null) => void
   setPendingSpectateGameId: (gameSessionId: string | null) => void
@@ -769,6 +806,7 @@ export type GameStore = {
   submitTargetsDecision: (selectedTargets: Record<number, readonly EntityId[]>) => void
   submitOrderedDecision: (orderedObjects: readonly EntityId[]) => void
   submitYesNoDecision: (choice: boolean) => void
+  submitBatchYesNoDecision: (choice: boolean, applyToAll: boolean) => void
   submitNumberDecision: (number: number) => void
   submitOptionDecision: (optionIndex: number) => void
   submitReplacementDecision: (fromIndex: number, toIndex: number) => void
@@ -791,22 +829,27 @@ export type GameStore = {
   setFullControl: (enabled: boolean) => void
   cyclePriorityMode: () => void
   toggleStopOverride: (step: Step, isMyTurn: boolean) => void
+  setAbilityYield: (cardDefinitionId: string, abilityId: string, kind: YieldKind) => void
+  clearAbilityYield: (cardDefinitionId: string, abilityId: string) => void
+  clearAllYields: () => void
   returnToMenu: () => void
+  setError: (error: ErrorState) => void
   clearError: () => void
   consumeEvent: () => ClientEvent | undefined
 
   // Lobby slice
   lobbyState: LobbyState | null
   tournamentState: TournamentState | null
+  ffaState: FfaState | null
   spectatingState: SpectatingState | null
-  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean) => void
+  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   addAiToLobby: () => void
   removeAiFromLobby: (playerId: string) => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: TournamentFormat; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number; isPublic?: boolean; deckFormat?: DeckFormat | '' | null; deckSizeMin?: number; allowDuplicates?: boolean; commanderPreset?: CommanderPreset; chaosBoosters?: boolean; bannedCardNames?: string[]; aiAssistEnabled?: boolean }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: TournamentFormat; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number; isPublic?: boolean; deckFormat?: DeckFormat | '' | null; deckSizeMin?: number; allowDuplicates?: boolean; commanderPreset?: CommanderPreset; chaosBoosters?: boolean; bannedCardNames?: string[]; aiAssistEnabled?: boolean; gameMode?: LobbyGameMode; attackMode?: AttackMode; randomTeams?: boolean; teamAssignments?: Record<string, number> }) => void
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
@@ -823,14 +866,14 @@ export type GameStore = {
 
   // Quick Game Lobby slice
   quickGameLobbyState: QuickGameLobbyStateMessage | null
-  createQuickGameLobby: (vsAi?: boolean, setCode?: string, isPublic?: boolean, format?: DeckFormat) => void
+  createQuickGameLobby: (vsAi?: boolean, setCode?: string, isPublic?: boolean, format?: DeckFormat, momirBasic?: boolean) => void
   joinQuickGameLobby: (lobbyId: string) => void
   leaveQuickGameLobby: () => void
   submitQuickGameLobbyDeck: (deckList: Record<string, number>, commander?: string | null) => void
   setQuickGameLobbyReady: (ready: boolean) => void
   setQuickGameLobbySetCode: (setCode: string | null) => void
   setQuickGameLobbyPublic: (isPublic: boolean) => void
-  setQuickGameLobbyFormat: (format: DeckFormat | null) => void
+  setQuickGameLobbyFormat: (format: DeckFormat | null, momirBasic?: boolean) => void
 
   // Draft slice
   deckBuildingState: DeckBuildingState | null
@@ -882,6 +925,21 @@ export type GameStore = {
   ) => void
   advancePipeline: (result: PhaseResult) => void
   cancelPipeline: () => void
+
+  // Board view slice (multiplayer viewed-opponent board + follow-the-action camera)
+  viewedOpponentId: EntityId | null
+  viewPinned: boolean
+  followAction: boolean
+  spectatorBottomSeatId: EntityId | null
+  teamByPlayerId: Readonly<Record<EntityId, number>>
+  teamSharedLife: boolean
+  viewOpponent: (playerId: EntityId, opts?: { pin?: boolean }) => void
+  unpinView: () => void
+  toggleFollowAction: () => void
+  followViewTo: (playerId: EntityId) => void
+  setSpectatorBottomSeat: (playerId: EntityId | null) => void
+  setSeatTeams: (teamByPlayerId: Record<EntityId, number>, sharedLife?: boolean) => void
+  resetBoardView: () => void
 
   // UI slice
   selectedCardId: EntityId | null
@@ -958,6 +1016,7 @@ export type GameStore = {
   startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
   stopDraggingAttacker: () => void
   setAttackTarget: (attackerId: EntityId, targetId: EntityId) => void
+  assignDefenderToSelectedAttackers: (defenderId: EntityId) => void
   startDraggingCard: (cardId: EntityId) => void
   stopDraggingCard: () => void
   confirmCombat: () => void

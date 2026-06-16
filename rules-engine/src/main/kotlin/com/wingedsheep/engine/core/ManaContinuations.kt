@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -52,7 +53,6 @@ data class CounterUnlessPaysContinuation(
  * @property manaCost The mana cost to pay
  * @property effect The effect to execute if the player pays
  * @property controllerId The controller for effect context
- * @property opponentId The opponent for effect context
  * @property xValue The X value if applicable
  * @property targets The chosen targets for effect context
  */
@@ -153,7 +153,15 @@ data class CounterUnlessPaysManaSelectionContinuation(
     /** See [CounterUnlessPaysContinuation.onPaid]. */
     val onPaid: Effect? = null,
     /** See [CounterUnlessPaysContinuation.sourceId]. Carried for the rider's [EffectContext]. */
-    val sourceId: EntityId? = null
+    val sourceId: EntityId? = null,
+    /**
+     * Not-yet-paid components of an enclosing [WardCost.Composite] (e.g. the "Pay 2 life" part of
+     * "Ward—{2}, Pay 2 life" while the mana part is being paid). When this is paid and the list is
+     * non-empty, the resumer charges the next component instead of letting the spell resolve.
+     */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** The ward source permanent, carried so a composite cost can re-prompt its next component. */
+    val wardSourceId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -200,7 +208,11 @@ data class CounterUnlessPaysLifeContinuation(
     val spellEntityId: EntityId,
     val lifeCost: Int,
     val exileOnCounter: Boolean = false,
-    val controllerId: EntityId? = null
+    val controllerId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -223,7 +235,11 @@ data class CounterUnlessDiscardContinuation(
     val count: Int,
     val random: Boolean = false,
     val exileOnCounter: Boolean = false,
-    val controllerId: EntityId? = null
+    val controllerId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -249,7 +265,11 @@ data class CounterUnlessSacrificeContinuation(
     val filter: GameObjectFilter,
     val count: Int = 1,
     val exileOnCounter: Boolean = false,
-    val controllerId: EntityId? = null
+    val controllerId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -306,7 +326,12 @@ data class WardTapPermanentsSubCostContinuation(
      *  spell's controller finishes paying through a tap-permanents sub-cost source. */
     val onPaid: Effect? = null,
     /** See [CounterUnlessPaysContinuation.sourceId]. Carried for the rider's [EffectContext]. */
-    val sourceId: EntityId? = null
+    val sourceId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts] — the not-yet-paid
+     *  components of an enclosing composite ward cost, charged once this mana part is fully paid. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
 ) : ContinuationFrame
 
 /**

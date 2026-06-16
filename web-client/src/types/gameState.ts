@@ -71,6 +71,29 @@ export interface ClientGameState {
    * {@link youAreHijacking}.
    */
   readonly hotseat?: boolean
+
+  /**
+   * The viewing player's active persistent yields (MTGO right-click yields — backlog §C).
+   * Masked per-player: only your own yields appear. Drives the Active Yields panel.
+   */
+  readonly activeYields?: readonly ClientYield[]
+}
+
+/** The stable (cardDefinitionId, abilityId) key an ability is yielded against. */
+export interface ClientAbilityIdentity {
+  readonly cardDefinitionId: string
+  readonly abilityId: string
+}
+
+/** One ability the viewing player has set a yield on (flattened from PlayerYields). */
+export interface ClientYield {
+  readonly cardDefinitionId: string
+  readonly abilityId: string
+  readonly displayName: string
+  readonly untilEndOfTurn?: boolean
+  readonly wholeGame?: boolean
+  /** true = always yes, false = always no, null/absent = no auto-answer. */
+  readonly autoAnswer?: boolean | null
 }
 
 /**
@@ -208,6 +231,10 @@ export interface ClientCard {
   /** Whether this card is plotted in exile (CR 718 — Plot keyword, castable for free on a later turn). Exile only. */
   readonly isPlotted?: boolean
 
+  /** Whether this permanent is prepared (Secrets of Strixhaven — Prepared keyword): a copy of its
+   * prepare spell sits castable in its controller's exile. Battlefield only. */
+  readonly isPrepared?: boolean
+
   /** Morph cost for face-down creatures (only visible to controller) */
   readonly morphCost?: string | null
 
@@ -234,6 +261,12 @@ export interface ClientCard {
 
   /** Chosen X value for spells with X in their cost (only present on stack) */
   readonly chosenX?: number | null
+
+  /**
+   * For a triggered/activated ability on the stack: its definition-scoped identity (backlog §C).
+   * Drives the stack-item yield context menu. Absent for spells.
+   */
+  readonly abilityIdentity?: ClientAbilityIdentity | null
 
   /** Copy index for storm/copy effects on the stack (1, 2, 3...) */
   readonly copyIndex?: number | null

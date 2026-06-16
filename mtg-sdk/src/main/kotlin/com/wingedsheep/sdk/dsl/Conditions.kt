@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCast as WasCastCondition
 import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCast as NoManaSpentToCastCondition
+import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCastEntered as NoManaSpentToCastEnteredCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand as WasCastFromHandCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone as WasCastFromZoneCondition
 import com.wingedsheep.sdk.scripting.conditions.WasKicked as WasKickedCondition
@@ -24,7 +25,8 @@ import com.wingedsheep.sdk.scripting.conditions.SneakCostWasPaid as SneakCostWas
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade as CastChoiceMadeCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceIs as CastChoiceIsCondition
 import com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet as CastTimeFlagSetCondition
-import com.wingedsheep.sdk.scripting.conditions.SourceMatches
+import com.wingedsheep.sdk.scripting.conditions.EntityMatches
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer as SourceIsRingBearerCondition
 import com.wingedsheep.sdk.scripting.conditions.YouChoseOtherCreatureAsRingBearer as YouChoseOtherCreatureAsRingBearerCondition
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
@@ -69,16 +71,45 @@ object Conditions {
      */
     val YouChoseOtherCreatureAsRingBearer: ConditionInterface = YouChoseOtherCreatureAsRingBearerCondition
 
+    /**
+     * If you put a counter on this creature this turn (Secrets of Strixhaven — Fractal
+     * Tender). True while the source permanent carries the per-turn "received counters"
+     * marker, which the counter-placement path stamps and cleanup clears each turn.
+     */
+    val SourceReceivedCounterThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceReceivedCounterThisTurn
+
     // =========================================================================
     // Battlefield Conditions (via Exists / Compare)
     // =========================================================================
+
+    /**
+     * Generic numeric comparison of two [DynamicAmount]s with a [ComparisonOperator] — the
+     * facade entry point for any "if amount X (</≤/=/≠/>/≥) amount Y" intervening-if or static
+     * condition. Composes the underlying [Compare] condition.
+     *
+     * Example (Taii Wakeen, Perfect Shot intervening-if — "damage equal to that creature's
+     * toughness"):
+     * ```
+     * Conditions.CompareAmounts(
+     *     DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT),
+     *     ComparisonOperator.EQ,
+     *     DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS),
+     * )
+     * ```
+     */
+    fun CompareAmounts(
+        left: DynamicAmount,
+        operator: ComparisonOperator,
+        right: DynamicAmount,
+    ): ConditionInterface = Compare(left, operator, right)
 
     /**
      * If an opponent controls more lands than you.
      */
     val OpponentControlsMoreLands: ConditionInterface =
         Compare(
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Land),
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Land),
             ComparisonOperator.GT,
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land)
         )
@@ -88,7 +119,7 @@ object Conditions {
      */
     val OpponentControlsMoreCreatures: ConditionInterface =
         Compare(
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature),
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature),
             ComparisonOperator.GT,
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature)
         )
@@ -101,7 +132,7 @@ object Conditions {
         Compare(
             DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature),
             ComparisonOperator.GT,
-            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature)
+            DynamicAmount.AggregateBattlefield(Player.EachOpponent, GameObjectFilter.Creature)
         )
 
     /**
@@ -109,13 +140,13 @@ object Conditions {
      * Used for CantAttackUnless (e.g. Deep-Sea Serpent, Slipstream Eel).
      */
     fun OpponentControlsLandType(landType: String): ConditionInterface =
-        Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype(landType))
+        Exists(Player.EachOpponent, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype(landType))
 
     /**
      * If an opponent controls a creature.
      */
     val OpponentControlsCreature: ConditionInterface =
-        Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Creature)
+        Exists(Player.EachOpponent, Zone.BATTLEFIELD, GameObjectFilter.Creature)
 
     /**
      * If you control a creature.
@@ -273,11 +304,12 @@ object Conditions {
         Compare(DynamicAmount.EntityProperty(EntityReference.Target(targetIndex), EntityNumericProperty.CounterCount(counterType)), ComparisonOperator.GTE, DynamicAmount.Fixed(1))
 
     /**
-     * If the target matches a GameObjectFilter.
-     * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."
+     * If the chosen target at [targetIndex] matches a GameObjectFilter. Resolution-only; a player
+     * target never matches a game-object filter (use [TargetIsPlayer] for that). Used for cards
+     * like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."
      */
     fun TargetMatchesFilter(filter: GameObjectFilter, targetIndex: Int = 0): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter(filter, targetIndex)
+        EntityMatches(EffectTarget.ContextTarget(targetIndex), filter)
 
     /**
      * If the context target at [targetIndex] is a player (not a permanent/spell/card).
@@ -286,6 +318,22 @@ object Conditions {
      */
     fun TargetIsPlayer(targetIndex: Int = 0): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.TargetIsPlayer(targetIndex)
+
+    /**
+     * If the context target at [targetIndex] is a tapped battlefield permanent. Branch on a
+     * target's tapped state at resolution — e.g. Shackle Slinger's "If it's tapped, put a stun
+     * counter on it. Otherwise, tap it."
+     */
+    fun TargetIsTapped(targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TargetIsTapped(targetIndex)
+
+    /**
+     * If the context target at [targetIndex] is this permanent (the ability's source). Wrap in
+     * [Not] for "another"/"a different permanent" wordings — e.g. Arid Archway's "If another
+     * Desert was returned this way".
+     */
+    fun TargetIsSource(targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TargetIsSource(targetIndex)
 
     /**
      * If the target shares a color with the most common color among all permanents
@@ -340,7 +388,7 @@ object Conditions {
      * for Essence Leak's "as long as enchanted permanent is red or green".
      */
     fun EnchantedPermanentMatches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.EnchantedPermanentMatches(filter)
+        EntityMatches(EffectTarget.EnchantedPermanent, filter)
 
     // =========================================================================
     // Life Total Conditions (via Compare)
@@ -383,13 +431,13 @@ object Conditions {
      * If you have more life than an opponent.
      */
     val MoreLifeThanOpponent: ConditionInterface =
-        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GT, DynamicAmount.LifeTotal(Player.Opponent))
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GT, DynamicAmount.LifeTotal(Player.EachOpponent))
 
     /**
      * If you have less life than an opponent.
      */
     val LessLifeThanOpponent: ConditionInterface =
-        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LT, DynamicAmount.LifeTotal(Player.Opponent))
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LT, DynamicAmount.LifeTotal(Player.EachOpponent))
 
     // =========================================================================
     // Hand Conditions (via Compare / Exists)
@@ -417,7 +465,7 @@ object Conditions {
      * If an opponent has N or fewer cards in hand.
      */
     fun OpponentCardsInHandAtMost(count: Int): ConditionInterface =
-        Compare(DynamicAmount.Count(Player.Opponent, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
+        Compare(DynamicAmount.Count(Player.EachOpponent, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
 
     // =========================================================================
     // Graveyard Conditions (via Compare / Exists)
@@ -467,6 +515,17 @@ object Conditions {
      */
     val NoManaSpentToCast: ConditionInterface =
         NoManaSpentToCastCondition
+
+    /**
+     * "if none of them were cast or no mana was spent to cast them" — the batch-enters variant of
+     * [NoManaSpentToCast]. True iff **every** permanent a batch trigger captured (the
+     * `Triggers.OneOrMorePermanentsEnter` batch, exposed at resolution as the `trigger.captured`
+     * collection) had no mana spent to cast it; an empty capture is vacuously true. Use as a
+     * resolution-time [com.wingedsheep.sdk.dsl.Effects] `ConditionalEffect` gate on the payoff —
+     * Satoru, the Infiltrator.
+     */
+    val NoManaSpentToCastEntered: ConditionInterface =
+        NoManaSpentToCastEnteredCondition
 
     /**
      * If this permanent was cast from your hand.
@@ -553,6 +612,28 @@ object Conditions {
         requiredRed = requiredRed,
         requiredGreen = requiredGreen
     )
+
+    /**
+     * The unified "an entity matches a filter" primitive: the [entity] (named via the shared
+     * [EffectTarget] vocabulary) matches [filter]. Subsumes the older near-clones — `SourceMatches`,
+     * `EnchantedPermanentMatches`, `TargetMatchesFilter`, `TriggeringSpellMatchesFilter` — which are
+     * now the named [SourceMatches] / [EnchantedPermanentMatches] / [TargetMatchesFilter] /
+     * [TriggeringSpellMatches] helpers below. Prefer those helpers for the common roles; reach for
+     * `EntityMatches` directly when you need a role they don't name (e.g. the equipped creature).
+     *
+     * `Self` and the enchanted/equipped attachment roles evaluate in both resolution and
+     * projection; `ContextTarget` and `TriggeringEntity` are resolution-only.
+     */
+    fun EntityMatches(entity: EffectTarget, filter: GameObjectFilter): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.EntityMatches(entity, filter)
+
+    /**
+     * If the source permanent matches [filter]. The general source-state primitive behind the
+     * `SourceIs*` / `SourceHas*` helpers; `EntityMatches(EffectTarget.Self, filter)`. Works in both
+     * resolution and static-ability projection.
+     */
+    fun SourceMatches(filter: GameObjectFilter): ConditionInterface =
+        EntityMatches(EffectTarget.Self, filter)
 
     /** If this creature is attacking. */
     val SourceIsAttacking: ConditionInterface =
@@ -812,7 +893,7 @@ object Conditions {
      * Used for cards like Hired Claw: "Activate only if an opponent lost life this turn"
      */
     val OpponentLostLifeThisTurn: ConditionInterface =
-        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.Opponent)
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.EachOpponent)
 
     // =========================================================================
     // Candidate-player target restrictions (CR 115)
@@ -1036,7 +1117,7 @@ object Conditions {
      * General intervening-if guard for "whenever you cast a spell, if it's a/an X ..." cards.
      */
     fun TriggeringSpellMatches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringSpellMatchesFilter(filter)
+        EntityMatches(EffectTarget.TriggeringEntity, filter)
 
     /**
      * If the spell that triggered this ability is the first spell matching [filter] you've cast

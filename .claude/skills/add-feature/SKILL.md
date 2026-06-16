@@ -122,6 +122,17 @@ generality, parameterized filters/amounts, name-the-mechanic). Then add it in th
 | Effect | `mtg-sdk/.../scripting/effect/{Category}Effects.kt` + facade in `dsl/Effects.kt` | Executor in `rules-engine/.../handlers/effects/{category}/` + register in `{Category}Executors.kt` |
 | Trigger | `mtg-sdk/.../scripting/trigger/` + facade in `dsl/Triggers.kt` | `TriggerDetector` detection path + `TriggerIndex` registration |
 | Condition | `mtg-sdk/.../scripting/condition/` + facade in `dsl/Conditions.kt` | `ConditionEvaluator` (must work in *both* resolution and projection via `ConditionEvaluationContext`) |
+
+**Before adding a `Condition` subtype, answer three placement questions** (the hierarchy
+re-bloats with one-offs otherwise — see `backlog/sdk-analysis-2026-06-revised.md` §2.3):
+1. **"Does X match a filter?"** → it's `Conditions.EntityMatches(entity, filter)` (or one of its
+   `SourceMatches` / `EnchantedPermanentMatches` / `TargetMatchesFilter` / `TriggeringSpellMatches`
+   facades), *not* a new condition. Name the entity role via `EffectTarget`.
+2. **A tracker-shaped check** ("you did/gained/cast N this turn") → `Compare` over a tracked
+   `DynamicAmount` (e.g. `TurnTracking`). If the tracked amount doesn't exist, add the *tracker
+   enum value* (data), not a condition class.
+3. **A genuinely set-specific condition** → put it in the mechanic's own file (quarantined next to
+   that mechanic's other SDK surface), never in the general `*Conditions.kt` files.
 | Static ability | `mtg-sdk/.../scripting/StaticAbility.kt` | `StateProjector` layer application (correct Rule 613 layer) |
 | Replacement effect | `mtg-sdk/.../scripting/ReplacementEffect.kt` (declarative `appliesTo` pattern) | engine interception point |
 | DynamicAmount variant | `mtg-sdk/.../scripting/DynamicAmount.kt` | `DynamicAmountEvaluator` |

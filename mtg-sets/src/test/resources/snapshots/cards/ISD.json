@@ -1,3 +1,63 @@
+// Abbey Griffin
+{
+    "name": "Abbey Griffin",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying, vigilance",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Jaime Jones",
+        "flavorText": "\"The darkness crawls with vampires and ghouls, but we are not without allies.\"\n—Mikaeus, the Lunarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf87803b-e7c6-4122-add4-72e596167b7e.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Altar's Reap
+{
+    "name": "Altar's Reap",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Donato Giancola",
+        "flavorText": "\"The demons don't care if we mutter niceties and act out ceremonies. Just kill him.\"\n—Bishop Volpaig, servant of Griselbrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dc2eec4-7e68-45d5-8736-6b32a47c671b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ambush Viper
 {
     "name": "Ambush Viper",
@@ -20,6 +80,554 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Angel of Flight Alabaster
+{
+    "name": "Angel of Flight Alabaster",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nAt the beginning of your upkeep, return target Spirit card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "She endures without Avacyn but secretly asks each soul she guides if it has seen her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dfe629f-485c-4619-9713-32d2ae406e63.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Armored Skaab
+{
+    "name": "Armored Skaab",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "When this creature enters, mill four cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Literally made for battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce4d00f2-30e6-41d5-b997-c66350fe783c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Avacyn's Pilgrim
+{
+    "name": "Avacyn's Pilgrim",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "{T}: Add {W}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "flavorText": "\"Avacyn's protection is everywhere. From the holy church to the sacred glade, all that we see is under her blessed watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eb39e97-53c2-4df0-9fb3-a3d6a24ec41f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
+// Avacynian Priest
+{
+    "name": "Avacynian Priest",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{1}, {T}: Tap target non-Human creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Human"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Greg Staples",
+        "flavorText": "Moorlanders speak in awe of the priests' talent for arriving just in time to drive off the wicked things that prowl the ravished parish.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08a47828-a79a-4189-9eef-2a5fc5125b61.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Battleground Geist
+{
+    "name": "Battleground Geist",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nOther Spirit creatures you control get +1/+0.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature Spirit ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "Not content to nudge vases and chill drawing rooms, some geists muster spectral armies to claw at the hearts of the living.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/129905ef-5b3b-4860-923c-109a7d7cad80.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Bump in the Night
+{
+    "name": "Bump in the Night",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent loses 3 life.\nFlashback {5}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{5}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "LoseLife",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Kev Walker",
+        "flavorText": "It's not just the wind. It's not all in your head. And it's definitely something to worry about.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c3ec389-a267-484f-994d-4a29ef494eb1.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Champion of the Parish
+{
+    "name": "Champion of the Parish",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever another Human you control enters, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Human ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"I stand for every cobbler, tanner, and fool in this town—and they stand for me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7314414-c2d2-48ed-af2c-764cf0207c62.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Chapel Geist
+{
+    "name": "Chapel Geist",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "Death has bound it with chains of past regrets. Forever it searches for atonement, each kindness removing a single link.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/790cdf67-80d6-4ade-aecf-f77120b509b0.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Cobbled Wings
+{
+    "name": "Cobbled Wings",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has flying.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "219",
+        "artist": "Matt Stewart",
+        "flavorText": "For the necro-alchemist, any puzzle can be solved with intelligence and harvested body parts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24abd762-e533-491a-97b6-aed40c214e9d.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Dead Weight
+{
+    "name": "Dead Weight",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -2/-2.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -2,
+                "toughnessBonus": -2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Randy Gallegos",
+        "flavorText": "The crueler vampires' idea of free-range farming.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/7933987e-7b8c-4d5a-804a-708d6bb6d231.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Desperate Ravings
+{
+    "name": "Desperate Ravings",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards, then discard a card at random.\nFlashback {2}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "Her mind was quite gone, yet she spoke nothing but truth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2ba3ab3e-d16c-492f-a860-6d8efcadf679.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Diregraf Ghoul
+{
+    "name": "Diregraf Ghoul",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "This creature enters tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "\"At least this one still has arms and legs. Well, most of its legs.\"\n—Enslow, ghoulcaller of Nephalia",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ed5790a-3354-49c2-89b6-3fc0de8dcc7c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -70,6 +678,853 @@
     ]
 }
 
+// Elder of Laurels
+{
+    "name": "Elder of Laurels",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "{3}{G}: Target creature gets +X/+X until end of turn, where X is the number of creatures you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen",
+        "flavorText": "Hopes and prayers can carry the same force as swords and torches.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32b82ef0-c974-4357-b21a-4c2a28ec7279.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Elite Inquisitor
+{
+    "name": "Elite Inquisitor",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "First strike, vigilance\nProtection from Vampires, from Werewolves, and from Zombies",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "VIGILANCE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Vampire"
+            }
+        },
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Werewolf"
+            }
+        },
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Zombie"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "flavorText": "\"No matter how many I kill, there are always more to hunt. It makes me smile just to think about it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9411c44-92a8-4f5d-b3de-d80046649c8c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Endless Ranks of the Dead
+{
+    "name": "Endless Ranks of the Dead",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, create X 2/2 black Zombie creature tokens, where X is half the number of Zombies you control, rounded down.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature Zombie"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "roundUp": false
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "flavorText": "With Thraben's army recalled to its city walls, outlying villages were left to fend for themselves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5db15c5f-80b7-4f7f-985a-9bbec3199ad9.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Feeling of Dread
+{
+    "name": "Feeling of Dread",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures.\nFlashback {1}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "TapUntap",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "John Stanko",
+        "flavorText": "People only say \"I'm sure it was nothing\" when they're sure it was something.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/846a2f9e-ad4f-4666-b152-fdeab7559d86.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Feral Ridgewolf
+{
+    "name": "Feral Ridgewolf",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Trample\n{1}{R}: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Martina Pilcerova",
+        "flavorText": "\"The wolves no longer hunt just to feed. They kill for sport, or for some madness behind their eyes.\"\n—Elmut, crossway watcher",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78c66cc0-cb0f-4daf-8141-0923ad46a834.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Forbidden Alchemy
+{
+    "name": "Forbidden Alchemy",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top four cards of your library. Put one of them into your hand and the rest into your graveyard.\nFlashback {6}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{6}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put in graveyard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb22ae62-6207-4693-87cf-7adf0fc1fe29.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Fortress Crab
+{
+    "name": "Fortress Crab",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Crab",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 6
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Vincent Proce",
+        "flavorText": "Unbreakable and unappetizing, the crab grows uninterrupted, sometimes to the size of a cottage and beyond.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87ca16d4-089f-42a7-a648-55301a77faea.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Furor of the Bitten
+{
+    "name": "Furor of the Bitten",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and attacks each combat if able.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Randy Gallegos",
+        "flavorText": "Those who only believe themselves infected with lycanthropy can be as dangerous as those who really are.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff4a4c19-6427-4a03-a543-992c910e668f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Gallows Warden
+{
+    "name": "Gallows Warden",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nOther Spirit creatures you control get +0/+1.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Spirit ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "The spirit cares nothing for the crimes or triumphs of the slain. It shelters all beneath its stormy cloak.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15947b20-8c8e-42ed-9599-8b180a382d21.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Geistcatcher's Rig
+{
+    "name": "Geistcatcher's Rig",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, you may have it deal 4 damage to target creature with flying.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "optional": true,
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature kw:flying"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "The rigs were outlawed except in Nephalia, where malign spirits are as plentiful as crazed inventors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfb8ecf0-8c12-4a14-9a75-4cc5bf9e47f1.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Geistflame
+{
+    "name": "Geistflame",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Geistflame deals 1 damage to any target.\nFlashback {3}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Scott Chou",
+        "flavorText": "Innistrad pyromancers find their best raw materials in the fury of the dead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b856f31-ac80-4338-95a5-3f8acda74cfe.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Gnaw to the Bone
+{
+    "name": "Gnaw to the Bone",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 2 life for each creature card in your graveyard.\nFlashback {2}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                },
+                "multiplier": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Scott Chou",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/416148c8-13d3-46d3-ac93-6eb7cbab2881.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Grasp of Phantoms
+{
+    "name": "Grasp of Phantoms",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature on top of its owner's library.\nFlashback {7}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{7}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02655d3d-82d0-4be6-bb64-25e1478edfc3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Grave Bramble
+{
+    "name": "Grave Bramble",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Plant",
+    "oracleText": "Defender, protection from Zombies",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Zombie"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Anthony Jones",
+        "flavorText": "Nature abhors a zombie.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8be1d4d2-5215-44b2-9b67-627d088efdb5.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Hamlet Captain
+{
+    "name": "Hamlet Captain",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks or blocks, other Humans you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Human ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Human ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"I would fear this fight, bloodsucker, were I alone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/1203ae4f-4d69-490f-8a7c-dadbefa6d697.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Heartless Summoning
+{
+    "name": "Heartless Summoning",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creature spells you cast cost {2} less to cast.\nCreatures you control get -1/-1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"They won't be winning any beauty pageants, but they'll do the trick.\"\n—Enslow, ghoulcaller of Nephalia",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14f8f638-b7fc-4e38-8623-ce7d2ebc82e6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hysterical Blindness
+{
+    "name": "Hysterical Blindness",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures your opponents control get -4/-0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -4
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Wayne England",
+        "flavorText": "\"The panic is amusing, but the real fun comes when the spell passes and the villagers start looking for a scapegoat.\"\n—Ludevic, necro-alchemist",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5aeaa757-e3b0-4606-a689-e8a20a686c3a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Infernal Plunge
+{
+    "name": "Infernal Plunge",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nAdd {R}{R}{R}.",
+    "script": {
+        "spellEffect": {
+            "type": "AddMana",
+            "color": "RED",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Daarken",
+        "flavorText": "\"Oh mighty Griselbrand, Scourge of the Heedless World, gladly I consume myself for thee!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3f50e17-c29c-4d2c-b3e7-45d1216b81ea.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Intangible Virtue
 {
     "name": "Intangible Virtue",
@@ -104,5 +1559,2270 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Into the Maw of Hell
+{
+    "name": "Into the Maw of Hell",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land. Into the Maw of Hell deals 13 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 13
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t1"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "Few entrances lead to where demons and devils lurk. Unfortunately, they occasionally open new ones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d188d9b-7a12-4eaf-855b-af4f0204dc5a.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Invisible Stalker
+{
+    "name": "Invisible Stalker",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\nThis creature can't be blocked.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Bud Cook",
+        "flavorText": "\"All that concerns me is the vampires' sense of smell and those freezing Nephalian nights.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0013620d-8e17-4246-86bf-71eafd51b806.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Kessig Wolf
+{
+    "name": "Kessig Wolf",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "{1}{R}: This creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Wayne England",
+        "flavorText": "\"Don't be afraid when you hear the wolves howl. Be afraid when you don't hear them at all.\"\n—Saint Trogen, the Slayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3255480b-c1cf-43d9-a40e-43e38112bb18.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Kindercatch
+{
+    "name": "Kindercatch",
+    "manaCost": "{3}{G}{G}{G}",
+    "typeLine": "Creature — Spirit",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Terese Nielsen",
+        "flavorText": "In the forest villages of Kessig, parents feed their children wormwood and other bitter herbs, hoping to make them less palatable to things that roam the night.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/4954e8a3-e72b-4f28-8762-2b1c658c31b6.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Lantern Spirit
+{
+    "name": "Lantern Spirit",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\n{U}: Return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "Bound to the square where she died, she calls out to those in danger—usually scaring them straight into the peril she warns of.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b50a5772-f411-458a-97f9-9f3967bb79c5.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Lost in the Mist
+{
+    "name": "Lost in the Mist",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Return target permanent to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "destination": "Hand"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t1"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "David Palumbo",
+        "flavorText": "The secrets she carried could have saved many lives, but they quietly drowned with her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e5fc39d-590a-436b-ab90-a1741d2ae3da.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Manor Skeleton
+{
+    "name": "Manor Skeleton",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Skeleton",
+    "oracleText": "Haste\n{1}{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Eric Deschamps",
+        "flavorText": "Lungs dried to parchment wheeze blasphemies within a cage of bleached bone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7b45197-d5c2-48c8-b72e-00236552e338.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Markov Patrician
+{
+    "name": "Markov Patrician",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "flavorText": "Vampires of the Markov bloodline pride themselves on their exquisite taste in fashion, art, and \"wine of the vein.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29c3d3f7-5e28-4fec-8422-87856fcd1e8e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mask of Avacyn
+{
+    "name": "Mask of Avacyn",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+2 and has hexproof. (It can't be the target of spells or abilities your opponents control.)\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "It hides the face and protects the soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4ff1acce-bed4-452c-8416-06726004f2e8.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Mausoleum Guard
+{
+    "name": "Mausoleum Guard",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "When this creature dies, create two 1/1 white Spirit creature tokens with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"Ghoulcallers trying to get in, geists trying to get out . . . . This duty is never dull.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c7b19de-96a6-4590-bfc3-31b0c7b2e25e.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Maw of the Mire
+{
+    "name": "Maw of the Mire",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land. You gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Vincent Proce",
+        "flavorText": "As the chapel was dragged under, the bell in the tower rang until the murky depths forever silenced its toll.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90b34a03-3270-412c-90ca-03c1b3e61222.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Midnight Haunting
+{
+    "name": "Midnight Haunting",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 white Spirit creature tokens with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "WHITE"
+            ],
+            "creatureTypes": [
+                "Spirit"
+            ],
+            "keywords": [
+                "FLYING"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "The path back to the world of the living is murky and bewildering. A geist may not even realize that it's terrifying its own loved ones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe1eb098-7128-4ec8-8218-51fdde3e8326.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Moan of the Unhallowed
+{
+    "name": "Moan of the Unhallowed",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 2/2 black Zombie creature tokens.\nFlashback {5}{B}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{5}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Zombie"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "For a ghoul, every village is a buffet and every disaster is a reunion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e2c5a8f-c03a-40ab-8390-ff6b5b654717.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Moment of Heroism
+{
+    "name": "Moment of Heroism",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 and gains lifelink until end of turn. (Damage dealt by the creature also causes its controller to gain that much life.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"My faith is stronger than fang, claw, or mindless hunger.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba8d15bc-889d-4fd0-9688-00e22db30036.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Moon Heron
+{
+    "name": "Moon Heron",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Spirit Bird",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Charles Urbach",
+        "flavorText": "The heron is the symbol of the archangel Avacyn. The fact that such spirits still fly gives the church hope that its founder may one day return.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a24de601-1d7b-41c4-aba1-fdb6fd8d5251.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Morkrut Banshee
+{
+    "name": "Morkrut Banshee",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Morbid — When this creature enters, if a creature died this turn, target creature gets -4/-4 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target"
+                },
+                "triggerCondition": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Let go your grudges, or risk wandering the bogs forever in a murderous rage.\"\n—Hildin, priest of Avacyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/fff9989f-77a3-4f73-ade6-c04306c98501.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// One-Eyed Scarecrow
+{
+    "name": "One-Eyed Scarecrow",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Scarecrow",
+    "oracleText": "Defender\nCreatures with flying your opponents control get -1/-0.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "artist": "Dave Kendall",
+        "flavorText": "Farmhands and priests mutter curses at the ragged thing; it unnerves more than just the crows.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d495d85-6458-44d5-b3b4-5e09569057e3.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Purify the Grave
+{
+    "name": "Purify the Grave",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target card from a graveyard.\nFlashback {W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Baker",
+        "flavorText": "Some priests speak in whispers of the Helvault, a silver prison of unpurged evils.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cf39365-e468-46ac-bb5b-7f43faa19458.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Rally the Peasants
+{
+    "name": "Rally the Peasants",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +2/+0 until end of turn.\nFlashback {2}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Jaime Jones",
+        "flavorText": "\"If you must go out at night, bring a mob.\"\n—Master of the Elgaud Cathars",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/514fe7de-16b2-42c0-adb1-f0af1c89cfd6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
+// Ranger's Guile
+{
+    "name": "Ranger's Guile",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +1/+1 and gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Steve Prescott",
+        "flavorText": "In the remote corners of Kessig, protection is found in secret powers unknown to the Church of Avacyn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c90742ae-c48b-4d32-a6b7-aa51a94018bd.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Rebuke
+{
+    "name": "Rebuke",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target attacking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"No one chooses to be stitched together into a skaab. If it could speak, it would beg for its own destruction.\"\n—Thalia, Knight-Cathar",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/267185ac-a176-423e-a7f8-ee966d1d9a1e.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Riot Devils
+{
+    "name": "Riot Devils",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Devils are demons' unearthly desires made flesh. Let loose on the world, they satisfy their mad craving for destruction in a whirlwind of chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd35107b-6aaf-4fd8-bf1c-12b724d1482e.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rolling Temblor
+{
+    "name": "Rolling Temblor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rolling Temblor deals 2 damage to each creature without flying.\nFlashback {4}{R}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{4}{R}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "flavorText": "When demons open a path to your front door, it's time to move.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/060ce982-94dd-4b9e-b240-15da297e29f9.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rotting Fensnake
+{
+    "name": "Rotting Fensnake",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Snake",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "Its venom sacs are long gone, but its crushing strength is somehow greater than ever.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c21cbb10-9157-4887-a752-29b9e94fc77a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Selfless Cathar
+{
+    "name": "Selfless Cathar",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{1}{W}, Sacrifice this creature: Creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"If I fail to offer myself, we will surely be overrun. My fate would be the same.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a1dc067-1972-4d46-ad5d-56e6a563f638.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sensory Deprivation
+{
+    "name": "Sensory Deprivation",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -3/-0.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -3,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Steven Belledin",
+        "flavorText": "They call it \"stitcher's anesthesia,\" a spell to deaden the senses while the mad doctors begin their grisly work.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/454739db-a3d6-45e8-849a-287438c36627.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Silent Departure
+{
+    "name": "Silent Departure",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature to its owner's hand.\nFlashback {4}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{4}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "John Avon",
+        "flavorText": "The same magic that lets geists pass through our realm can force them out of it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a18dea16-d535-4310-94ff-836645253d73.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Silverchase Fox
+{
+    "name": "Silverchase Fox",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Fox",
+    "oracleText": "{1}{W}, Sacrifice this creature: Exile target enchantment.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "enchantment"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Howard Lyon",
+        "flavorText": "\"Be careful in your hunt. The clever little creature can steal your wards and lead you right into the werewolf's den.\"\n—Britta, midwife of Gatstaf",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a81bfab-3397-4562-8b82-5f24cef167e3.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Skirsdag Cultist
+{
+    "name": "Skirsdag Cultist",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{R}, {T}, Sacrifice a creature: This creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Within blood is life. Within life is fire. Within fire is the path to our masters' glory!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e63fa0de-2ec3-41ff-8e5d-0b54f400f27f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Slayer of the Wicked
+{
+    "name": "Slayer of the Wicked",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, you may destroy target Vampire, Werewolf, or Zombie.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "optional": true,
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Vampire"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Werewolf"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "And",
+                                            "predicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Zombie"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "You don't want to see his trophy room.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c2cd68e-ff4c-49c7-ba0d-f2299d9c21f4.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Smite the Monstrous
+{
+    "name": "Smite the Monstrous",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with power 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature pow>=4"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Jason Felix",
+        "flavorText": "Though the old holy wards and roadside shrines have begun to fail, faith in Avacyn still holds true power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0103f3b1-88c2-4cbf-a67c-49420f92970f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Spectral Flight
+{
+    "name": "Spectral Flight",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has flying.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Johann Bodin",
+        "flavorText": "\"The church looks down on binding spirits into armor, but now I can look down on them.\"\n—Dierk, geistmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7149f2a-6917-4ad7-8035-c7a1babd4d4b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Spider Spawning
+{
+    "name": "Spider Spawning",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 1/2 green Spider creature token with reach for each creature card in your graveyard.\nFlashback {6}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{6}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "creature"
+            },
+            "power": 1,
+            "toughness": 2,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Spider"
+            ],
+            "keywords": [
+                "REACH"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f97007af-6642-4105-8d8c-4223681e1cf9.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Spidery Grasp
+{
+    "name": "Spidery Grasp",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Untap target creature. It gets +2/+4 and gains reach until end of turn. (It can block creatures with flying.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "James Ryman",
+        "flavorText": "\"Nobody's seen the Lady of Videns for years. Poor dear, no companions at all in that old castle.\"\n—Yonda of Gavony",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccbdfd82-d025-4070-a1f5-4ee759978bcb.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Splinterfright
+{
+    "name": "Splinterfright",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample\nSplinterfright's power and toughness are each equal to the number of creature cards in your graveyard.\nAt the beginning of your upkeep, mill two cards. (Put the top two cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "creature"
+            }
+        }
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37068a41-bc5c-44b9-a307-5d3919794233.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Stensia Bloodhall
+{
+    "name": "Stensia Bloodhall",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{3}{B}{R}, {T}: This land deals 2 damage to target player or planeswalker.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "flavorText": "The revelry ends when the supply of fresh ingenues runs dry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc2741d8-2c02-4acd-8ca2-55b4bf6aef1c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Stitcher's Apprentice
+{
+    "name": "Stitcher's Apprentice",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "{1}{U}, {T}: Create a 2/2 blue Homunculus creature token, then sacrifice a creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Homunculus"
+                            ]
+                        },
+                        {
+                            "type": "Sacrifice",
+                            "filter": "creature"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Oglor create life, Oglor take it away. Oglor god! . . . until Master return.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e0fcc53-cd0b-4b4c-b6de-5d301232106a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Thraben Purebloods
+{
+    "name": "Thraben Purebloods",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Dog",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Martina Pilcerova",
+        "flavorText": "\"I've learned to trust my dogs' instincts. When they're calm, I'm calm. And when they get nervous, I get my crossbow.\"\n—Hinrik of House Cecani",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16db28f4-3d96-42f5-a264-592fdc2d4196.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Traitorous Blood
+{
+    "name": "Traitorous Blood",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap it. It gains trample and haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"I can make you dance to my tune like a puppet, your very blood eager to obey.\"\n—Olivia Voldaren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8220f18a-f23f-4fe6-bb58-58b6c5f36c79.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Traveler's Amulet
+{
+    "name": "Traveler's Amulet",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, Sacrifice this artifact: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "artist": "Alan Pollack",
+        "flavorText": "The rider set off into the eerie mist, swaddled in armor and laden with amulets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5b0afa7-e9f9-4751-af36-d85343fabc26.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Typhoid Rats
+{
+    "name": "Typhoid Rats",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Kev Walker",
+        "flavorText": "Kidnappers caught in Havengul are given two choices: languish in prison or become rat catchers. The smart ones go to prison.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/4490ce65-c73a-4809-abd1-ccc3175bd2a4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Unburial Rites
+{
+    "name": "Unburial Rites",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield.\nFlashback {3}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Battlefield"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "All crave the Blessed Sleep. Few receive it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2794c82b-e5ce-4369-894e-bf56c6402ae1.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Urgent Exorcism
+{
+    "name": "Urgent Exorcism",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target Spirit or enchantment.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Spirit"
+                                            }
+                                        ]
+                                    },
+                                    "IsEnchantment"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"To show geists pity is to prolong their agonies. Whether they know it or not, they seek the Blessed Sleep, and we are to give it to them.\"\n—Mikaeus, the Lunarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/516a437c-a2ee-43c6-876c-1a63a455c97c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Vampire Interloper
+{
+    "name": "Vampire Interloper",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Scout",
+    "oracleText": "Flying\nThis creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "James Ryman",
+        "flavorText": "He listens to every heartbeat, deciding which one of hundreds he will stop.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48105c2e-ee36-4117-b56b-3440298da995.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vampiric Fury
+{
+    "name": "Vampiric Fury",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Vampire creatures you control get +2/+0 and gain first strike until end of turn. (They deal combat damage before creatures without first strike.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature Vampire ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": "Self"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Matt Stewart",
+        "flavorText": "Many peasants secretly admire vampires' glamour and elegance—until they witness a moment of pure bloodlust.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de4fd254-0ae9-498d-b9da-4fb3d6a1a55c.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Victim of Night
+{
+    "name": "Victim of Night",
+    "manaCost": "{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target non-Vampire, non-Werewolf, non-Zombie creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Vampire"
+                            },
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Werewolf"
+                            },
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Zombie"
+                            }
+                        ]
+                    }
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Winona Nelson",
+        "flavorText": "\"Do not touch a drop. Not yet. I want to watch this so-called slayer's last crisis of faith.\"\n—Olivia Voldaren",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee4c6135-eee9-43ec-bbe8-76912352dcac.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Village Bell-Ringer
+{
+    "name": "Village Bell-Ringer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhen this creature enters, untap all creatures you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "Self",
+                        "tap": false
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "David Palumbo",
+        "flavorText": "\"Priests, hunters, slayers—to arms! The enemy approaches!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb6912b3-bab9-4937-afdd-3711e6d792a0.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Voiceless Spirit
+{
+    "name": "Voiceless Spirit",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying, first strike",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Daarken",
+        "flavorText": "\"I'd rather take on a neckbiter or moonhowler any day. Oh well, looks like I'm going to end up parrying with empty air half the night.\"\n—Saint Trogen, the Slayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d24d9bd7-5721-4436-a86f-35e376727f46.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Walking Corpse
+{
+    "name": "Walking Corpse",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Is it hopeless? When wave upon wave of our dead return as mindless flesh-eaters to claw upon Thraben's walls? We're too busy cutting them down to indulge ourselves in such philosophical foppery.\"\n—Mikaeus, the Lunarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e033384-3334-4082-9541-f2443d3bc424.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

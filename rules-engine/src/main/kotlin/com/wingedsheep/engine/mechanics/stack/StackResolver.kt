@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.EffectHandler
+import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
@@ -30,11 +31,14 @@ import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.state.components.identity.PlottedComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
+import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GrantCantBeCountered
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -270,6 +274,20 @@ class StackResolver(
             }
         )
 
+        // Prepared (Secrets of Strixhaven): casting the prepare-spell copy unprepares its source
+        // creature. Strip the source's PreparedComponent and consume the (permanent) cast-from-exile
+        // permission for this copy so it can't be cast again — the copy itself is on the stack and
+        // ceases to exist on resolution (CopyOfComponent), or the source's leave-battlefield cleanup
+        // removes it if it never resolves.
+        val prepareCopyComp = state.getEntity(cardId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent>()
+        if (prepareCopyComp != null) {
+            newState = newState.updateEntity(prepareCopyComp.sourceId) { c ->
+                c.without<com.wingedsheep.engine.state.components.battlefield.PreparedComponent>()
+            }
+            newState = newState.removeMayPlayPermissionsForCard(cardId)
+        }
+
         // For face-down creatures, use a generic name in the event
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
 
@@ -308,7 +326,8 @@ class StackResolver(
                 wasKicked = wasKicked,
                 totalManaSpent = totalManaSpent,
                 paidWithTreasureMana = paidWithTreasureMana,
-                chosenModesCount = reportedChosenModesCount
+                chosenModesCount = reportedChosenModesCount,
+                manaValue = cardComponent.manaValue
             )
         )
 
@@ -543,12 +562,20 @@ class StackResolver(
 
     /**
      * Put an activated ability on the stack.
+     *
+     * [emitActivationEvent] is true for a genuine activation. A **copy** of an activated ability is
+     * *not* activated (CR 707.10), so the copy paths pass false to suppress the
+     * [AbilityActivatedEvent] — otherwise placing the copy would itself re-fire
+     * "whenever you activate an ability" triggers (e.g. Ertha Jo, Frontier Mentor would copy its own
+     * copies endlessly). The copy still becomes a stack object with its own targets, so
+     * `BecomesTargetEvent`/`TargetsChosenEvent` are still emitted below.
      */
     fun putActivatedAbility(
         state: GameState,
         ability: ActivatedAbilityOnStackComponent,
         targets: List<ChosenTarget> = emptyList(),
-        targetRequirements: List<TargetRequirement> = emptyList()
+        targetRequirements: List<TargetRequirement> = emptyList(),
+        emitActivationEvent: Boolean = true
     ): ExecutionResult {
         val (abilityId, stateWithId) = state.newEntity()
 
@@ -561,14 +588,17 @@ class StackResolver(
         newState = newState.pushToStack(abilityId)
             .copy(priorityPassedBy = emptySet())
 
-        val events = mutableListOf<GameEvent>(
-            AbilityActivatedEvent(
-                ability.sourceId,
-                ability.sourceName,
-                ability.controllerId,
-                abilityEntityId = abilityId
+        val events = mutableListOf<GameEvent>()
+        if (emitActivationEvent) {
+            events.add(
+                AbilityActivatedEvent(
+                    ability.sourceId,
+                    ability.sourceName,
+                    ability.controllerId,
+                    abilityEntityId = abilityId
+                )
             )
-        )
+        }
 
         if (CrimeDetector.isCrime(newState, ability.controllerId, targets)) {
             events.add(CommitCrimeEvent(ability.controllerId, abilityId, ability.sourceName))
@@ -1188,7 +1218,6 @@ class StackResolver(
                     val context = EffectContext(
                         sourceId = spellId,
                         controllerId = controllerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != controllerId }
                     )
                     !com.wingedsheep.engine.handlers.ConditionEvaluator().evaluate(
                         newState, entersTapped.unlessCondition!!, context
@@ -1204,6 +1233,20 @@ class StackResolver(
 
         // Handle "enters with counters" replacement effects (before adding to battlefield)
         val counterEvents = mutableListOf<GameEvent>()
+
+        // CR 603.2e — an Aura entering attached to its enchant target "becomes attached"; emit the
+        // event so attachment triggers (Eriette, the Beguiler) fire.
+        if (auraTargetId != null) {
+            counterEvents.add(
+                com.wingedsheep.engine.core.PermanentAttachedEvent(
+                    attachmentId = spellId,
+                    attachmentName = cardComponent?.name ?: "Aura",
+                    attachedToId = auraTargetId,
+                    controllerId = controllerId,
+                )
+            )
+        }
+
         if (cardDef != null && !spellComponent.castFaceDown) {
             val totalManaSpent = spellComponent.manaSpentWhite + spellComponent.manaSpentBlue +
                 spellComponent.manaSpentBlack + spellComponent.manaSpentRed +
@@ -1332,7 +1375,78 @@ class StackResolver(
             newState = newState.addDelayedTrigger(delayedTrigger)
         }
 
+        // Prepared (Secrets of Strixhaven): a preparation creature enters prepared. Becoming
+        // prepared creates a copy of the card's prepare spell in exile that its controller may
+        // cast (paying that spell's cost); casting it unprepares the creature.
+        if (cardDef != null && cardDef.layout == com.wingedsheep.sdk.model.CardLayout.PREPARE &&
+            !spellComponent.castFaceDown
+        ) {
+            newState = makePrepared(newState, spellId, cardDef, controllerId)
+        }
+
         return newState to counterEvents
+    }
+
+    /**
+     * Make the permanent [permanentId] prepared (Secrets of Strixhaven): create a copy of the
+     * card's prepare spell (`cardFaces[0]`) in [controllerId]'s exile, grant a permanent
+     * cast-from-exile permission for it, and link the two via [PreparedComponent] /
+     * [PreparedSpellCopyComponent]. The copy carries a [CopyOfComponent] (stack-style copy) so it
+     * ceases to exist on resolution, and a [PreparedSpellCopyComponent] so the cast-from-exile
+     * enumerator casts it as face 0 and the phantom-copy state-based action leaves it in exile.
+     */
+    private fun makePrepared(
+        state: GameState,
+        permanentId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        controllerId: EntityId,
+    ): GameState {
+        val sourceCard = state.getEntity(permanentId)?.get<CardComponent>() ?: return state
+        val prepareFace = cardDef.cardFaces.firstOrNull() ?: return state
+
+        var newState = state
+        val (copyId, stateWithCopy) = newState.newEntity()
+        newState = stateWithCopy
+        newState = newState.updateEntity(copyId) { c ->
+            c.with(
+                CardComponent(
+                    cardDefinitionId = sourceCard.cardDefinitionId,
+                    name = sourceCard.name,
+                    manaCost = prepareFace.manaCost,
+                    typeLine = prepareFace.typeLine,
+                    oracleText = prepareFace.oracleText,
+                    colors = prepareFace.manaCost.colors,
+                    ownerId = controllerId,
+                    spellEffect = prepareFace.script.spellEffect,
+                    imageUri = sourceCard.imageUri,
+                )
+            ).with(
+                com.wingedsheep.engine.state.components.identity.CopyOfComponent(
+                    originalCardDefinitionId = sourceCard.cardDefinitionId,
+                    copiedCardDefinitionId = sourceCard.cardDefinitionId,
+                )
+            ).with(
+                com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent(sourceId = permanentId)
+            )
+        }
+        newState = newState.addToZone(ZoneKey(controllerId, Zone.EXILE), copyId)
+
+        val (permId, stateWithPerm) = newState.newEntity()
+        newState = stateWithPerm.addMayPlayPermission(
+            com.wingedsheep.engine.state.permissions.MayPlayPermission(
+                id = permId,
+                cardIds = setOf(copyId),
+                controllerId = controllerId,
+                sourceId = permanentId,
+                permanent = true,
+                timestamp = newState.timestamp,
+            )
+        )
+
+        newState = newState.updateEntity(permanentId) { c ->
+            c.with(com.wingedsheep.engine.state.components.battlefield.PreparedComponent(exileCopyId = copyId))
+        }
+        return newState
     }
 
     /**
@@ -1380,7 +1494,6 @@ class StackResolver(
             val context = EffectContext(
                 sourceId = spellId,
                 controllerId = spellComponent.casterId,
-                opponentId = newState.getOpponent(spellComponent.casterId),
                 targets = targets,
                 // Position-preserving view (null in slots dropped by 608.2b) so positional
                 // references — ContextTarget(n), EntityReference.Target(n), ContextPlayer(n) —
@@ -1436,10 +1549,11 @@ class StackResolver(
                 val pausedResolvedScript = spellComponent.faceIndex?.let { pausedCardDef?.cardFaces?.getOrNull(it)?.script }
                     ?: pausedCardDef?.script
                 val pausedSelfExile = pausedResolvedScript?.selfExileOnResolve == true
-                // Flashback (printed) or Harmonize (printed or granted — Songcrafter Mage): a
-                // graveyard cast exiles on resolution instead of returning to the graveyard.
+                // Flashback (printed or granted — Archmage's Newt) or Harmonize (printed or granted
+                // — Songcrafter Mage): a graveyard cast exiles on resolution instead of returning
+                // to the graveyard.
                 val pausedFlashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-                    (pausedCardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true ||
+                    (FlashbackGrants.effectiveFlashback(state, spellId, pausedCardDef) != null ||
                         HarmonizeGrants.effectiveHarmonize(state, spellId, pausedCardDef) != null)
                 val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
                 val pausedExileAfterResolve = pausedExileAfterResolveComp != null
@@ -1465,6 +1579,13 @@ class StackResolver(
                     c.without<SpellOnStackComponent>().without<TargetsComponent>()
                 }
                 pausedState = pausedState.addToZone(pausedDestZoneKey, spellId)
+
+                // Paradigm: tag the just-exiled spell even when its effect paused mid-resolution.
+                if (pausedDestZone == Zone.EXILE && pausedResolvedScript?.paradigm == true) {
+                    pausedState = pausedState.updateEntity(spellId) { c ->
+                        c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
+                    }
+                }
 
                 // CR 715.3d — Adventure exiled by its own resolution: re-grant cast-from-exile.
                 if (pausedAdventureFaceExile && pausedDestZone == Zone.EXILE) {
@@ -1536,10 +1657,11 @@ class StackResolver(
         val resolvedScript = spellComponent.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.script }
             ?: cardDef?.script
         val selfExile = resolvedScript?.selfExileOnResolve == true
-        // Flashback (printed) or Harmonize (printed or granted — Songcrafter Mage): a graveyard
-        // cast exiles on resolution instead of returning to the graveyard.
+        // Flashback (printed or granted — Archmage's Newt) or Harmonize (printed or granted —
+        // Songcrafter Mage): a graveyard cast exiles on resolution instead of returning to the
+        // graveyard.
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            (cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true ||
+            (FlashbackGrants.effectiveFlashback(state, spellId, cardDef) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
         val exileAfterResolveComp = newState.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         val exileAfterResolve = exileAfterResolveComp != null
@@ -1576,6 +1698,15 @@ class StackResolver(
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = newState.addToZone(destZoneKey, spellId)
 
+        // Paradigm (Secrets of Strixhaven): tag the just-exiled spell so the engine synthesizes its
+        // recurring precombat-main free-recast ability (Paradigm.recastAbility). The marker is the
+        // gate — a Lesson exiled by any other path carries no marker and so never recurs.
+        if (destinationZone == Zone.EXILE && resolvedScript?.paradigm == true) {
+            newState = newState.updateEntity(spellId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
+            }
+        }
+
         // CR 715.3d — an Adventure card exiled by its own resolution may be cast as the creature
         // by the spell's controller while it remains in exile. Re-add the permission after
         // the prior removeMayPlayPermissionsForCard so the cast-from-exile enumerator picks
@@ -1603,6 +1734,12 @@ class StackResolver(
         // Add counters granted by ExileAfterResolveComponent (e.g., Goliath Daydreamer's dream counter).
         if (destinationZone == Zone.EXILE && exileAfterResolveComp != null && exileAfterResolveComp.withCounters.isNotEmpty()) {
             newState = applyExileCounters(newState, spellId, exileAfterResolveComp.withCounters, events)
+        }
+
+        // Make the exiled card plotted (Lilah, Undefeated Slickshot): "exile that spell instead of
+        // putting it into your graveyard as it resolves. If you do, it becomes plotted."
+        if (destinationZone == Zone.EXILE && exileAfterResolveComp?.makePlotted == true) {
+            newState = applyPlottedToExiledCard(newState, spellId, ownerId, cardComponent?.name ?: "Unknown", events)
         }
 
         // Link the exiled spell back to the source permanent (Goliath Daydreamer)
@@ -1699,10 +1836,11 @@ class StackResolver(
 
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
-        // Flashback (printed) or Harmonize (printed or granted — Songcrafter Mage): a graveyard
-        // cast exiles on resolution instead of returning to the graveyard.
+        // Flashback (printed or granted — Archmage's Newt) or Harmonize (printed or granted —
+        // Songcrafter Mage): a graveyard cast exiles on resolution instead of returning to the
+        // graveyard.
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            (cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true ||
+            (FlashbackGrants.effectiveFlashback(state, spellId, cardDef) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
         val exileAfterResolveComp = state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         // Goliath Daydreamer-style components only exile on actual resolution; if the spell
@@ -1776,7 +1914,7 @@ class StackResolver(
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
-            opponentId = state.getOpponent(abilityComponent.controllerId),
+            abilityIdentity = abilityComponent.abilityIdentity,
             targets = resolvedTargets2,
             triggerDamageAmount = abilityComponent.triggerDamageAmount,
             triggerCounterCount = abilityComponent.triggerCounterCount,
@@ -1793,12 +1931,24 @@ class StackResolver(
             triggerModesChosenCount = abilityComponent.triggerModesChosenCount,
             triggerScryCount = abilityComponent.triggerScryCount,
             triggerExcessDamageAmount = abilityComponent.triggerExcessDamageAmount,
+            triggerRecipientToughness = abilityComponent.triggerRecipientToughness,
+            triggerManaSpentOnTriggeringSpell = abilityComponent.triggerManaSpentOnTriggeringSpell,
+            triggerManaValueOfTriggeringSpell = abilityComponent.triggerManaValueOfTriggeringSpell,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
             chosenModes = abilityComponent.chosenModes,
             modeTargetsOrdered = abilityComponent.modeTargetsOrdered,
             modeTargetRequirements = abilityComponent.modeTargetRequirements,
-            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2))
+            pipeline = PipelineState(
+                namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2),
+                // Expose a batch trigger's captured permanents (the matching members of a
+                // PermanentsEnteredEvent batch) so a ForEachInCollectionEffect payoff can iterate
+                // them — "for each of them, create a tapped copy of it" (Kambal). The copy executor
+                // reads each entity at resolution, so any that left the battlefield meanwhile no-op.
+                storedCollections = if (abilityComponent.capturedEntityIds.isNotEmpty()) {
+                    mapOf(PipelineState.TRIGGER_CAPTURED_COLLECTION to abilityComponent.capturedEntityIds)
+                } else emptyMap()
+            )
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
@@ -1871,7 +2021,7 @@ class StackResolver(
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
-            opponentId = state.getOpponent(abilityComponent.controllerId),
+            abilityIdentity = abilityComponent.abilityIdentity,
             targets = activatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
             xValue = abilityComponent.xValue,
@@ -1939,7 +2089,6 @@ class StackResolver(
                         val condContext = EffectContext(
                             sourceId = entityId,
                             controllerId = controllerId,
-                            opponentId = newState.turnOrder.firstOrNull { it != controllerId }
                         )
                         if (!conditionEvaluator.evaluate(newState, effect.condition!!, condContext)) continue
                     }
@@ -1962,7 +2111,6 @@ class StackResolver(
                     val context = EffectContext(
                         sourceId = entityId,
                         controllerId = controllerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != controllerId },
                         xValue = xValue,
                         totalManaSpent = totalManaSpent
                     )
@@ -2138,6 +2286,92 @@ class StackResolver(
                 )
             )
         )
+    }
+
+    /**
+     * Exile a spell on the stack (CR 718 "exile target spell" — Aven Interrupter), optionally
+     * making it *plotted* for its owner.
+     *
+     * Unlike [counterSpellToExile] this is **not** a counter: it ignores can't-be-countered
+     * (the spell is exiled regardless — Aven Interrupter's ruling: "Spells that can't be
+     * countered can still be exiled"), and it emits no [SpellCounteredEvent] (so "whenever a
+     * spell is countered" triggers don't fire). The spell still ceases to resolve because it
+     * leaves the stack. A [ZoneChangeEvent] from [Zone.STACK] to [Zone.EXILE] is emitted.
+     *
+     * When [makePlotted] is true the exiled card gets the plotted designation and a permanent
+     * free-cast-on-a-later-turn permission gated by [SourcePlottedOnPriorTurn], granted to the
+     * card's **owner** (CR 718.2 / the reminder text: "Its owner may cast it as a sorcery on a
+     * later turn without paying its mana cost"), and a [CardPlottedEvent] is emitted.
+     */
+    fun exileSpell(
+        state: GameState,
+        spellId: EntityId,
+        makePlotted: Boolean
+    ): ExecutionResult {
+        if (spellId !in state.stack) {
+            return ExecutionResult.error(state, "Spell not on stack: $spellId")
+        }
+        val container = state.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Spell not found: $spellId")
+        val cardComponent = container.get<CardComponent>()
+        val spellComponent = container.get<SpellOnStackComponent>()
+        val ownerId = cardComponent?.ownerId
+            ?: spellComponent?.casterId
+            ?: return ExecutionResult.error(state, "Cannot determine spell owner")
+
+        // Remove from the stack and put the card into its owner's exile.
+        var newState = state.removeFromStack(spellId)
+        val exileZone = ZoneKey(ownerId, Zone.EXILE)
+        newState = newState.addToZone(exileZone, spellId)
+        newState = newState.updateEntity(spellId) { c ->
+            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+        }
+
+        val events = mutableListOf<GameEvent>(
+            ZoneChangeEvent(spellId, cardComponent?.name ?: "Unknown", Zone.STACK, Zone.EXILE, ownerId)
+        )
+
+        if (makePlotted) {
+            newState = applyPlottedToExiledCard(newState, spellId, ownerId, cardComponent?.name ?: "Unknown", events)
+        }
+
+        return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Make a card that already sits in [ownerId]'s exile *plotted* (CR 718): tag it with
+     * [PlottedComponent] + [PlayWithoutPayingCostComponent], grant a permanent may-play
+     * permission gated on [SourcePlottedOnPriorTurn] (a plotted card can't be cast the turn it
+     * was plotted), and emit [CardPlottedEvent]. Shared by [ExileTargetSpellEffect]'s
+     * `makePlotted` path and the [ExileAfterResolveComponent].`makePlotted` self-cast path
+     * (Lilah, Undefeated Slickshot).
+     */
+    private fun applyPlottedToExiledCard(
+        state: GameState,
+        cardId: EntityId,
+        ownerId: EntityId,
+        cardName: String,
+        events: MutableList<GameEvent>,
+    ): GameState {
+        val turnPlotted = state.turnNumber
+        var newState = state.updateEntity(cardId) { c ->
+            c.with(PlottedComponent(controllerId = ownerId, turnPlotted = turnPlotted))
+                .with(PlayWithoutPayingCostComponent(controllerId = ownerId, permanent = true))
+        }
+        val (permId, stateWithPerm) = newState.newEntity()
+        newState = stateWithPerm.addMayPlayPermission(
+            MayPlayPermission(
+                id = permId,
+                cardIds = setOf(cardId),
+                controllerId = ownerId,
+                sourceId = cardId,
+                condition = SourcePlottedOnPriorTurn,
+                permanent = true,
+                timestamp = newState.timestamp,
+            )
+        )
+        events.add(CardPlottedEvent(ownerId, cardId, cardName))
+        return newState
     }
 
     /**
@@ -2521,8 +2755,8 @@ class StackResolver(
         choice: EntersWithChoice
     ): ExecutionResult? {
         val chooserId = when (choice.chooser) {
-            com.wingedsheep.sdk.scripting.references.Player.Opponent ->
-                state.turnOrder.firstOrNull { it != controllerId } ?: controllerId
+            com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
+                state.getOpponents(controllerId).firstOrNull() ?: controllerId
             else -> controllerId
         }
 

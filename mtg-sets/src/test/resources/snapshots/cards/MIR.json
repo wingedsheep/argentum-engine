@@ -944,7 +944,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": {
                                 "cardPredicates": [
                                     "IsLand",
@@ -2136,6 +2140,63 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Goblin Elite Infantry
+{
+    "name": "Goblin Elite Infantry",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Whenever this creature blocks or becomes blocked, it gets -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "Robert Bliss",
+        "flavorText": "They talk a good fight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12b9c6b8-9f87-41f1-9e81-b5995e3ed6b7.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

@@ -1,0 +1,18 @@
+// Mass of Ghouls
+{
+    "name": "Mass of Ghouls",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Zombie Warrior",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Lucio Parrillo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20c3f515-de7d-41eb-8ba0-532f4c13ac39.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

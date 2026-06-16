@@ -26,5 +26,5 @@ class GameHistoryRepository {
         history.find { it.gameId == gameId }
 
     fun findByPlayerId(playerId: String): List<GameReplayRecord> =
-        history.filter { it.player1Id == playerId || it.player2Id == playerId }
+        history.filter { record -> record.players.any { it.playerId == playerId } }
 }

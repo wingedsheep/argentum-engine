@@ -17,7 +17,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "DrawEvent",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "exceptFirstInDrawStep": true
                 },
                 "binding": "ANY",
@@ -2074,7 +2074,8 @@
                             "gate": {
                                 "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "SourceMatches",
+                                    "type": "EntityMatches",
+                                    "entity": "Self",
                                     "filter": {
                                         "statePredicates": [
                                             {
@@ -2111,7 +2112,8 @@
                                 "condition": {
                                     "type": "Not",
                                     "condition": {
-                                        "type": "SourceMatches",
+                                        "type": "EntityMatches",
+                                        "entity": "Self",
                                         "filter": {
                                             "statePredicates": [
                                                 {
@@ -3409,7 +3411,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": "creature pow>=4"
                         }
                     },
@@ -5598,7 +5604,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": {
                                 "cardPredicates": [
                                     "IsLegendary"
@@ -7505,7 +7515,8 @@
                     }
                 },
                 "triggerCondition": {
-                    "type": "SourceMatches",
+                    "type": "EntityMatches",
+                    "entity": "Self",
                     "filter": "tapped"
                 },
                 "oncePerTurn": true
@@ -8506,7 +8517,8 @@
                     }
                 },
                 "condition": {
-                    "type": "SourceMatches",
+                    "type": "EntityMatches",
+                    "entity": "Self",
                     "filter": {
                         "statePredicates": [
                             "IsEquipped"
@@ -10067,7 +10079,7 @@
                 "id": "ability_2",
                 "trigger": {
                     "type": "DrawEvent",
-                    "player": "Opponent",
+                    "player": "EachOpponent",
                     "exceptFirstInDrawStep": true
                 },
                 "binding": "ANY",
@@ -11168,7 +11180,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": "creature Goblin|Orc"
                         }
                     },
@@ -13061,7 +13077,11 @@
                             "gate": {
                                 "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "TargetMatchesFilter",
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
                                     "filter": "creature pow>=4"
                                 }
                             },

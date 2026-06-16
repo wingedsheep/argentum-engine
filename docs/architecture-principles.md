@@ -769,6 +769,30 @@ toughness. The loop continues until the game reaches a stable state. Events emit
 processing feed into trigger detection afterward, ensuring death triggers and similar abilities
 fire correctly.
 
+**Safety limits — never hang, never overflow.** Magic has cards that drive *exponential or
+unbounded* growth: doubling tokens (Doubling Season + a token maker), doubling counters, "twice the
+number of X" dynamic amounts, and self-perpetuating effect loops. Left unguarded these either
+exhaust memory (tokens are one ECS entity each, so a doubler stack allocates 2^N entities) or
+silently overflow `Int` (doubling a near-billion counter wraps *negative*, corrupting state). No
+real game ever needs the huge number — per the tournament rules a mandatory loop is a draw and an
+optional one resolves by a named finite count — so the engine **clamps aggressively** rather than
+materializing it. The backstops, all tuned far above any legitimate card so real play is never
+affected, live in [`GameLimits`](../rules-engine/src/main/kotlin/com/wingedsheep/engine/core/GameLimits.kt):
+
+- **Saturating arithmetic** (`addClamped` / `subClamped` / `mulClamped`, `MAX_QUANTITY = 1e9`) backs
+  `CountersComponent.withAdded` and `DynamicAmount` `Add`/`Subtract`/`Multiply`, so counter and
+  amount math clamps instead of wrapping.
+- **Per-effect token cap** (`MAX_TOKENS_PER_EFFECT`, via `cappedTokenCount`) bounds the entities any
+  one token-creation effect materializes — applied *after* doublers, *before* the allocation loop.
+- **Resolution-depth guard** (`MAX_RESOLUTION_DEPTH`, carried on the immutable
+  `EffectContext.resolutionDepth` and enforced at the `EffectExecutorRegistry` chokepoint) aborts a
+  runaway effect-execution loop (e.g. a `RepeatWhileEffect` whose condition never goes false) before
+  the JVM call stack overflows. `RepeatDynamicTimesEffect` additionally clamps its body count
+  (`MAX_REPEAT_ITERATIONS`) since it materializes one body per iteration.
+
+Each cap `System.err`-logs when it actually bites (mirroring the SBA loop's 104.4c draw bail-out)
+so a degenerate card/combo stays debuggable. These are backstops, not game rules.
+
 ### 2.9 Turn Structure and Priority
 
 **Principle:** The turn is a state machine of phases and steps, with priority as the mechanism that

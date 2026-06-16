@@ -52,7 +52,7 @@ class ActionProcessor(
      * Registry that maps action types to their handlers.
      */
     private val registry = ActionHandlerRegistry().apply {
-        registerModule(SpecialActionsModule())
+        registerModule(SpecialActionsModule(services))
         registerModule(PriorityModule(services))
         registerModule(LandModule(services))
         registerModule(MulliganModule(services))

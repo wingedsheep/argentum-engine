@@ -89,9 +89,18 @@ export function CardSelectionDecision({
       }
     : null
 
+  const conditionalMinimums = decision.conditionalMinimums ?? []
+  const satisfiesConditionalMinimum = conditionalMinimums.some((minimum) => {
+    const matching = selectedCards.filter((id) => minimum.matchingOptions.includes(id)).length
+    return selectedCards.length >= minimum.minimumSelections && matching >= minimum.requiredMatches
+  })
+  const requiredMinimum = conditionalMinimums.length > 0
+    ? Math.max(...conditionalMinimums.map((minimum) => minimum.requiredSelections))
+    : decision.minSelections
   const canConfirm =
     selectedCards.length >= decision.minSelections &&
-    selectedCards.length <= decision.maxSelections
+    selectedCards.length <= decision.maxSelections &&
+    (selectedCards.length >= requiredMinimum || satisfiesConditionalMinimum)
 
   // Calculate card size that fits all cards
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 32
@@ -252,11 +261,19 @@ export function CardSelectionDecision({
       )}
 
       <p className={styles.hint}>
-        {decision.minSelections === 0
+        {conditionalMinimums.length > 0
+          ? `Selected: ${selectedCards.length} / ${requiredMinimum}; fewer is allowed if the selection matches the requirement`
+          : decision.minSelections === 0
           ? `Select up to ${decision.maxSelections}`
           : `Selected: ${selectedCards.length} / ${decision.minSelections}${decision.minSelections !== decision.maxSelections ? ` - ${decision.maxSelections}` : ''}`
         }
       </p>
+
+      {conditionalMinimums.map((minimum) => (
+        <div key={`${minimum.requiredSelections}-${minimum.minimumSelections}-${minimum.requiredMatches}`} className={styles.hint}>
+          {minimum.description ?? `You may select ${minimum.minimumSelections} if it matches the requirement.`}
+        </div>
+      ))}
 
       {decision.onePerColor && (
         <div

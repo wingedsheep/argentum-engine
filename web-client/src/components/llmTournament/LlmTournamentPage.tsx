@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import type { AvailableSet } from '@/types/messages'
 import { SetPickerModal } from '@/components/ui/SetPickerModal'
 
@@ -84,6 +85,16 @@ function fmtTokens(n: number): string {
   return String(n)
 }
 
+/** The game session id of whatever match is live right now (one at a time), else null. */
+function currentLiveGameId(t: TournamentView): string | null {
+  for (const round of t.rounds) {
+    for (const m of round.matches) {
+      if (m.status === 'live' && m.currentGameSessionId) return m.currentGameSessionId
+    }
+  }
+  return null
+}
+
 const PRESET_MODELS = [
   'deepseek/deepseek-v4-flash',
   'tencent/hy3-preview',
@@ -96,21 +107,41 @@ const PRESET_MODELS = [
 // ============================================================================
 
 export function LlmTournamentPage() {
+  const { id: routeId } = useParams<{ id?: string }>()
+  const navigate = useNavigate()
   const [tournament, setTournament] = useState<TournamentView | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const tournamentIdRef = useRef<string | null>(null)
+  const tournamentIdRef = useRef<string | null>(routeId ?? null)
 
-  // Poll the active tournament
+  // Poll the active tournament. The id lives in the URL (/llm-tournament/:id) so a page refresh
+  // re-loads the same tournament; a 404 (e.g. server restarted — tournaments are in-memory) drops
+  // back to the setup form.
   const refresh = useCallback(async () => {
     const id = tournamentIdRef.current
     if (!id) return
     try {
       const res = await fetch(`${API}/${id}`)
-      if (res.ok) setTournament(await res.json())
+      if (res.ok) {
+        setTournament(await res.json())
+      } else if (res.status === 404) {
+        tournamentIdRef.current = null
+        setTournament(null)
+        navigate('/llm-tournament', { replace: true })
+      }
     } catch {
       /* transient — keep last view */
     }
-  }, [])
+  }, [navigate])
+
+  // Sync the active id from the URL (initial load, refresh, back/forward) and fetch immediately.
+  useEffect(() => {
+    tournamentIdRef.current = routeId ?? null
+    if (routeId) {
+      void refresh()
+    } else {
+      setTournament(null)
+    }
+  }, [routeId, refresh])
 
   useEffect(() => {
     const interval = setInterval(refresh, 1500)
@@ -120,6 +151,7 @@ export function LlmTournamentPage() {
   const selectTournament = (view: TournamentView) => {
     tournamentIdRef.current = view.id
     setTournament(view)
+    navigate(`/llm-tournament/${view.id}`)
   }
 
   const control = async (action: string, body?: unknown) => {
@@ -174,6 +206,7 @@ export function LlmTournamentPage() {
             onNew={() => {
               tournamentIdRef.current = null
               setTournament(null)
+              navigate('/llm-tournament')
             }}
           />
           {tournament.status === 'BUILDING' && <BuildProgress tournament={tournament} />}
@@ -355,6 +388,7 @@ function PacingBar({
   const building = status === 'BUILDING'
   const running = status === 'RUNNING'
   const complete = status === 'COMPLETE'
+  const liveGameId = currentLiveGameId(tournament)
 
   return (
     <div style={styles.pacingBar}>
@@ -376,6 +410,17 @@ function PacingBar({
       </div>
 
       <div style={styles.controlsGroup}>
+        {liveGameId && (
+          <a
+            href={`/?spectate=${liveGameId}`}
+            target="_blank"
+            rel="noreferrer"
+            style={styles.watchLiveBtn}
+            title="Open the in-progress game in a new tab — updates to whichever game is live"
+          >
+            👁 Watch live game
+          </a>
+        )}
         {!running && !complete && (
           <button style={styles.ctrlBtn} disabled={building} onClick={status === 'PAUSED' ? onResume : onStart}>
             ▶ {status === 'PAUSED' ? 'Resume' : 'Start'}
@@ -824,6 +869,16 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 14px',
     fontSize: 13,
     cursor: 'pointer',
+  },
+  watchLiveBtn: {
+    background: '#166534',
+    color: '#dcfce7',
+    border: '1px solid #16a34a',
+    borderRadius: 8,
+    padding: '8px 14px',
+    fontSize: 13,
+    fontWeight: 600,
+    textDecoration: 'none',
   },
   secondaryBtn: {
     background: 'transparent',

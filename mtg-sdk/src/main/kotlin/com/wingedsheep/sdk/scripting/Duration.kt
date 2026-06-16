@@ -89,6 +89,24 @@ sealed interface Duration {
     }
 
     /**
+     * Effect lasts for as long as the effect's source (an Aura/Equipment) remains attached to the
+     * affected permanent (CR 611.2b "for as long as …"). The effect drops the instant the source
+     * leaves the battlefield, becomes unattached, or re-attaches to a different permanent. The
+     * latch is one-way per affected entity: once the source stops being attached to it, the effect
+     * never re-applies to that entity even if the source re-attaches.
+     *
+     * Used by Eriette, the Beguiler ("gain control of that permanent for as long as that Aura is
+     * attached to it") and Assimilation Aegis ("for as long as this Equipment remains attached to
+     * it, that creature becomes a copy …"). The source is the Aura/Equipment, not the card whose
+     * ability created the effect.
+     */
+    @SerialName("WhileSourceAttachedToAffected")
+    @Serializable
+    data object WhileSourceAttachedToAffected : Duration {
+        override val description = "for as long as it remains attached"
+    }
+
+    /**
      * Effect lasts until a specific phase.
      * Example: "Until your next end step"
      */

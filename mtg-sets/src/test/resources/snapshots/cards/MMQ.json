@@ -1,3 +1,115 @@
+// Ballista Squad
+{
+    "name": "Ballista Squad",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Rebel",
+    "oracleText": "{X}{W}, {T}: This creature deals X damage to target attacking or blocking creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Matthew D. Wilson",
+        "flavorText": "The perfect antidote for a tightly packed formation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30d51d84-23d2-41ff-ab68-a633beddba06.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Cloud Sprite
+{
+    "name": "Cloud Sprite",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nThis creature can block only creatures with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Mark Zug",
+        "flavorText": "The delicate sprites carry messages for Saprazzans, but they refuse to land in Mercadia City's filthy markets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d14352c-ac8c-45b5-b930-63822408ba3d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Collective Unconscious
 {
     "name": "Collective Unconscious",
@@ -121,6 +233,65 @@
         "artist": "Alan Pollack",
         "flavorText": "They feed on the living to stay undead.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/9/29cd6685-37ca-47c7-8f64-1fb86e9610ca.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Highway Robber
+{
+    "name": "Highway Robber",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Human Mercenary",
+    "oracleText": "When this creature enters, target opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Kev Walker",
+        "flavorText": "\"Tonight, madam, it's your money and your life.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc826c88-fe3c-4004-8283-27910c550fae.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -252,6 +423,31 @@
     ]
 }
 
+// Rock Badger
+{
+    "name": "Rock Badger",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Badger Beast",
+    "oracleText": "Mountainwalk (This creature can't be blocked as long as defending player controls a Mountain.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MOUNTAINWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "UNCOMMON",
+        "artist": "Heather Hudson",
+        "flavorText": "The Kyren goblins created most of the inverted mountain's tunnels simply by driving the beast before them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dff05df8-76f5-48c6-ac96-7b4e6a7050f6.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rushwood Dryad
 {
     "name": "Rushwood Dryad",
@@ -319,6 +515,30 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Steadfast Guard
+{
+    "name": "Steadfast Guard",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Human Rebel",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Adam Rex",
+        "flavorText": "The Mercadians were prepared for the guard, but the guard was even more prepared for the Mercadians.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6381774b-fb91-46cc-9bf6-6eeb4d67a165.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

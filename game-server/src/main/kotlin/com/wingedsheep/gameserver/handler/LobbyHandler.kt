@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.handler
 import com.wingedsheep.gameserver.ai.AiGameManager
 import com.wingedsheep.gameserver.ai.AiWebSocketSession
 import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
+import com.wingedsheep.gameserver.lobby.LobbyGameMode
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.gameserver.lobby.TournamentLobby
@@ -50,6 +51,7 @@ class LobbyHandler(
     private val gridDraftHandler: GridDraftHandler,
     private val spectatingHandler: SpectatingHandler,
     private val tournamentMatchHandler: TournamentMatchHandler,
+    private val freeForAllHandler: FreeForAllHandler,
     private val deckValidator: DeckValidator
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
@@ -148,14 +150,34 @@ class LobbyHandler(
     // Public API (delegates to sub-handlers, preserves facade for callers)
     // =========================================================================
 
-    fun handleReadyForNextRound(session: WebSocketSession) =
-        tournamentMatchHandler.handleReadyForNextRound(session)
+    fun handleReadyForNextRound(session: WebSocketSession) {
+        val (identity, lobby) = ctx.getIdentityAndLobby(session) ?: return
+        if (lobby.isFreeForAll) {
+            freeForAllHandler.handleReadyForNextGame(session, identity, lobby)
+        } else {
+            tournamentMatchHandler.handleReadyForNextRound(session)
+        }
+    }
 
-    fun handleMatchResult(lobbyId: String, gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int) =
-        tournamentMatchHandler.handleMatchResult(lobbyId, gameSessionId, winnerId, winnerLifeRemaining)
+    fun handleMatchResult(lobbyId: String, gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby?.isFreeForAll == true) {
+            freeForAllHandler.handleGameComplete(lobbyId, gameSessionId, winnerId)
+        } else {
+            tournamentMatchHandler.handleMatchResult(lobbyId, gameSessionId, winnerId, winnerLifeRemaining)
+        }
+    }
 
-    fun handleAbandon(lobbyId: String, playerId: EntityId) =
-        tournamentMatchHandler.handleAbandon(lobbyId, playerId)
+    fun handleAbandon(lobbyId: String, playerId: EntityId) {
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby?.isFreeForAll == true) {
+            // No bracket to update — just concede their seat in the running game (if any);
+            // the game continues for the remaining players (CR 800.4a).
+            freeForAllHandler.handlePlayerLeft(lobby, playerId)
+        } else {
+            tournamentMatchHandler.handleAbandon(lobbyId, playerId)
+        }
+    }
 
     fun handleAddExtraRound(session: WebSocketSession) =
         tournamentMatchHandler.handleAddExtraRound(session)
@@ -545,9 +567,22 @@ class LobbyHandler(
             TournamentFormat.SEALED
         }
 
-        val maxPlayers = when (format) {
-            TournamentFormat.WINSTON_DRAFT -> 2
-            TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 4)
+        val gameMode = try {
+            LobbyGameMode.valueOf(message.gameMode.uppercase())
+        } catch (e: IllegalArgumentException) {
+            LobbyGameMode.TOURNAMENT
+        }
+
+        val maxPlayers = when {
+            format == TournamentFormat.WINSTON_DRAFT -> 2
+            format == TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 4)
+            // Two-Headed Giant is always exactly four seats (two teams of two).
+            gameMode == LobbyGameMode.TWO_HEADED_GIANT -> 4
+            // Team vs. Team is two even teams: 4 (2v2), 6 (3v3), or 8 (4v4). The even-pod rule is
+            // re-checked at game start; an odd cap simply never starts a game.
+            gameMode == LobbyGameMode.TEAM_VS_TEAM -> message.maxPlayers.coerceIn(4, 8)
+            // FFA pods cap at 6 — the multiplayer UI lays opponent boards out around the table.
+            gameMode == LobbyGameMode.FREE_FOR_ALL -> message.maxPlayers.coerceIn(2, 6)
             else -> message.maxPlayers.coerceIn(2, 8)
         }
 
@@ -606,6 +641,9 @@ class LobbyHandler(
             // need to mix sets to give a workable pool when multiple sets are selected.
             chaosBoosters = format.isCommanderFormat,
             aiAssistEnabled = message.aiAssistEnabled,
+            gameMode = gameMode,
+            attackMode = runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(message.attackMode.uppercase()) }
+                .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE),
         )
         lobby.addPlayer(identity)
         lobbyRepository.saveLobby(lobby)
@@ -744,7 +782,11 @@ class LobbyHandler(
                 }
             }
             LobbyState.TOURNAMENT_ACTIVE -> {
-                sendTournamentActiveState(session, identity, playerSession, lobby)
+                if (lobby.isFreeForAll) {
+                    sendFfaActiveState(session, identity, playerSession, lobby)
+                } else {
+                    sendTournamentActiveState(session, identity, playerSession, lobby)
+                }
             }
             LobbyState.TOURNAMENT_COMPLETE -> {
                 val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
@@ -761,6 +803,31 @@ class LobbyHandler(
                 }
             }
         }
+    }
+
+    /**
+     * Send FFA-mode lobby state to a reconnecting player during TOURNAMENT_ACTIVE: the card pool
+     * (so they can still edit between games), the lobby roster, and then either the running game
+     * (re-associated) or the latest standings + ready status.
+     */
+    private fun sendFfaActiveState(
+        session: WebSocketSession,
+        identity: PlayerIdentity,
+        playerSession: PlayerSession?,
+        lobby: TournamentLobby
+    ) {
+        val playerState = lobby.players[identity.playerId]
+        val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+        val poolInfos = playerState?.cardPool?.map { cardToSealedCardInfo(it) } ?: emptyList()
+        sender.send(session, ServerMessage.SealedPoolGenerated(
+            setCodes = lobby.setCodes,
+            setNames = lobby.setNames,
+            cardPool = poolInfos,
+            basicLands = basicLandInfos
+        ))
+        sender.send(session, lobby.buildLobbyUpdate(identity.playerId, aiGameManager::isAiPlayer))
+
+        freeForAllHandler.sendReconnectionState(session, identity, playerSession, lobby)
     }
 
     /**
@@ -985,6 +1052,29 @@ class LobbyHandler(
         // Send lobby update so client shows lobby/tournament UI
         sender.send(session, lobby.buildLobbyUpdate(identity.playerId, aiGameManager::isAiPlayer))
 
+        // FFA mode: no tournament exists — send the latest standings and point the spectator at
+        // the running game (if any) so they can watch it.
+        if (lobby.isFreeForAll) {
+            lobby.ffaLastStandings?.let { standings ->
+                sender.send(session, ServerMessage.FreeForAllGameComplete(
+                    lobbyId = lobby.lobbyId,
+                    standings = standings,
+                    gamesPlayed = lobby.ffaGamesPlayed,
+                ))
+            }
+            val gameSessionId = lobby.ffaGameSessionId
+            val gameSession = gameSessionId?.let { gameRepository.findById(it) }
+            if (gameSession != null && gameSession.isStarted && !gameSession.isGameOver()) {
+                sender.send(session, ServerMessage.FreeForAllGameStarting(
+                    lobbyId = lobby.lobbyId,
+                    gameSessionId = gameSession.sessionId,
+                    gameNumber = lobby.ffaGamesPlayed + 1,
+                    players = gameSession.seatInfos(),
+                ))
+            }
+            return
+        }
+
         // Send tournament state based on lobby phase
         val tournament = lobbyRepository.findTournamentById(lobby.lobbyId)
         if (tournament != null) {
@@ -1160,13 +1250,21 @@ class LobbyHandler(
 
                 // Skip DECK_BUILDING entirely; jump straight into the tournament.
                 lobby.activatePremadeTournament()
-                logger.info("Lobby ${lobby.lobbyId} started premade-decks tournament (${lobby.playerCount} players)")
+                logger.info("Lobby ${lobby.lobbyId} started premade-decks ${lobby.gameMode.name.lowercase()} (${lobby.playerCount} players)")
 
-                val tournament = tournamentMatchHandler.ensureTournamentCreated(lobby)
-                lobby.players.values.forEach { ps ->
-                    tournamentMatchHandler.sendTournamentStartedToPlayer(lobby, tournament, ps.identity)
+                if (lobby.isFreeForAll) {
+                    // FFA mode: everyone's deck is in — start the one multiplayer game now.
+                    val lock = ctx.roundLocks.computeIfAbsent(lobby.lobbyId) { Any() }
+                    synchronized(lock) {
+                        freeForAllHandler.maybeStartGame(lobby)
+                    }
+                } else {
+                    val tournament = tournamentMatchHandler.ensureTournamentCreated(lobby)
+                    lobby.players.values.forEach { ps ->
+                        tournamentMatchHandler.sendTournamentStartedToPlayer(lobby, tournament, ps.identity)
+                    }
+                    tournamentMatchHandler.autoReadyAiPlayers(lobby, tournament)
                 }
-                tournamentMatchHandler.autoReadyAiPlayers(lobby, tournament)
             }
         }
 
@@ -1223,6 +1321,16 @@ class LobbyHandler(
                 session,
                 ErrorCode.INVALID_ACTION,
                 "AI opponents are not supported in Premade Decks tournaments yet"
+            )
+            return
+        }
+
+        if (lobby.isFreeForAll) {
+            // The built-in AI is deeply 1v1 (multiplayer.md "AI seats: deferred") — FFA pods are humans-only.
+            sender.sendError(
+                session,
+                ErrorCode.INVALID_ACTION,
+                "AI opponents are not supported in Free-for-All games yet"
             )
             return
         }
@@ -1640,6 +1748,11 @@ class LobbyHandler(
             return
         }
 
+        // A departing FFA player's seat is conceded; the game continues for the rest (CR 800.4a).
+        if (lobby.isFreeForAll) {
+            freeForAllHandler.handlePlayerLeft(lobby, identity.playerId)
+        }
+
         // Use forceRemovePlayer for explicit leave - player cannot rejoin
         lobby.forceRemovePlayer(identity.playerId)
         identity.currentLobbyId = null
@@ -1665,6 +1778,10 @@ class LobbyHandler(
     private fun leaveCurrentLobbyIfPresent(identity: PlayerIdentity) {
         val lobbyId = identity.currentLobbyId ?: return
         val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
+
+        if (lobby.isFreeForAll) {
+            freeForAllHandler.handlePlayerLeft(lobby, identity.playerId)
+        }
 
         lobby.removePlayer(identity.playerId)
         identity.currentLobbyId = null
@@ -1704,8 +1821,10 @@ class LobbyHandler(
             return
         }
 
-        // Can only stop during WAITING_FOR_PLAYERS, DRAFTING, or DECK_BUILDING (not during active tournament)
-        if (lobby.state == LobbyState.TOURNAMENT_ACTIVE || lobby.state == LobbyState.TOURNAMENT_COMPLETE) {
+        // Can only stop during WAITING_FOR_PLAYERS, DRAFTING, or DECK_BUILDING (not during active
+        // tournament). An FFA pod has no natural end, so its host may disband it between games.
+        val ffaBetweenGames = lobby.isFreeForAll && lobby.ffaGameSessionId == null
+        if ((lobby.state == LobbyState.TOURNAMENT_ACTIVE && !ffaBetweenGames) || lobby.state == LobbyState.TOURNAMENT_COMPLETE) {
             sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot stop lobby during tournament")
             return
         }
@@ -1754,6 +1873,10 @@ class LobbyHandler(
         val tournament = lobbyRepository.findTournamentById(lobbyId)
         if (tournament != null && tournament.hasActiveMatch(identity.playerId)) {
             sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot edit deck - match already started")
+            return
+        }
+        if (lobby.isFreeForAll && lobby.ffaGameSessionId != null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Cannot edit deck - game in progress")
             return
         }
 
@@ -1872,6 +1995,71 @@ class LobbyHandler(
             }
         }
 
+        // Game-mode switch (mode axis is orthogonal to format). Switching to FREE_FOR_ALL caps the
+        // pod at 6 seats and requires a humans-only roster (AI pod players are a deferred project).
+        message.gameMode?.let { modeStr ->
+            val newMode = runCatching { LobbyGameMode.valueOf(modeStr.uppercase()) }.getOrNull()
+            if (newMode == null) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid game mode: $modeStr")
+                return
+            }
+            if (newMode != lobby.gameMode) {
+                if (newMode != LobbyGameMode.TOURNAMENT) {
+                    if (lobby.players.keys.any { aiGameManager.isAiPlayer(it) }) {
+                        val label = when (newMode) {
+                            LobbyGameMode.TWO_HEADED_GIANT -> "Two-Headed Giant"
+                            LobbyGameMode.TEAM_VS_TEAM -> "Team vs. Team"
+                            else -> "Free-for-All"
+                        }
+                        sender.sendError(session, ErrorCode.INVALID_ACTION, "$label doesn't support AI players yet — remove them first")
+                        return
+                    }
+                }
+                when (newMode) {
+                    LobbyGameMode.TWO_HEADED_GIANT -> {
+                        // Two teams of two — always exactly four seats.
+                        if (lobby.playerCount > 4) {
+                            sender.sendError(session, ErrorCode.INVALID_ACTION, "Two-Headed Giant is exactly four players")
+                            return
+                        }
+                        lobby.maxPlayers = 4
+                    }
+                    LobbyGameMode.TEAM_VS_TEAM -> {
+                        // Two even teams: at most eight players (4v4).
+                        if (lobby.playerCount > 8) {
+                            sender.sendError(session, ErrorCode.INVALID_ACTION, "Team vs. Team supports at most 8 players")
+                            return
+                        }
+                        lobby.maxPlayers = lobby.maxPlayers.coerceIn(4, 8)
+                    }
+                    LobbyGameMode.FREE_FOR_ALL -> {
+                        if (lobby.playerCount > 6) {
+                            sender.sendError(session, ErrorCode.INVALID_ACTION, "Free-for-All supports at most 6 players")
+                            return
+                        }
+                        lobby.maxPlayers = lobby.maxPlayers.coerceIn(2, 6)
+                    }
+                    LobbyGameMode.TOURNAMENT -> Unit
+                }
+                lobby.gameMode = newMode
+            }
+        }
+
+        // Free-for-All attack rule (CR 802/803). Stored regardless of mode; only consumed when a
+        // Free-for-All game starts. Invalid values are ignored (settings left unchanged).
+        message.attackMode?.let { modeStr ->
+            runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(modeStr.uppercase()) }
+                .onSuccess { lobby.attackMode = it }
+        }
+
+        // Two-Headed Giant team setup (CR 810). Stored regardless of mode; only consumed when a 2HG
+        // game starts. randomTeams=true re-rolls teams each game; when false the host's
+        // teamAssignments (playerId -> team) are used, balanced/falling back if incomplete.
+        message.randomTeams?.let { lobby.randomTeams = it }
+        message.teamAssignments?.let { assignments ->
+            lobby.setTeamAssignments(assignments.mapKeys { com.wingedsheep.sdk.model.EntityId(it.key) })
+        }
+
         // Manual boosterCount override (apply after format change)
         // Grid draft uses fixed booster counts based on player count — no manual override.
         // Premade decks doesn't use boosters at all — ignore.
@@ -1903,11 +2091,15 @@ class LobbyHandler(
         }
         message.maxPlayers?.let {
             val oldMaxPlayers = lobby.maxPlayers
-            when (lobby.format) {
-                TournamentFormat.WINSTON_DRAFT -> lobby.maxPlayers = 2
-                TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 4)
-                TournamentFormat.PREMADE_DECKS -> lobby.maxPlayers = it.coerceIn(2, 8)
-                else -> lobby.maxPlayers = it.coerceIn(2, 8)
+            val modeCap = if (lobby.isFreeForAll) 6 else 8
+            when {
+                // Two-Headed Giant is locked at four seats — the host can't change it.
+                lobby.isTwoHeadedGiant -> lobby.maxPlayers = 4
+                // Team vs. Team allows 4/6/8 (two even teams), above the FFA board-layout cap of 6.
+                lobby.isTeamVsTeam -> lobby.maxPlayers = it.coerceIn(4, 8)
+                lobby.format == TournamentFormat.WINSTON_DRAFT -> lobby.maxPlayers = 2
+                lobby.format == TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 4)
+                else -> lobby.maxPlayers = it.coerceIn(2, modeCap)
             }
             // Auto-adjust grid draft booster count when player count changes (always, since it's fixed)
             if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.maxPlayers != oldMaxPlayers) {
@@ -2080,6 +2272,20 @@ class LobbyHandler(
                 // Premade decks: stay in WAITING_FOR_PLAYERS until host clicks Start. Don't
                 // pre-create the tournament here — that happens in handleStartTournamentLobby.
                 if (lobby.format == TournamentFormat.PREMADE_DECKS && lobby.state == LobbyState.WAITING_FOR_PLAYERS) {
+                    lobbyRepository.saveLobby(lobby)
+                    return
+                }
+
+                // Free-for-All mode: no bracket, no per-match readiness — submitting the last
+                // deck is the ready signal, and the one multiplayer game starts immediately.
+                if (lobby.isFreeForAll) {
+                    if (result.allReady && lobby.state == LobbyState.DECK_BUILDING) {
+                        lobby.activateTournament()
+                        val lock = ctx.roundLocks.computeIfAbsent(lobby.lobbyId) { Any() }
+                        synchronized(lock) {
+                            freeForAllHandler.maybeStartGame(lobby)
+                        }
+                    }
                     lobbyRepository.saveLobby(lobby)
                     return
                 }

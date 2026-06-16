@@ -360,6 +360,19 @@ export function mergeResult(
         return { ...action, additionalCostPayment }
       }
       if (action.type === 'ActivateAbility') {
+        // Station-style multi-select shortcut: when the tap cost is batch-activatable, the number
+        // of creatures chosen becomes repeatCount — one activation per creature goes on the stack,
+        // each tapping its own creature (the engine slices `tappedPermanents` per activation).
+        if (
+          costType === 'TapPermanents' &&
+          (_actionInfo.additionalCostInfo?.tapBatchMaxActivations ?? 1) > 1
+        ) {
+          return {
+            ...action,
+            costPayment: { tappedPermanents: selectedTargets },
+            repeatCount: selectedTargets.length,
+          }
+        }
         const costPayment =
           costType === 'TapPermanents'
             ? { tappedPermanents: selectedTargets }
@@ -586,19 +599,30 @@ export function enterPhase(
           break
         case 'TapPermanents': {
           validTargets = [...(costInfo.validTapTargets ?? [])]
-          // `tapCount = 0` from the server is the TapXPermanents sentinel for "variable,
-          // equals the chosen X". The xSelection pipeline phase already ran and put the
-          // chosen value on action.xValue; use it as the required tap count so the prompt
-          // reads "Select 3/3" instead of "Select 0/0".
-          const xTapCount =
-            actionInfo.hasXCost &&
-            (action.type === 'ActivateAbility' || action.type === 'CastSpell') &&
-            typeof action.xValue === 'number'
-              ? action.xValue
-              : null
-          const requiredTaps = xTapCount ?? costInfo.tapCount ?? 1
-          minTargets = requiredTaps
-          maxTargets = requiredTaps
+          // Station-style multi-select shortcut (CR 702.184a): each chosen creature becomes its
+          // own activation on the stack (one tap each). Let the player pick 1..N distinct
+          // creatures; mergeResult sets repeatCount to the number chosen. tapBatchMaxActivations
+          // is the server-validated cap (the count of legal tap targets). Picking one is the
+          // unchanged single-station behaviour, so this is strictly additive.
+          const batchMax = costInfo.tapBatchMaxActivations ?? 1
+          if (batchMax > 1) {
+            minTargets = 1
+            maxTargets = Math.min(batchMax, validTargets.length)
+          } else {
+            // `tapCount = 0` from the server is the TapXPermanents sentinel for "variable,
+            // equals the chosen X". The xSelection pipeline phase already ran and put the
+            // chosen value on action.xValue; use it as the required tap count so the prompt
+            // reads "Select 3/3" instead of "Select 0/0".
+            const xTapCount =
+              actionInfo.hasXCost &&
+              (action.type === 'ActivateAbility' || action.type === 'CastSpell') &&
+              typeof action.xValue === 'number'
+                ? action.xValue
+                : null
+            const requiredTaps = xTapCount ?? costInfo.tapCount ?? 1
+            minTargets = requiredTaps
+            maxTargets = requiredTaps
+          }
           flags.isSacrificeSelection = true
           flags.isTapPermanentSelection = true
           break

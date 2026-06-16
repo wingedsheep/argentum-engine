@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -79,7 +80,6 @@ class TargetValidator {
                         val context = EffectContext(
                             sourceId = sourceId,
                             controllerId = casterId,
-                            opponentId = state.getOpponent(casterId),
                             xValue = xValue
                         )
                         DynamicAmountEvaluator().evaluate(state, dyn, context).coerceAtLeast(0)
@@ -201,8 +201,39 @@ class TargetValidator {
         val protectionFromSupertypeError = checkProtectionFromSupertype(state, target, sourceId)
         if (protectionFromSupertypeError != null) return protectionFromSupertypeError
 
+        // "Can't be enchanted" (CR 303.4): an Aura can't legally target a permanent with the
+        // CANT_BE_ENCHANTED restriction (Guardian Beast). Only applies when the source is an Aura.
+        val cantBeEnchantedError = checkCantBeEnchanted(state, target, sourceId)
+        if (cantBeEnchantedError != null) return cantBeEnchantedError
+
         // Check protection from color and creature subtype (Rule 702.16)
         return checkProtection(state, target, sourceColors, sourceSubtypes)
+    }
+
+    /**
+     * Reject an Aura targeting a permanent that can't be enchanted (CR 303.4). No-op for
+     * non-Aura sources and for non-permanent targets.
+     *
+     * Scope note: this only guards Aura *targeting* at cast/activation time, which covers the
+     * common case (casting an Aura, or an ability that targets with an Aura on the stack). It does
+     * NOT cover effects that move/attach an existing Aura without targeting (e.g. "attach target
+     * Aura to ~", reanimate-an-Aura-attached). A card needing full coverage of the non-targeted
+     * attachment cases (CR 303.4i for entering attached, CR 303.4j for re-attaching an on-battlefield
+     * Aura) must also check [AbilityFlag.CANT_BE_ENCHANTED] at the attachment step.
+     */
+    private fun checkCantBeEnchanted(
+        state: GameState,
+        target: ChosenTarget,
+        sourceId: EntityId?
+    ): String? {
+        val sourceIsAura = sourceId
+            ?.let { state.getEntity(it)?.get<CardComponent>()?.typeLine?.isAura }
+            ?: false
+        if (!sourceIsAura) return null
+        val targetId = (target as? ChosenTarget.Permanent)?.entityId ?: return null
+        return if (state.projectedState.hasKeyword(targetId, AbilityFlag.CANT_BE_ENCHANTED)) {
+            "That permanent can't be enchanted"
+        } else null
     }
 
     /**

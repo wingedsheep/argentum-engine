@@ -19,3 +19,17 @@ data class PlayerComponent(
 data class LifeTotalComponent(
     val life: Int
 ) : Component
+
+/**
+ * Team membership for a player entity (Two-Headed Giant and other team variants — CR 810).
+ *
+ * Players sharing a [teamIndex] are on the same team. The index is assigned at game init from
+ * [com.wingedsheep.engine.core.GameConfig.teams]. In non-team formats no player carries this
+ * component and every player is implicitly a team of one — see [com.wingedsheep.engine.state.GameState.teamOf]
+ * / [com.wingedsheep.engine.state.GameState.teams], so all team-aware helpers degrade to per-player
+ * behaviour with no change to existing games.
+ */
+@Serializable
+data class TeamComponent(
+    val teamIndex: Int
+) : Component

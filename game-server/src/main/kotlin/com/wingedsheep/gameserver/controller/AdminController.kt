@@ -79,8 +79,8 @@ class AdminController(
 
     private fun GameReplayRecord.toSummary() = GameSummary(
         gameId = gameId,
-        player1Name = player1Name,
-        player2Name = player2Name,
+        player1Name = players.getOrNull(0)?.name ?: "",
+        player2Name = players.getOrNull(1)?.name ?: "",
         startedAt = startedAt.toString(),
         endedAt = endedAt.toString(),
         winnerName = winnerName,

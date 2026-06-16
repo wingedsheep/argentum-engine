@@ -28,15 +28,19 @@ class CombatEnumerator : ActionEnumerator {
     fun isCombatDeclarationStep(context: EnumerationContext): Boolean {
         val state = context.state
         val playerId = context.playerId
-        if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
+        if (state.step == Step.DECLARE_ATTACKERS && state.isActiveTurnFor(playerId)) {
             val attackersAlreadyDeclared = state.getEntity(playerId)
                 ?.get<AttackersDeclaredThisCombatComponent>() != null
             if (!attackersAlreadyDeclared) return true
         }
-        if (state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != playerId) {
+        if (state.step == Step.DECLARE_BLOCKERS && !state.isActiveTurnFor(playerId)) {
             val blockersAlreadyDeclared = state.getEntity(playerId)
                 ?.get<BlockersDeclaredThisCombatComponent>() != null
-            if (!blockersAlreadyDeclared) return true
+            if (!blockersAlreadyDeclared &&
+                com.wingedsheep.engine.mechanics.combat.CombatDefenders.isDefendingPlayer(state, playerId)
+            ) {
+                return true
+            }
         }
         return false
     }
@@ -46,18 +50,21 @@ class CombatEnumerator : ActionEnumerator {
         val playerId = context.playerId
 
         // Declare attackers
-        if (state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == playerId) {
+        if (state.step == Step.DECLARE_ATTACKERS && state.isActiveTurnFor(playerId)) {
             val attackersAlreadyDeclared = state.getEntity(playerId)
                 ?.get<AttackersDeclaredThisCombatComponent>() != null
             if (!attackersAlreadyDeclared) {
                 val validAttackers = context.turnManager.getValidAttackers(state, playerId)
                 val projected = context.projected
-                val opponents = state.turnOrder.filter { it != playerId }
+                // Opponents this player may attack under the game's AttackMode (CR 802 / 803).
+                // A planeswalker is attackable iff its controller is one of those opponents.
+                val attackableOpponents = com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                    .legalDefendingPlayers(state, playerId)
                 val opponentPlaneswalkers = state.getBattlefield().filter { entityId ->
                     projected.isPlaneswalker(entityId) &&
-                        projected.getController(entityId) in opponents
+                        projected.getController(entityId) in attackableOpponents
                 }
-                val validAttackTargets = opponents + opponentPlaneswalkers
+                val validAttackTargets = attackableOpponents.toList() + opponentPlaneswalkers
                 val mandatoryAttackers = context.turnManager.getMandatoryAttackers(state, playerId)
                 return listOf(LegalAction(
                     actionType = "DeclareAttackers",
@@ -70,8 +77,10 @@ class CombatEnumerator : ActionEnumerator {
             }
         }
 
-        // Declare blockers
-        if (state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != playerId) {
+        // Declare blockers — offered only to a defending player (one being attacked).
+        if (state.step == Step.DECLARE_BLOCKERS && !state.isActiveTurnFor(playerId) &&
+            com.wingedsheep.engine.mechanics.combat.CombatDefenders.isDefendingPlayer(state, playerId)
+        ) {
             val blockersAlreadyDeclared = state.getEntity(playerId)
                 ?.get<BlockersDeclaredThisCombatComponent>() != null
             if (!blockersAlreadyDeclared) {

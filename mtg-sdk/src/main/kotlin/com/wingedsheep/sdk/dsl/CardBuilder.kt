@@ -642,6 +642,23 @@ class CardBuilder(private val name: String) {
         face(name, init)
     }
 
+    /**
+     * Declare the prepare spell of a preparation card (Secrets of Strixhaven). Sets [layout]
+     * to [CardLayout.PREPARE] and registers the named face. Inside the block, declare the
+     * prepare spell's `manaCost`, `typeLine` (e.g. `"Sorcery"`), `oracleText`, and a
+     * `spell { … }` block for its effect / targets.
+     *
+     * The creature face is described by the surrounding [CardBuilder]'s top-level fields
+     * (`manaCost`, `typeLine`, `power`, `toughness`, plus the [com.wingedsheep.sdk.core.Keyword.PREPARED]
+     * keyword and any creature-side abilities). The creature enters prepared, which creates a
+     * copy of this prepare spell in exile that its controller may cast (paying this face's cost);
+     * casting that copy unprepares the creature.
+     */
+    fun prepare(name: String, init: CardFaceBuilder.() -> Unit) {
+        layout = CardLayout.PREPARE
+        face(name, init)
+    }
+
     // =========================================================================
     // Metadata
     // =========================================================================
@@ -712,6 +729,19 @@ class CardBuilder(private val name: String) {
             }
         }
 
+        // PREPARE layout (Secrets of Strixhaven): the surrounding CardBuilder fields describe the
+        // creature face; cardFaces[0] is the prepare spell. A copy of that spell is created in
+        // exile when the creature enters prepared.
+        if (layout == CardLayout.PREPARE) {
+            require(cardFaceList.size == 1) {
+                "PREPARE layout requires exactly one face (the prepare spell): $name"
+            }
+            val prepareFace = cardFaceList.first()
+            require(prepareFace.script.spellEffect != null) {
+                "Prepare spell '${prepareFace.name}' must declare a spell { } effect"
+            }
+        }
+
         val parsedTypeLine = TypeLine.parse(typeLine)
         val parsedManaCost = if (manaCost.isNotEmpty()) ManaCost.parse(manaCost) else ManaCost.ZERO
 
@@ -755,6 +785,7 @@ class CardBuilder(private val name: String) {
             classLevels = classLevelsList.toList(),
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
+            paradigm = spellBuilder?.isParadigm ?: false,
             selfAlternativeCost = selfAlternativeCost,
             xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
             mayStartOnBattlefield = mayStartOnBattlefield,
@@ -777,7 +808,9 @@ class CardBuilder(private val name: String) {
 
         // Derive simple keywords from parameterized keyword abilities
         val derivedKeywords = finalKeywordAbilities.mapNotNull { it.keyword }.toSet()
-        val finalKeywords = keywordSet + derivedKeywords
+        // Paradigm is a display keyword whose behavior is driven by the spell's `paradigm` flag.
+        val paradigmKeyword = if (spellBuilder?.isParadigm == true) setOf(Keyword.PARADIGM) else emptySet()
+        val finalKeywords = keywordSet + derivedKeywords + paradigmKeyword
 
         val parsedColorIdentity: Set<Color>? = colorIdentity?.let { raw ->
             raw.mapNotNullTo(mutableSetOf()) { Color.fromSymbol(it.uppercaseChar()) }
@@ -850,6 +883,23 @@ class SpellBuilder {
     }
 
     internal val exilesOnResolve: Boolean get() = selfExileOnResolve
+
+    private var paradigm: Boolean = false
+
+    /**
+     * Paradigm (Secrets of Strixhaven). The spell exiles itself on resolution and is tagged with
+     * the paradigm marker, so the engine synthesizes the recurring "at the beginning of each of
+     * your first main phases, you may cast a copy of this card from exile without paying its mana
+     * cost" ability ([com.wingedsheep.sdk.scripting.Paradigm.recastAbility]). Implies
+     * [selfExile]; the [com.wingedsheep.sdk.core.Keyword.PARADIGM] display keyword is added
+     * automatically.
+     */
+    fun paradigm() {
+        paradigm = true
+        selfExileOnResolve = true
+    }
+
+    internal val isParadigm: Boolean get() = paradigm
 
     /**
      * Alternate effect used when kicker is paid. When set along with [kickerTarget],
@@ -1518,6 +1568,7 @@ class CardFaceBuilder(private val name: String) {
             staticAbilities = staticAbilities.toList(),
             additionalCosts = additionalCostsList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
+            paradigm = spellBuilder?.isParadigm ?: false,
         )
         return CardFace(
             name = name,

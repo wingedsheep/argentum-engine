@@ -55,7 +55,7 @@ val StarforgedSword = card("Starforged Sword") {
                     toughness = 1,
                     colors = setOf(Color.BLUE),
                     creatureTypes = setOf("Fish"),
-                    controller = EffectTarget.PlayerRef(Player.EachOpponent),
+                    controller = EffectTarget.PlayerRef(Player.AnOpponent),
                     tapped = true,
                     imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
                 ).then(Effects.AttachEquipment(EffectTarget.ContextTarget(0)))

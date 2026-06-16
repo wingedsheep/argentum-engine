@@ -22,6 +22,7 @@ export function TournamentEntryPage() {
   const tournamentState = useGameStore((state) => state.tournamentState)
   const lastError = useGameStore((state) => state.lastError)
   const setPendingTournamentId = useGameStore((state) => state.setPendingTournamentId)
+  const sessionReplaced = useGameStore((state) => state.sessionReplaced)
 
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
   const [joining, setJoining] = useState(false)
@@ -42,14 +43,16 @@ export function TournamentEntryPage() {
       .catch(() => setFetchError('Tournament not found or no longer active.'))
   }, [lobbyId])
 
-  // Auto-connect if we have a stored name (returning user)
+  // Auto-connect if we have a stored name (returning user). Never while another
+  // tab/device owns the session — reconnecting would steal it back.
   useEffect(() => {
+    if (sessionReplaced) return
     const storedName = localStorage.getItem('argentum-player-name')
     if (storedName && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
       hasConnectedRef.current = true
       connect(storedName)
     }
-  }, [connectionStatus, connect])
+  }, [connectionStatus, connect, sessionReplaced])
 
   // Auto-join lobby once connected
   useEffect(() => {

@@ -23,6 +23,7 @@ import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 class AIPlayerTest : FunSpec({
 
@@ -533,5 +534,119 @@ class AIPlayerTest : FunSpec({
         val chosen2 = ai.chooseFrom(driver.state, listOf(act2, pass2)).action
         val secondTarget = targetOf(chosen2)
         (secondTarget != firstTarget).shouldBeTrue()
+    }
+
+    // Regression: a spell that targets "a spell on the stack" (Reprieve, a counterspell, …) is a
+    // SINGLE-requirement targeted spell, so the enumerator surfaces it with `targetRequirements =
+    // null` and only a flat `validTargets` list — i.e. with no target zone. The strategist's
+    // single-target path then defaulted every entity to a `ChosenTarget.Permanent`, so the cast
+    // was submitted with a Permanent target, rejected by the engine ("Target must be a spell on
+    // the stack"), and re-picked forever. The fix consults `state.isSpellOnStack` and wraps a
+    // stack target as a `ChosenTarget.Spell`.
+    test("AI casts a 'target spell' instant with a Spell target instead of looping") {
+        val bounceSpell = card("Test Spell Bounce") {
+            manaCost = "{1}{W}"
+            typeLine = "Instant"
+            spell {
+                target("target spell", Targets.Spell)
+                effect = Effects.ReturnSpellToOwnersHand() then Effects.DrawCards(1)
+            }
+        }
+        val creature = card("Test Ogre Mage") {
+            manaCost = "{2}{R}"
+            typeLine = "Creature — Ogre"
+            power = 4
+            toughness = 4
+        }
+
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(bounceSpell, creature))
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+        // Opponent is the active player; the AI responds to the opponent's creature spell.
+        val opp = driver.activePlayer!!
+        val aiId = driver.getOpponent(opp)
+
+        driver.passPriorityUntil(Phase.PRECOMBAT_MAIN)
+
+        // Opponent puts a creature spell on the stack, then passes so the AI gets priority
+        // with the spell still unresolved.
+        val creatureCard = driver.putCardInHand(opp, "Test Ogre Mage")
+        driver.giveMana(opp, com.wingedsheep.sdk.core.Color.RED, 1)
+        driver.giveColorlessMana(opp, 2)
+        driver.castSpell(opp, creatureCard).isSuccess shouldBe true
+        driver.passPriority(opp)
+        driver.state.stack.shouldNotBeEmpty()
+
+        // Arm the AI: the bounce spell in hand plus the mana to cast it.
+        val bounceCard = driver.putCardInHand(aiId, "Test Spell Bounce")
+        driver.giveMana(aiId, com.wingedsheep.sdk.core.Color.WHITE, 1)
+        driver.giveColorlessMana(aiId, 1)
+
+        val simulator = GameSimulator(driver.cardRegistry)
+        val legalActions = simulator.getLegalActions(driver.state, aiId)
+
+        // The single-target "target spell" cast must be offered (there IS a legal target on the
+        // stack) and must NOT carry the multi-requirement metadata — this is exactly the shape
+        // that produced the bug.
+        val cast = legalActions.find {
+            it.actionType == "CastSpell" && it.requiresTargets &&
+                it.description.contains("Test Spell Bounce")
+        }
+        cast.shouldNotBeNull()
+        cast.targetRequirements shouldBe null
+        cast.validTargets.shouldNotBeNull()
+
+        val ai = AIPlayer.create(driver.cardRegistry, aiId)
+        val pass = legalActions.first { it.actionType == "PassPriority" }
+        val chosen = ai.chooseFrom(driver.state, listOf(cast, pass)).action
+
+        // The AI must have wrapped the stack entity as a Spell target, not a Permanent.
+        (chosen is CastSpell).shouldBeTrue()
+        val targets = (chosen as CastSpell).targets
+        targets.shouldNotBeEmpty()
+        targets.single().shouldBeInstanceOf<ChosenTarget.Spell>()
+
+        // The decisive anti-loop guarantee: the chosen action is actually legal and accepted.
+        driver.submit(chosen).isSuccess shouldBe true
+    }
+
+    // Guard against over-correction: a no-target spell and an "up to one target" spell must
+    // still be castable when there is nothing (or nobody) to target. The fix only touched how a
+    // chosen stack entity is wrapped; it must not gate these casts away.
+    test("AI still casts a no-target spell and an 'up to one target' spell with no targets") {
+        val plainDraw = card("Test Cantrip") {
+            manaCost = "{1}"
+            typeLine = "Sorcery"
+            spell { effect = Effects.DrawCards(1) }
+        }
+        val upToOne = card("Test Optional Bolt") {
+            manaCost = "{R}"
+            typeLine = "Sorcery"
+            spell {
+                val t = target("up to one target creature", Targets.UpToCreatures(1))
+                effect = Effects.DealDamage(2, t)
+            }
+        }
+
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(plainDraw, upToOne))
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+        val aiId = driver.activePlayer!!
+        driver.passPriorityUntil(Phase.PRECOMBAT_MAIN)
+
+        driver.putCardInHand(aiId, "Test Cantrip")
+        driver.putCardInHand(aiId, "Test Optional Bolt")
+        driver.giveColorlessMana(aiId, 1)
+        driver.giveMana(aiId, com.wingedsheep.sdk.core.Color.RED, 1)
+
+        val simulator = GameSimulator(driver.cardRegistry)
+        // No creatures exist anywhere, so "up to one target creature" has zero candidates — but
+        // because minTargets == 0 the cast is still legal (CR 601.2c only blocks a cast whose
+        // target requirement has NO legal target AND requires at least one).
+        val actions = simulator.getLegalActions(driver.state, aiId)
+        actions.any { it.actionType == "CastSpell" && it.description.contains("Test Cantrip") }
+            .shouldBeTrue()
+        actions.any { it.actionType == "CastSpell" && it.description.contains("Test Optional Bolt") }
+            .shouldBeTrue()
     }
 })

@@ -25,7 +25,8 @@ internal fun effectTargetToChooser(target: EffectTarget): Chooser = when (target
     is EffectTarget.BoundVariable -> Chooser.TargetPlayer
     is EffectTarget.PlayerRef -> when (target.player) {
         is Player.You -> Chooser.Controller
-        is Player.Opponent, is Player.TargetOpponent, is Player.EachOpponent -> Chooser.Opponent
+        is Player.TargetOpponent -> Chooser.TargetPlayer
+        is Player.AnOpponent, is Player.EachOpponent -> Chooser.Opponent
         is Player.TriggeringPlayer -> Chooser.TriggeringPlayer
         // "Its owner" (e.g. Recoil: "Return target permanent to its owner's hand. Then that
         // player discards a card.") resolves to whoever owns the targeted permanent, which may be

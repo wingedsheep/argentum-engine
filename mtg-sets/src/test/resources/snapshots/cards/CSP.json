@@ -1,3 +1,115 @@
+// Deathmark
+{
+    "name": "Deathmark",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target green or white creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature green|white"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Jeremy Jarvis",
+        "flavorText": "\"I hope it's true that every snowflake is unique, because I never want to see one like this again. Now clean up that body.\"\n—Thangbrand Gyrdsson, Kjeldoran patrol",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e72e8728-d0a0-4ee5-87c3-092ca94225e0.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Field Marshal
+{
+    "name": "Field Marshal",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Other Soldier creatures get +1/+1 and have first strike. (They deal combat damage before creatures without first strike.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Soldier",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "creature Soldier",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "Stephen Tappin",
+        "flavorText": "The Knights of Stromgald struck Darien's Roost from two sides. They would have caught Kjeldor in a pincer attack were it not for Darien's tacticians.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/421648a0-51c8-45c4-9771-0fd3ccdc69c9.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Flashfreeze
+{
+    "name": "Flashfreeze",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target red or green spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "red|green",
+                    "zone": "Stack"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Despain",
+        "flavorText": "\"Nature? Fire? Bah! Both are chaotic and difficult to control. Ice is structured, latticed, light as a feather, massive as a glacier. In ice, there is power!\"\n—Heidar, Rimewind master",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cefd9955-a195-4855-a00e-3809b96ca92b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Zur the Enchanter
 {
     "name": "Zur the Enchanter",

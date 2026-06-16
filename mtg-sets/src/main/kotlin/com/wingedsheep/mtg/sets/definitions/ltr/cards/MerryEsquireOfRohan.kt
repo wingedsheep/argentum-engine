@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -9,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.conditions.Exists
-import com.wingedsheep.sdk.scripting.conditions.SourceMatches
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -39,7 +39,7 @@ val MerryEsquireOfRohan = card("Merry, Esquire of Rohan") {
             keyword = Keyword.FIRST_STRIKE.name,
             filter = GroupFilter.source()
         )
-        condition = SourceMatches(GameObjectFilter.Any.equipped())
+        condition = Conditions.SourceMatches(GameObjectFilter.Any.equipped())
     }
 
     // "Whenever you attack with Merry and another legendary creature, draw a card."

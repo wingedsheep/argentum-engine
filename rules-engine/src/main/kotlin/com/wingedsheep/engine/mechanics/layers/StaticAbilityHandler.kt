@@ -52,6 +52,7 @@ import com.wingedsheep.sdk.scripting.GrantColor
 import com.wingedsheep.sdk.scripting.GrantChosenColor
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.TransformPermanent
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessDynamicStatic
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
@@ -68,6 +69,7 @@ import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
 import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.AttackTax
+import com.wingedsheep.sdk.scripting.BlockTax
 import com.wingedsheep.sdk.scripting.AttackerCountLimit
 import com.wingedsheep.sdk.scripting.BlockerCountLimit
 import com.wingedsheep.sdk.scripting.CanAttackDespiteDefender
@@ -104,12 +106,14 @@ import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
+import com.wingedsheep.sdk.scripting.ModifyPlotCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.NoMaximumHandSize
 import com.wingedsheep.sdk.scripting.NoncombatDamageBonus
 import com.wingedsheep.sdk.scripting.OpponentsPlayWithHandsRevealed
 import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
@@ -609,6 +613,12 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is SetBasePowerToughnessDynamicStatic -> {
+                ContinuousEffectData(
+                    modification = Modification.SetPowerToughnessDynamic(ability.power, ability.toughness),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is SetBaseToughnessForCreatureGroup -> {
                 ContinuousEffectData(
                     modification = Modification.SetToughness(ability.toughness),
@@ -654,6 +664,7 @@ class StaticAbilityHandler(
             // Combat: attack/block legality (AttackPhaseManager / BlockPhaseManager /
             // AttackRestrictionRules / BlockEvasionRules / CombatEnumerator):
             is AttackTax,
+            is BlockTax,
             is AttackerCountLimit,
             is BlockerCountLimit,
             is CanAttackDespiteDefender,
@@ -695,12 +706,16 @@ class StaticAbilityHandler(
             is FreeFirstEquipEachTurn,
             is PlayFromTopOfLibrary,
             is PlayLandsAndCastFilteredFromTopOfLibrary,
+            is PlotFromTopOfLibrary,
             is PlayersCantCastSpells,
             is RestrictSpellsCastPerTurn,
 
             // Spell costs (CostCalculator):
             is GrantAlternativeCastingCost,
             is ModifySpellCost,
+
+            // Plot special-action cost (PlotCostReducer / PlotEnumerator / PlotCardHandler):
+            is ModifyPlotCost,
 
             // Spells on the stack (StackResolver / GrantedKeywordResolver):
             is GrantCantBeCountered,

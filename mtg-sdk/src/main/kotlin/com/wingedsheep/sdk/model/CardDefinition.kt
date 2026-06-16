@@ -109,6 +109,25 @@ enum class CardLayout {
      * ([CardFace.imageUri]).
      */
     MODAL_DFC,
+
+    /**
+     * Preparation card (Secrets of Strixhaven). The primary characteristics in [CardDefinition]
+     * describe the creature face; [CardDefinition.cardFaces] holds the single "prepare spell"
+     * face — an instant or sorcery with its own name, mana cost, type line, oracle text, target
+     * requirements, and spell effect.
+     *
+     * Unlike [ADVENTURE], a preparation card is only ever cast with its **creature**
+     * characteristics (its prepare spell is never cast from hand). It enters with the
+     * [com.wingedsheep.sdk.core.Keyword.PREPARED] keyword, which says "This creature enters
+     * prepared."
+     *
+     * Becoming prepared (per the official rulings): the controller creates a copy of the prepare
+     * spell (`cardFaces[0]`) in exile. That copy persists in exile while the permanent is on the
+     * battlefield and prepared, and the controller may cast that copy from exile (paying its
+     * mana cost). Casting the copy makes the creature stop being prepared. If the permanent
+     * leaves the battlefield or otherwise stops being prepared, the exiled copy ceases to exist.
+     */
+    PREPARE,
 }
 
 /**
@@ -285,6 +304,7 @@ data class CardDefinition(
     val isSplit: Boolean get() = layout == CardLayout.SPLIT
     val isAdventure: Boolean get() = layout == CardLayout.ADVENTURE
     val isOmen: Boolean get() = layout == CardLayout.OMEN
+    val isPreparation: Boolean get() = layout == CardLayout.PREPARE
 
     /**
      * True if this card is a Room (CR 709.5 + 205.3h). A Room is a split-layout enchantment whose

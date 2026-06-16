@@ -40,8 +40,8 @@ class PlayerReplayController(
         val summaries = gameHistoryRepository.findByPlayerId(playerId).map { record ->
             GameSummary(
                 gameId = record.gameId,
-                player1Name = record.player1Name,
-                player2Name = record.player2Name,
+                player1Name = record.players.getOrNull(0)?.name ?: "",
+                player2Name = record.players.getOrNull(1)?.name ?: "",
                 startedAt = record.startedAt.toString(),
                 endedAt = record.endedAt.toString(),
                 winnerName = record.winnerName,
@@ -76,8 +76,8 @@ class PlayerReplayController(
             gameHistoryRepository.findById(gameId)?.let { record ->
                 GameSummary(
                     gameId = record.gameId,
-                    player1Name = record.player1Name,
-                    player2Name = record.player2Name,
+                    player1Name = record.players.getOrNull(0)?.name ?: "",
+                    player2Name = record.players.getOrNull(1)?.name ?: "",
                     startedAt = record.startedAt.toString(),
                     endedAt = record.endedAt.toString(),
                     winnerName = record.winnerName,
@@ -103,7 +103,7 @@ class PlayerReplayController(
 
         // Verify the player was a participant OR is in the same tournament
         val playerId = identity.playerId.value
-        val isParticipant = record.player1Id == playerId || record.player2Id == playerId
+        val isParticipant = record.players.any { it.playerId == playerId }
         val isTournamentMember = lobbyId?.let { lid ->
             val tournament = lobbyRepository.findTournamentById(lid)
             tournament != null &&

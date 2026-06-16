@@ -46,8 +46,11 @@ class ScenarioSessionFactory(
         includeDevUrls: Boolean = false,
     ): ScenarioResponse {
         val mode = request.effectiveMode
-        val p1Name = request.player1Name ?: "Player1"
-        val p2Name = request.player2Name ?: "Player2"
+        val seats = request.seats()
+        val seatNames = seats.map { it.first }
+        val seatIds = build.playerIds
+        val p1Name = seatNames[0]
+        val p2Name = seatNames.getOrElse(1) { "Player2" }
         val player1Id = build.player1Id
         val player2Id = build.player2Id
 
@@ -58,7 +61,8 @@ class ScenarioSessionFactory(
         )
         gameSession.injectStateForDevScenario(build.state)
 
-        // Per-step stop overrides (prevents auto-pass at specified steps).
+        // Per-step stop overrides (prevents auto-pass at specified steps). The stop
+        // fields are two-seat tooling; they keep applying to the first two seats.
         val p1Stops = request.player1StopAtSteps.orEmpty()
         val p1OppStops = request.player1OpponentStopAtSteps.orEmpty()
         if (p1Stops.isNotEmpty() || p1OppStops.isNotEmpty()) {
@@ -79,19 +83,26 @@ class ScenarioSessionFactory(
 
         return when (mode) {
             ScenarioMode.SELF -> {
-                // One human connection controls BOTH seats. Pre-register only player1's
-                // identity and route every seat's input authority to it.
+                // One human connection controls EVERY seat (2-4 player pods). Pre-register
+                // only player1's identity and route every seat's input authority to it.
                 val token = player1Token ?: newToken()
                 val identity = preRegister(token, player1Id, p1Name)
                 gameSession.enableHotseat(player1Id)
-                logger.info("Created hotseat scenario session ${gameSession.sessionId}")
+                val roster = seatIds.mapIndexed { i, id ->
+                    PlayerInfo(seatNames.getOrElse(i) { "Player${i + 1}" }, identity.token, id.value)
+                }
+                logger.info("Created hotseat scenario session ${gameSession.sessionId} (${seatIds.size} seats)")
                 ScenarioResponse(
                     sessionId = gameSession.sessionId,
-                    // Both PlayerInfo carry the same token: the one connection plays both seats.
-                    player1 = PlayerInfo(p1Name, identity.token, player1Id.value),
-                    player2 = PlayerInfo(p2Name, identity.token, player2Id.value),
-                    message = "Hotseat scenario created — you control both players.",
+                    // Every PlayerInfo carries the same token: the one connection plays all seats.
+                    player1 = roster[0],
+                    player2 = roster.getOrElse(1) { roster[0] },
+                    message = if (seatIds.size > 2)
+                        "Hotseat scenario created — you control all ${seatIds.size} players."
+                    else
+                        "Hotseat scenario created — you control both players.",
                     mode = mode,
+                    players = if (seatIds.size > 2) roster else null,
                 )
             }
 

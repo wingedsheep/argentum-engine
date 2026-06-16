@@ -17,6 +17,8 @@ export function LifeDisplay({
   spectatorMode = false,
   poisonCounters = 0,
   commanderDamage,
+  seatColor,
+  isAlly = false,
 }: {
   life: number
   isPlayer?: boolean
@@ -25,6 +27,16 @@ export function LifeDisplay({
   spectatorMode?: boolean
   poisonCounters?: number
   commanderDamage?: readonly ClientCommanderDamage[]
+  /**
+   * Multiplayer: the player's seat-identity color — tints the orb border and
+   * name so the viewed opponent's orb visibly matches their rail chip.
+   */
+  seatColor?: string
+  /**
+   * Two-Headed Giant: this orb is the viewing player's teammate (shown in the opponent slot when
+   * their board is viewed). The role tag reads "Ally" so it never reads as an opponent.
+   */
+  isAlly?: boolean
 }) {
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
@@ -38,10 +50,23 @@ export function LifeDisplay({
   const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
   const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
   const draggingAttackerId = useGameStore((state) => state.draggingAttackerId)
+  const combatState = useGameStore((state) => state.combatState)
+  const assignDefenderToSelectedAttackers = useGameStore((state) => state.assignDefenderToSelectedAttackers)
+  const isMultiplayer = useGameStore(
+    (state) => ((state.spectatingState?.gameState ?? state.gameState)?.players.length ?? 0) > 2,
+  )
 
-  // Check if an attacker is being dragged and this is the opponent's life display
+  // Check if an attacker is being dragged and this is the opponent's life display.
+  // In multiplayer the orb is also a click target while attackers are selected
+  // (assign-defender), so it highlights for both gestures.
   const isDraggingAttacker = draggingAttackerId !== null
-  const isAttackDropTarget = isDraggingAttacker && !isPlayer
+  const isDefenderClickTarget =
+    isMultiplayer &&
+    !isPlayer &&
+    combatState?.mode === 'declareAttackers' &&
+    combatState.selectedAttackers.length > 0 &&
+    combatState.validAttackTargets.includes(playerId)
+  const isAttackDropTarget = (isDraggingAttacker && !isPlayer) || isDefenderClickTarget
 
   // Check if this player is a valid target in current targeting mode
   const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
@@ -72,6 +97,20 @@ export function LifeDisplay({
   const isSelected = isTargetingSelected || isSelectedDecisionOption
 
   const handleClick = () => {
+    // Multiplayer attack declaration: clicking a defender's orb assigns the
+    // selected attackers to them (same gesture as the rail chips, biggest
+    // target). 2-player keeps its implicit sole-defender default untouched.
+    if (
+      isMultiplayer &&
+      !isPlayer &&
+      combatState?.mode === 'declareAttackers' &&
+      combatState.selectedAttackers.length > 0 &&
+      combatState.validAttackTargets.includes(playerId)
+    ) {
+      assignDefenderToSelectedAttackers(playerId)
+      return
+    }
+
     // Handle inline distribute mode - click to add damage
     if (isDistributeTarget && distributeRemaining > 0) {
       incrementDistribute(playerId)
@@ -106,8 +145,15 @@ export function LifeDisplay({
 
   const size = responsive.isMobile ? 36 : responsive.isTablet ? 42 : responsive.isShortDesktop ? 40 : 48
 
-  // Dynamic styling based on targeting state
-  const bgColor = isPlayer ? '#1a3a5a' : '#4a2812'
+  // Dynamic styling based on targeting state. In multiplayer a seatColor is supplied for *both*
+  // roles (it's the player's seat identity, the same color others see), so it takes precedence
+  // over the fixed 2-player blue (player) / orange (opponent) default.
+  const identityColor = seatColor ?? (isPlayer ? '#3a7aba' : '#e08038')
+  // The orb fill is a dark tint of the identity color. In multiplayer that's the seat color
+  // (so the circle visibly matches the player); 2-player keeps the fixed blue (you) / brown (foe).
+  const bgColor = seatColor
+    ? `color-mix(in srgb, ${seatColor} 32%, #0b0e16)`
+    : isPlayer ? '#1a3a5a' : '#4a2812'
   const borderColor = isDistributeTarget && distributeAllocated > 0
     ? '#ff6b35' // Orange for distribute targets with allocation
     : isDistributeTarget
@@ -118,9 +164,9 @@ export function LifeDisplay({
           ? '#ff4444' // Red glow if valid target
           : isAttackDropTarget
             ? '#ff4444' // Red highlight when attacker being dragged
-            : isPlayer ? '#3a7aba' : '#e08038'
+            : identityColor
 
-  const cursor = isValidTarget || isDistributeTarget ? 'pointer' : 'default'
+  const cursor = isValidTarget || isDistributeTarget || isDefenderClickTarget ? 'pointer' : 'default'
   const boxShadow = isDistributeTarget && distributeAllocated > 0
     ? '0 0 16px rgba(255, 107, 53, 0.7), 0 0 32px rgba(255, 107, 53, 0.4)'
     : isDistributeTarget
@@ -138,8 +184,21 @@ export function LifeDisplay({
   // (otherwise the name itself already carries the same information) and when
   // not spectating (there's no "you" in spectator mode).
   const showRoleTag = !spectatorMode && !!playerName
-  const roleColor = isPlayer ? 'rgba(74, 154, 234, 0.7)' : 'rgba(255, 158, 70, 0.8)'
-  const roleBorder = isPlayer ? 'rgba(74, 154, 234, 0.35)' : 'rgba(255, 158, 70, 0.4)'
+  // Seat-tinted in multiplayer (SEAT_COLORS are 6-digit hex, so appending an alpha byte gives the
+  // translucent variants the tag uses). A supplied seatColor wins for both roles; otherwise fall
+  // back to the fixed 2-player blue (player) / orange (opponent).
+  const roleColor = seatColor
+    ? `${seatColor}CC`
+    : isPlayer ? 'rgba(74, 154, 234, 0.7)' : 'rgba(255, 158, 70, 0.8)'
+  const roleBorder = seatColor
+    ? `${seatColor}66`
+    : isPlayer ? 'rgba(74, 154, 234, 0.35)' : 'rgba(255, 158, 70, 0.4)'
+
+  // On phones the side-by-side name labels push past the screen edges (the
+  // step strip leaves them no room) — show a small name *under* the orb
+  // instead, and drop the role tag (left/right position already says who's
+  // who).
+  const compactName = responsive.isMobile
 
   const nameLabel = (
     <div
@@ -157,7 +216,7 @@ export function LifeDisplay({
           fontSize: 12,
           fontWeight: 700,
           letterSpacing: '0.5px',
-          color: isPlayer ? '#4a9aea' : '#ff9e46',
+          color: seatColor ?? (isPlayer ? '#4a9aea' : '#ff9e46'),
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -181,7 +240,7 @@ export function LifeDisplay({
             lineHeight: '12px',
           }}
         >
-          {isPlayer ? 'You' : 'Opponent'}
+          {isPlayer ? 'You' : isAlly ? 'Ally' : 'Opponent'}
         </span>
       )}
     </div>
@@ -191,7 +250,7 @@ export function LifeDisplay({
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isDistributeTarget ? 4 : 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* Name on outer side: left of opponent's orb, right of player's orb */}
-        {!isPlayer && nameLabel}
+        {!isPlayer && !compactName && nameLabel}
         <div
           data-player-id={playerId}
           data-life-id={playerId}
@@ -214,15 +273,12 @@ export function LifeDisplay({
             style={
               life <= 5
                 ? { color: '#ff4444' }
-                : isPlayer
-                  ? {
-                      color: '#ffffff',
-                      textShadow: '0 0 6px rgba(80, 170, 240, 0.55), 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)',
-                    }
-                  : {
-                      color: '#ffffff',
-                      textShadow: '0 0 6px rgba(255, 130, 40, 0.55), 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)',
-                    }
+                : {
+                    color: '#ffffff',
+                    // Glow tinted by seat identity in multiplayer; falls back to the fixed
+                    // blue (player) / orange (opponent) 2-player glow.
+                    textShadow: `0 0 6px ${seatColor ? `${seatColor}8C` : isPlayer ? 'rgba(80, 170, 240, 0.55)' : 'rgba(255, 130, 40, 0.55)'}, 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)`,
+                  }
             }
           >
             {life}
@@ -251,8 +307,28 @@ export function LifeDisplay({
             </div>
           )}
         </div>
-        {isPlayer && nameLabel}
+        {isPlayer && !compactName && nameLabel}
       </div>
+
+      {compactName && (
+        <span
+          title={playerName}
+          style={{
+            marginTop: 2,
+            maxWidth: 64,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.4px',
+            color: seatColor ?? (isPlayer ? '#4a9aea' : '#ff9e46'),
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          {nameText}
+        </span>
+      )}
 
       {/* Inline +/- controls for distribute mode */}
       {isDistributeTarget && (

@@ -7,6 +7,7 @@ import com.wingedsheep.gameserver.handler.MessageSender
 import com.wingedsheep.gameserver.handler.QuickGameLobbyHandler
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
+import com.wingedsheep.gameserver.protocol.ServerMessage
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -70,6 +71,10 @@ class GameWebSocketHandler(
             logger.debug("Received message from ${session.id}: $clientMessage")
 
             when (clientMessage) {
+                // Liveness probe — answered unconditionally, even before authentication,
+                // so the client can distinguish a half-open socket from a healthy one.
+                is ClientMessage.Ping -> sender.send(session, ServerMessage.Pong)
+
                 is ClientMessage.Connect -> connectionHandler.handleConnect(session, clientMessage)
 
                 is ClientMessage.CreateGame,
@@ -85,6 +90,9 @@ class GameWebSocketHandler(
                 is ClientMessage.SetFullControl,
                 is ClientMessage.SetPriorityMode,
                 is ClientMessage.SetStopOverrides,
+                is ClientMessage.SetAbilityYield,
+                is ClientMessage.ClearAbilityYield,
+                is ClientMessage.ClearAllYields,
                 is ClientMessage.RequestUndo,
                 is ClientMessage.RequestResync -> gamePlayHandler.handle(session, clientMessage)
 

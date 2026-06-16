@@ -66,9 +66,14 @@ class PassPriorityHandler(
             }
         }
         if (state.step == Step.DECLARE_BLOCKERS && action.playerId != state.activePlayerId) {
+            // Only a defending player (one being attacked) must declare blockers before
+            // passing. In a multiplayer combat, players who aren't being attacked pass
+            // freely — they have no blocks to declare (CR 509.1).
+            val isDefender = com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                .isDefendingPlayer(state, action.playerId)
             val blockersDeclared = state.getEntity(action.playerId)
                 ?.get<BlockersDeclaredThisCombatComponent>() != null
-            if (!blockersDeclared) {
+            if (isDefender && !blockersDeclared) {
                 return "You must declare blockers before passing priority"
             }
         }

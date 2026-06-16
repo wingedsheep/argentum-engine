@@ -56,6 +56,42 @@ data class GrantDynamicStatsEffect(
 }
 
 /**
+ * Sets the base power and toughness of a group of creatures to dynamic amounts — a
+ * characteristic-defining ability (CDA) that recomputes continuously rather than snapshotting
+ * the value once at creation time.
+ *
+ * Used for star/star creatures whose printed power and toughness are each defined by a count,
+ * e.g. token CDAs like Beau ("Beau's power and toughness are each equal to the number of lands
+ * you control"), Tarmogoyf-style cards, Lhurgoyf, etc.
+ *
+ * This is a Layer 7b (POWER_TOUGHNESS, SET_VALUES) continuous effect — distinct from
+ * [GrantDynamicStatsEffect], which is a Layer 7c *bonus* added on top of an existing base. Use
+ * this when the dynamic value *is* the base P/T, so a later base-setting effect (e.g. "becomes
+ * a 0/2") overwrites it rather than stacking on top of it.
+ *
+ * @property power The dynamic value to set base power to (evaluated continuously at projection)
+ * @property toughness The dynamic value to set base toughness to
+ * @property filter Which creatures are affected (typically [GroupFilter.source] for a CDA on self)
+ */
+@SerialName("SetBasePowerToughnessDynamicStatic")
+@Serializable
+data class SetBasePowerToughnessDynamicStatic(
+    val power: DynamicAmount,
+    val toughness: DynamicAmount,
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String =
+        "${filter.description} has base power and toughness each equal to ${power.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newPower = power.applyTextReplacement(replacer)
+        val newToughness = toughness.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newPower !== power || newToughness !== toughness)
+            copy(filter = newFilter, power = newPower, toughness = newToughness) else this
+    }
+}
+
+/**
  * Sets the base toughness of a group of creatures.
  * Used for Maha, Its Feathers Night: "Creatures your opponents control have base toughness 1."
  *

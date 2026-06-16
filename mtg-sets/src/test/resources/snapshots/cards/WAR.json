@@ -46,13 +46,20 @@
                             "type": "All",
                             "conditions": [
                                 {
-                                    "type": "TargetMatchesFilter",
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
                                     "filter": "creature ctrl:you"
                                 },
                                 {
-                                    "type": "TargetMatchesFilter",
-                                    "filter": "creature ctrl:opponent",
-                                    "targetIndex": 1
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 1
+                                    },
+                                    "filter": "creature ctrl:opponent"
                                 }
                             ]
                         }

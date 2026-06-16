@@ -84,6 +84,7 @@ data class GrantWard(
         is WardCost.Life -> "${filter.description} have \"Ward—Pay ${cost.amount} life.\""
         is WardCost.Discard -> "${filter.description} have \"Ward—Discard ${cost.description}.\""
         is WardCost.Sacrifice -> "${filter.description} have \"Ward—Sacrifice ${cost.description}.\""
+        is WardCost.Composite -> "${filter.description} have \"Ward—${cost.description}.\""
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)

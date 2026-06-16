@@ -229,7 +229,6 @@ class CardSpecificContinuationResumer(
         val context = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = continuation.sourceId,
             controllerId = playerId,
-            opponentId = state.turnOrder.firstOrNull { it != playerId },
             xValue = bidAmount
         )
         return services.effectExecutorRegistry.execute(state, effect, context).toExecutionResult()

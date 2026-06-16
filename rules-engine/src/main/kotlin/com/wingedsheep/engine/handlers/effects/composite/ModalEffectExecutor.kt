@@ -121,7 +121,6 @@ class ModalEffectExecutor(
             sourceName = sourceName,
             modes = effect.modes,
             xValue = context.xValue,
-            opponentId = context.opponentId,
             triggeringEntityId = context.triggeringEntityId,
             chooseCount = effectiveChooseCount,
             minChooseCount = effectiveMinChooseCount,
@@ -169,7 +168,6 @@ class ModalEffectExecutor(
             controllerId = context.controllerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            opponentId = context.opponentId,
             xValue = context.xValue,
             triggeringEntityId = context.triggeringEntityId
         )
@@ -220,7 +218,6 @@ internal data class ModalPreChosenBaseContext(
     val controllerId: com.wingedsheep.sdk.model.EntityId,
     val sourceId: com.wingedsheep.sdk.model.EntityId?,
     val sourceName: String?,
-    val opponentId: com.wingedsheep.sdk.model.EntityId?,
     val xValue: Int?,
     val triggeringEntityId: com.wingedsheep.sdk.model.EntityId?
 )
@@ -277,7 +274,6 @@ internal fun processPreChosenModeQueue(
     val effectContext = EffectContext(
         sourceId = ctx.sourceId,
         controllerId = ctx.controllerId,
-        opponentId = ctx.opponentId,
         xValue = ctx.xValue,
         targets = head.targets,
         pipeline = PipelineState(
@@ -295,7 +291,6 @@ internal fun processPreChosenModeQueue(
                 controllerId = ctx.controllerId,
                 sourceId = ctx.sourceId,
                 sourceName = ctx.sourceName,
-                opponentId = ctx.opponentId,
                 xValue = ctx.xValue,
                 triggeringEntityId = ctx.triggeringEntityId,
                 remainingEntries = tail

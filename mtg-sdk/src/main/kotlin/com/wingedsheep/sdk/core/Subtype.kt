@@ -186,6 +186,9 @@ value class Subtype(val value: String) {
         val ROOM = Subtype("Room")
         val SAGA = Subtype("Saga")
 
+        // Spell (instant/sorcery) subtypes
+        val LESSON = Subtype("Lesson")
+
         // Artifact subtypes
         val EQUIPMENT = Subtype("Equipment")
         val FOOD = Subtype("Food")

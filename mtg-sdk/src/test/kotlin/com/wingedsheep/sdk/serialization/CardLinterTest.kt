@@ -12,7 +12,9 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade
+import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -330,6 +332,60 @@ class CardLinterTest : DescribeSpec({
                 ),
             )
             CardLinter.lint(card).filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
+                .shouldBeEmpty()
+        }
+    }
+
+    describe("EntityMatches entity roles") {
+
+        it("flags an entity role the ConditionEvaluator doesn't dispatch — a silent constant false") {
+            val card = instant(
+                "Unsupported Role",
+                CardScript(
+                    spellEffect = ConditionalEffect(
+                        condition = EntityMatches(EffectTarget.Controller, GameObjectFilter.Creature),
+                        effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                    ),
+                    targetRequirements = listOf(AnyTarget()),
+                ),
+            )
+            val findings = CardLinter.lint(card)
+                .filterIsInstance<CardValidationError.UnsupportedEntityMatchesRole>()
+            findings.shouldHaveSize(1)
+            findings[0].message shouldContain "Controller"
+        }
+
+        it("accepts the dispatched roles, including EquippedCreature (no facade names it)") {
+            val card = instant(
+                "Supported Roles",
+                CardScript(
+                    spellEffect = CompositeEffect(
+                        listOf(
+                            ConditionalEffect(
+                                condition = EntityMatches(EffectTarget.Self, GameObjectFilter.Creature),
+                                effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                            ),
+                            ConditionalEffect(
+                                condition = EntityMatches(
+                                    EffectTarget.EquippedCreature,
+                                    GameObjectFilter.Creature,
+                                ),
+                                effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                            ),
+                            ConditionalEffect(
+                                condition = EntityMatches(
+                                    EffectTarget.ContextTarget(0),
+                                    GameObjectFilter.Creature,
+                                ),
+                                effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                            ),
+                        ),
+                    ),
+                    targetRequirements = listOf(AnyTarget()),
+                ),
+            )
+            CardLinter.lint(card)
+                .filterIsInstance<CardValidationError.UnsupportedEntityMatchesRole>()
                 .shouldBeEmpty()
         }
     }

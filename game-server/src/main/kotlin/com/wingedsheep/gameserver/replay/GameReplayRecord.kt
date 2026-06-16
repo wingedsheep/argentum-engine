@@ -9,12 +9,16 @@ import java.time.Instant
  * This is significantly more memory-efficient than storing full snapshots for every step,
  * since most of the game state (cards, zones) doesn't change between consecutive updates.
  */
+/** A single seat in a recorded replay, in turn order. */
+data class ReplayPlayerInfo(
+    val playerId: String,
+    val name: String,
+)
+
 data class GameReplayRecord(
     val gameId: String,
-    val player1Id: String,
-    val player2Id: String,
-    val player1Name: String,
-    val player2Name: String,
+    /** Every seat in turn order. 2-player is the degenerate case (two entries). */
+    val players: List<ReplayPlayerInfo>,
     val startedAt: Instant,
     val endedAt: Instant,
     val winnerName: String?,

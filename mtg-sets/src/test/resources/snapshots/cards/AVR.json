@@ -1,3 +1,42 @@
+// Avacyn, Angel of Hope
+{
+    "name": "Avacyn, Angel of Hope",
+    "manaCost": "{5}{W}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying, vigilance, indestructible\nOther permanents you control have indestructible.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "permanent ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Jason Chan",
+        "flavorText": "A golden helix streaked skyward from the Helvault. A thunderous explosion shattered the silver monolith and Avacyn emerged, free from her prison at last.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba149706-cd17-4da6-8403-ccfe2d6cb437.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cavern of Souls
 {
     "name": "Cavern of Souls",
@@ -238,6 +277,95 @@
     ]
 }
 
+// Demonic Taskmaster
+{
+    "name": "Demonic Taskmaster",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice a creature other than this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "creature",
+                    "excludeSource": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "Subservience to greater power is the only law in the pit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb5d6266-30a7-4360-84bc-22b52fb782b3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Griselbrand
+{
+    "name": "Griselbrand",
+    "manaCost": "{4}{B}{B}{B}{B}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying, lifelink\nPay 7 life: Draw seven cards.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": 7
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Avacyn emerged from the broken Helvault, but her freedom came at a price—him.\"\n—Thalia, Knight-Cathar",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b51666ae-2aef-4cb1-9cd4-44aec81530f8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Maalfeld Twins
 {
     "name": "Maalfeld Twins",
@@ -284,6 +412,56 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mist Raven
+{
+    "name": "Mist Raven",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "John Avon",
+        "flavorText": "\"When you see a raven, head for the hills. It knows when the ghost-tide is headed in.\"\n—Sved, fisherman of Nephalia",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d98f0c4-021a-407a-8b0c-5500d804f959.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -405,6 +583,77 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "RED"
+    ]
+}
+
+// Zealous Conscripts
+{
+    "name": "Zealous Conscripts",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Haste\nWhen this creature enters, gain control of target permanent until end of turn. Untap that permanent. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc027b11-1ecc-430d-a862-586a14bb23c3.jpg"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }

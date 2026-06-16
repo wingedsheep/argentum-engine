@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -59,17 +60,15 @@ val BetorKinToAll = card("Betor, Kin to All") {
                 )
             )
             // "Then if ... 40 or greater, each opponent loses half their life, rounded up."
-            // The loss amount is computed once from Player.Opponent's life, then applied to every
-            // EachOpponent target — exact in 1v1. In multiplayer each opponent would lose half of a
-            // single opponent's life rather than their own (a LoseLifeExecutor architecture limit,
-            // not this card's); revisit if/when multiplayer is supported.
+            // Iterated per opponent so each loses half of *their own* life total — the
+            // loop rebinds the controller, so the LoseHalfLife defaults (target =
+            // Controller, lifePlayer = You) read the iterated opponent.
             .then(
                 ConditionalEffect(
                     condition = totalToughnessAtLeast(40),
-                    effect = Effects.LoseHalfLife(
-                        roundUp = true,
-                        target = EffectTarget.PlayerRef(Player.EachOpponent),
-                        lifePlayer = Player.Opponent
+                    effect = ForEachPlayerEffect(
+                        players = Player.EachOpponent,
+                        effects = listOf(Effects.LoseHalfLife(roundUp = true))
                     )
                 )
             )

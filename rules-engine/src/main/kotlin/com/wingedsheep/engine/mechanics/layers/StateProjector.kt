@@ -498,6 +498,15 @@ class StateProjector(
                     continue
                 }
             }
+            // "for as long as [the source Aura/Equipment] remains attached to it" — gate the whole
+            // effect on the source still being on the battlefield (CR 611.2b). The per-affected
+            // "still attached to *this* entity" half is applied below.
+            if (floating.duration is Duration.WhileSourceAttachedToAffected) {
+                val sourceId = floating.sourceId
+                if (sourceId == null || !state.getBattlefield().contains(sourceId)) {
+                    continue
+                }
+            }
 
             var validAffectedEntities = if (floating.effect.dynamicGroupFilter != null) {
                 // Rule 611.2c: re-evaluate filter dynamically to include entities that entered later
@@ -515,6 +524,19 @@ class StateProjector(
                 floating.effect.affectedEntities.filter { entityId ->
                     state.getBattlefield().contains(entityId) || state.stack.contains(entityId)
                 }.toSet()
+            }
+
+            // Per-affected "still attached to this entity" half of
+            // [Duration.WhileSourceAttachedToAffected]: drop any affected entity the source is no
+            // longer attached to (source moved to a different host, or detached). The latch-off is
+            // handled by EndedDurationExpiryCheck so a re-attach can't resurrect it.
+            if (floating.duration is Duration.WhileSourceAttachedToAffected) {
+                val attachedTo = floating.sourceId?.let {
+                    state.getEntity(it)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                        ?.targetId
+                }
+                validAffectedEntities = validAffectedEntities.filterTo(LinkedHashSet()) { it == attachedTo }
             }
 
             // The per-affected-entity power gate for
@@ -612,7 +634,6 @@ class StateProjector(
             val context = EffectContext(
                 sourceId = entityId,
                 controllerId = controllerId,
-                opponentId = state.getOpponent(controllerId)
             )
             val baseStats = cardComponent.baseStats ?: continue
             val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()

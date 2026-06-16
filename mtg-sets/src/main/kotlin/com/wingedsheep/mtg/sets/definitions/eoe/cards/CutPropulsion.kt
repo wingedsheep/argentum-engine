@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
@@ -22,7 +22,7 @@ val CutPropulsion = card("Cut Propulsion") {
         val power = DynamicAmount.EntityProperty(EntityReference.Target(0), EntityNumericProperty.Power)
         effect = Effects.DealDamage(
             amount = DynamicAmount.Conditional(
-                condition = TargetMatchesFilter(
+                condition = Conditions.TargetMatchesFilter(
                     filter = GameObjectFilter.Creature.withKeyword(Keyword.FLYING),
                     targetIndex = 0
                 ),

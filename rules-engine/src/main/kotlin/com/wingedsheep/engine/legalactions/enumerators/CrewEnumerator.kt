@@ -34,6 +34,15 @@ class CrewEnumerator : ActionEnumerator {
                 .filterIsInstance<KeywordAbility.Numeric>()
                 .firstOrNull { it.keyword == Keyword.CREW } ?: continue
 
+            // "Crew N. Activate only once each turn." — once it's already been crewed this turn,
+            // the crew action is no longer available (Luxurious Locomotive).
+            if (crewAbility.onceEachTurn) {
+                val crewActivations = container
+                    .get<com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent>()
+                    ?.crewActivations ?: 0
+                if (crewActivations >= 1) continue
+            }
+
             // Find all untapped creatures controlled by the player that can crew
             val validCrewCreatures = mutableListOf<TapForPowerCreatureData>()
             var totalAvailablePower = 0

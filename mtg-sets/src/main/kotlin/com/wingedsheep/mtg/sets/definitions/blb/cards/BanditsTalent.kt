@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -10,12 +11,9 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Patterns
 
 /**
  * Bandit's Talent
@@ -47,10 +45,7 @@ val BanditsTalent = card("Bandit's Talent") {
         effect = ForEachPlayerEffect(
             players = Player.EachOpponent,
             effects = listOf(
-                PayOrSufferEffect(
-                    cost = Costs.pay.Discard(filter = GameObjectFilter.Nonland, count = 1),
-                    suffer = Patterns.Hand.discardCards(2)
-                )
+                Patterns.Hand.discardCardsUnlessMatching(2, GameObjectFilter.Nonland)
             )
         )
     }

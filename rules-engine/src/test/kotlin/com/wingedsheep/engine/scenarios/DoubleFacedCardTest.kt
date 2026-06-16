@@ -133,6 +133,23 @@ class DoubleFacedCardTest : FunSpec({
         dfc.currentFace shouldBe DoubleFacedComponent.Face.FRONT
     }
 
+    test("transforming a one-faced permanent does nothing") {
+        val driver = createDriver()
+        val caster = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val entityId = driver.putCreatureOnBattlefield(caster, "Savannah Lions")
+        val spell = driver.putCardInHand(caster, "Transform Target Creature")
+        driver.giveMana(caster, Color.BLUE, 2)
+
+        driver.castSpell(caster, spell, listOf(entityId)).isSuccess shouldBe true
+        driver.bothPass().isSuccess shouldBe true
+
+        val container = driver.state.getEntity(entityId)!!
+        container.get<CardComponent>()?.name shouldBe "Savannah Lions"
+        container.get<DoubleFacedComponent>() shouldBe null
+    }
+
     test("a triggered ability keyed on 'when this transforms' fires through the trigger pipeline") {
         // Back face: "When this transforms, its controller gains 2 life."
         val transformTriggerBack = CardDefinition.creature(

@@ -243,9 +243,14 @@ class DamageTriggerDetector(
                         // not the damage recipient. This allows effects like "exile it" to reference
                         // the creature that dealt damage.
                         val context = if (trigger.sourceFilter != null && event.sourceId != null) {
+                            // The triggering entity is the damage SOURCE (e.g. "a source you
+                            // control deals damage… exile it"). Still carry the recipient creature's
+                            // toughness so "equal to that creature's toughness" payoffs (Taii Wakeen)
+                            // can read it via ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS.
                             TriggerContext(
                                 triggeringEntityId = event.sourceId,
-                                damageAmount = event.amount
+                                damageAmount = event.amount,
+                                recipientToughnessAtDamage = event.targetToughnessAtDamage
                             )
                         } else {
                             TriggerContext.fromEvent(event)

@@ -85,7 +85,7 @@ object OpenLifeBidLogic {
     private val decisionHandler = DecisionHandler()
 
     private fun lifeOf(state: GameState, playerId: EntityId): Int =
-        state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+        state.lifeTotal(playerId) // CR 810.9a — team's shared total
 
     /**
      * Ask [bidderToAsk] whether to top the current [highBid], or resolve the auction if they
@@ -183,7 +183,7 @@ object OpenLifeBidLogic {
 
         // The high bidder loses life equal to the high bid (routed through the life-loss
         // executor so prevention/replacement effects apply uniformly).
-        val loseLifeContext = EffectContext(sourceId = sourceId, controllerId = highBidder, opponentId = null)
+        val loseLifeContext = EffectContext(sourceId = sourceId, controllerId = highBidder)
         val lifeResult = executeEffect(
             state,
             LoseLifeEffect(DynamicAmount.Fixed(highBid), EffectTarget.PlayerRef(Player.You)),
@@ -198,7 +198,6 @@ object OpenLifeBidLogic {
             val winContext = EffectContext(
                 sourceId = sourceId,
                 controllerId = casterId,
-                opponentId = null,
                 targets = targets
             )
             val winResult = executeEffect(currentState, onWin, winContext)
