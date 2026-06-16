@@ -15,6 +15,10 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
+import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -286,8 +290,38 @@ class TriggerProcessor(
             return processTargetedTrigger(currentState, trigger, targetRequirement)
         }
 
+        // A no-target "you may X. If you don't, Y" (optional + elseEffect) has no target-selection
+        // step to carry the decline through, so the targeted path's may/else handling never runs and
+        // both fields were silently dropped (the latent bug that made Yawgmoth Demon do nothing).
+        // Lower it into the unified GatedEffect(Gate.MayDecide) frame so GatedEffectExecutor owns the
+        // resolution-time yes/no and runs `elseEffect` on decline. Feasibility derived from the
+        // may-action lets an impossible "may" (e.g. "you may sacrifice an artifact" with no artifact)
+        // fall straight to the else with no prompt — the no-target analogue of "no legal targets → else".
+        val elseEffect = ability.elseEffect
+        if (ability.optional && elseEffect != null) {
+            val gated = GatedEffect(
+                gate = Gate.MayDecide(feasibility = impliedMayFeasibility(ability.effect)),
+                then = ability.effect,
+                otherwise = elseEffect
+            )
+            return putTriggerOnStack(currentState, trigger, emptyList(), gated)
+        }
+
         // No targets required - put directly on stack
         return putTriggerOnStack(currentState, trigger, emptyList())
+    }
+
+    /**
+     * The feasibility a no-target "may" action implies, so a "you may [action]. If you don't, …"
+     * trigger skips the prompt and runs its else branch when the action is impossible (the player
+     * can't, so they "don't"). A [SacrificeEffect] is always controller-self and needs the
+     * controller to control enough matching permanents; other actions (draw, gain life, add a
+     * counter) are always feasible (`null` → always prompt). Extend as further
+     * impossible-when-empty may-actions appear.
+     */
+    private fun impliedMayFeasibility(effect: Effect): FeasibilityCheck? = when (effect) {
+        is SacrificeEffect -> FeasibilityCheck.ControlsPermanentMatching(effect.filter, effect.count)
+        else -> null
     }
 
     /**

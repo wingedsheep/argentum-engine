@@ -1,13 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.atq.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -19,11 +18,12 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * At the beginning of your upkeep, you may sacrifice an artifact. If you don't, tap this
  * creature and it deals 2 damage to you.
  *
- * Modeled with the curated punisher primitive [PayOrSufferEffect] ("do [suffer] unless you
- * [cost]"): the avoidable cost is sacrificing an artifact, and the `suffer` is the upkeep tax —
- * tap this creature and deal 2 damage to its controller. When the controller has an artifact they
- * choose whether to sacrifice one (decline → suffer); with no artifact the cost is unpayable and
- * the tax applies automatically. This is the "you may sacrifice …; if you don't, …" reading.
+ * The literal "you may [action]. If you don't, [consequence]" reading: an optional triggered
+ * ability whose body is "sacrifice an artifact" and whose `elseEffect` is the upkeep tax — tap
+ * this creature and deal 2 damage to its controller. With an artifact the controller is asked
+ * whether to sacrifice one (decline → tax); with no artifact the sacrifice is impossible, so the
+ * engine skips the prompt and applies the tax automatically (the no-target may-action's feasibility
+ * is derived from the [SacrificeEffect], so an impossible "may" falls straight to its else branch).
  */
 val YawgmothDemon = card("Yawgmoth Demon") {
     manaCost = "{4}{B}{B}"
@@ -39,13 +39,12 @@ val YawgmothDemon = card("Yawgmoth Demon") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = PayOrSufferEffect(
-            cost = Costs.pay.Sacrifice(GameObjectFilter.Artifact),
-            suffer = Effects.Composite(
-                listOf(
-                    Effects.Tap(EffectTarget.Self),
-                    Effects.DealDamage(2, EffectTarget.Controller, damageSource = EffectTarget.Self)
-                )
+        optional = true
+        effect = SacrificeEffect(GameObjectFilter.Artifact)
+        elseEffect = Effects.Composite(
+            listOf(
+                Effects.Tap(EffectTarget.Self),
+                Effects.DealDamage(2, EffectTarget.Controller, damageSource = EffectTarget.Self)
             )
         )
     }

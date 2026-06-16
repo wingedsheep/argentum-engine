@@ -2348,32 +2348,27 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "PayOrSuffer",
-                    "cost": {
-                        "type": "PayAtom",
-                        "atom": {
-                            "type": "AtomSacrifice",
-                            "filter": "artifact"
-                        }
-                    },
-                    "suffer": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "TapUntap",
-                                "target": "Self"
+                    "type": "Sacrifice",
+                    "filter": "artifact"
+                },
+                "optional": true,
+                "elseEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
                             },
-                            {
-                                "type": "DealDamage",
-                                "amount": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                },
-                                "target": "Controller",
-                                "damageSource": "Self"
-                            }
-                        ]
-                    }
+                            "target": "Controller",
+                            "damageSource": "Self"
+                        }
+                    ]
                 }
             }
         ]

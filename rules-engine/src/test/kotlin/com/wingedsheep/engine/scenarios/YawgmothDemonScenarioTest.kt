@@ -14,19 +14,20 @@ import io.kotest.matchers.shouldBe
  * "At the beginning of your upkeep, you may sacrifice an artifact. If you don't, tap this
  *  creature and it deals 2 damage to you."
  *
- * Modeled with [com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect] ("do [suffer] unless you
- * [cost]"). The upkeep trigger only fires on a real step transition into UPKEEP, so each scenario
- * starts on the opponent's turn (precombat main) and passes around to player 1's upkeep. The
- * punisher flow: with no artifact the sacrifice cost is unpayable and the tax applies with no
- * decision; with an artifact the controller is offered a card selection — picking one pays the
- * cost (no tax), picking none declines (tax applies).
+ * Modeled as the literal "you may [action]. If you don't, [consequence]" — an optional triggered
+ * ability (no target) whose body is "sacrifice an artifact" and whose `elseEffect` is the upkeep
+ * tax. The upkeep trigger only fires on a real step transition into UPKEEP, so each scenario starts
+ * on the opponent's turn (precombat main) and passes around to player 1's upkeep. The flow exercises
+ * the no-target may/else engine path: with no artifact the sacrifice is impossible, so the may
+ * prompt is skipped and the tax applies automatically; with an artifact the controller is asked
+ * yes/no — yes sacrifices one (no tax), no declines (tax applies).
  */
 class YawgmothDemonScenarioTest : ScenarioTestBase() {
 
     private fun isTapped(game: TestGame, id: com.wingedsheep.sdk.model.EntityId): Boolean =
         game.state.getEntity(id)?.get<TappedComponent>() != null
 
-    private fun atPlayer1Upkeep(withArtifact: Boolean): TestGame {
+    private fun atPlayer1Upkeep(artifacts: List<String>): TestGame {
         var builder = scenario()
             .withPlayers("Player", "Opponent")
             .withCardOnBattlefield(1, "Yawgmoth Demon", summoningSickness = false)
@@ -34,7 +35,7 @@ class YawgmothDemonScenarioTest : ScenarioTestBase() {
             // Start on the opponent's turn so we transition into player 1's upkeep.
             .withActivePlayer(2)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
-        if (withArtifact) builder = builder.withCardOnBattlefield(1, "Ornithopter")
+        for (artifact in artifacts) builder = builder.withCardOnBattlefield(1, artifact)
         // Library fuel so neither player decks out during step advances.
         repeat(5) { builder = builder.withCardInLibrary(1, "Forest") }
         repeat(5) { builder = builder.withCardInLibrary(2, "Forest") }
@@ -48,11 +49,11 @@ class YawgmothDemonScenarioTest : ScenarioTestBase() {
     init {
         context("Yawgmoth Demon upkeep tax") {
 
-            test("with no artifact the cost is unpayable and the tax applies (tap + 2 to controller)") {
-                val game = atPlayer1Upkeep(withArtifact = false)
+            test("with no artifact the may is infeasible: no prompt, the tax applies (tap + 2 to controller)") {
+                val game = atPlayer1Upkeep(artifacts = emptyList())
                 val demonId = game.findPermanent("Yawgmoth Demon")!!
 
-                withClue("No payable sacrifice cost → no decision is offered") {
+                withClue("No artifact to sacrifice → the may is skipped, no decision offered") {
                     game.hasPendingDecision() shouldBe false
                 }
                 withClue("The tax taps Yawgmoth Demon") {
@@ -63,37 +64,62 @@ class YawgmothDemonScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("sacrificing an artifact pays the cost and avoids the tax") {
-                val game = atPlayer1Upkeep(withArtifact = true)
+            test("choosing to sacrifice the only artifact avoids the tax (auto-sacrificed)") {
+                val game = atPlayer1Upkeep(artifacts = listOf("Ornithopter"))
                 val demonId = game.findPermanent("Yawgmoth Demon")!!
 
-                withClue("With an artifact, the punisher offers a sacrifice selection") {
+                withClue("With an artifact, the ability asks the may question") {
                     game.hasPendingDecision() shouldBe true
                 }
-                val artifactId = game.findPermanent("Ornithopter")!!
-                game.selectCards(listOf(artifactId))
+                // Say yes — with a single artifact it is sacrificed without a further "which?" prompt.
+                game.answerYesNo(true)
                 game.resolveStack()
 
                 withClue("The sacrificed artifact should be gone from the battlefield") {
                     game.isOnBattlefield("Ornithopter") shouldBe false
                 }
-                withClue("Paying the cost spares Yawgmoth Demon — it is NOT tapped") {
+                withClue("Sacrificing spares Yawgmoth Demon — it is NOT tapped") {
                     isTapped(game, demonId) shouldBe false
                 }
-                withClue("Paying the cost spares the controller — no life loss (stays at 20)") {
+                withClue("Sacrificing spares the controller — no life loss (stays at 20)") {
                     game.getLifeTotal(1) shouldBe 20
                 }
             }
 
-            test("declining to sacrifice an available artifact still triggers the tax") {
-                val game = atPlayer1Upkeep(withArtifact = true)
+            test("with multiple artifacts, saying yes lets the controller choose which to sacrifice") {
+                val game = atPlayer1Upkeep(artifacts = listOf("Ornithopter", "Su-Chi"))
                 val demonId = game.findPermanent("Yawgmoth Demon")!!
 
-                withClue("With an artifact, the punisher offers a sacrifice selection") {
+                withClue("The ability asks the may question") {
                     game.hasPendingDecision() shouldBe true
                 }
-                // Decline by selecting no artifact to sacrifice.
-                game.skipSelection()
+                game.answerYesNo(true)
+                // Now choose which single artifact to sacrifice.
+                val ornithopterId = game.findPermanent("Ornithopter")!!
+                game.selectCards(listOf(ornithopterId))
+                game.resolveStack()
+
+                withClue("Only the chosen artifact is sacrificed") {
+                    game.isOnBattlefield("Ornithopter") shouldBe false
+                    game.isOnBattlefield("Su-Chi") shouldBe true
+                }
+                withClue("Sacrificing spares Yawgmoth Demon — it is NOT tapped") {
+                    isTapped(game, demonId) shouldBe false
+                }
+                withClue("Sacrificing spares the controller — no life loss (stays at 20)") {
+                    game.getLifeTotal(1) shouldBe 20
+                }
+            }
+
+            test("declining the may with an artifact available triggers the tax") {
+                val game = atPlayer1Upkeep(artifacts = listOf("Ornithopter"))
+                val demonId = game.findPermanent("Yawgmoth Demon")!!
+
+                withClue("With an artifact, the ability asks the may question") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                // Say no — decline the optional sacrifice.
+                game.answerYesNo(false)
                 game.resolveStack()
 
                 withClue("Declining keeps the artifact on the battlefield") {

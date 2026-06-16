@@ -772,10 +772,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   targets on `then`/`otherwise` lock at trigger time (CR 603.3d) and the gate is resolved at
   resolution time (CR 117.3a) by `decisionMaker` (defaults to the controller) — the may-vs-target
   timing is correct by construction rather than re-encoded per wrapper. Gates:
-  - `Gate.MayDecide(prompt?, hint?, sourceRequiredZone?, inlineOnTrigger?)` — pure yes/no
+  - `Gate.MayDecide(prompt?, hint?, sourceRequiredZone?, inlineOnTrigger?, feasibility?)` — pure yes/no
     ("You may [then]."). Replaces `MayEffect` (see the `MayEffect` facade below). `sourceRequiredZone`
     skips the gate silently when the source has left that zone by resolution; `inlineOnTrigger`
-    renders the yes/no on the triggering permanent rather than as a modal.
+    renders the yes/no on the triggering permanent rather than as a modal. `feasibility` (a
+    `FeasibilityCheck`) — when set and **unmet** at resolution, the may-action is impossible, so the
+    player "doesn't": the prompt is skipped and `otherwise` runs directly. Lets "you may sacrifice an
+    artifact. If you don't, …" apply its else automatically when the controller has no artifact (the
+    no-target analogue of a targeted "may" with no legal targets falling to its else branch).
   - `Gate.MayPay(cost)` — "You may [cost]. If you do, [then]." `cost` is a cost **effect**
     (`PayManaCostEffect`, `PayDynamicManaCostEffect`, `PayLifeEffect`, `SacrificeEffect`, or a
     `CompositeEffect` of them). An unaffordable cost (fixed mana, dynamic mana, and life are
@@ -1540,7 +1544,19 @@ work for abilities-on-stack (which carry no `CardComponent`).
 
 ## 8. Triggered abilities (`Triggers.*`)
 
-`triggeredAbility { trigger; effect; target?; triggerCondition?; optional?; checkOnNextState?; dealsDamageBeforeResolve?; controlledByTriggeringEntityController? }`.
+`triggeredAbility { trigger; effect; target?; triggerCondition?; optional?; elseEffect?; checkOnNextState?; dealsDamageBeforeResolve?; controlledByTriggeringEntityController? }`.
+
+**`optional` + `elseEffect` = "you may [effect]. If you don't, [elseEffect]."** For a **targeted**
+trigger, `optional` lets the player choose 0 targets to decline, and `elseEffect` runs on decline or
+when no legal targets exist (Entrails Feaster: "you may exile a creature card from a graveyard … if
+you don't, tap this"). For a **no-target** trigger the same pair lowers to a
+`GatedEffect(Gate.MayDecide, then = effect, otherwise = elseEffect)` resolved by the unified gated
+executor — a resolution-time yes/no whose "no" runs `elseEffect`. The may-action's feasibility is
+derived from `effect` (a `SacrificeEffect` needs the controller to control a matching permanent), so
+an impossible "may" skips the prompt and runs `elseEffect` directly — the no-target analogue of "no
+legal targets → else" (Yawgmoth Demon: "you may sacrifice an artifact. If you don't, tap this
+creature and it deals 2 damage to you" — with no artifact the tax just applies). Always-feasible
+bodies (gain life, draw, add a counter) always prompt.
 
 ### Zone change
 

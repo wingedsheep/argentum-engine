@@ -125,6 +125,11 @@ sealed interface Gate {
      * @property inlineOnTrigger When true, the yes/no is rendered inline on the triggering
      *   permanent rather than as a centered modal (the Dragon Shadow / "may" trigger UX); flows
      *   into `DecisionContext.inlineOnTrigger`.
+     * @property feasibility If set and unmet at resolution, the may-action is impossible — so the
+     *   player "doesn't": the yes/no prompt is skipped and [GatedEffect.otherwise] runs directly
+     *   (the no-target analogue of a targeted "may" with no legal targets falling to its else
+     *   branch). Lets a "you may sacrifice an artifact. If you don't, …" trigger apply its else
+     *   automatically when the controller has no artifact, with no pointless "sacrifice?" prompt.
      */
     @SerialName("Gate.MayDecide")
     @Serializable
@@ -132,7 +137,8 @@ sealed interface Gate {
         val prompt: String? = null,
         val hint: String? = null,
         val sourceRequiredZone: Zone? = null,
-        val inlineOnTrigger: Boolean = false
+        val inlineOnTrigger: Boolean = false,
+        val feasibility: FeasibilityCheck? = null
     ) : Gate {
         override fun applyTextReplacement(replacer: TextReplacer): Gate = this
     }

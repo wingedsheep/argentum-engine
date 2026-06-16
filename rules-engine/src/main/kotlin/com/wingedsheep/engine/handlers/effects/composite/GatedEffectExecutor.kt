@@ -112,6 +112,17 @@ class GatedEffectExecutor(
             ) {
                 return EffectResult.success(state)
             }
+            // A declared feasibility that isn't met means the may-action is impossible — the player
+            // "doesn't", so skip the prompt and run `otherwise` directly. This is the no-target
+            // analogue of a targeted "may" with no legal targets falling to its else branch (e.g.
+            // "you may sacrifice an artifact. If you don't, …" with no artifact taps you out).
+            gate.feasibility?.let { check ->
+                if (!checkFeasibility(state, context.controllerId, check)) {
+                    return effect.otherwise
+                        ?.let { effectExecutor(state, it, context) }
+                        ?: EffectResult.success(state)
+                }
+            }
         }
 
         val playerId = effect.decisionMaker
