@@ -164,6 +164,15 @@ enum class ContextPropertyKey(val description: String) {
      */
     TRIGGERING_SPELL_MANA_VALUE("the mana value of that spell"),
     /**
+     * The value chosen for `{X}` on the spell that fired this trigger (CR 601.2b). Distinct from
+     * [MANA_SPENT_ON_TRIGGERING_SPELL] (total mana paid) and [TRIGGERING_SPELL_MANA_VALUE] (printed
+     * mana value, which counts each {X} as 0): this reads the actual X the caster announced. `0`
+     * when the trigger was not driven by a spell cast or the spell had no {X}. Populated from
+     * `SpellCastEvent.xValue`. Pair with `SpellCastPredicate.HasXInCost`. Used by Geometer's
+     * Arthropod — "look at the top X cards of your library."
+     */
+    X_VALUE_OF_TRIGGERING_SPELL("X"),
+    /**
      * Number of cards actually looked at by the scry that fired this trigger. Equals the
      * scry N parameter unless the library held fewer cards. Read by "Whenever you scry,
      * ... for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).

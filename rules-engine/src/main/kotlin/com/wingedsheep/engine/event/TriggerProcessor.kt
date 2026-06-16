@@ -606,7 +606,8 @@ class TriggerProcessor(
                 triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
                 triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
                 triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
-                triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell
+                triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
+                triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell
             )
             ability.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
         } catch (_: Exception) {
@@ -656,7 +657,8 @@ class TriggerProcessor(
             triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
             triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
             triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
-            triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell
+            triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
+            triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell
         )
 
         // Push the continuation onto the stack
@@ -713,6 +715,7 @@ class TriggerProcessor(
             triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
             triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
             triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
+            triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell,
             capturedEntityIds = trigger.triggerContext.capturedEntityIds ?: emptyList()
         )
 

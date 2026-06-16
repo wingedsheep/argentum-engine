@@ -1861,6 +1861,12 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
   700.2). Matches `SpellCastEvent.chosenModesCount > 0`, where the count is the size of
   `SpellOnStackComponent.chosenModes` (so Spree picking the same mode twice counts as
   two). Used by Riku of Many Paths: "Whenever you cast a modal spell, …".
+- `SpellCastPredicate.HasXInCost` — spell has `{X}` in its printed mana cost (CR 107.3).
+  A property of the cost, not the value chosen, so a spell cast with X=0 still satisfies
+  it. Matches `CardComponent.manaCost.hasX`. Read the announced X in the payoff via
+  `DynamicAmounts.xValueOfTriggeringSpell()` (→ `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL`).
+  Used by Geometer's Arthropod: "Whenever you cast a spell with {X} in its mana cost, look
+  at the top X cards of your library, …".
 
 Examples:
 
@@ -1884,6 +1890,11 @@ Triggers.youCastSpell(
 
 // "Whenever you cast a modal spell" (Riku of Many Paths)
 Triggers.youCastSpell(requires = setOf(SpellCastPredicate.IsModal))
+
+// "Whenever you cast a spell with {X} in its mana cost" (Geometer's Arthropod) —
+// then dig X cards: keep one, bottom the rest in a random order.
+Triggers.youCastSpell(requires = setOf(SpellCastPredicate.HasXInCost))
+// payoff count: DynamicAmounts.xValueOfTriggeringSpell()
 
 // "Whenever you cast a noncreature or Otter spell"
 Triggers.youCastSpell(
@@ -3410,6 +3421,12 @@ sibling effect that reads `DynamicAmount.EntityProperty(EntityReference.AmassedA
     `SpellCastEvent.manaValue`; `0` for non-cast triggers. Pair with
     `CollectionFilter.ManaValueAtMost(ContextProperty(TRIGGERING_SPELL_MANA_VALUE))` to bound a
     gathered collection by the triggering spell's mana value.
+  - `X_VALUE_OF_TRIGGERING_SPELL` — value chosen for `{X}` on the spell that fired the trigger
+    (CR 601.2b) — Geometer's Arthropod's "look at the top X cards of your library." Distinct from
+    `MANA_SPENT_ON_TRIGGERING_SPELL` (total mana paid) and `TRIGGERING_SPELL_MANA_VALUE` (printed
+    mana value, where {X} counts as 0). Populated from `SpellCastEvent.xValue`; `0` for non-cast /
+    no-{X} triggers. Pair with `SpellCastPredicate.HasXInCost`. Facade:
+    `DynamicAmounts.xValueOfTriggeringSpell()`.
   - `TRIGGER_SCRY_COUNT` — cards looked at by the scry that fired the trigger (Celeborn the
     Wise, Elrond Master of Healing). Equals the scry N parameter.
   - `TRIGGER_EXCESS_DAMAGE_AMOUNT` — damage past lethal in the trigger payload (CR 120.4a).

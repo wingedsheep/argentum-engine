@@ -84,6 +84,13 @@ data class TriggerContext(
      */
     val manaValueOfTriggeringSpell: Int? = null,
     /**
+     * For SpellCastEvent triggers — the value chosen for `{X}` on the triggering spell (CR 601.2b).
+     * `null` when the trigger was not driven by a spell cast or the spell had no {X}. Read by
+     * `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL` so abilities like Geometer's Arthropod can
+     * scale by "the top X cards of your library."
+     */
+    val xValueOfTriggeringSpell: Int? = null,
+    /**
      * Power of the creature the trigger's source (an Aura/Equipment) was attached to, captured
      * when the trigger fired. Carried as last-known information (CR 608.2h) so that an
      * "enchanted creature deals damage equal to its power" ability still uses the right power
@@ -171,7 +178,8 @@ data class TriggerContext(
                     triggeringPlayerId = event.casterId,
                     modesChosenCount = event.chosenModesCount.takeIf { it > 0 },
                     manaSpentOnTriggeringSpell = event.totalManaSpent.takeIf { it > 0 },
-                    manaValueOfTriggeringSpell = event.manaValue.takeIf { it > 0 }
+                    manaValueOfTriggeringSpell = event.manaValue.takeIf { it > 0 },
+                    xValueOfTriggeringSpell = event.xValue
                 )
                 is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 is com.wingedsheep.engine.core.ScriedEvent -> TriggerContext(

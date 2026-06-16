@@ -102,7 +102,8 @@ class EffectAndTriggerContinuationResumer(
                 triggerExcessDamageAmount = continuation.triggerExcessDamageAmount,
                 triggerRecipientToughness = continuation.triggerRecipientToughness,
                 triggerManaSpentOnTriggeringSpell = continuation.triggerManaSpentOnTriggeringSpell,
-                triggerManaValueOfTriggeringSpell = continuation.triggerManaValueOfTriggeringSpell
+                triggerManaValueOfTriggeringSpell = continuation.triggerManaValueOfTriggeringSpell,
+                triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell
             )
             val stackResult = services.stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
             if (!stackResult.isSuccess) return stackResult
@@ -152,7 +153,8 @@ class EffectAndTriggerContinuationResumer(
             triggerExcessDamageAmount = continuation.triggerExcessDamageAmount,
             triggerRecipientToughness = continuation.triggerRecipientToughness,
             triggerManaSpentOnTriggeringSpell = continuation.triggerManaSpentOnTriggeringSpell,
-            triggerManaValueOfTriggeringSpell = continuation.triggerManaValueOfTriggeringSpell
+            triggerManaValueOfTriggeringSpell = continuation.triggerManaValueOfTriggeringSpell,
+            triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(

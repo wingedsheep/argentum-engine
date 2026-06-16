@@ -1262,6 +1262,8 @@ class TriggerMatcher(
             else -> false
         }
         SpellCastPredicate.IsModal -> event.chosenModesCount > 0
+        SpellCastPredicate.HasXInCost ->
+            state.getEntity(event.spellEntityId)?.get<CardComponent>()?.manaCost?.hasX == true
     }
 
     /**
@@ -1289,7 +1291,8 @@ class TriggerMatcher(
                 triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
                 triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
                 triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
-                triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell
+                triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
+                triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell
             )
             conditionEvaluator.evaluate(state, condition, context)
         }

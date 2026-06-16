@@ -1934,6 +1934,7 @@ class StackResolver(
             triggerRecipientToughness = abilityComponent.triggerRecipientToughness,
             triggerManaSpentOnTriggeringSpell = abilityComponent.triggerManaSpentOnTriggeringSpell,
             triggerManaValueOfTriggeringSpell = abilityComponent.triggerManaValueOfTriggeringSpell,
+            triggerXValueOfTriggeringSpell = abilityComponent.triggerXValueOfTriggeringSpell,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
             chosenModes = abilityComponent.chosenModes,
