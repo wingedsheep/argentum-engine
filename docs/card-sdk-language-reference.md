@@ -2418,6 +2418,19 @@ staticAbility {
   toughness rather than its power"), grant the `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` flag via
   `Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS, target, duration)`; the same combat
   util reads it from projected keywords (unconditional — no toughness > power gate).
+- **Untap-step restriction flags** — granted via `GrantKeyword(AbilityFlag.X.name)` and read by the untap
+  step (`BeginningPhaseManager`) off projected keywords, so they vanish when the granting source leaves play:
+  - `AbilityFlag.DOESNT_UNTAP` — "doesn't untap during its controller's untap step" (Charmed Sleep,
+    Temporal Distortion's hourglass-counter form).
+  - `AbilityFlag.MAY_NOT_UNTAP` — controller may choose not to untap it (Everglove Courier).
+  - `AbilityFlag.REMOVE_COUNTER_TO_UNTAP` — "If this would untap during your untap step, remove a +1/+1
+    counter from it instead. If you do, untap it." (Bewitching Leechcraft). During the controller's untap
+    step the engine tries to remove a +1/+1 counter; the permanent untaps **only if** one was removed,
+    otherwise it stays tapped (and a `CountersRemovedEvent` + `UntappedEvent` are emitted when it does).
+    Engine-wired through `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`), which applies it only on
+    the natural untap step (callers pass projected state); explicit "untap target permanent" effects and
+    other players' untap steps (Seedborn Muse) pass `projected = null` and never apply it — matching the
+    "during **your** untap step" wording. Stacks after the stun-counter replacement (CR 122.1d, checked first).
 - `MustBlock(filter = source())` — matching creatures must block each combat if able (Grand Melee).
 - `MustBeBlocked(allCreatures = false)` — static: the source creature must be blocked while active —
   "if able" (≥1 blocker, default) or by **all** able blockers (`allCreatures = true`, Lure-style).

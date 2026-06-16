@@ -142,9 +142,9 @@ class BeginningPhaseManager(
         // No MAY_NOT_UNTAP permanents — untap everything normally. Stun counters
         // replace each untap event per Rule 122.1d (handled by untapOrConsumeStun).
         for (entityId in permanentsAfterCantUntap) {
-            val (afterUntap, event) = untapOrConsumeStun(newState, entityId)
+            val (afterUntap, untapEvents) = untapOrConsumeStun(newState, entityId, projected)
             newState = afterUntap
-            if (event != null) events.add(event)
+            events.addAll(untapEvents)
         }
 
         // Untap permanents for non-active players with UntapDuringOtherUntapSteps (e.g., Seedborn Muse)
@@ -175,9 +175,12 @@ class BeginningPhaseManager(
                         !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)
                 }.keys
                 for (entityId in tappedPermanents) {
-                    val (afterUntap, event) = untapOrConsumeStun(newState, entityId)
+                    // Another player's untap step (Seedborn Muse, etc.) — the
+                    // "during your untap step" counter-removal replacement is not
+                    // active here, so pass projected = null.
+                    val (afterUntap, untapEvents) = untapOrConsumeStun(newState, entityId)
                     newState = afterUntap
-                    if (event != null) events.add(event)
+                    events.addAll(untapEvents)
                 }
             } else if (filteredUntapFilters.isNotEmpty()) {
                 val alreadyUntapped = mutableSetOf<EntityId>()
@@ -190,9 +193,9 @@ class BeginningPhaseManager(
                             matchesFilterForUntap(newState, projectedForSeedborn, entityId, container, filter)
                     }.keys
                     for (entityId in tappedPermanents) {
-                        val (afterUntap, event) = untapOrConsumeStun(newState, entityId)
+                        val (afterUntap, untapEvents) = untapOrConsumeStun(newState, entityId)
                         newState = afterUntap
-                        if (event != null) events.add(event)
+                        events.addAll(untapEvents)
                         alreadyUntapped.add(entityId)
                     }
                 }

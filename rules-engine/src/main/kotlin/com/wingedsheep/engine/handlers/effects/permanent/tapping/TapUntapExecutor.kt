@@ -33,8 +33,10 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
         val cardName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "Permanent"
 
         if (!effect.tap) {
-            val (newState, event) = untapOrConsumeStun(state, targetId)
-            return EffectResult.success(newState, listOfNotNull(event))
+            // Explicit "untap target" effect — pass projected = null so the
+            // untap-step-only REMOVE_COUNTER_TO_UNTAP replacement does not apply.
+            val (newState, events) = untapOrConsumeStun(state, targetId)
+            return EffectResult.success(newState, events)
         }
 
         // Only untapped permanents can be tapped (CR 701.21a). Tapping an

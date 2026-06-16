@@ -22,6 +22,17 @@ enum class AbilityFlag(val displayName: String) {
     DOESNT_UNTAP("Doesn't untap during your untap step"),
     MAY_NOT_UNTAP("You may choose not to untap"),
 
+    /**
+     * "If this would untap during its controller's untap step, remove a +1/+1
+     * counter from it instead. If you do, untap it." (CR 614 replacement applied
+     * during the untap step, CR 502.) Granted to a permanent (e.g. the creature
+     * enchanted by Bewitching Leechcraft). During the untap step the engine tries
+     * to remove a +1/+1 counter; the permanent untaps only if a counter was removed,
+     * otherwise it stays tapped. Applies only to the natural untap step — explicit
+     * "untap target permanent" effects are unaffected.
+     */
+    REMOVE_COUNTER_TO_UNTAP("If this would untap during your untap step, remove a +1/+1 counter from it instead; untap it only if you do"),
+
     // ── Counter restriction flags ───────────────────────────────
     CANT_RECEIVE_COUNTERS("Can't have counters put on it"),
 

@@ -1610,3 +1610,30 @@ These three share one small pipeline addition: an optional `filter` on `MoveColl
   `PendingTrigger.kt` (`SagaChapterInfo`), `StackComponents.kt`, `TriggerDetector.kt`,
   `TriggerProcessor.kt`, `StackResolver.kt`, `TriggerMatcher.kt`, `TriggerIndex.kt`, `TomBombadil.kt`
   (card), SDK reference §12/§13/§8, LTR snapshot golden, backlog, `TomBombadilScenarioTest.kt`.
+
+## Bewitching Leechcraft (LTR #41)
+- **Card:** {1}{U} Enchantment — Aura. "Enchant creature / When this Aura enters, tap enchanted
+  creature. / Enchanted creature has \"If this creature would untap during your untap step, remove a
+  +1/+1 counter from it instead. If you do, untap it.\" (Otherwise, it doesn't untap.)"
+- **Modeled like Charmed Sleep**, but the granted untap restriction is a counter-removal replacement
+  rather than a flat "doesn't untap". Added a new **`AbilityFlag.REMOVE_COUNTER_TO_UNTAP`** flag,
+  granted to the enchanted creature via the same `GrantKeyword(AbilityFlag.X.name)` Aura static used
+  by Charmed Sleep (`DOESNT_UNTAP`) — so it stays projection-scoped and disappears when the Aura
+  leaves play. The ETB tap reuses `Triggers.EntersBattlefield` + `Effects.Tap(EffectTarget.EnchantedCreature)`.
+- **New primitive — granted untap-step counter-removal replacement.** Extended the existing
+  `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`), the single helper that already applies the
+  stun-counter untap replacement (CR 122.1d). It now takes an optional `projected: ProjectedState?`
+  and, when supplied and the permanent has `REMOVE_COUNTER_TO_UNTAP`, tries to remove a +1/+1 counter
+  instead of untapping: the permanent untaps **only if** a counter was removed (emitting
+  `CountersRemovedEvent` + `UntappedEvent`), otherwise it stays tapped. Return type changed from
+  `Pair<GameState, UntappedEvent?>` to `Pair<GameState, List<GameEvent>>` (a counter removal emits two
+  events). Stun is still checked first (CR 122.1d), then this granted replacement.
+- **"During your untap step" honored literally.** Only the active player's untap-step callers
+  (`BeginningPhaseManager`'s main untap loop and the `MAY_NOT_UNTAP` continuation resumer) pass projected
+  state. Explicit "untap target permanent" effects (`TapUntapExecutor`) and other players' untap steps
+  via Seedborn-style statics pass `projected = null`, so the replacement does not fire there.
+- **Touched:** `AbilityFlag.kt` (new flag), `UntapHelpers.kt` (extended helper),
+  `BeginningPhaseManager.kt` (3 callers), `SacrificeAndPayContinuationResumer.kt` (1 caller),
+  `TapUntapExecutor.kt` (1 caller), `BewitchingLeechcraft.kt` (card), SDK reference §9 (static
+  abilities — untap-step restriction flags), LTR snapshot golden, backlog,
+  `BewitchingLeechcraftScenarioTest.kt`.
