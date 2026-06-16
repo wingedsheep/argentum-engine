@@ -421,6 +421,12 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // the flat type/subtype/controller filter below — emitting the aggregate without it would silently
         // over-count, so decline (-> SCAFFOLD) rather than misrender.
         if ("SharesACreatureTypeWithPermanent" in compact(node)) return null
+        // "for each creature blocking it" — an IsBlockingAttacker combat-relationship predicate scoped to
+        // the triggering attacker (Elvish Berserker's "+1/+1 for each creature blocking it"). A flat
+        // battlefield aggregate has no notion of "blocking <that creature>"; the search filter would
+        // silently drop the predicate and tally EVERY creature on the battlefield. Decline -> SCAFFOLD
+        // rather than misrender.
+        if ("IsBlockingAttacker" in compact(node)) return null
         // "for each creature that crewed it this turn" — a CrewedVehicleThisTurn predicate scoped to the
         // source Vehicle (Luxurious Locomotive). This is a per-source set-tracker count, not a flat
         // battlefield aggregate; the search filter below would silently drop the CrewedVehicleThisTurn
