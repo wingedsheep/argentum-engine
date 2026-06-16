@@ -10,28 +10,39 @@ import { styles } from './styles'
 
 const CARD_RATIO = 1.4
 const LABEL_HEIGHT = 14
-const PILE_COUNT = 3
+// Deck + Graveyard + Exile are always present; a fourth "Plotted" pile appears
+// only when the player has plotted cards in exile (see `pileCount` below).
+const BASE_PILE_COUNT = 3
 // Reserve room above the opponent's pile column for the absolutely-positioned
 // Concede button so the top pile doesn't render under it.
 const OPPONENT_TOP_RESERVED = 52
 const MIN_PILE_WIDTH = 28
 
 /**
- * Deck, graveyard, and exile pile display.
+ * Deck, graveyard, exile — and, when present, a dedicated Plotted pile — display.
  */
 export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer; isOpponent?: boolean }) {
   const graveyardCards = useZoneCards(graveyard(player.playerId))
   const topGraveyardCard = graveyardCards[graveyardCards.length - 1]
   const exileCards = useZoneCards(exile(player.playerId))
   const topExileCard = exileCards[exileCards.length - 1]
+  // Plotted cards (CR 718) are a public subset of exile: face-up, castable for free on a
+  // later turn. Surface them in their own pile so both players — crucially the opponent —
+  // can see at a glance which spells are waiting, instead of digging through the exile pile.
+  const plottedCards = exileCards.filter((c) => c.isPlotted)
+  const topPlottedCard = plottedCards[plottedCards.length - 1]
   const libraryZone = useZone(library(player.playerId))
   const libraryEntityIds = libraryZone?.cardIds ?? []
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
   const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
   const [browsingExile, setBrowsingExile] = useState(false)
+  const [browsingPlotted, setBrowsingPlotted] = useState(false)
   const [browsingLibrary, setBrowsingLibrary] = useState(false)
   const stackCards = useStackCards()
+
+  const hasPlotted = plottedCards.length > 0
+  const pileCount = BASE_PILE_COUNT + (hasPlotted ? 1 : 0)
 
   // Shrink piles to fit the column's actual height. The viewport-derived
   // pileWidth doesn't know about (a) the opponent's Concede button, which
@@ -48,13 +59,13 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
 
     const reservedTop = isOpponent ? OPPONENT_TOP_RESERVED : 0
     const reservedBottom = isOpponent ? 0 : responsive.sectionGap * 2
-    const totalGap = responsive.cardGap * (PILE_COUNT - 1)
-    const totalLabel = LABEL_HEIGHT * PILE_COUNT
+    const totalGap = responsive.cardGap * (pileCount - 1)
+    const totalLabel = LABEL_HEIGHT * pileCount
     const fixedOverhead = reservedTop + reservedBottom + totalGap + totalLabel
 
     const compute = (availableHeight: number) => {
       const heightForPiles = Math.max(0, availableHeight - fixedOverhead)
-      const maxPileHeight = heightForPiles / PILE_COUNT
+      const maxPileHeight = heightForPiles / pileCount
       const widthFromHeight = Math.floor(maxPileHeight / CARD_RATIO)
       const next = Math.max(MIN_PILE_WIDTH, Math.min(responsive.pileWidth, widthFromHeight))
       setFittedPileWidth(next)
@@ -67,7 +78,7 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
     })
     obs.observe(parent)
     return () => obs.disconnect()
-  }, [isOpponent, responsive.pileWidth, responsive.cardGap, responsive.sectionGap])
+  }, [isOpponent, pileCount, responsive.pileWidth, responsive.cardGap, responsive.sectionGap])
 
   const effectivePileWidth = fittedPileWidth
   const effectivePileHeight = Math.round(effectivePileWidth * CARD_RATIO)
@@ -212,11 +223,48 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
         <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Exile</span>
       </div>
 
+      {/* Plotted (CR 718) — only present when this player has plotted spells waiting. A
+          first-class, always-visible zone (for both players) so the opponent can read the
+          threat without opening the exile pile. */}
+      {hasPlotted && (
+        <div style={styles.zoneStack}>
+          <div
+            data-plotted-id={player.playerId}
+            style={{ ...styles.plottedPile, ...pileStyle, cursor: 'pointer' }}
+            onClick={() => setBrowsingPlotted(true)}
+            onMouseEnter={(e) => { if (topPlottedCard) hoverCard(topPlottedCard.id, { x: e.clientX, y: e.clientY }) }}
+            onMouseLeave={() => hoverCard(null)}
+          >
+            {topPlottedCard && (
+              <img
+                src={getCardImageUrl(topPlottedCard.name, topPlottedCard.imageUri, 'normal')}
+                alt={topPlottedCard.name}
+                style={styles.pileImage}
+                onError={(e) => handleImageError(e, topPlottedCard.name, 'normal')}
+              />
+            )}
+            <div style={{ ...styles.pileCount, ...styles.plottedPileCount, fontSize: responsive.fontSize.small }}>
+              {plottedCards.length}
+            </div>
+          </div>
+          <span style={{ ...styles.zoneLabel, ...styles.plottedZoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>
+            ⚐ Plotted
+          </span>
+        </div>
+      )}
+
       {browsingGraveyard && (
         <GraveyardBrowser cards={graveyardCards} onClose={() => setBrowsingGraveyard(false)} />
       )}
       {browsingExile && (
         <ExileBrowser cards={exileCards} onClose={() => setBrowsingExile(false)} />
+      )}
+      {browsingPlotted && (
+        <PlottedBrowser
+          cards={plottedCards}
+          ownerLabel={isOpponent ? "Opponent's Plotted Spells" : 'Your Plotted Spells'}
+          onClose={() => setBrowsingPlotted(false)}
+        />
       )}
       {browsingLibrary && (
         <LibraryBrowser
@@ -355,6 +403,13 @@ function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClos
   const cardWidth = responsive.isMobile ? 120 : 160
   const cardHeight = Math.round(cardWidth * 1.4)
 
+  // Plotted cards (CR 718) are still part of exile, but they carry future value — float
+  // them to the front and badge them so they stand out among morphs, impulse-draws, etc.
+  const plottedCount = cards.filter((c) => c.isPlotted).length
+  const orderedCards = plottedCount > 0
+    ? [...cards].sort((a, b) => Number(b.isPlotted ?? false) - Number(a.isPlotted ?? false))
+    : cards
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -403,14 +458,27 @@ function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClos
     <div style={styles.exileOverlay} onClick={onClose}>
       <div style={styles.exileBrowserContent} onClick={(e) => e.stopPropagation()}>
         <div style={styles.exileBrowserHeader}>
-          <h2 style={styles.exileBrowserTitle}>Exile ({cards.length})</h2>
+          <h2 style={styles.exileBrowserTitle}>
+            Exile ({cards.length})
+            {plottedCount > 0 && (
+              <span style={styles.exilePlottedCount}> · {plottedCount} plotted</span>
+            )}
+          </h2>
           <button style={styles.exileCloseButton} onClick={onClose}>✕</button>
         </div>
         <div style={styles.exileCardGrid}>
-          {cards.map((card) => (
+          {orderedCards.map((card) => (
             <div
               key={card.id}
-              style={{ width: cardWidth, height: cardHeight, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}
+              style={{
+                width: cardWidth,
+                height: cardHeight,
+                borderRadius: 6,
+                overflow: 'hidden',
+                flexShrink: 0,
+                position: 'relative',
+                boxShadow: card.isPlotted ? '0 0 0 2px #f5d76e, 0 0 14px rgba(245, 215, 110, 0.6)' : 'none',
+              }}
               onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
               onMouseLeave={() => hoverCard(null)}
             >
@@ -420,6 +488,7 @@ function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClos
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 onError={(e) => handleImageError(e, card.name, 'normal')}
               />
+              {card.isPlotted && <div style={styles.plottedGridBadge}>Plotted</div>}
             </div>
           ))}
         </div>
@@ -432,6 +501,143 @@ function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClos
               fontSize: responsive.fontSize.normal,
               backgroundColor: '#7c3aed',
               color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            View Battlefield
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#333',
+              color: '#aaa',
+              border: '1px solid #555',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Full-screen overlay for browsing plotted spells (CR 718) — the public, face-up subset of
+ * exile that can be cast for free on a later turn. Used for both the viewer's and the
+ * opponent's Plotted pile, so the threat of an incoming free spell is always inspectable.
+ */
+function PlottedBrowser({
+  cards,
+  ownerLabel,
+  onClose,
+}: {
+  cards: readonly ClientCard[]
+  ownerLabel: string
+  onClose: () => void
+}) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  const responsive = useResponsiveContext()
+  const [minimized, setMinimized] = useState(false)
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (minimized) {
+          setMinimized(false)
+        } else {
+          onClose()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, minimized])
+
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#a07b16',
+          color: '#fff8e1',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to Plotted
+      </button>
+    )
+  }
+
+  return (
+    <div style={styles.plottedOverlay} onClick={onClose}>
+      <div style={styles.plottedBrowserContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.exileBrowserHeader}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <h2 style={styles.plottedBrowserTitle}>⚐ {ownerLabel} ({cards.length})</h2>
+            <span style={{ color: '#bfa14a', fontSize: 11, letterSpacing: 0.5 }}>
+              Castable for free on a later turn (CR 718)
+            </span>
+          </div>
+          <button style={styles.plottedCloseButton} onClick={onClose}>✕</button>
+        </div>
+        <div style={styles.exileCardGrid}>
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              style={{
+                width: cardWidth,
+                height: cardHeight,
+                borderRadius: 6,
+                overflow: 'hidden',
+                flexShrink: 0,
+                position: 'relative',
+                boxShadow: '0 0 0 2px #f5d76e, 0 0 14px rgba(245, 215, 110, 0.6)',
+              }}
+              onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
+              onMouseLeave={() => hoverCard(null)}
+            >
+              <img
+                src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+                alt={card.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => handleImageError(e, card.name, 'normal')}
+              />
+              <div style={styles.plottedGridBadge}>Plotted</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+          <button
+            onClick={() => setMinimized(true)}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#a07b16',
+              color: '#fff8e1',
               border: 'none',
               borderRadius: 8,
               cursor: 'pointer',
