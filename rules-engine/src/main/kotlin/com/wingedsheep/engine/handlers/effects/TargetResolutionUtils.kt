@@ -258,8 +258,8 @@ object TargetResolutionUtils {
                 // under their control (CR 701.54e). Null when the player has no Ring-bearer.
                 val ownerId = when (ref.player) {
                     is Player.You -> context.controllerId
-                    is Player.Opponent, is Player.EachOpponent,
-                    is Player.TargetOpponent, is Player.TargetPlayer -> context.opponentId
+                    is Player.AnOpponent, is Player.EachOpponent,
+                    is Player.TargetOpponent, is Player.TargetPlayer -> state.getOpponents(context.controllerId).firstOrNull()
                     else -> context.controllerId
                 }
                 ownerId?.let { owner ->

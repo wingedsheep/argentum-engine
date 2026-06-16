@@ -70,7 +70,6 @@ object LifeGainModifiers {
                     val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                         sourceId = entityId,
                         controllerId = recipientId,
-                        opponentId = state.getOpponent(recipientId),
                     )
                     val restrictionsHold = effect.restrictions.all { restriction ->
                         conditionEvaluator.evaluate(state, restriction, effectContext)

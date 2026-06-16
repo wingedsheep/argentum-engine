@@ -817,8 +817,7 @@ internal class BlockPhaseManager(
                         ability.condition,
                         EffectContext(
                             sourceId = attackerId,
-                            controllerId = controller,
-                            opponentId = state.turnOrder.firstOrNull { it != controller }
+                            controllerId = controller
                         )
                     )
                 } else true

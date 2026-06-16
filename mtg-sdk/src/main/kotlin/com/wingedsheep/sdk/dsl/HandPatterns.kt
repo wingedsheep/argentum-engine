@@ -88,30 +88,37 @@ object HandPatterns {
         )
     }
 
-    fun discardCards(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect =
+    fun discardCards(
+        count: Int,
+        target: EffectTarget = EffectTarget.Controller,
+        filter: GameObjectFilter = GameObjectFilter.Any,
+    ): CompositeEffect =
         discardCards(
             DynamicAmount.Fixed(count),
             target,
             prompt = "Choose $count card${if (count != 1) "s" else ""} to discard",
+            filter = filter,
         )
 
     /**
      * Discard a [DynamicAmount] of cards (e.g. "discard X cards, where X is the number of colors
      * of mana spent to cast this spell" — SOS Converge's Arcane Omens). Same Gather → Select →
      * Move pipeline as the fixed-count overload; the count is resolved at the SelectFromCollection
-     * step.
+     * step. When [filter] is set, only matching hand cards are gathered for discard (e.g. a
+     * filtered ward-discard cost — Saruman of Many Colors).
      */
     fun discardCards(
         count: DynamicAmount,
         target: EffectTarget = EffectTarget.Controller,
         prompt: String = "Choose cards to discard",
+        filter: GameObjectFilter = GameObjectFilter.Any,
     ): CompositeEffect {
         val player = effectTargetToPlayer(target)
         val chooser = effectTargetToChooser(target)
         return CompositeEffect(
             listOf(
                 GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, player),
+                    source = CardSource.FromZone(Zone.HAND, player, filter),
                     storeAs = "hand"
                 ),
                 SelectFromCollectionEffect(

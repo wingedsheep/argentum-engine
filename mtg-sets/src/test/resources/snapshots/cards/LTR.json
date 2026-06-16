@@ -1338,18 +1338,21 @@
                 "id": "ability_1",
                 "trigger": "BecomesBlockedEvent",
                 "effect": {
-                    "type": "ForEachInGroup",
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                "IsCreature"
-                            ],
-                            "statePredicates": [
-                                "IsBlockingSource"
-                            ]
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsBlockingSource"
+                                ]
+                            }
                         }
                     },
-                    "effect": {
+                    "body": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "Fixed",
@@ -2034,7 +2037,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "SpellCastEvent",
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -2052,11 +2055,14 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "ForEachInGroup",
-                            "filter": {
-                                "baseFilter": "creature ctrl:you"
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
                             },
-                            "effect": {
+                            "body": {
                                 "type": "GrantKeyword",
                                 "keyword": "INDESTRUCTIBLE",
                                 "target": "Self"
@@ -5465,20 +5471,23 @@
                     }
                 },
                 {
-                    "type": "ForEachInGroup",
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                "IsCreature"
-                            ],
-                            "controllerPredicate": {
-                                "type": "ControlledByReferencedPlayer",
-                                "target": "TargetController"
-                            }
-                        },
-                        "excludeTarget": true
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": "TargetController"
+                                }
+                            },
+                            "excludeTarget": true
+                        }
                     },
-                    "effect": {
+                    "body": {
                         "type": "DealDamage",
                         "amount": {
                             "type": "Fixed",
@@ -6327,7 +6336,8 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "SourceMatches",
+                            "type": "EntityMatches",
+                            "entity": "Self",
                             "filter": "Citizen"
                         }
                     },
@@ -6360,7 +6370,8 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "SourceMatches",
+                            "type": "EntityMatches",
+                            "entity": "Self",
                             "filter": "Scout"
                         }
                     },
@@ -7927,7 +7938,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": {
                                 "cardPredicates": [
                                     "IsLegendary"
@@ -13278,20 +13293,21 @@
             {
                 "chapter": 3,
                 "effect": {
-                    "type": "ForEachPlayer",
-                    "players": "EachOpponent",
-                    "effects": [
-                        {
-                            "type": "LoseLife",
-                            "amount": {
-                                "type": "Count",
-                                "player": "You",
-                                "zone": "Graveyard",
-                                "filter": "creature"
-                            },
-                            "target": "Controller"
-                        }
-                    ]
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "target": "Controller"
+                    }
                 }
             }
         ]
@@ -14704,7 +14720,8 @@
                     ]
                 },
                 "triggerCondition": {
-                    "type": "SourceMatches",
+                    "type": "EntityMatches",
+                    "entity": "Self",
                     "filter": {
                         "statePredicates": [
                             "AttackedThisTurn"
@@ -14841,7 +14858,11 @@
                             "gate": {
                                 "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "TargetMatchesFilter",
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
                                     "filter": {
                                         "cardPredicates": [
                                             "IsCreature",
@@ -15964,7 +15985,7 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "SpellCastEvent",
-                    "player": "Opponent"
+                    "player": "EachOpponent"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -20891,7 +20912,11 @@
                     "gate": {
                         "type": "Gate.WhenCondition",
                         "condition": {
-                            "type": "TargetMatchesFilter",
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
                             "filter": {
                                 "cardPredicates": [
                                     "IsCreature"

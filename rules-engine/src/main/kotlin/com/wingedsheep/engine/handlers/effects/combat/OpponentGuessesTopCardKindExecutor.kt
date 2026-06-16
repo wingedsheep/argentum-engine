@@ -90,7 +90,7 @@ class OpponentGuessesTopCardKindExecutor : EffectExecutor<OpponentGuessesTopCard
         context: EffectContext
     ): EntityId? = when (chooser) {
         Chooser.Controller -> context.controllerId
-        Chooser.Opponent -> context.opponentId
+        Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
         Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
             TargetResolutionUtils.run { it.toEntityId() }
         }

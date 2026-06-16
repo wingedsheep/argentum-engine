@@ -581,11 +581,9 @@ class CastPermissionUtils(
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
                         val inner = ability.ability as? com.wingedsheep.sdk.scripting.ReduceEquipCost ?: continue
-                        val opponentId = state.turnOrder.firstOrNull { it != playerId }
                         val context = com.wingedsheep.engine.handlers.EffectContext(
                             sourceId = entityId,
-                            controllerId = playerId,
-                            opponentId = opponentId
+                            controllerId = playerId
                         )
                         if (conditionEvaluator.evaluate(state, ability.condition, context)) total += inner.amount
                     }

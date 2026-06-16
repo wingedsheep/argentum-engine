@@ -959,11 +959,9 @@ class CastSpellHandler(
         }
         val dynamic = modalEffect.dynamicChooseCount
         if (dynamic != null) {
-            val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
             val context = EffectContext(
                 sourceId = action.cardId,
                 controllerId = action.playerId,
-                opponentId = opponentId,
                 targets = emptyList(),
                 xValue = 0
             )
