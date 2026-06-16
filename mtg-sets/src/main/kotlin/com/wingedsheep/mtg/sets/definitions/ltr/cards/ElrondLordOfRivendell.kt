@@ -47,6 +47,7 @@ val ElrondLordOfRivendell = card("Elrond, Lord of Rivendell") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "49"
+        flavorText = "\"This is the hour of the Shire-folk, when they arise from their quiet fields to shake the towers and counsels of the Great. Who of all the Wise could have foreseen it?\""
         artist = "Ryan Yee"
         imageUri = "https://cards.scryfall.io/normal/front/a/6/a62a5e55-fa1b-4c70-9293-740dd513d52e.jpg?1686968084"
     }

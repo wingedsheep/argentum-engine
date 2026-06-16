@@ -39,7 +39,7 @@ val StalwartsOfOsgiliath = card("Stalwarts of Osgiliath") {
         rarity = Rarity.COMMON
         collectorNumber = "33"
         artist = "Lixin Yin"
-        flavorText = "\"The Enemy must pay dearly for the crossing of the River.\" —Denethor"
+        flavorText = "\"The Enemy must pay dearly for the crossing of the River.\"\n—Denethor"
         imageUri = "https://cards.scryfall.io/normal/front/2/a/2acb8240-8e0e-4adf-a884-4986c116e704.jpg?1686967946"
     }
 }

@@ -46,6 +46,7 @@ val NastyEnd = card("Nasty End") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "99"
+        flavorText = "\"And that's the end of that. A nasty end for Saruman, and I wish I needn't have seen it; but it's a good riddance.\"\n—Sam"
         artist = "Valera Lutfullina"
         imageUri = "https://cards.scryfall.io/normal/front/c/3/c34f88d7-15a1-434f-88d7-3d4fcf406d54.jpg?1686968630"
     }

@@ -30,6 +30,7 @@ val SarumansTrickery = card("Saruman's Trickery") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "68"
+        flavorText = "\"I gave you the chance of aiding me willingly.\"\n—Saruman"
         artist = "Yongjae Choi"
         imageUri = "https://cards.scryfall.io/normal/front/8/e/8eb6c23b-e52e-4533-9625-884eb0a4d866.jpg?1686968278"
     }

@@ -53,6 +53,7 @@ val BoromirWardenOfTheTower = card("Boromir, Warden of the Tower") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "4"
+        flavorText = "\"Farewell, Aragorn! Go to Minas Tirith and save my people!\""
         artist = "Yigit Koroglu"
         imageUri = "https://cards.scryfall.io/normal/front/f/6/f6bc3720-2892-4dda-8f30-079a1ac8e1e2.jpg?1686967669"
     }

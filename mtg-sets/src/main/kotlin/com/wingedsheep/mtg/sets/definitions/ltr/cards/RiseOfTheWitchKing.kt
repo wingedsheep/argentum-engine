@@ -91,6 +91,7 @@ val RiseOfTheWitchKing = card("Rise of the Witch-king") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "221"
+        flavorText = "In rode the Lord of the Nazgûl, under the archway that no enemy ever yet had passed, and all fled before his face."
         artist = "Andrea Piparo"
         imageUri = "https://cards.scryfall.io/normal/front/3/f/3f440fa1-5387-41d6-a80f-5b19dbb21514.jpg?1686969962"
     }

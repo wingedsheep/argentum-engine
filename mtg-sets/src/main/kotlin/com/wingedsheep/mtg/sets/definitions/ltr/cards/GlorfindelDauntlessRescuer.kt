@@ -73,6 +73,7 @@ val GlorfindelDauntlessRescuer = card("Glorfindel, Dauntless Rescuer") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "171"
+        flavorText = "On the Elf-lord's brow sat wisdom, and in his hand was strength."
         artist = "Viko Menezes"
         imageUri = "https://cards.scryfall.io/normal/front/b/a/baf7a546-8a8b-4396-ab64-9a5b9abffe79.jpg?1686969418"
     }

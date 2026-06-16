@@ -30,6 +30,7 @@ val DeceiveTheMessenger = card("Deceive the Messenger") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "47"
+        flavorText = "\"Tell Gandalf that he must seek my aid at once.\"\n—Saruman"
         artist = "Tomas Duchek"
         imageUri = "https://cards.scryfall.io/normal/front/b/2/b2984bc6-7c12-46e4-8dd3-b23e29a7a7ec.jpg?1686968062"
     }

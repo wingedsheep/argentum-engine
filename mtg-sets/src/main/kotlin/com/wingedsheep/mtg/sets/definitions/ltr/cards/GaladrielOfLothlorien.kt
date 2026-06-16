@@ -77,6 +77,7 @@ val GaladrielOfLothlorien = card("Galadriel of Lothlórien") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "206"
+        flavorText = "\"I pass the test. I will diminish, and go into the West, and remain Galadriel.\""
         artist = "Magali Villeneuve"
         imageUri = "https://cards.scryfall.io/normal/front/a/6/a6e5c3b3-9a70-4a1c-bfb3-db27e51c4b8d.jpg?1686969798"
     }

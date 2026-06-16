@@ -36,6 +36,7 @@ val GloriousGale = card("Glorious Gale") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "51"
+        flavorText = "The Elves of Lórien took Dol Guldur. Galadriel threw down its walls and laid bare its pits, and the forest was cleansed."
         artist = "Ekaterina Burmak"
         imageUri = "https://cards.scryfall.io/normal/front/6/e/6e1057de-5710-415c-9a51-1d8bd86021a3.jpg?1686968102"
     }

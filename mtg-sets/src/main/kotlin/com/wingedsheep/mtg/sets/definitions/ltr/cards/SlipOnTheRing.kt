@@ -44,6 +44,7 @@ val SlipOnTheRing = card("Slip On the Ring") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "31"
+        flavorText = "How had it come to be on his finger? He wondered if the Ring itself had not played him a trick."
         artist = "Iga Oliwiak"
         imageUri = "https://cards.scryfall.io/normal/front/2/e/2e20c2b8-ffe3-4d14-8588-f89719358e3d.jpg?1686967929"
     }

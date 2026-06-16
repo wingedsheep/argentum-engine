@@ -65,6 +65,7 @@ val TheTormentOfGollum = card("The Torment of Gollum") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "110"
+        flavorText = "In Mordor, all that he knew was forced from him."
         artist = "Nino Is"
         imageUri = "https://cards.scryfall.io/normal/front/b/a/ba2c8c25-1fa9-4cc4-a378-5eccc25bacf0.jpg?1686968743"
     }

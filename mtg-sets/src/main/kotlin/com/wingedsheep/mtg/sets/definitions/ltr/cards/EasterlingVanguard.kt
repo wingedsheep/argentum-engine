@@ -30,6 +30,7 @@ val EasterlingVanguard = card("Easterling Vanguard") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "83"
+        flavorText = "An army of Easterlings charged forth, while from the hills poured Orcs innumerable."
         artist = "Javier Charro"
         imageUri = "https://cards.scryfall.io/normal/front/e/8/e860dd40-07c5-47c3-92a8-1ee95a953c2f.jpg?1686968439"
     }

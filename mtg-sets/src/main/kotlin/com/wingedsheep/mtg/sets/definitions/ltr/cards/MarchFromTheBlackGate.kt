@@ -36,6 +36,7 @@ val MarchFromTheBlackGate = card("March from the Black Gate") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "94"
+        flavorText = "Like a storm, they broke upon the line of the Men of Gondor."
         artist = "Victor Harmatiuk"
         imageUri = "https://cards.scryfall.io/normal/front/e/5/e57815d4-b21f-4ceb-a3f1-73cff5f0e612.jpg?1686968563"
     }

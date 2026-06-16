@@ -27,7 +27,7 @@ val SurroundedByOrcs = card("Surrounded by Orcs") {
     manaCost = "{3}{U}"
     colorIdentity = "U"
     typeLine = "Sorcery"
-    oracleText = "Amass Orcs 3, then target player mills X cards, where X is the amassed Army's power."
+    oracleText = "Amass Orcs 3, then target player mills X cards, where X is the amassed Army's power. (To amass Orcs 3, put three +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)"
 
     spell {
         val player = target("target player", Targets.Player)

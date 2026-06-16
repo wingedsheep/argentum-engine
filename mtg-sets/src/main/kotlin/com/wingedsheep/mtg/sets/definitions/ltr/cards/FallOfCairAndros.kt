@@ -30,9 +30,7 @@ val FallOfCairAndros = card("Fall of Cair Andros") {
     manaCost = "{2}{R}"
     colorIdentity = "R"
     typeLine = "Enchantment"
-    oracleText = "Whenever a creature an opponent controls is dealt excess noncombat damage, " +
-        "amass Orcs X, where X is that excess damage.\n" +
-        "{7}{R}: This enchantment deals 7 damage to target creature."
+    oracleText = "Whenever a creature an opponent controls is dealt excess noncombat damage, amass Orcs X, where X is that excess damage. (Put X +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)\n{7}{R}: This enchantment deals 7 damage to target creature."
 
     triggeredAbility {
         trigger = Triggers.dealsDamage(

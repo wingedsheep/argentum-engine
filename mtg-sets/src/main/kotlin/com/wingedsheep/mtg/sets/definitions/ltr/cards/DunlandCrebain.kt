@@ -36,6 +36,7 @@ val DunlandCrebain = card("Dunland Crebain") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "82"
+        flavorText = "\"What's that, Strider? It don't look like a cloud.\"\n—Sam"
         artist = "Alexander Ostrowski"
         imageUri = "https://cards.scryfall.io/normal/front/6/9/695c05ab-e46e-46c7-bd2e-ef0b2307e449.jpg?1686968429"
     }

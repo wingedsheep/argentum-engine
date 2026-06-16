@@ -37,6 +37,7 @@ val DisplayOfPower = card("Display of Power") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "119"
+        flavorText = "\"The Nazgûl closed round at night, and I was besieged. Such light and flame cannot have been seen on Weathertop since the war-beacons of old.\"\n—Gandalf"
         artist = "Shahab Alizadeh"
         imageUri = "https://cards.scryfall.io/normal/front/2/9/295b8595-5b4e-4fc8-8249-486d36e15f67.jpg?1686968845"
     }

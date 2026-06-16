@@ -58,6 +58,7 @@ val GrimaWormtongue = card("Gríma Wormtongue") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "88"
+        flavorText = "\"Do not weary yourself, or tax too heavily your strength. Let others deal with these irksome guests.\""
         artist = "Alex Brock"
         imageUri = "https://cards.scryfall.io/normal/front/8/e/8e3bd86b-e8ca-4885-a823-78fb967e6caf.jpg?1694569791"
     }

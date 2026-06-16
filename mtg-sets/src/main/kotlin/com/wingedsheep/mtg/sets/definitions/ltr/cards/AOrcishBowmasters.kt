@@ -27,10 +27,7 @@ val AOrcishBowmasters = card("A-Orcish Bowmasters") {
     typeLine = "Creature — Orc Archer"
     power = 1
     toughness = 1
-    oracleText = "Flash\nWhenever an opponent draws a card except the first one they draw in each " +
-        "of their draw steps, Orcish Bowmasters deals 1 damage to any target. Then amass Orcs 1. " +
-        "(To amass Orcs 1, put a +1/+1 counter on an Army you control. It's also an Orc. If you " +
-        "don't control an Army, create a 0/0 black Orc Army creature token first.)"
+    oracleText = "Flash\nWhenever an opponent draws a card except the first one they draw in each of their draw steps, Orcish Bowmasters deals 1 damage to any target. Then amass Orcs 1."
 
     keywords(Keyword.FLASH)
 

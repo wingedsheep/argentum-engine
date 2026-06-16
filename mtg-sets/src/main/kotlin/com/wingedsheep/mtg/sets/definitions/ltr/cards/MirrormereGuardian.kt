@@ -30,7 +30,7 @@ val MirrormereGuardian = card("Mirrormere Guardian") {
         rarity = Rarity.COMMON
         collectorNumber = "179"
         artist = "Anton Solovianchyk"
-        flavorText = "\"But still the sunken stars appear In dark and windless Mirrormere; There lies his crown in water deep, Till Durin wakes again from sleep.\" —Gimli's song"
+        flavorText = "\"But still the sunken stars appear\nIn dark and windless Mirrormere;\nThere lies his crown in water deep,\nTill Durin wakes again from sleep.\"\n—Gimli's song"
         imageUri = "https://cards.scryfall.io/normal/front/8/3/8315d7cc-fc2c-45b1-8340-11ff2af3beb5.jpg?1686969503"
     }
 }

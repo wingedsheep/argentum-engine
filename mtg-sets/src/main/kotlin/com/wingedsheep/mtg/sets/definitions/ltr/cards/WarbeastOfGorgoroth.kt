@@ -38,6 +38,7 @@ val WarbeastOfGorgoroth = card("Warbeast of Gorgoroth") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "152"
+        flavorText = "Drums rolled, fires leaped, and great engines drawn by beasts crawled across the field."
         artist = "Oleg Shekhovtsov"
         imageUri = "https://cards.scryfall.io/normal/front/5/e/5eeecb9e-fbde-429b-b3da-18a4dbadf6de.jpg?1686969217"
     }

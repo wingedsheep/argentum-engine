@@ -69,6 +69,7 @@ val EowynFearlessKnight = card("Éowyn, Fearless Knight") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "201"
+        flavorText = "\"Am I not of the House of Eorl? I have waited on faltering feet long enough.\""
         artist = "Magali Villeneuve"
         imageUri = "https://cards.scryfall.io/normal/front/a/d/adffb389-c9a3-41c4-b078-292a2bcf870d.jpg?1686969744"
     }

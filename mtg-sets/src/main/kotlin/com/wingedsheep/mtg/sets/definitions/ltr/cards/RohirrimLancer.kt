@@ -21,7 +21,7 @@ val RohirrimLancer = card("Rohirrim Lancer") {
     typeLine = "Creature — Human Knight"
     power = 1
     toughness = 1
-    oracleText = "Menace\nWhen this creature dies, the Ring tempts you."
+    oracleText = "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature dies, the Ring tempts you."
 
     keywords(Keyword.MENACE)
 
@@ -34,7 +34,7 @@ val RohirrimLancer = card("Rohirrim Lancer") {
         rarity = Rarity.COMMON
         collectorNumber = "146"
         artist = "Anastasia Balakchina"
-        flavorText = "\"Dire deeds awake, dark is it eastward. Let horse be bridled, horn be sounded!\" —Théoden"
+        flavorText = "\"Dire deeds awake, dark is it eastward. Let horse be bridled, horn be sounded!\"\n—Théoden"
         imageUri = "https://cards.scryfall.io/normal/front/2/f/2f506f9f-4c0d-44e8-9f81-8403d808d0e4.jpg?1686969151"
     }
 }

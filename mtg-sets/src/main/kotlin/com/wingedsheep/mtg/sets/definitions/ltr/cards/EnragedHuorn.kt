@@ -34,7 +34,7 @@ val EnragedHuorn = card("Enraged Huorn") {
         rarity = Rarity.COMMON
         collectorNumber = "162"
         artist = "David Álvarez"
-        flavorText = "\"They stand watching endlessly over the trees. It is difficult to see them moving, but they can move very quickly if they are angry.\" —Merry"
+        flavorText = "\"They stand watching endlessly over the trees. It is difficult to see them moving, but they can move very quickly if they are angry.\"\n—Merry"
         imageUri = "https://cards.scryfall.io/normal/front/a/9/a9b48836-6d37-46eb-8c41-a3eeecc72ae1.jpg?1686969323"
     }
 }

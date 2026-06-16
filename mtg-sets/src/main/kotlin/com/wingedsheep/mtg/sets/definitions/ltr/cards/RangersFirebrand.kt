@@ -27,7 +27,7 @@ val RangersFirebrand = card("Ranger's Firebrand") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "143"
         artist = "Pavel Kolomeyets"
-        flavorText = "\"Keep close to the fire, with your faces outward! Get some of the longer sticks ready in your hands!\" —Strider"
+        flavorText = "\"Keep close to the fire, with your faces outward! Get some of the longer sticks ready in your hands!\"\n—Strider"
         imageUri = "https://cards.scryfall.io/normal/front/0/6/06541200-fa4c-4b98-bdc4-44708fd2ddf6.jpg?1686969118"
     }
 }

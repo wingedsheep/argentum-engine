@@ -48,6 +48,7 @@ val BreakingOfTheFellowship = card("Breaking of the Fellowship") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "117"
+        flavorText = "\"It might have been mine. It should be mine. Give it to me!\""
         artist = "Randy Gallegos"
         imageUri = "https://cards.scryfall.io/normal/front/1/3/130f60d0-4fac-4e4e-a938-58f3b96e5335.jpg?1686968821"
     }

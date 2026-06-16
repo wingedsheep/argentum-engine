@@ -3,7 +3,7 @@
     "name": "A-Orcish Bowmasters",
     "manaCost": "{1}{B}",
     "typeLine": "Creature — Orc Archer",
-    "oracleText": "Flash\nWhenever an opponent draws a card except the first one they draw in each of their draw steps, Orcish Bowmasters deals 1 damage to any target. Then amass Orcs 1. (To amass Orcs 1, put a +1/+1 counter on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
+    "oracleText": "Flash\nWhenever an opponent draws a card except the first one they draw in each of their draw steps, Orcish Bowmasters deals 1 damage to any target. Then amass Orcs 1.",
     "creatureStats": {
         "power": 1,
         "toughness": 1
@@ -2078,6 +2078,7 @@
         "collectorNumber": "4",
         "rarity": "RARE",
         "artist": "Yigit Koroglu",
+        "flavorText": "\"Farewell, Aragorn! Go to Minas Tirith and save my people!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6bc3720-2892-4dda-8f30-079a1ac8e1e2.jpg?1686967669"
     },
     "colorIdentityOverride": [
@@ -2176,6 +2177,7 @@
     "metadata": {
         "collectorNumber": "117",
         "artist": "Randy Gallegos",
+        "flavorText": "\"It might have been mine. It should be mine. Give it to me!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/130f60d0-4fac-4e4e-a938-58f3b96e5335.jpg?1686968821"
     },
     "colorIdentityOverride": [
@@ -2701,7 +2703,7 @@
     "metadata": {
         "collectorNumber": "81",
         "artist": "Artur Treffner",
-        "flavorText": "\"I think it is a sad story, and it might have happened to others, even to some Hobbits that I have known.\" —Gandalf",
+        "flavorText": "\"I think it is a sad story, and it might have happened to others, even to some Hobbits that I have known.\"\n—Gandalf",
         "imageUri": "https://cards.scryfall.io/normal/front/1/2/121c12c4-83ea-463e-8fdf-30718968a2bd.jpg?1686968419"
     },
     "colorIdentityOverride": [
@@ -2937,6 +2939,7 @@
     "metadata": {
         "collectorNumber": "47",
         "artist": "Tomas Duchek",
+        "flavorText": "\"Tell Gandalf that he must seek my aid at once.\"\n—Saruman",
         "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2984bc6-7c12-46e4-8dd3-b23e29a7a7ec.jpg?1686968062"
     },
     "colorIdentityOverride": [
@@ -3118,6 +3121,7 @@
         "collectorNumber": "119",
         "rarity": "RARE",
         "artist": "Shahab Alizadeh",
+        "flavorText": "\"The Nazgûl closed round at night, and I was besieged. Such light and flame cannot have been seen on Weathertop since the war-beacons of old.\"\n—Gandalf",
         "imageUri": "https://cards.scryfall.io/normal/front/2/9/295b8595-5b4e-4fc8-8249-486d36e15f67.jpg?1686968845"
     },
     "colorIdentityOverride": [
@@ -3368,6 +3372,7 @@
     "metadata": {
         "collectorNumber": "82",
         "artist": "Alexander Ostrowski",
+        "flavorText": "\"What's that, Strider? It don't look like a cloud.\"\n—Sam",
         "imageUri": "https://cards.scryfall.io/normal/front/6/9/695c05ab-e46e-46c7-bd2e-ef0b2307e449.jpg?1686968429"
     },
     "colorIdentityOverride": [
@@ -3468,7 +3473,7 @@
     "oracleText": "Landfall — Whenever a land you control enters, if you don't control a Ring-bearer, the Ring tempts you.",
     "creatureStats": {
         "power": 4,
-        "toughness": 3
+        "toughness": 4
     },
     "script": {
         "triggeredAbilities": [
@@ -3756,6 +3761,7 @@
     "metadata": {
         "collectorNumber": "83",
         "artist": "Javier Charro",
+        "flavorText": "An army of Easterlings charged forth, while from the hills poured Orcs innumerable.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/8/e860dd40-07c5-47c3-92a8-1ee95a953c2f.jpg?1686968439"
     },
     "colorIdentityOverride": [
@@ -4014,6 +4020,7 @@
         "collectorNumber": "49",
         "rarity": "UNCOMMON",
         "artist": "Ryan Yee",
+        "flavorText": "\"This is the hour of the Shire-folk, when they arise from their quiet fields to shake the towers and counsels of the Great. Who of all the Wise could have foreseen it?\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/6/a62a5e55-fa1b-4c70-9293-740dd513d52e.jpg?1686968084"
     },
     "colorIdentityOverride": [
@@ -4383,7 +4390,7 @@
     "metadata": {
         "collectorNumber": "162",
         "artist": "David Álvarez",
-        "flavorText": "\"They stand watching endlessly over the trees. It is difficult to see them moving, but they can move very quickly if they are angry.\" —Merry",
+        "flavorText": "\"They stand watching endlessly over the trees. It is difficult to see them moving, but they can move very quickly if they are angry.\"\n—Merry",
         "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9b48836-6d37-46eb-8c41-a3eeecc72ae1.jpg?1686969323"
     },
     "colorIdentityOverride": [
@@ -5014,7 +5021,7 @@
     "name": "Fall of Cair Andros",
     "manaCost": "{2}{R}",
     "typeLine": "Enchantment",
-    "oracleText": "Whenever a creature an opponent controls is dealt excess noncombat damage, amass Orcs X, where X is that excess damage.\n{7}{R}: This enchantment deals 7 damage to target creature.",
+    "oracleText": "Whenever a creature an opponent controls is dealt excess noncombat damage, amass Orcs X, where X is that excess damage. (Put X +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)\n{7}{R}: This enchantment deals 7 damage to target creature.",
     "script": {
         "triggeredAbilities": [
             {
@@ -5980,7 +5987,7 @@
     "name": "Foray of Orcs",
     "manaCost": "{3}{R}",
     "typeLine": "Sorcery",
-    "oracleText": "Amass Orcs 2. When you do, Foray of Orcs deals X damage to target creature an opponent controls, where X is the amassed Army's power.",
+    "oracleText": "Amass Orcs 2. When you do, Foray of Orcs deals X damage to target creature an opponent controls, where X is the amassed Army's power. (To amass Orcs 2, put two +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
     "script": {
         "spellEffect": {
             "type": "ReflexiveTrigger",
@@ -6188,7 +6195,7 @@
     "oracleText": "Whenever Frodo Baggins or another legendary creature you control enters, the Ring tempts you.\nAs long as Frodo Baggins is your Ring-bearer, it must be blocked if able.",
     "creatureStats": {
         "power": 1,
-        "toughness": 1
+        "toughness": 3
     },
     "script": {
         "triggeredAbilities": [
@@ -6303,6 +6310,7 @@
         "collectorNumber": "289",
         "rarity": "RARE",
         "artist": "Magali Villeneuve",
+        "flavorText": "Frodo's heart flamed within him. He drew his sword and advanced.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/3/83d1b37c-a8c6-4690-8701-3395397711e7.jpg?1687424782"
     },
     "colorIdentityOverride": [
@@ -6732,6 +6740,7 @@
         "collectorNumber": "206",
         "rarity": "RARE",
         "artist": "Magali Villeneuve",
+        "flavorText": "\"I pass the test. I will diminish, and go into the West, and remain Galadriel.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6e5c3b3-9a70-4a1c-bfb3-db27e51c4b8d.jpg?1686969798"
     },
     "colorIdentityOverride": [
@@ -7916,6 +7925,7 @@
         "collectorNumber": "171",
         "rarity": "UNCOMMON",
         "artist": "Viko Menezes",
+        "flavorText": "On the Elf-lord's brow sat wisdom, and in his hand was strength.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/a/baf7a546-8a8b-4396-ab64-9a5b9abffe79.jpg?1686969418"
     },
     "colorIdentityOverride": [
@@ -7969,6 +7979,7 @@
     "metadata": {
         "collectorNumber": "51",
         "artist": "Ekaterina Burmak",
+        "flavorText": "The Elves of Lórien took Dol Guldur. Galadriel threw down its walls and laid bare its pits, and the forest was cleansed.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e1057de-5710-415c-9a51-1d8bd86021a3.jpg?1686968102"
     },
     "colorIdentityOverride": [
@@ -8976,6 +8987,7 @@
         "collectorNumber": "88",
         "rarity": "UNCOMMON",
         "artist": "Alex Brock",
+        "flavorText": "\"Do not weary yourself, or tax too heavily your strength. Let others deal with these irksome guests.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e3bd86b-e8ca-4885-a823-78fb967e6caf.jpg?1694569791"
     },
     "colorIdentityOverride": [
@@ -11347,6 +11359,7 @@
         "collectorNumber": "94",
         "rarity": "UNCOMMON",
         "artist": "Victor Harmatiuk",
+        "flavorText": "Like a storm, they broke upon the line of the Men of Gondor.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/5/e57815d4-b21f-4ceb-a3f1-73cff5f0e612.jpg?1686968563"
     },
     "colorIdentityOverride": [
@@ -12128,7 +12141,7 @@
     "metadata": {
         "collectorNumber": "179",
         "artist": "Anton Solovianchyk",
-        "flavorText": "\"But still the sunken stars appear In dark and windless Mirrormere; There lies his crown in water deep, Till Durin wakes again from sleep.\" —Gimli's song",
+        "flavorText": "\"But still the sunken stars appear\nIn dark and windless Mirrormere;\nThere lies his crown in water deep,\nTill Durin wakes again from sleep.\"\n—Gimli's song",
         "imageUri": "https://cards.scryfall.io/normal/front/8/3/8315d7cc-fc2c-45b1-8340-11ff2af3beb5.jpg?1686969503"
     },
     "colorIdentityOverride": [
@@ -12257,6 +12270,7 @@
     "metadata": {
         "collectorNumber": "96",
         "artist": "Pavel Kolomeyets",
+        "flavorText": "\"Orcs, thousands of Orcses. Nice Hobbits mustn't go to those places.\"\n—Gollum",
         "imageUri": "https://cards.scryfall.io/normal/front/a/a/aae2f15a-0629-453e-992c-a199af194a3c.jpg?1686968586"
     },
     "colorIdentityOverride": [
@@ -12695,6 +12709,7 @@
     "metadata": {
         "collectorNumber": "99",
         "artist": "Valera Lutfullina",
+        "flavorText": "\"And that's the end of that. A nasty end for Saruman, and I wish I needn't have seen it; but it's a good riddance.\"\n—Sam",
         "imageUri": "https://cards.scryfall.io/normal/front/c/3/c34f88d7-15a1-434f-88d7-3d4fcf406d54.jpg?1686968630"
     },
     "colorIdentityOverride": [
@@ -13328,7 +13343,7 @@
     "name": "Orcish Bowmasters",
     "manaCost": "{1}{B}",
     "typeLine": "Creature — Orc Archer",
-    "oracleText": "Flash\nWhen this creature enters and whenever an opponent draws a card except the first one they draw in each of their draw steps, this creature deals 1 damage to any target. Then amass Orcs 1. (To amass Orcs 1, put a +1/+1 counter on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
+    "oracleText": "Flash\nWhen this creature enters and whenever an opponent draws a card except the first one they draw in each of their draw steps, this creature deals 1 damage to any target. Then amass Orcs 1.",
     "creatureStats": {
         "power": 1,
         "toughness": 1
@@ -13967,6 +13982,7 @@
         "collectorNumber": "218",
         "rarity": "RARE",
         "artist": "Bartłomiej Gaweł",
+        "flavorText": "\"Here do I swear fealty to Gondor, until my lord release me, or death take me.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/8/08b7a4d8-1183-430e-8ea4-016844f33200.jpg?1686969929"
     },
     "colorIdentityOverride": [
@@ -14464,7 +14480,7 @@
         "collectorNumber": "143",
         "rarity": "UNCOMMON",
         "artist": "Pavel Kolomeyets",
-        "flavorText": "\"Keep close to the fire, with your faces outward! Get some of the longer sticks ready in your hands!\" —Strider",
+        "flavorText": "\"Keep close to the fire, with your faces outward! Get some of the longer sticks ready in your hands!\"\n—Strider",
         "imageUri": "https://cards.scryfall.io/normal/front/0/6/06541200-fa4c-4b98-bdc4-44708fd2ddf6.jpg?1686969118"
     },
     "colorIdentityOverride": [
@@ -14533,6 +14549,7 @@
         "collectorNumber": "66",
         "rarity": "RARE",
         "artist": "Torgeir Fjereide",
+        "flavorText": "\"We have a new errand on this journey: to ambush the Men of Harad.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/1/819b4208-7a29-41fa-947f-614bf669b300.jpg?1686968256"
     },
     "colorIdentityOverride": [
@@ -14565,7 +14582,7 @@
     "metadata": {
         "collectorNumber": "144",
         "artist": "John Di Giovanni",
-        "flavorText": "\"The Orcs are in the Deep! Helm! Helm! Forth Helmingas!\" —Gamling the Old",
+        "flavorText": "\"The Orcs are in the Deep! Helm! Helm! Forth Helmingas!\"\n—Gamling the Old",
         "imageUri": "https://cards.scryfall.io/normal/front/2/1/21b7606a-6a4c-4bf0-b311-1883383161d2.jpg?1686969129"
     },
     "colorIdentityOverride": [
@@ -14988,6 +15005,7 @@
         "collectorNumber": "221",
         "rarity": "UNCOMMON",
         "artist": "Andrea Piparo",
+        "flavorText": "In rode the Lord of the Nazgûl, under the archway that no enemy ever yet had passed, and all fled before his face.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f440fa1-5387-41d6-a80f-5b19dbb21514.jpg?1686969962"
     },
     "colorIdentityOverride": [
@@ -15175,7 +15193,7 @@
     "name": "Rohirrim Lancer",
     "manaCost": "{R}",
     "typeLine": "Creature — Human Knight",
-    "oracleText": "Menace\nWhen this creature dies, the Ring tempts you.",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature dies, the Ring tempts you.",
     "creatureStats": {
         "power": 1,
         "toughness": 1
@@ -15199,7 +15217,7 @@
     "metadata": {
         "collectorNumber": "146",
         "artist": "Anastasia Balakchina",
-        "flavorText": "\"Dire deeds awake, dark is it eastward. Let horse be bridled, horn be sounded!\" —Théoden",
+        "flavorText": "\"Dire deeds awake, dark is it eastward. Let horse be bridled, horn be sounded!\"\n—Théoden",
         "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f506f9f-4c0d-44e8-9f81-8403d808d0e4.jpg?1686969151"
     },
     "colorIdentityOverride": [
@@ -15531,6 +15549,7 @@
         "collectorNumber": "28",
         "rarity": "UNCOMMON",
         "artist": "Irvin Rodriguez",
+        "flavorText": "\"You've hurt my master, you brute, and you'll pay for it.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/2/1/214c270e-29ca-4d69-bea6-9252ae7707ad.jpg?1686967902"
     },
     "colorIdentityOverride": [
@@ -15853,6 +15872,7 @@
         "collectorNumber": "68",
         "rarity": "UNCOMMON",
         "artist": "Yongjae Choi",
+        "flavorText": "\"I gave you the chance of aiding me willingly.\"\n—Saruman",
         "imageUri": "https://cards.scryfall.io/normal/front/8/e/8eb6c23b-e52e-4533-9625-884eb0a4d866.jpg?1686968278"
     },
     "colorIdentityOverride": [
@@ -17305,6 +17325,7 @@
     "metadata": {
         "collectorNumber": "31",
         "artist": "Iga Oliwiak",
+        "flavorText": "How had it come to be on his finger? He wondered if the Ring itself had not played him a trick.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e20c2b8-ffe3-4d14-8588-f89719358e3d.jpg?1686967929"
     },
     "colorIdentityOverride": [
@@ -17706,7 +17727,7 @@
     "metadata": {
         "collectorNumber": "33",
         "artist": "Lixin Yin",
-        "flavorText": "\"The Enemy must pay dearly for the crossing of the River.\" —Denethor",
+        "flavorText": "\"The Enemy must pay dearly for the crossing of the River.\"\n—Denethor",
         "imageUri": "https://cards.scryfall.io/normal/front/2/a/2acb8240-8e0e-4adf-a884-4986c116e704.jpg?1686967946"
     },
     "colorIdentityOverride": [
@@ -18123,7 +18144,7 @@
     "name": "Surrounded by Orcs",
     "manaCost": "{3}{U}",
     "typeLine": "Sorcery",
-    "oracleText": "Amass Orcs 3, then target player mills X cards, where X is the amassed Army's power.",
+    "oracleText": "Amass Orcs 3, then target player mills X cards, where X is the amassed Army's power. (To amass Orcs 3, put three +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
     "script": {
         "spellEffect": {
             "type": "Composite",
@@ -19203,6 +19224,7 @@
     "metadata": {
         "collectorNumber": "110",
         "artist": "Nino Is",
+        "flavorText": "In Mordor, all that he knew was forced from him.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba2c8c25-1fa9-4cc4-a378-5eccc25bacf0.jpg?1686968743"
     },
     "colorIdentityOverride": [
@@ -19709,6 +19731,7 @@
         "collectorNumber": "398",
         "rarity": "RARE",
         "artist": "Alexander Gering",
+        "flavorText": "\"Not idly do the leaves of Lórien fall.\"\n—Aragorn",
         "imageUri": "https://cards.scryfall.io/normal/front/3/6/36ee958c-ae8c-49bd-9d85-0128ca19901c.jpg?1778748786"
     }
 }
@@ -19718,7 +19741,7 @@
     "name": "Treason of Isengard",
     "manaCost": "{2}{U}",
     "typeLine": "Sorcery",
-    "oracleText": "Put up to one target instant or sorcery card from your graveyard on top of your library.\nAmass Orcs 2. (Put two +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
+    "oracleText": "Put up to one target instant or sorcery card from your graveyard on top of your library.\nAmass Orcs 2. (To amass Orcs 2, put two +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",
     "script": {
         "spellEffect": {
             "type": "Composite",
@@ -20135,6 +20158,7 @@
     "metadata": {
         "collectorNumber": "152",
         "artist": "Oleg Shekhovtsov",
+        "flavorText": "Drums rolled, fires leaped, and great engines drawn by beasts crawled across the field.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/e/5eeecb9e-fbde-429b-b3da-18a4dbadf6de.jpg?1686969217"
     },
     "colorIdentityOverride": [
@@ -20880,6 +20904,7 @@
         "collectorNumber": "201",
         "rarity": "RARE",
         "artist": "Magali Villeneuve",
+        "flavorText": "\"Am I not of the House of Eorl? I have waited on faltering feet long enough.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/d/adffb389-c9a3-41c4-b078-292a2bcf870d.jpg?1686969744"
     },
     "colorIdentityOverride": [

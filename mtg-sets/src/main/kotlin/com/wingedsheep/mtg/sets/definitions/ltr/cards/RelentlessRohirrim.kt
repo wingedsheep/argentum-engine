@@ -30,7 +30,7 @@ val RelentlessRohirrim = card("Relentless Rohirrim") {
         rarity = Rarity.COMMON
         collectorNumber = "144"
         artist = "John Di Giovanni"
-        flavorText = "\"The Orcs are in the Deep! Helm! Helm! Forth Helmingas!\" —Gamling the Old"
+        flavorText = "\"The Orcs are in the Deep! Helm! Helm! Forth Helmingas!\"\n—Gamling the Old"
         imageUri = "https://cards.scryfall.io/normal/front/2/1/21b7606a-6a4c-4bf0-b311-1883383161d2.jpg?1686969129"
     }
 }

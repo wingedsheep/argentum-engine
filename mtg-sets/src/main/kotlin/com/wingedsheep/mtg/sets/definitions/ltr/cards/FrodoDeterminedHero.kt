@@ -82,6 +82,7 @@ val FrodoDeterminedHero = card("Frodo, Determined Hero") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "289"
+        flavorText = "Frodo's heart flamed within him. He drew his sword and advanced."
         artist = "Magali Villeneuve"
         imageUri = "https://cards.scryfall.io/normal/front/8/3/83d1b37c-a8c6-4690-8701-3395397711e7.jpg?1687424782"
     }

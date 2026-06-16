@@ -20,9 +20,7 @@ val TreasonOfIsengard = card("Treason of Isengard") {
     manaCost = "{2}{U}"
     colorIdentity = "U"
     typeLine = "Sorcery"
-    oracleText = "Put up to one target instant or sorcery card from your graveyard on top of your library.\n" +
-        "Amass Orcs 2. (Put two +1/+1 counters on an Army you control. It's also an Orc. If you don't " +
-        "control an Army, create a 0/0 black Orc Army creature token first.)"
+    oracleText = "Put up to one target instant or sorcery card from your graveyard on top of your library.\nAmass Orcs 2. (To amass Orcs 2, put two +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)"
 
     spell {
         val card = target(

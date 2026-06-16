@@ -29,7 +29,7 @@ val FrodoBaggins = card("Frodo Baggins") {
     colorIdentity = "GW"
     typeLine = "Legendary Creature — Halfling Scout"
     power = 1
-    toughness = 1
+    toughness = 3
     oracleText = "Whenever Frodo Baggins or another legendary creature you control enters, the Ring " +
         "tempts you.\n" +
         "As long as Frodo Baggins is your Ring-bearer, it must be blocked if able."

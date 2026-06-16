@@ -52,6 +52,7 @@ val RangersOfIthilien = card("Rangers of Ithilien") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "66"
+        flavorText = "\"We have a new errand on this journey: to ambush the Men of Harad.\""
         artist = "Torgeir Fjereide"
         imageUri = "https://cards.scryfall.io/normal/front/8/1/819b4208-7a29-41fa-947f-614bf669b300.jpg?1686968256"
     }

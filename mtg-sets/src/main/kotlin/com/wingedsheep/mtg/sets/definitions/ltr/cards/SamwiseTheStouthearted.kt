@@ -63,6 +63,7 @@ val SamwiseTheStouthearted = card("Samwise the Stouthearted") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "28"
+        flavorText = "\"You've hurt my master, you brute, and you'll pay for it.\""
         artist = "Irvin Rodriguez"
         imageUri = "https://cards.scryfall.io/normal/front/2/1/214c270e-29ca-4d69-bea6-9252ae7707ad.jpg?1686967902"
     }

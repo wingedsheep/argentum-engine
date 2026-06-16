@@ -24,7 +24,7 @@ val DunedainRangers = card("Dúnedain Rangers") {
     colorIdentity = "G"
     typeLine = "Creature — Human Ranger"
     power = 4
-    toughness = 3
+    toughness = 4
     oracleText = "Landfall — Whenever a land you control enters, if you don't control a Ring-bearer, " +
         "the Ring tempts you."
 

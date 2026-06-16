@@ -36,6 +36,7 @@ val TrailblazersBoots = card("Trailblazer's Boots") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "398"
+        flavorText = "\"Not idly do the leaves of Lórien fall.\"\n—Aragorn"
         artist = "Alexander Gering"
         imageUri = "https://cards.scryfall.io/normal/front/3/6/36ee958c-ae8c-49bd-9d85-0128ca19901c.jpg?1778748786"
     }

@@ -27,7 +27,7 @@ val ClaimThePrecious = card("Claim the Precious") {
         rarity = Rarity.COMMON
         collectorNumber = "81"
         artist = "Artur Treffner"
-        flavorText = "\"I think it is a sad story, and it might have happened to others, even to some Hobbits that I have known.\" —Gandalf"
+        flavorText = "\"I think it is a sad story, and it might have happened to others, even to some Hobbits that I have known.\"\n—Gandalf"
         imageUri = "https://cards.scryfall.io/normal/front/1/2/121c12c4-83ea-463e-8fdf-30718968a2bd.jpg?1686968419"
     }
 }

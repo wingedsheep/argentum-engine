@@ -31,6 +31,7 @@ val MordorMuster = card("Mordor Muster") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "96"
+        flavorText = "\"Orcs, thousands of Orcses. Nice Hobbits mustn't go to those places.\"\n—Gollum"
         artist = "Pavel Kolomeyets"
         imageUri = "https://cards.scryfall.io/normal/front/a/a/aae2f15a-0629-453e-992c-a199af194a3c.jpg?1686968586"
     }

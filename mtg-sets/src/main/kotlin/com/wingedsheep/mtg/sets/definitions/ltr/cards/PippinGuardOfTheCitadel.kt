@@ -45,6 +45,7 @@ val PippinGuardOfTheCitadel = card("Pippin, Guard of the Citadel") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "218"
+        flavorText = "\"Here do I swear fealty to Gondor, until my lord release me, or death take me.\""
         artist = "Bartłomiej Gaweł"
         imageUri = "https://cards.scryfall.io/normal/front/0/8/08b7a4d8-1183-430e-8ea4-016844f33200.jpg?1686969929"
     }
