@@ -87,6 +87,7 @@ internal object FilterPredicates {
     fun tapped(node: JsonElement?): Link? = if (node.hasTag("IsTapped")) Link("tapped") else null
     fun untapped(node: JsonElement?): Link? = if (node.hasTag("IsUntapped")) Link("untapped") else null
     fun attacking(node: JsonElement?): Link? = if (node.hasTag("IsAttacking")) Link("attacking") else null
+    fun blocking(node: JsonElement?): Link? = if (node.hasTag("IsBlocking")) Link("blocking") else null
 
     /** `.nontoken()` for an `IsNonToken` clause ("another nontoken Bird you control"), else null. */
     fun nontoken(node: JsonElement?): Link? = if (node.hasTag("IsNonToken")) Link("nontoken") else null
@@ -178,6 +179,35 @@ internal fun EmitCtx.creatureFilterExpr(filterNode: JsonElement?): Dsl? {
         )
         if (unrenderableAlongside.any { it in blob }) return null
     }
+    // "nonlegendary creature" (Blind with Anger) — a negated supertype (IsNonSupertype "Legendary").
+    // Only Legendary maps to a filter helper (.nonlegendary()); any other negated supertype has no
+    // rendering, so decline rather than silently drop it. The special creature shapes below (attacking/
+    // blocking/face-down/subtype/non-cardtype) can't compose .nonlegendary(), so if such a predicate is
+    // also present, decline rather than widen — only the plain-creature path composes it (see below).
+    val nonSupertypes = filterNode.argWordsTagged("IsNonSupertype")
+    if (nonSupertypes.any { it != "Legendary" }) return null
+    val nonlegendary = nonSupertypes.contains("Legendary")
+    if (nonlegendary) {
+        val unrenderableAlongside = listOf(
+            "IsAttacking", "IsBlocking", "IsFaceDown", "IsCreatureType", "IsNonCreatureType", "Other",
+        )
+        if (unrenderableAlongside.any { it in blob }) return null
+    }
+    // "legendary creature" (Shinka / Shizo / Okina target abilities) — a positive supertype (IsSupertype
+    // "Legendary"). Only Legendary maps to a filter helper (.legendary()); any other supertype declines.
+    // As with nonlegendary, the special creature shapes below can't compose it, so decline if present.
+    val supertypes = filterNode.argWordsTagged("IsSupertype")
+    if (supertypes.any { it != "Legendary" }) return null
+    val legendary = supertypes.contains("Legendary")
+    if (legendary) {
+        val unrenderableAlongside = listOf(
+            "IsAttacking", "IsBlocking", "IsFaceDown", "IsCreatureType", "IsNonCreatureType", "Other",
+        )
+        if (unrenderableAlongside.any { it in blob }) return null
+    }
+    // "creature that dealt damage to you this turn" (Reciprocate) — a relational predicate with no SDK
+    // target filter. Dropping it would let the spell hit any creature, so decline (-> SCAFFOLD).
+    if ("DealtDamageToPlayerThisTurn" in blob) return null
     // "non-outlaw creature" (Shoot the Sheriff): IsNonOutlaw excludes the five outlaw creature types
     // (Assassin, Mercenary, Pirate, Rogue, Warlock) at once. Render the exact filter
     // Targets.NonOutlawCreature compiles to — Creature.notAnyOfSubtypes(Subtype.OUTLAW_TYPES). Only the
@@ -306,6 +336,8 @@ internal fun EmitCtx.creatureFilterExpr(filterNode: JsonElement?): Dsl? {
         return Call("TargetFilter", listOf(arg(Infix("or", subs.map { Lit("GameObjectFilter.Creature").dot("withSubtype", arg("\"$it\"")) }))))
     }
     var node: Dsl = Lit("TargetFilter.Creature")
+    if (nonlegendary) node = node.dot("nonlegendary")
+    if (legendary) node = node.dot("legendary")
     if ("Artifact" in nonCardtypes) node = node.dot("nonartifact")
     // Color recovery, IsColor/IsNonColor-scoped: a single colour -> .withColor / .notColor; several
     // colours under an Or ("white or black creature") -> .withAnyColor so the extra colours aren't
@@ -390,6 +422,9 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
     val args = tnode["args"]
     val countInt = findInteger(tnode)
     if (ttype == "TargetPlayer") {
+        // "target player dealt damage by this creature this turn" (Wicked Akuba) is a source-relative
+        // restriction with no SDK target filter — decline rather than emit an unrestricted target player.
+        if ("DealtDamage" in compact(tnode)) return null
         return if (jsonContains(tnode, "_Players", "Opponent")) Call("TargetOpponent") else Call("TargetPlayer")
     }
     // "any number of target players" / "any number of target opponents" — an unbounded player target
@@ -612,6 +647,13 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             // silently drop the controller (ControlledByAPlayer) and self-exclusion (Other) restrictions,
             // widening it to any permanent. Decline (-> SCAFFOLD) rather than emit a too-broad target.
             if ("ControlledByAPlayer" in blob || jsonContains(args, "_Permanents", "Other")) return null
+            // "target legendary permanent" (Minamo, School at Water's Edge) — a positive supertype on an
+            // otherwise-any permanent. Render TargetFilter.Permanent.legendary(); any other supertype has
+            // no rendering, so decline rather than silently drop it.
+            val supertypes = args.argWordsTagged("IsSupertype")
+            if (supertypes.any { it != "Legendary" }) return null
+            if (supertypes.contains("Legendary"))
+                return Call("TargetPermanent", listOf(arg("filter", Lit("TargetFilter.Permanent").dot("legendary"))))
             return Call("TargetPermanent")
         }
         // A two-cardtype union ("artifact or creature", "creature or enchantment"). The base maps to a
@@ -681,7 +723,18 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         if (types == setOf("Creature", "Sorcery")) return Call("TargetSpell", listOf(arg("filter", "TargetFilter.CreatureOrSorcerySpellOnStack")))
         if (types == setOf("Instant", "Sorcery")) return Call("TargetSpell", listOf(arg("filter", "TargetFilter.InstantOrSorcerySpellOnStack")))
         if (types == setOf("Creature")) return Call("TargetSpell", listOf(arg("filter", "TargetFilter.CreatureSpellOnStack")))
-        if (types.isEmpty()) return Call("TargetSpell")
+        if (types.isEmpty()) {
+            // "counter target spell with mana value N or less" (Thoughtbind) -> SpellOnStack.manaValueAtMost(N).
+            FilterPredicates.manaValueAtMost(args)?.let {
+                return Call("TargetSpell", listOf(arg("filter", Lit("TargetFilter.SpellOnStack").dot(it))))
+            }
+            // A bare "target spell" is only correct with no further restriction. A creature-type or
+            // spell-subtype restriction ("Spirit or Arcane spell", Hisoka's Defiance), or any other mana-value
+            // comparison, has no SDK stack-spell filter — decline (-> SCAFFOLD) rather than emit an
+            // unrestricted counter that hits any spell.
+            if ("IsCreatureType" in blob || "IsSpellType" in blob || "IsSupertype" in blob || "ManaValueIs" in blob) return null
+            return Call("TargetSpell")
+        }
         return null
     }
     if (ttype == "TargetSpellOrAbility") {
@@ -739,7 +792,13 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             // A ManaValueIs clause we couldn't render as a `<=` cap (any other comparison/X) must decline
             // rather than widen the target to any permanent card in the graveyard.
             if ("ManaValueIs" in blob && mvCap == null) return null
-            var g: Dsl = Lit("GameObjectFilter.Permanent")
+            // "target NONLAND permanent card from your graveyard" (Moment of Reckoning's reanimate mode)
+            // arrives as `IsPermanent` AND `IsNonCardtype "Land"`. Render the nonland-permanent group so
+            // the "nonland" restriction isn't silently dropped (which would let it reanimate lands); any
+            // other negated cardtype on a permanent-card target has no rendering here, so decline.
+            val isNonland = args.argWordsTagged("IsNonCardtype") == listOf("Land")
+            if (args.hasTag("IsNonCardtype") && !isNonland) return null
+            var g: Dsl = if (isNonland) Lit("GameObjectFilter.NonlandPermanent") else Lit("GameObjectFilter.Permanent")
             when {
                 "\"You\"" in blob -> g = g.dot("ownedByYou")
                 "\"Opponent\"" in blob -> g = g.dot("ownedByOpponent")
@@ -809,6 +868,10 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         val graveyardSubs = args.argWordsTagged("IsCreatureType")
         val filt: Dsl = when {
             types.isEmpty() && "IsCardtype" !in blob -> when {
+                // "target Arcane card from your graveyard" (Hana Kami) — a spell-subtype or supertype
+                // restriction with no graveyard target filter. Decline (-> SCAFFOLD) rather than let the
+                // spell return any card from the graveyard. (Creature subtypes ARE handled below.)
+                "IsSpellType" in blob || "IsSupertype" in blob -> return null
                 graveyardSubs.size == 1 ->
                     graveyardFilter(Lit("GameObjectFilter.Any").dot("withSubtype", arg(subtypeArg(graveyardSubs[0]))), blob)
                 graveyardSubs.isEmpty() && ("\"You\"" in blob || "\"Opponent\"" in blob) ->
@@ -906,6 +969,13 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     // as GameObjectFilter.Permanent and widen the effect to EVERY permanent, so decline (-> SCAFFOLD):
     // a target-reference group has no static GroupFilter rendering.
     if ("Ref_TargetPermanent" in blob) return null
+    // "the permanents tapped this way" (`ThePermanentsTappedThisWay`, e.g. Homesickness's "put a stun
+    // counter on each of them") is a PIPELINE reference to the just-tapped permanents, NOT a static
+    // battlefield filter. The bare `"Permanent" in blob` arm below would misread it (the substring is
+    // inside `ThePermanentsTappedThisWay`) as GameObjectFilter.Permanent and widen the effect to EVERY
+    // permanent on the battlefield. There is no static GroupFilter rendering for a "this way" pipeline
+    // group, so decline (-> SCAFFOLD) rather than emit a confidently-wrong board-wide effect.
+    if ("ThePermanentsTappedThisWay" in blob) return null
     // "...that was dealt damage this turn" has no GroupFilter helper — decline rather than widen the group.
     if ("WasDealtDamageThisTurn" in blob) return null
     // "creatures you control WITH +1/+1 counters on them" (Badgermole's trample lord): a
@@ -1000,6 +1070,10 @@ internal fun EmitCtx.gameObjectFilterExpr(filterNode: JsonElement?): Dsl? {
     FilterPredicates.tapped(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.untapped(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.attacking(filterNode)?.let { node = node.dot(it) }
+    // "Blocking creatures get +7/+7" (Hold the Line): an IsBlocking predicate on the mass-effect group.
+    // Without .blocking() the buff would silently widen to every creature, so compose it (the SDK has
+    // GameObjectFilter.Creature.blocking(), the same helper TargetFilter.BlockingCreature uses).
+    FilterPredicates.blocking(filterNode)?.let { node = node.dot(it) }
     FilterPredicates.nontoken(filterNode)?.let { node = node.dot(it) }
     // "creatures that saddled/crewed it this turn" (SaddledPermanentThisTurn / CrewedPermanentThisTurn,
     // bound to the trigger's permanent — Rambling Possum's "return any number of creatures that saddled

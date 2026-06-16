@@ -489,11 +489,16 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // signals still route through the search helper below.
         val bareLandCount = subtype == null && "\"Land\"" in countBlob &&
             "IsLandType" !in countBlob && "IsBasicLand" !in countBlob && "IsSupertype" !in countBlob
-        val filter = when {
+        var filter = when {
             subtype != null -> Lit("GameObjectFilter.Creature").dot("withSubtype", arg("\"$subtype\""))
             bareLandCount -> Lit("GameObjectFilter.Land")
             else -> landSearchFilterExpr(node)
         }
+        // "untapped Mountains you control" (Ben-Ben, Akki Hermit): an IsUntapped predicate on the counted
+        // group. Compose .untapped() so the tally isn't silently widened to include tapped permanents (the
+        // land/type filter above has no untapped path). The tapped case is already handled inside
+        // landSearchFilterExpr via the oracle "tapped creature" cue (Theft of Dreams), so don't re-apply it.
+        if ("IsUntapped" in compact(node)) filter = filter.dot("untapped")
         return call("DynamicAmount.AggregateBattlefield", arg(player), arg(filter))
     }
     return null
@@ -762,6 +767,15 @@ internal fun EmitCtx.paycostDsl(costNode: JsonElement?): String? {
             else -> null
         }
         return if (filter == null) "Costs.pay.Discard()" else "Costs.pay.Discard(filter = $filter)"
+    }
+    if (kind == "PayMana") {
+        // "unless you pay {cost}" carries an EXPLICIT mana cost in the IR ({B}{B}{B}{B} for Kuro,
+        // Pitlord). That is rarely the card's own printed cost, so render the literal symbols rather
+        // than collapsing to OwnManaCost (which resolves against the source's printed cost). Decline
+        // if any symbol is unrecognised so we scaffold instead of emitting a wrong cost.
+        val mana = renderMana((costNode as? JsonObject)?.get("args"))
+        if (mana.isBlank() || "{?}" in mana) return null
+        return "Costs.pay.Mana(\"$mana\")"
     }
     if ("Mana" in blob) {
         // A specific printed mana cost — an explicit `_ManaSymbol` list, e.g. Drifting Djinn's

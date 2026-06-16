@@ -120,6 +120,57 @@
     ]
 }
 
+// Ajani's Response
+{
+    "name": "Ajani's Response",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {3} less to cast if it targets a tapped creature.\nDestroy target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 3,
+                        "filter": "creature tapped"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "April Prime",
+        "flavorText": "Ajani no longer wanted to swing his axe in battle, but nothing came easier to him than defending those who needed protection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Arcane Omens
 {
     "name": "Arcane Omens",
@@ -3152,6 +3203,96 @@
     ]
 }
 
+// Homesickness
+{
+    "name": "Homesickness",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target player draws two cards. Tap up to two target creatures. Put a stun counter on each of them. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "filter": "creature"
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                },
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "stun",
+                                    "count": 1,
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            },
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "up to two target creatures"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"We know you're working hard. Dress warm and get enough sleep. Dad says hi!\"\n—Love, Mom",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hungry Graffalon
 {
     "name": "Hungry Graffalon",
@@ -4179,6 +4320,77 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Moment of Reckoning
+{
+    "name": "Moment of Reckoning",
+    "manaCost": "{3}{W}{W}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose up to four. You may choose the same mode more than once.\n• Destroy target nonland permanent.\n• Return target nonland permanent card from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target nonland permanent"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Battlefield"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Return target nonland permanent card from your graveyard to the battlefield"
+                }
+            ],
+            "chooseCount": 4,
+            "minChooseCount": 0,
+            "allowRepeat": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "The archaics experience all of Arcavian history. Changing that fate threatens their very existence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 

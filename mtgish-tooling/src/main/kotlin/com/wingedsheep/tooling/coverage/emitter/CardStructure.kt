@@ -970,6 +970,38 @@ internal fun EmitCtx.modalChooseOneSpell(card: JsonObject): List<Stmt>? {
 }
 
 /**
+ * "Choose up to N. You may choose the same mode more than once." modal spell
+ * (`SpellActions { Modal_ChooseNumberMayChooseSameModeMoreThanOnce([N, [arm, arm, …]]) }`, CR 700.2d) →
+ * a `spell { modal(chooseCount = N, minChooseCount = 0, allowRepeat = true) { mode("…") { … } … } }`
+ * block (Moment of Reckoning). The IR args are `[<Integer N>, [arms]]`; each arm renders via the same
+ * [modalArmBody] machinery as `Modal_ChooseOne`, so a mode emits exactly as the equivalent stand-alone
+ * spell. Mode labels come from the oracle-text bullets. Declines (→ SCAFFOLD) unless N is a fixed
+ * integer, every arm renders, AND the bullet count matches the arm count — a card never emits with a
+ * missing or mislabeled mode.
+ */
+internal fun EmitCtx.modalChooseNumberSpell(card: JsonObject): List<Stmt>? {
+    val spellActions = (card["Rules"].asArr ?: return null).filterIsInstance<JsonObject>()
+        .firstNotNullOfOrNull { rule ->
+            (rule["args"] as? JsonObject)
+                ?.takeIf { it.strField("_Actions") == "Modal_ChooseNumberMayChooseSameModeMoreThanOnce" }
+        } ?: return null
+    val outer = spellActions["args"].asArr ?: return null
+    val chooseCount = findInteger(outer.getOrNull(0)) as? Int ?: run { reasons.add("modal-spell"); return null }
+    val arms = outer.getOrNull(1).asArr?.filterIsInstance<JsonObject>() ?: return null
+    if (arms.isEmpty()) return null
+
+    val bullets = modeBullets() ?: run { reasons.add("modal-spell"); return null }
+    if (bullets.size != arms.size) { reasons.add("modal-spell"); return null }
+
+    val modeBlocks = arms.mapIndexed { i, arm ->
+        val body = modalArmBody(arm) ?: run { reasons.add("modal-spell"); return null }
+        Sub(Block("mode(\"${ktStr(bullets[i])}\")", body))
+    }
+    val builder = "modal(chooseCount = $chooseCount, minChooseCount = 0, allowRepeat = true)"
+    return listOf(Sub(Block("spell", listOf(Sub(Block(builder, modeBlocks))))))
+}
+
+/**
  * One arm of a `Modal_ChooseOne` on a triggered ability → a `Mode.withTarget(effect, target, "bullet")`
  * (a single targeted mode) or `Mode.noTarget(effect, "bullet")` (an untargeted mode) call expression.
  *
@@ -1146,6 +1178,10 @@ internal fun EmitCtx.spellBlock(card: JsonObject): List<Stmt>? {
     // "Choose one —" modal spells (`Modal_ChooseOne`) render to the engine's modal DSL — one
     // `mode("<bullet>") { … }` per arm. Render them before the generic `Modal_*` scaffold guard.
     modalChooseOneSpell(card)?.let { return it }
+    // "Choose up to N. You may choose the same mode more than once." (Moment of Reckoning) renders to
+    // `modal(chooseCount = N, minChooseCount = 0, allowRepeat = true) { … }`. Render before the generic
+    // `Modal_*` scaffold guard.
+    modalChooseNumberSpell(card)?.let { return it }
     // Other modal spells ("Choose up to four", entwine, escalate, …) carry a `Modal_*` envelope whose
     // children are the individual modes. The generic envelope path below would grab only the FIRST mode
     // and silently drop the rest, so scaffold the whole card rather than emit one arm of a modal spell.

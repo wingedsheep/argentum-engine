@@ -78,6 +78,12 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
     on("TapEachPermanent", "UntapEachPermanent") { node, args, _ ->
         val verb = if (node.strField("_Action") == "TapEachPermanent") "Tap" else "Untap"
         if (jsonContains(node, "_Permanents", "Ref_TargetPermanents")) {  // Tidal Surge: each chosen target
+            // `Effects.${verb}EachTarget()` composes `ForEachTargetEffect` over EVERY target the spell
+            // chose. That's exact for a spell whose only targets are the creatures being tapped (Tidal
+            // Surge), but if the spell ALSO targets a player (Homesickness's "target player draws two
+            // cards. Tap up to two target creatures …") it would wrongly tap the player too. Decline
+            // (-> SCAFFOLD) on that mixed-target shape rather than emit a confidently-wrong tap.
+            if (targetRefVarsByKind.containsKey("Ref_TargetPlayer")) return@on null
             return@on call("Effects.${verb}EachTarget")
         }
         val filter = groupFilterExpr(args) ?: return@on null  // mass: tap/untap a group

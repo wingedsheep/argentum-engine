@@ -513,6 +513,10 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     // count isn't a fixed amount, and the CreateTokens payoff would be dropped. Decline -> SCAFFOLD rather
     // than emit a wrong hand-search that silently loses the token clause.
     if ("ExileFoundCards" in blob || "CreateTokens" in blob || "FindAnyNumberOfCardsOfType" in blob) return null
+    // "an Arcane card" (Eerie Procession) is a spell-subtype (IsSpellType) restriction the land/type search
+    // filter can't express — it would silently widen to GameObjectFilter.Any. Decline -> SCAFFOLD rather
+    // than search for any card.
+    if ("IsSpellType" in blob) return null
     // "search for an Equipment card" (Steelshaper's Gift): an artifact-subtype (IsArtifactType) the
     // land/type search filter can't express — it falls through to GameObjectFilter.Any, silently dropping
     // the subtype. "...artifact card with mana value 1 or less" (Trinket Mage): a ManaValueIs cap the
@@ -545,12 +549,22 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     // predicates. Map the whole union to the matching SDK constant. A union we have no constant for
     // declines to SCAFFOLD rather than silently dropping a type — which picking a single arm would do.
     val unionTypes = orCardTypes(blob)
-    val filt = when {
+    var filt = when {
         named != null -> "GameObjectFilter.Any.named(\"$named\")"
         searchSubtype != null -> "GameObjectFilter.Any.withSubtype(\"$searchSubtype\")"  // "an Elf card"
         enchSubtype != null -> "GameObjectFilter.Enchantment.withSubtype(\"$enchSubtype\")"  // "an Aura card"
         unionTypes != null -> cardTypeUnionFilter(unionTypes) ?: return null
         else -> landSearchFilterDsl(args)
+    }
+    // "a legendary creature card" (Time of Need): a positive supertype the type search filter drops.
+    // Append .legendary() (SDK-supported). "Basic" is handled by the basic-land path inside the filter
+    // above, so exclude it; any other supertype has no rendering, so decline rather than widen.
+    val searchSupertypes = Regex(""""IsSupertype",\s*"args":\s*"(\w+)"""").findAll(blob)
+        .map { it.groupValues[1] }.filter { it != "Basic" }.toList()
+    if (searchSupertypes.any { it != "Legendary" }) return null
+    if (searchSupertypes.contains("Legendary")) {
+        if (named != null) return null  // a named card carries no extra supertype filter we model
+        filt = "$filt.legendary()"
     }
     val count = findInteger(args)
     val parts = mutableListOf(arg("filter", filt))
