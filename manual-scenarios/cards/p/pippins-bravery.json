@@ -1,5 +1,5 @@
 {
-  "_comment": "Pippin's Bravery (LTR, {G} instant): 'You may sacrifice a Food. If you do, target creature gets +4/+4 until end of turn. Otherwise, that creature gets +2/+2 until end of turn.' Flow: cast Pippin's Bravery ({G}) targeting your Grizzly Bears (2/2). You control a Food, so the spell asks whether to sacrifice it — say YES for +4/+4 (Bears -> 6/6, Food sacrificed) or NO for +2/+2 (Bears -> 4/4). KNOWN BUG (open): the buff currently never applies (Bears stays 2/2) regardless of the choice — a targeted optional-cost spell branch isn't seeing its target. Remove the Food to test the unpayable (no-Food) path, which should still give +2/+2.",
+  "_comment": "Pippin's Bravery (LTR, {G} instant): 'You may sacrifice a Food. If you do, target creature gets +4/+4 until end of turn. Otherwise, that creature gets +2/+2 until end of turn.' Flow: cast Pippin's Bravery ({G}) targeting your Grizzly Bears (2/2). You control a Food, so on resolution you're prompted to choose a Food to sacrifice (up to 1) — choose it for +4/+4 (Bears -> 6/6, Food sacrificed) or choose none for +2/+2 (Bears -> 4/4). Remove the Food to test the no-Food path: there's nothing to choose, so no prompt appears and the target still gets +2/+2.",
   "player1Name": "You",
   "player2Name": "Opponent",
   "player1": {

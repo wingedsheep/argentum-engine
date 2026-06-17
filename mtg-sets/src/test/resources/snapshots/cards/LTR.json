@@ -4000,6 +4000,7 @@
                             "order": "ControllerChooses"
                         },
                         "EmitScriedEvent",
+                        "IncrementAbilityResolutionCount",
                         {
                             "type": "Gated",
                             "gate": {
@@ -13881,10 +13882,48 @@
         "spellEffect": {
             "type": "Gated",
             "gate": {
-                "type": "Gate.MayPay",
-                "cost": {
-                    "type": "Sacrifice",
-                    "filter": "Food"
+                "type": "Gate.DoAction",
+                "action": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "Food",
+                                "player": "You"
+                            },
+                            "storeAs": "controlledFood"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "controlledFood",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "sacrificedFood",
+                            "prompt": "You may sacrifice a Food",
+                            "selectedLabel": "Sacrifice",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "sacrificedFood",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "successCriterion": {
+                    "type": "SuccessCriterion.CollectionNonEmpty",
+                    "name": "sacrificedFood"
                 }
             },
             "then": {
