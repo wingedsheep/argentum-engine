@@ -257,6 +257,27 @@ object ZoneMovementUtils {
     }
 
     /**
+     * Detach every permanent currently attached *to* [entityId] (its Equipment, Auras,
+     * Fortifications) by clearing their [AttachedToComponent]. Called when [entityId] leaves the
+     * battlefield so the attachments become unattached immediately (CR 704.5q) rather than
+     * lingering until the next state-based-action check — e.g. an Equipment falls off a creature
+     * that is exiled/blinked (Bilbo's Ring when Meneldor, Swift Savior blinks its bearer).
+     *
+     * This is the forward complement of [cleanupReverseAttachmentLink] (which handles the attached
+     * object itself leaving). The equipment/aura remains on the battlefield, now unattached.
+     */
+    fun detachPermanentsAttachedTo(state: GameState, entityId: EntityId): GameState {
+        var newState = state
+        for (id in state.getBattlefield()) {
+            val attachedTo = state.getEntity(id)?.get<AttachedToComponent>() ?: continue
+            if (attachedTo.targetId == entityId) {
+                newState = newState.updateEntity(id) { it.without<AttachedToComponent>() }
+            }
+        }
+        return newState
+    }
+
+    /**
      * Strip all battlefield-specific components from an entity leaving the battlefield.
      * Per MTG Rule 400.7, when an object changes zones it becomes a new object with no
      * memory of its previous existence. This removes all transient battlefield state:
@@ -273,6 +294,11 @@ object ZoneMovementUtils {
             // (CR 400.7 / 707.2). ZoneTransitionService restores the printed
             // CardComponent before this strip runs.
             .without<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+            // The Ring-bearer designation is tied to the permanent; a permanent that leaves the
+            // battlefield stops being the Ring-bearer (CR 701.54e), and the object that returns is
+            // a new object (CR 400.7) that must not inherit the designation (e.g. a blinked
+            // Ring-bearer via Meneldor, Swift Savior).
+            .without<com.wingedsheep.engine.state.components.identity.RingBearerComponent>()
             // Battlefield
             .without<TappedComponent>()
             .without<SummoningSicknessComponent>()
