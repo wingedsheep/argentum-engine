@@ -132,6 +132,9 @@ data class TargetFilter(
         /** Target land */
         val Land = TargetFilter(GameObjectFilter.Companion.Land)
 
+        /** Target nonbasic land (Rocket Volley, Shivan Harvest, Encroaching Wastes). */
+        val NonbasicLand = TargetFilter(GameObjectFilter.Companion.NonbasicLand)
+
         /** Target planeswalker */
         val Planeswalker = TargetFilter(GameObjectFilter.Companion.Planeswalker)
 
@@ -322,6 +325,9 @@ data class TargetFilter(
 
     /** Must not be legendary */
     fun nonlegendary() = copy(baseFilter = baseFilter.nonlegendary())
+
+    /** Must not be a basic land ("nonbasic land"). */
+    fun nonbasic() = copy(baseFilter = baseFilter.nonbasic())
 
     /** Must be legendary */
     fun legendary() = copy(baseFilter = baseFilter.legendary())

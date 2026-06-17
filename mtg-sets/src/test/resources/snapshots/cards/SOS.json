@@ -502,6 +502,49 @@
     ]
 }
 
+// Blazing Firesinger
+{
+    "name": "Blazing Firesinger",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dwarf Bard",
+    "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "PREPARED"
+    ],
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Ashly Lovett",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Seething Song",
+            "manaCost": "{2}{R}",
+            "typeLine": "Instant",
+            "oracleText": "Add {R}{R}{R}{R}{R}.",
+            "script": {
+                "spellEffect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        }
+    ]
+}
+
 // Borrowed Knowledge
 {
     "name": "Borrowed Knowledge",
@@ -2062,6 +2105,92 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Elite Interceptor
+{
+    "name": "Elite Interceptor",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "PREPARED"
+    ],
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Lindsey Look",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Rejoinder",
+            "manaCost": "{1}{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "You may tap or untap target creature.\nDraw a card.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Modal",
+                                "modes": [
+                                    {
+                                        "effect": {
+                                            "type": "TapUntap",
+                                            "target": {
+                                                "type": "ContextTarget",
+                                                "index": 0
+                                            }
+                                        },
+                                        "description": "Tap that creature"
+                                    },
+                                    {
+                                        "effect": {
+                                            "type": "TapUntap",
+                                            "target": {
+                                                "type": "ContextTarget",
+                                                "index": 0
+                                            },
+                                            "tap": false
+                                        },
+                                        "description": "Untap that creature"
+                                    }
+                                ],
+                                "countsAsModalSpell": false
+                            },
+                            "descriptionOverride": "You may tap or untap target creature."
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                ]
+            }
+        }
     ]
 }
 
@@ -5253,6 +5382,68 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Maelstrom Artisan
+{
+    "name": "Maelstrom Artisan",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Minotaur Sorcerer",
+    "oracleText": "Haste\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "PREPARED"
+    ],
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Eelis Kyttanen",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1778165111"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Rocket Volley",
+            "manaCost": "{1}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Destroy target nonbasic land.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsBasicLand"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        }
     ]
 }
 
@@ -9505,6 +9696,66 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Strife Scholar
+{
+    "name": "Strife Scholar",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Orc Sorcerer",
+    "oracleText": "Ward—Pay 2 life.\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "PREPARED",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Life",
+                "amount": 2
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8de79312-2046-425e-9919-49afe19be81b.jpg?1775937883"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Awaken the Ages",
+            "manaCost": "{5}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create two 2/2 red and white Spirit creature tokens.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ]
+                }
+            }
+        }
     ]
 }
 

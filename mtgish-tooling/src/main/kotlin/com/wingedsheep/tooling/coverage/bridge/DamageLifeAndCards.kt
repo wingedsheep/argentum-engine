@@ -71,6 +71,9 @@ internal fun BridgeBuilder.damageLifeAndCards() {
     effects("TapPermanent", "UntapPermanent", tag = "TapUntap")
     composed("TapEachPermanent", composes = listOf("TapUntap"))
     composed("UntapEachPermanent", composes = listOf("TapUntap"))
+    // "tap or untap <permanent>" — a resolution-time ModalEffect.chooseOne of Tap/Untap on the
+    // same chosen permanent (Elite Interceptor's Rejoinder, Bounding Krasis, …).
+    composed("TapOrUntapPermanent", composes = listOf("TapUntap"))
 
     // Plain ±P/T and the two dynamic-amount variants (AdjustPTX uses a ±X modifier over a game number —
     // Wirewood Pride / Feeding Frenzy / Tribal Unity; AdjustPTForEach scales a fixed base by a count —

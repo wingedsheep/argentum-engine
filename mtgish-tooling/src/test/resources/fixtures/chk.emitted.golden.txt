@@ -7173,7 +7173,7 @@ val PsychicPuppetry = card("Psychic Puppetry") {
     colorIdentity = "U"
     typeLine = "Instant — Arcane"
     oracleText = "You may tap or untap target permanent.\nSplice onto Arcane {U} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: MayAction
+    // STRUCTURE needs human wiring: 
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "80"

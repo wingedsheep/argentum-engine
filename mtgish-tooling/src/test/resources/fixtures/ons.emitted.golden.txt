@@ -3946,7 +3946,7 @@ val DwarvenBlastminer = card("Dwarven Blastminer") {
     toughness = 1
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{R}"), Costs.Tap)
-        val t = target("target", TargetPermanent(filter = TargetFilter.Land))
+        val t = target("target", TargetPermanent(filter = TargetFilter.Land.nonbasic()))
         effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
     morph = "{R}"

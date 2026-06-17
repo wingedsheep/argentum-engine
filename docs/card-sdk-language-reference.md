@@ -1401,6 +1401,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   the type-negation analogue of `.notColor(c)` / `.notSubtype(s)`.
 - `.notCreature()` — appends `CardPredicate.Not(CardPredicate.IsCreature)` ("noncreature artifact",
   e.g. `GameObjectFilter.Artifact.notCreature().youControl()` — Guardian Beast).
+- `.nonbasic()` — appends `CardPredicate.Not(CardPredicate.IsBasicLand)` ("nonbasic land"); compose on
+  the land base (`GameObjectFilter.Land.nonbasic()`), or use the named constant `GameObjectFilter.NonbasicLand`
+  / `TargetFilter.NonbasicLand` (Rocket Volley, Shivan Harvest, Encroaching Wastes). `TargetFilter.Land.nonbasic()`
+  is the target-side passthrough.
 - `.withChosenColor()` — `CardPredicate.HasChosenColor`: matches the color chosen during the current
   effect's resolution (read from `EffectContext.chosenColor`, set by `Effects.ChooseColorThen`). Use with
   `AggregateBattlefield(Player.Each, …)` for "for each permanent of that color" (Coalition Dragon cycle).

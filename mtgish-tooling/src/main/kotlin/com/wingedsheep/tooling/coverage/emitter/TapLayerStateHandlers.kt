@@ -31,6 +31,20 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
         val tgt = refTarget(args, tvar) ?: return@on null
         call("Effects.${if (node.strField("_Action") == "TapPermanent") "Tap" else "Untap"}", arg(Lit(tgt)))
     }
+    on("TapOrUntapPermanent") { _, args, tvar ->
+        // "tap or untap <permanent>" (Elite Interceptor's Rejoinder, Bounding Krasis, …). The
+        // controller picks tap vs untap at resolution, so it renders as a non-spell
+        // `ModalEffect.chooseOne` of `Effects.Tap`/`Effects.Untap` over the SAME chosen permanent
+        // (cf. Effects.Endure, which models "choose one" as a two-mode chooseOne). Wrapped in
+        // MayEffect by the MayAction handler when the oracle says "you may tap or untap".
+        val tgt = refTarget(args, tvar) ?: return@on null
+        call(
+            "ModalEffect.chooseOne",
+            arg(call("Mode.noTarget", arg(call("Effects.Tap", arg(Lit(tgt)))), arg(Lit("\"Tap that permanent\"")))),
+            arg(call("Mode.noTarget", arg(call("Effects.Untap", arg(Lit(tgt)))), arg(Lit("\"Untap that permanent\"")))),
+            arg("countsAsModalSpell", "false"),
+        )
+    }
     on("GoadCreature") { _, args, tvar ->  // CR 701.15: goad target creature
         val tgt = refTarget(args, tvar) ?: return@on null
         call("Effects.Goad", arg(Lit(tgt)))

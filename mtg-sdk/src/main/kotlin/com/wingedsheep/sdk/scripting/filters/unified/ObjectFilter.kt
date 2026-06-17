@@ -90,6 +90,9 @@ data class GameObjectFilter(
         val Creature = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsCreature))
         val Land = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsLand))
         val BasicLand = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsBasicLand))
+        val NonbasicLand = GameObjectFilter(
+            cardPredicates = listOf(CardPredicate.IsLand, CardPredicate.Not(CardPredicate.IsBasicLand))
+        )
         val Artifact = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsArtifact))
         val Enchantment = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsEnchantment))
         val Planeswalker = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPlaneswalker))
@@ -356,6 +359,11 @@ data class GameObjectFilter(
     /** Must not be legendary */
     fun nonlegendary() = copy(
         cardPredicates = cardPredicates + CardPredicate.IsNonlegendary
+    )
+
+    /** Must not be a basic land ("nonbasic land", e.g. Rocket Volley, Shivan Harvest). */
+    fun nonbasic() = copy(
+        cardPredicates = cardPredicates + CardPredicate.Not(CardPredicate.IsBasicLand)
     )
 
     /** Must not be a token */

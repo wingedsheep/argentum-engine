@@ -581,6 +581,14 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             // An unrendered creature-subtype clause alongside the single cardtype (an Or arm the union
             // branch above didn't model) must decline rather than silently drop it (-> SCAFFOLD).
             if ("IsCreatureType" in blob) return null
+            // "target nonbasic land" (Rocket Volley, Encroaching Wastes): an IsNonSupertype "Basic" clause
+            // on the single Land cardtype. Render `.nonbasic()`; any OTHER negated supertype (or any
+            // positive supertype) on a land/artifact/enchantment has no rendering, so decline rather than
+            // silently drop it and widen the target (e.g. to all lands, including basics).
+            val nonSupertypes = args.argWordsTagged("IsNonSupertype")
+            val nonbasic = nonSupertypes == listOf("Basic") && types.first() == "Land"
+            if (nonSupertypes.any { !(it == "Basic" && nonbasic) }) return null
+            if (args.argWordsTagged("IsSupertype").isNotEmpty()) return null
             // "target land you control" / "...an opponent controls" — the controller restriction is a
             // ControlledByAPlayer clause. Preserve it as a `.youControl()` / `.opponentControls()` suffix
             // (mirrors the creature path); a controller clause we can't render exactly declines (-> SCAFFOLD)
@@ -592,7 +600,7 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
                 else -> return null
             }
             var f: Dsl = Lit(singleType.getValue(types.first()))
-            controller?.let { f = f.dot(it) }
+            if (nonbasic) f = f.dot("nonbasic")
             val parts = mutableListOf(arg("filter", f))
             if (ttype in setOf("NumberTargetPermanents", "UptoNumberTargetPermanents") && countInt is Int) parts.add(0, arg("count", "$countInt"))
             if (ttype == "UptoNumberTargetPermanents" || isUpToOne) parts.add(0, arg("optional", "true"))
