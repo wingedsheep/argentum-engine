@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -390,6 +392,16 @@ class GatedEffectExecutor(
                 life >= cost.amount
             }
             is CompositeEffect -> cost.effects.all { canAfford(state, playerId, it, context) }
+            // "You may sacrifice [filter]" — payable only if the player controls enough matching
+            // permanents (`any = true`, "sacrifice any number", is always payable: zero is legal).
+            // Without this the gate fails open and offers an impossible "yes": Pippin's Bravery with
+            // no Food still lets you choose "Sacrifice a Food" and wrongly take the +4/+4 branch.
+            is com.wingedsheep.sdk.scripting.effects.SacrificeEffect -> cost.any || run {
+                val fodder = BattlefieldFilterUtils.findMatchingOnBattlefield(
+                    state, cost.filter.youControl(), PredicateContext(controllerId = playerId)
+                ).filterNot { cost.excludeSource && it == context.sourceId }
+                fodder.size >= cost.count
+            }
             else -> true
         }
 
