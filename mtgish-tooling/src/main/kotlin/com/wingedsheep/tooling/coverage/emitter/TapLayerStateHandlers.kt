@@ -156,25 +156,42 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
         )
     }
 
-    on("PutNumberCountersOfTypeOnEachPermanent") { _, args, tvar ->
+    on("PutNumberCountersOfTypeOnEachPermanent") { _, args, _ ->
         // "Put N <counter> counters on <permanents>." — the mass / dynamic-count form. IR args are
         // [<amount>, <counterType>, <permanents>]. The only recipient we render here is the just-created
-        // token (`TheTokensCreatedThisWay` -> the CREATED_TOKENS pipeline slot, Outlaw Stitcher: "put two
+        // token(s) (`TheTokensCreatedThisWay` -> the CREATED_TOKENS pipeline slot, Outlaw Stitcher: "put two
         // +1/+1 counters on that token for each spell …"); a real "each <group>" filter would need a
         // ForEach over the group, which this handler deliberately leaves to scaffold. The amount may be
         // dynamic, so render through AddDynamicCounters with the recovered DynamicAmount. Only the named
         // ±1/±1 / keyword counters render; an unrenderable amount or non-token recipient declines.
         val arr = args.asArr ?: return@on null
         val counter = counterTypeDsl(arr.getOrNull(1)) ?: return@on null
-        val recipient = arr.getOrNull(2) as? JsonObject ?: return@on null
-        if (recipient.strField("_Permanents") != "TheTokensCreatedThisWay") return@on null
+        val target = createdTokensTarget(arr.getOrNull(2)) ?: return@on null
+        // A fixed integer count renders through the static AddCountersEffect (matching the singular
+        // PutNumberCountersOfTypeOnPermanent handler — Fractal Tender's "put three +1/+1 counters on it");
+        // a derived count (Outlaw Stitcher's "two per spell cast this turn") through AddDynamicCounters.
+        (findInteger(arr.getOrNull(0)) as? Int)?.let { count ->
+            return@on call("AddCountersEffect", arg("counterType", counter), arg("count", "$count"), arg("target", target))
+        }
         val amount = dynamicAmount(arr.getOrNull(0)) ?: return@on null
         call(
             "Effects.AddDynamicCounters",
             arg("counterType", counter),
             arg("amount", Lit(amount)),
-            arg("target", "EffectTarget.PipelineTarget(CREATED_TOKENS, 0)"),
+            arg("target", target),
         )
+    }
+
+    on("PutCounters") { _, args, tvar ->
+        // mtgish's token-creation cleanup wraps the put-counter actions in a `PutCounters` envelope whose
+        // single arg carries the real action under `_PutCounterAction` (Fractal Tender: "create a 0/0
+        // Fractal, then put three +1/+1 counters on it" -> PutCounters(NumberCountersOfTypeOnEachPermanent
+        // (3, +1/+1, TheTokensCreatedThisWay))). Unwrap and re-dispatch to the matching top-level
+        // `Put<variant>` handler (the variant name is the action name minus the `Put` prefix) with the
+        // inner args; a variant with no handler declines -> SCAFFOLD.
+        val inner = args.asArr?.firstOrNull() as? JsonObject ?: return@on null
+        val variant = inner.strField("_PutCounterAction") ?: return@on null
+        ACTION_HANDLERS["Put$variant"]?.invoke(this, inner, inner["args"], tvar)
     }
 
     on("CreateReplaceWouldPutCountersUntil") { node, _, _ ->

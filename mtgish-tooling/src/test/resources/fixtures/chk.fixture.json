@@ -11538,9 +11538,9 @@
                             "_Actions": "ActionList",
                             "args": [
                               {
-                                "_Action": "SacrificePermanent",
+                                "_Action": "SacrificeEachPermanent",
                                 "args": {
-                                  "_Permanent": "TheCreatedToken"
+                                  "_Permanents": "TheTokensCreatedThisWay"
                                 }
                               }
                             ]
@@ -23789,9 +23789,9 @@
                     "_Action": "CreateFutureTrigger",
                     "args": [
                       {
-                        "_FutureTrigger": "WhenCreatureOrPlaneswalkerDies",
+                        "_FutureTrigger": "WhenACreatureOrPlaneswalkerDies",
                         "args": {
-                          "_Permanent": "TheCreatedToken"
+                          "_Permanents": "TheTokensCreatedThisWay"
                         }
                       },
                       {

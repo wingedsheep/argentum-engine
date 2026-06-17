@@ -7662,9 +7662,9 @@
                         "_Actions": "ActionList",
                         "args": [
                           {
-                            "_Action": "ExilePermanent",
+                            "_Action": "ExileEachPermanent",
                             "args": {
-                              "_Permanent": "TheCreatedToken"
+                              "_Permanents": "TheTokensCreatedThisWay"
                             }
                           }
                         ]

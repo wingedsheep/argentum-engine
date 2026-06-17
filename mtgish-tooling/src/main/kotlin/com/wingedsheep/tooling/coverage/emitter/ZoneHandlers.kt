@@ -43,16 +43,19 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         } else null
     }
 
-    on("AttachPermanentToPermanent") { _, args, tvar ->
+    on("AttachPermanentToPermanent", "AttachPermanentToAPermanent") { _, args, tvar ->
         // "attach it to target …" — an Equipment/Aura attaching ITSELF to a chosen permanent. The
         // engine idiom is `Effects.AttachEquipment(target)`, which always attaches the source. So this
         // renders ONLY the self-attach shape: args[0] (the permanent being attached) must be a self-ref
         // (`ThatEnteringPermanent` for an ETB "attach it to target creature you control", Thunder Lasso).
-        // Anything else (attaching a different permanent) declines -> SCAFFOLD.
+        // Anything else (attaching a different permanent) declines -> SCAFFOLD. The `…ToAPermanent` variant
+        // is the same self-attach onto the just-created token(s) (Ancestral Blade: "create a 1/1 Soldier,
+        // then attach Ancestral Blade to it") — its `_Permanents:TheTokensCreatedThisWay` recipient
+        // resolves to the CREATED_TOKENS pipeline slot via [createdTokensTarget].
         val arr = args.asArr ?: return@on null
         val subjectRef = findRef(arr.getOrNull(0)) ?: return@on null
         if (subjectRef !in SELF_REFS) return@on null
-        val tgt = refTargetFromRef(findRef(arr.getOrNull(1)), tvar) ?: return@on null
+        val tgt = createdTokensTarget(arr.getOrNull(1)) ?: refTargetFromRef(findRef(arr.getOrNull(1)), tvar) ?: return@on null
         call("Effects.AttachEquipment", arg(Lit(tgt)))
     }
 
@@ -82,6 +85,16 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
 
     on("ExilePermanent") { _, args, tvar ->  // "Exile target permanent" -> the atomic Exile facade
         val tgt = refTarget(args, tvar) ?: return@on null
+        call("Effects.Exile", arg(Lit(tgt)))
+    }
+
+    on("ExileEachPermanent") { _, args, _ ->
+        // The mass form. The only group we render is the just-created token(s) ("exile that token at the
+        // beginning of the next end step", Daring Piracy; "exile those tokens", Rakdos Guildmage) — their
+        // `_Permanents:TheTokensCreatedThisWay` group is the CREATED_TOKENS pipeline collection, so one
+        // Exile addresses them all. A real "exile each <battlefield group>" would need a ForEach over the
+        // group, which this deliberately leaves to scaffold.
+        val tgt = createdTokensTarget(args) ?: return@on null
         call("Effects.Exile", arg(Lit(tgt)))
     }
 

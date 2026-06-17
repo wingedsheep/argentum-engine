@@ -120,6 +120,29 @@ internal val SELF_REFS = setOf(
     "ThisGraveyardCard",
 )
 
+/**
+ * The mtgish derived variables that name "the token(s) a CreateTokens action in this same effect just
+ * made". itemfive's mtgish token-creation cleanup (mtgish_grammar-create_tokens.json5) folded the old
+ * singular `_Permanent:TheCreatedToken` ref into these plural `_Permanents` derived variables, because a
+ * token-creation replacement effect (Doubling Season, "those tokens plus a Squirrel", …) means there is
+ * never exactly one created token — only "the tokens created this way". `TheCreatedToken` is kept as a
+ * legacy alias so a mixed/older IR snapshot still resolves. All name the same collection, which the token
+ * executor publishes under the [CREATED_TOKENS] pipeline slot.
+ */
+internal val CREATED_TOKEN_REFS = setOf("TheTokensCreatedThisWay", "TheCreatedTokens", "TheCreatedToken")
+
+/** The EffectTarget DSL addressing the just-created token collection. */
+internal const val CREATED_TOKENS_TARGET = "EffectTarget.PipelineTarget(CREATED_TOKENS, 0)"
+
+/** [CREATED_TOKENS_TARGET] if [node] is a created-token group/ref sentinel (under `_Permanents` or the
+ *  legacy `_Permanent` key), else null — so a "do X to the tokens created this way" action targets the
+ *  pipeline collection rather than being mistaken for a battlefield group. */
+internal fun createdTokensTarget(node: JsonElement?): String? {
+    val o = node as? JsonObject ?: return null
+    return if (o.strField("_Permanents") in CREATED_TOKEN_REFS || o.strField("_Permanent") in CREATED_TOKEN_REFS)
+        CREATED_TOKENS_TARGET else null
+}
+
 // ---------------------------------------------------------------------------
 // Dispatch + effect-list assembly.
 // ---------------------------------------------------------------------------
@@ -673,11 +696,13 @@ internal fun EmitCtx.refTargetFromRef(ref: String?, tvar: String?): String? {
         return targetRefVars[ref] ?: targetRefVarsByKind[ref]?.firstOrNull()
     }
     if (ref in SELF_REFS) return "EffectTarget.Self"
-    // "the created token" — the token a preceding CreateTokens action in this same action list just
-    // made (Fractal Tender: "create a 0/0 Fractal … and put three +1/+1 counters on it"). The token
-    // executor publishes its ids under the CREATED_TOKENS pipeline collection, so the follow-up effect
-    // addresses it via PipelineTarget(CREATED_TOKENS, 0).
-    if (ref == "TheCreatedToken") return "EffectTarget.PipelineTarget(CREATED_TOKENS, 0)"
+    // "the tokens created this way" / "the created tokens" — the tokens a preceding CreateTokens action
+    // in this same action list just made (Fractal Tender: "create a 0/0 Fractal … and put three +1/+1
+    // counters on it"). The token executor publishes their ids under the CREATED_TOKENS pipeline
+    // collection, so a follow-up effect addresses them via PipelineTarget(CREATED_TOKENS, 0). See
+    // [CREATED_TOKEN_REFS] for why these are plural — mtgish's token cleanup folded the old singular
+    // `TheCreatedToken` ref into the plural derived variables.
+    if (ref in CREATED_TOKEN_REFS) return CREATED_TOKENS_TARGET
     // "that player" in a trigger. In a spell-cast trigger the triggering entity is the spell, so "that
     // player" is its controller — the caster — modeled as ControllerOfTriggeringEntity (Magebane Lizard).
     // In every other trigger ("the player ~ dealt combat damage to") it's the triggering player itself.
