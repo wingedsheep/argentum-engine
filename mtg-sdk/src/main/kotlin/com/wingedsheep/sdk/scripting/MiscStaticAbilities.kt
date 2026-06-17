@@ -437,6 +437,38 @@ data class PreventActivatedAbilities(
 }
 
 /**
+ * Permanents matching [filter] entering the battlefield don't cause abilities to trigger
+ * (CR 614 — a continuous replacement of the enters-the-battlefield trigger event).
+ *
+ * Suppresses every enters-the-battlefield triggered ability that would fire *because* a matching
+ * permanent entered — both the entering permanent's own "When this enters …" abilities and other
+ * permanents' "Whenever a [matching] permanent enters …" abilities that triggered off that entry.
+ * It does NOT touch leaves-the-battlefield, dies, or any non-entry trigger, nor replacement effects
+ * (e.g. enters-tapped / enters-with-counters still apply). Global — read off any battlefield permanent
+ * with this ability, regardless of who controls the entering permanent.
+ *
+ * Read at trigger-detection time. The filter is matched against the entering permanent, so:
+ *  - Torpor Orb / Hushwing Gryff / Tocatli Honor Guard's creature lock = `SuppressEntersTriggers(
+ *    GameObjectFilter.Creature)` ("Creatures entering don't cause abilities to trigger.").
+ *  - A hypothetical "permanents entering don't cause abilities to trigger" (Hushbringer-style
+ *    artifact/creature scope, or all permanents) is the same type with a wider filter.
+ *
+ * @property filter Which entering permanents have their enters-triggers suppressed.
+ */
+@SerialName("SuppressEntersTriggers")
+@Serializable
+data class SuppressEntersTriggers(
+    val filter: GameObjectFilter
+) : StaticAbility {
+    override val description: String =
+        "${filter.description.replaceFirstChar { it.uppercase() }} entering the battlefield don't cause abilities to trigger"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Prevents mana pools from emptying as steps and phases end.
  * Used for Upwelling: "Players don't lose unspent mana as steps and phases end."
  *

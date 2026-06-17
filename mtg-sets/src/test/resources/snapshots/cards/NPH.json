@@ -1,0 +1,22 @@
+// Torpor Orb
+{
+    "name": "Torpor Orb",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Creatures entering don't cause abilities to trigger.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressEntersTriggers",
+                "filter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Phyrexia is certainly dangerous, but I have to admire some of its innovations.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/953610f6-ea96-4e71-969f-50ecac09c091.jpg?1722108794"
+    }
+}

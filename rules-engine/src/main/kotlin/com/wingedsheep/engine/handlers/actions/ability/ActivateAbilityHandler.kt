@@ -182,6 +182,13 @@ class ActivateAbilityHandler(
                 return "Activated abilities of this permanent can't be activated"
             }
 
+            // PlayersCantActivateAbilities (Grand Abolisher etc.) blocks abilities by *who* is
+            // activating and *when* — "During your turn, your opponents can't activate abilities
+            // of artifacts, creatures, or enchantments." Scoped to the activating player.
+            if (castPermissionUtils.isActivationPreventedForPlayer(state, action.sourceId, action.playerId)) {
+                return "An effect prevents you from activating that ability right now"
+            }
+
             // Creatures that have lost all abilities cannot activate them (e.g., Deep Freeze)
             if (state.projectedState.hasLostAllAbilities(action.sourceId)) {
                 // Only block the creature's own abilities, not granted ones

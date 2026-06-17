@@ -424,3 +424,67 @@ data class PlayersCantCastSpells(
         else copy(spellFilter = newFilter, condition = newCondition)
     }
 }
+
+/**
+ * A continuous prohibition on activating activated abilities, scoped along the same three
+ * independent axes as [PlayersCantCastSpells] — each a reused SDK primitive, so one type covers a
+ * whole family of "can't activate" cards:
+ *
+ *  - **who** — [affected], a [Player] reference interpreted *relative to this permanent's
+ *    controller*: `EachOpponent` / `Opponent` (your opponents), `You` (the controller), `Each`
+ *    (everyone). The activating player is the controller of the permanent whose ability is being
+ *    activated, so this gates by who controls the source permanent.
+ *  - **which** — [permanentFilter], matched (in projected state) against the **permanent whose
+ *    ability is being activated**, not the ability itself. Defaults to every permanent.
+ *  - **when** — [condition], evaluated in the source's controller's context, so `IsYourTurn` reads
+ *    as "during your turn". `null` = always.
+ *
+ * Read at ability-activation-legality time on every battlefield permanent (mirrors how
+ * [PlayersCantCastSpells] is read at cast-legality time), so it composes with mana and non-mana
+ * activated abilities alike. Like [PreventActivatedAbilities] this blocks the source's activated
+ * abilities; unlike it, it additionally scopes by *who* is activating and *when*, which the
+ * who/when-blind [PreventActivatedAbilities] (Cursed Totem) can't express.
+ *
+ *  - Grand Abolisher's activate clause: `PlayersCantActivateAbilities(Player.EachOpponent,
+ *    permanentFilter = artifact-or-creature-or-enchantment, condition = IsYourTurn)`
+ *    ("During your turn, your opponents can't activate abilities of artifacts, creatures, or
+ *    enchantments.")
+ *
+ * @property affected Who is forbidden, relative to the source's controller.
+ * @property permanentFilter Which permanents' abilities are forbidden (matched against the source).
+ * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
+ */
+@SerialName("PlayersCantActivateAbilities")
+@Serializable
+data class PlayersCantActivateAbilities(
+    val affected: Player = Player.EachOpponent,
+    val permanentFilter: GameObjectFilter = GameObjectFilter.Any,
+    val condition: Condition? = null
+) : StaticAbility {
+    override val description: String = buildString {
+        when (condition) {
+            is IsYourTurn -> append("During your turn, ")
+            is IsNotYourTurn -> append("During your opponents' turns, ")
+            else -> {}
+        }
+        when (affected) {
+            is Player.You -> append("you can't activate ")
+            is Player.EachOpponent -> append("your opponents can't activate ")
+            else -> append("${affected.description} can't activate ")
+        }
+        append(
+            if (permanentFilter == GameObjectFilter.Any) "activated abilities"
+            else "abilities of ${permanentFilter.description}"
+        )
+        when (condition) {
+            is IsYourTurn, is IsNotYourTurn, null -> {}
+            else -> append(" ${condition.description}")
+        }
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = permanentFilter.applyTextReplacement(replacer)
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newFilter === permanentFilter && newCondition === condition) this
+        else copy(permanentFilter = newFilter, condition = newCondition)
+    }
+}

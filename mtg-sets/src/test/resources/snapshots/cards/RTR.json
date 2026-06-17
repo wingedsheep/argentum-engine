@@ -23,6 +23,67 @@
     ]
 }
 
+// Rest in Peace
+{
+    "name": "Rest in Peace",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "allGraveyards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "allGraveyards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen",
+        "flavorText": "Some corpses the Golgari cannot claim. Some souls the Orzhov cannot shackle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37c2b1d1-faa0-40fd-82f4-216604ce7635.jpg?1562784882"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rogue's Passage
 {
     "name": "Rogue's Passage",

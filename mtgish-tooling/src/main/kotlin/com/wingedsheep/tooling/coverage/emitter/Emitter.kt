@@ -273,6 +273,15 @@ object Emitter {
                 rname == "StationChargedAnimate" -> block = ctx.stationAnimateBlock(rule)
                 rname == "Equip" -> block = equipAbilityLine(rule)
                 rname == "Protection" -> block = protectionScopeDsl(rule)?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.Protection", arg(Lit(it))))))) }
+                // Torpor Orb: "Creatures entering don't cause abilities to trigger." A whole-card static
+                // -> staticAbility { ability = SuppressEntersTriggers(<filter>) }. Only an `IsCardtype`
+                // permanent filter renders; any richer filter declines -> scaffold.
+                rname == "PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger" ->
+                    block = ctx.suppressEntersTriggersBlock(rule)
+                // Rest in Peace: "If a card or token would be put into a graveyard from anywhere, exile
+                // it instead." -> staticAbility-less RedirectZoneChange(EXILE) replacement. Only the
+                // unrestricted "any card/token, any player, from anywhere -> exile" shape renders.
+                rname == "ReplaceWouldPutIntoGraveyard" -> block = ctx.replaceWouldPutIntoGraveyardBlock(rule)
                 rname != null && (rname in handledRules || Bridge[rname]?.kind == "keyword") -> continue
                 // A bare auto-keyword rule (Flying, Menace, …) carries no args. A keyword rule that DOES
                 // carry args is parameterized (Crew N, Flashback {cost}, Bushido N, …) — those must be

@@ -784,7 +784,95 @@ internal fun EmitCtx.ifRuleBlock(rule: JsonObject): List<Stmt>? {
         return asEntersBlock(innerRule, condition = condDsl)
     }
 
+    // Grand Abolisher: "During your turn, your opponents can't cast spells or activate abilities of
+    // artifacts, creatures, or enchantments."
+    //   If(IsPlayersTurn(You))
+    //     [ EachPlayerEffect(Opponent, [ CantCastSpells(AnySpell),
+    //                                    CantActivateAbilities(AbilityOfAPermanent(Or[<types>])) ]) ]
+    // -> one `staticAbility { ability = PlayersCant{Cast,Activate}…(affected = Player.EachOpponent,
+    //    …, condition = Conditions.IsYourTurn) }` per recognised opponent-scoped player effect, the
+    // your-turn gate carried *inside* each static (not as a separate `condition =` row). Only the
+    // EachOpponent scope + your-turn gate + the two recognised "can't cast" / "can't activate" effects
+    // render; any other scope, condition, or effect declines -> SCAFFOLD rather than guess.
+    if (innerRule.strField("_Rule") == "EachPlayerEffect") {
+        return opponentLockBlock(innerRule, cond) ?: run { reasons.add("If"); return null }
+    }
+
     reasons.add("If"); return null
+}
+
+/**
+ * `EachPlayerEffect(Opponent, [<player effects>])` gated on "during your turn" -> one
+ * `staticAbility { }` per recognised opponent-scoped lock, each carrying `affected =
+ * Player.EachOpponent` and `condition = Conditions.IsYourTurn`. Backs Grand Abolisher / Voice of
+ * Victory-style "your opponents can't … during your turn" cards. Returns null (-> SCAFFOLD) unless the
+ * scope is exactly `Opponent`, the gate is `IsPlayersTurn(You)`, and *every* nested player effect is one
+ * we render exactly — partial recognition would silently drop a clause, so it's all-or-nothing.
+ */
+private fun EmitCtx.opponentLockBlock(rule: JsonObject, cond: JsonObject): List<Stmt>? {
+    if (isYourTurnConditionDsl(cond) == null) return null
+    val args = rule["args"].asArr ?: return null
+    val player = args.getOrNull(0) as? JsonObject ?: return null
+    if (!jsonContains(player, "_Players", "Opponent")) return null
+    val effects = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
+    if (effects.isNullOrEmpty()) return null
+
+    val gate = arg("condition", Lit("Conditions.IsYourTurn"))
+    val stmts = effects.map { e ->
+        val ability = when (e.strField("_PlayerEffect")) {
+            // "your opponents can't cast spells during your turn" — only the unfiltered "any spell"
+            // shape renders; a filtered cast lock declines rather than approximate the filter.
+            "CantCastSpells" -> {
+                val spells = e["args"] as? JsonObject
+                if (spells == null || !jsonContains(spells, "_Spells", "AnySpell")) return null
+                call("PlayersCantCastSpells", arg("affected", Lit("Player.EachOpponent")), gate)
+            }
+            // "your opponents can't activate abilities of <permanent filter> during your turn" —
+            // AbilityOfAPermanent over an `Or` of `IsCardtype` predicates -> a `GameObjectFilter`
+            // type-union. Any non-cardtype / non-Or permanent filter declines.
+            "CantActivateAbilities" -> {
+                val filterExpr = cantActivatePermanentFilterExpr(e["args"] as? JsonObject) ?: return null
+                call(
+                    "PlayersCantActivateAbilities",
+                    arg("affected", Lit("Player.EachOpponent")),
+                    arg("permanentFilter", Lit(filterExpr)),
+                    gate,
+                )
+            }
+            else -> return null
+        }
+        staticAbilityStmt(ability)
+    }
+    return stmts
+}
+
+/**
+ * The `GameObjectFilter` expr for a `CantActivateAbilities(AbilityOfAPermanent(<perm filter>))` effect.
+ * Renders only `AbilityOfAPermanent` over an `Or` of `IsCardtype` predicates -> `GameObjectFilter.X or
+ * GameObjectFilter.Y or …` (Grand Abolisher: artifacts, creatures, or enchantments), or a single bare
+ * `IsCardtype`. Any richer permanent filter declines (-> SCAFFOLD) rather than emit an inexact lock.
+ */
+private fun cantActivatePermanentFilterExpr(abilitySet: JsonObject?): String? {
+    if (abilitySet == null || abilitySet.strField("_ActivatedAbilities") != "AbilityOfAPermanent") return null
+    val perm = abilitySet["args"] as? JsonObject ?: return null
+    fun typeToFilter(type: String?): String? = when (type) {
+        "Artifact" -> "GameObjectFilter.Artifact"
+        "Creature" -> "GameObjectFilter.Creature"
+        "Enchantment" -> "GameObjectFilter.Enchantment"
+        "Land" -> "GameObjectFilter.Land"
+        "Planeswalker" -> "GameObjectFilter.Planeswalker"
+        else -> null
+    }
+    return when (perm.strField("_Permanents")) {
+        "IsCardtype" -> typeToFilter(perm["args"].asStr())
+        "Or" -> {
+            val arms = (perm["args"] as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+            if (arms.isEmpty() || arms.any { it.strField("_Permanents") != "IsCardtype" }) return null
+            val parts = arms.map { typeToFilter(it["args"].asStr()) ?: return null }
+            parts.joinToString(" or ")
+        }
+        else -> null
+    }
 }
 
 /**

@@ -1,3 +1,54 @@
+// Grand Abolisher
+{
+    "name": "Grand Abolisher",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "During your turn, your opponents can't cast spells or activate abilities of artifacts, creatures, or enchantments.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "PlayersCantActivateAbilities",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsCreature"
+                                    ]
+                                },
+                                "IsEnchantment"
+                            ]
+                        }
+                    ]
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Your superstitions and mumblings are useless chaff before my righteousness.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67e35a40-37dd-436c-b4ac-b17b04508c1f.jpg?1562645447"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Stingerfling Spider
 {
     "name": "Stingerfling Spider",

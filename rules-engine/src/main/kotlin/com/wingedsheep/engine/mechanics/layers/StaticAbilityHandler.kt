@@ -115,8 +115,10 @@ import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
+import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.PreventManaPoolEmptying
 import com.wingedsheep.sdk.scripting.ReplaceLandManaColor
@@ -725,7 +727,11 @@ class StaticAbilityHandler(
             is ExtraLoyaltyActivation,
             is GrantActivatedAbility,
             is PreventActivatedAbilities,
+            is PlayersCantActivateAbilities,
             is PreventCycling,
+
+            // Triggered-ability suppression (TriggerDetector — Torpor Orb):
+            is SuppressEntersTriggers,
 
             // Turn-based actions (BeginningPhaseManager / CleanupPhaseManager):
             is NoMaximumHandSize,

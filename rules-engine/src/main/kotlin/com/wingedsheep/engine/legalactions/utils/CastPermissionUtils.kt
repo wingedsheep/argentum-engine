@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.PreventCycling
@@ -558,6 +559,54 @@ class CastPermissionUtils(
             for (ability in cardDef.script.staticAbilities) {
                 val prevent = ability as? PreventActivatedAbilities ?: continue
                 if (predicateEvaluator.matches(state, projected, sourceId, prevent.filter, context)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /**
+     * True when a [PlayersCantActivateAbilities] static forbids [activatingPlayerId] from
+     * activating an ability of the permanent [sourceId] — i.e. some battlefield permanent's
+     * ability whose [affected][PlayersCantActivateAbilities.affected] group (relative to the
+     * granter's controller) includes the activating player, whose
+     * [condition][PlayersCantActivateAbilities.condition] holds in the granter's controller's
+     * context, and whose [permanentFilter][PlayersCantActivateAbilities.permanentFilter] matches
+     * the source permanent in projected state.
+     *
+     * Grand Abolisher's activate clause flows through here: "During your turn, your opponents
+     * can't activate abilities of artifacts, creatures, or enchantments." Mirrors
+     * [isActivationPrevented] (Cursed Totem's who/when-blind block), but additionally scopes by
+     * who is activating and when. Face-down permanents (no abilities) are skipped as granters.
+     */
+    fun isActivationPreventedForPlayer(
+        state: GameState,
+        sourceId: EntityId,
+        activatingPlayerId: EntityId
+    ): Boolean {
+        val projected = state.projectedState
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val cardDef = container.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
+            for (sa in cardDef.script.staticAbilities) {
+                if (sa !is PlayersCantActivateAbilities) continue
+                val controller = projected.getController(permanentId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                    ?: continue
+                if (!affectedPlayerMatches(sa.affected, controller, activatingPlayerId)) continue
+                val condition = sa.condition
+                if (condition != null) {
+                    val ctx = EffectContext(sourceId = permanentId, controllerId = controller)
+                    if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
+                }
+                if (predicateEvaluator.matches(
+                        state, projected, sourceId, sa.permanentFilter,
+                        PredicateContext(controllerId = activatingPlayerId)
+                    )
+                ) {
                     return true
                 }
             }

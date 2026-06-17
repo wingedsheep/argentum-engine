@@ -64,6 +64,10 @@ class ManaAbilityEnumerator : ActionEnumerator {
             // creatures."
             if (context.castPermissionUtils.isActivationPrevented(state, entityId)) continue
 
+            // PlayersCantActivateAbilities (Grand Abolisher) likewise blocks mana abilities of
+            // matching permanents for the affected player — "can't activate abilities of …".
+            if (context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId)) continue
+
             val entityLostAllAbilities = projected.hasLostAllAbilities(entityId)
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name)

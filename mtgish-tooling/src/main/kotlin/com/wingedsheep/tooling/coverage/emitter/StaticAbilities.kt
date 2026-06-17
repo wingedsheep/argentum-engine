@@ -712,3 +712,65 @@ private fun EmitCtx.decreasePlotFromHandCostAbility(effect: JsonObject): Dsl? {
         arg("modification", call("CostModification.ReduceGeneric", arg("$amount"))),
     )
 }
+
+/**
+ * Torpor Orb: `PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger(IsCardtype <type>)` ->
+ * `staticAbility { ability = SuppressEntersTriggers(GameObjectFilter.<Type>) }`. Only a single bare
+ * `IsCardtype` permanent filter renders to an exact `GameObjectFilter` type val; any richer filter
+ * (subtype, color, an `Or` union, …) declines (-> SCAFFOLD) rather than emit an inexact lock.
+ */
+internal fun EmitCtx.suppressEntersTriggersBlock(rule: JsonObject): List<Stmt>? {
+    val filter = rule["args"] as? JsonObject ?: run { reasons.add("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger"); return null }
+    if (filter.strField("_Permanents") != "IsCardtype") {
+        reasons.add("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger"); return null
+    }
+    val type = when (filter["args"].asStr()) {
+        "Creature" -> "GameObjectFilter.Creature"
+        "Artifact" -> "GameObjectFilter.Artifact"
+        "Enchantment" -> "GameObjectFilter.Enchantment"
+        "Land" -> "GameObjectFilter.Land"
+        "Planeswalker" -> "GameObjectFilter.Planeswalker"
+        else -> { reasons.add("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger"); return null }
+    }
+    return listOf(staticAbilityStmt(call("SuppressEntersTriggers", arg(Lit(type)))))
+}
+
+/**
+ * Rest in Peace's static clause:
+ *   `ReplaceWouldPutIntoGraveyard(WouldPutACardOrTokenInAPlayersGraveyardFromAnywhere(AnyCard,
+ *    AnyPlayer), [ExileItInstead])`
+ * -> `replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE, appliesTo =
+ *    EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Any, to = Zone.GRAVEYARD)))`.
+ *
+ * Only the fully unrestricted shape — any card/token, any player, from anywhere, replaced by
+ * "exile it instead" — renders. A filtered card set, a single-player scope, a from-zone restriction,
+ * or a replacement other than `ExileItInstead` declines (-> SCAFFOLD) rather than drop the constraint.
+ */
+internal fun EmitCtx.replaceWouldPutIntoGraveyardBlock(rule: JsonObject): List<Stmt>? {
+    fun decline(): List<Stmt>? { reasons.add("ReplaceWouldPutIntoGraveyard"); return null }
+    val args = rule["args"].asArr ?: return decline()
+    val event = args.getOrNull(0) as? JsonObject ?: return decline()
+    if (event.strField("_ReplacableEventWouldPutIntoGraveyard")
+        != "WouldPutACardOrTokenInAPlayersGraveyardFromAnywhere"
+    ) return decline()
+    val eventArgs = event["args"].asArr ?: return decline()
+    val cards = eventArgs.getOrNull(0) as? JsonObject ?: return decline()
+    val players = eventArgs.getOrNull(1) as? JsonObject ?: return decline()
+    if (!jsonContains(cards, "_Cards", "AnyCard")) return decline()
+    if (!jsonContains(players, "_Players", "AnyPlayer")) return decline()
+    val replacements = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return decline()
+    val only = replacements.singleOrNull() ?: return decline()
+    if (only.strField("_ReplacementActionWouldPutIntoGraveyard") != "ExileItInstead") return decline()
+    return listOf(Eval(call(
+        "replacementEffect",
+        arg(call(
+            "RedirectZoneChange",
+            arg("newDestination", "Zone.EXILE"),
+            arg("appliesTo", call(
+                "EventPattern.ZoneChangeEvent",
+                arg("filter", "GameObjectFilter.Any"),
+                arg("to", "Zone.GRAVEYARD"),
+            )),
+        )),
+    )))
+}

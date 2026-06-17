@@ -147,6 +147,32 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // `RestrictSpellsCastPerTurn(maxPerTurn = N, eachPlayer = <scope>)`.
     effect("CantCastMoreThanNumberSpellsEachTurn", "RestrictSpellsCastPerTurn")
 
+    // "Your opponents can't cast spells [during your turn]" / "… can't activate abilities of
+    // <filter> [during your turn]" (Grand Abolisher, Voice of Victory) — the nested _PlayerEffects of
+    // an `EachPlayerEffect{Opponent}` static, optionally gated by an `If(IsPlayersTurn(You))`. They
+    // render to the who/which/when-parameterised `PlayersCantCastSpells` / `PlayersCantActivateAbilities`
+    // statics (affected = Player.EachOpponent, condition = Conditions.IsYourTurn). The activate filter
+    // is an `AbilityOfAPermanent(Or[IsCardtype …])` cardtype union.
+    effect("CantCastSpells", "PlayersCantCastSpells")
+    effect("CantActivateAbilities", "PlayersCantActivateAbilities")
+    supported("AbilityOfAPermanent", "ability selector: activated abilities of permanents matching a filter")
+
+    // Torpor Orb: "Creatures entering don't cause abilities to trigger." A whole-card static read at
+    // trigger-detection time -> SuppressEntersTriggers(<permanent filter>).
+    effect("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger", "SuppressEntersTriggers")
+
+    // Rest in Peace: "exile all graveyards" (ETB) + "if a card or token would be put into a graveyard
+    // from anywhere, exile it instead" (static replacement). The first composes via the Gather -> Move
+    // pipeline over Player.Each graveyards; the second is the RedirectZoneChange(EXILE) replacement.
+    composed(
+        "ExileEachPlayersGraveyard",
+        "GatherCards(GRAVEYARD, Player.Each) -> MoveCollection -> EXILE",
+        composes = listOf("GatherCards", "MoveCollection"),
+    )
+    effect("ReplaceWouldPutIntoGraveyard", "RedirectZoneChange")
+    supported("WouldPutACardOrTokenInAPlayersGraveyardFromAnywhere", "replaceable event: any card/token to any graveyard from anywhere")
+    supported("ExileItInstead", "replacement action: exile instead of going to the graveyard")
+
     // "You have no maximum hand size for the rest of the game" (Wisdom of Ages) — the nested
     // _PlayerEffect of a CreatePlayerEffect(You) resolution action. Renders to the one-shot
     // player-scoped `RemoveMaximumHandSize` effect (distinct from the battlefield-only

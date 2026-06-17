@@ -98,6 +98,21 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
         call("Effects.Exile", arg(Lit(tgt)))
     }
 
+    // "Exile all graveyards" (Rest in Peace's ETB; Bojuka Bog targets one). Only the every-player
+    // (`AnyPlayer`) form renders — the Gather (every graveyard, any card) -> Move-to-exile atomic
+    // pair. A single-player scope would need a target, so it declines (-> SCAFFOLD) here.
+    on("ExileEachPlayersGraveyard") { node, _, _ ->
+        val players = node["args"] as? JsonObject
+        if (players == null || !jsonContains(players, "_Players", "AnyPlayer")) return@on null
+        Composite(listOf(
+            Lit(
+                "GatherCardsEffect(source = CardSource.FromZone(zone = Zone.GRAVEYARD, " +
+                    "player = Player.Each, filter = GameObjectFilter.Any), storeAs = \"allGraveyards\")"
+            ),
+            Lit("MoveCollectionEffect(from = \"allGraveyards\", destination = CardDestination.ToZone(Zone.EXILE))"),
+        ))
+    }
+
     // "exile target <permanent> until this <permanent> leaves the battlefield" — the Banishing Light /
     // O-Ring shape (Mystical Tether, Lassoed by the Law). The action renders `Effects.ExileUntilLeaves`;
     // the matching leaves-battlefield ReturnLinkedExile trigger is synthesized once at card assembly
