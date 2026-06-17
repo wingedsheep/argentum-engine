@@ -300,6 +300,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TokenCreationReplacementContinuation::class)
         subclass(LeylineDecisionContinuation::class)
         subclass(ActivateAbilityChooseXContinuation::class)
+        subclass(ActivateAbilityChooseManaXContinuation::class)
         subclass(ActivateAbilityTapXTargetsContinuation::class)
         subclass(ActivateAbilityExileFromGraveyardContinuation::class)
         subclass(ActivateAbilityOpponentTargetContinuation::class)

@@ -534,6 +534,48 @@ class ActivateAbilityHandler(
         }
 
         // -------------------------------------------------------------------
+        // {X} *mana* cost pause (legal-actions submission path).
+        //
+        // When the cost contains `{X}` mana (Wizard's Rockets: "{X}, {T}, Sacrifice this artifact:
+        // Add X mana...") the frontend submits the bare `ActivateAbility` with no xValue, expecting
+        // the engine to ask which X to pay. Without this the handler defaults X to 0
+        // (`action.xValue ?: 0`), pays nothing, and the ability produces no mana — the player never
+        // gets to choose X. The engine-direct path (xValue pre-filled) skips this.
+        // -------------------------------------------------------------------
+        val manaXCost = extractManaCost(effectiveCost)
+        if (manaXCost?.hasX == true && action.xValue == null && tapXCost == null) {
+            val fixedMana = manaXCost.cmc // the non-X portion ({X} alone is 0; {1}{X} is 1)
+            val maxX = (manaSolver.getAvailableManaCount(state, action.playerId) - fixedMana).coerceAtLeast(0)
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = com.wingedsheep.engine.core.ChooseNumberDecision(
+                id = decisionId,
+                playerId = action.playerId,
+                prompt = "Choose X for ${cardComponent.name} (0-$maxX)",
+                context = com.wingedsheep.engine.core.DecisionContext(
+                    sourceId = action.sourceId,
+                    sourceName = cardComponent.name,
+                    phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                ),
+                minValue = 0,
+                maxValue = maxX
+            )
+            val continuation = com.wingedsheep.engine.core.ActivateAbilityChooseManaXContinuation(
+                decisionId = decisionId,
+                action = action
+            )
+            val pausedState = state
+                .withPendingDecision(decision)
+                .pushContinuation(continuation)
+            val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = action.playerId,
+                decisionType = "CHOOSE_NUMBER",
+                prompt = decision.prompt
+            )
+            return ExecutionResult.paused(pausedState, decision, listOf(event))
+        }
+
+        // -------------------------------------------------------------------
         // ExileFromGraveyard cost-choice pause (legal-actions submission path).
         //
         // When the cost is `ExileFromGraveyard(count, filter)` (Rust Harvester:

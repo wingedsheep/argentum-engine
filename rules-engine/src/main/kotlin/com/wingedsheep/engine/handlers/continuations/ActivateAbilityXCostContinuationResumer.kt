@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.core.ActivateAbilityChooseManaXContinuation
 import com.wingedsheep.engine.core.ActivateAbilityChooseXContinuation
 import com.wingedsheep.engine.core.ActivateAbilityExileFromGraveyardContinuation
 import com.wingedsheep.engine.core.ActivateAbilitySacrificeContinuation
@@ -45,10 +46,29 @@ class ActivateAbilityXCostContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ActivateAbilityChooseXContinuation::class, ::resumeChooseX),
+        resumer(ActivateAbilityChooseManaXContinuation::class, ::resumeChooseManaX),
         resumer(ActivateAbilityTapXTargetsContinuation::class, ::resumeTapXTargets),
         resumer(ActivateAbilityExileFromGraveyardContinuation::class, ::resumeExileFromGraveyard),
         resumer(ActivateAbilitySacrificeContinuation::class, ::resumeSacrifice)
     )
+
+    /**
+     * Resume after the player chooses X for an activated ability with an `{X}` **mana** cost
+     * (Wizard's Rockets). Re-enter the handler with the chosen X bound; the `{X}` mana cost is then
+     * paid for that amount and the ability resolves normally. No follow-up decision is needed.
+     */
+    private fun resumeChooseManaX(
+        state: GameState,
+        continuation: ActivateAbilityChooseManaXContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for ActivateAbility mana-X choice")
+        }
+        val chosenX = response.number.coerceAtLeast(0)
+        return handler.execute(state, continuation.action.copy(xValue = chosenX))
+    }
 
     private fun resumeChooseX(
         state: GameState,

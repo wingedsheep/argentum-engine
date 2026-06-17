@@ -469,6 +469,22 @@ data class ActivateAbilityChooseXContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player chooses X for an activated ability whose cost contains `{X}` **mana**
+ * (e.g. Wizard's Rockets: "{X}, {T}, Sacrifice this artifact: Add X mana..."). The legal-actions
+ * submission path sends a bare [ActivateAbility] with `xValue == null`; the handler raises a
+ * ChooseNumberDecision and stores this frame. On resume the handler is re-entered with `xValue`
+ * bound to the chosen number, and the `{X}` mana cost is paid for that amount.
+ *
+ * Unlike [ActivateAbilityChooseXContinuation] (a tap-X cost, which has a follow-up tap-target
+ * selection), a mana-X cost has no second decision — paying the mana is automatic.
+ */
+@Serializable
+data class ActivateAbilityChooseManaXContinuation(
+    override val decisionId: String,
+    val action: ActivateAbility
+) : ContinuationFrame
+
+/**
  * Resume after a player picks which permanents to tap to satisfy a TapXPermanents cost,
  * once X has already been chosen via [ActivateAbilityChooseXContinuation].
  *
