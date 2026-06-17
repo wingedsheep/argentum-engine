@@ -1628,7 +1628,12 @@ internal fun EmitCtx.triggerBlock(rule: JsonObject, oncePerTurn: Boolean = false
     // `triggerCondition = …` gate over the then-branch, but ONLY when the condition renders via the same
     // strict [interveningIfDsl] used by TriggerI (no else-branch, single If). Any other shape falls
     // through to the normal action path (where `on("If")` handles the static gates or declines).
-    val lifted = if (effTriggerCondition == null) liftInterveningIfAction(effectActions) else null
+    // An `Unless{cond}[actions]` action — "do [actions] unless [cond]" (Tragedy Feaster's Infusion
+    // "sacrifice a permanent unless you gained life this turn") — lifts to a NEGATED triggerCondition
+    // gate (CR 603.4) over the inner actions, the mirror of the intervening-if lift.
+    val lifted = if (effTriggerCondition == null) {
+        liftInterveningIfAction(effectActions) ?: liftUnlessAction(effectActions)
+    } else null
     val condFromIf = lifted?.first
     // A spell-cast trigger's triggering entity is the spell, so "that player" in the body is the caster
     // (ControllerOfTriggeringEntity), not the triggering player — see [EmitCtx.triggeringEntityIsSpell].
@@ -1780,6 +1785,29 @@ private fun EmitCtx.liftInterveningIfAction(actions: List<JsonObject>): Pair<Str
     if (args.getOrNull(2) != null) return null
     val condDsl = interveningIfDsl(cond) ?: return null
     return condDsl to thenActions
+}
+
+/**
+ * A trigger effect that is a single `Unless{cond}[actions]` action -> a NEGATED intervening-if
+ * condition gate plus the inner actions, or null when it isn't a lone liftable `Unless`. Used by
+ * [triggerBlock] to model the Infusion "sacrifice a permanent unless you gained life this turn"
+ * shape (Tragedy Feaster) as `triggerCondition = Conditions.Not(<cond>)` over the inner actions
+ * (CR 603.4): "do [actions] unless [cond]" means the trigger's actions resolve only when the
+ * condition is FALSE.
+ *
+ * The IR `Unless` args are `[<condition>, [<actions>]]`. Renders ONLY when the condition renders via
+ * the same strict [interveningIfDsl] used by the intervening-if path, so the negated gate is always
+ * exact — anything else declines (-> SCAFFOLD) rather than dropping or widening the "unless" clause.
+ */
+private fun EmitCtx.liftUnlessAction(actions: List<JsonObject>): Pair<String, List<JsonObject>>? {
+    val only = actions.singleOrNull() ?: return null
+    if (only.strField("_Action") != "Unless") return null
+    val args = only["args"].asArr ?: return null
+    val cond = args.getOrNull(0) as? JsonObject ?: return null
+    val innerActions = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+    if (innerActions.isEmpty()) return null
+    val condDsl = interveningIfDsl(cond) ?: return null
+    return "Conditions.Not($condDsl)" to innerActions
 }
 
 /**
