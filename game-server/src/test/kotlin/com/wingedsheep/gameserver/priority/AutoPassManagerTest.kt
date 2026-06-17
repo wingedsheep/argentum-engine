@@ -10,6 +10,10 @@ import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.core.TypeLine
+import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
@@ -30,7 +34,19 @@ import io.mockk.mockk
 /**
  * Type of stack item for test mocking.
  */
-enum class StackItemType { ABILITY, PERMANENT_SPELL, AURA_SPELL, INSTANT_SORCERY }
+enum class StackItemType {
+    ABILITY,
+    PERMANENT_SPELL,
+    AURA_SPELL,
+    INSTANT_SORCERY,
+    /**
+     * A split-layout card (Omen / Adventure / MDFC) cast as its instant/sorcery face. The base
+     * [CardComponent] still describes the permanent (creature) face — `isPermanent = true` — but the
+     * spell carries `faceIndex`, and the registry resolves that face to an instant. The auto-pass
+     * logic must treat it as a non-permanent spell and stop, not auto-resolve it like a creature.
+     */
+    OMEN_INSTANT_FACE
+}
 
 /**
  * Tests for the Arena-style AutoPassManager.
@@ -42,7 +58,10 @@ enum class StackItemType { ABILITY, PERMANENT_SPELL, AURA_SPELL, INSTANT_SORCERY
  * - Rule 4: Stack Response (Absolute Rule)
  */
 class AutoPassManagerTest : FunSpec({
-    val autoPassManager = AutoPassManager()
+    // Registry that resolves split-card faces; configured per-test inside createMockState only for
+    // the OMEN_INSTANT_FACE case. Relaxed so the unused getCard calls of other cases return null.
+    val cardRegistry = mockk<CardRegistry>(relaxed = true)
+    val autoPassManager = AutoPassManager(cardRegistry)
     val player1 = EntityId.generate()
     val player2 = EntityId.generate()
 
@@ -149,6 +168,31 @@ class AutoPassManagerTest : FunSpec({
                     )
                     val cardComponent = mockk<com.wingedsheep.engine.state.components.identity.CardComponent>(relaxed = true)
                     every { cardComponent.isPermanent } returns false
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns spellComponent
+                    every { stackEntity.get<com.wingedsheep.engine.state.components.identity.CardComponent>() } returns cardComponent
+                }
+                StackItemType.OMEN_INSTANT_FACE -> {
+                    // Split card cast as its instant face: faceIndex set, base card is a permanent,
+                    // but the registry-resolved cast face is an instant (isPermanent = false).
+                    val spellComponent = com.wingedsheep.engine.state.components.stack.SpellOnStackComponent(
+                        casterId = controllerId,
+                        faceIndex = 0
+                    )
+                    val cardComponent = mockk<com.wingedsheep.engine.state.components.identity.CardComponent>(relaxed = true)
+                    every { cardComponent.name } returns "Dirgur Island Dragon"
+                    every { cardComponent.isPermanent } returns true   // base creature face
+                    every { cardComponent.isAura } returns false
+                    // Registry resolves cast face[0] to an instant so it is NOT a permanent spell.
+                    val instantFace = mockk<CardFace>(relaxed = true)
+                    val instantTypeLine = mockk<TypeLine>(relaxed = true)
+                    every { instantTypeLine.isPermanent } returns false
+                    every { instantTypeLine.isAura } returns false
+                    every { instantFace.typeLine } returns instantTypeLine
+                    val cardDef = mockk<CardDefinition>(relaxed = true)
+                    every { cardDef.cardFaces } returns listOf(instantFace)
+                    every { cardRegistry.getCard("Dirgur Island Dragon") } returns cardDef
                     every { stackEntity.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>() } returns null
                     every { stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>() } returns null
                     every { stackEntity.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>() } returns spellComponent
@@ -728,6 +772,24 @@ class AutoPassManagerTest : FunSpec({
             )
 
             // Auras are targeting spells - always stop so opponent can see what's being targeted
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("STOP when opponent's Omen/Adventure spell (instant face of a creature) is on stack with no responses") {
+            // player2 cast the instant/sorcery face of a split card (e.g. Dirgur Island Dragon //
+            // Skimming Strike). The base card is a creature, but the cast face is an instant — the
+            // opponent should STOP and see it on the stack, not auto-resolve it like a creature.
+            val state = createMockState(
+                player1, player1, Step.PRECOMBAT_MAIN,
+                stackEmpty = false, stackControllerId = player2,
+                stackItemType = StackItemType.OMEN_INSTANT_FACE
+            )
+            val actions = listOf(
+                passPriorityAction(player1),
+                manaAbilityAction(player1) // Only mana ability, not a response
+            )
+
+            // Cast face is non-permanent → always stop for opponent's instant/sorcery face.
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
     }

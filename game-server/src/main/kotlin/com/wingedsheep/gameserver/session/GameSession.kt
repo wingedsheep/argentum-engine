@@ -163,7 +163,7 @@ class GameSession(
 
     private val actionProcessor = ActionProcessor(services)
     private val gameInitializer = GameInitializer(cardRegistry, services.printingRegistry)
-    private val autoPassManager = AutoPassManager()
+    private val autoPassManager = AutoPassManager(cardRegistry)
     private val spectatorStateBuilder = SpectatorStateBuilder(cardRegistry, stateTransformer)
     private val decisionEnricher = DecisionEnricher(cardRegistry)
     private val legalActionEnumerator = LegalActionEnumerator(

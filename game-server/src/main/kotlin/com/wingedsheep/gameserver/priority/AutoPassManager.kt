@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.priority
 
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -42,7 +43,15 @@ import org.slf4j.LoggerFactory
  * - If OPPONENT's permanent spell is on top and you have no responses: AUTO-PASS (auto-resolve)
  * - If OPPONENT's non-permanent spell or ability is on top: STOP (so you can see what they're doing)
  */
-class AutoPassManager {
+class AutoPassManager(
+    /**
+     * Used to resolve the actually-cast face of a split-layout spell on the stack (CR 709/715).
+     * A null registry disables that resolution and falls back to the base card's type line — fine
+     * for unit tests that only exercise single-face spells, but production must supply it so an
+     * Omen/Adventure instant face isn't mistaken for the permanent (creature) face.
+     */
+    private val cardRegistry: CardRegistry? = null
+) {
 
     private val logger = LoggerFactory.getLogger(AutoPassManager::class.java)
 
@@ -175,7 +184,7 @@ class AutoPassManager {
                 val container = state.getEntity(topOfStack)
                 val cardComponent = container?.get<CardComponent>()
                 val isPermanentSpell = container?.get<SpellOnStackComponent>()?.let {
-                    cardComponent?.isPermanent ?: false
+                    isPermanentSpell(cardComponent, it)
                 } ?: false
                 val isAura = cardComponent?.isAura ?: false
 
@@ -554,6 +563,24 @@ class AutoPassManager {
             // Must be a spell cast or activatable ability (not land play or combat action)
             action.isInstantSpeedResponse()
         }
+    }
+
+    /**
+     * Whether a spell on the stack is a permanent spell, respecting the actually-cast face.
+     *
+     * Split-layout cards (Omen, Adventure, MDFC — CR 709 / 715) keep their *base* characteristics
+     * (a creature) in [CardComponent] even when cast as their instant/sorcery face. Casting the
+     * instant/sorcery face stamps [SpellOnStackComponent.faceIndex]; resolving the type from that
+     * face (like [com.wingedsheep.engine.mechanics.stack.StackResolver] does) is what keeps the
+     * spell off the "permanent spell → auto-resolve" path, so the opponent still stops and sees it
+     * on the stack. Falls back to the base type line when there's no cast face or no registry.
+     */
+    private fun isPermanentSpell(cardComponent: CardComponent?, spell: SpellOnStackComponent): Boolean {
+        if (cardComponent == null) return false
+        val faceTypeLine = spell.faceIndex?.let { idx ->
+            cardRegistry?.getCard(cardComponent.name)?.cardFaces?.getOrNull(idx)?.typeLine
+        }
+        return faceTypeLine?.isPermanent ?: cardComponent.isPermanent
     }
 
     /**
