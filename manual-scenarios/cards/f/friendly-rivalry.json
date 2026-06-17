@@ -1,0 +1,38 @@
+{
+  "_comment": "Friendly Rivalry (LTR, {R}{G} instant): 'Target creature you control and up to one other target legendary creature you control each deal damage equal to their power to target creature you don't control.' Flow: cast Friendly Rivalry ({R}{G}). Target 0 = your Grizzly Bears (2/2). Target 1 (up to one OTHER legendary creature you control) = Frodo Baggins (1/3 legendary) — note you must NOT be able to pick Grizzly Bears again here, nor Frodo for both: 'other' is enforced (TargetOther / CR 601.2c). Target 2 = Opponent's Hill Giant (3/3). On resolution it takes 2 (Bears) + 1 (Frodo) = 3 damage and dies.",
+  "player1Name": "You",
+  "player2Name": "Opponent",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Friendly Rivalry"],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Frodo Baggins"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Forest", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

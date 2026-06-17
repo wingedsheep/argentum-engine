@@ -1,0 +1,41 @@
+{
+  "_comment": "Bilbo's Ring (LTR, {3} legendary artifact Equipment): 'During your turn, equipped creature has hexproof and can't be blocked. Whenever equipped creature attacks alone, you draw a card and you lose 1 life. Equip Halfling {1}. Equip {4}.' Setup: the Ring is unattached. Test (a) Equip Halfling {1} onto Delighted Halfling (a Halfling), or Equip {4} onto Grizzly Bears (both sorcery-speed). Test (b) during your turn the equipped creature has hexproof and can't be blocked. Test (c) attack with ONLY the equipped creature -> you draw a card and lose 1 life; attack with the equipped creature AND the other creature (not alone) -> NO draw (the 'attacks alone' trigger now correctly checks the whole attacker set).",
+  "player1Name": "You",
+  "player2Name": "Opponent",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Bilbo's Ring"},
+      {"name": "Delighted Halfling", "summoningSickness": false},
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

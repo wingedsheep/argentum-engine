@@ -1,0 +1,36 @@
+{
+  "_comment": "Easterling Vanguard (LTR, {1}{B} creature — Human Warrior, 2/1): 'When this creature dies, amass Orcs 1.' Flow: declare Easterling Vanguard as an attacker; the Opponent blocks with their Grizzly Bears (2/2). Vanguard (2/1) takes 2 and dies -> its dies trigger amasses Orcs 1, creating a 0/0 black Orc Army token under your control with a +1/+1 counter (a 1/1 Orc Army). Alternatively kill the Vanguard any other way to see the amass. (Combat needs an opponent willing to block — the AI opponent or manual play.)",
+  "player1Name": "You",
+  "player2Name": "Opponent",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Easterling Vanguard", "summoningSickness": false},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
