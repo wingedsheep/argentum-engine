@@ -1286,7 +1286,7 @@ class TriggerMatcher(
      * attack-time fact. The matcher is conjunctive — every predicate the
      * trigger declares must hold.
      */
-    private fun matchesAttackPredicate(
+    internal fun matchesAttackPredicate(
         predicate: AttackPredicate,
         event: AttackersDeclaredEvent
     ): Boolean = when (predicate) {

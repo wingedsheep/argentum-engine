@@ -10,7 +10,7 @@ Status legend: [ ] open · [repro] reproduced with a failing test (LtrBugTriageT
 - [repro] **Pippin's Bravery** — "may sacrifice a Food" / don't need Food. With no Food the target gets neither +4/+4 nor +2/+2 (stays at base); the `ifNotPaid` (+2/+2) branch doesn't run when the Sacrifice cost is unpayable (card/engine).
 - [repro] **Ring-bearer preserved between zones** — `RingBearerComponent` persists across exile→return; the returned permanent is a new object and must not stay the Ring-bearer (CR 701.54) (engine).
 - [repro] **Meneldor — Bilbo's Ring still attached** — Equipment is not detached when the equipped creature leaves the battlefield (CR 301.5/701.3) (engine).
-- [repro] **Bilbo's Ring — attacks alone.** Corrected repro: when the equipped creature does **not** attack alone (attacks alongside others), the controller still draws. The "attacks alone" trigger fires when it shouldn't (engine/trigger predicate).
+- [fixed] **Bilbo's Ring — attacks alone.** The "attacks alone" trigger fired even when the equipped creature attacked alongside others. `AttachmentTriggerDetector` (which handles ATTACHED-binding triggers) fired on bare membership in the attacker set without applying the trigger's `requires` predicates (`AttackPredicate.Alone`). Fixed to apply `requires`, mirroring the main loop. Covered by BilbosRingAttacksAloneScenarioTest; empty-`requires` attached-attack triggers (Stormbeacon Blade, Thunder Lasso) still fire.
 
 ## Added later
 

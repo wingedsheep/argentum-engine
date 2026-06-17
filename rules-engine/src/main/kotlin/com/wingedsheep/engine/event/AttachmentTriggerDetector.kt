@@ -105,7 +105,11 @@ class AttachmentTriggerDetector(private val matcher: TriggerMatcher) {
                     matcher.matchesDealsDamageTrigger(trigger, event, state)
             }
             is EventPattern.AttackEvent -> {
-                event is AttackersDeclaredEvent && attachedEntityId in event.attackers
+                event is AttackersDeclaredEvent && attachedEntityId in event.attackers &&
+                    // Apply the trigger's attack-time predicates (e.g. AttackPredicate.Alone for
+                    // Bilbo's Ring) — the same conjunctive check the main loop runs at declaration,
+                    // which the ATTACHED path must not skip.
+                    trigger.requires.all { matcher.matchesAttackPredicate(it, event) }
             }
             is EventPattern.TapEvent -> {
                 event is TappedEvent && event.entityId == attachedEntityId
