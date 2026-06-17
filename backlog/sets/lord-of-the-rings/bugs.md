@@ -14,7 +14,7 @@ Status legend: [ ] open · [repro] reproduced with a failing test (LtrBugTriageT
 
 ## Added later
 
-- [root-caused] **Glorious Gale** — "the Ring tempts you" not working when countering a legendary creature spell. Likely cause: `ConditionalEffect(TargetMatchesFilter(Any.legendary(), 0), TheRingTemptsYou()).then(CounterSpell())` — the legendary check against the *spell on the stack* (target 0) returns false, so the tempt branch is skipped. Repro pending (the simple test driver can't target a spell-on-stack like a counterspell needs).
-- [root-caused] **Elrond, Master of Healing** — draws a card when a creature you control *without* a +1/+1 counter becomes the target of an opponent's spell/ability. The trigger `CreatureYouControlBecomesTargetByOpponent(Creature.withCounter(PLUS_ONE_PLUS_ONE))` isn't applying its `withCounter` filter. Repro pending (needs an opponent spell/ability targeting your creature).
+- [not-a-bug] **Glorious Gale** — verified working: the existing GloriousGaleScenarioTest pins both "counters a legendary creature spell and the Ring tempts you" (temptCount 1) and the nonlegendary case (0). The legendary check on the countered spell-on-stack resolves correctly; no change needed.
+- [fixed] **Elrond, Master of Healing** — drew a card even when the targeted creature had no +1/+1 counter. `TriggerMatcher.matchesBecomesTargetTrigger` never evaluated the target filter's `statePredicates`; fixed to apply them. Covered by ElrondMasterOfHealingTargetTriggerTest.
 - [fixed] **Frodo Baggins** — power/toughness was 1/1, should be 1/3. Fixed in the LTR field-verification pass (commit "Verify LTR card fields against Scryfall; fix P/T and text divergences").
 - [repro] **Friendly Rivalry** — can choose the same creature for both "creature you control" targets; casting with target0==target1 is accepted (should be illegal). The `.other()` on the second target excludes the *source*, not target 0.

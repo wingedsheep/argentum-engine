@@ -1066,6 +1066,21 @@ class TriggerMatcher(
                 if (!matchesCardPredicate(predicate, targetCard, projected, event.targetEntityId)) return false
             }
 
+            // Check state predicates (e.g. "with a +1/+1 counter on it" — Elrond, Master of
+            // Healing). The targeted permanent is on the battlefield, so projected/base state
+            // applies. (A spell-on-stack target has no such state, so the filter simply won't match.)
+            if (trigger.targetFilter.statePredicates.isNotEmpty()) {
+                val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                    controllerId = controllerId, sourceId = sourceId
+                )
+                val statePredicateEvaluator = PredicateEvaluator()
+                for (predicate in trigger.targetFilter.statePredicates) {
+                    if (!statePredicateEvaluator.matchesStatePredicate(
+                            state, event.targetEntityId, predicate, predicateContext
+                        )) return false
+                }
+            }
+
             // Check controller predicate. Spells on the stack aren't in projected state
             // (only battlefield permanents are), so fall back to the spell's own controller
             // component for spell-target events (Surrak, Elusive Hunter).
