@@ -303,6 +303,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `ExchangeLifeAndPower(target)` — swap target's power with controller's life total.
 - `LoseHalfLife(roundUp, target, lifePlayer?)` — lose half of life total (round up/down).
 - `LoseGame(target, message?)` — target loses the game.
+- `RemoveMaximumHandSize(target?)` — "target has no maximum hand size for the rest of the game"
+  (default target: controller). One-shot resolution effect that confers a permanent, player-scoped
+  property via `PlayerNoMaximumHandSizeComponent` — unlike the battlefield-only `NoMaximumHandSize`
+  *static ability* (§9, Reliquary Tower / Thought Vessel), it survives the source leaving any zone
+  (e.g. Wisdom of Ages exiles itself on resolution). Idempotent. `CleanupPhaseManager` checks both
+  this component and the static ability when discarding to hand size.
 - `WinGame(target, message?)` — target wins the game.
 - `ForceExileMultiZone(count, target)` — exile from hand/battlefield/graveyard combined (Lich's Mastery shape).
 
@@ -2372,7 +2378,10 @@ staticAbility {
   permanents can't be activated; loyalty abilities and animation costs that haven't yet
   produced a creature are unaffected. (Cursed Totem → `GameObjectFilter.Creature`)
 - `PreventManaPoolEmptying` — mana pools don't empty between steps/phases. (Upwelling)
-- `NoMaximumHandSize` — controller has no hand-size limit. (Thought Vessel)
+- `NoMaximumHandSize` — controller has no hand-size limit *while this permanent is on the
+  battlefield*. (Thought Vessel, Reliquary Tower) For a one-shot resolution effect that confers a
+  *permanent, player-scoped* "no maximum hand size for the rest of the game" (survives the source
+  leaving play), use the effect `Effects.RemoveMaximumHandSize(target)` instead — see §4. (Wisdom of Ages)
 - `DampLandManaProduction` — a land tapped for 2+ mana produces `{C}` instead. (Damping Sphere)
 - `RestrictSpellsCastPerTurn(maxPerTurn, eachPlayer = false)` — a per-turn cap on spells cast.
   `eachPlayer = false` (default) limits only the source's controller (Yawgmoth's Agenda: "You can't

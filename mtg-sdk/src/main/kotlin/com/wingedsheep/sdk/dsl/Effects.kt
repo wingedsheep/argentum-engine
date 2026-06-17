@@ -638,6 +638,15 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.GainCitysBlessingEffect(target)
 
     /**
+     * "[target] has no maximum hand size for the rest of the game." A one-shot resolution effect
+     * that confers a permanent, player-scoped property (survives the source leaving play), as
+     * opposed to the battlefield-only [com.wingedsheep.sdk.scripting.NoMaximumHandSize] static
+     * ability used by Reliquary Tower / Thought Vessel. Used by Wisdom of Ages.
+     */
+    fun RemoveMaximumHandSize(target: EffectTarget = EffectTarget.Controller): Effect =
+        com.wingedsheep.sdk.scripting.effects.RemoveMaximumHandSizeEffect(target)
+
+    /**
      * "The Ring tempts you" (CR 701.54). The target player gets the Ring emblem (if they don't have
      * one), then chooses a creature they control to become their Ring-bearer. Defaults to the
      * controller. Tempting still happens even if the player controls no creatures.

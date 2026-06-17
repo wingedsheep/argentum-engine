@@ -531,6 +531,29 @@ data class GainCitysBlessingEffect(
 }
 
 /**
+ * Removes the target player's maximum hand size for the rest of the game
+ * ("you have no maximum hand size for the rest of the game").
+ *
+ * Unlike [com.wingedsheep.sdk.scripting.NoMaximumHandSize] — a permanent's *static* ability
+ * that only applies while that permanent is on the battlefield (Reliquary Tower, Thought Vessel)
+ * — this is a one-shot resolution effect that confers a player-scoped, permanent property. It
+ * survives the source leaving any zone (e.g. Wisdom of Ages exiles itself on resolution), so it
+ * must live on the player, not on a permanent. Applying it to a player who already has no maximum
+ * hand size is a no-op.
+ *
+ * @param target The player who loses their maximum hand size. Defaults to the ability's
+ *   controller, matching "you have no maximum hand size for the rest of the game".
+ */
+@SerialName("RemoveMaximumHandSize")
+@Serializable
+data class RemoveMaximumHandSizeEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String =
+        "${target.description.replaceFirstChar { it.uppercase() }} has no maximum hand size for the rest of the game"
+}
+
+/**
  * "The Ring tempts you" (CR 701.54). The target player gets an emblem named The Ring (if they
  * don't have one) and chooses a creature they control to become their Ring-bearer. The emblem's
  * four cumulative abilities are gated by how many times that player has been tempted.

@@ -1215,6 +1215,8 @@ internal fun EmitCtx.spellBlock(card: JsonObject): List<Stmt>? {
     // children are the individual modes. The generic envelope path below would grab only the FIRST mode
     // and silently drop the rest, so scaffold the whole card rather than emit one arm of a modal spell.
     if ("\"Modal_" in compact(card["Rules"])) { reasons.add("modal-spell"); return null }
+    // SOS whole-spell composite recognizers (exact-shape, render the full block or decline).
+    wisdomOfAgesSpell(card)?.let { return it }
     // One-line `effect =` shortcuts, then whole-block shortcuts, then the generic envelope path.
     eachplayerMaydraw(card)?.let { return spellOf(it) }
     fluxEffect(card)?.let { return spellOf(it) }

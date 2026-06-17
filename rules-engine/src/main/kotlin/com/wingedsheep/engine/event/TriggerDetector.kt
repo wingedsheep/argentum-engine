@@ -168,6 +168,39 @@ class TriggerDetector(
             }
         }
 
+        // Phase 3: Index graveyard/exile cards whose abilities function from that zone, but only
+        // for the batch / observer categories that are consumed exclusively by the dedicated
+        // detectors (see TriggerIndex.NON_BATTLEFIELD_BATCH_CATEGORIES). These shapes are skipped
+        // by the per-event graveyard/exile passes (TriggerMatcher returns false for them), so they
+        // would otherwise never fire from outside the battlefield. Enables graveyard-active
+        // recursion triggers like Killian's Confidence.
+        for (zone in listOf(Zone.GRAVEYARD, Zone.EXILE)) {
+            for (playerId in state.turnOrder) {
+                val zoneEntities = if (zone == Zone.GRAVEYARD) state.getGraveyard(playerId) else state.getExile(playerId)
+                for (entityId in zoneEntities) {
+                    val container = state.getEntity(entityId) ?: continue
+                    val cardComponent = container.get<CardComponent>() ?: continue
+                    val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+                    if (abilities.isEmpty()) continue
+                    // The controller of a card in the graveyard/exile is its owner.
+                    val ownerId = cardComponent.ownerId
+                        ?: container.get<OwnerComponent>()?.playerId
+                        ?: playerId
+                    val entry = TriggerIndex.IndexedEntity(entityId, cardComponent, ownerId, abilities)
+                    val entityCategories = mutableSetOf<TriggerCategory>()
+                    for (ability in abilities) {
+                        if (ability.activeZone != zone) continue
+                        for (cat in TriggerIndex.triggerToCategories(ability.trigger, ability.binding)) {
+                            if (cat in TriggerIndex.NON_BATTLEFIELD_BATCH_CATEGORIES) entityCategories.add(cat)
+                        }
+                    }
+                    for (cat in entityCategories) {
+                        categoryMap.getOrPut(cat) { mutableListOf() }.add(entry)
+                    }
+                }
+            }
+        }
+
         return TriggerIndex(
             byCategory = categoryMap,
             aurasByTarget = auraMap,

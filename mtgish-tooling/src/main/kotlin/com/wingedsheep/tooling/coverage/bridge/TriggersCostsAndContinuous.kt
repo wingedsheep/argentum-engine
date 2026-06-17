@@ -142,6 +142,12 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // `RestrictSpellsCastPerTurn(maxPerTurn = N, eachPlayer = <scope>)`.
     effect("CantCastMoreThanNumberSpellsEachTurn", "RestrictSpellsCastPerTurn")
 
+    // "You have no maximum hand size for the rest of the game" (Wisdom of Ages) — the nested
+    // _PlayerEffect of a CreatePlayerEffect(You) resolution action. Renders to the one-shot
+    // player-scoped `RemoveMaximumHandSize` effect (distinct from the battlefield-only
+    // NoMaximumHandSize static used by Reliquary Tower / Thought Vessel).
+    effect("HasNoMaximumHandSize", "RemoveMaximumHandSize")
+
     // "Spells your opponents cast from graveyards or from exile cost {2} more to cast" (Aven
     // Interrupter) — the nested _PlayerEffect of an EachPlayerEffect{Opponent} static. Renders to
     // `ModifySpellCost(target = SpellCostTarget.OpponentsCastFromZones(...), modification =

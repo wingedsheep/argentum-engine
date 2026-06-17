@@ -4758,6 +4758,90 @@
     ]
 }
 
+// Killian's Confidence
+{
+    "name": "Killian's Confidence",
+    "manaCost": "{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +1/+1 until end of turn. Draw a card.\nWhenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{W/B}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand"
+                    }
+                },
+                "activeZone": "Graveyard",
+                "descriptionOverride": "Whenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Jodie Muir",
+        "flavorText": "\"Don't hold back, because I certainly won't.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Landscape Painter
 {
     "name": "Landscape Painter",
@@ -10316,6 +10400,55 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Wisdom of Ages
+{
+    "name": "Wisdom of Ages",
+    "manaCost": "{4}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all instant and sorcery cards from your graveyard to your hand. You have no maximum hand size for the rest of the game.\nExile Wisdom of Ages.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "RemoveMaximumHandSize"
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Jabari Weathers",
+        "flavorText": "\"If you take the time to listen, the archaics will tell you that this world has been torn asunder and remade many times before.\"\n—Jadzi, Oracle of Arcavios",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b227ef04-33e4-44e8-a357-0ea3dfe5d49b.jpg?1775937405"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

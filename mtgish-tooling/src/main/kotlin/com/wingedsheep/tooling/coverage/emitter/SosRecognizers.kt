@@ -1,9 +1,14 @@
 package com.wingedsheep.tooling.coverage.emitter
 
+import com.wingedsheep.tooling.coverage.Assign
+import com.wingedsheep.tooling.coverage.Block
 import com.wingedsheep.tooling.coverage.Composite
 import com.wingedsheep.tooling.coverage.Dsl
 import com.wingedsheep.tooling.coverage.Lit
 import com.wingedsheep.tooling.coverage.Raw
+import com.wingedsheep.tooling.coverage.RawLine
+import com.wingedsheep.tooling.coverage.Stmt
+import com.wingedsheep.tooling.coverage.Sub
 import com.wingedsheep.tooling.coverage.arg
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.call
@@ -223,4 +228,80 @@ internal fun EmitCtx.manaSculptCounterWizardManaEffect(actions: List<JsonObject>
         arg("effect", delayedTrigger),
     )
     return Composite(listOf(gated, call("Effects.CounterSpell")))
+}
+
+/**
+ * Wisdom of Ages — a whole-spell recognizer (returns the full `spell { … }` statement list, since
+ * the trailing `ExileSpell(ThisSpell)` lowers to the envelope flag `selfExile()`, not an effect):
+ *
+ * `SpellActions { ActionList[
+ *     ReturnEachCardFromGraveyardToHand(Or(IsCardtype Instant, IsCardtype Sorcery), You),
+ *     CreatePlayerEffect(You, [HasNoMaximumHandSize]),
+ *     ExileSpell(ThisSpell) ] }`
+ * →
+ * ```
+ * spell {
+ *     selfExile()
+ *     effect = Effects.Composite(
+ *         Effects.Pipeline { val cards = gather(CardSource.FromZone(Zone.GRAVEYARD,
+ *             filter = GameObjectFilter.InstantOrSorcery)); toHand(cards) },
+ *         Effects.RemoveMaximumHandSize(),
+ *     )
+ * }
+ * ```
+ *
+ * The gather→toHand pipeline is emitted as the explicit `GatherCardsEffect(storeAs = "gathered0")`
+ * + `MoveCollectionEffect(from = "gathered0", → Hand)` pair wrapped in `Effects.Composite(...)`,
+ * which is exactly the nested tree the hand-authored card's inline `Effects.Pipeline { gather; toHand }`
+ * builder produces (deterministic `gathered0` slot key). Matches only this exact shape (instant-or-
+ * sorcery from YOUR graveyard, no-maximum-hand-size for the rest of the game, self-exile); any other
+ * filter / player-effect / exile target declines (→ SCAFFOLD).
+ */
+internal fun EmitCtx.wisdomOfAgesSpell(card: JsonObject): List<Stmt>? {
+    val (_, actions) = extractEnvelope(card["Rules"])
+    if (actions == null || actions.size != 3) return null
+    val (ret, playerEffect, exile) = actions
+
+    // 1. Return all instant AND sorcery cards from your graveyard to your hand. (The IR carries no
+    // explicit player scope on this action — graveyard return defaults to the controller's graveyard.)
+    if (ret.strField("_Action") != "ReturnEachCardFromGraveyardToHand") return null
+    val retBlob = compact(ret)
+    val isInstantOrSorcery = "\"Or\"" in retBlob &&
+        "IsCardtype" in retBlob && "\"Instant\"" in retBlob && "\"Sorcery\"" in retBlob
+    if (!isInstantOrSorcery) return null
+
+    // 2. "You have no maximum hand size for the rest of the game."
+    if (playerEffect.strField("_Action") != "CreatePlayerEffect") return null
+    if (!jsonContains(playerEffect, "_Player", "You")) return null
+    if (!jsonContains(playerEffect, "_PlayerEffect", "HasNoMaximumHandSize")) return null
+
+    // 3. Exile this spell (→ selfExile() on the spell envelope).
+    if (exile.strField("_Action") != "ExileSpell") return null
+    if (!jsonContains(exile, "_Spell", "ThisSpell")) return null
+
+    val returnPipeline = Composite(
+        listOf(
+            Lit(
+                "GatherCardsEffect(source = CardSource.FromZone(Zone.GRAVEYARD, " +
+                    "filter = GameObjectFilter.InstantOrSorcery), storeAs = \"gathered0\")",
+            ),
+            Lit("MoveCollectionEffect(from = \"gathered0\", destination = CardDestination.ToZone(Zone.HAND))"),
+        ),
+    )
+    val effect = call(
+        "Effects.Composite",
+        arg(returnPipeline),
+        arg(call("Effects.RemoveMaximumHandSize")),
+    )
+    return listOf(
+        Sub(
+            Block(
+                "spell",
+                listOf(
+                    RawLine("        selfExile()"),
+                    Assign("effect", effect),
+                ),
+            ),
+        ),
+    )
 }

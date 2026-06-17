@@ -429,6 +429,18 @@ data class PlayerHexproofComponent(
 data object PlayerCitysBlessingComponent : Component
 
 /**
+ * Marks a player as having no maximum hand size for the rest of the game.
+ *
+ * Conferred by resolution effects like Wisdom of Ages ("You have no maximum hand size for the
+ * rest of the game"). Distinct from the battlefield-only
+ * [com.wingedsheep.sdk.scripting.NoMaximumHandSize] static ability (Reliquary Tower, Thought
+ * Vessel), which only applies while its permanent is in play. Like the city's blessing, this is
+ * permanent for the rest of the game — cleanup never removes it, so it has no `removeOn` field.
+ */
+@Serializable
+data object PlayerNoMaximumHandSizeComponent : Component
+
+/**
  * Tracks a player's emblem named **The Ring** (CR 701.54c).
  *
  * Presence of this component means the player has the Ring emblem. [temptCount] is how many times

@@ -139,6 +139,27 @@ class TriggerIndex(
     )
 
     companion object {
+        /**
+         * Trigger categories that are consumed *only* by the dedicated batch / observer detectors
+         * via [getEntitiesForCategory], never by the main per-event [getEntitiesForEvent] loop or
+         * the graveyard/exile per-event passes (which route through [TriggerMatcher.matchesTrigger],
+         * and that returns `false` for these batch event shapes). It is therefore safe to index
+         * non-battlefield-zone entities (graveyard, exile) into these categories without risking a
+         * double-fire — enabling graveyard-active recursion triggers like Killian's Confidence
+         * ("Whenever one or more creatures you control deal combat damage to a player, … return this
+         * card from your graveyard to your hand").
+         */
+        val NON_BATTLEFIELD_BATCH_CATEGORIES: Set<TriggerCategory> = setOf(
+            TriggerCategory.COMBAT_DAMAGE_BATCH,
+            TriggerCategory.LIBRARY_TO_GRAVEYARD,
+            TriggerCategory.ANY_TO_GRAVEYARD,
+            TriggerCategory.CARDS_LEFT_GRAVEYARD,
+            TriggerCategory.SACRIFICE,
+            TriggerCategory.LEAVE_WITHOUT_DYING,
+            TriggerCategory.CREATURES_DIED_BATCH,
+            TriggerCategory.PERMANENTS_ENTERED_BATCH,
+        )
+
         val EMPTY = TriggerIndex(
             byCategory = emptyMap(),
             aurasByTarget = emptyMap(),

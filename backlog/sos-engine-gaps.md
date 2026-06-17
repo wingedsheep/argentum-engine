@@ -218,7 +218,11 @@ for consistency, but it composes existing primitives.
     ("Whenever you gain life, target opponent loses that much life" — `CreatePermanentEmblemEffect` + life-gain trigger
     + `DynamicAmount` for "that much"). No new framework; listed to confirm the second PW is not a gap.
 
-15. **Wisdom of Ages** ✅ "no maximum hand size" — confirm `NoMaximumHandSize` static exists (common; verify during build).
+15. **Wisdom of Ages** ✅ DONE. The existing `NoMaximumHandSize` *static ability* only applies while a
+    permanent is on the battlefield, so it can't model a self-exiling sorcery's "you have no maximum hand
+    size for the rest of the game". Added a one-shot player-scoped effect `Effects.RemoveMaximumHandSize`
+    (→ `PlayerNoMaximumHandSizeComponent`, consulted by `CleanupPhaseManager`), composed with a
+    return-all-instant/sorcery-from-graveyard pipeline + `selfExile()`. mtgish: AUTOGEN.
 
 16. **Quill-Blade Laureate // Twofold Intent**, **Expressive Firedancer**, **Growth Curve**, **Practiced Offense** —
     "double"-text cards (double counters / double damage / doubling). Existing one-shot counter-doubling and

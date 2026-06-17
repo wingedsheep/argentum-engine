@@ -249,6 +249,19 @@ data class CitysBlessingGainedEvent(
 ) : GameEvent
 
 /**
+ * A player lost their maximum hand size for the rest of the game (Wisdom of Ages,
+ * "You have no maximum hand size for the rest of the game"). Permanent — fires at most
+ * once per player per game.
+ */
+@Serializable
+@SerialName("MaximumHandSizeRemovedEvent")
+data class MaximumHandSizeRemovedEvent(
+    val playerId: EntityId,
+    val playerName: String,
+    val sourceName: String
+) : GameEvent
+
+/**
  * The Ring tempted a player (CR 701.54d). Emitted after the "the Ring tempts you" action
  * completes (even if some or all of it was impossible). Drives "Whenever the Ring tempts you"
  * triggers; see [com.wingedsheep.sdk.scripting.EventPattern.RingTemptedEvent].

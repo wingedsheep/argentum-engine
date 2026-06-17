@@ -23,6 +23,9 @@ internal fun BridgeBuilder.zoneMovement() {
     composed("PutGraveyardCardOnBottomOfLibrary", "MoveCollection -> library bottom (Tomb Trawler)", composes = listOf("MoveToZone"))
     composed("ReturnGraveyardCardToHand", UNIVERSAL, composes = listOf("MoveToZone"))
     composed("PutEachGraveyardCardIntoHand", UNIVERSAL, composes = listOf("MoveCollection"))
+    // "Return all <filter> cards from your graveyard to your hand" (Wisdom of Ages) — a mass
+    // Gather(graveyard, filter) -> MoveCollection(hand) with no selection.
+    composed("ReturnEachCardFromGraveyardToHand", "Gather(graveyard, filter) -> MoveCollection(hand)", composes = listOf("MoveCollection"))
     composed("ExileGraveyardCard", UNIVERSAL, composes = listOf("MoveToZone"))
 
     composed("ShuffleHandIntoLibrary", "MoveCollection hand->library + ShuffleLibrary", composes = listOf("MoveCollection", "ShuffleLibrary"))

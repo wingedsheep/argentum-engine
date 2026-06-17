@@ -48,6 +48,7 @@ class PlayerExecutors(
         CreatePermanentEmblemExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),
         GainCitysBlessingExecutor(),
+        RemoveMaximumHandSizeExecutor(),
         GiftGivenExecutor(),
         GrantCastCreaturesFromGraveyardWithForageExecutor(),
         GrantFlashToSpellsExecutor(),

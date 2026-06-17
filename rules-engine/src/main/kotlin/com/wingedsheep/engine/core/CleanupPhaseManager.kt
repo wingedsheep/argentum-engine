@@ -53,6 +53,7 @@ import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThi
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
+import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.player.SpellsCantBeCounteredComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
@@ -267,10 +268,14 @@ class CleanupPhaseManager(
     }
 
     /**
-     * Check if [playerId] controls any permanent with the [NoMaximumHandSize] static ability.
-     * Used for cards like Thought Vessel and Reliquary Tower.
+     * Check if [playerId] has no maximum hand size — either from a permanent they control with the
+     * [NoMaximumHandSize] static ability (Thought Vessel, Reliquary Tower) or from a player-scoped
+     * rest-of-game effect ([PlayerNoMaximumHandSizeComponent], conferred by Wisdom of Ages).
      */
     private fun hasNoMaximumHandSize(state: GameState, playerId: EntityId): Boolean {
+        if (state.getEntity(playerId)?.has<PlayerNoMaximumHandSizeComponent>() == true) {
+            return true
+        }
         val registry = cardRegistry
         val projected = state.projectedState
         for (permanentId in projected.getBattlefieldControlledBy(playerId)) {
