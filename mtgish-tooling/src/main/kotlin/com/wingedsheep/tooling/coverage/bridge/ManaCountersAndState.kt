@@ -32,6 +32,10 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // layer effect collapse to one BecomeCreatureTypeEffect (Mistform cycle, Imagecrafter).
     effect("AddCreatureTypeVariable", "BecomeCreatureType", UNIVERSAL)
     effects("PutACounterOfTypeOnPermanent", "PutNumberCountersOfTypeOnPermanent", tag = "AddCounters", note = UNIVERSAL)
+    // "put those counters on <permanent>" — the counters a just-died permanent had move to the target
+    // (Scolding Administrator's dies trigger). Maps to MoveAllLastKnownCounters, which moves every
+    // counter kind off the dying source (Essence Channeler shape), not just +1/+1.
+    effect("PutFormerCountersOnPermanent", "MoveAllLastKnownCounters", "move a dying permanent's counters to the target (Scolding Administrator)")
     // "Put a counter on each <filter>" — the mass form, rendered as ForEachInGroup(AddCounters) over the
     // recovered group filter (Bounding Felidar's "each other creature you control").
     composed("PutACounterOfTypeOnEachPermanent", "ForEachInGroup(AddCounters) over a group filter",

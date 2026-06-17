@@ -97,6 +97,15 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
         call("Effects.BecomePrepared", arg(tgt))
     }
 
+    on("PutFormerCountersOnPermanent") { _, args, tvar ->
+        // "put those counters on <permanent>" — the counters that were on a just-died permanent move
+        // to the target (Scolding Administrator's dies trigger). The arg is the destination permanent
+        // ref (a bound target). Renders Effects.MoveAllLastKnownCounters(target), which moves every
+        // counter kind off the dying source (not just +1/+1), matching the engine's behaviour.
+        val tgt = refTarget(args, tvar) ?: return@on null
+        call("Effects.MoveAllLastKnownCounters", arg(tgt))
+    }
+
     on("PutACounterOfTypeOnPermanent") { _, args, tvar ->
         // "Put a +1/+1 (or -1/-1) counter on <permanent>." or a named keyword counter ("a flying
         // counter"). Only the bare ±1/±1 PTCounter and the keyword counters we name render; any other
@@ -415,7 +424,20 @@ private fun grantCounterPlacementModifierAmount(node: JsonObject): Int? {
  *  other expiration scaffolds rather than emit a wrong duration. */
 internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: String?): Dsl? {
     val mass = action == "CreateEachPermanentLayerEffectUntil"
-    val target = if (mass) "EffectTarget.Self" else refTarget(node["args"], tvar)
+    // "<bound targets> each get …" — the mass form whose subject is the spell's CHOSEN TARGETS
+    // (Ref_TargetPermanents), e.g. "one or two target creatures each get +2/+2" (Scrollboost). The
+    // engine models this as a ForEachTargetEffect over the bound targets, with each iteration's effect
+    // bound to ContextTarget(0) — NOT a battlefield-filter ForEachInGroup (which would widen to every
+    // permanent). Distinct from the filter form ("each creature you control gets …"), which keeps the
+    // ForEachInGroup-over-Self path below.
+    val subjectArg = (node["args"].asArr)?.getOrNull(0)
+    val overBoundTargets = mass && subjectArg != null &&
+        jsonContains(subjectArg, "_Permanents", "Ref_TargetPermanents")
+    val target = when {
+        overBoundTargets -> "EffectTarget.ContextTarget(0)"
+        mass -> "EffectTarget.Self"
+        else -> refTarget(node["args"], tvar)
+    }
     if (target == null) return null
     val duration = expirationDsl(node) ?: return null  // unknown expiration -> SCAFFOLD
 
@@ -502,13 +524,15 @@ internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: S
     }
     if (inner.isEmpty()) return null
     val effect = if (inner.size == 1) inner[0] else Composite(inner)
+    if (overBoundTargets) {
+        // "one or two target creatures each get +X/+X" — fan the per-target effect (bound to
+        // ContextTarget(0)) over the spell's chosen targets via ForEachTargetEffect (Scrollboost). The
+        // multi-target slot is declared by the surrounding Targeted envelope (TargetCreature(count =
+        // 2, minCount = 1)); this just applies the body once per chosen target.
+        return call("ForEachTargetEffect", arg(call("listOf", arg(effect))))
+    }
     if (mass) {
         val gfArg = (node["args"].asArr)?.getOrNull(0) ?: JsonObject(emptyMap())
-        // "they each get +X/+X" — the group is the spell's CHOSEN TARGETS (Ref_TargetPermanents), not a
-        // battlefield filter. A static GroupFilter can't express "the creatures this spell targeted"; the
-        // generic recovery would widen it to GameObjectFilter.Permanent (every permanent on the
-        // battlefield). Decline so it scaffolds rather than buff the whole board (Fancy Footwork).
-        if (jsonContains(gfArg, "_Permanents", "Ref_TargetPermanents")) return null
         val filter = groupFilterExpr(gfArg) ?: return null
         return call("Effects.ForEachInGroup", arg(filter), arg(effect))
     }

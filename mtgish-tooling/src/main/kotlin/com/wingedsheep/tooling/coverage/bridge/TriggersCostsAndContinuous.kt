@@ -11,6 +11,11 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // payoff via the trigger.captured pipeline collection — Kambal, Profiteering Mayor).
     supported("WhenAnyNumberOfPermanentsEnterTheBattlefield", "trigger: one or more permanents enter, batched (Triggers.OneOrMorePermanentsEnter / OneOrMoreOpponentPermanentsEnter)")
     supported("WhenACreatureOrPlaneswalkerDies", "trigger: dies")
+    // "Whenever one or more <counter> counters are put on this creature, …" — the counters-placed
+    // trigger (CountersPlacedEvent bound to SELF; Exemplar of Light, Pensive Professor). The emitter
+    // renders only the SELF subject + a nameable counter type; a non-self subject or unnameable counter
+    // declines -> SCAFFOLD.
+    supported("WhenAnyNumberOfCountersOfTypeArePutOnAPermanent", "trigger: one or more counters of a type put on this permanent (CountersPlacedEvent, SELF)")
     supported("WhenACreatureAttacks", "trigger: attacks")
     // "Whenever you attack with one or more creatures [matching a filter]" — the batched declare-attackers
     // trigger that fires once per combat when at least one attacker matches (Triggers.YouAttackWithFilter,

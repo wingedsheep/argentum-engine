@@ -1681,6 +1681,16 @@ internal fun EmitCtx.interveningIfDsl(cond: JsonObject?): String? {
 
 /** One non-And intervening-if condition node -> its `Conditions.*` DSL, or null (-> SCAFFOLD). */
 private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
+    // "if it had counters on it" — DeadPermanentPassesFilter(HasACounter): the just-died permanent
+    // (the triggering entity of a dies trigger) had at least one counter of any kind on it (Scolding
+    // Administrator's "When this creature dies, if it had counters on it, …"). Maps to
+    // Conditions.TriggeringEntityHadCounters. Only the bare HasACounter (any counter kind) renders;
+    // a counter-type-specific filter declines -> SCAFFOLD rather than widening.
+    if (cond.strField("_Condition") == "DeadPermanentPassesFilter" &&
+        jsonContains(cond, "_Permanents", "HasACounter")
+    ) {
+        return "Conditions.TriggeringEntityHadCounters"
+    }
     // "during your turn" — IsPlayersTurn(You) -> Conditions.IsYourTurn (Overzealous Muscle's
     // "Whenever you commit a crime during your turn, …"). Only the You scope renders; any other
     // player scope (an opponent's turn) has no calibrated DSL constant yet, so it declines -> SCAFFOLD.
@@ -2160,6 +2170,58 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
             "_Color" !in blob && "IsCardname" !in blob
         if (unfiltered) return "Triggers.CardsLeaveYourGraveyard()"
         return null
+    }
+
+    // "Whenever one or more +1/+1 counters are put on this creature, …" —
+    // WhenAnyNumberOfCountersOfTypeArePutOnAPermanent. The args are [counter type, subject]; the
+    // subject is the second arg (a SinglePermanent(ThisPermanent)), so isSelf — which inspects args[0]
+    // — does not apply here. Render only the exact SELF + nameable counter-type shape as a
+    // CountersPlacedEvent bound to SELF over an unfiltered permanent (the binding fixes it to this
+    // permanent), matching Exemplar of Light / Pensive Professor. A non-self subject or an unnameable
+    // counter declines -> SCAFFOLD. firstTimeEachTurn is NOT baked into this IR tag, so the once-each-
+    // turn rider (Exemplar of Light) is carried separately by the TriggerOnceEachTurn envelope, not here.
+    if (jsonContains(trig, "_Trigger", "WhenAnyNumberOfCountersOfTypeArePutOnAPermanent")) {
+        val targs = trig["args"].asArr ?: return null
+        val counter = counterTypeDsl(targs.getOrNull(0)) ?: return null
+        val subject = targs.getOrNull(1) as? JsonObject
+        val selfSubject = subject?.strField("_Permanents") == "SinglePermanent" &&
+            subject.field("args").strField("_Permanent") == "ThisPermanent"
+        if (!selfSubject) return null
+        return "TriggerSpec(EventPattern.CountersPlacedEvent(counterType = $counter, " +
+            "filter = GameObjectFilter.Any), TriggerBinding.SELF)"
+    }
+
+    // "Whenever one or more tokens you control enter, …" — the batched
+    // WhenAnyNumberOfPermanentsEnterTheBattlefield (distinct from the singular
+    // WhenAPermanentEntersTheBattlefield above). Fires once per enter batch. The controller scope is
+    // carried by the trigger VARIANT (OneOrMorePermanentsEnter defaults to "you control";
+    // OneOrMoreOpponentPermanentsEnter for opponents), so the rendered filter must NOT re-encode the
+    // controller clause. Only the exact "token" subject renders today — the bare GameObjectFilter.Token
+    // (Spiritcall Enthusiast's "tokens you control", Kambal's "tokens your opponents control"). Any other
+    // subject filter declines -> SCAFFOLD rather than widening (gameObjectFilterDsl has no positive
+    // IsToken rendering, so it would silently drop the token restriction).
+    if (jsonContains(trig, "_Trigger", "WhenAnyNumberOfPermanentsEnterTheBattlefield")) {
+        val subject = (trig["args"] as? JsonArray)?.firstOrNull() ?: trig["args"]
+        val opponentControlled = jsonContains(subject, "_Players", "Opponent")
+        // Strip the controller clause (it's conveyed by the variant) and require the remainder to be
+        // exactly IsToken. The subject is either a bare IsToken or an And(IsToken, ControlledByAPlayer).
+        val isTokenSubject = when {
+            subject.strField("_Permanents") == "IsToken" -> true
+            subject.strField("_Permanents") == "And" -> {
+                val arms = subject.field("args").asArr?.filterIsInstance<JsonObject>() ?: return null
+                // every arm must be either IsToken or a controller clause we recognise — nothing else.
+                arms.all {
+                    it.strField("_Permanents") == "IsToken" ||
+                        it.strField("_Permanents") == "ControlledByAPlayer"
+                } && arms.any { it.strField("_Permanents") == "IsToken" }
+            }
+            else -> false
+        }
+        if (!isTokenSubject) return null
+        return if (opponentControlled)
+            "Triggers.OneOrMoreOpponentPermanentsEnter(GameObjectFilter.Token)"
+        else
+            "Triggers.OneOrMorePermanentsEnter(GameObjectFilter.Token)"
     }
 
     return null
