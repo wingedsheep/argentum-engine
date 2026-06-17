@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
+import com.wingedsheep.sdk.scripting.effects.MakePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeSaddledEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
@@ -1642,6 +1643,20 @@ object Effects {
      */
     fun Explore(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         ExploreEffect(target)
+
+    /**
+     * The target permanent becomes prepared (Prepare — Secrets of Strixhaven).
+     *
+     * Gives the permanent the "prepared" status and creates a castable copy of its card's prepare
+     * spell in its controller's exile; casting that copy unprepares it. Already-prepared permanents
+     * are unaffected. Use for cards that *become* prepared mid-game (e.g. Joined Researchers'
+     * end-step trigger); cards that "enter prepared" rely on [com.wingedsheep.sdk.model.CardLayout.PREPARE]
+     * instead.
+     *
+     * @param target The permanent that becomes prepared (default: the effect's source).
+     */
+    fun MakePrepared(target: EffectTarget = EffectTarget.Self): Effect =
+        MakePreparedEffect(target)
 
     /**
      * Create a Map artifact token.

@@ -90,4 +90,15 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // "enters with N +1/+1 counters" — a fixed count renders EntersWithCounters(count = N), a dynamic
     // count (Stag Beetle) renders EntersWithDynamicCounters.
     composed("EntersWithNumberCounters", "enters with N +1/+1 counters (EntersWithCounters / EntersWithDynamicCounters)")
+
+    // Prepare (Secrets of Strixhaven, CR 702.x). "This creature enters prepared." — the nested
+    // `EntersPrepared` of the AsPermanentEnters envelope. The engine encodes "enters prepared" as the
+    // PREPARED keyword on a CardLayout.PREPARE card (the stack resolver creates the exiled prepare-spell
+    // copy on entry), so the emitter renders `keywords(Keyword.PREPARED)` + a `prepare("…") { spell { … } }`
+    // block and skips this rule. Map the capability to the PREPARED keyword the golden carries.
+    keyword("EntersPrepared", "PREPARED", "enters prepared (keywords(Keyword.PREPARED) on a PREPARE-layout card)")
+    // "… becomes prepared." — a permanent that *becomes* prepared from a resolution/triggered effect
+    // (Joined Researchers' end-step trigger), not on entry. Renders to Effects.MakePrepared. The card
+    // carries no PREPARED keyword in this case (it doesn't enter prepared), so this is the effect mapping.
+    effect("PreparePermanent", "MakePrepared", "becomes prepared mid-game (Effects.MakePrepared)")
 }

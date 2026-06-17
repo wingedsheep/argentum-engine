@@ -1,17 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.conditions.Compare
-import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Beza, the Bounding Spring
@@ -51,11 +46,7 @@ val BezaTheBoundingSpring = card("Beza, the Bounding Spring") {
                 imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
             )
         ) then ConditionalEffect(
-            condition = Compare(
-                DynamicAmount.Count(Player.EachOpponent, Zone.HAND),
-                ComparisonOperator.GT,
-                DynamicAmount.Count(Player.You, Zone.HAND)
-            ),
+            condition = Conditions.OpponentHasMoreCardsInHand,
             effect = Effects.DrawCards(1)
         )
     }

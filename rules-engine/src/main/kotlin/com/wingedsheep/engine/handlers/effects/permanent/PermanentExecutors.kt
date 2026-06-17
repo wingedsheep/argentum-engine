@@ -166,6 +166,7 @@ class PermanentExecutors(
         LevelUpClassExecutor(staticAbilityHandler),
         IncrementAbilityResolutionCountExecutor(),
         ExploreEffectExecutor(),
+        MakePreparedEffectExecutor(cardRegistry),
         // tapping
         TapUntapExecutor(),
         TapUntapCollectionExecutor(),

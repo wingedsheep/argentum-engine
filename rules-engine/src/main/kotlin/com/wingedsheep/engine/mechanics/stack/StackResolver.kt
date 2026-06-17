@@ -1377,10 +1377,14 @@ class StackResolver(
             newState = newState.addDelayedTrigger(delayedTrigger)
         }
 
-        // Prepared (Secrets of Strixhaven): a preparation creature enters prepared. Becoming
-        // prepared creates a copy of the card's prepare spell in exile that its controller may
-        // cast (paying that spell's cost); casting it unprepares the creature.
+        // Prepared (Secrets of Strixhaven): a preparation creature with the PREPARED keyword
+        // ("This creature enters prepared") enters prepared. Becoming prepared creates a copy of
+        // the card's prepare spell in exile that its controller may cast (paying that spell's
+        // cost); casting it unprepares the creature. PREPARE-layout cards that *become* prepared
+        // some other way (e.g. Joined Researchers' end-step trigger) omit the keyword and don't
+        // enter prepared.
         if (cardDef != null && cardDef.layout == com.wingedsheep.sdk.model.CardLayout.PREPARE &&
+            cardDef.hasKeyword(com.wingedsheep.sdk.core.Keyword.PREPARED) &&
             !spellComponent.castFaceDown
         ) {
             newState = makePrepared(newState, spellId, cardDef, controllerId)
@@ -1402,54 +1406,9 @@ class StackResolver(
         permanentId: EntityId,
         cardDef: com.wingedsheep.sdk.model.CardDefinition,
         controllerId: EntityId,
-    ): GameState {
-        val sourceCard = state.getEntity(permanentId)?.get<CardComponent>() ?: return state
-        val prepareFace = cardDef.cardFaces.firstOrNull() ?: return state
-
-        var newState = state
-        val (copyId, stateWithCopy) = newState.newEntity()
-        newState = stateWithCopy
-        newState = newState.updateEntity(copyId) { c ->
-            c.with(
-                CardComponent(
-                    cardDefinitionId = sourceCard.cardDefinitionId,
-                    name = sourceCard.name,
-                    manaCost = prepareFace.manaCost,
-                    typeLine = prepareFace.typeLine,
-                    oracleText = prepareFace.oracleText,
-                    colors = prepareFace.manaCost.colors,
-                    ownerId = controllerId,
-                    spellEffect = prepareFace.script.spellEffect,
-                    imageUri = sourceCard.imageUri,
-                )
-            ).with(
-                com.wingedsheep.engine.state.components.identity.CopyOfComponent(
-                    originalCardDefinitionId = sourceCard.cardDefinitionId,
-                    copiedCardDefinitionId = sourceCard.cardDefinitionId,
-                )
-            ).with(
-                com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent(sourceId = permanentId)
-            )
-        }
-        newState = newState.addToZone(ZoneKey(controllerId, Zone.EXILE), copyId)
-
-        val (permId, stateWithPerm) = newState.newEntity()
-        newState = stateWithPerm.addMayPlayPermission(
-            com.wingedsheep.engine.state.permissions.MayPlayPermission(
-                id = permId,
-                cardIds = setOf(copyId),
-                controllerId = controllerId,
-                sourceId = permanentId,
-                permanent = true,
-                timestamp = newState.timestamp,
-            )
-        )
-
-        newState = newState.updateEntity(permanentId) { c ->
-            c.with(com.wingedsheep.engine.state.components.battlefield.PreparedComponent(exileCopyId = copyId))
-        }
-        return newState
-    }
+    ): GameState = com.wingedsheep.engine.handlers.effects.permanent.PreparedService.makePrepared(
+        state, permanentId, cardDef, controllerId
+    )
 
     /**
      * Resolve a non-permanent spell - execute effects, put in graveyard.

@@ -85,7 +85,15 @@ object Emitter {
         // FRONT face, so a generic render would silently emit a single-faced card and drop the entire back
         // face — exactly the lossy approximation the hard rules forbid. Decline unconditionally (even in
         // partial mode) so these classify as SCAFFOLD/BLOCKED and get hand-authored instead.
-        if (ctx.oracleText?.contains("\n//\n") == true) {
+        //
+        // EXCEPTION — preparation cards (Secrets of Strixhaven). A `prepare` layout's two "faces" are the
+        // creature (front) and its prepare *spell*, and the mtgish IR DOES carry the prepare spell as a
+        // nested `Prepared` object on the front card (`_OracleCard == "Preparer"`). The preparer branch
+        // below renders BOTH the creature characteristics and the `prepare("…") { spell { … } }` block
+        // from that nested IR — nothing is dropped — and scaffolds (via `prepareBlock` returning null) if
+        // the prepare spell can't be rendered exactly. So preparers are exempt from the blanket decline.
+        val isPreparer = card.strField("_OracleCard") == "Preparer" && card["Prepared"] != null
+        if (ctx.oracleText?.contains("\n//\n") == true && !isPreparer) {
             ctx.reasons.add("multi-faced")
             return incomplete(ctx, pre, header, body, scryfall, pkg)
         }
@@ -112,7 +120,6 @@ object Emitter {
         // PREPARED keyword + a prepare("…") { spell { … } } block from the nested prepare card, and
         // skip the AsPermanentEnters rule (the PREPARE layout already encodes "enters prepared").
         // The whole card scaffolds if the prepare spell can't be rendered exactly.
-        val isPreparer = card.strField("_OracleCard") == "Preparer" && card["Prepared"] != null
         if (isPreparer) {
             body.add(RawLine("    keywords(Keyword.PREPARED)"))
             val prepStmts = ctx.prepareBlock(card)

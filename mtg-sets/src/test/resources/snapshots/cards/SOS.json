@@ -4147,6 +4147,96 @@
     ]
 }
 
+// Joined Researchers
+{
+    "name": "Joined Researchers",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric Wizard",
+    "oracleText": "First strike\nAt the beginning of each end step, if an opponent has more cards in hand than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "MakePrepared",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "EachOpponent",
+                        "zone": "Hand"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if an opponent has more cards in hand than you, this creature becomes prepared."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1778165075"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Secret Rendezvous",
+            "manaCost": "{1}{W}{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "You and target opponent each draw three cards.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    "TargetOpponent"
+                ]
+            }
+        }
+    ]
+}
+
 // Landscape Painter
 {
     "name": "Landscape Painter",
@@ -5504,6 +5594,43 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Pigment Wrangler
+{
+    "name": "Pigment Wrangler",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Orc Sorcerer",
+    "oracleText": "Flying\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "PREPARED"
+    ],
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Gonzalo Kenny",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Striking Palette",
+            "manaCost": "{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.",
+            "script": {
+                "spellEffect": "CopyNextSpellCast"
+            }
+        }
     ]
 }
 
@@ -7069,6 +7196,88 @@
     ]
 }
 
+// Spellbook Seeker
+{
+    "name": "Spellbook Seeker",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "PREPARED"
+    ],
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc44eaa4-59a4-419e-b1d1-d92f354ff588.jpg?1775937383"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Careful Study",
+            "manaCost": "{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Draw two cards, then discard two cards.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
+
 // Spirit Mascot
 {
     "name": "Spirit Mascot",
@@ -7452,6 +7661,76 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/7/87741fbb-b426-4f83-a358-587b0907f081.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Studious First-Year
+{
+    "name": "Studious First-Year",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Bear Wizard",
+    "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "PREPARED"
+    ],
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Mariah Tekulve",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1778165149"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Rampant Growth",
+            "manaCost": "{1}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Search your library for a basic land card, put that card onto the battlefield tapped, then shuffle.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                }
+            }
+        }
+    ]
 }
 
 // Summoned Dromedary

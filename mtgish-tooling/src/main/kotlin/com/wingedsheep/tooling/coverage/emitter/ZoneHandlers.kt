@@ -150,11 +150,31 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
     on("CreateFutureTrigger") { _, args, tvar ->
         val a = args.asArr ?: return@on null
         val timing = a.getOrNull(0) as? JsonObject ?: return@on null
-        if (timing.strField("_FutureTrigger") != "AtTheBeginningOfTheNextEndStep") return@on null
         val actionsNode = a.getOrNull(1) as? JsonObject ?: return@on null
-        val inner = actionsNode["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
-        val body = renderEffectList(inner, tvar) ?: return@on null
-        call("CreateDelayedTriggerEffect", arg("step", "Step.END"), arg("effect", body))
+        when (timing.strField("_FutureTrigger")) {
+            "AtTheBeginningOfTheNextEndStep" -> {
+                val inner = actionsNode["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
+                val body = renderEffectList(inner, tvar) ?: return@on null
+                call("CreateDelayedTriggerEffect", arg("step", "Step.END"), arg("effect", body))
+            }
+            // "When you next cast an instant or sorcery spell this turn, copy that spell. You may
+            // choose new targets for the copy." (Howl of the Horde, Striking Palette). The future
+            // trigger is `WhenPlayerCastsTheirNextSpellThisTurn(You, Instant|Sorcery)` and its body
+            // is a single `CopySpellAndMayChooseNewTargets(Trigger_ThatSpell)` — exactly the
+            // `CopyNextSpellCastEffect` pending-rider (default filter = instant-or-sorcery, 1 copy,
+            // may choose new targets). Decline any other player/filter/body so we never widen.
+            "WhenPlayerCastsTheirNextSpellThisTurn" -> {
+                val timingArgs = timing["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
+                if (timingArgs.getOrNull(0)?.strField("_Player") != "You") return@on null
+                if (!isInstantOrSorcerySpellFilter(timingArgs.getOrNull(1))) return@on null
+                val inner = actionsNode["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
+                val onlyAction = inner.singleOrNull() ?: return@on null
+                if (onlyAction.strField("_Action") != "CopySpellAndMayChooseNewTargets") return@on null
+                if (onlyAction["args"].strField("_Spell") != "Trigger_ThatSpell") return@on null
+                call("Effects.CopyNextSpellCast", arg(Lit("1")))
+            }
+            else -> null
+        }
     }
 
     on("PutPermanentIntoItsOwnersHand") { _, args, tvar ->  // bounce
@@ -573,6 +593,22 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     if ("EntersTapped" in blob) parts.add(arg("entersTapped", "true"))  // "...onto the battlefield tapped"
     if ("RevealFoundCards" in blob) parts.add(arg("reveal", "true"))
     return Call("Patterns.Library.searchLibrary", parts)
+}
+
+/**
+ * True iff a mtgish *spell* filter node is exactly "an instant or sorcery spell" —
+ * `_Spells: "Or"` over `IsCardtype Instant` + `IsCardtype Sorcery`. Used to confirm a
+ * copy-next-spell future trigger matches the SDK default (`GameObjectFilter.InstantOrSorcery`)
+ * before rendering `Effects.CopyNextSpellCast`; any other spell filter declines -> SCAFFOLD.
+ */
+internal fun isInstantOrSorcerySpellFilter(node: JsonObject?): Boolean {
+    if (node?.strField("_Spells") != "Or") return false
+    val types = (node["args"].asArr ?: return false)
+        .filterIsInstance<JsonObject>()
+        .filter { it.strField("_Spells") == "IsCardtype" }
+        .mapNotNull { it["args"].asStr()?.lowercase() }
+        .toSortedSet()
+    return types == sortedSetOf("instant", "sorcery")
 }
 
 /**

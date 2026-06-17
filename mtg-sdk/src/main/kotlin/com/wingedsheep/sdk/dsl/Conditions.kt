@@ -125,6 +125,19 @@ object Conditions {
         )
 
     /**
+     * If an opponent has more cards in hand than you.
+     *
+     * Compares opponents' hand size to yours (CR — "an opponent has more cards in hand than you").
+     * Used by Beza, the Bounding Spring and Joined Researchers (Secrets of Strixhaven).
+     */
+    val OpponentHasMoreCardsInHand: ConditionInterface =
+        Compare(
+            DynamicAmount.Count(Player.EachOpponent, Zone.HAND),
+            ComparisonOperator.GT,
+            DynamicAmount.Count(Player.You, Zone.HAND)
+        )
+
+    /**
      * If you control more creatures than opponent.
      * Used for CantAttackUnless / CantBlockUnless (e.g. Goblin Goon).
      */
