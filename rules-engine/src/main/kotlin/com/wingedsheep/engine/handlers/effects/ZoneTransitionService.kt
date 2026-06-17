@@ -234,12 +234,12 @@ object ZoneTransitionService {
         // 4. EXIT CLEANUP if leaving battlefield
         if (leavingBattlefield) {
             newState = cleanupReverseAttachmentLink(newState, entityId)
-            // Detach any Equipment/Aura attached *to* this permanent — it falls off when its
-            // host leaves the battlefield (CR 704.5q), e.g. Bilbo's Ring when Meneldor blinks
-            // the equipped creature.
-            newState = ZoneMovementUtils.detachPermanentsAttachedTo(newState, entityId)
             newState = cleanupCombatReferences(newState, entityId)
         }
+        // Equipment/Auras attached *to* this permanent become unattached when their host leaves
+        // the battlefield (CR 704.5q) — handled by the UnattachedAurasCheck state-based action,
+        // which runs after any "when equipped creature dies/leaves" triggers (Forebears Blade) have
+        // been detected, so the attachment must NOT be cleared eagerly here.
 
         // 5. Strip face-down if leaving exile
         if (fromZone == Zone.EXILE) {

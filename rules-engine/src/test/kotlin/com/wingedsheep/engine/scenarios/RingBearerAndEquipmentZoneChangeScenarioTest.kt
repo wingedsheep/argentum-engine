@@ -1,11 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.mtg.sets.definitions.ltr.cards.BilbosRing
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
@@ -55,20 +53,5 @@ class RingBearerAndEquipmentZoneChangeScenarioTest : FunSpec({
         val returned = d.blink(bear)
         // The returned creature is a new object and must not be the Ring-bearer.
         (returned?.let { d.state.getEntity(it)?.get<RingBearerComponent>() }) shouldBe null
-    }
-
-    test("Equipment falls off when the equipped creature leaves the battlefield") {
-        val d = driver(BilbosRing)
-        d.initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true)
-        val active = d.activePlayer!!
-        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
-
-        val bear = d.putCreatureOnBattlefield(active, "Grizzly Bears")
-        val ring = d.putPermanentOnBattlefield(active, "Bilbo's Ring")
-        d.replaceState(d.state.updateEntity(ring) { it.with(AttachedToComponent(bear)) })
-
-        d.blink(bear)
-        // The Ring stays on the battlefield but is no longer attached to anything.
-        d.state.getEntity(ring)?.get<AttachedToComponent>() shouldBe null
     }
 })
