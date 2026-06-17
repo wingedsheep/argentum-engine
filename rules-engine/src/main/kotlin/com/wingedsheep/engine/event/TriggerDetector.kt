@@ -1846,6 +1846,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.CREATURES_DIED_BATCH)) {
             for (ability in entry.abilities) {
                 fireCreaturesDiedBatchTrigger(
+                    state = state,
                     ability = ability,
                     sourceId = entry.entityId,
                     sourceName = entry.cardComponent.name,
@@ -1878,6 +1879,7 @@ class TriggerDetector(
             for (ability in abilityResolver.getTriggeredAbilities(event.entityId, cardDefId, state)) {
                 if (ability.trigger !is EventPattern.CreaturesYouControlDiedEvent) continue
                 fireCreaturesDiedBatchTrigger(
+                    state = state,
                     ability = ability,
                     sourceId = event.entityId,
                     sourceName = sourceName,
@@ -1890,11 +1892,16 @@ class TriggerDetector(
     }
 
     /**
-     * Evaluate a single "whenever one or more [filtered] creatures you control die" ability
-     * against the batch of deaths grouped by controller, firing it at most once. Shared by the
+     * Evaluate a single batched "whenever one or more [filtered] creatures die" ability against
+     * the batch of deaths grouped by controller, firing it at most once. Shared by the
      * surviving-source (battlefield index) and dead-source (Rule 603.10 look-back) paths.
+     *
+     * The filter's controller predicate scopes which players' creature deaths count, mirroring the
+     * enter-batch trigger: no predicate (or `ControlledByYou`) means "creatures you control",
+     * `ControlledByOpponent` scopes to the observer's opponents (Spiteful Banditry).
      */
     private fun fireCreaturesDiedBatchTrigger(
+        state: GameState,
         ability: TriggeredAbility,
         sourceId: EntityId,
         sourceName: String,
@@ -1905,13 +1912,34 @@ class TriggerDetector(
         val trigger = ability.trigger
         if (trigger !is EventPattern.CreaturesYouControlDiedEvent) return
 
-        val controllerDeaths = deathsByController[controllerId] ?: return
+        // The filter's controller predicate scopes which players' deaths count, relative to the
+        // observer (the trigger's controller). Defaults to "you control".
+        val controllerPredicate = trigger.filter.controllerPredicate
+        fun controllerMatches(deathControllerId: EntityId): Boolean = when (controllerPredicate) {
+            null, com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou ->
+                deathControllerId == controllerId
+            com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
+                deathControllerId in state.getOpponents(controllerId)
+            else -> controllerPredicate.evaluateWith { leaf ->
+                when (leaf) {
+                    com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou ->
+                        deathControllerId == controllerId
+                    com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
+                        deathControllerId in state.getOpponents(controllerId)
+                    else -> null
+                }
+            }
+        }
+
+        val scopedDeaths = deathsByController.entries
+            .filter { controllerMatches(it.key) }
+            .flatMap { it.value }
 
         // "one or more *other* creatures you control die" excludes the source's own death.
         val relevantDeaths = if (trigger.excludeSelf) {
-            controllerDeaths.filter { it.entityId != sourceId }
+            scopedDeaths.filter { it.entityId != sourceId }
         } else {
-            controllerDeaths
+            scopedDeaths
         }
         if (relevantDeaths.isEmpty()) return
 

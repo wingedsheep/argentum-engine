@@ -1738,7 +1738,15 @@ for any other (filter, binding, to/excludeTo) combination.
   definition, since it has already left the battlefield). For `excludeSelf = true` payoffs that
   target the source (Vengeful Townsfolk's own +1/+1) this is a harmless no-op, but a *non-self*
   payoff — draw a card, make a token, gain life — correctly still resolves on a board wipe that
-  also kills the source.
+  also kills the source. The `filter`'s controller predicate scopes which players' deaths count
+  (mirrors the enter-batch trigger): no predicate means "you control"; `.opponentControls()` scopes
+  to your opponents.
+- `OneOrMoreCreaturesAnOpponentControlsDie(filter = Creature)` — the opponent-scoped variant of the
+  above (sugar for `OneOrMoreCreaturesYouControlDie(filter.opponentControls())`): batched, fires at
+  most once per death batch, so it pairs with `oncePerTurn` without over-firing on mass removal —
+  "Whenever one or more creatures your opponents control die, …" (Spiteful Banditry). A per-creature
+  `leavesBattlefield(binding = ANY)` would create a separate trigger per death, and simultaneous
+  deaths each fire before the once-per-turn marker is set, so the batched form is required here.
 - `PutIntoGraveyardFromBattlefield` — SELF, same event shape as `Dies`; rename
   clarifies non-creature intent (artifact / enchantment going to yard).
 - `leavesBattlefield(filter, to?, excludeTo?, binding)` — factory. `to = GRAVEYARD`

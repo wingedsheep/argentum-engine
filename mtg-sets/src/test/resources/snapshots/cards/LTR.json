@@ -17662,10 +17662,8 @@
             {
                 "id": "ability_2",
                 "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "filter": "creature ctrl:opponent",
-                    "from": "Battlefield",
-                    "to": "Graveyard"
+                    "type": "CreaturesYouControlDiedEvent",
+                    "filter": "creature ctrl:opponent"
                 },
                 "binding": "ANY",
                 "effect": {

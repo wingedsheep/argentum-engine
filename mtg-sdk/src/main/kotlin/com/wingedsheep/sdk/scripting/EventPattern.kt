@@ -1643,7 +1643,15 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             append("one or more ")
             if (excludeSelf) append("other ")
             append(describeObjectForEvent(filter))
-            append(" you control die")
+            // The filter's controller predicate scopes the trigger (you control / an opponent
+            // controls); a null predicate keeps the historical "you control" wording.
+            append(
+                when (filter.controllerPredicate) {
+                    com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
+                        " an opponent controls die"
+                    else -> " you control die"
+                }
+            )
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

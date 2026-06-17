@@ -1512,6 +1512,20 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever one or more creatures an opponent controls die. Same batched death trigger as
+     * [OneOrMoreCreaturesYouControlDie] with the controller scope fixed to your opponents —
+     * fires at most once per death batch regardless of how many opponents' creatures died
+     * (CR 603.3b), so it pairs with `oncePerTurn` cleanly where a per-creature trigger would
+     * over-fire on a board wipe (Spiteful Banditry).
+     */
+    fun OneOrMoreCreaturesAnOpponentControlsDie(
+        filter: GameObjectFilter = GameObjectFilter.Creature
+    ): TriggerSpec = TriggerSpec(
+        event = CreaturesYouControlDiedEvent(filter = filter.opponentControls()),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Enter Battlefield Batch Triggers
     // =========================================================================

@@ -1,12 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -38,13 +35,10 @@ val SpitefulBanditry = card("Spiteful Banditry") {
     }
 
     // Whenever one or more creatures your opponents control die, you create a Treasure token.
-    // This ability triggers only once each turn.
+    // This ability triggers only once each turn. Batched (fires once per death event), so a
+    // board wipe that kills several of an opponent's creatures still makes a single Treasure.
     triggeredAbility {
-        trigger = Triggers.leavesBattlefield(
-            filter = GameObjectFilter.Creature.opponentControls(),
-            to = Zone.GRAVEYARD,
-            binding = TriggerBinding.ANY
-        )
+        trigger = Triggers.OneOrMoreCreaturesAnOpponentControlsDie()
         oncePerTurn = true
         effect = Effects.CreateTreasure(1)
     }
