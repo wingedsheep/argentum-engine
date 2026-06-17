@@ -517,21 +517,26 @@
                         "type": "Composite",
                         "effects": [
                             {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand"
-                                },
-                                "storeAs": "discardedHand"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "discardedHand",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                },
-                                "moveType": "Discard"
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
                             },
                             {
                                 "type": "DrawCards",
@@ -553,21 +558,26 @@
                         "type": "Composite",
                         "effects": [
                             {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand"
-                                },
-                                "storeAs": "discardedHand"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "discardedHand",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                },
-                                "moveType": "Discard"
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
                             },
                             {
                                 "type": "DrawCards",
@@ -7479,60 +7489,59 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "RevealHand",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "target opponent"
-                    }
-                },
-                {
-                    "type": "GatherCards",
-                    "source": {
-                        "type": "FromZone",
-                        "zone": "Hand",
-                        "player": {
-                            "type": "ContextPlayer",
-                            "index": 0
+                    "type": "Composite",
+                    "effects": [
+                        "RevealHand",
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "storeAs": "opponentHand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "opponentHand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "toDiscard",
+                            "prompt": "Choose a nonland card to discard",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toDiscard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "moveType": "Discard"
                         }
-                    },
-                    "storeAs": "opponentHand"
-                },
-                {
-                    "type": "SelectFromCollection",
-                    "from": "opponentHand",
-                    "selection": {
-                        "type": "ChooseExactly",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 1
-                        }
-                    },
-                    "filter": "nonland",
-                    "storeSelected": "toDiscard",
-                    "prompt": "Choose a nonland card to discard",
-                    "showAllCards": true,
-                    "alwaysPrompt": true
-                },
-                {
-                    "type": "MoveCollection",
-                    "from": "toDiscard",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Graveyard",
-                        "player": {
-                            "type": "ContextPlayer",
-                            "index": 0
-                        }
-                    },
-                    "moveType": "Discard"
+                    ]
                 },
                 {
                     "type": "AddCounters",
                     "counterType": "+1/+1",
                     "count": 2,
                     "target": {
-                        "type": "ContextTarget",
-                        "index": 1
+                        "type": "BoundVariable",
+                        "name": "up to one target creature"
                     }
                 }
             ]
@@ -8908,6 +8917,102 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Stress Dream
+{
+    "name": "Stress Dream",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Stress Dream deals 5 damage to up to one target creature. Look at the top two cards of your library. Put one of those cards into your hand and the other on the bottom of your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one target creature"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "up to one target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Edgar Sánchez Hidalgo",
+        "flavorText": "Krelg's attempt at a calming nap proved futile.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 

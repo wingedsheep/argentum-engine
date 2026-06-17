@@ -158,6 +158,8 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     erodeDestroyControllerFetchEffect(actions)?.let { return it }
     heatedArgumentExileRiderEffect(actions)?.let { return it }
     manaSculptCounterWizardManaEffect(actions)?.let { return it }
+    discardHandThenDrawEffect(actions)?.let { return it }
+    renderSpeechlessDiscardCountersEffect(actions)?.let { return it }
     becomeCreatureTypeEffect(actions, tvar)?.let { return it }
     chooseAbilityGrantEffect(actions, tvar)?.let { return it }
     chooseTypeModifyStatsEffect(actions)?.let { return it }

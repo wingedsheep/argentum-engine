@@ -801,6 +801,30 @@ internal fun EmitCtx.renderLook(node: JsonObject, args: JsonElement?, tvar: Stri
             arg("restOrder", "CardOrder.Random"),
         )
     }
+    // "Look at the top X cards ... Put one of them into your hand and the rest on the bottom of your
+    // library in any order." (Stress Dream — look at the top two, keep one, bottom the other). One
+    // generic card kept to hand, the remainder bottomed in the controller's chosen order. The flat
+    // keepCount=1 lookAtTopAndKeep with hand/bottom destinations and CardOrder.ControllerChooses
+    // renders this exactly; the look count may also be a battlefield aggregate, never a cast-time X,
+    // so a complete render is safe. Require the sub-actions to be EXACTLY [keep-to-hand, rest-to-bottom]
+    // (no third clause): Telling Time's "...one on top..." adds a PutAGenericCardOnTopOfLibrary that this
+    // keep-one/bottom-rest shape can't express, so it must decline (-> SCAFFOLD) rather than drop it.
+    run {
+        val subKinds = node.field("args").asArr?.getOrNull(1).asArr
+            ?.mapNotNull { (it as? JsonObject)?.strField("_LookAtTopOfLibraryAction") }
+        if (subKinds == listOf("PutAGenericCardIntoHand", "PutTheRemainingCardsOnTheBottomOfLibraryInAnyOrder")) {
+            val count = findInteger(node)?.toString()?.let { "DynamicAmount.Fixed($it)" }
+                ?: dynamicAmount(amountNode(node)) ?: return null
+            return call(
+                "Patterns.Library.lookAtTopAndKeep",
+                arg("count", count),
+                arg("keepCount", "DynamicAmount.Fixed(1)"),
+                arg("keepDestination", "CardDestination.ToZone(Zone.HAND)"),
+                arg("restDestination", "CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)"),
+                arg("restOrder", "CardOrder.ControllerChooses"),
+            )
+        }
+    }
     // "Look at the top N. You may exile a nonland card from among them. If you do, it becomes plotted.
     // Put the rest into your hand." (Make Your Own Luck). The IR is a `MayExileACardOfType` (filter) +
     // `CreateExiledCardEffect[IsPlotted]` + `PutRemainingCardsInHand` sub-action triple. Render the

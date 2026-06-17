@@ -6,6 +6,7 @@ import com.wingedsheep.tooling.coverage.Lit
 import com.wingedsheep.tooling.coverage.Raw
 import com.wingedsheep.tooling.coverage.arg
 import com.wingedsheep.tooling.coverage.asArr
+import com.wingedsheep.tooling.coverage.asStr
 import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.findInteger
@@ -161,6 +162,120 @@ internal fun EmitCtx.heatedArgumentExileRiderEffect(actions: List<JsonObject>): 
         arg("successCriterion", "SuccessCriterion.CollectionNonEmpty(\"toExile\", min = 1)"),
     )
     return Composite(listOf(firstDamage, call("MayEffect", arg(ifYouDo))))
+}
+
+/**
+ * Borrowed Knowledge (one modal arm): `[DiscardHand, DrawNumberCards(<count>)]`
+ * → `Patterns.Hand.discardHand().then(Effects.DrawCards(<count>))`.
+ *
+ * "Discard your hand, then draw cards equal to …" — both modes of Borrowed Knowledge share this
+ * shape, differing only in the draw count. `Patterns.Hand.discardHand` gathers the controller's hand
+ * into the `discardedHand` collection and discards it, so a `NumCardsDiscardedThisWay` count renders as
+ * `DynamicAmount.VariableReference("discardedHand_count")` (the count GatherCardsEffect auto-publishes
+ * for that collection). A `TheNumberOfCardsInPlayersHand(Ref_TargetPlayer)` count renders as
+ * `DynamicAmount.Count(Player.TargetOpponent, Zone.HAND)` — the modal arm targets an opponent (the only
+ * player ref this shape supports). Any other count or a non-controller discard target declines (->
+ * SCAFFOLD); the discard is always the controller's own hand ("discard your hand").
+ *
+ * Tried inside [renderEffectList], so it covers the modal arm bodies (each arm calls renderEffectList).
+ */
+internal fun EmitCtx.discardHandThenDrawEffect(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val (discard, draw) = actions
+    if (discard.strField("_Action") != "DiscardHand") return null
+    if (draw.strField("_Action") != "DrawNumberCards") return null
+    val countNode = draw["args"] as? JsonObject ?: return null
+    val drawCount: String = when (countNode.strField("_GameNumber")) {
+        "NumCardsDiscardedThisWay" -> "DynamicAmount.VariableReference(\"discardedHand_count\")"
+        "TheNumberOfCardsInPlayersHand" -> {
+            // Only "target opponent's hand" renders — the modal arm's TargetPlayer Opponent slot,
+            // referenced as Ref_TargetPlayer. Any other player scope declines.
+            if (!jsonContains(countNode, "_Player", "Ref_TargetPlayer")) return null
+            "DynamicAmount.Count(Player.TargetOpponent, Zone.HAND)"
+        }
+        else -> return null
+    }
+    return Composite(
+        listOf(
+            call("Patterns.Hand.discardHand"),
+            call("Effects.DrawCards", arg(Lit(drawCount))),
+        ),
+    )
+}
+
+/**
+ * Render Speechless: `[PlayerAction(Ref_TargetPlayer,
+ *                        RevealHandAndPlayerChoosesACardToDiscard(You, IsNonCardtype Land)),
+ *                      PutNumberCountersOfTypeOnPermanent(2, PTCounter(1,1), Ref_TargetPermanent)]`
+ * → the Divest-style targeted-discard pipeline (reveal target opponent's hand → controller chooses a
+ *   nonland card → that player discards it) then `AddCountersEffect(+1/+1, 2, <creature>)`.
+ *
+ * Two independently-targeted clauses (`[TargetPlayer Opponent, UptoOneTargetPermanent Creature]`), so
+ * this runs inside the multi-target spell block: `Ref_TargetPlayer` resolves to the opponent local
+ * (the discarded-from player, addressed in the pipeline by `Player.ContextPlayer(0)` — the first
+ * chosen target) and `Ref_TargetPermanent` resolves to the optional creature local. mtgish models the
+ * coercive discard as a `PlayerAction` wrapping `RevealHandAndPlayerChoosesACardToDiscard`, which the
+ * per-action `PlayerAction` handler can't render, so it's fused here. Renders only this exact shape (a
+ * nonland-filtered discard the controller picks + a fixed ±1/±1 counter on the bound target); any other
+ * filter, chooser, counter kind, or action declines (-> SCAFFOLD).
+ */
+internal fun EmitCtx.renderSpeechlessDiscardCountersEffect(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val (playerAction, counters) = actions
+    if (playerAction.strField("_Action") != "PlayerAction") return null
+    // The acting player is the targeted opponent (Ref_TargetPlayer).
+    if (!jsonContains(playerAction, "_Player", "Ref_TargetPlayer")) return null
+    val reveal = innerAction(playerAction)
+        ?.takeIf { it.strField("_Action") == "RevealHandAndPlayerChoosesACardToDiscard" } ?: return null
+    val revealArgs = reveal["args"].asArr ?: return null
+    // The chooser is the spell's controller ("You choose a card from it").
+    if ((revealArgs.getOrNull(0) as? JsonObject)?.strField("_Player") != "You") return null
+    // The choosable card is filtered to nonland (IsNonCardtype Land); any other filter declines.
+    val filterNode = revealArgs.getOrNull(1) as? JsonObject ?: return null
+    val isNonland = filterNode.strField("_Cards") == "IsNonCardtype" &&
+        filterNode["args"].asStr() == "Land"
+    if (!isNonland) return null
+
+    // "Put two +1/+1 counters on up to one target creature."
+    if (counters.strField("_Action") != "PutNumberCountersOfTypeOnPermanent") return null
+    val counterArgs = counters["args"].asArr ?: return null
+    val count = findInteger(counterArgs.getOrNull(0)) as? Int ?: return null
+    val counterType = counterTypeDsl(counterArgs.getOrNull(1)) ?: return null
+    if (!jsonContains(counterArgs.getOrNull(2), "_Permanent", "Ref_TargetPermanent")) return null
+    val creatureTarget = refTarget(counterArgs.getOrNull(2), null) ?: return null
+
+    val discardPipeline = Composite(
+        listOf(
+            Lit("RevealHandEffect(EffectTarget.ContextTarget(0))"),
+            Lit(
+                "GatherCardsEffect(source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)), " +
+                    "storeAs = \"opponentHand\")",
+            ),
+            Raw(
+                "SelectFromCollectionEffect(\n" +
+                    "                from = \"opponentHand\",\n" +
+                    "                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),\n" +
+                    "                chooser = Chooser.Controller,\n" +
+                    "                filter = GameObjectFilter.Nonland,\n" +
+                    "                storeSelected = \"toDiscard\",\n" +
+                    "                prompt = \"Choose a nonland card to discard\",\n" +
+                    "                alwaysPrompt = true,\n" +
+                    "                showAllCards = true,\n" +
+                    "            )",
+            ),
+            Lit(
+                "MoveCollectionEffect(from = \"toDiscard\", destination = " +
+                    "CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)), moveType = MoveType.Discard)",
+            ),
+        ),
+    )
+    val addCounters = call(
+        "AddCountersEffect",
+        arg("counterType", counterType),
+        arg("count", "$count"),
+        arg("target", creatureTarget),
+    )
+    return Composite(listOf(discardPipeline, addCounters))
 }
 
 /**

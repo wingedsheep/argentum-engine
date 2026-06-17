@@ -43,11 +43,14 @@ val RenderSpeechless = card("Render Speechless") {
         "player discards that card.\nPut two +1/+1 counters on up to one target creature."
 
     spell {
-        val opponent = target("target opponent", TargetOpponent())
+        target("target opponent", TargetOpponent())
         val creature = target("up to one target creature", TargetCreature(optional = true))
         effect = Effects.Composite(
-            listOf(
-                RevealHandEffect(opponent),
+            // Targeted discard: reveal the opponent's hand (target 0), the controller chooses a nonland
+            // card from it, that player discards it. The opponent is the first chosen target, addressed
+            // by Player.ContextPlayer(0) for both the gather source and the discard destination.
+            Effects.Composite(
+                RevealHandEffect(EffectTarget.ContextTarget(0)),
                 GatherCardsEffect(
                     source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0)),
                     storeAs = "opponentHand",
@@ -67,8 +70,9 @@ val RenderSpeechless = card("Render Speechless") {
                     destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.ContextPlayer(0)),
                     moveType = MoveType.Discard,
                 ),
-                Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, EffectTarget.ContextTarget(1)),
             ),
+            // Two +1/+1 counters on the optional creature (target 1). No-ops when no creature is chosen.
+            Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, creature),
         )
     }
 

@@ -39,12 +39,16 @@ val BorrowedKnowledge = card("Borrowed Knowledge") {
         modal(chooseCount = 1) {
             mode("Discard your hand, then draw cards equal to the number of cards in target opponent's hand") {
                 target = Targets.Opponent
-                effect = Patterns.Hand.discardHand()
-                    .then(Effects.DrawCards(DynamicAmount.Count(Player.TargetOpponent, Zone.HAND)))
+                effect = Effects.Composite(
+                    Patterns.Hand.discardHand(),
+                    Effects.DrawCards(DynamicAmount.Count(Player.TargetOpponent, Zone.HAND)),
+                )
             }
             mode("Discard your hand, then draw cards equal to the number of cards discarded this way") {
-                effect = Patterns.Hand.discardHand()
-                    .then(Effects.DrawCards(DynamicAmount.VariableReference("discardedHand_count")))
+                effect = Effects.Composite(
+                    Patterns.Hand.discardHand(),
+                    Effects.DrawCards(DynamicAmount.VariableReference("discardedHand_count")),
+                )
             }
         }
     }
