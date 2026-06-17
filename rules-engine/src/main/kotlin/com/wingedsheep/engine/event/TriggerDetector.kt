@@ -329,16 +329,44 @@ class TriggerDetector(
         // decayed counter is declared as an attacker, it must be sacrificed at end of combat.
         detectDecayedCounterAttackTriggers(state, events, triggers)
 
-        // Filter out once-per-turn triggers that have already fired this turn
-        val filteredTriggers = triggers.filter { trigger ->
-            if (!trigger.ability.oncePerTurn) return@filter true
-            val entity = state.getEntity(trigger.sourceId)
-            val tracker = entity?.get<TriggeredAbilityFiredThisTurnComponent>()
-            tracker == null || !tracker.hasFired(trigger.ability.id)
-        }
+        // Filter out once-per-turn triggers that have already fired this turn, and dedupe
+        // simultaneous fires (see [capOncePerTurnTriggers]).
+        val filteredTriggers = capOncePerTurnTriggers(state, triggers)
 
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
         return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, filteredTriggers))
+    }
+
+    /**
+     * Filter [triggers] for "this ability triggers only once each turn" (`oncePerTurn`) abilities.
+     *
+     * Two cuts, in order:
+     *  1. Drop any oncePerTurn trigger whose source has already fired that ability id this turn
+     *     (tracked by [TriggeredAbilityFiredThisTurnComponent], stamped on resolution).
+     *  2. Within this single detection pass, keep only the *first* trigger per
+     *     `(sourceId, abilityId)` for oncePerTurn abilities. The fired-this-turn tracker is only
+     *     written when a trigger resolves, so a single multi-subject event (e.g. a player
+     *     discarding two cards, which fires a per-card "whenever a player discards" trigger twice)
+     *     would otherwise queue two instances before either resolves and stamps the tracker. This
+     *     dedupe enforces the "only once each turn" cap for batch-style triggers — e.g. Hostile
+     *     Investigator investigating once even when several cards are discarded at once.
+     *
+     * Non-oncePerTurn triggers are never deduped (two lord bonuses, two prowess fires, etc. must
+     * all survive).
+     */
+    private fun capOncePerTurnTriggers(
+        state: GameState,
+        triggers: List<PendingTrigger>
+    ): List<PendingTrigger> {
+        val seenOncePerTurn = HashSet<Pair<EntityId, com.wingedsheep.sdk.scripting.AbilityId>>()
+        return triggers.filter { trigger ->
+            if (!trigger.ability.oncePerTurn) return@filter true
+            val entity = state.getEntity(trigger.sourceId)
+            val tracker = entity?.get<TriggeredAbilityFiredThisTurnComponent>()
+            if (tracker != null && tracker.hasFired(trigger.ability.id)) return@filter false
+            // Collapse simultaneous fires of the same ability from the same source.
+            seenOncePerTurn.add(trigger.sourceId to trigger.ability.id)
+        }
     }
 
     /**
@@ -511,13 +539,9 @@ class TriggerDetector(
         // abilities (e.g., Twinflame Travelers) — also applies to phase/step triggers.
         duplicateSourceTriggers(state, triggers)
 
-        // Filter out once-per-turn triggers that have already fired this turn
-        val filteredTriggers = triggers.filter { trigger ->
-            if (!trigger.ability.oncePerTurn) return@filter true
-            val entity = state.getEntity(trigger.sourceId)
-            val tracker = entity?.get<TriggeredAbilityFiredThisTurnComponent>()
-            tracker == null || !tracker.hasFired(trigger.ability.id)
-        }
+        // Filter out once-per-turn triggers that have already fired this turn, and dedupe
+        // simultaneous fires (see [capOncePerTurnTriggers]).
+        val filteredTriggers = capOncePerTurnTriggers(state, triggers)
 
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
         return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, filteredTriggers))

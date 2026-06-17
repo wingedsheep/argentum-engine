@@ -110,6 +110,47 @@ data class ModifyTokenCount(
     }
 }
 
+/**
+ * When a player would create one or more tokens matching [appliesTo], also create
+ * [additionalTokenCount] predefined token(s) of a *different* type ([additionalTokenType]).
+ *
+ * Models "If you would create one or more artifact tokens, instead create those tokens
+ * plus an additional Map token" (Worldwalker Helm). Unlike [ModifyTokenCount] (which adds
+ * more copies of the *same* token), this appends tokens of a named predefined type. The
+ * extra tokens are created once per qualifying creation event, regardless of how many
+ * tokens the original effect made.
+ *
+ * The [appliesTo] event's `controller` / `tokenFilter` gate which creations qualify
+ * (e.g. `TokenCreationEvent(controller = You, tokenFilter = GameObjectFilter.Artifact)`).
+ * Per the Worldwalker Helm ruling, the added token inherits the original effect's
+ * "tapped" rider when [inheritTapped] is set, but never the original tokens' abilities.
+ *
+ * @property additionalTokenType The predefined token to additionally create (e.g. "Map").
+ * @property additionalTokenCount How many of that token to add per qualifying event.
+ * @property inheritTapped When true, the added token enters tapped if the original
+ *           creation made tapped tokens.
+ */
+@SerialName("CreateAdditionalToken")
+@Serializable
+data class CreateAdditionalToken(
+    val additionalTokenType: String,
+    val additionalTokenCount: Int = 1,
+    val inheritTapped: Boolean = false,
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, create those tokens plus ")
+        append(if (additionalTokenCount == 1) "an additional " else "$additionalTokenCount additional ")
+        append(additionalTokenType)
+        append(if (additionalTokenCount == 1) " token instead" else " tokens instead")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
 // =============================================================================
 // Counter Replacement Effects
 // =============================================================================

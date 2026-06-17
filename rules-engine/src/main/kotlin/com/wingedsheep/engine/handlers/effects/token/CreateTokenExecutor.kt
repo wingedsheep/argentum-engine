@@ -345,6 +345,16 @@ class CreateTokenExecutor(
             )
         }
 
+        // Apply "create those tokens plus an additional X token" replacements (Worldwalker
+        // Helm) once for this batch. Only the just-created tokens are matched against the
+        // filter, so an added artifact token can't recursively re-trigger.
+        val (afterAdditional, additionalEvents) = TokenCreationReplacementHelper
+            .applyAdditionalTokenReplacements(
+                newState, tokenControllerId, createdTokens, effect.tapped,
+                cardRegistry, staticAbilityHandler
+            )
+        newState = afterAdditional
+
         // Publish the freshly-created token entity IDs to the pipeline so sibling effects in a
         // CompositeEffect can address them via EffectTarget.PipelineTarget(CREATED_TOKENS, index).
         // Mirrors CreatePredefinedTokenExecutor — lets a composite grant keywords/counters to the
@@ -352,7 +362,7 @@ class CreateTokenExecutor(
         // haste until end of turn").
         return EffectResult(
             state = newState,
-            events = events + counterEvents,
+            events = events + counterEvents + additionalEvents,
             updatedCollections = mapOf(CREATED_TOKENS to createdTokens)
         )
     }

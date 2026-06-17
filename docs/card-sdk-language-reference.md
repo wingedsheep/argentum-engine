@@ -3762,6 +3762,12 @@ replacementEffect {
   attachment-type validation already happens at cast/attach time via `equipmentTarget` /
   `auraTarget`. Token copies are summoning-sick only when the copy is a creature (CR 302.6).
   Mirrormind Crown: `attachmentVerb = "equipped"`; Moonlit Meditation: `attachmentVerb = "enchanted"`.
+- `CreateAdditionalToken(additionalTokenType, additionalTokenCount = 1, inheritTapped = false, appliesTo)` —
+  token-creation replacement that keeps the original tokens and appends one or more predefined tokens of
+  another type. `appliesTo = EventPattern.TokenCreationEvent(controller, tokenFilter)` gates the original
+  creation event, and the extra tokens are added once per qualifying event, not once per token. The added
+  tokens bypass the same replacement pass so a Map added for an artifact-token event does not recursively
+  trigger itself. Used by Worldwalker Helm (`TokenCreationEvent(You, Artifact)`, add `Map`, `inheritTapped = true`).
 - `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard)` —
   "enter as a copy of …". As the permanent resolves, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides

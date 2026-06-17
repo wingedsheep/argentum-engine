@@ -136,7 +136,18 @@ class CreatePredefinedTokenExecutor(
                 toZone = Zone.BATTLEFIELD,
                 ownerId = tokenControllerId
             )
-        }
+        }.toMutableList<com.wingedsheep.engine.core.GameEvent>()
+
+        // Apply "create those tokens plus an additional X token" replacements (Worldwalker
+        // Helm) once for this batch. Only the original tokens are matched against the filter,
+        // so the added token can't recursively re-trigger.
+        val (afterAdditional, additionalEvents) = TokenCreationReplacementHelper
+            .applyAdditionalTokenReplacements(
+                newState, tokenControllerId, createdTokenIds, effect.tapped,
+                cardRegistry, staticAbilityHandler
+            )
+        newState = afterAdditional
+        events.addAll(additionalEvents)
 
         // Publish the freshly-created token entity IDs to the pipeline so
         // sibling effects in a CompositeEffect can address them via

@@ -1,3 +1,167 @@
+// Generous Plunderer
+{
+    "name": "Generous Plunderer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Menace\nAt the beginning of your upkeep, you may create a Treasure token. When you do, target opponent creates a tapped Treasure token.\nWhenever this creature attacks, it deals damage to defending player equal to the number of artifacts they control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Treasure"
+                    },
+                    "reflexiveEffect": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Treasure",
+                        "controller": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tapped": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        "TargetOpponent"
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "DefendingPlayer",
+                        "filter": "artifact"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c6cf93a-d073-48ac-88db-c46bf3e10beb.jpg?1739804185"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hostile Investigator
+{
+    "name": "Hostile Investigator",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Ogre Rogue Detective",
+    "oracleText": "When this creature enters, target opponent discards a card.\nWhenever one or more players discard one or more cards, investigate. This ability triggers only once each turn. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Clue"
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "MYTHIC",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/158c000e-7960-4518-b034-a529622b7bf1.jpg?1739804181"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Legion Extruder
 {
     "name": "Legion Extruder",
@@ -382,5 +546,69 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Worldwalker Helm
+{
+    "name": "Worldwalker Helm",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "If you would create one or more artifact tokens, instead create those tokens plus an additional Map token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")\n{1}{U}, {T}: Create a token that's a copy of target artifact token you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target artifact token you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact token ctrl:you"
+                        },
+                        "id": "target artifact token you control"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "CreateAdditionalToken",
+                "additionalTokenType": "Map",
+                "inheritTapped": true,
+                "appliesTo": {
+                    "type": "TokenCreationEvent",
+                    "tokenFilter": "artifact"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "MYTHIC",
+        "artist": "Camille Alquier",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b74ad496-05bc-4c5a-9027-b14df9c387ab.jpg?1739804167"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
