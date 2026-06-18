@@ -366,6 +366,141 @@
     ]
 }
 
+// Aragorn, Company Leader
+{
+    "name": "Aragorn, Company Leader",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Ranger",
+    "oracleText": "Whenever the Ring tempts you, if you chose a creature other than Aragorn as your Ring-bearer, put your choice of a counter from among first strike, vigilance, deathtouch, and lifelink on Aragorn.\nWhenever you put one or more counters on Aragorn, put one of each of those kinds of counters on up to one other target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "RingTemptedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "First strike counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "first strike",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Vigilance counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "vigilance",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Deathtouch counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "deathtouch",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Lifelink counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "lifelink",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "triggerCondition": "YouChoseOtherCreatureAsRingBearer",
+                "descriptionOverride": "Whenever the Ring tempts you, if you chose a creature other than Aragorn as your Ring-bearer, put your choice of a counter from among first strike, vigilance, deathtouch, and lifelink on Aragorn."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "any"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "first strike",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "vigilance",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "deathtouch",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "lifelink",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetObject",
+                        "minCount": 0,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "id": "up to one other target creature"
+                },
+                "descriptionOverride": "Whenever you put one or more counters on Aragorn, put one of each of those kinds of counters on up to one other target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73ca5f48-0117-49d6-8b00-b8482e3545b3.jpg?1686969633"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Aragorn, the Uniter
 {
     "name": "Aragorn, the Uniter",
@@ -5253,6 +5388,122 @@
     ]
 }
 
+// Flame of Anor
+{
+    "name": "Flame of Anor",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one. If you control a Wizard as you cast this spell, you may choose two instead.\n• Target player draws two cards.\n• Destroy target artifact.\n• Flame of Anor deals 5 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target player"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "target player"
+                        }
+                    ],
+                    "description": "Target player draws two cards"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target artifact"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "target artifact"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target creature"
+                        }
+                    ],
+                    "description": "Flame of Anor deals 5 damage to target creature"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature Wizard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "flavorText": "There was a ringing clash and a stab of white fire, and the Balrog fell back.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04779a7e-b453-48b9-b392-6d6fd0b8d283.jpg?1686969766"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Flowering of the White Tree
 {
     "name": "Flowering of the White Tree",
@@ -5701,6 +5952,138 @@
     ]
 }
 
+// Frodo, Sauron's Bane
+{
+    "name": "Frodo, Sauron's Bane",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Creature — Halfling Citizen",
+    "oracleText": "{W/B}{W/B}: If Frodo is a Citizen, it becomes a Halfling Scout with base power and toughness 2/3 and lifelink.\n{B}{B}{B}: If Frodo is a Scout, it becomes a Halfling Rogue with \"Whenever this creature deals combat damage to a player, that player loses the game if the Ring has tempted you four or more times this game. Otherwise, the Ring tempts you.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W/B}{W/B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Citizen"
+                        }
+                    },
+                    "then": {
+                        "type": "BecomeCreature",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "keywords": [
+                            "LIFELINK"
+                        ],
+                        "creatureTypes": [
+                            "Halfling",
+                            "Scout"
+                        ],
+                        "duration": "Permanent"
+                    }
+                }
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Scout"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Halfling",
+                                    "Rogue"
+                                ]
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "ability_3",
+                                    "trigger": {
+                                        "type": "DealsDamageEvent",
+                                        "damageType": "DamageCombat",
+                                        "recipient": "AnyPlayer"
+                                    },
+                                    "effect": {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "RingHasTemptedPlayerAtLeast",
+                                                "times": 4
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "LoseGame",
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "TriggeringPlayer"
+                                            },
+                                            "message": "Frodo, Sauron's Bane dealt combat damage (Ring tempted you 4+ times)"
+                                        },
+                                        "otherwise": "TheRingTemptsYou"
+                                    },
+                                    "descriptionOverride": "Whenever this creature deals combat damage to a player, that player loses the game if the Ring has tempted you four or more times this game. Otherwise, the Ring tempts you."
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d86dc2e-6f0c-4714-9d30-5d099d3b895c.jpg?1686967812"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Galadhrim Bow
 {
     "name": "Galadhrim Bow",
@@ -6115,6 +6498,136 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Gandalf the Grey
+{
+    "name": "Gandalf the Grey",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Legendary Creature — Avatar Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, choose one that hasn't been chosen —\n• You may tap or untap target permanent.\n• Gandalf deals 3 damage to each opponent.\n• Copy target instant or sorcery spell you control. You may choose new targets for the copy.\n• Put Gandalf on top of its owner's library.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "ChooseAction",
+                                    "choices": [
+                                        {
+                                            "label": "Tap it",
+                                            "effect": {
+                                                "type": "TapUntap",
+                                                "target": {
+                                                    "type": "ContextTarget",
+                                                    "index": 0
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "label": "Untap it",
+                                            "effect": {
+                                                "type": "TapUntap",
+                                                "target": {
+                                                    "type": "ContextTarget",
+                                                    "index": 0
+                                                },
+                                                "tap": false
+                                            }
+                                        }
+                                    ]
+                                },
+                                "descriptionOverride": "You may tap or untap that permanent"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent"
+                                    }
+                                }
+                            ],
+                            "description": "You may tap or untap target permanent"
+                        },
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                },
+                                "damageSource": "Self"
+                            },
+                            "description": "Gandalf deals 3 damage to each opponent"
+                        },
+                        {
+                            "effect": "CopyTargetSpell",
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "instant|sorcery ctrl:you",
+                                        "zone": "Stack"
+                                    }
+                                }
+                            ],
+                            "description": "Copy target instant or sorcery spell you control. You may choose new targets for the copy"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Library",
+                                "placement": "Top"
+                            },
+                            "description": "Put Gandalf on top of its owner's library"
+                        }
+                    ],
+                    "excludePreviouslyChosenModes": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2b975e6-e709-481f-bfbc-41a832508283.jpg?1686969808"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -6844,6 +7357,134 @@
         "GREEN",
         "RED"
     ]
+}
+
+// Glamdring
+{
+    "name": "Glamdring",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature has first strike and gets +1/+0 for each instant and sorcery card in your graveyard.\nWhenever equipped creature deals combat damage to a player, you may cast an instant or sorcery spell from your hand with mana value less than or equal to that damage without paying its mana cost.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "combatDamage",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "handSpells"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "handSpells",
+                            "filter": {
+                                "type": "ManaValueAtMost",
+                                "max": {
+                                    "type": "VariableReference",
+                                    "variableName": "combatDamage"
+                                }
+                            },
+                            "storeMatching": "castable"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "castable",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "castable"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            },
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "instant|sorcery"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "MYTHIC",
+        "artist": "Andrea Piparo",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8296ebf7-45ed-4b38-acf2-b48d9fb3e706.jpg?1686970159"
+    },
+    "colorIdentityOverride": []
 }
 
 // Glorfindel, Dauntless Rescuer
@@ -8648,6 +9289,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// King of the Oathbreakers
+{
+    "name": "King of the Oathbreakers",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Spirit Noble",
+    "oracleText": "Flying\nWhenever King of the Oathbreakers or another Spirit you control becomes the target of a spell, it phases out. (Treat it and anything attached to it as though they don't exist until your next turn.)\nWhenever King of the Oathbreakers or another Spirit you control phases in, create a tapped 1/1 white Spirit creature token with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature Spirit ctrl:you",
+                    "spellsOnly": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PhaseOut",
+                    "target": "TriggeringEntity"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "PhasesInEvent",
+                    "filter": "creature Spirit ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "RARE",
+        "artist": "Tatiana Veryayskaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc857755-62e6-4d29-95f5-82f5d4bde522.jpg?1686969851"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -12081,6 +12787,147 @@
     ]
 }
 
+// Pippin, Guard of the Citadel
+{
+    "name": "Pippin, Guard of the Citadel",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Halfling Soldier",
+    "oracleText": "Vigilance, ward {1}\n{T}: Another target creature you control gains protection from the card type of your choice until end of turn. (It can't be blocked, targeted, dealt damage, enchanted, or equipped by anything of that type.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "GrantProtectionFromChosenCardType",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "RARE",
+        "artist": "Bartłomiej Gaweł",
+        "flavorText": "\"Here do I swear fealty to Gondor, until my lord release me, or death take me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08b7a4d8-1183-430e-8ea4-016844f33200.jpg?1686969929"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Press the Enemy
+{
+    "name": "Press the Enemy",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target spell or nonland permanent an opponent controls to its owner's hand. You may cast an instant or sorcery spell with equal or lesser mana value from your hand without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "bouncedMv",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                {
+                    "type": "ReturnSpellOrPermanentToOwnersHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target spell or nonland permanent an opponent controls"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "handSpells"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "handSpells",
+                    "filter": {
+                        "type": "ManaValueAtMost",
+                        "max": {
+                            "type": "VariableReference",
+                            "variableName": "bouncedMv"
+                        }
+                    },
+                    "storeMatching": "castable"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "castable",
+                    "ifNotEmpty": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "castable"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetSpellOrPermanent",
+                "id": "target spell or nonland permanent an opponent controls",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsNonland",
+                        "IsPermanent"
+                    ],
+                    "controllerPredicate": "ControlledByOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Valera Lutfullina",
+        "flavorText": "\"I showed the blade reforged to him. He is not so mighty yet that he is above fear.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfa5380a-480c-4c61-ac52-5debc49c5df9.jpg?1686968246"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Prince Imrahil the Fair
 {
     "name": "Prince Imrahil the Fair",
@@ -13759,6 +14606,81 @@
     ]
 }
 
+// Sauron, the Necromancer
+{
+    "name": "Sauron, the Necromancer",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Avatar Horror",
+    "oracleText": "Menace\nWhenever Sauron attacks, exile target creature card from your graveyard. Create a tapped and attacking token that's a copy of that card, except it's a 3/3 black Wraith with menace. At the beginning of the next end step, exile that token unless Sauron is your Ring-bearer.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature card from your graveyard"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "overridePower": 3,
+                            "overrideToughness": 3,
+                            "tapped": true,
+                            "attacking": true,
+                            "addedKeywords": [
+                                "MENACE"
+                            ],
+                            "overrideColors": [
+                                "BLACK"
+                            ],
+                            "overrideSubtypes": [
+                                "Wraith"
+                            ],
+                            "exileAtStep": "END",
+                            "exileUnlessSourceIsRingBearer": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target creature card from your graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/377d65d8-21c8-4292-97db-610e0173ba59.jpg?1686968699"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Scroll of Isildur
 {
     "name": "Scroll of Isildur",
@@ -14153,6 +15075,110 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Shelob, Child of Ungoliant
+{
+    "name": "Shelob, Child of Ungoliant",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Legendary Creature — Spider Demon",
+    "oracleText": "Deathtouch, ward {2}\nOther Spiders you control have deathtouch and ward {2}.\nWhenever another creature dealt damage this turn by a Spider you controlled dies, create a token that's a copy of that creature, except it's a Food artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life,\" and it loses all other card types.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "CreatureDealtDamageBySourceDiesEvent",
+                    "sourceFilter": "creature Spider ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "addedSubtypes": [
+                        "Food"
+                    ],
+                    "overrideCardTypes": [
+                        "ARTIFACT"
+                    ],
+                    "activatedAbilities": [
+                        {
+                            "id": "ability_2",
+                            "cost": {
+                                "type": "CostComposite",
+                                "costs": [
+                                    {
+                                        "type": "CostAtomWrapper",
+                                        "atom": {
+                                            "type": "AtomMana",
+                                            "cost": "{2}"
+                                        }
+                                    },
+                                    "CostTap",
+                                    "CostSacrificeSelf"
+                                ]
+                            },
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature Spider ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                },
+                "filter": {
+                    "baseFilter": "creature Spider ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a14c4b29-3363-45ce-9190-0f79e1a0ef7f.jpg?1686970060"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -15076,6 +16102,95 @@
     ]
 }
 
+// Sting, the Glinting Dagger
+{
+    "name": "Sting, the Glinting Dagger",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 and has haste.\nAt the beginning of each combat, untap equipped creature.\nEquipped creature has first strike as long as it's blocking or blocked by a Goblin or Orc.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EquippedCreature",
+                    "tap": false
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": {
+                    "type": "SourceIsBlockingOrBlockedBySubtype",
+                    "subtypes": [
+                        "Goblin",
+                        "Orc"
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Nino Is",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afbec7e7-f5b9-407e-bf96-2e088710e791.jpg?1686970284"
+    },
+    "colorIdentityOverride": []
+}
+
 // Stone of Erech
 {
     "name": "Stone of Erech",
@@ -15498,6 +16613,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// The Balrog, Durin's Bane
+{
+    "name": "The Balrog, Durin's Bane",
+    "manaCost": "{5}{B}{R}",
+    "typeLine": "Legendary Creature — Avatar Demon",
+    "oracleText": "This spell costs {1} less to cast for each permanent sacrificed this turn.\nHaste\nThe Balrog can't be blocked except by legendary creatures.\nWhen The Balrog dies, destroy target artifact or creature an opponent controls.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:opponent"
+                    },
+                    "id": "target artifact or creature an opponent controls"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": "PermanentsSacrificedThisTurn"
+                }
+            },
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsLegendary"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/416880c3-cefb-45ea-bcc3-2ec7a70c8097.jpg?1686969678"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -17300,6 +18487,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Witch-king of Angmar
+{
+    "name": "Witch-king of Angmar",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Wraith Noble",
+    "oracleText": "Flying\nWhenever one or more creatures deal combat damage to you, each opponent sacrifices a creature of their choice that dealt combat damage to you this turn. The Ring tempts you.\nDiscard a card: Witch-king of Angmar gains indestructible until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "OneOrMoreDealCombatDamageToYouEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "DealtCombatDamageToSourceControllerThisTurn"
+                                ]
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        "TheRingTemptsYou"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "MYTHIC",
+        "artist": "Anato Finnstark",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a55e6508-0b59-4573-bc4e-67b27279cfed.jpg?1686968786"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
