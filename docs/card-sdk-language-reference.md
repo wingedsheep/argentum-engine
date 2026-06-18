@@ -4252,7 +4252,14 @@ replacementEffect {
   predicates: `GameObjectFilter.sharingColorWithRecipient()` (`CardPredicate.SharesColorWithRecipient`,
   Well-Laid Plans — "another creature that shares a color") and `sharingChosenColorWithSource()`
   (`CardPredicate.SharesChosenColorWithSource`, reads the replacement source's `ChosenColorComponent`).
-- `ReplacementEffect.EntersBattlefieldTappedUnless(condition)` — ETB tapped unless condition met.
+- `EntersTapped(unlessCondition?, payLifeCost?)` — "this permanent enters tapped" (`unlessCondition = null`),
+  or "enters tapped unless `<condition>`" when an `unlessCondition` is supplied. The "slow land" cycle
+  (Deathcap Glade, Dreamroot Cascade, Sundown Pass — "enters tapped unless you control two or more other
+  lands") uses `unlessCondition = Conditions.YouControlAtLeast(3, GameObjectFilter.Land)`: the
+  `AggregateBattlefield` count includes the entering land itself, so "two or more *other* lands" is
+  "three or more lands total". The parallel "fast land" cycle (Blooming Marsh — "two or fewer other lands")
+  uses an `LTE`-direction `Compare(AggregateBattlefield(You, Land), LTE, Fixed(3))`. `payLifeCost` renders
+  the "you may pay N life; if you don't, it enters tapped" variant.
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - `OnEnterRunEffect(effect)` — generic "as ~ enters the battlefield, run [effect]". The wrapped effect
   executes via the normal effect-executor pipeline at entry time (so `EffectTarget.Self` resolves to

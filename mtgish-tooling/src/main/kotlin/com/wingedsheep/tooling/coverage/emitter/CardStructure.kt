@@ -532,6 +532,51 @@ private fun EmitCtx.youControlAtLeastConditionDsl(condNode: JsonElement?): Strin
 }
 
 /**
+ * The "slow land" enters-tapped gate (Deathcap Glade, Dreamroot Cascade, Sundown Pass; VOW/SOS/INR):
+ * an `Unless{<condition>}[EntersTapped]` replacement node whose condition is
+ * `PlayerPassesFilter(You, ControlsNum(>= N, And(Other(ThisPermanent), IsCardtype Land)))` —
+ * "you control N or more OTHER lands". Renders the `unlessCondition` argument for
+ * `EntersTapped(...)` as `Conditions.YouControlAtLeast(N + 1, GameObjectFilter.Land)`.
+ *
+ * The `+ 1` accounts for the IR's `Other(ThisPermanent)` exclusion: Argentum's
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.AggregateBattlefield] over `GameObjectFilter.Land`
+ * counts the entering land itself, so "N or more *other* lands" is "N + 1 or more lands total".
+ *
+ * Conservative by design — returns null (-> SCAFFOLD) unless the shape is exactly: the `Unless`
+ * action is a single `EntersTapped`, the condition is the You/ControlsNum/`>=`/Integer gate over an
+ * `And(Other(ThisPermanent), IsCardtype Land)` filter. A `<=` comparison (the parallel "fast land"
+ * cycle, "two or fewer other lands") or any other filter declines rather than miscount.
+ */
+private fun EmitCtx.slowLandEntersTappedConditionDsl(rep: JsonObject): String? {
+    val args = rep["args"].asArr ?: return null
+    // Second arg is the list of replacement actions the Unless gates — must be a lone EntersTapped.
+    val gated = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+    if (gated.singleOrNull()?.strField("_ReplacementActionWouldEnter") != "EntersTapped") return null
+
+    val cond = args.getOrNull(0) as? JsonObject ?: return null
+    if (cond.strField("_Condition") != "PlayerPassesFilter") return null
+    val condArgs = cond["args"].asArr ?: return null
+    if ((condArgs.getOrNull(0) as? JsonObject)?.strField("_Player") != "You") return null
+    val controls = condArgs.getOrNull(1) as? JsonObject ?: return null
+    if (controls.strField("_Players") != "ControlsNum") return null
+    val cArgs = controls["args"].asArr ?: return null
+    val comparison = cArgs.getOrNull(0) as? JsonObject ?: return null
+    if (comparison.strField("_Comparison") != "GreaterThanOrEqualTo") return null
+    val n = (comparison["args"] as? JsonObject)?.takeIf { it.strField("_GameNumber") == "Integer" }
+        ?.get("args").asInt() ?: return null
+    // The filter must be exactly "other lands": And(Other(ThisPermanent), IsCardtype Land).
+    val filter = cArgs.getOrNull(1) as? JsonObject ?: return null
+    if (filter.strField("_Permanents") != "And") return null
+    val parts = filter["args"].asArr?.filterIsInstance<JsonObject>() ?: return null
+    if (parts.size != 2) return null
+    val other = parts.firstOrNull { it.strField("_Permanents") == "Other" } ?: return null
+    if ((other["args"] as? JsonObject)?.strField("_Permanent") != "ThisPermanent") return null
+    val land = parts.firstOrNull { it.strField("_Permanents") == "IsCardtype" } ?: return null
+    if (land["args"].asStr() != "Land") return null
+    return render(call("Conditions.YouControlAtLeast", arg("${n + 1}"), arg(Lit("GameObjectFilter.Land"))))
+}
+
+/**
  * A `FlashForCasters { Condition }` rule -> the card-level `conditionalFlash = <condition>`
  * assignment ("<this> has flash as long as <condition>", CR 702.8 / Colossal Rattlewurm). Only the
  * "you control a [filter]" condition the shared [youControlConditionDsl] renders exactly produces a
@@ -597,6 +642,30 @@ private fun EmitCtx.sourceCounterCountAtLeastConditionDsl(condNode: JsonElement?
         ?.get("args").asInt() ?: return null
     val counter = counterTypeDsl(hArgs.getOrNull(1)) ?: return null
     return "Conditions.SourceCounterCountAtLeast($counter, $n)"
+}
+
+/**
+ * **Delirium** static gate — "as long as there are N or more card types among cards in your graveyard"
+ * (`PlayerPassesFilter(You, NumCardTypesInGraveyardIs(GreaterThanOrEqualTo Integer N))`, Wildfire
+ * Wickerfolk) -> the `Compare(AggregateZone(You, GRAVEYARD, Any, DISTINCT_TYPES), GTE, Fixed(N))` DSL
+ * string. Delirium is an ability word with no rules meaning, so the gate is just the graveyard
+ * distinct-card-type count threshold the engine reads under projection. Renders ONLY the You-scoped,
+ * `>= N` (fixed integer) shape; any other player scope or comparator declines (-> SCAFFOLD) rather than
+ * miscount the threshold.
+ */
+private fun deliriumConditionDsl(condNode: JsonElement?): String? {
+    val cond = condNode as? JsonObject ?: return null
+    if (cond.strField("_Condition") != "PlayerPassesFilter") return null
+    val args = cond["args"].asArr ?: return null
+    if ((args.getOrNull(0) as? JsonObject)?.strField("_Player") != "You") return null
+    val pred = args.getOrNull(1) as? JsonObject ?: return null
+    if (pred.strField("_Players") != "NumCardTypesInGraveyardIs") return null
+    val comparison = pred["args"] as? JsonObject ?: return null
+    if (comparison.strField("_Comparison") != "GreaterThanOrEqualTo") return null
+    val n = (comparison["args"] as? JsonObject)?.takeIf { it.strField("_GameNumber") == "Integer" }
+        ?.get("args").asInt() ?: return null
+    return "Compare(DynamicAmount.AggregateZone(Player.You, Zone.GRAVEYARD, GameObjectFilter.Any, " +
+        "Aggregation.DISTINCT_TYPES), ComparisonOperator.GTE, DynamicAmount.Fixed($n))"
 }
 
 /**
@@ -705,43 +774,41 @@ internal fun EmitCtx.ifRuleBlock(rule: JsonObject): List<Stmt>? {
         val condDsl = youHaventCastASpellConditionDsl(cond)
             ?: youCommittedCrimeConditionDsl(cond)
             ?: sourceCounterCountAtLeastConditionDsl(cond)
+            ?: deliriumConditionDsl(cond)
             ?: run { reasons.add("If"); return null }
         val layerEffects = (innerRule["args"].asArr?.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
             ?: run { reasons.add("If"); return null }
-        // All-AddAbility layer effects: grant each bare keyword to SELF, gated on the same condition.
-        // One layer effect or several (Vadmir grants two) — emit one ConditionalStaticAbility per keyword.
-        if (layerEffects.isNotEmpty() && layerEffects.all { it.strField("_StaticLayerEffect") == "AddAbility" }) {
-            val keywords = layerEffects.map { le ->
-                // An AddAbility whose granted rule is anything richer than a plain keyword (an activated
-                // ability, landwalk, protection-from-color) isn't a bare keyword grant — decline.
-                val granted = (le["args"] as? JsonArray)?.singleOrNull() as? JsonObject
-                if (granted?.strField("_Rule") != null && granted.size > 1) { reasons.add("If"); return null }
-                keywordOf(le) ?: run { reasons.add("If"); return null }
-            }
-            return keywords.map { kw ->
-                staticAbilityStmt(call(
-                    "ConditionalStaticAbility",
-                    arg("ability", call("GrantKeyword", arg("Keyword.$kw"), arg("Filters.Self"))),
-                    arg("condition", Lit(condDsl)),
-                ))
+        if (layerEffects.isEmpty()) { reasons.add("If"); return null }
+        // Each layer effect grants ONE continuous effect to SELF, gated on the same condition — one
+        // `ConditionalStaticAbility` per layer effect, in order. Two shapes render: a bare `AddAbility`
+        // (grant a plain keyword) and a fixed `AdjustPT` (a +p/+t buff). A card can mix them (Wildfire
+        // Wickerfolk's Delirium grants +1/+1 AND trample). Anything richer (a dynamic AdjustPTX, an
+        // AddAbility wrapping an activated ability / landwalk / protection) declines (-> SCAFFOLD)
+        // rather than dropping the variable count or the exception.
+        val abilities = layerEffects.map { le ->
+            when (le.strField("_StaticLayerEffect")) {
+                "AddAbility" -> {
+                    val granted = (le["args"] as? JsonArray)?.singleOrNull() as? JsonObject
+                    if (granted?.strField("_Rule") != null && granted.size > 1) { reasons.add("If"); return null }
+                    val kw = keywordOf(le) ?: run { reasons.add("If"); return null }
+                    call("GrantKeyword", arg("Keyword.$kw"), arg("Filters.Self"))
+                }
+                "AdjustPT" -> {
+                    val pt = le["args"].asArr
+                    val p = pt?.getOrNull(0).asInt()
+                    val t = pt?.getOrNull(1).asInt()
+                    if (pt == null || pt.size != 2 || p == null || t == null) { reasons.add("If"); return null }
+                    call("ModifyStats", arg("$p"), arg("$t"), arg("Filters.Self"))
+                }
+                else -> { reasons.add("If"); return null }
             }
         }
-        val le = layerEffects.singleOrNull()
-        when (le?.strField("_StaticLayerEffect")) {
-            "AdjustPT" -> {
-                // A fixed +p/+t buff: `args` is the [p, t] pair. Anything else (a dynamic AdjustPTX /
-                // AdjustPTForEach) declines rather than dropping the variable count.
-                val pt = le["args"].asArr
-                val p = pt?.getOrNull(0).asInt()
-                val t = pt?.getOrNull(1).asInt()
-                if (pt == null || pt.size != 2 || p == null || t == null) { reasons.add("If"); return null }
-                return listOf(staticAbilityStmt(call(
-                    "ConditionalStaticAbility",
-                    arg("ability", call("ModifyStats", arg("$p"), arg("$t"), arg("Filters.Self"))),
-                    arg("condition", Lit(condDsl)),
-                )))
-            }
-            else -> { reasons.add("If"); return null }
+        return abilities.map { ability ->
+            staticAbilityStmt(call(
+                "ConditionalStaticAbility",
+                arg("ability", ability),
+                arg("condition", Lit(condDsl)),
+            ))
         }
     }
 
@@ -1335,8 +1402,20 @@ internal fun EmitCtx.spellBlock(card: JsonObject): List<Stmt>? {
     balanceEffect(card)?.let { return it }
     conditionalSpell(card)?.let { return it }
 
-    val (targets, actions) = extractEnvelope(card["Rules"])
-    if (actions == null) return null
+    val (targets, rawActions) = extractEnvelope(card["Rules"])
+    if (rawActions == null) return null
+
+    // Paradigm (Secrets of Strixhaven) lowers to the spell-envelope ability word `paradigm()`, not an
+    // effect: the IR carries a trailing `Paradigm(ThisSpell)` action after the spell's real body. Strip
+    // it here and emit `paradigm()` in the spell block; the remaining actions render through the normal
+    // body path, so every body the emitter can already render automatically gains Paradigm support. Only
+    // the trailing-action form (`Paradigm` as the last action of the spell's ActionList, scoped to
+    // ThisSpell) is recognized — anything else declines to SCAFFOLD via the normal path.
+    val paradigm = rawActions.lastOrNull()?.let { it.strField("_Action") == "Paradigm" && jsonContains(it, "_Spell", "ThisSpell") } == true
+    val actions = if (paradigm) rawActions.dropLast(1) else rawActions
+    if (actions.isEmpty()) return null
+    fun withParadigm(stmts: List<Stmt>): List<Stmt> =
+        if (paradigm) listOf<Stmt>(RawLine("        paradigm()")) + stmts else stmts
 
     // MULTI-target spell (two or more chosen targets, e.g. Skulduggery's "target creature you control …
     // and target creature an opponent controls …"). Render one `target("tN", …)` local per chosen
@@ -1356,7 +1435,7 @@ internal fun EmitCtx.spellBlock(card: JsonObject): List<Stmt>? {
             restrictions.forEach { stmts.add(RawLine(it)) }
             targetStmts.forEach { stmts.add(it) }
             stmts.add(Assign("effect", edsl))
-            return listOf(Sub(Block("spell", stmts)))
+            return listOf(Sub(Block("spell", withParadigm(stmts))))
         } finally {
             targetVars = emptyList()
             targetRefVars = emptyMap()
@@ -1371,7 +1450,7 @@ internal fun EmitCtx.spellBlock(card: JsonObject): List<Stmt>? {
     restrictions.forEach { stmts.add(RawLine(it)) }
     if (tvar != null) stmts.add(targetLocal(tnode!!))
     stmts.add(Assign("effect", edsl))
-    return listOf(Sub(Block("spell", stmts)))
+    return listOf(Sub(Block("spell", withParadigm(stmts))))
 }
 
 private fun spellOf(effect: Dsl): List<Stmt> = listOf(Sub(Block("spell", listOf(Assign("effect", effect)))))
@@ -1916,6 +1995,55 @@ private fun EmitCtx.liftUnlessAction(actions: List<JsonObject>): Pair<String, Li
 }
 
 /**
+ * A `TriggerMayOnceEachTurn` rule — a triggered ability whose actions are a "you may [do X]. Do this only
+ * once each turn." rummage (Irreverent Gremlin: "Whenever another creature you control with power 2 or
+ * less enters, you may discard a card. If you do, draw a card. Do this only once each turn.").
+ *
+ * The IR's once-each-turn tag bakes in BOTH the once-per-turn cap (CR 603.3b) AND the "you may" framing
+ * over its `MustCost(...) + If(CostWasPaid)[...]` action body. So the body's forced `MustCost` becomes a
+ * *resolution-time* MayEffect: `MayEffect(IfYouDoEffect(action = <cost-as-effect>, ifYouDo = <then>))`,
+ * exactly the engine's loot idiom — and the ability carries `oncePerTurn = true`. The trigger spec is
+ * recovered by the shared [triggerSpecFor] (so the "another creature you control with power 2 or less"
+ * ETB filter round-trips through gameObjectFilterDsl, declining if it can't).
+ *
+ * Renders ONLY the exact rummage body: a `MustCost(DiscardACard)` followed by `If(CostWasPaid, [DrawACard])`
+ * with no else-branch. Any other cost, then-effect, or shape declines (-> SCAFFOLD) rather than guess; in
+ * particular the optional "may" must come solely from this once-each-turn tag, never invented for a bare
+ * forced cost.
+ */
+internal fun EmitCtx.triggerMayOnceEachTurnBlock(rule: JsonObject): List<Stmt>? {
+    val spec = triggerSpecFor(rule) ?: run { reasons.add("TriggerMayOnceEachTurn"); return null }
+    val (_, actions) = extractEnvelope(rule)
+    if (actions == null || actions.size != 2) { reasons.add("TriggerMayOnceEachTurn"); return null }
+    val (mustCost, ifPaid) = actions
+    // The forced cost — "discard a card" — becomes the IfYouDo's action effect.
+    if (mustCost.strField("_Action") != "MustCost") { reasons.add("TriggerMayOnceEachTurn"); return null }
+    val costAction = when ((mustCost["args"] as? JsonObject)?.strField("_Cost")) {
+        "DiscardACard" -> call("Patterns.Hand.discardCards", arg("1"))
+        else -> { reasons.add("TriggerMayOnceEachTurn"); return null }
+    }
+    // The gate must be exactly If(CostWasPaid, [then]) with no else-branch.
+    if (ifPaid.strField("_Action") != "If") { reasons.add("TriggerMayOnceEachTurn"); return null }
+    val ifArgs = ifPaid["args"].asArr ?: run { reasons.add("TriggerMayOnceEachTurn"); return null }
+    if (!jsonContains(ifArgs.getOrNull(0), "_Condition", "CostWasPaid") || ifArgs.getOrNull(2) != null) {
+        reasons.add("TriggerMayOnceEachTurn"); return null
+    }
+    val thenActions = (ifArgs.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
+        ?: run { reasons.add("TriggerMayOnceEachTurn"); return null }
+    val thenEffect = renderEffectList(thenActions, null) ?: run { reasons.add("TriggerMayOnceEachTurn"); return null }
+
+    val effect = call(
+        "MayEffect",
+        arg("effect", call("IfYouDoEffect", arg("action", costAction), arg("ifYouDo", thenEffect))),
+    )
+    return listOf(Sub(Block("triggeredAbility", listOf(
+        Assign("trigger", Lit(spec)),
+        Assign("effect", effect),
+        Assign("oncePerTurn", Lit("true")),
+    ))))
+}
+
+/**
  * An intervening-if condition node -> a `Conditions.*` DSL string, or null (-> SCAFFOLD) for any
  * condition shape we can't express exactly. Only the shapes our calibrated cards need are
  * recognised; declining beats widening. A top-level `And` composes its arms with `Conditions.All`
@@ -2327,6 +2455,22 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         return "Triggers.YouAttackWithFilter($filter)"
     }
 
+    // "Whenever you fully unlock a Room" — the Eerie Room half (CR 709.5h, Balemurk Leech, Optimistic
+    // Scavenger). The args are [player scope, the Room subject]. The engine's Triggers.RoomFullyUnlocked
+    // is fixed to the You scope over any Room, so only that exact shape renders: a SinglePlayer(You)
+    // scope plus an IsEnchantmentType "Room" subject. Any other player scope, or a Room subject carrying
+    // extra constraints, has no matching Triggers.* constant, so it declines -> SCAFFOLD rather than
+    // widening the trigger.
+    if (jsonContains(trig, "_Trigger", "WhenAPlayerFullyUnlocksARoom")) {
+        val argv = trig["args"].asArr ?: return null
+        val scope = castScope(argv.getOrNull(0) as? JsonObject)
+        val subject = argv.getOrNull(1) as? JsonObject
+        val bareRoomSubject = subject?.strField("_Permanents") == "IsEnchantmentType" &&
+            subject.field("args").asStr() == "Room"
+        if (scope == CastScope.YOU && bareRoomSubject) return "Triggers.RoomFullyUnlocked"
+        return null
+    }
+
     // "Whenever a [filtered] permanent enters the battlefield" (the SELF case returned above): an
     // `Other(ThisPermanent)` clause means "another …" -> OTHER binding (Elvish Vanguard's "another
     // Elf", Wretched Anurid's "another creature"); otherwise "a …" -> ANY (Wirewood Savage's "a Beast").
@@ -2697,6 +2841,19 @@ internal fun EmitCtx.asEntersBlock(rule: JsonObject, condition: String? = null):
     for (rep in replacements) {
         val dsl: Dsl = when (rep.strField("_ReplacementActionWouldEnter")) {
             "EntersTapped" -> call("EntersTapped")
+            // The "slow land" cycle (Deathcap Glade, Dreamroot Cascade, Sundown Pass; VOW/SOS/INR):
+            // "~ enters tapped unless you control two or more OTHER lands." The IR wraps the tapped
+            // replacement in an `Unless{<condition>}[EntersTapped]`. Only the conservative
+            // control-N-other-lands gate renders -> EntersTapped(unlessCondition = ...); any other
+            // Unless condition declines (-> SCAFFOLD) rather than guess the gate. Note the parallel
+            // "fast land" cycle ("two or FEWER other lands") uses a `<=` comparison this helper
+            // deliberately doesn't render — the at-least condition facade only models `>=`.
+            "Unless" -> {
+                if (!onSelf) { reasons.add("AsPermanentEnters"); return null }
+                val cond = slowLandEntersTappedConditionDsl(rep)
+                    ?: run { reasons.add("AsPermanentEnters"); return null }
+                call("EntersTapped", arg("unlessCondition", Lit(cond)))
+            }
             "ChooseACreatureType" -> call("EntersWithChoice", arg("ChoiceType.CREATURE_TYPE"))
             // "As ~ enters, choose a color." Only the unrestricted any-color choice (Mirage Mesa,
             // Uncharted Haven) renders exactly; a constrained color pick scaffolds. Pairs with the

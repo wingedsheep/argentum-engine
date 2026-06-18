@@ -17,6 +17,9 @@ object TheBigScoreSet : MtgSet {
     override val displayName = "The Big Score"
     override val releaseDate = "2024-04-19"
 
+    // All 30 cards of the bonus sheet are implemented — surface it as complete, not "partial".
+    override val sealedSupported = true
+
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
     }

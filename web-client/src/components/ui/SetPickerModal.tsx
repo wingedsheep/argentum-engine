@@ -75,8 +75,8 @@ export function SetPickerModal({
   const [search, setSearch] = useState('')
   // Partially-implemented sets are hidden by default; the user opts into them with this toggle.
   const [showPartialSets, setShowPartialSets] = useState(false)
-  // Hide thin sets (lots of partial sets have only a handful of cards). Defaults to 50.
-  const [minCards, setMinCards] = useState(50)
+  // Hide thin sets (lots of partial sets have only a handful of cards). Defaults to 30.
+  const [minCards, setMinCards] = useState(30)
 
   const isSingle = mode === 'single'
   const isSelected = (code: string) => selectedCodes.includes(code)

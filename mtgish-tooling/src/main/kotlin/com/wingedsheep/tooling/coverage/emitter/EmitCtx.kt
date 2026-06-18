@@ -155,6 +155,7 @@ internal fun EmitCtx.renderAction(node: JsonObject, tvar: String?): Dsl? =
 internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?): Dsl? {
     echoEffect(actions)?.let { return it }
     counterUnlessPaysEffect(actions)?.let { return it }
+    mayCostReflexiveDamageEffect(actions)?.let { return it }
     erodeDestroyControllerFetchEffect(actions)?.let { return it }
     heatedArgumentExileRiderEffect(actions)?.let { return it }
     manaSculptCounterWizardManaEffect(actions)?.let { return it }

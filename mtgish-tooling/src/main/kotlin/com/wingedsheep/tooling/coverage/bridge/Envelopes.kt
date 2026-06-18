@@ -23,6 +23,11 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     // your hand this turn").
     envelope("TriggerI", "envelope: triggered ability with intervening-if condition")
     envelope("TriggerOnceEachTurn", "envelope: triggered ability that triggers only once each turn")
+    // "you may [do X]. Do this only once each turn." — a once-per-turn triggered ability whose body the
+    // once-each-turn tag also frames as a "you may". The capability is the nested actions (the emitter
+    // renders Irreverent Gremlin's MustCost(discard) + If(CostWasPaid)[draw] rummage as
+    // MayEffect(IfYouDoEffect(...)) with oncePerTurn = true; other bodies scaffold).
+    envelope("TriggerMayOnceEachTurn", "envelope: optional once-each-turn triggered ability (capability is the nested actions)")
     envelope("Activated", "envelope: activated ability")
     envelope("ActivatedWithModifiers", "envelope: activated ability")
     // Zone-scoped activated abilities: the inner Activated rule carries the real capability; the
@@ -45,6 +50,10 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     // `GatedEffect(gate = MayDecide)` (SerialName "Gated") in our trees, so the gate envelope composes it.
     envelope("MayAction", "gate envelope: 'you may' (Lesson 1 cluster)", composes = listOf("Gated"))
     envelope("MayCost", "gate envelope: 'you may pay' (Lesson 1 cluster)")
+    // A forced cost inside a trigger/ability body ("discard a card. If you do, …"). The capability is the
+    // nested cost + its `If(CostWasPaid)` rider; the emitter renders the recognised loot shapes
+    // (Irreverent Gremlin's discard-then-draw) and scaffolds the rest.
+    envelope("MustCost", "gate envelope: a forced cost (capability is the nested cost + CostWasPaid rider)")
     envelope("Unless", "gate envelope: 'unless ...' (Lesson 1 cluster)", composes = listOf("PayOrSuffer"))
 
     // A controller-scoped continuous static ("spells you cast cost less", "you have shroud"); the real

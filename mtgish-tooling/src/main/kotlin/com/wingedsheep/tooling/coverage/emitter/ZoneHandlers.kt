@@ -529,6 +529,30 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
             call("Effects.Move", arg(Lit(tgt)), arg("Zone.$zone"))
         }
     }
+
+    // "If that creature or planeswalker would die this turn, exile it instead." (Scorching Dragonfire) —
+    // a death-replacement (CR 614) marker on the just-damaged target. mtgish models it as
+    //   CreateReplaceWouldPutIntoGraveyardUntil(
+    //     [ APermanentWouldDie(SinglePermanent Ref_TargetPermanent) ], [ ExileItInstead ], UntilEndOfTurn )
+    // -> `MarkExileOnDeathEffect(<sameTarget>)`, the engine's exile-instead-of-graveyard marker that
+    // expires at end of turn. Renders ONLY the exact shape: a single "a permanent would die" replaceable
+    // event on a bound target, the lone `ExileItInstead` replacement action, and the `UntilEndOfTurn`
+    // expiration. Any other event / replacement / expiration declines (-> SCAFFOLD) rather than
+    // approximate a death replacement we can't reproduce exactly.
+    on("CreateReplaceWouldPutIntoGraveyardUntil") { _, args, tvar ->
+        val arr = args.asArr ?: return@on null
+        if (arr.size != 3) return@on null
+        // 1. The replaceable event must be exactly "a permanent would die" on a bound target.
+        val event = arr.getOrNull(0) as? JsonObject ?: return@on null
+        if (event.strField("_ReplacableEventWouldPutIntoGraveyard") != "APermanentWouldDie") return@on null
+        val tgt = refTargetIn(event["args"], "_Permanent", tvar) ?: return@on null
+        // 2. The replacement action must be exactly the lone ExileItInstead.
+        val replacements = (arr.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return@on null
+        if (replacements.singleOrNull()?.strField("_ReplacementActionWouldPutIntoGraveyard") != "ExileItInstead") return@on null
+        // 3. The expiration must be exactly until end of turn (the marker MarkExileOnDeathEffect models).
+        if ((arr.getOrNull(2) as? JsonObject)?.strField("_Expiration") != "UntilEndOfTurn") return@on null
+        call("MarkExileOnDeathEffect", arg(Lit(tgt)))
+    }
 }
 
 internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {

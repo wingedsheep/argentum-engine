@@ -135,8 +135,16 @@ internal fun findLandwalkKeywords(node: JsonElement?, keywords: Set<String>, out
     }
 }
 
-internal fun keywordLines(card: JsonObject, keywords: Set<String>): Set<String> {
+internal fun keywordLines(card: JsonObject, keywords: Set<String>, oracleText: String? = null): Set<String> {
     val out = mutableSetOf<String>()
+    // Ability words that the SDK models as a (rules-inert) Keyword but the mtgish IR carries only as the
+    // triggered/effect shape, with NO top-level `_Rule` to scan for. Eerie is the lone such word so far:
+    // it's an ability word (CR 207.2c — no rules meaning) whose Room/enchantment-enters trigger union is
+    // already rendered by triggerSpecFor, but the hand-authored golden still stamps `keywords(Keyword.EERIE)`
+    // to match Scryfall's `keywords:["Eerie"]` (Balemurk Leech, Optimistic Scavenger). Detect it from the
+    // ability-word prefix in the printed oracle text — the only place the IR exposes it — and emit it only
+    // when the SDK actually has the EERIE enum value, so the line round-trips against the golden.
+    if (oracleText != null && "EERIE" in keywords && oracleText.startsWith("Eerie —")) out.add("EERIE")
     // Only TOP-LEVEL rules are intrinsic card keywords. A keyword nested inside an Activated/Triggered
     // ability is GRANTED to a target ("target creature gains forestwalk"), not a card keyword — the old
     // whole-tree scan wrongly stamped it on the card (Elvish Pathcutter, Spurred Wolverine, Krosan Groundshaker).

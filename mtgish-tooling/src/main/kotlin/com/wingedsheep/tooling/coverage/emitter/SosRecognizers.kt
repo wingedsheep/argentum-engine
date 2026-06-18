@@ -420,3 +420,90 @@ internal fun EmitCtx.wisdomOfAgesSpell(card: JsonObject): List<Stmt>? {
         ),
     )
 }
+
+/**
+ * Boilerbilges Ripper — the "you may [pay a sacrifice cost]. When you do, [reflexive effect targeting]"
+ * idiom. mtgish models it as two sibling actions inside the ETB triggered ability:
+ *
+ * `[ MayCost(SacrificeAPermanent: And(Other ThisPermanent, Or(IsCardtype Creature, IsCardtype Enchantment))),
+ *    If(CostWasPaid)[ ReflexiveTrigger(Targeted([AnyTarget],
+ *        ActionList[ PermanentDealsDamage(ThisPermanent, 2, Ref_AnyTarget) ])) ] ]`
+ * →
+ * ```
+ * ReflexiveTriggerEffect(
+ *     action = Effects.Composite(listOf(
+ *         SelectTargetEffect(requirement = TargetObject(filter =
+ *             TargetFilter.CreatureOrEnchantment.youControl().other()), storeAs = "permanentToSacrifice"),
+ *         Effects.SacrificeTarget(EffectTarget.PipelineTarget("permanentToSacrifice")))),
+ *     optional = true,
+ *     reflexiveEffect = Effects.DealDamage(2, EffectTarget.ContextTarget(0), damageSource = EffectTarget.Self),
+ *     reflexiveTargetRequirements = listOf(<reflexive target>))
+ * ```
+ *
+ * The optional sacrifice is a resolution-time CHOICE (not a target), so it's a select-then-sacrifice
+ * pipeline whose chosen permanent the SacrificeTarget reads via the pipeline slot; the "When you do"
+ * reflexive trigger then chooses its own target as it goes on the stack (`ContextTarget(0)`). The damage
+ * source is the source permanent (Self). Renders ONLY this exact shape — sacrifice "another creature or
+ * enchantment" (you control), a CostWasPaid-gated single reflexive trigger whose sole action is the
+ * source dealing a fixed amount of damage to its chosen target — and only when the reflexive target
+ * round-trips through [targetExpr]; anything else declines (-> SCAFFOLD).
+ */
+internal fun EmitCtx.mayCostReflexiveDamageEffect(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val (mayCost, ifPaid) = actions
+    if (mayCost.strField("_Action") != "MayCost") return null
+    // The optional cost must be "sacrifice another creature or enchantment (you control)".
+    val cost = mayCost["args"] as? JsonObject ?: return null
+    if (cost.strField("_Cost") != "SacrificeAPermanent") return null
+    val costBlob = compact(cost["args"])
+    val sacFilter = "\"Other\"" in costBlob && "ThisPermanent" in costBlob &&
+        "\"Or\"" in costBlob && "IsCardtype" in costBlob &&
+        "\"Creature\"" in costBlob && "\"Enchantment\"" in costBlob &&
+        "ControlledByAPlayer" !in costBlob && "IsCreatureType" !in costBlob
+    if (!sacFilter) return null
+
+    // The gate must be exactly If(CostWasPaid)[ ReflexiveTrigger(...) ] — no else-branch.
+    if (ifPaid.strField("_Action") != "If") return null
+    val ifArgs = ifPaid["args"].asArr ?: return null
+    if (!jsonContains(ifArgs.getOrNull(0), "_Condition", "CostWasPaid") || ifArgs.getOrNull(2) != null) return null
+    val reflexive = (ifArgs.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
+        ?.singleOrNull()?.takeIf { it.strField("_Action") == "ReflexiveTrigger" } ?: return null
+
+    // The reflexive trigger's Targeted envelope: a single AnyTarget, one PermanentDealsDamage action.
+    val (rTargets, rActions) = extractEnvelope(reflexive)
+    val reflexiveTargetNode = rTargets?.singleOrNull() ?: return null
+    val reflexiveTarget = targetExpr(reflexiveTargetNode) ?: return null
+    val damage = rActions?.singleOrNull()?.takeIf { it.strField("_Action") == "PermanentDealsDamage" } ?: return null
+    // The damage source is this permanent; recipient is the reflexive AnyTarget (Ref_AnyTarget).
+    if (!jsonContains(damage["args"].asArr?.firstOrNull(), "_Permanent", "ThisPermanent")) return null
+    if (!jsonContains(damage, "_DamageRecipient", "Ref_AnyTarget")) return null
+    val amt = findInteger(damage["args"]) as? Int ?: return null
+
+    val action = call(
+        "Effects.Composite",
+        arg(call(
+            "listOf",
+            arg(call(
+                "SelectTargetEffect",
+                arg("requirement", call(
+                    "TargetObject",
+                    arg("filter", Lit("TargetFilter.CreatureOrEnchantment.youControl().other()")),
+                )),
+                arg("storeAs", Lit("\"permanentToSacrifice\"")),
+            )),
+            arg(call("Effects.SacrificeTarget", arg(Lit("EffectTarget.PipelineTarget(\"permanentToSacrifice\")")))),
+        )),
+    )
+    return call(
+        "ReflexiveTriggerEffect",
+        arg("action", action),
+        arg("optional", Lit("true")),
+        arg("reflexiveEffect", call(
+            "Effects.DealDamage",
+            arg("$amt"),
+            arg("EffectTarget.ContextTarget(0)"),
+            arg("damageSource", Lit("EffectTarget.Self")),
+        )),
+        arg("reflexiveTargetRequirements", call("listOf", arg(reflexiveTarget))),
+    )
+}

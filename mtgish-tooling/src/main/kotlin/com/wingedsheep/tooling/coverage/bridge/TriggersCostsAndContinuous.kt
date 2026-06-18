@@ -36,14 +36,21 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     supported("AtTheBeginningOfCombatDuringAPlayersTurn", "trigger: beginning of combat on your turn (Triggers.BeginCombat)")
     supported("WhenAPlayerCastsASpell", "trigger: a player casts a spell (Triggers.YouCastSpell / AnyPlayerCastsSpell / OpponentCastsSpell + type filters)")
     supported("WhenAPlayerCastsTheirNthSpellInATurn", "trigger: you cast your Nth spell each turn (Triggers.NthSpellCast(N, Player.You) — Rodeo Pyromancers)")
-    // DELIBERATE DECLINE — Breeches, the Blastmaker. Its second-spell payoff (NthSpellCast above) is a
-    // `MayCost(sacrifice an artifact)`-gated `FlipACoin_OnWinAndLose` that sets up two reflexive (delayed)
-    // triggers — win: `CopySpellAndMayChooseNewTargets`, lose: deal that spell's mana value to any target.
-    // The win/lose coin branch + reflexive-trigger + copy-spell-with-new-targets cluster is exactly the
-    // value-selection / reflexive shape the module creator's note (mtgish-tooling/CLAUDE.md) says to leave
-    // BLOCKED rather than risk a confidently-wrong render. The tags FlipACoin_OnWinAndLose / ReflexiveTrigger
-    // / CopySpellAndMayChooseNewTargets stay unmapped on purpose; the hand-authored card + its scenario test
+    // Breeches, the Blastmaker stays a DELIBERATE DECLINE — its second-spell payoff (NthSpellCast above)
+    // is a `MayCost(sacrifice an artifact)`-gated `FlipACoin_OnWinAndLose` that sets up two reflexive
+    // (delayed) triggers — win: `CopySpellAndMayChooseNewTargets`, lose: deal that spell's mana value to
+    // any target. The win/lose coin branch + copy-spell-with-new-targets cluster is exactly the
+    // value-selection shape the module creator's note (mtgish-tooling/CLAUDE.md) says to leave BLOCKED
+    // rather than risk a confidently-wrong render. FlipACoin_OnWinAndLose / CopySpellAndMayChooseNewTargets
+    // stay unmapped on purpose, so Breeches stays BLOCKED; the hand-authored card + its scenario test
     // (BreechesTheBlastmakerTest) is the ground truth.
+    //
+    // ReflexiveTrigger itself is capability vocabulary — the "you may [pay a cost]. When you do, [reflexive
+    // effect targeting]" idiom maps to ReflexiveTriggerEffect. The emitter renders ONLY the exact shape it
+    // can reproduce (Boilerbilges Ripper: MayCost(sacrifice another creature or enchantment) +
+    // If(CostWasPaid)[reflexive: this permanent deals N to any target]); any other reflexive shape (the
+    // Breeches coin cluster) still scaffolds/blocks via its sibling tags.
+    supported("ReflexiveTrigger", "reflexive 'when you do' trigger (ReflexiveTriggerEffect — Boilerbilges Ripper); other shapes scaffold")
     supported("AtTheBeginningOfAPlayersUpkeep", "trigger: upkeep (Triggers.YourUpkeep / EachUpkeep / EachOpponentUpkeep)")
     supported("AtTheBeginningOfAPlayersEndStep", "trigger: end step (Triggers.YourEndStep / EachEndStep)")
     supported("WhenAPlayerGainsLife", "trigger: you gain life (Triggers.YouGainLife — Pest Mascot, Essence Channeler)")

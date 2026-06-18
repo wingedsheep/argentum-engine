@@ -16,6 +16,11 @@ internal fun BridgeBuilder.damageLifeAndCards() {
     effect("SpellDealsDistributedDamage", "DividedDamage")
     // "<creature> fights <creature>" (Savage Punch, Dragonclaw Strike, Chelonian Tackle) -> FightEffect.
     effect("Fight", "Fight")
+    // "If that creature or planeswalker would die this turn, exile it instead." (Scorching Dragonfire) —
+    // a death-replacement marker (CR 614) on the just-damaged target -> MarkExileOnDeathEffect. The
+    // emitter renders ONLY the exact shape (a "permanent would die" replaceable event on a bound target,
+    // a lone ExileItInstead replacement, until end of turn); other shapes scaffold.
+    effect("CreateReplaceWouldPutIntoGraveyardUntil", "MarkExileOnDeath")
 
     // "where X is …" — mtgish binds the value with a CreateValueX action, then a later action spends
     // `ValueX`. Argentum has no separate "set X" step for a one-shot spell: the computed DynamicAmount

@@ -1,0 +1,47 @@
+// Scorching Dragonfire
+{
+    "name": "Scorching Dragonfire",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Scorching Dragonfire deals 3 damage to target creature or planeswalker. If that creature or planeswalker would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature or planeswalker"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature or planeswalker"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "target creature or planeswalker"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Eric Velhagen",
+        "flavorText": "As the blaze raced toward her, Syr Ameril closed her eyes and pictured Castle Ardenvale so her last thoughts would be of home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b74a806-ed74-458e-8903-d3d084e9f507.jpg?1636491470"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

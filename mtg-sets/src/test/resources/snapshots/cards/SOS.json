@@ -57,53 +57,98 @@
     ]
 }
 
-// Abstract Paintmage
+// Additive Evolution
 {
-    "name": "Abstract Paintmage",
-    "manaCost": "{U}{U/R}{R}",
-    "typeLine": "Creature — Djinn Sorcerer",
-    "oracleText": "At the beginning of your first main phase, add {U}{R}. Spend this mana only to cast instant and sorcery spells.",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 2
-    },
+    "name": "Additive Evolution",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 0/0 green and blue Fractal creature token. Put three +1/+1 counters on it.\nAt the beginning of combat on your turn, put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.",
     "script": {
         "triggeredAbilities": [
             {
                 "id": "ability_1",
                 "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "GREEN",
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Fractal"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 3,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, create a 0/0 green and blue Fractal creature token. Put three +1/+1 counters on it."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
                     "type": "StepEvent",
-                    "step": "PRECOMBAT_MAIN"
+                    "step": "BEGIN_COMBAT"
                 },
                 "binding": "ANY",
                 "effect": {
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "AddMana",
-                            "color": "BLUE",
-                            "restriction": "InstantOrSorceryOnly"
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature you control"
+                            }
                         },
                         {
-                            "type": "AddMana",
-                            "color": "RED",
-                            "restriction": "InstantOrSorceryOnly"
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature you control"
+                            }
                         }
                     ]
-                }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, put a +1/+1 counter on target creature you control. It gains vigilance until end of turn."
             }
         ]
     },
     "metadata": {
-        "collectorNumber": "171",
+        "collectorNumber": "139",
         "rarity": "UNCOMMON",
-        "artist": "David Auden Nash",
-        "flavorText": "\"Life is vivid; the pigments I use should be too.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173"
+        "artist": "Josiah \"Jo\" Cameron",
+        "flavorText": "\"Numbers have no limits. Why should nature?\"\n—Emil, Quandrix fourth-year",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943"
     },
     "colorIdentityOverride": [
-        "BLUE",
-        "RED"
+        "GREEN"
     ]
 }
 
@@ -663,79 +708,6 @@
     ]
 }
 
-// Biblioplex Tomekeeper
-{
-    "name": "Biblioplex Tomekeeper",
-    "manaCost": "{4}",
-    "typeLine": "Artifact Creature — Construct",
-    "oracleText": "When this creature enters, choose up to one —\n• Target creature becomes prepared. (Only creatures with prepare spells can become prepared.)\n• Target creature becomes unprepared.",
-    "creatureStats": {
-        "power": 3,
-        "toughness": 4
-    },
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "ability_1",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "to": "Battlefield"
-                },
-                "effect": {
-                    "type": "Modal",
-                    "modes": [
-                        {
-                            "effect": {
-                                "type": "BecomePrepared",
-                                "target": {
-                                    "type": "ContextTarget",
-                                    "index": 0
-                                }
-                            },
-                            "targetRequirements": [
-                                {
-                                    "type": "TargetObject",
-                                    "filter": {
-                                        "baseFilter": "creature"
-                                    }
-                                }
-                            ],
-                            "description": "Target creature becomes prepared"
-                        },
-                        {
-                            "effect": {
-                                "type": "Unprepare",
-                                "target": {
-                                    "type": "ContextTarget",
-                                    "index": 0
-                                }
-                            },
-                            "targetRequirements": [
-                                {
-                                    "type": "TargetObject",
-                                    "filter": {
-                                        "baseFilter": "creature"
-                                    }
-                                }
-                            ],
-                            "description": "Target creature becomes unprepared"
-                        }
-                    ],
-                    "minChooseCount": 0,
-                    "countsAsModalSpell": false
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "247",
-        "artist": "Raph Lomotan",
-        "flavorText": "\"Due dates are firm, and will be enforced.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba.jpg?1775938724"
-    },
-    "colorIdentityOverride": []
-}
-
 // Blazing Firesinger
 {
     "name": "Blazing Firesinger",
@@ -1109,66 +1081,6 @@
     },
     "colorIdentityOverride": [
         "GREEN"
-    ]
-}
-
-// Campus Composer
-{
-    "name": "Campus Composer",
-    "manaCost": "{3}{U}",
-    "typeLine": "Creature — Merfolk Bard",
-    "oracleText": "Ward {2}\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-    "creatureStats": {
-        "power": 3,
-        "toughness": 4
-    },
-    "keywords": [
-        "PREPARED",
-        "WARD"
-    ],
-    "keywordAbilities": [
-        {
-            "type": "Ward",
-            "cost": {
-                "type": "WardCost.Mana",
-                "manaCost": "{2}"
-            }
-        }
-    ],
-    "metadata": {
-        "collectorNumber": "40",
-        "rarity": "UNCOMMON",
-        "artist": "Madeline Boni",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1778164968"
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ],
-    "layout": "PREPARE",
-    "cardFaces": [
-        {
-            "name": "Aqueous Aria",
-            "manaCost": "{4}{U}",
-            "typeLine": "Sorcery",
-            "oracleText": "Create a 3/3 blue and red Elemental creature token with flying.",
-            "script": {
-                "spellEffect": {
-                    "type": "CreateToken",
-                    "power": 3,
-                    "toughness": 3,
-                    "colors": [
-                        "BLUE",
-                        "RED"
-                    ],
-                    "creatureTypes": [
-                        "Elemental"
-                    ],
-                    "keywords": [
-                        "FLYING"
-                    ]
-                }
-            }
-        }
     ]
 }
 
@@ -9350,6 +9262,49 @@
     ]
 }
 
+// Restoration Seminar
+{
+    "name": "Restoration Seminar",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Return target nonland permanent card from your graveyard to the battlefield.\nParadigm (Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile without paying its mana cost at the beginning of each of your first main phases.)",
+    "keywords": [
+        "PARADIGM"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target nonland permanent card from your graveyard"
+            },
+            "destination": "Battlefield",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target nonland permanent card from your graveyard"
+            }
+        ],
+        "selfExileOnResolve": true,
+        "paradigm": true
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "MYTHIC",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6.jpg?1775937123"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rubble Rouser
 {
     "name": "Rubble Rouser",
@@ -13043,6 +12998,112 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Visionary's Dance
+{
+    "name": "Visionary's Dance",
+    "manaCost": "{5}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 3/3 blue and red Elemental creature tokens with flying.\n{2}, Discard this card: Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 3,
+            "toughness": 3,
+            "colors": [
+                "BLUE",
+                "RED"
+            ],
+            "creatureTypes": [
+                "Elemental"
+            ],
+            "keywords": [
+                "FLYING"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/5/7/57b98846-85e3-47c7-a903-29953d0b0e8a.jpg?1775828504"
+        },
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "activateFromZone": "Hand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "artist": "Josiah \"Jo\" Cameron",
+        "flavorText": "Choreography powers the spell, but improvisation shapes it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/846a0e79-a530-429e-8f7f-4b87f1b0156e.jpg?1776000377"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 

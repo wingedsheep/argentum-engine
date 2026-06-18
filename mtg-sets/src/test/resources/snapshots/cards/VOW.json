@@ -116,6 +116,140 @@
     ]
 }
 
+// Deathcap Glade
+{
+    "name": "Deathcap Glade",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {B} or {G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "261",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "Deadly mushrooms litter these woods, each waiting for an errant footstep to release its noxious spores.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5523659-98a8-4ae2-9ec7-d77e7352c374.jpg?1655879791",
+        "rulings": [
+            {
+                "date": "2021-11-19",
+                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Dreamroot Cascade
+{
+    "name": "Dreamroot Cascade",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {G} or {U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "Soothing whispers invite travelers to step closer, closer, closer . . . until they vanish soundlessly beneath the surface.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb604455-c411-414d-a2ef-e7567ee86a4d.jpg?1655879797",
+        "rulings": [
+            {
+                "date": "2021-11-19",
+                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Hullbreaker Horror
 {
     "name": "Hullbreaker Horror",
@@ -225,6 +359,73 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sundown Pass
+{
+    "name": "Sundown Pass",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {R} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "266",
+        "rarity": "RARE",
+        "artist": "Muhammad Firdaus",
+        "flavorText": "Riders chase the fading light recklessly through the mountains, desperate for one last glimpse of day.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f3fddd7-ede4-41c7-a645-a6af298a3d35.jpg?1655879812",
+        "rulings": [
+            {
+                "date": "2021-11-19",
+                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 

@@ -55,7 +55,7 @@ object Emitter {
         val pt = card["CardPT"].asObj
 
         val permanent = isPermanent(card)
-        val kw = if (permanent) keywordLines(card, keywords) else emptySet()
+        val kw = if (permanent) keywordLines(card, keywords, ctx.oracleText) else emptySet()
 
         // The whole card is one Block tree: the KDoc precedes it, the shell/ability lines are its body
         // statements, and the renderer turns it into source. Shell scaffolding (mana/typeline/metadata)
@@ -191,6 +191,7 @@ object Emitter {
                 rname == "TriggerA" -> block = ctx.triggerBlock(rule)
                 rname == "TriggerI" -> block = ctx.triggerIBlock(rule)
                 rname == "TriggerOnceEachTurn" -> block = ctx.triggerBlock(rule, oncePerTurn = true)
+                rname == "TriggerMayOnceEachTurn" -> block = ctx.triggerMayOnceEachTurnBlock(rule)
                 rname == "PermanentRuleEffect" -> block = ctx.staticBlock(rule)
                 rname == "If" -> block = ctx.ifRuleBlock(rule)
                 rname == "PlayerEffect" -> block = ctx.playerEffectBlock(rule)

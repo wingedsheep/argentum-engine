@@ -45,6 +45,17 @@ internal fun BridgeBuilder.keywords() {
         "keyword: increment() -> Keyword.INCREMENT + 'whenever you cast a spell, if mana spent > power or toughness, +1/+1 counter' trigger",
         composes = listOf("AddCounters"),
     )
+    // Paradigm (Secrets of Strixhaven) — a spell ability word lowered to the `paradigm()` CardBuilder
+    // helper: it implies self-exile on resolution plus a synthesized "at the beginning of each of your
+    // first main phases, you may cast a free copy from exile" recast trigger (Paradigm.recastAbility).
+    // `composed`, not a bare effect: it has no standalone Effect, and the recast recurrence is engine-
+    // synthesized from the exile marker. The emitter strips the trailing `Paradigm(ThisSpell)` action
+    // off the spell's ActionList and emits `paradigm()` in the spell block (see CardStructure.spellBlock).
+    composed(
+        "Paradigm",
+        "spell ability word: paradigm() -> self-exile on resolve + synthesized first-main-phase free-recast trigger",
+        composes = listOf("ExileSpell"),
+    )
     // Ward (CR 702.21) — a PARAMETERIZED keyword ability: the cost rides in the rule's args
     // (`Ward—Discard a card`, `Ward {2}`, `Ward—Pay N life`, `Ward—Sacrifice <filter>`). Like Saddle,
     // it must be `supported`, not `keyword`: a bare `keywords(Keyword.WARD)` would drop the cost. The

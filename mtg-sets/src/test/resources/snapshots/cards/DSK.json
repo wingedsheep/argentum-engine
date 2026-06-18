@@ -79,6 +79,72 @@
     ]
 }
 
+// Balemurk Leech
+{
+    "name": "Balemurk Leech",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Leech",
+    "oracleText": "Eerie — Whenever an enchantment you control enters and whenever you fully unlock a Room, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "EERIE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Eerie — Whenever an enchantment you control enters, each opponent loses 1 life."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "RoomFullyUnlockedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Eerie — Whenever you fully unlock a Room, each opponent loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "John Tedrick",
+        "flavorText": "Adapted to feed on dead flesh, it's not averse to making its own when no corpses are available.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0621b32-95c5-4f70-96cf-d46d20efc85d.jpg?1726286164"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Baseball Bat
 {
     "name": "Baseball Bat",
@@ -304,6 +370,81 @@
     ]
 }
 
+// Boilerbilges Ripper
+{
+    "name": "Boilerbilges Ripper",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "When this creature enters, you may sacrifice another creature or enchantment. When you do, this creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature|enchantment ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "permanentToSacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "permanentToSacrifice"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "damageSource": "Self"
+                    },
+                    "reflexiveTargetRequirements": [
+                        "AnyTarget"
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature or enchantment. When you do, this creature deals 2 damage to any target."
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice another creature or enchantment. When you do, this creature deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Kai Carpenter",
+        "flavorText": "\"Go ahead, meat. Run.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a68009c-83cd-455f-81e9-bdd720d23a43.jpg?1726286321"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Broodspinner
 {
     "name": "Broodspinner",
@@ -426,6 +567,85 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Commune with Evil
+{
+    "name": "Commune with Evil",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top four cards of your library. Put one of them into your hand and the rest into your graveyard. You gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Ovidio Cartagena",
+        "flavorText": "Elsa swelled with euphoria and power as she stepped over her friends' corpses. She should have bargained with a demon a lot sooner.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9ab94ebe-b51b-4c6f-af43-0ed80e2808a3.jpg?1726286174"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1372,6 +1592,97 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Irreverent Gremlin
+{
+    "name": "Irreverent Gremlin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Gremlin",
+    "oracleText": "Menace\nWhenever another creature you control with power 2 or less enters, you may discard a card. If you do, draw a card. Do this only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature pow<=2 ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may discard a card. If you do, draw a card."
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8da254f5-53f2-41d2-a4f0-a90b3dd6209c.jpg?1726286376"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3129,6 +3440,117 @@
     "colorIdentityOverride": []
 }
 
+// Vengeful Possession
+{
+    "name": "Vengeful Possession",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap it. It gains haste until end of turn. You may discard a card. If you do, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may discard a card. If you do, draw a card."
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Dominik Mayer",
+        "flavorText": "As the ghost clawed its way into her skin, Sarissa forgot that the rage tearing through her heart wasn't her own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6918d50-a4c3-40d8-9480-343f14773a69.jpg?1726286456"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Veteran Survivor
 {
     "name": "Veteran Survivor",
@@ -3414,6 +3836,87 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/5/25ed97f2-b47e-49b7-9b1a-694c4bbeca3b.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wildfire Wickerfolk
+{
+    "name": "Wildfire Wickerfolk",
+    "manaCost": "{R}{G}",
+    "typeLine": "Artifact Creature — Scarecrow",
+    "oracleText": "Haste\nDelirium — This creature gets +1/+1 and has trample as long as there are four or more card types among cards in your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "J.Lonnee",
+        "flavorText": "\"Isn't fire supposed to *kill* those things?\"\n—Tyvar",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c7fbc6e-09c6-4f0e-92e2-766aae950b3d.jpg?1726286766"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "GREEN"
     ]
 }
