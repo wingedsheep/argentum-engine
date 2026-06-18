@@ -1709,8 +1709,13 @@ class TriggerDetector(
             }
         }
 
-        // SELF binding: source has left the battlefield, so it isn't in the index.
-        // Look up triggered abilities directly from each sacrificed permanent.
+        // Self-sacrifice: when a permanent with a sacrifice-batch trigger is itself sacrificed it
+        // has already left the battlefield, so it isn't in the index and the ANY-binding loop above
+        // (which iterates the battlefield index) can't catch it. Look up triggered abilities
+        // directly from each sacrificed permanent instead. Both SELF ("whenever you sacrifice this
+        // permanent") and ANY ("whenever you sacrifice this permanent or another <filter>" /
+        // "whenever you sacrifice a <filter>") bindings include the source sacrificing itself
+        // (only an OTHER binding — "another" exactly — excludes it), so accept SELF and ANY here.
         for ((controllerId, controllerEvents) in sacrificeByController) {
             for (event in controllerEvents) {
                 for (permanentId in event.permanentIds) {
@@ -1722,7 +1727,9 @@ class TriggerDetector(
                         permanentId, cardComponent.cardDefinitionId, state
                     )
                     for (ability in abilities) {
-                        if (ability.binding != TriggerBinding.SELF) continue
+                        if (ability.binding != TriggerBinding.SELF &&
+                            ability.binding != TriggerBinding.ANY
+                        ) continue
                         val trigger = ability.trigger
                         if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
                         if (ability.activeZone != Zone.BATTLEFIELD) continue
@@ -1734,7 +1741,9 @@ class TriggerDetector(
                                 sourceId = permanentId,
                                 sourceName = cardComponent.name,
                                 controllerId = controllerId,
-                                triggerContext = TriggerContext()
+                                triggerContext = TriggerContext(
+                                    triggeringEntityId = permanentId
+                                )
                             )
                         )
                     }

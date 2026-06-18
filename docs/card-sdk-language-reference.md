@@ -2007,7 +2007,13 @@ Triggers.youCastSpell(
 
 ### Sacrifice & counters
 
-- `YouSacrificeOneOrMore(filter?)` — you sac ≥1 matching.
+- `YouSacrificeOneOrMore(filter?)` — you sac ≥1 matching. Built with `binding = ANY`, which (CR-faithfully)
+  **includes the source sacrificing itself**: an ANY-binding sacrifice-batch trigger fires both when *another*
+  matching permanent is sacrificed and when the source permanent is itself sacrificed. The triggering entity is
+  bound to the just-sacrificed permanent, so a payoff reading "that <permanent>" (its mana value / a token copy
+  of it) resolves against its last-known information in the graveyard. This is exactly the wording "whenever you
+  sacrifice this permanent or another <filter>" (Esoteric Duplicator) as well as the plain "whenever you sacrifice
+  a <filter>" (Mayhem Devil). For the "another" exclusion use an `OTHER`-binding trigger instead.
 - `Sacrificed` — source is sacrificed.
 - `PlusOneCountersPlacedOnYourCreature` — Hardened Scales shape (+1/+1 only).
 - `countersPlacedOn(filter = Creature.youControl(), counterType = Counters.ANY, firstTimeEachTurn = true)`
@@ -2118,6 +2124,14 @@ Triggers.youCastSpell(
     so a lazy read would yield 0 — author the gated delayed-trigger creation *before* the counter so
     the target spell is still on the stack when the snapshot is taken. Already-`Fixed` amounts pass
     through untouched.
+  - **Context-target baking covers `CreateTokenCopyOfTargetEffect`.** A delayed "at the beginning of the
+    next end step, create a token that's a copy of that <permanent>" whose `target` is `TriggeringEntity` /
+    `ContextTarget(n)` / `Self` is baked into a `SpecificEntity` at creation time (same mechanism that bakes
+    `MoveToZoneEffect` / `SacrificeTargetEffect` / `AddCountersEffect` targets). The copied permanent is
+    typically gone (sacrificed → graveyard) by the time the trigger fires; the token-copy executor then reads
+    its printed characteristics from the captured entity's `CardComponent` via last-known information. Used by
+    **Esoteric Duplicator** ("whenever you sacrifice this artifact or another artifact … create a token that's a
+    copy of that artifact").
 
 ---
 

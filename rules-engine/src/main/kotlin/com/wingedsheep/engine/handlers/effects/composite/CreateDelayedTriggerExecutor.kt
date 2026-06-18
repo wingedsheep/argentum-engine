@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -219,6 +220,16 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is AddCountersEffect -> {
+                val resolvedId = context.resolveTarget(effect.target)
+                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
+            }
+            // "At the beginning of the next end step, create a token that's a copy of that
+            // <permanent>" — the copied permanent (e.g. a just-sacrificed artifact, bound here as
+            // TriggeringEntity) is gone by the time the delayed trigger fires, so capture its id NOW
+            // into a SpecificEntity. The token-copy executor reads the copy's printed characteristics
+            // from the captured entity's CardComponent (last-known information), matching the rule
+            // that the token copies what was printed on the original (Esoteric Duplicator).
+            is CreateTokenCopyOfTargetEffect -> {
                 val resolvedId = context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
