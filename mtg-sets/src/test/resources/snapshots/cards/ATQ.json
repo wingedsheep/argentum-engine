@@ -1341,6 +1341,53 @@
     ]
 }
 
+// Hurkyl's Recall
+{
+    "name": "Hurkyl's Recall",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return all artifacts target player owns to their hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact own:target-player"
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "NéNé Thomas",
+        "flavorText": "This spell, attributed to Drafna, was actually the work of his wife Hurkyl.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f32373dd-06d8-45d1-8777-3b1411bcb30a.jpg?1562946376"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ivory Tower
 {
     "name": "Ivory Tower",
