@@ -1491,6 +1491,7 @@ object Effects {
         removedSupertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet(),
         overrideColors: Set<com.wingedsheep.sdk.core.Color>? = null,
         overrideSubtypes: Set<com.wingedsheep.sdk.core.Subtype>? = null,
+        addedSubtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
         sacrificeAtStep: com.wingedsheep.sdk.core.Step? = null,
         sacrificeOnlyOnControllersTurn: Boolean = false,
         addCardTypes: Set<String> = emptySet()
@@ -1507,6 +1508,7 @@ object Effects {
         removedSupertypes = removedSupertypes,
         overrideColors = overrideColors,
         overrideSubtypes = overrideSubtypes,
+        addedSubtypes = addedSubtypes,
         sacrificeAtStep = sacrificeAtStep,
         sacrificeOnlyOnControllersTurn = sacrificeOnlyOnControllersTurn,
         addCardTypes = addCardTypes

@@ -39,6 +39,14 @@ import kotlin.math.min
 private val BASIC_LAND_SUBTYPES: Set<String> = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
 
 /**
+ * The names of every true card type (CR 205.2a). Used to count "card types" via
+ * [Aggregation.DISTINCT_TYPES] without including supertypes/subtypes, which
+ * [ProjectedState.getTypes] folds into the same set.
+ */
+private val CARD_TYPE_NAMES: Set<String> =
+    com.wingedsheep.sdk.core.CardType.entries.mapTo(mutableSetOf()) { it.name }
+
+/**
  * Evaluates DynamicAmount values against the current game state.
  *
  * DynamicAmount represents values that depend on game state, like
@@ -629,8 +637,13 @@ class DynamicAmountEvaluator(
                 val prop = amount.property ?: return 0
                 matchingEntities.sumOf { resolveCardNumericProperty(state, projection, it, prop) }
             }
+            // "Number of card types" (CR 205.2a) — count only true card types
+            // (Artifact, Creature, Enchantment, …), never supertypes or subtypes.
+            // [ProjectedState.getTypes] folds supertypes + subtypes into one set, so intersect
+            // with the known [CardType] names; this still respects projection-changed types
+            // (e.g. an animated land that became a Creature).
             Aggregation.DISTINCT_TYPES -> matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
-                projection.getTypes(entityId).ifEmpty {
+                projection.getTypes(entityId).filterTo(mutableSetOf()) { it in CARD_TYPE_NAMES }.ifEmpty {
                     state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes?.map { it.name }?.toSet()
                         ?: emptySet()
                 }

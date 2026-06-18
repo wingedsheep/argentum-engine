@@ -587,13 +587,17 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `CreateChosenTokenEffect`; under the hood it sets `CreateTokenEffect.colorsFromChoice` /
   `creatureTypesFromChoice`.)
 - `CreateTokenCopyOfSelf(count?, tapped?)` — token copies of source.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, addedSubtypes?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
-  so a graveyard/exile card works). `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
+  so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
+  step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
+  `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
   outright for "a token that's a copy … except it's a 5/5 black Demon" wording (Ardyn, the Usurper).
+  `addedSubtypes` *unions* extra subtypes onto the copy (vs `overrideSubtypes` which replaces) — e.g.
+  Nexus of Becoming's "a 3/3 Golem … in addition to its other types".
   `addCardTypes` (e.g. `setOf("ARTIFACT")`) *unions* extra card types onto the copy's type line for the
   "except it's a [type] in addition to its other types" clause (the targeted sibling of
-  `CreateTokenCopyOfSource`'s `addCardTypes`; Molten Duplication).
+  `CreateTokenCopyOfSource`'s `addCardTypes`; Molten Duplication, Nexus of Becoming).
   `attacking` only applies to copies whose printed type line is a creature (a copy of a non-creature card
   still enters tapped but never attacking). `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
   per created copy at that step (the sacrifice sibling of `CreateTokenEffect.sacrificeAtStep`);
@@ -3302,6 +3306,12 @@ Numbers computed at resolution time.
   "the number of different powers among creatures you control" via
   `aggregation = DISTINCT_VALUES, property = POWER`; two permanents sharing a value count once).
   Builder shortcut: `DynamicAmounts.battlefield(player, filter).distinctValues(CardNumericProperty.POWER)`.
+  `excludeSelf = true` drops the aggregate's own source/affected entity ("among *other* …"), e.g.
+  Loot, the Key to Everything's "the number of card types among other nonland permanents you control"
+  (`filter = GameObjectFilter.NonlandPermanent, aggregation = DISTINCT_TYPES, excludeSelf = true`).
+  `DISTINCT_TYPES` counts only true **card types** (CR 205.2a: Artifact/Creature/Enchantment/…), never
+  supertypes or subtypes, while still honoring projection-changed types (an animated land that became a
+  Creature counts as a Creature).
 - `AggregateZone(player, zone, filter?, aggregation?)` — count cards in a zone.
 - `CountPermanentsOfType(player, subtype)` — count by creature type.
 - `CountCreaturesYouControl` — shorthand for "your creatures".

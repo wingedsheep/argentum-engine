@@ -124,6 +124,106 @@
     ]
 }
 
+// Harvester of Misery
+{
+    "name": "Harvester of Misery",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Menace\nWhen this creature enters, other creatures get -2/-2 until end of turn.\n{1}{B}, Discard this card: Target creature gets -2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ],
+                "activateFromZone": "Hand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "MYTHIC",
+        "artist": "Jorge Jacinto",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3012af9-621d-4fae-b00d-079a89ae35fe.jpg?1739804174"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hostile Investigator
 {
     "name": "Hostile Investigator",
@@ -294,6 +394,85 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a077de0-1893-40d0-a499-ee2e6e2258f1.jpg?1739804188"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Loot, the Key to Everything
+{
+    "name": "Loot, the Key to Everything",
+    "manaCost": "{G}{U}{R}",
+    "typeLine": "Legendary Creature — Beast Noble",
+    "oracleText": "Ward {1}\nAt the beginning of your upkeep, exile the top X cards of your library, where X is the number of card types among other nonland permanents you control. You may play those cards this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "nonland permanent",
+                                    "aggregation": "DISTINCT_TYPES",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "storeAs": "exiledCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiledCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "exiledCards"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "MYTHIC",
+        "artist": "Rudy Siswanto",
+        "flavorText": "The vault's ultimate prize wasn't exactly what Kellan had imagined.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb169fa2-c92e-45f7-89a2-0ca0e3910a1c.jpg?1739804220"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
         "RED"
     ]
 }
@@ -546,6 +725,165 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Nexus of Becoming
+{
+    "name": "Nexus of Becoming",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of combat on your turn, draw a card. Then you may exile an artifact or creature card from your hand. If you do, create a token that's a copy of the exiled card, except it's a 3/3 Golem artifact creature in addition to its other types.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature|artifact"
+                            },
+                            "storeAs": "candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "exiledCard",
+                            "prompt": "You may exile an artifact or creature card from your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiledCard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "exiledCard"
+                            },
+                            "overridePower": 3,
+                            "overrideToughness": 3,
+                            "addedSubtypes": [
+                                "Golem"
+                            ],
+                            "addCardTypes": [
+                                "ARTIFACT",
+                                "CREATURE"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "MYTHIC",
+        "artist": "Adam Volker",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0f61742-522c-4b36-97db-41d0c412a072.jpg?1739804233"
+    },
+    "colorIdentityOverride": []
+}
+
+// Oltec Matterweaver
+{
+    "name": "Oltec Matterweaver",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Whenever you cast a creature spell, choose one —\n• Create a 1/1 colorless Gnome artifact creature token.\n• Create a token that's a copy of target artifact token you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [],
+                                "creatureTypes": [
+                                    "Gnome"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/a/2/a257ae72-2a82-4861-a2fb-a0a09be00646.jpg?1712317852",
+                                "artifactToken": true
+                            },
+                            "description": "Create a 1/1 colorless Gnome artifact creature token"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact token ctrl:you"
+                                    }
+                                }
+                            ],
+                            "description": "Create a token that's a copy of target artifact token you control"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Villarrte",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4f2a818-9fd1-41db-967e-7d2c9b4e4c2f.jpg?1739804152"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

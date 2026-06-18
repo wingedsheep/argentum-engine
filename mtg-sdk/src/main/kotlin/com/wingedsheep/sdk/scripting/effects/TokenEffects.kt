@@ -357,6 +357,13 @@ data class CreateTokenCopyOfTargetEffect(
      */
     val overrideSubtypes: Set<Subtype>? = null,
     /**
+     * Subtypes unioned onto the token copy's subtypes *in addition* to those copied
+     * (e.g., Golem for Nexus of Becoming's "a 3/3 Golem artifact creature in addition to
+     * its other types"). Distinct from [overrideSubtypes] (which replaces). Ignored when
+     * [overrideSubtypes] is set.
+     */
+    val addedSubtypes: Set<Subtype> = emptySet(),
+    /**
      * If set, create delayed triggers to sacrifice each created token copy at this step
      * (the sacrifice sibling of [CreateTokenEffect.sacrificeAtStep]). Used for "create a
      * tapped token copy ... at the beginning of your next end step, sacrifice those tokens"
@@ -409,11 +416,12 @@ data class CreateTokenCopyOfTargetEffect(
                 addedSupertypes.joinToString(" ") { it.displayName.lowercase() }
             }")
         }
-        if (addCardTypes.isNotEmpty()) {
+        if (addCardTypes.isNotEmpty() || addedSubtypes.isNotEmpty()) {
             val pronoun = if (count == DynamicAmount.Fixed(1)) "it's" else "they're"
-            val typeWords = addCardTypes.joinToString(" ") { it.lowercase() }
+            val typeWords = (addedSubtypes.map { it.value } + addCardTypes.map { it.lowercase() })
+                .joinToString(" ")
             val article = if (count == DynamicAmount.Fixed(1)) {
-                if (typeWords.first() in "aeiou") "an " else "a "
+                if (typeWords.first().lowercaseChar() in "aeiou") "an " else "a "
             } else ""
             append(", except $pronoun $article$typeWords in addition to its other types")
         }

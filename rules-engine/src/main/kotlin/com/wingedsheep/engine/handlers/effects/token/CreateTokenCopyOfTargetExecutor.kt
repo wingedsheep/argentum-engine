@@ -90,7 +90,7 @@ class CreateTokenCopyOfTargetExecutor(
             val tokenTypeLine = targetCard.typeLine.copy(
                 cardTypes = targetCard.typeLine.cardTypes + extraCardTypes,
                 supertypes = targetCard.typeLine.supertypes + effect.addedSupertypes - effect.removedSupertypes,
-                subtypes = effect.overrideSubtypes ?: targetCard.typeLine.subtypes
+                subtypes = effect.overrideSubtypes ?: (targetCard.typeLine.subtypes + effect.addedSubtypes)
             )
             val tokenCard = targetCard.copy(
                 ownerId = controllerId,
