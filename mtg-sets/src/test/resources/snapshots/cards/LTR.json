@@ -1375,6 +1375,49 @@
     ]
 }
 
+// Bewitching Leechcraft
+{
+    "name": "Bewitching Leechcraft",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature has \"If this creature would untap during your untap step, remove a +1/+1 counter from it instead. If you do, untap it.\" (Otherwise, it doesn't untap.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "REMOVE_COUNTER_TO_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Wei Guan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b612452e-b8a8-4a5a-82a8-01fd463cfc77.jpg?1686968013"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Bilbo's Ring
 {
     "name": "Bilbo's Ring",
@@ -8130,6 +8173,89 @@
     ]
 }
 
+// Goldberry, River-Daughter
+{
+    "name": "Goldberry, River-Daughter",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Nymph",
+    "oracleText": "{T}: Move a counter of each kind not on Goldberry from another target permanent you control onto Goldberry.\n{U}, {T}: Move one or more counters from Goldberry onto another target permanent you control. If you do, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveCountersEachKindMissing",
+                    "source": {
+                        "type": "BoundVariable",
+                        "name": "another target permanent you control"
+                    },
+                    "destination": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another target permanent you control"
+                    }
+                ]
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveChosenCountersToTarget",
+                    "source": "Self",
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "another target permanent you control"
+                    },
+                    "drawCardOnMove": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another target permanent you control"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Marie Magny",
+        "flavorText": "\"Fear nothing! For tonight you are under the roof of Tom Bombadil.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf4f0a7c-620e-4ed8-8da3-fa6564e8a0cd.jpg?1686968111"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gollum's Bite
 {
     "name": "Gollum's Bite",
@@ -9099,6 +9225,85 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Hew the Entwood
+{
+    "name": "Hew the Entwood",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sacrifice any number of lands. Reveal the top X cards of your library, where X is the number of lands sacrificed this way. Choose any number of artifact and/or land cards revealed this way. Put all nonland cards chosen this way onto the battlefield, then put all land cards chosen this way onto the battlefield tapped, then put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Sacrifice",
+                    "filter": "land",
+                    "any": true
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "PermanentsSacrificedThisWay"
+                    },
+                    "storeAs": "revealed"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "revealed",
+                    "selection": "ChooseAnyNumber",
+                    "filter": "artifact|land",
+                    "storeSelected": "chosen",
+                    "storeRemainder": "rest",
+                    "prompt": "Choose any number of artifact and/or land cards to put onto the battlefield"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosen",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "filter": "nonland"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosen",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "filter": "land"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "MYTHIC",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81940498-a5bf-4bcd-b06d-8816887b2a2b.jpg?1686969039"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13037,6 +13242,113 @@
     ]
 }
 
+// One Ring to Rule Them All
+{
+    "name": "One Ring to Rule Them All",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — The Ring tempts you, then each player mills cards equal to your Ring-bearer's power.\nII — Destroy all nonlegendary creatures.\nIII — Each opponent loses 1 life for each creature card in that player's graveyard.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "TheRingTemptsYou",
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "EntityProperty",
+                                            "entity": "RingBearer",
+                                            "numericProperty": "Power"
+                                        },
+                                        "player": "Each"
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "Each"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsNonlegendary"
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "L J Koh",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb2dc2e0-f393-4442-818b-d3b860bfffd0.jpg?1688569235"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Orcish Bowmasters
 {
     "name": "Orcish Bowmasters",
@@ -15336,6 +15648,152 @@
     ]
 }
 
+// Saruman of Many Colors
+{
+    "name": "Saruman of Many Colors",
+    "manaCost": "{3}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Avatar Wizard",
+    "oracleText": "Ward—Discard an enchantment, instant, or sorcery card.\nWhenever you cast your second spell each turn, each opponent mills two cards. When one or more cards are milled this way, exile target enchantment, instant, or sorcery card with equal or lesser mana value than that spell from an opponent's graveyard. Copy the exiled card. You may cast the copy without paying its mana cost.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Discard",
+                "filter": "enchantment|instant|sorcery"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "player": "EachOpponent"
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        ]
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "CollectionContainsMatch",
+                                "collection": "milled"
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "destination": "Exile"
+                                },
+                                {
+                                    "type": "CopyCardIntoCollection",
+                                    "storeAs": "copy"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "copy"
+                                    },
+                                    "descriptionOverride": "You may cast the copy without paying its mana cost."
+                                }
+                            ]
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        "IsInstant"
+                                                    ]
+                                                },
+                                                "IsSorcery"
+                                            ]
+                                        },
+                                        {
+                                            "type": "ManaValueAtMostEntity",
+                                            "reference": "Triggering"
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByOpponent"
+                                },
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Each opponent mills two cards. When one or more cards are milled this way, exile target enchantment, instant, or sorcery card with equal or lesser mana value than that spell from an opponent's graveyard. Copy the exiled card. You may cast the copy without paying its mana cost."
+                },
+                "descriptionOverride": "Whenever you cast your second spell each turn, each opponent mills two cards. When one or more cards are milled this way, exile target enchantment, instant, or sorcery card with equal or lesser mana value than that spell from an opponent's graveyard. Copy the exiled card. You may cast the copy without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cfcc7ec-87a2-4712-8d82-217bd8600891.jpg?1686969983"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Saruman the White
 {
     "name": "Saruman the White",
@@ -15427,6 +15885,210 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sauron's Ransom
+{
+    "name": "Sauron's Ransom",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose an opponent. They look at the top four cards of your library and separate them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard. The Ring tempts you.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "revealed",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "revealed",
+                    "selection": "ChooseAnyNumber",
+                    "chooser": "Opponent",
+                    "storeSelected": "pileA",
+                    "storeRemainder": "pileB",
+                    "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                    "selectedLabel": "Pile 1",
+                    "remainderLabel": "Pile 2",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ChoosePile",
+                    "pileA": "pileA",
+                    "pileB": "pileB",
+                    "storeChosenAs": "keepPile",
+                    "storeOtherAs": "otherPile",
+                    "prompt": "Choose which pile goes to your Hand; the other goes to your Graveyard."
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "keepPile",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "otherPile",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                "TheRingTemptsYou"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Alex Brock",
+        "flavorText": "\"He was dear to you, I see. And now he shall endure the slow torment of years.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b98850c-ad69-42da-b91a-8dc5e226c444.jpg?1686970005"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Sauron, the Dark Lord
+{
+    "name": "Sauron, the Dark Lord",
+    "manaCost": "{3}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Avatar Horror",
+    "oracleText": "Ward—Sacrifice a legendary artifact or legendary creature.\nWhenever an opponent casts a spell, amass Orcs 1.\nWhenever an Army you control deals combat damage to a player, the Ring tempts you.\nWhenever the Ring tempts you, you may discard your hand. If you do, draw four cards.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Sacrifice",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsLegendary"
+                                    ]
+                                },
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsCreature",
+                                        "IsLegendary"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Amass",
+                    "subtype": "Orc"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer",
+                    "sourceFilter": "creature Army ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": "TheRingTemptsYou"
+            },
+            {
+                "id": "ability_3",
+                "trigger": "RingTemptedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "You may discard your hand. If you do, draw four cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/034e0929-b2c7-4b5f-94f2-8eaf4fb1a2a1.jpg?1693611218"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -16040,6 +16702,52 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Sharkey, Tyrant of the Shire
+{
+    "name": "Sharkey, Tyrant of the Shire",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Avatar Rogue",
+    "oracleText": "Activated abilities of lands your opponents control can't be activated unless they're mana abilities.\nSharkey has all activated abilities of lands your opponents control except mana abilities.\nMana of any type can be spent to activate Sharkey's abilities.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": "land ctrl:opponent",
+                "nonManaAbilitiesOnly": true
+            },
+            {
+                "type": "GainActivatedAbilitiesOfPermanents",
+                "grantedTo": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "sourceFilter": "land ctrl:opponent"
+            },
+            {
+                "type": "SpendAnyManaTypeForActivatedAbilities",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0e446bd-8295-4fca-957a-e4710a15d8e8.jpg?1686970050"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -18807,6 +19515,143 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Tom Bombadil
+{
+    "name": "Tom Bombadil",
+    "manaCost": "{W}{U}{B}{R}{G}",
+    "typeLine": "Legendary Creature — God Bard",
+    "oracleText": "As long as there are four or more lore counters among Sagas you control, Tom Bombadil has hexproof and indestructible.\nWhenever the final chapter ability of a Saga you control resolves, reveal cards from the top of your library until you reveal a Saga card. Put that card onto the battlefield and the rest on the bottom of your library in a random order. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "SagaChapterResolvedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "Saga",
+                            "storeMatch": "revealedSaga",
+                            "storeRevealed": "allRevealed"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "allRevealed"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "allRevealed",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "filter": "Saga"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "allRevealed",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Saga"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "oncePerTurn": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "enchantment Saga ctrl:you",
+                        "aggregation": "SUM",
+                        "counterType": {
+                            "type": "Named",
+                            "name": "lore"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "enchantment Saga ctrl:you",
+                        "aggregation": "SUM",
+                        "counterType": {
+                            "type": "Named",
+                            "name": "lore"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "MYTHIC",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2ab04c49-76a1-4896-8dca-8cb4c615f489.jpg?1686970104"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
