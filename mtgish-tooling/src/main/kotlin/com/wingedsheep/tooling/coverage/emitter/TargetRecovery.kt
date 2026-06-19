@@ -720,12 +720,32 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
                 "\"Opponent\"" in blob -> Link("opponentControls")
                 else -> return null
             }
-            val filter: Dsl = if (controller == null) {
-                Lit(namedTargetFilter.getValue(types))
-            } else {
-                Call("TargetFilter", listOf(arg(Lit("GameObjectFilter.$union").dot(controller))))
+            // "creatures and/or enchantments YOU OWN" (Get Out mode 2) — an OwnedByAPlayer(You) clause.
+            // Render `.ownedByYou()` so the ownership restriction isn't silently dropped (which would let
+            // the spell bounce an opponent's permanents); any other owner shape declines (-> SCAFFOLD).
+            val owner: Link? = when {
+                "OwnedByAPlayer" !in blob -> null
+                "\"You\"" in blob -> Link("ownedByYou")
+                else -> return null
             }
-            return Call("TargetPermanent", listOf(arg("filter", filter)))
+            // Controller and owner narrowings are independent — a card carrying both would need a composed
+            // shape the named constant can't express. Only one narrowing at a time renders here.
+            if (controller != null && owner != null) return null
+            val filter: Dsl = when {
+                controller == null && owner == null -> Lit(namedTargetFilter.getValue(types))
+                controller != null -> Call("TargetFilter", listOf(arg(Lit("GameObjectFilter.$union").dot(controller))))
+                else -> Lit(namedTargetFilter.getValue(types)).dot(owner!!)
+            }
+            // "one or two target creatures and/or enchantments" (Get Out) needs an explicit minCount, which
+            // the TargetPermanent factory doesn't expose — emit the underlying TargetObject(count, minCount)
+            // directly for that shape. Every other count/optional shape renders via TargetPermanent.
+            if (ttype == "OneOrTwoTargetPermanents") {
+                return Call("TargetObject", listOf(arg("count", "2"), arg("minCount", "1"), arg("filter", filter)))
+            }
+            val parts = mutableListOf(arg("filter", filter))
+            if (ttype in setOf("NumberTargetPermanents", "UptoNumberTargetPermanents") && countInt is Int) parts.add(0, arg("count", "$countInt"))
+            if (ttype == "UptoNumberTargetPermanents" || isUpToOne) parts.add(0, arg("optional", "true"))
+            return Call("TargetPermanent", parts)
         }
         return null  // unusual filters: not rendered yet -> SCAFFOLD
     }
@@ -762,6 +782,13 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
         if (colors.isNotEmpty()) return null  // colour + type combo not rendered yet -> SCAFFOLD
         if (types == setOf("Creature", "Sorcery")) return Call("TargetSpell", listOf(arg("filter", "TargetFilter.CreatureOrSorcerySpellOnStack")))
         if (types == setOf("Instant", "Sorcery")) return Call("TargetSpell", listOf(arg("filter", "TargetFilter.InstantOrSorcerySpellOnStack")))
+        // "counter target creature or enchantment spell" (Get Out) — no named convenience filter exists,
+        // so emit the GameObjectFilter.CreatureOrEnchantment shape scoped to the stack, matching the
+        // hand-written card's gameplay tree exactly.
+        if (types == setOf("Creature", "Enchantment")) {
+            val f = Call("TargetFilter", listOf(arg("GameObjectFilter.CreatureOrEnchantment"), arg("zone", "Zone.STACK")))
+            return Call("TargetSpell", listOf(arg("filter", f)))
+        }
         if (types == setOf("Creature")) return Call("TargetSpell", listOf(arg("filter", "TargetFilter.CreatureSpellOnStack")))
         if (types.isEmpty()) {
             // "counter target spell with mana value N or less" (Thoughtbind) -> SpellOnStack.manaValueAtMost(N).

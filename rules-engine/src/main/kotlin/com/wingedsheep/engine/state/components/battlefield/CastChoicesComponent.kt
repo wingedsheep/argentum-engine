@@ -102,6 +102,10 @@ fun ComponentContainer.chosenLandType(): String? =
 fun ComponentContainer.chosenModeId(): String? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.MODE) as? ChoiceValue.TextChoice)?.text
 
+/** The card name chosen as this object entered (e.g. Petrified Hamlet), or null. */
+fun ComponentContainer.chosenCardName(): String? =
+    (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CARD_NAME) as? ChoiceValue.TextChoice)?.text
+
 /** The creature chosen as this object entered, or null. */
 fun ComponentContainer.chosenCreatureRef(): EntityId? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CREATURE) as? ChoiceValue.EntityChoice)?.entityId

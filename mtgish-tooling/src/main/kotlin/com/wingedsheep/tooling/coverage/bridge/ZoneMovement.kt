@@ -58,6 +58,10 @@ internal fun BridgeBuilder.zoneMovement() {
 
     composed("LookAtTheTopNumberCardsOfLibrary", "Patterns.Library.lookAtTopAndKeep/Reorder -> Gather/Select/MoveCollection", composes = listOf("MoveCollection"))
     composed("LookAtTheTopNumberCardsOfPlayersLibrary", "look pipeline on opponent library -> MoveCollection", composes = listOf("MoveCollection"))
+    // "Reveal cards from the top until you reveal a <type> card. Put it [in hand|onto the battlefield
+    // tapped] and the rest on the bottom in a random/any order." (House Cartographer, Clifftop Lookout)
+    // -> GatherUntilMatch -> Reveal -> Filter(exclude match) -> MoveCollection(match) -> MoveCollection(rest).
+    composed("RevealCardsFromTheTopOfLibraryUntilACardOfTypeIsRevealed", "GatherUntilMatch -> Reveal -> Filter -> MoveCollection x2", composes = listOf("MoveCollection"))
 
     composed("ExilePermanent", UNIVERSAL, composes = listOf("MoveToZone"))
     // "[A player] exiles a [filter] they control" — the exile flavor of an edict, where the affected

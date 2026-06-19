@@ -727,6 +727,53 @@
     ]
 }
 
+// Clammy Prowler
+{
+    "name": "Clammy Prowler",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment Creature — Horror",
+    "oracleText": "Whenever this creature attacks, another target attacking creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another target attacking creature"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        }
+                    },
+                    "id": "another target attacking creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "John Tedrick",
+        "flavorText": "Sometimes, survivors in the Floodpits hear their own drowning voices crying out for help. Only the ones who flee immediately live to speak of it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/237f0b93-f12e-4c5f-a3d7-83e8f20f8493.jpg?1726286023"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Clockwork Percussionist
 {
     "name": "Clockwork Percussionist",
@@ -869,6 +916,116 @@
         "artist": "Ovidio Cartagena",
         "flavorText": "Elsa swelled with euphoria and power as she stepped over her friends' corpses. She should have bargained with a demon a lot sooner.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/a/9ab94ebe-b51b-4c6f-af43-0ed80e2808a3.jpg?1726286174"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Demonic Counsel
+{
+    "name": "Demonic Counsel",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a Demon card, reveal it, put it into your hand, then shuffle.\nDelirium — If there are four or more card types among cards in your graveyard, instead search your library for any card, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library"
+                        },
+                        "storeAs": "searchable"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "found"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    "ShuffleLibrary"
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "filter": "Demon"
+                        },
+                        "storeAs": "searchable"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "found"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    "ShuffleLibrary"
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Babs Webb",
+        "flavorText": "Valgavoth whispered into Marina's ear until he was all she could hear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff79c845-4115-4fbf-b20f-37470f2bf7fb.jpg?1726286193"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1787,6 +1944,69 @@
     "colorIdentityOverride": []
 }
 
+// Get Out
+{
+    "name": "Get Out",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target creature or enchantment spell.\n• Return one or two target creatures and/or enchantments you own to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|enchantment",
+                                "zone": "Stack"
+                            }
+                        }
+                    ],
+                    "description": "Counter target creature or enchantment spell."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "minCount": 1,
+                            "filter": {
+                                "baseFilter": "creature|enchantment own:you"
+                            }
+                        }
+                    ],
+                    "description": "Return one or two target creatures and/or enchantments you own to your hand."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Mirko Failoni",
+        "flavorText": "Kaito's blade brought the light of another plane into Duskmourn, and with it, a brief chance to escape.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d9471c8-2db9-4ce3-a1e5-42b85134cb8e.jpg?1726286080"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Give In to Violence
 {
     "name": "Give In to Violence",
@@ -2321,6 +2541,87 @@
         "artist": "Chris Cold",
         "flavorText": "\"We set it on fire. It lived. We cut off its head. It lived. We fell to it, one by one. It lives.\"\n—Sunrise, survivor sentry",
         "imageUri": "https://cards.scryfall.io/normal/front/c/1/c175c998-7b80-4187-bdbc-5b6e0d7eac91.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// House Cartographer
+{
+    "name": "House Cartographer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Scout Survivor",
+    "oracleText": "Survival — At the beginning of your second main phase, if this creature is tapped, reveal cards from the top of your library until you reveal a land card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "land",
+                            "storeMatch": "revealedLand",
+                            "storeRevealed": "allRevealed"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "allRevealed"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "allRevealed",
+                            "filter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "revealedLand"
+                            },
+                            "storeMatching": "nonLandRevealed"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealedLand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "nonLandRevealed",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "tapped"
+                },
+                "descriptionOverride": "Survival — At the beginning of your second main phase, if this creature is tapped, reveal cards from the top of your library until you reveal a land card. Put that card into your hand and the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "UNCOMMON",
+        "artist": "Kai Carpenter",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a534918-a009-4f7d-87c9-5ef600b6e7c2.jpg?1726286553"
     },
     "colorIdentityOverride": [
         "GREEN"

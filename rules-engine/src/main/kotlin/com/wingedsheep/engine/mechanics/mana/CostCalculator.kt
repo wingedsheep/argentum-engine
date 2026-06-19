@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -1005,6 +1007,13 @@ class CostCalculator(
             is CardPredicate.HasSubtypeInStoredList -> true
             is CardPredicate.HasSubtypeInEachStoredGroup -> true
             is CardPredicate.NameEqualsChosen -> true
+            is CardPredicate.NameEqualsChosenComponent -> {
+                if (sourceEntityId == null || state == null) return false
+                val chosenName = (state.getEntity(sourceEntityId)
+                    ?.get<CastChoicesComponent>()?.chosen?.get(predicate.slot)
+                    as? ChoiceValue.TextChoice)?.text ?: return false
+                cardDef.name.equals(chosenName, ignoreCase = true)
+            }
 
             is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
             is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }

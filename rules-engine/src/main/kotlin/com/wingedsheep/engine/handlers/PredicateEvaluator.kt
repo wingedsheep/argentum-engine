@@ -2,6 +2,8 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -551,6 +553,18 @@ class PredicateEvaluator {
             // Context-relative predicates (pipeline variable references)
             is CardPredicate.NameEqualsChosen -> {
                 val chosenName = context?.chosenValues?.get(predicate.variableName) ?: return false
+                card.name.equals(chosenName, ignoreCase = true)
+            }
+
+            // Source-component name reference: the name durably chosen by the source permanent as it
+            // entered (Petrified Hamlet). Read from the source's CastChoicesComponent[slot] — works
+            // in static/projection contexts where there is no pipeline, as long as the predicate
+            // context supplies the granting permanent as the source.
+            is CardPredicate.NameEqualsChosenComponent -> {
+                val sourceId = context?.sourceId ?: return false
+                val chosenName = (state.getEntity(sourceId)
+                    ?.get<CastChoicesComponent>()?.chosen?.get(predicate.slot)
+                    as? ChoiceValue.TextChoice)?.text ?: return false
                 card.name.equals(chosenName, ignoreCase = true)
             }
 
@@ -1109,6 +1123,9 @@ class PredicateEvaluator {
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,
             is CardPredicate.HasSubtypeInEachStoredGroup -> false
+            // Source-component name reference is a permanent-static predicate, not meaningful for a
+            // cast-spell record.
+            is CardPredicate.NameEqualsChosenComponent -> false
 
             // Stack ability check — cast spells are not abilities
             CardPredicate.IsActivatedOrTriggeredAbility -> false

@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.predicates
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -259,6 +260,25 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @SerialName("NameEqualsChosen")
     @Serializable
     data class NameEqualsChosen(val variableName: String) : CardPredicate {
+        override val description: String = "with the chosen name"
+    }
+
+    /**
+     * Matches cards whose name equals a name **durably chosen by the source permanent** as it
+     * entered — read from that permanent's [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent]
+     * under [slot]. Matching is case-insensitive.
+     *
+     * Unlike [NameEqualsChosen] (which reads a transient pipeline variable and fails closed in
+     * projection), this predicate is **static-projection / activation-legality safe**: the source
+     * permanent's id is in scope wherever a static ability's filter is evaluated (the granter
+     * supplies it as the predicate-context source). Used by name-keyed static abilities such as
+     * Petrified Hamlet ("sources with the chosen name … / Lands with the chosen name …").
+     *
+     * Fails closed (no match) when the source has made no such choice.
+     */
+    @SerialName("NameEqualsChosenComponent")
+    @Serializable
+    data class NameEqualsChosenComponent(val slot: ChoiceSlot = ChoiceSlot.CARD_NAME) : CardPredicate {
         override val description: String = "with the chosen name"
     }
 

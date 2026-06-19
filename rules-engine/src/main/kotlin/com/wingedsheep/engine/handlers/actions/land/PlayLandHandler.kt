@@ -25,6 +25,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.OnEnterRunEffect
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -358,7 +359,10 @@ class PlayLandHandler(
                         cardComponent = cardComponent,
                         choice = firstChoice,
                         fromZone = fromZone,
-                        carryEvents = events
+                        carryEvents = events,
+                        cardNameOptions = if (firstChoice.choiceType == ChoiceType.CARD_NAME) {
+                            cardRegistry.landCardNames().toList()
+                        } else emptyList(),
                     )
                 if (result != null) return result
             }
