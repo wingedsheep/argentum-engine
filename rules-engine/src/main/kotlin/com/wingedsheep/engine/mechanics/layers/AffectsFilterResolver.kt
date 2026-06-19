@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -265,6 +267,18 @@ internal class AffectsFilterResolver {
                 ?: return emptySet()
         } else null
 
+        // If the base filter keys off the source's durably-chosen card name (Petrified Hamlet),
+        // resolve it once from the source's CastChoicesComponent. Fail closed (match nothing) when
+        // the source has made no such choice yet.
+        val nameComponentPredicate = baseFilter.cardPredicates
+            .filterIsInstance<CardPredicate.NameEqualsChosenComponent>()
+            .firstOrNull()
+        val sourceChosenName = if (nameComponentPredicate != null) {
+            (state.getEntity(sourceId)?.get<CastChoicesComponent>()
+                ?.chosen?.get(nameComponentPredicate.slot) as? ChoiceValue.TextChoice)?.text
+                ?: return emptySet()
+        } else null
+
         return state.getBattlefield().filter { entityId ->
             if (groupFilter.excludeSelf && entityId == sourceId) return@filter false
 
@@ -302,9 +316,18 @@ internal class AffectsFilterResolver {
             val isFaceDown = projected?.isFaceDown ?: container.has<FaceDownComponent>()
 
             for (predicate in baseFilter.cardPredicates) {
+                // The source-chosen-name predicate is resolved once above (sourceChosenName) and
+                // applied as a separate constraint below — skip it in the generic projection loop,
+                // which has no source in scope and would fail it closed.
+                if (predicate is CardPredicate.NameEqualsChosenComponent) continue
                 if (!matchesCardPredicateForProjection(predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)) {
                     return@filter false
                 }
+            }
+
+            // Source-chosen card name constraint (from source's CastChoicesComponent).
+            if (sourceChosenName != null && !card.name.equals(sourceChosenName, ignoreCase = true)) {
+                return@filter false
             }
 
             // Check state predicates
@@ -605,6 +628,9 @@ internal class AffectsFilterResolver {
         is CardPredicate.HasSubtypeFromVariable,
         is CardPredicate.HasSubtypeInStoredList,
         is CardPredicate.NameEqualsChosen,
+        // Resolved separately in resolveGenericFilter against the source's CastChoicesComponent
+        // (no source in scope here) — fail closed if it ever reaches this generic path.
+        is CardPredicate.NameEqualsChosenComponent,
         is CardPredicate.HasSubtypeInEachStoredGroup -> false
         // Stack-only predicates — never match a battlefield entity being projected.
         CardPredicate.IsActivatedOrTriggeredAbility,

@@ -31,6 +31,17 @@ enum class ChoiceSlot {
     /** A named card-defined mode chosen as the object entered (e.g. the Khans Sieges). */
     MODE,
 
+    /**
+     * A card name chosen as the object entered (e.g. Petrified Hamlet "choose a land card name").
+     * Stored as a [com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice].
+     * Read back at static-projection / activation-legality time by
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosenComponent], which
+     * keys name-matching off the *source permanent's* durable choice — unlike
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosen], which reads a
+     * transient pipeline variable and fails closed in projection.
+     */
+    CARD_NAME,
+
     /** Another creature chosen as the object entered (e.g. Dauntless Bodyguard). */
     CREATURE,
 

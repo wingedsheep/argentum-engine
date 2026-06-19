@@ -257,6 +257,16 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.NameEqualsChosen(variableName)
     )
 
+    /**
+     * Match cards whose name equals the name durably chosen by the *source permanent* as it
+     * entered (its [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under
+     * [slot]). Static-projection / activation-legality safe — use this in static-ability filters
+     * (Petrified Hamlet), where [namedFromVariable] would fail closed.
+     */
+    fun namedFromChosenComponent(slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_NAME) = copy(
+        cardPredicates = cardPredicates + CardPredicate.NameEqualsChosenComponent(slot)
+    )
+
     /** Mana value equals */
     fun manaValue(value: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.ManaValueEquals(value)

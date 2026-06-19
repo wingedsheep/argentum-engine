@@ -215,7 +215,14 @@ data class EntersWithChoiceSpellContinuation(
      * stored on the resulting `CastChoicesComponent` under
      * [com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT].
      */
-    val opponentIds: List<EntityId> = emptyList()
+    val opponentIds: List<EntityId> = emptyList(),
+    /**
+     * For [com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME] choices, the positionally
+     * aligned list of land card names presented. The response's chosen index indexes into
+     * this list to recover the name stored under
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_NAME].
+     */
+    val cardNames: List<String> = emptyList()
 ) : ContinuationFrame
 
 /**
@@ -253,6 +260,9 @@ data class EntersWithChoiceOnBattlefieldContinuation(
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] choices, see
      *  [EntersWithChoiceSpellContinuation.opponentIds]. */
     val opponentIds: List<EntityId> = emptyList(),
+    /** For [com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME] choices, the land card names
+     *  presented (the resumer stores the chosen name by index). */
+    val cardNames: List<String> = emptyList(),
     val fromZone: Zone? = null
 ) : ContinuationFrame
 

@@ -3006,6 +3006,40 @@ class StackResolver(
                     .withPendingDecision(decision)
                 ExecutionResult.paused(pausedState, decision)
             }
+
+            ChoiceType.CARD_NAME -> {
+                // "Choose a land card name" (Petrified Hamlet). For a permanent that enters from
+                // the stack the registry's land card names are the option set; the chosen name is
+                // stored durably under [ChoiceSlot.CARD_NAME] by the resumer. (Lands themselves
+                // route through PlayLandHandler / PermanentEntryReplacements, but this completes the
+                // spell-cast path for any permanent spell that names a land as it enters.)
+                val cardNames = cardRegistry.landCardNames().sorted()
+                if (cardNames.isEmpty()) return null
+                val decisionId = "choose-card-name-enters-${spellId.value}"
+                val decision = ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = chooserId,
+                    prompt = "Choose a land card name",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    options = cardNames
+                )
+                val continuation = EntersWithChoiceSpellContinuation(
+                    decisionId = decisionId,
+                    spellId = spellId,
+                    controllerId = controllerId,
+                    ownerId = ownerId,
+                    choiceType = ChoiceType.CARD_NAME,
+                    cardNames = cardNames
+                )
+                val pausedState = state
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+                ExecutionResult.paused(pausedState, decision)
+            }
         }
     }
 

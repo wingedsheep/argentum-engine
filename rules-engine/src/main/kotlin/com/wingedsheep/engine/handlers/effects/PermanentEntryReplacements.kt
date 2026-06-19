@@ -69,6 +69,7 @@ object PermanentEntryReplacements {
         choice: EntersWithChoice,
         fromZone: Zone?,
         carryEvents: List<GameEvent> = emptyList(),
+        cardNameOptions: List<String> = emptyList(),
     ): ExecutionResult? {
         val chooserId = when (choice.chooser) {
             Player.AnOpponent -> state.getOpponents(controllerId).firstOrNull() ?: controllerId
@@ -224,6 +225,32 @@ object PermanentEntryReplacements {
                         controllerId = controllerId,
                         choiceType = ChoiceType.OPPONENT,
                         opponentIds = opponentIds,
+                        fromZone = fromZone
+                    )
+                )
+            }
+
+            ChoiceType.CARD_NAME -> {
+                // The option list (land card names from the registry) is supplied by the caller,
+                // which has the registry in scope. If empty, there is nothing to name — complete
+                // entry normally.
+                val options = cardNameOptions.sorted()
+                if (options.isEmpty()) return null
+                val id = "choose-card-name-enters-${entityId.value}"
+                pause(
+                    ChooseOptionDecision(
+                        id = id,
+                        playerId = chooserId,
+                        prompt = "Choose a land card name",
+                        context = context(id),
+                        options = options
+                    ),
+                    EntersWithChoiceOnBattlefieldContinuation(
+                        decisionId = id,
+                        entityId = entityId,
+                        controllerId = controllerId,
+                        choiceType = ChoiceType.CARD_NAME,
+                        cardNames = options,
                         fromZone = fromZone
                     )
                 )

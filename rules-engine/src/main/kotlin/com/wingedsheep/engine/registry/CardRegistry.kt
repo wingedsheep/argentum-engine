@@ -103,6 +103,13 @@ class CardRegistry {
     fun allCardNames(): Set<String> = cardsByName.keys.toSet()
 
     /**
+     * Get the names of every registered card whose type line includes Land (e.g. for
+     * Petrified Hamlet's "choose a land card name"). Unique names only.
+     */
+    fun landCardNames(): Set<String> =
+        cardsByName.values.filter { it.isLand }.map { it.name }.toSet()
+
+    /**
      * Get all cards with a given name (useful for basic lands with multiple variants).
      *
      * @param name The card name (e.g., "Plains")

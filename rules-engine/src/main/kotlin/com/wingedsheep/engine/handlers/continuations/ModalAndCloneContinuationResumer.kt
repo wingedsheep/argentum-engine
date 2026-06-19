@@ -594,6 +594,16 @@ class ModalAndCloneContinuationResumer(
                     c.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosenOpponent))
                 }
             }
+            com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME -> {
+                if (response !is OptionChosenResponse) {
+                    return ExecutionResult.error(state, "Expected option chosen response for card name choice")
+                }
+                val chosenName = continuation.cardNames.getOrNull(response.optionIndex)
+                    ?: return ExecutionResult.error(state, "Invalid card name index: ${response.optionIndex}")
+                state.updateEntity(spellId) { c ->
+                    c.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice(chosenName))
+                }
+            }
         }
 
         // Check if the card has remaining choices to chain to
@@ -709,6 +719,16 @@ class ModalAndCloneContinuationResumer(
                     ?: return ExecutionResult.error(state, "Invalid opponent index: ${response.optionIndex}")
                 state.updateEntity(entityId) { c ->
                     c.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosenOpponent))
+                }
+            }
+            com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME -> {
+                if (response !is OptionChosenResponse) {
+                    return ExecutionResult.error(state, "Expected option chosen response for card name choice")
+                }
+                val chosenName = continuation.cardNames.getOrNull(response.optionIndex)
+                    ?: return ExecutionResult.error(state, "Invalid card name index: ${response.optionIndex}")
+                state.updateEntity(entityId) { c ->
+                    c.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice(chosenName))
                 }
             }
         }

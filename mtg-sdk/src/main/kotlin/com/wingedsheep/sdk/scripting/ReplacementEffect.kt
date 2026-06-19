@@ -981,7 +981,17 @@ enum class ChoiceType {
      * holding the chosen player's entity id, and read back through
      * [com.wingedsheep.sdk.scripting.references.Player.ChosenOpponent].
      */
-    OPPONENT
+    OPPONENT,
+    /**
+     * Choose a land card name (e.g., Petrified Hamlet: "When this land enters, choose a land
+     * card name"). Stored on the permanent in a
+     * [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_NAME] as a
+     * [com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice], and read
+     * back at static-projection / activation-legality time by
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosenComponent].
+     */
+    CARD_NAME
 }
 
 /**
@@ -1071,6 +1081,11 @@ data class EntersWithChoice(
             "As this permanent enters, an opponent chooses an opponent"
         } else {
             "As this permanent enters, choose an opponent"
+        }
+        ChoiceType.CARD_NAME -> if (chooser == Player.AnOpponent) {
+            "As this permanent enters, an opponent chooses a land card name"
+        } else {
+            "As this permanent enters, choose a land card name"
         }
     }
 
