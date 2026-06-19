@@ -705,6 +705,82 @@
     ]
 }
 
+// Arnyn, Deathbloom Botanist
+{
+    "name": "Arnyn, Deathbloom Botanist",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Vampire Druid",
+    "oracleText": "Deathtouch\nWhenever a creature you control with power or toughness 1 or less dies, target opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerOrToughnessAtMost",
+                                "max": 1
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target opponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                },
+                "descriptionOverride": "Whenever a creature you control with power or toughness 1 or less dies, target opponent loses 2 life and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"My lovelies need meat, just like any other carnivore.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6168b472-0930-4db5-9920-407340b99050.jpg?1775937426"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Artistic Process
 {
     "name": "Artistic Process",
@@ -3180,6 +3256,54 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Echocasting Symposium
+{
+    "name": "Echocasting Symposium",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Target player creates a token that's a copy of target creature you control.\nParadigm (Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile without paying its mana cost at the beginning of each of your first main phases.)",
+    "keywords": [
+        "PARADIGM"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target creature you control"
+            },
+            "controller": {
+                "type": "BoundVariable",
+                "name": "target player"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "target creature you control"
+            }
+        ],
+        "selfExileOnResolve": true,
+        "paradigm": true
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "MYTHIC",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9169,6 +9293,118 @@
     ]
 }
 
+// Nita, Forum Conciliator
+{
+    "name": "Nita, Forum Conciliator",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Whenever you cast a spell you don't own, put a +1/+1 counter on each creature you control.\n{2}, Sacrifice another creature: Exile target instant or sorcery card from an opponent's graveyard. You may cast it this turn, and mana of any type can be spent to cast that spell. If that spell would be put into a graveyard, exile it instead. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellNotOwnedByController"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "+1/+1",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell you don't own, put a +1/+1 counter on each creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "borrowed"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "borrowed",
+                            "withAnyManaType": true,
+                            "exileAfterResolve": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery own:opponent",
+                            "zone": "Graveyard"
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{2}, Sacrifice another creature: Exile target instant or sorcery card from an opponent's graveyard. You may cast it this turn, and mana of any type can be spent to cast that spell. If that spell would be put into a graveyard, exile it instead. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Jodie Muir",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Noxious Newt
 {
     "name": "Noxious Newt",
@@ -10024,6 +10260,55 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Potioner's Trove
+{
+    "name": "Potioner's Trove",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add one mana of any color.\n{T}: You gain 2 life. Activate only if you've cast an instant or sorcery spell this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color."
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "filter": "instant|sorcery",
+                            "atLeast": 1
+                        }
+                    }
+                ],
+                "descriptionOverride": "{T}: You gain 2 life. Activate only if you've cast an instant or sorcery spell this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "artist": "Alessandra Pisano",
+        "flavorText": "The shops of Ribtruss Town sell anything that can be gathered within Titan's Grave. Just don't ask where they acquired their goods.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752"
+    },
+    "colorIdentityOverride": []
 }
 
 // Pox Plague

@@ -3602,6 +3602,40 @@ private fun EmitCtx.activationRestrictionLines(rule: JsonObject): List<String>? 
             }
         }
     }
+    // "Activate only if you've cast an instant or sorcery spell this turn" (Potioner's Trove): the
+    // sole modifier is an ActivateOnlyIf whose condition is PlayerPassesFilter(You,
+    // CastASpellThisTurn(Or(IsCardtype Instant, IsCardtype Sorcery))) ->
+    // ActivationRestriction.OnlyIfCondition(Conditions.YouCastSpellsThisTurn(1,
+    // GameObjectFilter.InstantOrSorcery)). Match the exact shape (You + the instant-or-sorcery spell
+    // filter) so any other player, count, or spell filter still scaffolds.
+    run {
+        val mods = (rule["args"].asArr ?: emptyList()).filterIsInstance<JsonObject>()
+            .filter { it.strField("_ActivateModifier") != null }
+        val only = mods.singleOrNull()
+        if (only != null && only.strField("_ActivateModifier") == "ActivateOnlyIf") {
+            val cond = only["args"] as? JsonObject
+            if (cond?.strField("_Condition") == "PlayerPassesFilter") {
+                val cArgs = cond["args"].asArr ?: emptyList()
+                val player = cArgs.getOrNull(0) as? JsonObject
+                val playerFilter = cArgs.getOrNull(1) as? JsonObject
+                if (jsonContains(player, "_Player", "You") &&
+                    playerFilter?.strField("_Players") == "CastASpellThisTurn" &&
+                    isInstantOrSorcerySpellFilter(playerFilter["args"] as? JsonObject)
+                ) {
+                    return listOf(
+                        "        restrictions = listOf(",
+                        "            ActivationRestriction.OnlyIfCondition(",
+                        "                Conditions.YouCastSpellsThisTurn(",
+                        "                    atLeast = 1,",
+                        "                    filter = GameObjectFilter.InstantOrSorcery,",
+                        "                ),",
+                        "            ),",
+                        "        )",
+                    )
+                }
+            }
+        }
+    }
     // Per-turn activation caps -> ActivationRestriction frequency rules. Render only when EVERY
     // modifier present is a recognised per-turn cap, so an unrecognised modifier still scaffolds:
     //  - "Activate only once each turn"  (Mindful Biomancer)              -> OncePerTurn

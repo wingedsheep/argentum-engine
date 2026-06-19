@@ -424,7 +424,16 @@ data class CreateTokenCopyOfTargetEffect(
      * controller's Ring-bearer at the time the trigger fires (CR 701.54e) — i.e. "exile that
      * token unless [source] is your Ring-bearer" (Sauron, the Necromancer).
      */
-    val exileUnlessSourceIsRingBearer: Boolean = false
+    val exileUnlessSourceIsRingBearer: Boolean = false,
+    /**
+     * The player who creates (and so controls and owns) the token copy. `null` defaults to the
+     * effect's controller — the normal "you create a token that's a copy of …" case. Set it to a
+     * resolved player target for "**Target player** creates a token that's a copy of target
+     * creature you control" (Echocasting Symposium): the chosen permanent is copied, but the new
+     * token is put onto the battlefield under the named player's control. Mirrors
+     * [CreateTokenEffect.controller].
+     */
+    val controller: EffectTarget? = null
 ) : Effect {
     override val description: String = buildString {
         append("Create ${count.description} token copies of target permanent")

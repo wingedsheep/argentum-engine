@@ -68,7 +68,12 @@ class CreateTokenCopyOfTargetExecutor(
         val count = amountEvaluator.evaluate(state, effect.count, context)
         if (count <= 0) return EffectResult.success(state)
 
-        val controllerId = context.controllerId
+        // Who creates (controls + owns) the token. Defaults to the effect's controller; a player
+        // target (e.g. "Target player creates a token …" — Echocasting Symposium) puts the token
+        // under that player's control instead.
+        val controllerId = effect.controller
+            ?.let { context.resolvePlayerTargets(it, state).firstOrNull() }
+            ?: context.controllerId
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown).
         // Mirrormind's replacement copies the equipped creature instead of this

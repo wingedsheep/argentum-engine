@@ -493,6 +493,13 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with power or toughness $min or greater"
     }
 
+    /** Power or toughness is at most the given value (OR logic) */
+    @SerialName("PowerOrToughnessAtMost")
+    @Serializable
+    data class PowerOrToughnessAtMost(val max: Int) : CardPredicate {
+        override val description: String = "with power or toughness $max or less"
+    }
+
     /** Total power and toughness (sum) is at most the given value */
     @SerialName("TotalPowerAndToughnessAtMost")
     @Serializable

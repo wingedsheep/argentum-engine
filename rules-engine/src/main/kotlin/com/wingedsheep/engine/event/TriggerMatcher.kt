@@ -920,6 +920,13 @@ class TriggerMatcher(
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
                 power >= predicate.min || toughness >= predicate.min
             }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerOrToughnessAtMost -> {
+                val power = if (isFaceDown) 2
+                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                val toughness = if (isFaceDown) 2
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                power <= predicate.max || toughness <= predicate.max
+            }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.TotalPowerAndToughnessAtMost -> {
                 val power = if (isFaceDown) 2
                     else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
@@ -1351,6 +1358,12 @@ class TriggerMatcher(
                     state, state.projectedState, targetId, predicate.filter, predicateContext
                 )
             }
+        }
+        SpellCastPredicate.NotOwnedByController -> {
+            val ownerId = state.getEntity(event.spellEntityId)
+                ?.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()
+                ?.playerId
+            ownerId != null && ownerId != controllerId
         }
     }
 

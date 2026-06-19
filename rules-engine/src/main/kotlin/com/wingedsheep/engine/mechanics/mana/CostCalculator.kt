@@ -949,6 +949,11 @@ class CostCalculator(
                 val toughness = cardDef.creatureStats?.baseToughness ?: 0
                 power >= predicate.min || toughness >= predicate.min
             }
+            is CardPredicate.PowerOrToughnessAtMost -> {
+                val power = cardDef.creatureStats?.basePower ?: 0
+                val toughness = cardDef.creatureStats?.baseToughness ?: 0
+                power <= predicate.max || toughness <= predicate.max
+            }
             is CardPredicate.TotalPowerAndToughnessAtMost -> {
                 val power = cardDef.creatureStats?.basePower ?: 0
                 val toughness = cardDef.creatureStats?.baseToughness ?: 0

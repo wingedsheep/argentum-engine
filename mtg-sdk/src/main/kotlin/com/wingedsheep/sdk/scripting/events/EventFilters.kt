@@ -437,6 +437,20 @@ sealed interface SpellCastPredicate {
     data class TargetsMatching(val filter: GameObjectFilter) : SpellCastPredicate {
         override val description = "that targets ${filter.description}"
     }
+
+    /**
+     * The just-cast spell is **owned by a player other than the trigger's controller** — the
+     * card's owner (CR 108.3, fixed at game start) differs from who cast it. This is true when
+     * you cast a spell that isn't yours: a card exiled from an opponent's graveyard/hand that you
+     * may cast (Nita, Forum Conciliator; Gonti, Lord of Luxury), a spell stolen with control of
+     * the stack object, etc. A spell you cast from your own zones (owner == controller) does not
+     * satisfy it. Resolved against the spell entity's owner record vs. the trigger controller.
+     */
+    @SerialName("SpellNotOwnedByController")
+    @Serializable
+    data object NotOwnedByController : SpellCastPredicate {
+        override val description = "you don't own"
+    }
 }
 
 // =============================================================================

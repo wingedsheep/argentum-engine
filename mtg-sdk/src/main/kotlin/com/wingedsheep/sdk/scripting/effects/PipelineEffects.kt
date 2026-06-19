@@ -1121,7 +1121,17 @@ data class GrantMayPlayFromExileEffect(
      * its owner may play it until the end of their next turn."). Defaults to controller-controls,
      * matching impulse-draw effects where you exile and play cards you own.
      */
-    val ownerControls: Boolean = false
+    val ownerControls: Boolean = false,
+    /**
+     * When true, each granted card is stamped so that, if a spell cast from this permission would
+     * be put into a graveyard (on resolution, when countered, or when it fizzles), it is exiled
+     * instead. Models the "If that spell would be put into a graveyard, exile it instead" rider on
+     * cards that let you cast a card you don't own out of exile (Nita, Forum Conciliator) — the
+     * same `ExileAfterResolveComponent` mechanism behind [GrantFreeCastTargetFromExileEffect.exileAfterResolve],
+     * but for a *paid* cast rather than a free one. Defaults to off (impulse-draw cards leave the
+     * card to go to its owner's graveyard normally).
+     */
+    val exileAfterResolve: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         val who = if (ownerControls) "its owner" else "you"
@@ -1132,6 +1142,7 @@ data class GrantMayPlayFromExileEffect(
         }
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
         if (landEntersTapped) append(". Each land played this way enters tapped")
+        if (exileAfterResolve) append(". If a spell cast this way would be put into a graveyard, exile it instead")
     }
 }
 

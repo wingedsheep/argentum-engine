@@ -471,7 +471,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `ReturnLinkedExileUnderOwnersControl()` — return under each card's owner.
 - `ReturnLinkedExileToHand()` — return all from linked exile to hand.
 - `ReturnOneFromLinkedExile()` — return one chosen card.
-- `GrantMayPlayFromExile(from, expiry?, withAnyManaType?, condition?, landEntersTapped?, onPlayRider?, ownerControls?)` — controller may play matching cards from exile. `withAnyManaType=true` relaxes the colored pips so mana of any type can pay them (Laughing Jasper Flint, Cruelclaw's Heist); the grant works whether the card stays in exile *or* in a graveyard (Tinybones, the Pickpocket grants over a card the trigger gathered straight from a graveyard via `CardSource.ChosenTargets`), and the relaxation is applied both in the legal-action enumerator and in the cast handler's payment. `landEntersTapped=true` forces a played land tapped regardless of its own ETB script (Lightstall Inquisitor); PlayLandHandler reads the flag off the active `MayPlayPermission` at play time and stamps `TappedComponent` before the card's intrinsic `EntersTapped` branch runs. `onPlayRider` is a "When you play a card this way, …" payoff: the engine registers a linked event-based delayed triggered ability alongside the permission, and casting/playing a granted card emits a `CardPlayedFromPermissionEvent` (link-id-scoped, like `DamagePreventedEvent`) that fires the rider on the stack as a triggered ability of the granting source. Expires with the grant (end of turn). Used by Fires of Mount Doom ("…When you play a card this way, Fires of Mount Doom deals 2 damage to each player."). `ownerControls=true` grants the permission to each exiled card's *owner* instead of the effect controller — the collection is grouped by owner into one permission per owner, and any turn-keyed `expiry` (e.g. `MayPlayExpiry.UntilEndOfNextTurn`) is measured against each owner's own turns. Use for "for each of those cards, its owner may play it until the end of their next turn" wording where the exiled cards may belong to different players (Suspend Aggression: exile a target nonland permanent + your top library card, each owner may replay the one they own). Mirrors `MakePlottedEffect.ownerControls`; prefer it (composed in a gather → exile → grant pipeline) over the monolithic `ExileAndGrantOwnerPlayPermission` when the expiry is turn-bounded or more than one card is exiled.
+- `GrantMayPlayFromExile(from, expiry?, withAnyManaType?, condition?, landEntersTapped?, onPlayRider?, ownerControls?, exileAfterResolve?)` — controller may play matching cards from exile. `exileAfterResolve=true` stamps `ExileAfterResolveComponent` on each granted card so a spell cast from the permission is exiled instead of going to a graveyard (on resolution, when countered, or when it fizzles) — the "If that spell would be put into a graveyard, exile it instead" rider on borrow-a-spell-you-don't-own cards (Nita, Forum Conciliator); the same mechanism as `GrantFreeCastTargetFromExile.exileAfterResolve` but for a *paid* cast. `withAnyManaType=true` relaxes the colored pips so mana of any type can pay them (Laughing Jasper Flint, Cruelclaw's Heist); the grant works whether the card stays in exile *or* in a graveyard (Tinybones, the Pickpocket grants over a card the trigger gathered straight from a graveyard via `CardSource.ChosenTargets`), and the relaxation is applied both in the legal-action enumerator and in the cast handler's payment. `landEntersTapped=true` forces a played land tapped regardless of its own ETB script (Lightstall Inquisitor); PlayLandHandler reads the flag off the active `MayPlayPermission` at play time and stamps `TappedComponent` before the card's intrinsic `EntersTapped` branch runs. `onPlayRider` is a "When you play a card this way, …" payoff: the engine registers a linked event-based delayed triggered ability alongside the permission, and casting/playing a granted card emits a `CardPlayedFromPermissionEvent` (link-id-scoped, like `DamagePreventedEvent`) that fires the rider on the stack as a triggered ability of the granting source. Expires with the grant (end of turn). Used by Fires of Mount Doom ("…When you play a card this way, Fires of Mount Doom deals 2 damage to each player."). `ownerControls=true` grants the permission to each exiled card's *owner* instead of the effect controller — the collection is grouped by owner into one permission per owner, and any turn-keyed `expiry` (e.g. `MayPlayExpiry.UntilEndOfNextTurn`) is measured against each owner's own turns. Use for "for each of those cards, its owner may play it until the end of their next turn" wording where the exiled cards may belong to different players (Suspend Aggression: exile a target nonland permanent + your top library card, each owner may replay the one they own). Mirrors `MakePlottedEffect.ownerControls`; prefer it (composed in a gather → exile → grant pipeline) over the monolithic `ExileAndGrantOwnerPlayPermission` when the expiry is turn-bounded or more than one card is exiled.
 - `GrantPlayWithoutPayingCost(from)` — same, without paying mana costs.
 - `GrantPlayWithCostIncrease(from, amount)` — stamp `PlayWithCostIncreaseComponent(controllerId, amount)` on every card in the collection, so the next cast pays `{amount}` extra generic. Pair with `GrantMayPlayFromExile` for "each spell cast this way costs {N} more" clauses (Lightstall Inquisitor); for target-based "exile this permanent, owner may play it, opponents tax" effects use `Effects.ExileAndGrantOwnerPlayPermission` instead.
 - `GrantFreeCastTargetFromExile(target)` — cast specific exiled card for free.
@@ -641,7 +641,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `CreateChosenTokenEffect`; under the hood it sets `CreateTokenEffect.colorsFromChoice` /
   `creatureTypesFromChoice`.)
 - `CreateTokenCopyOfSelf(count?, tapped?)` — token copies of source.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
@@ -667,6 +667,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   so it is skipped while the source is the controller's Ring-bearer at fire time (CR 701.54e) — "create a
   tapped and attacking token that's a copy of that card … at the beginning of the next end step, exile that
   token unless ~ is your Ring-bearer" (Sauron, the Necromancer).
+  `controller` (an `EffectTarget` player ref) overrides who creates — and so controls and owns — the token;
+  `null` defaults to the effect's controller. Set it for "**Target player** creates a token that's a copy of
+  target creature you control" (Echocasting Symposium): the chosen creature is copied but the token enters
+  under the named player's control. Mirrors `CreateTokenEffect.controller`.
   Like `CreateToken`, both `CreateTokenCopyOfTarget` and `CreateTokenCopyOfSource` publish their created token
   entity IDs to the `CREATED_TOKENS` pipeline collection, so a sibling effect in a `CompositeEffect` can address
   the new copy — e.g. Applied Geometry's "Create a token that's a copy … Put six +1/+1 counters on it" composes
@@ -1636,6 +1640,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   (a record stores the resolved mana value, not the printed cost). Used by *Paradox Surveyor*
   ("a card with {X} in its mana cost"). Underlying predicate: `CardPredicate.HasXInManaCost`.
 - `.toughnessAtMost(n)` / `.toughnessAtLeast(n)` — toughness comparator.
+- `.powerOrToughnessAtLeast(n)` / `.powerOrToughnessAtMost(n)` — **OR** caps over power and
+  toughness: matches when *either* power or toughness is ≥ (resp. ≤) `n`. `powerOrToughnessAtMost`
+  backs Arnyn, Deathbloom Botanist ("a creature you control with power or toughness 1 or less
+  dies"). Honored in all four evaluation sites (resolution predicate, trigger matcher with
+  last-known stats, layer projection, cost calculation). Underlying predicates:
+  `CardPredicate.PowerOrToughnessAtLeast` / `CardPredicate.PowerOrToughnessAtMost`.
 - `.toughnessAtMostX()` — toughness ≤ the X chosen for the source spell/ability. Resolves
   against `PredicateContext.xValue` at evaluation time, so it works at the spell's resolution
   filter pass (e.g. Zero Point Ballad's mass destruction). Layer projection / trigger matching
@@ -2128,6 +2138,12 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
 - `SpellCastPredicate.TargetsMatching(filter)` — the cast spell has ≥1 chosen target matching
   `filter` (evaluated relative to the trigger controller). Used by Legolas, Master Archer
   ("a spell that targets a creature you don't control").
+- `SpellCastPredicate.NotOwnedByController` — the cast spell is owned by someone other than its
+  controller (the trigger's controller, i.e. "you"). True precisely for "a spell you don't own":
+  a card you cast out of exile / a graveyard that belongs to another player (Nita, Forum
+  Conciliator; Gonti's-style borrow effects). Matches when the spell entity's `OwnerComponent`
+  (fixed at game start, CR 108.3) differs from the controller; a spell cast from your own zones
+  (owner == controller) never satisfies it.
 
 Examples:
 

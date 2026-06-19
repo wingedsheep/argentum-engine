@@ -777,9 +777,16 @@ object Effects {
         withAnyManaType: Boolean = false,
         condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
         landEntersTapped: Boolean = false,
-        onPlayRider: Effect? = null
+        onPlayRider: Effect? = null,
+        exileAfterResolve: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
-        from, expiry, withAnyManaType, condition, landEntersTapped, onPlayRider
+        from = from,
+        expiry = expiry,
+        withAnyManaType = withAnyManaType,
+        condition = condition,
+        landEntersTapped = landEntersTapped,
+        onPlayRider = onPlayRider,
+        exileAfterResolve = exileAfterResolve
     )
 
     /**
@@ -1608,7 +1615,8 @@ object Effects {
         sacrificeOnlyOnControllersTurn: Boolean = false,
         addCardTypes: Set<String> = emptySet(),
         exileAtStep: com.wingedsheep.sdk.core.Step? = null,
-        exileUnlessSourceIsRingBearer: Boolean = false
+        exileUnlessSourceIsRingBearer: Boolean = false,
+        controller: EffectTarget? = null
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -1629,7 +1637,8 @@ object Effects {
         sacrificeOnlyOnControllersTurn = sacrificeOnlyOnControllersTurn,
         addCardTypes = addCardTypes,
         exileAtStep = exileAtStep,
-        exileUnlessSourceIsRingBearer = exileUnlessSourceIsRingBearer
+        exileUnlessSourceIsRingBearer = exileUnlessSourceIsRingBearer,
+        controller = controller
     )
 
     /**

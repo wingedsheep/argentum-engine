@@ -371,6 +371,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.PowerOrToughnessAtLeast(min)
     )
 
+    /** Power or toughness at most */
+    fun powerOrToughnessAtMost(max: Int) = copy(
+        cardPredicates = cardPredicates + CardPredicate.PowerOrToughnessAtMost(max)
+    )
+
     /** Total power and toughness (sum) at most */
     fun totalPowerAndToughnessAtMost(max: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.TotalPowerAndToughnessAtMost(max)
