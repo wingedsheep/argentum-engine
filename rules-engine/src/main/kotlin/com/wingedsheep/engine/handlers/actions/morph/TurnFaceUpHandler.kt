@@ -26,7 +26,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ManifestedComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
@@ -79,13 +79,13 @@ class TurnFaceUpHandler(
             return "This creature is not face-down"
         }
 
-        val morphData = container.get<MorphDataComponent>()
+        val turnUpData = container.get<FaceDownTurnUpComponent>()
             ?: return "This creature cannot be turned face up (no morph cost)"
 
         // Validate cost payment based on morph cost type.
         // Apply morph cost increases from permanents like Exiled Doomsayer.
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
-        val morphCost = morphData.morphCost
+        val morphCost = turnUpData.turnUpCost
         val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
         when {
             manaMorph != null -> {
@@ -158,17 +158,17 @@ class TurnFaceUpHandler(
         val container = state.getEntity(action.sourceId)
             ?: return ExecutionResult.error(state, "Permanent not found")
 
-        val morphData = container.get<MorphDataComponent>()
+        val turnUpData = container.get<FaceDownTurnUpComponent>()
             ?: return ExecutionResult.error(state, "No morph data found")
 
         val cardComponent = container.get<CardComponent>()
-        val cardDef = cardRegistry.getCard(morphData.originalCardDefinitionId)
+        val cardDef = cardRegistry.getCard(turnUpData.originalCardDefinitionId)
         val cardName = cardDef?.name ?: cardComponent?.name ?: "Unknown"
 
         // Pay the morph cost (including any morph cost increases)
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
         val xValue = action.xValue ?: 0
-        val morphCost = morphData.morphCost
+        val morphCost = turnUpData.turnUpCost
         val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
         when {
             manaMorph != null -> {
@@ -342,7 +342,7 @@ class TurnFaceUpHandler(
             // face down — equivalent to never having taken the action.
             else -> {
                 val flip: com.wingedsheep.sdk.scripting.effects.Effect =
-                    morphData.faceUpEffect
+                    turnUpData.faceUpEffect
                         ?.let { Effects.Composite(TurnFaceUpEffect(EffectTarget.Self), it) }
                         ?: TurnFaceUpEffect(EffectTarget.Self)
                 return when (
@@ -375,12 +375,12 @@ class TurnFaceUpHandler(
         }
 
         // Execute face-up replacement effect (e.g., "put five +1/+1 counters on it")
-        if (morphData.faceUpEffect != null) {
+        if (turnUpData.faceUpEffect != null) {
             val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                 sourceId = action.sourceId,
                 controllerId = action.playerId,
             )
-            val effectResult = effectExecutorRegistry.execute(currentState, morphData.faceUpEffect, effectContext)
+            val effectResult = effectExecutorRegistry.execute(currentState, turnUpData.faceUpEffect, effectContext)
             if (effectResult.error == null) {
                 currentState = effectResult.state
                 events.addAll(effectResult.events)

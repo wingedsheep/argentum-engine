@@ -321,7 +321,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TokenComponent::class)
         subclass(FaceDownComponent::class)
         subclass(RevealedToComponent::class)
-        subclass(MorphDataComponent::class)
+        subclass(FaceDownTurnUpComponent::class)
         subclass(ManifestedComponent::class)
         subclass(TextReplacementComponent::class)
         subclass(ProtectionComponent::class)

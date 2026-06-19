@@ -653,7 +653,7 @@ class MoveCollectionExecutor(
             // its identity and the mode. Per-card because manifested cards turn up for their own
             // (differing) mana costs. Exile face-down (Hideaway) is just hidden — no turn-up data.
             val isBattlefieldFaceDown = faceDown != null && destZone == Zone.BATTLEFIELD
-            val morphData = if (isBattlefieldFaceDown) {
+            val turnUpData = if (isBattlefieldFaceDown) {
                 val cardDefinitionId = newState.getEntity(cardId)?.get<CardComponent>()?.cardDefinitionId
                 if (cardDefinitionId != null) {
                     com.wingedsheep.engine.handlers.effects.FaceDownTurnUp.dataFor(
@@ -668,7 +668,7 @@ class MoveCollectionExecutor(
                 tapped = destination.placement == ZonePlacement.Tapped || destination.placement == ZonePlacement.TappedAndAttacking,
                 tappedAndAttacking = destination.placement == ZonePlacement.TappedAndAttacking,
                 faceDown = isBattlefieldFaceDown,
-                morphData = morphData,
+                turnUpData = turnUpData,
                 manifested = isBattlefieldFaceDown && faceDown == FaceDownMode.MANIFEST,
                 faceDownExile = faceDown != null && destZone == Zone.EXILE
             )

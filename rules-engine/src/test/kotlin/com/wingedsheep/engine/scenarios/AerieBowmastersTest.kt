@@ -4,7 +4,7 @@ import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dtk.cards.AerieBowmasters
@@ -48,7 +48,7 @@ class AerieBowmastersTest : FunSpec({
         replaceState(state.updateEntity(creatureId) { container ->
             container
                 .with(FaceDownComponent)
-                .with(MorphDataComponent(morphAbility.morphCost, cardDef.name, morphAbility.faceUpEffect))
+                .with(FaceDownTurnUpComponent(morphAbility.morphCost, cardDef.name, morphAbility.faceUpEffect))
         })
         return creatureId
     }

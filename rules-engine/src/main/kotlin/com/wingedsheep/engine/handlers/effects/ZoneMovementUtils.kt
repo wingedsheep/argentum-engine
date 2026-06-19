@@ -44,7 +44,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
@@ -267,7 +267,7 @@ object ZoneMovementUtils {
             // Identity
             .without<ControllerComponent>()
             .without<FaceDownComponent>()
-            .without<MorphDataComponent>()
+            .without<FaceDownTurnUpComponent>()
             .without<RevealedToComponent>()
             // Copy effects on permanents end when the object leaves the battlefield
             // (CR 400.7 / 707.2). ZoneTransitionService restores the printed

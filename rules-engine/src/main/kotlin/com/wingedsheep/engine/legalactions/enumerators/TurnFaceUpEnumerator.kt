@@ -7,7 +7,7 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 
@@ -36,12 +36,12 @@ class TurnFaceUpEnumerator : ActionEnumerator {
             if (!container.has<FaceDownComponent>()) continue
 
             // Must have morph data (to get the morph cost)
-            val morphData = container.get<MorphDataComponent>() ?: continue
+            val turnUpData = container.get<FaceDownTurnUpComponent>() ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
             // Check if player can afford the morph cost (including any morph cost increases)
             val morphCostIncrease = context.costCalculator.calculateMorphCostIncrease(state)
-            val cost = morphData.morphCost
+            val cost = turnUpData.turnUpCost
             val manaMorph = (cost as? PayCost.Atom)?.atom as? CostAtom.Mana
             when {
                 manaMorph != null -> {

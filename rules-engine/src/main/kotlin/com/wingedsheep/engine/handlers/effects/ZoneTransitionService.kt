@@ -19,7 +19,7 @@ import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardFromBattlefieldThisTurnMarker
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ManifestedComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
@@ -46,7 +46,7 @@ data class ZoneEntryOptions(
     val tapped: Boolean = false,
     val tappedAndAttacking: Boolean = false,
     val faceDown: Boolean = false,
-    val morphData: MorphDataComponent? = null,
+    val turnUpData: FaceDownTurnUpComponent? = null,
     /** True when the face-down battlefield entry is a manifest (CR 701.40), not a morph. */
     val manifested: Boolean = false,
     val skipZoneChangeRedirect: Boolean = false,
@@ -714,8 +714,8 @@ object ZoneTransitionService {
             // Face-down entry (morph / manifest)
             if (options.faceDown) {
                 updated = updated.with(FaceDownComponent)
-                if (options.morphData != null) {
-                    updated = updated.with(options.morphData)
+                if (options.turnUpData != null) {
+                    updated = updated.with(options.turnUpData)
                 }
                 if (options.manifested) {
                     updated = updated.with(ManifestedComponent)

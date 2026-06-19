@@ -12,12 +12,16 @@ import kotlinx.serialization.Serializable
 data object FaceDownComponent : Component
 
 /**
- * Stores the morph cost and original card identity for face-down creatures.
- * This allows the creature to be turned face up by paying the morph cost.
+ * The "turn face up" record for a face-down permanent — shared by every face-down mechanic
+ * (morph, manifest, …). [turnUpCost] is the cost to turn it face up (the morph cost for a morph,
+ * the card's mana cost for a manifested creature card — see
+ * [com.wingedsheep.engine.handlers.effects.FaceDownTurnUp], which derives it at entry), and
+ * [originalCardDefinitionId] records what the permanent really is. Absent when the permanent has no
+ * way to be turned face up (e.g. a manifested non-creature card, CR 701.40b).
  */
 @Serializable
-data class MorphDataComponent(
-    val morphCost: PayCost,
+data class FaceDownTurnUpComponent(
+    val turnUpCost: PayCost,
     val originalCardDefinitionId: String,
     /** Effect to execute as a replacement effect when turned face up (e.g., put 5 +1/+1 counters on it) */
     val faceUpEffect: Effect? = null

@@ -3,7 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.lgn.cards.Dermoplasm
@@ -52,7 +52,7 @@ class DermoplasmTest : FunSpec({
         replaceState(state.updateEntity(creatureId) { container ->
             var c = container.with(FaceDownComponent)
             if (morphAbility != null) {
-                c = c.with(MorphDataComponent(morphAbility.morphCost, cardDef.name))
+                c = c.with(FaceDownTurnUpComponent(morphAbility.morphCost, cardDef.name))
             }
             c
         })

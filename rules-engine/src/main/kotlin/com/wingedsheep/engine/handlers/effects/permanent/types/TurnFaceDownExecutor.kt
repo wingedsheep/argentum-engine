@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
  *
  * Adds FaceDownComponent to the target creature. The creature becomes
  * a 2/2 colorless creature with no name, types, or abilities (Rule 708.2).
- * MorphDataComponent should already be present on the creature.
+ * FaceDownTurnUpComponent should already be present on the creature.
  */
 class TurnFaceDownExecutor : EffectExecutor<TurnFaceDownEffect> {
 

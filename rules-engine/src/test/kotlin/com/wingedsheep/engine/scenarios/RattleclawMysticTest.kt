@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -51,7 +51,7 @@ class RattleclawMysticTest : FunSpec({
         replaceState(state.updateEntity(creatureId) { container ->
             var c = container.with(FaceDownComponent)
             if (morphAbility != null) {
-                c = c.with(MorphDataComponent(morphAbility.morphCost, cardDef.name))
+                c = c.with(FaceDownTurnUpComponent(morphAbility.morphCost, cardDef.name))
             }
             c
         })

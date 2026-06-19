@@ -261,7 +261,7 @@ class MoveToZoneEffectExecutor(
         // Derive turn-up data for a face-down battlefield entry (morph cost vs. manifest mana cost).
         val faceDownMode = effect.faceDown
         val isBattlefieldFaceDown = faceDownMode != null && effect.destination == Zone.BATTLEFIELD
-        val morphData = if (isBattlefieldFaceDown) {
+        val turnUpData = if (isBattlefieldFaceDown) {
             com.wingedsheep.engine.handlers.effects.FaceDownTurnUp.dataFor(
                 cardRegistry.getCard(cardComponent.cardDefinitionId),
                 cardComponent.cardDefinitionId,
@@ -275,7 +275,7 @@ class MoveToZoneEffectExecutor(
             tapped = effect.placement == ZonePlacement.Tapped,
             tappedAndAttacking = effect.placement == ZonePlacement.TappedAndAttacking,
             faceDown = isBattlefieldFaceDown,
-            morphData = morphData,
+            turnUpData = turnUpData,
             manifested = isBattlefieldFaceDown && faceDownMode == FaceDownMode.MANIFEST
         )
     }

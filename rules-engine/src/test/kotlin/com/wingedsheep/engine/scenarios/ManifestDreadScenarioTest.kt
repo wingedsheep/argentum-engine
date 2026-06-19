@@ -6,7 +6,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ManifestedComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -98,8 +98,8 @@ class ManifestDreadScenarioTest : FunSpec({
         d.submitDecision(you, CardsSelectedResponse(decisionId = pick.id, selectedCards = listOf(creature)))
 
         // Its turn-up cost is its real mana cost {2}{G} (CR 701.40b), not a morph cost.
-        val morphData = d.state.getEntity(creature)?.get<MorphDataComponent>()
-        morphData.shouldNotBeNull()
+        val turnUpData = d.state.getEntity(creature)?.get<FaceDownTurnUpComponent>()
+        turnUpData.shouldNotBeNull()
 
         // Pay {2}{G} to turn it face up — it becomes the real 3/3 Centaur Courser.
         d.giveMana(you, Color.GREEN, 3)
@@ -131,7 +131,7 @@ class ManifestDreadScenarioTest : FunSpec({
         entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
         entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
         // No morph/turn-up data — a manifested non-creature can never be turned face up (CR 701.40b).
-        entity?.get<MorphDataComponent>() shouldBe null
+        entity?.get<FaceDownTurnUpComponent>() shouldBe null
 
         d.giveMana(you, Color.GREEN, 5)
         d.submit(TurnFaceUp(playerId = you, sourceId = land, paymentStrategy = PaymentStrategy.FromPool))

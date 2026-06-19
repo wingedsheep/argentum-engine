@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.SaguMauler
@@ -42,7 +42,7 @@ class SaguMaulerTest : FunSpec({
             .filterIsInstance<KeywordAbility.Morph>()
             .first()
         replaceState(state.updateEntity(creatureId) { container ->
-            container.with(FaceDownComponent).with(MorphDataComponent(morphAbility.morphCost, cardDef.name))
+            container.with(FaceDownComponent).with(FaceDownTurnUpComponent(morphAbility.morphCost, cardDef.name))
         })
         return creatureId
     }

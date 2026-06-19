@@ -228,7 +228,7 @@ sealed interface StatePredicate {
         override val description: String = "face-up"
     }
 
-    /** Has a morph ability (has MorphDataComponent) */
+    /** Has a morph ability (has HasMorphAbilityComponent) */
     @SerialName("HasMorphAbility")
     @Serializable
     data object HasMorphAbility : Entity {

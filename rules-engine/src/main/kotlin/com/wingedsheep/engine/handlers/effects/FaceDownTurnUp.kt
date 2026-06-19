@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -8,11 +8,11 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 
 /**
- * Derives the [MorphDataComponent] that lets a face-down permanent be turned face up, given the
+ * Derives the [FaceDownTurnUpComponent] that lets a face-down permanent be turned face up, given the
  * card it represents and the [FaceDownMode] under which it entered the battlefield.
  *
  * This is the one place that knows the turn-up rule of each face-down mechanic. The turn-up itself
- * (special action, payment, flip) is mechanic-agnostic — it reads only [MorphDataComponent] — so a
+ * (special action, payment, flip) is mechanic-agnostic — it reads only [FaceDownTurnUpComponent] — so a
  * manifested creature reuses the entire morph turn-up machinery for free.
  *
  * Returns `null` when the permanent has no way to be turned face up (a non-morph card entered as
@@ -24,11 +24,11 @@ object FaceDownTurnUp {
         cardDef: CardDefinition?,
         cardDefinitionId: String,
         mode: FaceDownMode
-    ): MorphDataComponent? = when (mode) {
+    ): FaceDownTurnUpComponent? = when (mode) {
         // Morph / Megamorph (CR 702.37): turn face up by paying the card's morph cost.
         FaceDownMode.MORPH -> {
             val morph = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
-            morph?.let { MorphDataComponent(it.morphCost, cardDefinitionId, it.faceUpEffect) }
+            morph?.let { FaceDownTurnUpComponent(it.morphCost, cardDefinitionId, it.faceUpEffect) }
         }
 
         // Manifest / Cloak (CR 701.40b): turn face up by paying the card's mana cost, but only if
@@ -36,8 +36,8 @@ object FaceDownTurnUp {
         // can never be turned face up this way.
         FaceDownMode.MANIFEST ->
             if (cardDef != null && cardDef.typeLine.isCreature) {
-                MorphDataComponent(
-                    morphCost = PayCost.Atom(CostAtom.Mana(cardDef.manaCost)),
+                FaceDownTurnUpComponent(
+                    turnUpCost = PayCost.Atom(CostAtom.Mana(cardDef.manaCost)),
                     originalCardDefinitionId = cardDefinitionId,
                     faceUpEffect = null
                 )

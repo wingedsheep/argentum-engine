@@ -28,7 +28,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.PlottedComponent
@@ -98,7 +98,7 @@ class StackResolver(
      *
      * @param castFaceDown If true, cast as a face-down 2/2 creature (morph). The spell
      *                     will resolve as a face-down creature with FaceDownComponent
-     *                     and MorphDataComponent.
+     *                     and FaceDownTurnUpComponent.
      * @param damageDistribution Pre-chosen damage distribution for DividedDamageEffect spells
      */
     fun castSpell(
@@ -213,8 +213,8 @@ class StackResolver(
             val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
             val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
             if (morphAbility != null) {
-                updated = updated.with(MorphDataComponent(
-                    morphCost = morphAbility.morphCost,
+                updated = updated.with(FaceDownTurnUpComponent(
+                    turnUpCost = morphAbility.morphCost,
                     originalCardDefinitionId = cardComponent.cardDefinitionId,
                     faceUpEffect = morphAbility.faceUpEffect
                 ))
@@ -1085,7 +1085,7 @@ class StackResolver(
 
             // If cast face-down (morph), add FaceDownComponent and strip any
             // RevealedToComponent from hand-peek effects (zone change = new object)
-            // MorphDataComponent was already added when the spell was cast
+            // FaceDownTurnUpComponent was already added when the spell was cast
             if (spellComponent.castFaceDown) {
                 updated = updated.with(FaceDownComponent)
                     .without<RevealedToComponent>()

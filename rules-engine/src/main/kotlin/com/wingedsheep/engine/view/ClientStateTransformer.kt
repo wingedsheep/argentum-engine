@@ -746,7 +746,7 @@ class ClientStateTransformer(
             projectedState.isCreature(entityId)
 
         // Get morph data for face-down creatures
-        val morphData = container.get<MorphDataComponent>()
+        val turnUpData = container.get<FaceDownTurnUpComponent>()
 
         // Handle face-down card masking
         // Opponents and spectators see modified stats but no card information
@@ -1134,7 +1134,7 @@ class ClientStateTransformer(
             isPlotted = isPlotted,
             isPrepared = isPrepared,
             isWarped = isWarped,
-            morphCost = if (isFaceDown && morphData != null) morphData.morphCost.description else null,
+            morphCost = if (isFaceDown && turnUpData != null) turnUpData.turnUpCost.description else null,
             targets = targets,
             imageUri = cardComponent.imageUri ?: cardDef?.metadata?.imageUri,
             activeEffects = activeEffects,

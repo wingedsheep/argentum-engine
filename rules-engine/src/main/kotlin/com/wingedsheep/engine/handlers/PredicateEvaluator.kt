@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownTurnUpComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardFromBattlefieldThisTurnMarker
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Color
@@ -895,7 +895,7 @@ class PredicateEvaluator {
             // Morph ability — check both the runtime component (face-down permanents)
             // and the card definition tag (cards in hand/library/graveyard)
             StatePredicate.HasMorphAbility ->
-                container.has<MorphDataComponent>() ||
+                container.has<FaceDownTurnUpComponent>() ||
                 container.has<HasMorphAbilityComponent>()
 
             // Ring-bearer designation (CR 701.54e): only while it has the component AND is controlled
