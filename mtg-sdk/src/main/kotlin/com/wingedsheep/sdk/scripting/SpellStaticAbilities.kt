@@ -172,15 +172,21 @@ data class GrantMayCastFromLinkedExile(
  *
  * @property keyword The keyword that matching spells gain while this permanent is in play.
  * @property spellFilter Which spells gain the keyword (defaults to creature spells).
+ * @property keywordParameter Numeric parameter for parameterized keywords (e.g. Casualty N — the
+ *   power threshold), or null for parameterless keywords like Convoke/Conspire. Read by the engine
+ *   when the granted keyword needs a number (e.g. Silverquill: "instant and sorcery spell you cast
+ *   has casualty 1" → `keyword = CASUALTY, keywordParameter = 1`).
  */
 @SerialName("GrantKeywordToOwnSpells")
 @Serializable
 data class GrantKeywordToOwnSpells(
     val keyword: Keyword,
-    val spellFilter: GameObjectFilter = GameObjectFilter.Creature
+    val spellFilter: GameObjectFilter = GameObjectFilter.Creature,
+    val keywordParameter: Int? = null
 ) : StaticAbility {
     override val description: String =
-        "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells you cast have ${keyword.displayName.lowercase()}"
+        "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells you cast have " +
+            "${keyword.displayName.lowercase()}${keywordParameter?.let { " $it" } ?: ""}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = spellFilter.applyTextReplacement(replacer)
         return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
@@ -215,6 +221,33 @@ data class GrantWarpToCardsInHand(
 ) : StaticAbility {
     override val description: String =
         "${filter.description.replaceFirstChar { it.uppercase() }} in your hand have warp $cost"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Grants miracle (CR 702.94) to cards in the granter's controller's hand that match [filter].
+ * Models oracle text like "Each instant and sorcery card in your hand has miracle {2}."
+ * (Lorehold, the Historian).
+ *
+ * Read by the draw flow the same way printed [KeywordAbility.Miracle] is read: when a matching card
+ * is the first card its owner draws in a turn, the engine opens a one-turn miracle window on it and
+ * the cast-from-hand enumerator surfaces a "Cast (Miracle)" alternative cost at [cost]. Hand-only by
+ * design (CR 702.94a — the miracle ability functions only while the card is in hand).
+ *
+ * @property filter Which cards in the controller's hand gain miracle (e.g. instant or sorcery).
+ * @property cost The miracle mana cost the granted ability uses.
+ */
+@SerialName("GrantMiracleToCardsInHand")
+@Serializable
+data class GrantMiracleToCardsInHand(
+    val filter: GameObjectFilter,
+    val cost: ManaCost
+) : StaticAbility {
+    override val description: String =
+        "${filter.description.replaceFirstChar { it.uppercase() }} in your hand have miracle $cost"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

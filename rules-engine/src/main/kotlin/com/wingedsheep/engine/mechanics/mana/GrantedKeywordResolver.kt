@@ -40,6 +40,30 @@ class GrantedKeywordResolver(
     }
 
     /**
+     * The effective numeric parameter for a parameterized keyword on [cardDef] when cast by
+     * [playerId] — e.g. the Casualty power threshold. Reads the printed [KeywordAbility]
+     * parameter first, then any granting source's [GrantKeywordToOwnSpells.keywordParameter].
+     * Returns null when the spell does not have the keyword.
+     */
+    fun casualtyThreshold(
+        state: GameState,
+        playerId: EntityId,
+        cardDef: CardDefinition
+    ): Int? {
+        val printed = cardDef.keywordAbilities
+            .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Casualty>()
+            .firstOrNull()
+        if (printed != null) return printed.threshold
+        val grantSource = findGrant(state, playerId, cardDef, Keyword.CASUALTY) ?: return null
+        val sourceDef = state.getEntity(grantSource)?.get<CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return null
+        return sourceDef.script.staticAbilities
+            .filterIsInstance<GrantKeywordToOwnSpells>()
+            .firstOrNull { it.keyword == Keyword.CASUALTY && matchesSpellFilter(it.spellFilter, cardDef) }
+            ?.keywordParameter
+    }
+
+    /**
      * Find the first battlefield source that grants [keyword] to [cardDef] when cast by [playerId].
      * Returns null if no grant applies (or none exists).
      */

@@ -348,6 +348,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayWithoutPayingCostComponent::class)
         subclass(WarpExiledComponent::class)
         subclass(PlottedComponent::class)
+        subclass(MiracleWindowComponent::class)
 
         // Battlefield components
         subclass(TappedComponent::class)

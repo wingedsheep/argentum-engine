@@ -55,6 +55,20 @@ data class PlottedComponent(
 ) : Component
 
 /**
+ * Marks a card in hand as having an open miracle window (CR 702.94): it was the first card its owner
+ * drew this turn and it has miracle (printed or granted in hand), so its controller may cast it for
+ * its miracle cost this turn. Cleared at end of turn by [com.wingedsheep.engine.core.CleanupPhaseManager].
+ *
+ * @param controllerId The player who may cast the card for its miracle cost.
+ * @param turnOpened The `GameState.turnNumber` on which the window opened (the window lasts the turn).
+ */
+@Serializable
+data class MiracleWindowComponent(
+    val controllerId: EntityId,
+    val turnOpened: Int,
+) : Component
+
+/**
  * Marks a card as playable without paying its mana cost.
  * Applied by effects like Mind's Desire, Cascade, Omniscience.
  * This only waives the mana cost — the card must still be in a zone where it can

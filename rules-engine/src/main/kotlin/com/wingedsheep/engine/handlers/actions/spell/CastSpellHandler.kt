@@ -24,6 +24,7 @@ import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.SneakWindow
 import com.wingedsheep.engine.mechanics.WarpGrants
+import com.wingedsheep.engine.mechanics.MiracleGrants
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
@@ -371,6 +372,16 @@ class CastSpellHandler(
             if (conspireError != null) return conspireError
         }
 
+        // Validate Casualty optional additional cost (CR 702.153). One creature the caster controls
+        // with projected power >= the spell's casualty threshold. The spell must have Casualty
+        // either printed or granted (e.g., Silverquill: "Each instant and sorcery spell you cast
+        // has casualty 1").
+        if (action.casualtyCreature != null) {
+            if (cardDef == null) return "Casualty requires a card definition"
+            val casualtyError = validateCasualty(state, action, cardDef)
+            if (casualtyError != null) return casualtyError
+        }
+
         // Calculate effective cost (free if PlayWithoutPayingCostComponent is present, or if a
         // MayCastWithoutPayingManaCost battlefield source (e.g. Weftwalking) is the chosen alt).
         val playForFreeFromComponent = zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId)
@@ -431,8 +442,18 @@ class CastSpellHandler(
                     } else {
                         // Check impending cost
                         val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+                        // Check miracle cost (CR 702.94 — printed or granted in hand, window-gated).
+                        // The window component must be present (opened when drawn as the first card
+                        // this turn); without it, the miracle alternative cost is unavailable.
+                        val miracleWindowOpen = state.getEntity(action.cardId)
+                            ?.has<com.wingedsheep.engine.state.components.identity.MiracleWindowComponent>() == true
+                        val miracleAbility = if (miracleWindowOpen) MiracleGrants.effectiveMiracle(
+                            state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+                        ) else null
                         if (action.altAllows(AlternativeCostType.IMPENDING) && impendingAbility != null) {
                             costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, impendingAbility.cost, action.playerId)
+                        } else if (action.altAllows(AlternativeCostType.MIRACLE) && miracleAbility != null) {
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, miracleAbility.cost, action.playerId)
                         } else {
                             // Check self-alternative cost (e.g., Zahid's {3}{U} + tap artifact)
                             val selfAltCost = cardDef.script.selfAlternativeCost
@@ -874,6 +895,26 @@ class CastSpellHandler(
             val sharesColor = spellColors.any { projected.hasColor(creatureId, it) }
             if (!sharesColor) return "Conspire creature shares no color with this spell"
         }
+        return null
+    }
+
+    private fun validateCasualty(
+        state: GameState,
+        action: CastSpell,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition
+    ): String? {
+        val threshold = grantedKeywordResolver.casualtyThreshold(state, action.playerId, cardDef)
+            ?: return "This spell does not have casualty"
+        val creatureId = action.casualtyCreature ?: return "Casualty requires a creature to sacrifice"
+        val projected = state.projectedState
+        if (creatureId !in state.getBattlefield()) return "Casualty creature is not on the battlefield"
+        state.getEntity(creatureId) ?: return "Casualty creature not found: $creatureId"
+        if (projected.getController(creatureId) != action.playerId) {
+            return "Casualty creature is not controlled by you"
+        }
+        if (!projected.isCreature(creatureId)) return "Casualty requires a creature"
+        val power = projected.getPower(creatureId) ?: 0
+        if (power < threshold) return "Casualty creature must have power $threshold or greater"
         return null
     }
 
@@ -1580,8 +1621,16 @@ class CastSpellHandler(
                     } else {
                         // Check impending cost
                         val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+                        // Check miracle cost (CR 702.94 — printed or granted in hand, window-gated).
+                        val miracleWindowOpen = currentState.getEntity(action.cardId)
+                            ?.has<com.wingedsheep.engine.state.components.identity.MiracleWindowComponent>() == true
+                        val miracleAbility = if (miracleWindowOpen) MiracleGrants.effectiveMiracle(
+                            currentState, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+                        ) else null
                         if (action.altAllows(AlternativeCostType.IMPENDING) && impendingAbility != null) {
                             costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, impendingAbility.cost, action.playerId)
+                        } else if (action.altAllows(AlternativeCostType.MIRACLE) && miracleAbility != null) {
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, miracleAbility.cost, action.playerId)
                         } else {
                             val selfAltCost = cardDef.script.selfAlternativeCost
                             if (action.altAllows(AlternativeCostType.SELF_ALTERNATIVE) && selfAltCost != null) {
@@ -2189,6 +2238,33 @@ class CastSpellHandler(
             }
         }
 
+        // Pay Casualty's optional additional cost: sacrifice the chosen creature (CR 702.153).
+        // Validated in validate(); mirror the additional-cost Sacrifice zone move, including the
+        // LKI snapshot (Rule 112.7a / 608.2h) and the leave-the-battlefield events so dies/leaves
+        // triggers and the "cards leave your graveyard" family see the move.
+        action.casualtyCreature?.let { permId ->
+            val projectedBeforeSacrifice = currentState.projectedState
+            sacrificedSnapshots.addAll(capturePermanentSnapshots(listOf(permId), projectedBeforeSacrifice))
+            val permContainer = currentState.getEntity(permId)
+            val permCard = permContainer?.get<CardComponent>()
+            if (permContainer != null && permCard != null) {
+                val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
+                val ownerId = permCard.ownerId ?: action.playerId
+                currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
+                currentState = currentState.removeFromZone(ZoneKey(controllerId, Zone.BATTLEFIELD), permId)
+                currentState = currentState.addToZone(ZoneKey(ownerId, Zone.GRAVEYARD), permId)
+                events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
+                events.add(ZoneChangeEvent(
+                    entityId = permId,
+                    entityName = permCard.name,
+                    fromZone = Zone.BATTLEFIELD,
+                    toZone = Zone.GRAVEYARD,
+                    ownerId = ownerId
+                ))
+            }
+        }
+
         // X mana to pay (≤ action.xValue). For an X-cost Harmonize cast with a tapped
         // creature, the leftover power beyond the printed generic reduces the X mana paid;
         // computed from the pre-reduction cost so the printed-generic split matches what
@@ -2672,6 +2748,43 @@ class CastSpellHandler(
                 } else emptyList()
             } else emptyList()
 
+        // Handle Casualty (CR 702.153): when the optional additional cost (sacrifice a creature
+        // with power N or greater) was paid, a reflexive trigger goes on the stack above the spell:
+        // "When you do, copy it and you may choose new targets for the copy." Identical copy shape
+        // to Conspire — reuses StormCopyEffect with copyCount=1.
+        val casualtyPendingTriggers: List<PendingTrigger> =
+            if (!action.castFaceDown && cardDef != null && action.casualtyCreature != null) {
+                val spellEffect = cardDef.script.spellEffect
+                if (spellEffect != null) {
+                    val copyEffect = StormCopyEffect(
+                        copyCount = 1,
+                        spellEffect = spellEffect,
+                        spellTargetRequirements = spellTargetRequirements,
+                        spellName = cardComponent.name
+                    )
+                    val ability = TriggeredAbility(
+                        id = AbilityId.generate(),
+                        trigger = SdkGameEvent.SpellCastEvent(player = Player.You),
+                        binding = TriggerBinding.SELF,
+                        effect = copyEffect,
+                        activeZone = Zone.STACK,
+                        descriptionOverride = "Casualty — copy ${cardComponent.name}"
+                    )
+                    listOf(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = action.cardId,
+                            sourceName = cardComponent.name,
+                            controllerId = action.playerId,
+                            triggerContext = TriggerContext(
+                                triggeringEntityId = action.cardId,
+                                triggeringPlayerId = action.playerId
+                            )
+                        )
+                    )
+                } else emptyList()
+            } else emptyList()
+
         // Handle pending spell copies (e.g., Howl of the Horde). Each pending entry carries its own
         // spellFilter (instant or sorcery by default, but e.g. "creature" is expressible), matched
         // against the spell just cast. Face-down spells have no characteristics, so they never match.
@@ -2748,7 +2861,7 @@ class CastSpellHandler(
         // Other AP spell-cast triggers follow (placed higher on the stack), then NAP triggers on top,
         // matching APNAP ordering within processTriggers.
         val detectedTriggers = triggerDetector.detectTriggers(currentCastState, allEvents)
-        val triggers = riderPendingTriggers + conspirePendingTriggers + stormPendingTriggers + detectedTriggers
+        val triggers = riderPendingTriggers + conspirePendingTriggers + casualtyPendingTriggers + stormPendingTriggers + detectedTriggers
         if (triggers.isNotEmpty()) {
             val triggerResult = triggerProcessor.processTriggers(currentCastState, triggers)
 
