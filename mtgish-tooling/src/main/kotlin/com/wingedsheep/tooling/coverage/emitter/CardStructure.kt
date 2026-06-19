@@ -2237,6 +2237,28 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
         }
         return null
     }
+    // "if N or more creatures died this turn" — ANumberOfPermanentsDiedThisTurn([>= N], IsCardtype
+    // Creature) (Emeritus of Woe's "if two or more creatures died this turn" end-step gate). The bare
+    // ACreatureOrPlaneswalkerDiedThisTurn condition above is one-or-more only, so a `>= N` count needs
+    // the explicit Compare over the global creatures-died tracker:
+    //   Conditions.CompareAmounts(DynamicAmounts.creaturesDiedThisTurn(Player.Each), GTE, Fixed(N)).
+    // Player.Each sums every player's per-player tracker = a true global count, matching the IR's
+    // unscoped "creatures died this turn". Only the `>= N` (fixed integer) comparison over a bare
+    // creature-cardtype filter renders; any other comparator or a narrower filter (subtype, control)
+    // declines -> SCAFFOLD rather than miscount.
+    if (cond.strField("_Condition") == "ANumberOfPermanentsDiedThisTurn") {
+        val condArgs = cond["args"].asArr ?: return null
+        val comparison = condArgs.getOrNull(0) as? JsonObject ?: return null
+        if (comparison.strField("_Comparison") != "GreaterThanOrEqualTo") return null
+        val n = (comparison["args"] as? JsonObject)?.takeIf { it.strField("_GameNumber") == "Integer" }
+            ?.get("args").asInt() ?: return null
+        val filter = condArgs.getOrNull(1) as? JsonObject ?: return null
+        val bareCreature = filter.strField("_Permanents") == "IsCardtype" &&
+            filter.field("args").asStr() == "Creature" && filter.size == 2
+        if (!bareCreature) return null
+        return "Conditions.CompareAmounts(DynamicAmounts.creaturesDiedThisTurn(Player.Each), " +
+            "ComparisonOperator.GTE, DynamicAmount.Fixed($n))"
+    }
     // "if you put a counter on this creature this turn" — PlayerPassesFilter(You,
     // HasPutACounterOnAPermanentThisTurn(SinglePermanent(ThisPermanent))) (Fractal Tender's end-step
     // gate). Only the exact ThisPermanent subject maps to Conditions.SourceReceivedCounterThisTurn;
@@ -2274,6 +2296,11 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
     // "you control another outlaw" — ControlsA over And(Other(ThatEnteringPermanent), IsAnOutlaw). The
     // entering permanent is itself an outlaw, so this is exactly "two or more outlaws you control".
     youControlAnotherOutlawDsl(cond)?.let { return it }
+    // "if you control N or more <filter>" — PlayerPassesFilter(You, ControlsNum(>= N, <filter>)) ->
+    // Conditions.YouControlAtLeast(N, <filter>) (Emeritus of Abundance's "if you control eight or more
+    // lands" attack-trigger intervening-if). Reuses the same calibrated renderer the enters-with-counters
+    // gate uses; only the `>= N` comparison over a filter that renders exactly produces a line.
+    youControlAtLeastConditionDsl(cond)?.let { return it }
     // "you control a <filter>" — reuse the static-gate renderer (PlayerPassesFilter(You, ControlsA(filter))).
     youControlConditionDsl(cond)?.let { return it }
     // "if a card left your graveyard this turn" — ACardLeftPlayersGraveyardThisTurn(AnyCard, You)
@@ -3084,7 +3111,17 @@ internal fun EmitCtx.fromAnyZoneBlock(rule: JsonObject): List<Stmt>? {
 internal fun EmitCtx.prepareBlock(card: JsonObject): List<Stmt>? {
     val prepared = card["Prepared"] as? JsonObject ?: run { reasons.add("Prepared"); return null }
     val faceName = prepared["Name"].asStr() ?: run { reasons.add("Prepared"); return null }
-    val spellStmts = spellBlock(prepared) ?: run { reasons.add("Prepared"); return null }
+    // Render the prepare spell in a child context with NO oracleText. The IR's `oracleText` is the
+    // WHOLE two-faced card's Scryfall text, joined across the creature face and this prepare spell;
+    // leaking it into the prepare spell's renderers makes the whole-card wording bleed into the
+    // prepare spell's inference. E.g. a creature face that mentions "creatures died this turn" would
+    // wrongly steer `landSearchFilterExpr`'s `"creature" in oracle` proxy to emit
+    // GameObjectFilter.Creature for a Demonic Tutor that searches for *any* card. The prepare spell's
+    // own characteristics come from its structured IR rules, not the shared oracle blob.
+    val faceCtx = EmitCtx(keywords, oracleText = null)
+    val spellStmts = faceCtx.spellBlock(prepared)
+    reasons.addAll(faceCtx.reasons)
+    if (spellStmts == null) { reasons.add("Prepared"); return null }
     val faceBody = mutableListOf<Stmt>(
         RawLine("        manaCost = \"${renderMana(prepared["ManaCost"])}\""),
         RawLine("        typeLine = \"${renderTypeline(prepared["Typeline"])}\""),

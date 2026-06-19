@@ -2921,6 +2921,490 @@
     ]
 }
 
+// Emeritus of Abundance
+{
+    "name": "Emeritus of Abundance",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Vigilance\nThis creature enters prepared.\nWhenever this creature attacks, if you control eight or more lands, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE",
+        "PREPARED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": "BecomePrepared",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "MYTHIC",
+        "artist": "Justyna Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1778165051"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Regrowth",
+            "manaCost": "{1}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Return target card from your graveyard to your hand.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Emeritus of Conflict
+{
+    "name": "Emeritus of Conflict",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "First strike\nWhenever you cast your third spell each turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 3,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": "BecomePrepared"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "MYTHIC",
+        "artist": "Alix Branwyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1778165054"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Lightning Bolt",
+            "manaCost": "{R}",
+            "typeLine": "Instant",
+            "oracleText": "Lightning Bolt deals 3 damage to any target.",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Emeritus of Ideation
+{
+    "name": "Emeritus of Ideation",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flying, ward {2}\nThis creature enters prepared.\nWhenever this creature attacks, you may exile eight cards from your graveyard. If you do, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "PREPARED",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 8
+                                            }
+                                        },
+                                        "storeSelected": "ideationExile",
+                                        "prompt": "Exile eight cards from your graveyard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "ideationExile",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "ideationExile",
+                                "min": 8
+                            }
+                        },
+                        "then": "BecomePrepared"
+                    },
+                    "descriptionOverride": "You may exile eight cards from your graveyard. If you do, this creature becomes prepared."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "MYTHIC",
+        "artist": "Evyn Fong",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1778165058"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Ancestral Recall",
+            "manaCost": "{U}",
+            "typeLine": "Instant",
+            "oracleText": "Target player draws three cards.",
+            "script": {
+                "spellEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "target"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Emeritus of Truce
+{
+    "name": "Emeritus of Truce",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Cat Cleric",
+    "oracleText": "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "PREPARED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE",
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Inkling"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "controller": {
+                                "type": "BoundVariable",
+                                "name": "target player"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "EachOpponent",
+                                        "filter": "creature"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature"
+                                    }
+                                }
+                            },
+                            "then": "BecomePrepared"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "target player"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1778165061"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Swords to Plowshares",
+            "manaCost": "{W}",
+            "typeLine": "Instant",
+            "oracleText": "Exile target creature. Its controller gains life equal to its power.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "Power"
+                            },
+                            "target": "TargetController"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature"
+                            },
+                            "destination": "Exile"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ]
+            }
+        }
+    ]
+}
+
+// Emeritus of Woe
+{
+    "name": "Emeritus of Woe",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire Warlock",
+    "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)\nAt the beginning of your end step, if two or more creatures died this turn, this creature becomes prepared.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "PREPARED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "BecomePrepared",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "Each",
+                        "tracker": "CREATURES_DIED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "MYTHIC",
+        "artist": "Jodie Muir",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1778165065"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "PREPARE",
+    "cardFaces": [
+        {
+            "name": "Demonic Tutor",
+            "manaCost": "{1}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Search your library for a card, put that card into your hand, then shuffle.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                }
+            }
+        }
+    ]
+}
+
 // Encouraging Aviator
 {
     "name": "Encouraging Aviator",
