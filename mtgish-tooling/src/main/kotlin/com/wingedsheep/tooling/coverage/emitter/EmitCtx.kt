@@ -172,6 +172,7 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     heatedArgumentExileRiderEffect(actions)?.let { return it }
     manaSculptCounterWizardManaEffect(actions)?.let { return it }
     discardHandThenDrawEffect(actions)?.let { return it }
+    discardAnyNumberThenDrawEffect(actions)?.let { return it }
     renderSpeechlessDiscardCountersEffect(actions)?.let { return it }
     runBehindOwnerTopOrBottomEffect(actions, tvar)?.let { return it }
     dinasGuidanceSearchHandOrGraveyardEffect(actions)?.let { return it }

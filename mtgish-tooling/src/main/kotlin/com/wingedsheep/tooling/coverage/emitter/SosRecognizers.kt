@@ -209,6 +209,53 @@ internal fun EmitCtx.discardHandThenDrawEffect(actions: List<JsonObject>): Dsl? 
 }
 
 /**
+ * Colossus of the Blood Age (dies trigger): `[DiscardAnyNumberOfCards,
+ *   DrawNumberCards(Plus(NumCardsDiscardedThisWay, <k>))]`
+ * → the inline Gather → ChooseAnyNumber(discard) → draw "that many plus <k>" pipeline.
+ *
+ * "Discard any number of cards, then draw that many cards plus <k>." The controller discards any
+ * subset of their own hand, then draws the discarded count plus a fixed bonus. Rendered as the exact
+ * `gathered0 / selected1` raw-step Composite the inline `Effects.Pipeline { }` builder produces (the
+ * same idiom as ReturnAnyNumberOfPermanentsToTheirOwnersHands), so the serialized tree matches the
+ * hand-authored card. The discard is always the controller's own hand (no chooser/target variants); the
+ * draw count is `selected1_count` (+ the bonus). Any other discard scope or a non-`NumCardsDiscardedThisWay`
+ * /-non-integer draw shape declines (→ SCAFFOLD) rather than approximate.
+ *
+ * Tried inside [renderEffectList], so it covers both spell bodies and triggered-ability bodies.
+ */
+internal fun EmitCtx.discardAnyNumberThenDrawEffect(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val (discard, draw) = actions
+    if (discard.strField("_Action") != "DiscardAnyNumberOfCards") return null
+    if (draw.strField("_Action") != "DrawNumberCards") return null
+    val countNode = draw["args"] as? JsonObject ?: return null
+    // The draw count must be Plus(NumCardsDiscardedThisWay, <integer bonus>).
+    if (countNode.strField("_GameNumber") != "Plus") return null
+    val terms = countNode["args"].asArr ?: return null
+    if (terms.size != 2) return null
+    val hasDiscardedRef = terms.any {
+        (it as? JsonObject)?.strField("_GameNumber") == "NumCardsDiscardedThisWay"
+    }
+    if (!hasDiscardedRef) return null
+    val bonus = terms.firstNotNullOfOrNull { findInteger(it) as? Int } ?: return null
+    val drawCount = "DynamicAmount.Add(" +
+        "DynamicAmount.VariableReference(\"selected1_count\"), DynamicAmount.Fixed($bonus))"
+    return call(
+        "Effects.Composite",
+        arg(Lit("GatherCardsEffect(CardSource.FromZone(Zone.HAND, Player.You), storeAs = \"gathered0\")")),
+        arg(Lit(
+            "SelectFromCollectionEffect(from = \"gathered0\", selection = SelectionMode.ChooseAnyNumber, " +
+                "storeSelected = \"selected1\", prompt = \"Choose any number of cards to discard\")"
+        )),
+        arg(Lit(
+            "MoveCollectionEffect(from = \"selected1\", " +
+                "destination = CardDestination.ToZone(Zone.GRAVEYARD), moveType = MoveType.Discard)"
+        )),
+        arg(Lit("DrawCardsEffect($drawCount)")),
+    )
+}
+
+/**
  * Render Speechless: `[PlayerAction(Ref_TargetPlayer,
  *                        RevealHandAndPlayerChoosesACardToDiscard(You, IsNonCardtype Land)),
  *                      PutNumberCountersOfTypeOnPermanent(2, PTCounter(1,1), Ref_TargetPermanent)]`
