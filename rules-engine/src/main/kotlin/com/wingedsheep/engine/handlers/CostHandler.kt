@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
+import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -780,10 +781,17 @@ class CostHandler(
         }
 
         var newState = state
+        val events = mutableListOf<GameEvent>()
         for (permanentId in toTap) {
             newState = newState.updateEntity(permanentId) { it.with(TappedComponent) }
+            // Emit TappedEvent so "whenever this becomes tapped" triggers fire when a creature
+            // is tapped to pay a cost (Station, Cryptic Gateway). Without this, paying the cost
+            // adds TappedComponent silently and the trigger never sees the tap (cf. the analogous
+            // declare-attackers fix in AttackPhaseManager.commitAttackDeclaration).
+            val name = state.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Permanent"
+            events.add(TappedEvent(permanentId, name))
         }
-        return CostPaymentResult.success(newState, manaPool)
+        return CostPaymentResult.success(newState, manaPool, events)
     }
 
     /** Pay a [CostAtom.ReturnToHand] atom from the chosen bounce targets, validating each. */
