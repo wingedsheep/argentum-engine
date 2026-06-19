@@ -411,6 +411,35 @@ sealed interface SuccessCriterion {
     @SerialName("SuccessCriterion.Always")
     @Serializable
     data object Always : SuccessCriterion
+
+    /**
+     * Action succeeded iff the gated action actually *dealt damage* — at least one
+     * point of damage was dealt by the effect's source during the action (a `DamageDealtEvent`
+     * with `amount > 0` whose source is this ability's source). This distinguishes damage that
+     * was really dealt from damage that was fully prevented or replaced (e.g. by a Circle of
+     * Protection, a damage-prevention shield, or redirection), where no such event is emitted.
+     *
+     * Mishra's War Machine: "At the beginning of your upkeep, this creature deals 3 damage to you
+     * unless you discard a card. If it deals damage to you this way, tap it." — `requireRecipient`
+     * defaults to [DamageRecipient.Controller] so only damage that reached *you* counts.
+     */
+    @SerialName("SuccessCriterion.DamageDealt")
+    @Serializable
+    data class DamageDealt(
+        val recipient: DamageRecipient = DamageRecipient.Controller
+    ) : SuccessCriterion
+}
+
+/**
+ * Which recipient a [SuccessCriterion.DamageDealt] gate cares about.
+ */
+@Serializable
+enum class DamageRecipient {
+    /** Any recipient — succeeds if the source dealt damage to anything. */
+    Any,
+
+    /** Only damage dealt to the ability's controller ("...damage to you this way"). */
+    Controller
 }
 
 /**

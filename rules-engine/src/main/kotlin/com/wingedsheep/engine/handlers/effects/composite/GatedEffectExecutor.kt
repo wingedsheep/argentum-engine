@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
+import com.wingedsheep.sdk.scripting.effects.DamageRecipient
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -526,9 +527,14 @@ class GatedEffectExecutor(
             snapshot: GatedActionSnapshot,
             effectContext: EffectContext,
             priorEvents: List<GameEvent>,
-            effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
+            effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
+            // Events to *read* when evaluating an event-based criterion (SuccessCriterion.DamageDealt).
+            // Defaults to [priorEvents]; the auto-resumer passes the accumulated frame events here
+            // (already emitted by the paused action) while keeping [priorEvents] empty so they're
+            // not prepended twice when the outer merge re-adds them.
+            evaluationEvents: List<GameEvent> = priorEvents
         ): EffectResult {
-            val happened = evaluate(state, criterion, snapshot, effectContext)
+            val happened = evaluate(state, criterion, snapshot, effectContext, evaluationEvents)
             val branch = if (happened) then else otherwise
                 ?: return EffectResult.success(state, priorEvents)
             val branchResult = effectExecutor(state, branch, effectContext)
@@ -547,12 +553,38 @@ class GatedEffectExecutor(
             state: GameState,
             criterion: SuccessCriterion,
             snapshot: GatedActionSnapshot,
-            effectContext: EffectContext
+            effectContext: EffectContext,
+            priorEvents: List<GameEvent>
         ): Boolean = when (criterion) {
             is SuccessCriterion.Always -> true
             is SuccessCriterion.Auto -> evaluateAuto(state, snapshot)
             is SuccessCriterion.CollectionNonEmpty ->
                 (effectContext.pipeline.storedCollections[criterion.name]?.size ?: 0) >= criterion.min
+            is SuccessCriterion.DamageDealt -> evaluateDamageDealt(criterion, effectContext, priorEvents)
+        }
+
+        /**
+         * Did the gated action actually deal damage from this ability's source? Scans the action's
+         * events for a [DamageDealtEvent] with positive amount sourced from `effectContext.sourceId`
+         * (CR 119.x — damage that was prevented/replaced emits no such event). When the criterion's
+         * recipient is [DamageRecipient.Controller], the damaged target must be the controller.
+         */
+        private fun evaluateDamageDealt(
+            criterion: SuccessCriterion.DamageDealt,
+            effectContext: EffectContext,
+            priorEvents: List<GameEvent>
+        ): Boolean {
+            val sourceId = effectContext.sourceId
+            val controllerId = effectContext.controllerId
+            return priorEvents.any { event ->
+                event is DamageDealtEvent &&
+                    event.amount > 0 &&
+                    (sourceId == null || event.sourceId == sourceId) &&
+                    when (criterion.recipient) {
+                        DamageRecipient.Any -> true
+                        DamageRecipient.Controller -> event.targetId == controllerId
+                    }
+            }
         }
 
         private fun evaluateAuto(state: GameState, snapshot: GatedActionSnapshot): Boolean {

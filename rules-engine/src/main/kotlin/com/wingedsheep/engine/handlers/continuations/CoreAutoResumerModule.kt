@@ -83,7 +83,11 @@ class CoreAutoResumerModule(
                 snapshot = continuation.snapshot,
                 effectContext = continuation.effectContext,
                 priorEvents = emptyList(),
-                effectExecutor = services.effectExecutorRegistry::execute
+                effectExecutor = services.effectExecutorRegistry::execute,
+                // The gated action may have paused (e.g. a discard decision) and resumed; its
+                // damage events are in the accumulated `events` here. Event-based criteria
+                // (SuccessCriterion.DamageDealt) read them from here without re-prepending.
+                evaluationEvents = events
             )
             mergeAndContinue(branchResult.toExecutionResult(), events, checkForMore)
         },
