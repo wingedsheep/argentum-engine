@@ -158,6 +158,17 @@ class CleanupPhaseManager(
             newState = newState.updateEntity(entityId) { it.without<CanAttackDespiteDefenderThisTurnComponent>() }
         }
 
+        // Close any open miracle windows (CR 702.94 — the chance to cast for the miracle cost lasts
+        // only the turn the card was drawn).
+        val cardsWithMiracleWindow = newState.entities.filter { (_, container) ->
+            container.has<com.wingedsheep.engine.state.components.identity.MiracleWindowComponent>()
+        }.keys
+        for (entityId in cardsWithMiracleWindow) {
+            newState = newState.updateEntity(entityId) {
+                it.without<com.wingedsheep.engine.state.components.identity.MiracleWindowComponent>()
+            }
+        }
+
         // No priority during cleanup (normally)
         newState = newState.copy(priorityPlayerId = null)
 

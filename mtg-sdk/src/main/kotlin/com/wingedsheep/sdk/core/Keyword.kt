@@ -156,6 +156,27 @@ enum class Keyword(val displayName: String) {
      */
     IMPENDING("Impending"),
     CONSPIRE("Conspire"),
+
+    /**
+     * Casualty N (CR 702.153). "As an additional cost to cast this spell, you may sacrifice a
+     * creature with power N or greater. When you do, copy this spell and you may choose new
+     * targets for the copy." Modeled like Conspire: an optional additional cost (sacrifice one
+     * creature meeting the power threshold) plus a reflexive triggered copy. The threshold N is
+     * carried by [com.wingedsheep.sdk.scripting.KeywordAbility.Casualty] (printed) or by
+     * [com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells.keywordParameter] (granted).
+     */
+    CASUALTY("Casualty"),
+
+    /**
+     * Miracle {cost} (CR 702.94). "You may cast this card for its miracle cost when you draw it if
+     * it's the first card you drew this turn." Modeled as a hand-only alternative cost gated by a
+     * one-turn window: when a card with miracle (printed via
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Miracle] or granted via
+     * [com.wingedsheep.sdk.scripting.GrantMiracleToCardsInHand]) is the first card a player draws in
+     * a turn, the engine stamps it with a miracle window for that turn; the cast-from-hand
+     * enumerator then surfaces a "Cast (Miracle)" alternative cost at the miracle mana cost.
+     */
+    MIRACLE("Miracle"),
     HIDEAWAY("Hideaway"),
 
     /**

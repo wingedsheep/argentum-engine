@@ -3006,7 +3006,7 @@ Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Pla
 (`Keyword.NONBASIC_LANDWALK` — unblockable while the defending player controls any non-basic land;
 `LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
-Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Sneak, Impending, Conspire, Hideaway, Cascade, Plot,
+Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Sneak, Impending, Conspire, Casualty, Miracle, Hideaway, Cascade, Plot,
 Offspring, Persist, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
 composite abilities).
 
@@ -3046,6 +3046,29 @@ composite abilities).
   rendered text with "Flurry — Whenever you cast your second spell each turn," (mirrors `prowess()` /
   `rampage()`). The second-spell-cast event is matched by `EventPattern.NthSpellCastEvent`; no new engine
   subsystem is involved. Example: `flurry { effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent), damageSource = EffectTarget.Self) }`.
+- `Casualty(threshold)` (`KeywordAbility.casualty(n)`) — Casualty N (CR 702.153): "As an additional
+  cost to cast this spell, you may sacrifice a creature with power N or greater. When you do, copy
+  this spell and you may choose new targets for the copy." Modeled like Conspire — an optional
+  additional cost plus a reflexive triggered copy (reuses `StormCopyEffect` with `copyCount = 1`).
+  The cast enumerator surfaces a `CastWithCasualty` legal action whenever the caster controls a
+  creature whose projected power meets the threshold; the chosen creature is submitted as
+  `CastSpell.casualtyCreature` and sacrificed during payment. Grant it to a player's spells with
+  `GrantKeywordToOwnSpells(keyword = Keyword.CASUALTY, spellFilter = …, keywordParameter = N)` —
+  the `keywordParameter` carries the threshold for granted casualty (Silverquill, the Disputant:
+  "Each instant and sorcery spell you cast has casualty 1"). `GrantedKeywordResolver.casualtyThreshold`
+  reads the printed `KeywordAbility.Casualty.threshold` first, then the granting source's
+  `keywordParameter`.
+- `Miracle(cost)` (`KeywordAbility.miracle(cost)`) — Miracle {cost} (CR 702.94): "You may cast this
+  card for its miracle cost when you draw it if it's the first card you drew this turn." Modeled as a
+  hand-only alternative cost gated by a one-turn window. When a card with miracle (printed, or granted
+  in hand — see below) is the first card its owner draws in a turn, the draw flow stamps it with a
+  `MiracleWindowComponent` and reveals it (`CardRevealedFromDrawEvent`); the cast-from-hand enumerator
+  then surfaces a "Miracle …" alternative-cost action (`AlternativeCostType.MIRACLE`) paying the
+  miracle mana cost instead of the mana cost. The window is cleared at end of turn. Grant it to a
+  player's hand cards with `GrantMiracleToCardsInHand(filter, cost)` (Lorehold, the Historian: "Each
+  instant and sorcery card in your hand has miracle {2}"); `MiracleGrants.effectiveMiracle` is the
+  single source of truth consulted by the draw flow, enumerator, and cast handler (printed wins, else
+  the first matching battlefield grant on a permanent the player controls).
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
   Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to

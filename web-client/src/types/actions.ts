@@ -118,6 +118,8 @@ export interface CastSpellAction {
   readonly modeDamageDistribution?: Record<number, Record<EntityId, number>>
   /** Creatures tapped to pay Conspire's optional additional cost (two distinct IDs) */
   readonly conspiredCreatures?: readonly EntityId[]
+  /** Creature sacrificed to pay Casualty's optional additional cost (one ID, power >= threshold) */
+  readonly casualtyCreature?: EntityId
   /**
    * For split-layout cards (Rooms, etc.): index into the card's `cardFaces` of the face being
    * cast. Required for SPLIT cards; null/omitted for normal single-face cards.

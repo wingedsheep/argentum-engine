@@ -80,6 +80,12 @@ data class CastSpell(
      */
     val conspiredCreatures: List<EntityId> = emptyList(),
     /**
+     * Creature sacrificed to pay Casualty's optional additional cost (CR 702.153). When non-null,
+     * must be a creature the caster controls whose projected power is at least the spell's Casualty
+     * threshold. When null, Casualty was not invoked.
+     */
+    val casualtyCreature: EntityId? = null,
+    /**
      * Index into `cardDef.cardFaces` identifying which face of a split-layout card is being
      * cast (CR 709.3a — only the chosen half is put on the stack and evaluated for legality).
      * `null` for normal single-face cards. Required for SPLIT cards; the cast handler reads
@@ -141,6 +147,13 @@ enum class AlternativeCostType {
     SNEAK,
     /** Impending ([com.wingedsheep.sdk.scripting.KeywordAbility.Impending]) — hand. */
     IMPENDING,
+    /**
+     * Miracle ([com.wingedsheep.sdk.scripting.KeywordAbility.Miracle], printed or granted) — hand,
+     * legal only while the card carries an open miracle window
+     * ([com.wingedsheep.engine.state.components.identity.MiracleWindowComponent]), opened when the
+     * card is the first card its owner drew this turn (CR 702.94).
+     */
+    MIRACLE,
     /** A card's own `selfAlternativeCost` (e.g. Zahid's "tap an untapped artifact") — hand. */
     SELF_ALTERNATIVE,
     /** A battlefield-granted alternative cost (e.g. Jodah's {W}{U}{B}{R}{G}) — `GrantAlternativeCastingCost`. */

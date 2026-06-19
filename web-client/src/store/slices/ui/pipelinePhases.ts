@@ -170,6 +170,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'ChooseEntity',
       'Blight',
       'Conspire',
+      'Casualty',
       'Craft',
     ]
 
@@ -378,6 +379,10 @@ export function mergeResult(
         // Conspire populates a dedicated field on CastSpell, not additionalCostPayment.
         if (costType === 'Conspire') {
           return { ...action, conspiredCreatures: selectedTargets }
+        }
+        // Casualty sacrifices a single chosen creature into its own dedicated field.
+        if (costType === 'Casualty') {
+          return { ...action, casualtyCreature: selectedTargets[0] }
         }
         const fieldUpdate =
           costType === 'DiscardCard'

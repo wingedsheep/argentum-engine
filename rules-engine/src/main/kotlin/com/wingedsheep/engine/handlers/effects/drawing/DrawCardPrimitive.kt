@@ -38,6 +38,8 @@ import com.wingedsheep.sdk.scripting.RevealFirstDrawEachTurn
 class DrawCardPrimitive(
     private val cardRegistry: CardRegistry
 ) {
+    private val predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator()
+
     /**
      * Result of a single [drawOne] call.
      *
@@ -110,6 +112,36 @@ class DrawCardPrimitive(
         if (drawCountBefore == 0) {
             val revealEvent = checkRevealFirstDraw(newState, playerId, cardId)
             if (revealEvent != null) events.add(revealEvent)
+
+            // Miracle (CR 702.94): if the first card drawn this turn has miracle (printed or granted
+            // in hand), open its miracle window so its controller may cast it for the miracle cost
+            // this turn, and reveal it (CR 702.94b). The window component is cleared at end of turn.
+            val cardDef = newState.getEntity(cardId)?.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            val miracle = com.wingedsheep.engine.mechanics.MiracleGrants.effectiveMiracle(
+                newState, cardId, cardDef, playerId, cardRegistry, predicateEvaluator
+            )
+            if (miracle != null) {
+                newState = newState.updateEntity(cardId) { c ->
+                    c.with(
+                        com.wingedsheep.engine.state.components.identity.MiracleWindowComponent(
+                            controllerId = playerId,
+                            turnOpened = newState.turnNumber
+                        )
+                    )
+                }
+                if (revealEvent == null) {
+                    val drawn = newState.getEntity(cardId)?.get<CardComponent>()
+                    events.add(
+                        CardRevealedFromDrawEvent(
+                            playerId = playerId,
+                            cardEntityId = cardId,
+                            cardName = drawn?.name ?: "card",
+                            isCreature = drawn?.typeLine?.isCreature ?: false
+                        )
+                    )
+                }
+            }
         }
 
         return Result(

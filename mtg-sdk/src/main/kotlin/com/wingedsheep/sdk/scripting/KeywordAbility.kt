@@ -485,6 +485,49 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Casualty
+    // =========================================================================
+
+    /**
+     * Casualty N (CR 702.153).
+     * "As an additional cost to cast this spell, you may sacrifice a creature with power [threshold]
+     * or greater. When you do, copy this spell and you may choose new targets for the copy."
+     *
+     * Like Conspire, Casualty is an optional additional cost combined with a reflexive triggered
+     * copy. The power-threshold check is evaluated at cost-payment time against the sacrificed
+     * creature's projected power, so the choose-the-creature payment is handled as a
+     * Casualty-specific branch of the cast flow (the threshold is intrinsic to the spell) rather
+     * than a generic [com.wingedsheep.sdk.scripting.AdditionalCost] subtype.
+     */
+    @SerialName("Casualty")
+    @Serializable
+    data class Casualty(val threshold: Int) : KeywordAbility {
+        override val keyword: Keyword = Keyword.CASUALTY
+        override val description: String = "Casualty $threshold"
+    }
+
+    // =========================================================================
+    // Miracle
+    // =========================================================================
+
+    /**
+     * Miracle {cost} (CR 702.94).
+     * "You may cast this card for its miracle cost when you draw it if it's the first card you drew
+     * this turn."
+     *
+     * Modeled as a hand-only alternative cost gated by a one-turn window: when this card is the
+     * first card its owner draws in a turn, the engine opens a miracle window (a per-card component
+     * cleared at end of turn) and the cast-from-hand enumerator surfaces a "Cast (Miracle)"
+     * alternative cost paying [cost] instead of the mana cost.
+     */
+    @SerialName("Miracle")
+    @Serializable
+    data class Miracle(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.MIRACLE
+        override val description: String = "Miracle $cost"
+    }
+
+    // =========================================================================
     // Evoke
     // =========================================================================
 
@@ -847,6 +890,16 @@ sealed interface KeywordAbility {
          * Create Conspire keyword ability.
          */
         fun conspire(): KeywordAbility = Conspire
+
+        /**
+         * Create Casualty N keyword ability.
+         */
+        fun casualty(threshold: Int): KeywordAbility = Casualty(threshold)
+
+        /**
+         * Create Miracle keyword ability with a miracle mana cost.
+         */
+        fun miracle(cost: String): KeywordAbility = Miracle(ManaCost.parse(cost))
 
         /**
          * Create Toxic with a numeric value.
