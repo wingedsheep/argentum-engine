@@ -70,7 +70,15 @@ enum class TurnTracker {
      * `CardsDrawnThisTurnComponent`, reset to 0 for every player at the start of each turn.
      * Powers "equal to the number of cards you've drawn this turn" (Duelist of the Mind).
      */
-    CARDS_DRAWN;
+    CARDS_DRAWN,
+    /**
+     * Number of cards put into exile this turn, keyed on each card's owner. Summed across every
+     * player (via `Player.Each`) it gives the game-wide count of cards put into exile this turn.
+     * Backed by `CardsPutIntoExileThisTurnComponent`, reset to 0 for every player at the start of
+     * each turn. Tokens are excluded — a token briefly placed in exile isn't a card. Powers
+     * "if one or more cards were put into exile this turn" (Ennis, Debate Moderator).
+     */
+    CARDS_PUT_INTO_EXILE;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -89,6 +97,7 @@ enum class TurnTracker {
         CARDS_LEFT_GRAVEYARD -> "the number of cards that left ${player.possessive} graveyard this turn"
         DESCENDED -> "the number of times ${player.description} descended this turn"
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
+        CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
     }
 }
 

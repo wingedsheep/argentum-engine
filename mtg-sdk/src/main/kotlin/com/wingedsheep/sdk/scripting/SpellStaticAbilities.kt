@@ -384,11 +384,26 @@ data object CantCastSpellsSharingColorWithLastCast : StaticAbility {
 data class MayCastWithoutPayingManaCost(
     val controllerOnly: Boolean = false,
     val firstSpellOfTurnOnly: Boolean = false,
-    val spellFilter: GameObjectFilter = GameObjectFilter.Any
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    /**
+     * When true, the permission may be used at most once during each of the caster's own turns —
+     * unlike [firstSpellOfTurnOnly] (which forces the free cast to be the turn's *first* spell),
+     * the caster may cast other spells first and still use this free cast once. Like
+     * [firstSpellOfTurnOnly] it requires the caster to be the active player ("each of your turns").
+     * Each source tracks its own use via
+     * `com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent`,
+     * cleared at end of turn. Zaffai and the Tempests:
+     * `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn = true,
+     * spellFilter = GameObjectFilter.InstantOrSorcery)`.
+     */
+    val oncePerTurn: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
         val noun = if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells"
-        if (firstSpellOfTurnOnly) {
+        val singular = if (spellFilter == GameObjectFilter.Any) "spell" else "${spellFilter.description} spell"
+        if (oncePerTurn) {
+            append("Once during each of your turns, you may cast a $singular without paying its mana cost")
+        } else if (firstSpellOfTurnOnly) {
             if (controllerOnly) append("The first spell you cast each turn may be cast without paying its mana cost")
             else append("The first spell each player casts during each of their turns may be cast without paying its mana cost")
         } else {

@@ -2957,13 +2957,20 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
     grant. (Cascade-style granted keywords are instead modelled as a `youCastSpell(...)`-triggered `Effects.Cascade`
     on the granter — see **Quandrix, the Proof** / Wildsear, Scouring Maw — since cascade is a cast trigger, not a
     cost keyword.)
-- `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any)` — a
+- `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false)` — a
   battlefield permission to cast a spell without paying its mana cost (CR 118.9). Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);
   `firstSpellOfTurnOnly = true` requires the caster to be the active player and to have cast
-  zero spells this turn; `spellFilter` restricts *which* spells may be cast for free (card
-  predicates, matched in any zone — default `GameObjectFilter.Any` = every spell). Weftwalking is
-  `MayCastWithoutPayingManaCost(firstSpellOfTurnOnly = true)`; Dracogenesis is
+  zero spells this turn; `oncePerTurn = true` allows one free cast during each of the caster's own
+  turns (active player only) regardless of how many spells were cast first — unlike
+  `firstSpellOfTurnOnly`, the caster may cast other spells before using it; each source tracks its
+  own use via `MayCastWithoutPayingCostUsedThisTurnComponent`, cleared at end of turn; `spellFilter`
+  restricts *which* spells may be cast for free (card predicates, matched in any zone — default
+  `GameObjectFilter.Any` = every spell). The free-cast permission is only ever offered for cards in
+  hand. Weftwalking is `MayCastWithoutPayingManaCost(firstSpellOfTurnOnly = true)`; Zaffai and the
+  Tempests is `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn = true, spellFilter =
+  GameObjectFilter.InstantOrSorcery)` ("Once during each of your turns, you may cast an instant or
+  sorcery spell from your hand without paying its mana cost"); Dracogenesis is
   `MayCastWithoutPayingManaCost(controllerOnly = true, spellFilter = GameObjectFilter.Any.withSubtype("Dragon"))`
   ("You may cast Dragon spells without paying their mana costs"); a future "you may cast the first
   spell you cast each turn …" composes via both gates true. The filter is enforced per-spell in
@@ -3503,6 +3510,10 @@ answer it and would silently return `false`.
 - `YouGainedLifeThisTurnAtLeast(n)` — you gained ≥`n` life this turn. The threshold form of
   `YouGainedLifeThisTurn` (`Compare(TurnTracking(You, LIFE_GAINED), GTE, n)`). Used by Scheming
   Silvertongue's "if you gained 2 or more life this turn" prepared trigger.
+- `CardsPutIntoExileThisTurn(atLeast = 1)` — `atLeast` or more cards were put into exile this turn,
+  game-wide (summed across every player via `Player.Each`, backed by the `CARDS_PUT_INTO_EXILE`
+  turn tracker), not just yours. Used by Ennis, Debate Moderator's end-step "if one or more cards
+  were put into exile this turn".
 
 ### Cast / cost
 
@@ -4240,6 +4251,12 @@ of `AddMana`. The engine empties pools at end of turn, so:
   `CardsDrawnThisTurnComponent`, reset to 0 for every player at turn start). Powers
   characteristic-defining stats like Duelist of the Mind's "power is equal to the number of
   cards you've drawn this turn" via `dynamicPower = CharacteristicValue.dynamic(TurnTracking(You, CARDS_DRAWN))`.
+- `CARDS_PUT_INTO_EXILE` — number of cards put into exile this turn, keyed on each card's owner
+  (backed by `CardsPutIntoExileThisTurnComponent`, incremented at the central zone-transition for
+  any non-token card entering exile from another zone, reset to 0 for every player at turn start).
+  Summed across all players (via `Player.Each`) it gives the game-wide count of cards put into
+  exile this turn. Powers Ennis, Debate Moderator's "if one or more cards were put into exile this
+  turn" — see the `Conditions.CardsPutIntoExileThisTurn(atLeast)` wrapper.
 
 `SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity?)` /
 `DynamicAmounts.subtypeEnteredUnderControlThisTurn(subtype, player?, excludeTriggeringEntity?)` —

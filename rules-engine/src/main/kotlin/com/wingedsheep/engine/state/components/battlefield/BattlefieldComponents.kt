@@ -805,3 +805,12 @@ data class ExileEntryTurnComponent(
  */
 @Serializable
 data object MayCastFromLinkedExileUsedThisTurnComponent : Component
+
+/**
+ * Marks a permanent as having had its
+ * [com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost] permission used this turn. Used to
+ * enforce the `oncePerTurn` flag on that static ability (e.g., Zaffai and the Tempests). Cleared
+ * at end of turn by CleanupPhaseManager.
+ */
+@Serializable
+data object MayCastWithoutPayingCostUsedThisTurnComponent : Component

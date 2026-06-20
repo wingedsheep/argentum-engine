@@ -902,6 +902,18 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_GAINED, atLeast)
 
     /**
+     * If [atLeast] or more cards were put into exile this turn — game-wide, counting every
+     * player's cards (summed via [Player.Each]), not just yours. Used for Ennis, Debate
+     * Moderator's "if one or more cards were put into exile this turn".
+     */
+    fun CardsPutIntoExileThisTurn(atLeast: Int = 1): ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.CARDS_PUT_INTO_EXILE,
+            atLeast,
+            Player.Each,
+        )
+
+    /**
      * As long as you attacked with [atLeast] or more creatures matching [filter] this turn.
      * Used for cards like Deepway Navigator: "as long as you attacked with three or more
      * Merfolk this turn".

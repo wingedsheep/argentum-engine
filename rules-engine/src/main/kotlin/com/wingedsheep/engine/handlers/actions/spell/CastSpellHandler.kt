@@ -2650,6 +2650,18 @@ class CastSpellHandler(
             }
         }
 
+        // Record once-per-turn free-cast permission usage (e.g., Zaffai and the Tempests). Only a
+        // `MayCastWithoutPayingManaCost(oncePerTurn = true)` source consumes a use, and only when
+        // no unlimited free-cast source could have paid instead.
+        if (action.useWithoutPayingManaCost) {
+            val onceSource = costCalculator.oncePerTurnFreeCastSourceToConsume(currentCastState, action.playerId, cardDef)
+            if (onceSource != null) {
+                currentCastState = currentCastState.updateEntity(onceSource) { c ->
+                    c.with(com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent)
+                }
+            }
+        }
+
         // Handle Storm keyword: build one PendingTrigger per instance of Storm.
         // Per CR 702.40b each instance of Storm triggers separately. Sources of Storm:
         //   1. The card's printed keyword (Keyword.STORM in keywords) — counts once.

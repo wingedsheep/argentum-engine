@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
@@ -482,6 +483,18 @@ object ZoneTransitionService {
                         playerContainer.with(OpponentCreaturesExiledThisTurnComponent(existing.count + 1))
                     }
                 }
+            }
+        }
+
+        // 8b2b. Track cards put into exile this turn, keyed on the card's owner. Summed across
+        // all players this gives the game-wide "cards put into exile this turn" count (Ennis,
+        // Debate Moderator). Tokens are excluded — a token briefly placed in exile isn't a card —
+        // and exile→exile shuffles don't count as a card being "put into exile".
+        if (actualDestZone == Zone.EXILE && fromZone != Zone.EXILE && !container.has<TokenComponent>()) {
+            newState = newState.updateEntity(ownerId) { playerContainer ->
+                val existing = playerContainer.get<CardsPutIntoExileThisTurnComponent>()
+                    ?: CardsPutIntoExileThisTurnComponent()
+                playerContainer.with(CardsPutIntoExileThisTurnComponent(existing.count + 1))
             }
         }
 

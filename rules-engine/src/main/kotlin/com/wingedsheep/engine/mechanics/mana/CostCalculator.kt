@@ -1157,6 +1157,12 @@ class CostCalculator(
                     if (state.activePlayerId != casterId) continue
                     if ((state.playerSpellsCastThisTurn[casterId] ?: 0) > 0) continue
                 }
+                // `oncePerTurn` (Zaffai and the Tempests): only during the caster's own turn, and
+                // only while this specific source hasn't already been used this turn.
+                if (ability.oncePerTurn) {
+                    if (state.activePlayerId != casterId) continue
+                    if (container.has<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()) continue
+                }
                 // The permission may be scoped to a spell type (e.g. Dracogenesis — Dragons only).
                 // When the caller knows the spell being cast, enforce the filter; with no spell in
                 // hand (a generic "does any free-cast source exist?" probe) a filtered source still
@@ -1168,6 +1174,47 @@ class CostCalculator(
             }
         }
         return false
+    }
+
+    /**
+     * After a successful free cast via [MayCastWithoutPayingManaCost], returns the battlefield
+     * source whose `oncePerTurn` permission should be marked used — or null when an unlimited
+     * (non-`oncePerTurn`) source for [casterId] already grants this cast, so no once-per-turn use
+     * is consumed. With several once-per-turn sources, returns the first eligible one. Errs toward
+     * preserving the player's once-per-turn use whenever an unlimited source could have paid.
+     */
+    fun oncePerTurnFreeCastSourceToConsume(
+        state: GameState,
+        casterId: EntityId,
+        spellCardDef: CardDefinition?
+    ): EntityId? {
+        var oncePerTurnCandidate: EntityId? = null
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
+                if (ability !is MayCastWithoutPayingManaCost) continue
+                if (ability.controllerOnly) {
+                    val controllerId = state.projectedState.getController(entityId) ?: continue
+                    if (controllerId != casterId) continue
+                }
+                if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
+                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
+                ) continue
+                if (ability.oncePerTurn) {
+                    if (state.activePlayerId != casterId) continue
+                    if (container.has<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()) continue
+                    if (oncePerTurnCandidate == null) oncePerTurnCandidate = entityId
+                } else {
+                    // An unlimited / first-spell source already grants this free cast — don't burn
+                    // a once-per-turn use.
+                    return null
+                }
+            }
+        }
+        return oncePerTurnCandidate
     }
 
     /**

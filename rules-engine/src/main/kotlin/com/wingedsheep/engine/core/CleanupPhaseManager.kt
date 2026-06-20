@@ -797,12 +797,14 @@ class CleanupPhaseManager(
             val playFree = container.get<PlayWithoutPayingCostComponent>()
             val removePlayFree = playFree != null && !playFree.permanent
             val removeLinkedExileUsed = container.get<com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent>() != null
+            val removeFreeCastUsed = container.get<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>() != null
             val removeExileEntryTurn = container.get<com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent>() != null
-            if (removePlayFree || removeLinkedExileUsed || removeExileEntryTurn) {
+            if (removePlayFree || removeLinkedExileUsed || removeFreeCastUsed || removeExileEntryTurn) {
                 newState = newState.updateEntity(entityId) { c ->
                     var updated = c
                     if (removePlayFree) updated = updated.without<PlayWithoutPayingCostComponent>()
                     if (removeLinkedExileUsed) updated = updated.without<com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent>()
+                    if (removeFreeCastUsed) updated = updated.without<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()
                     if (removeExileEntryTurn) updated = updated.without<com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent>()
                     updated
                 }

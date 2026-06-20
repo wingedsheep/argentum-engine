@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComp
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
@@ -125,6 +126,7 @@ class TurnManager(
         for (pid in state.turnOrder) {
             newState = newState.updateEntity(pid) { container ->
                 container.with(CardsDrawnThisTurnComponent(count = 0))
+                    .with(CardsPutIntoExileThisTurnComponent(count = 0))
                     .with(ManaSpentOnSpellsThisTurnComponent(totalSpent = 0))
                     .with(EquipActivationsThisTurnComponent(count = 0))
             }
