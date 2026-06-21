@@ -427,6 +427,60 @@
     ]
 }
 
+// Artifact Ward
+{
+    "name": "Artifact Ward",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't be blocked by artifact creatures.\nPrevent all damage that would be dealt to enchanted creature by artifact sources.\nEnchanted creature can't be the target of abilities from artifact sources.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        "IsCreature"
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            "CantBeTargetedByArtifactSourceAbilities"
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": "RecipientEnchantedCreature",
+                    "source": {
+                        "type": "SourceMatching",
+                        "filter": "artifact"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "setCode": "ATQ",
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3a5101a-ec66-4658-950c-9ad49c29b836.jpg?1562932896"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ashnod's Altar
 {
     "name": "Ashnod's Altar",
@@ -3207,6 +3261,161 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/3/23eb19f9-2e8f-4bf0-9bf8-868e6da70e2d.jpg?1562902619"
     },
     "colorIdentityOverride": []
+}
+
+// Transmute Artifact
+{
+    "name": "Transmute Artifact",
+    "manaCost": "{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sacrifice an artifact. If you do, search your library for an artifact card. If that card's mana value is less than or equal to the sacrificed artifact's mana value, put it onto the battlefield. If it's greater, you may pay {X}, where X is the difference. If you do, put it onto the battlefield. If you don't, put it into its owner's graveyard. Then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "sacrificeable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "sacrificeable",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "sacrificed",
+                    "prompt": "Sacrifice an artifact"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "sacrificed",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "sacrificed"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "artifact"
+                                },
+                                "storeAs": "searchable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an artifact card"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "StoredCardManaValue",
+                                            "collectionName": "found"
+                                        },
+                                        "operator": "LTE",
+                                        "right": {
+                                            "type": "StoredCardManaValue",
+                                            "collectionName": "sacrificed"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                },
+                                "otherwise": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.MayPay",
+                                        "cost": {
+                                            "type": "PayDynamicManaCost",
+                                            "amount": {
+                                                "type": "Subtract",
+                                                "left": {
+                                                    "type": "StoredCardManaValue",
+                                                    "collectionName": "found"
+                                                },
+                                                "right": {
+                                                    "type": "StoredCardManaValue",
+                                                    "collectionName": "sacrificed"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    "otherwise": {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "setCode": "ATQ",
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6eab6765-eba3-4844-81ca-ae37a6e903df.jpg?1562918256"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Triskelion
