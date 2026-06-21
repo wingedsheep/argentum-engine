@@ -916,6 +916,30 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
                 return Call("TargetObject", withGraveCounting(parts))
             }
         }
+        // "target creature card with mana value N or less from your graveyard" (Savior of the Small): a
+        // single card-type + a `<=` MV cap + an optional ownership clause, no creature subtype. The typed
+        // branches below handle a card type OR a mana-value cap but not both together, so compose
+        // `GameObjectFilter.<Type>[.ownedBy…].manaValueAtMost(N)` in the GRAVEYARD zone here. Only the exact
+        // single-type + at-most-one `<=` cap + optional You/Opponent ownership shape renders; anything else
+        // (a subtype, a second card type, a non-`<=` comparison) falls through and declines, so no
+        // restriction is silently dropped.
+        run {
+            val ts = targetTypes(args).toList()
+            if (ts.size == 1 && ts.first() in graveyardCardtypeFilters && "IsCreatureType" !in blob) {
+                val mvCap = FilterPredicates.manaValueAtMost(args)
+                if ("ManaValueIs" in blob && mvCap != null) {
+                    var g: Dsl = Lit("GameObjectFilter.${graveyardCardtypeFilters.getValue(ts.first())}")
+                    when {
+                        "\"You\"" in blob -> g = g.dot("ownedByYou")
+                        "\"Opponent\"" in blob -> g = g.dot("ownedByOpponent")
+                    }
+                    g = g.dot(mvCap)
+                    val filt = Call("TargetFilter", listOf(arg(g), arg("zone", "Zone.GRAVEYARD")))
+                    val parts = mutableListOf(arg("filter", filt))
+                    return Call("TargetObject", withGraveCounting(parts))
+                }
+            }
+        }
         // "target artifact card WITH MANA VALUE 1 OR LESS from your graveyard" (Auriok Salvagers, Leonin
         // Squire): a ManaValueIs cap the graveyard filters below don't compose — emitting without it would
         // widen the target to any artifact in the graveyard. Decline (-> SCAFFOLD) rather than drop it.

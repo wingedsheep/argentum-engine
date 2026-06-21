@@ -409,6 +409,12 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // permanent subject declines (-> scaffold) rather than misattribute the stat.
         "ToughnessOfPermanent" ->
             return if (jsonContains(node["args"], "_Permanent", "ThisPermanent")) call("DynamicAmounts.sourceToughness") else null
+        // "damage equal to its power" in a dies trigger where the dead permanent IS the source
+        // (Infernal Phantom's "When this creature dies, it deals damage equal to its power …").
+        // mtgish tags the dead permanent's last-known power as its own GameNumber (no args); it reads
+        // the dies-trigger source's last-known power, the same value `DynamicAmounts.sourcePower`
+        // resolves for a `WhenACreatureOrPlaneswalkerDies(ThisPermanent)` ability.
+        "PowerOfDeadPermanent" -> return call("DynamicAmounts.sourcePower")
         "PowerOfPermanent" -> {
             // "its power" where "it" is the source: either the static ThisPermanent or — in a dies
             // trigger — Trigger_ThatPermanent (the permanent that died, i.e. this source via LKI).

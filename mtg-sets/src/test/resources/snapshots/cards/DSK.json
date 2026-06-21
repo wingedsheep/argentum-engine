@@ -2640,6 +2640,66 @@
     ]
 }
 
+// Entity Tracker
+{
+    "name": "Entity Tracker",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Flash\nEerie — Whenever an enchantment you control enters and whenever you fully unlock a Room, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "EERIE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Eerie — Whenever an enchantment you control enters, draw a card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "RoomFullyUnlockedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Eerie — Whenever you fully unlock a Room, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"The readings are off the charts! Whatever it is, it's close.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae54d697-6d06-4af1-a617-8a47a6ab9c01.jpg?1726286051"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Erratic Apparition
 {
     "name": "Erratic Apparition",
@@ -4934,6 +4994,99 @@
         "artist": "Edgar Sánchez Hidalgo",
         "flavorText": "No living being, survivor or monster, is exempt from Valgavoth's wrath.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/3/a35248f9-9a4e-4758-a4c1-0e0c83e3fd75.jpg?1726286368"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Infernal Phantom
+{
+    "name": "Infernal Phantom",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Eerie — Whenever an enchantment you control enters and whenever you fully unlock a Room, this creature gets +2/+0 until end of turn.\nWhen this creature dies, it deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "EERIE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Eerie — Whenever an enchantment you control enters, this creature gets +2/+0 until end of turn."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "RoomFullyUnlockedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Eerie — Whenever you fully unlock a Room, this creature gets +2/+0 until end of turn."
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "any target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "any target"
+                },
+                "descriptionOverride": "When this creature dies, it deals damage equal to its power to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Sass",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0c5999f-a185-4fc7-86fa-c4e5b091e768.jpg?1726286374"
     },
     "colorIdentityOverride": [
         "RED"
@@ -7484,6 +7637,61 @@
     ]
 }
 
+// Savior of the Small
+{
+    "name": "Savior of the Small",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Kor Survivor",
+    "oracleText": "Survival — At the beginning of your second main phase, if this creature is tapped, return target creature card with mana value 3 or less from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature card with mana value 3 or less from your graveyard"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target creature card with mana value 3 or less from your graveyard"
+                },
+                "triggerCondition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "tapped"
+                },
+                "descriptionOverride": "Survival — At the beginning of your second main phase, if this creature is tapped, return target creature card with mana value 3 or less from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Elizabeth Peiró",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2ed31ea-c278-4e8c-afa7-6d09af399345.jpg?1726285957"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sawblade Skinripper
 {
     "name": "Sawblade Skinripper",
@@ -7948,6 +8156,45 @@
         "rarity": "UNCOMMON",
         "artist": "Mirko Failoni",
         "imageUri": "https://cards.scryfall.io/normal/front/3/8/389f3f7b-be40-4a2d-b5cc-28471a577981.jpg?1726285971"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shepherding Spirits
+{
+    "name": "Shepherding Spirits",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nPlainscycling {2} ({2}, Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Plains"
+                    }
+                ]
+            },
+            "displayPrefix": "Plainscycling"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Billy Christian",
+        "flavorText": "\"This way, Melinda. A hundred years haven't improved your sense of direction.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86c02ab1-0fb2-4cb0-a871-bfad406726fc.jpg?1726285971"
     },
     "colorIdentityOverride": [
         "WHITE"
