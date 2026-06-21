@@ -695,6 +695,20 @@ internal fun EmitCtx.targetExpr(tnode: JsonObject, actionContext: List<JsonObjec
             if (supertypes.any { it != "Legendary" }) return null
             if (supertypes.contains("Legendary"))
                 return Call("TargetPermanent", listOf(arg("filter", Lit("TargetFilter.Permanent").dot("legendary"))))
+            // "target face-down permanent" (Hauntwoods Shrieker) — IsFaceDown on an otherwise-any
+            // permanent (the IR's And[IsFaceDown, IsPermanent]). Render GameObjectFilter.Permanent
+            // .faceDown() wrapped in TargetFilter; dropping the IsFaceDown clause would wrongly let
+            // the ability hit any permanent. Decline if any other predicate rides along.
+            if ("IsFaceDown" in blob) {
+                val extras = listOf(
+                    "IsTapped", "IsUntapped", "IsAttacking", "IsBlocking", "PowerIs", "ToughnessIs",
+                    "ManaValueIs", "IsColor", "IsNonColor", "HasAbility", "DoesntHaveAbility",
+                    "IsNonToken", "IsToken", "HasACounterOfType",
+                )
+                if (extras.any { it in blob }) return null
+                return Call("TargetPermanent", listOf(arg("filter",
+                    Call("TargetFilter", listOf(arg(Lit("GameObjectFilter.Permanent").dot("faceDown")))))))
+            }
             return Call("TargetPermanent")
         }
         // A two-cardtype union ("artifact or creature", "creature or enchantment"). The base maps to a

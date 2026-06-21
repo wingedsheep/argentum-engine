@@ -120,6 +120,20 @@ internal val tapLayerStateHandlers: Map<String, ActionHandler> = actionHandlers 
         call("Effects.Unprepare", arg(tgt))
     }
 
+    on("RevealFaceDownPermanent") { _, args, tvar ->
+        // "Reveal target face-down permanent" (Hauntwoods Shrieker). The subject is the chosen target.
+        // Informational only — does NOT turn it face up (that's a separate gated TurnPermanentFaceUp).
+        val tgt = refTarget(args, tvar) ?: return@on null
+        call("Effects.RevealFaceDownPermanent", arg(Lit(tgt)))
+    }
+
+    on("TurnPermanentFaceUp") { _, args, tvar ->
+        // "turn it face up" (Hauntwoods Shrieker, after revealing). The free, no-cost flip via
+        // TurnFaceUpEffect; the "you may" wrapper is supplied by the surrounding MayAction handler.
+        val tgt = refTarget(args, tvar) ?: return@on null
+        call("TurnFaceUpEffect", arg(Lit(tgt)))
+    }
+
     on("PutFormerCountersOnPermanent") { _, args, tvar ->
         // "put those counters on <permanent>" — the counters that were on a just-died permanent move
         // to the target (Scolding Administrator's dies trigger). The arg is the destination permanent

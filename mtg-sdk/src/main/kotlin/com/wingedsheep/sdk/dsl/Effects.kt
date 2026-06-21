@@ -377,6 +377,14 @@ object Effects {
         DrawCardsEffect(count, target)
 
     /**
+     * Reveal a face-down permanent (make the hidden card public). Informational only — does not
+     * turn it face up. Pair with `Conditions.TargetIsCreatureCard` + `TurnFaceUpEffect` for
+     * "Reveal target face-down permanent. If it's a creature card, you may turn it face up."
+     */
+    fun RevealFaceDownPermanent(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.RevealFaceDownPermanentEffect(target)
+
+    /**
      * Draw a dynamic number of cards. Default target is the controller.
      */
     fun DrawCards(count: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect =

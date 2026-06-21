@@ -4955,6 +4955,135 @@
     ]
 }
 
+// Hauntwoods Shrieker
+{
+    "name": "Hauntwoods Shrieker",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Beast Mutant",
+    "oracleText": "Whenever this creature attacks, manifest dread. (Look at the top two cards of your library. Put one onto the battlefield face down as a 2/2 creature and the other into your graveyard. Turn it face up any time for its mana cost if it's a creature card.)\n{1}{G}: Reveal target face-down permanent. If it's a creature card, you may turn it face up.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "manifestDreadLooked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "manifestDreadLooked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "manifestDreadManifested",
+                            "storeRemainder": "manifestDreadGraveyard",
+                            "selectedLabel": "Manifest (put onto the battlefield face down)",
+                            "remainderLabel": "Put into your graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifestDreadManifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifestDreadGraveyard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealFaceDownPermanent",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "TargetIsCreatureCard"
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "TurnFaceUp",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "target"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent facedown"
+                        },
+                        "id": "target"
+                    }
+                ],
+                "descriptionOverride": "{1}{G}: Reveal target face-down permanent. If it's a creature card, you may turn it face up."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "MYTHIC",
+        "artist": "John Tedrick",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/744ef0bc-9973-450e-a0c4-056d8244f357.jpg?1726286542"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Horrid Vigor
 {
     "name": "Horrid Vigor",
@@ -5600,6 +5729,75 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Intruding Soulrager
+{
+    "name": "Intruding Soulrager",
+    "manaCost": "{U}{R}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Vigilance\n{T}, Sacrifice a Room: This creature deals 2 damage to each opponent. Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Room"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Jeremy Wilson",
+        "flavorText": "The souls of those who perished outside the House persist as fractured echoes, driven to share their misery with the living.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adffc298-0219-4807-ab05-d94460e767bc.jpg?1726286682"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -6461,6 +6659,135 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Osseous Sticktwister
+{
+    "name": "Osseous Sticktwister",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact Creature — Scarecrow",
+    "oracleText": "Lifelink\nDelirium — At the beginning of your end step, if there are four or more card types among cards in your graveyard, each opponent may sacrifice a nonland permanent of their choice or discard a card. Then this creature deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Sacrifice a nonland permanent",
+                                "effect": {
+                                    "type": "ForceSacrifice",
+                                    "filter": "nonland permanent",
+                                    "target": "Controller"
+                                },
+                                "feasibilityCheck": {
+                                    "type": "ControlsPermanentMatching",
+                                    "filter": "nonland permanent"
+                                }
+                            },
+                            {
+                                "label": "Discard a card",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        }
+                                    ]
+                                },
+                                "feasibilityCheck": {
+                                    "type": "HasCardsInZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "label": "Take damage equal to Osseous Sticktwister's power",
+                                "effect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": "Power"
+                                    },
+                                    "target": "Controller"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "Delirium — At the beginning of your end step, if there are four or more card types among cards in your graveyard, each opponent may sacrifice a nonland permanent of their choice or discard a card. Then this creature deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f43473e-1302-4543-b331-1a86cfbc3ced.jpg?1726286266"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7644,6 +7971,52 @@
         "collectorNumber": "151",
         "artist": "Slawomir Maniak",
         "imageUri": "https://cards.scryfall.io/normal/front/5/6/569c914b-95af-428f-a142-6f20e418bc59.jpg?1726286414"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Razorkin Hordecaller
+{
+    "name": "Razorkin Hordecaller",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Clown Berserker",
+    "oracleText": "Haste\nWhenever you attack, create a 1/1 red Gremlin creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Gremlin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/9/d948b503-890a-49d5-a3cf-cb6e604851b8.jpg?1726236661"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "David Álvarez",
+        "flavorText": "\"Know your place, pets! First blood is mine!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7fb0f11-d1d0-4941-a1a7-a2db88f30394.jpg?1726286414"
     },
     "colorIdentityOverride": [
         "RED"

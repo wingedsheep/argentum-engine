@@ -375,6 +375,16 @@ object Conditions {
         EntityMatches(EffectTarget.ContextTarget(targetIndex), filter)
 
     /**
+     * If the chosen target at [targetIndex] is a creature *card*, tested by the underlying card's
+     * printed types rather than projected state. The right test for a face-down permanent (which
+     * projects as a typeless 2/2 Creature regardless of what it really is) — e.g. "Reveal target
+     * face-down permanent. If it's a creature card, you may turn it face up." (Hauntwoods Shrieker).
+     * Resolution-only.
+     */
+    fun TargetIsCreatureCard(targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TargetIsCreatureCard(targetIndex)
+
+    /**
      * If the context target at [targetIndex] is a player (not a permanent/spell/card).
      * Used for "any target" effects with a player-only follow-up — e.g. Sonic Shrieker's
      * "If a player is dealt damage this way, they discard a card."

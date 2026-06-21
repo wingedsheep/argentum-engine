@@ -84,6 +84,7 @@ import com.wingedsheep.sdk.scripting.conditions.YouSacrificedPermanentThisWay
 import com.wingedsheep.sdk.scripting.conditions.AnotherPermanentWithSameNameAsTarget
 import com.wingedsheep.sdk.scripting.conditions.TargetMarkedDamageExceedsToughness
 import com.wingedsheep.sdk.scripting.conditions.TargetIsPlayer
+import com.wingedsheep.sdk.scripting.conditions.TargetIsCreatureCard
 import com.wingedsheep.sdk.scripting.conditions.TargetIsTapped
 import com.wingedsheep.sdk.scripting.conditions.TargetIsSource
 import com.wingedsheep.sdk.scripting.conditions.TargetSharesMostCommonColor
@@ -397,6 +398,7 @@ class ConditionEvaluator(
                 ifResolution { evaluateTriggeringEntityWasNotPutByThisSource(state, it) }
             is TriggeringSpellHasSingleTarget -> ifResolution { evaluateTriggeringSpellHasSingleTarget(state, it) }
             is TargetIsPlayer -> ifResolution { evaluateTargetIsPlayer(condition, it) }
+            is TargetIsCreatureCard -> ifResolution { evaluateTargetIsCreatureCard(state, condition, it) }
             is TargetIsTapped -> ifResolution { evaluateTargetIsTapped(state, condition, it) }
             is TargetIsSource -> ifResolution { evaluateTargetIsSource(condition, it) }
             is TargetMarkedDamageExceedsToughness ->
@@ -1140,6 +1142,24 @@ class ConditionEvaluator(
      * false. Used by Shackle Slinger to branch between stunning a tapped target and tapping an
      * untapped one.
      */
+    /**
+     * "If [the target] is a creature card": resolve the chosen target and test its *underlying
+     * card's* printed type, not projected state. This is the correct test for a face-down permanent
+     * — while face down it projects as a typeless 2/2 Creature regardless of what it really is, so
+     * "creature card" must read the hidden card itself (CR 708.2). Non-permanent / player targets
+     * return false.
+     */
+    private fun evaluateTargetIsCreatureCard(
+        state: GameState,
+        condition: TargetIsCreatureCard,
+        context: EffectContext
+    ): Boolean {
+        val target = context.positionalTarget(condition.index) ?: return false
+        val entityId = (target as? com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent)
+            ?.entityId ?: return false
+        return state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
+    }
+
     private fun evaluateTargetIsTapped(
         state: GameState,
         condition: TargetIsTapped,

@@ -237,6 +237,27 @@ data class TurnFaceUpEffect(
 }
 
 /**
+ * Reveal a face-down permanent: make the identity of the card under a face-down permanent
+ * public (CR 708 — a face-down permanent's hidden card characteristics are shown to all players).
+ * This is purely informational — it does not turn the permanent face up and does not change its
+ * game state; it emits a reveal so opponents learn what the permanent is.
+ *
+ * Models "Reveal target face-down permanent" (Hauntwoods Shrieker). Pair with a
+ * [com.wingedsheep.sdk.scripting.conditions.TargetIsCreatureCard] gate + an optional
+ * [TurnFaceUpEffect] to express "...If it's a creature card, you may turn it face up." If the
+ * target is somehow no longer face down by resolution, the reveal is a no-op.
+ *
+ * @property target The face-down permanent to reveal (default: this effect's first target).
+ */
+@SerialName("RevealFaceDownPermanent")
+@Serializable
+data class RevealFaceDownPermanentEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Reveal ${target.description}"
+}
+
+/**
  * Attach this equipment to a target creature.
  * Detaches from the currently equipped creature (if any) before attaching to the new one.
  * "Attach to target creature you control."

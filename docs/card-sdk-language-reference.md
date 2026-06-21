@@ -438,6 +438,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `PutOntoBattlefield(target, tapped?)` — put target on the battlefield.
 - `PutOntoBattlefieldUnderYourControl(target)` — under controller's control.
 - `PutOntoBattlefieldFaceDown(count, target?)` — enter face-down (2/2 morph shape).
+- `RevealFaceDownPermanent(target?)` — reveal a face-down permanent (make its hidden card public,
+  CR 708.2). Informational only — does **not** turn it face up. Pair with
+  `Conditions.TargetIsCreatureCard` + `TurnFaceUpEffect` for "Reveal target face-down permanent. If
+  it's a creature card, you may turn it face up." (Hauntwoods Shrieker).
 - `PutOntoBattlefieldAttachedToChosen(target, hostFilter?)` — put a targeted Aura or Equipment onto the
   battlefield attached to a permanent the controller chooses at resolution (default host filter: a creature
   you control). Works for both Auras and Equipment; the host is chosen, not targeted. If no legal host exists,
@@ -3534,6 +3538,12 @@ answer it and would silently return `false`.
   the dedicated check for "any target" effects with a player-only follow-up. Used by Sonic Shrieker
   ("If a player is dealt damage this way, they discard a card"); pair with
   `EffectTarget.ContextTarget(index)` to make that same player the subject of the follow-up.
+- `TargetIsCreatureCard(targetIndex = 0)` — the context target is a creature *card*, tested by the
+  underlying card's printed types rather than projected state. Unlike `TargetMatchesFilter(Creature)`
+  (which reads projection, where a face-down permanent always projects as a typeless 2/2 Creature),
+  this reads the hidden card itself (CR 708.2) — the correct test for "...if it's a creature card"
+  over a face-down permanent. Resolution-only. Used by Hauntwoods Shrieker ("Reveal target face-down
+  permanent. If it's a creature card, you may turn it face up.").
 - `TargetIsTapped(targetIndex = 0)` — the context target resolves to a tapped battlefield permanent.
   Non-permanent targets and permanents no longer on the battlefield return false. Branch on a target's
   tapped state at resolution via `ConditionalEffect` — used by Shackle Slinger ("If it's tapped, put a

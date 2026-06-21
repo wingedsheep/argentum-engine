@@ -31,6 +31,29 @@ data class CollectionContainsMatch(
     }
 }
 
+/**
+ * Condition: "if [the target] is a creature card" — tests the *underlying card's* card type,
+ * reading the base [com.wingedsheep.sdk.model.CardDefinition] characteristics rather than projected
+ * state. This is the correct test for a face-down permanent: while face down it projects as a
+ * typeless 2/2 Creature regardless of what it really is (so [EntityMatches] over projected state
+ * would match every face-down permanent), but "creature *card*" refers to the hidden card itself
+ * (CR 708.2). Resolution-only; resolves the chosen target ([index]) to its game object and checks
+ * its card's printed types.
+ *
+ * Models the "If it's a creature card, ..." clause of "Reveal target face-down permanent. If it's a
+ * creature card, you may turn it face up." (Hauntwoods Shrieker).
+ *
+ * @property index Which context target to test (default: the first target).
+ */
+@SerialName("TargetIsCreatureCard")
+@Serializable
+data class TargetIsCreatureCard(
+    val index: Int = 0
+) : Condition {
+    override val description: String = "if it's a creature card"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
 // =============================================================================
 // Generic Condition Primitives
 // =============================================================================

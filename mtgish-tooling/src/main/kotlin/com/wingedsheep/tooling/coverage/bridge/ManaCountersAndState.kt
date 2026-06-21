@@ -62,6 +62,13 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // "<permanent> becomes unprepared" (Secrets of Strixhaven — Biblioplex Tomekeeper). The inverse of
     // BecomePrepared: maps to the Unprepare effect (strips prepared status + its exile prepare-spell copy).
     effect("UnpreparePermanent", "Unprepare", "a prepared permanent becomes unprepared (Biblioplex Tomekeeper)")
+    // "Reveal target face-down permanent" (Hauntwoods Shrieker) — make the hidden card public (CR
+    // 708.2). Informational only; the follow-up "if it's a creature card, you may turn it face up"
+    // composes a TargetIsCreatureCard gate + MayEffect(TurnFaceUp).
+    effect("RevealFaceDownPermanent", "RevealFaceDownPermanent", "reveal a face-down permanent (Hauntwoods Shrieker)")
+    // "turn it face up" — the free, no-cost flip of a revealed creature card (Hauntwoods Shrieker),
+    // distinct from paying a morph/manifest turn-up cost. Maps to the TurnFaceUp effect.
+    effect("TurnPermanentFaceUp", "TurnFaceUp", "turn a face-down permanent face up for free (Hauntwoods Shrieker)")
     // "attach it to target …" — an Equipment/Aura attaching ITSELF (the source) to a chosen permanent
     // (Thunder Lasso's ETB "attach it to target creature you control"). The engine idiom is
     // AttachEquipment, which always attaches the source. The emitter only renders the self-attach shape

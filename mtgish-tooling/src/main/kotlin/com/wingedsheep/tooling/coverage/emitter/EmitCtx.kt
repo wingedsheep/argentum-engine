@@ -864,6 +864,18 @@ internal fun EmitCtx.keywordOf(node: JsonElement?): String? {
  */
 internal fun EmitCtx.actionConditionDsl(cond: JsonObject?): String? {
     if (cond == null) return null
+    // "If it's a creature card" after revealing a face-down permanent (Hauntwoods Shrieker):
+    // `ACardWasRevealedThisWay(IsCardtype Creature)`. The revealed card is the chosen target, so the
+    // engine tests its underlying card type via `Conditions.TargetIsCreatureCard(0)` (not projected
+    // state — a face-down permanent always projects as a typeless 2/2 Creature). Only the exact
+    // creature-card shape renders; any other revealed-card filter declines (-> SCAFFOLD).
+    if (cond.strField("_Condition") == "ACardWasRevealedThisWay") {
+        val cards = cond["args"] as? JsonObject
+        if (cards?.strField("_Cards") == "IsCardtype" && cards["args"].asStr() == "Creature") {
+            return "Conditions.TargetIsCreatureCard(0)"
+        }
+        return null
+    }
     if (cond.strField("_Condition") == "PlayerPassesFilter") {
         val args = cond["args"].asArr
         if (args != null && (args.getOrNull(0) as? JsonObject)?.strField("_Player") == "You") {

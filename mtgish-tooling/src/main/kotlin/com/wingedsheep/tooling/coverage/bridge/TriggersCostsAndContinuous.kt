@@ -91,6 +91,10 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // emitter renders the recognised shapes to `triggerCondition = Conditions.*`; an unrenderable
     // condition still scaffolds, so these are accepted as supported vocabulary (the emitter is the gate).
     supported("PermanentPassesFilter", "condition: a permanent matches a filter (e.g. ThisPermanent IsSaddled -> Conditions.SourceIsSaddled)")
+    // "if it's a creature card" after revealing a face-down permanent (Hauntwoods Shrieker). The
+    // emitter renders the IsCardtype(Creature) shape to Conditions.TargetIsCreatureCard(0) (reads the
+    // underlying card, not the face-down 2/2 projection); other revealed-card filters scaffold.
+    supported("ACardWasRevealedThisWay", "condition: a revealed card matches a filter (IsCardtype Creature -> Conditions.TargetIsCreatureCard)")
     supported("PlayerPassesFilter", "condition: a player matches a filter (e.g. You HasntCastASpellThisTurn)")
     // "an opponent matches [filter]" — APlayerPassesFilter(Opponent, …). Used by Claim Jumper's
     // intervening-if "if an opponent controls more lands than you". The engine has

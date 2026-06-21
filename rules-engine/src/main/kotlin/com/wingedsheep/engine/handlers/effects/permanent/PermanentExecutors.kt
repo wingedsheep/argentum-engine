@@ -82,6 +82,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.ReturnSelfFromExi
 import com.wingedsheep.engine.handlers.effects.permanent.types.TransformEffectExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.TurnFaceDownExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.TurnFaceUpExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.RevealFaceDownPermanentExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 
@@ -157,6 +158,7 @@ class PermanentExecutors(
         ReturnSelfFromExileTransformedExecutor(cardRegistry),
         TurnFaceDownExecutor(),
         TurnFaceUpExecutor(cardRegistry),
+        RevealFaceDownPermanentExecutor(),
         // attachments
         AttachEquipmentExecutor(),
         AttachTargetEquipmentToCreatureExecutor(),
