@@ -1486,6 +1486,13 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   creatures" use `dynamicMaxCount = DynamicAmount.XValue` instead — that clamps the count to the chosen X.
 - `dynamicMaxCount: DynamicAmount?` — evaluated when the spell/ability hits the stack; the resolved
   value becomes the max ("up to X target creatures", X = board state or chosen X).
+- **Distinctness (CR 601.2c) is automatic and needs no flag.** A single requirement that picks more
+  than one target ("two / up to two / X target creatures") is one instance of the word "target", so the
+  chosen objects/players must all be **different** — enforced both at cast time (`TargetValidator`) and on
+  interactive target decisions (`DecisionValidators`). Cross-requirement duplicates are a *different*
+  "target" instance and stay **legal by default** (the same object may be chosen once per instance); when
+  a later requirement must differ from an earlier one ("… and up to one **other** target …"), wrap it in
+  `TargetOther` — `.other()`/`excludeSelf` on a filter only excludes the *source*, not another chosen target.
 - `sameController = false` — on `TargetObject` / `TargetCreature(...)`; when `true` and the requirement
   picks more than one target, every chosen target must share a controller ("**two target creatures
   controlled by the same player**"). Enforced cross-target by `TargetValidator` at cast time using

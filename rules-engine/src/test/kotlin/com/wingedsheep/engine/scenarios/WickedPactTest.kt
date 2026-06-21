@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Tests for Wicked Pact's multi-target spell behavior.
@@ -107,9 +108,9 @@ class WickedPactTest : FunSpec({
         driver.getLifeTotal(activePlayer) shouldBe 15
     }
 
-    test("Wicked Pact targets the same creature twice if only one available") {
-        // Note: MTG rules allow targeting the same creature with both targets
-        // if only one nonblack creature exists (though this may be suboptimal)
+    test("Wicked Pact cannot target the same creature twice — 'two target creatures' needs two different ones") {
+        // CR 601.2c: the same creature can't be chosen for both targets of a single "target"
+        // instance, so with only one legal nonblack creature Wicked Pact can't be cast.
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of(
@@ -133,23 +134,13 @@ class WickedPactTest : FunSpec({
         val wickedPact = driver.putCardInHand(activePlayer, "Wicked Pact")
         driver.giveMana(activePlayer, Color.BLACK, 3)
 
-        // Cast Wicked Pact targeting the green creature twice
-        // (This tests that the spell can be cast with valid targets)
+        // Casting Wicked Pact targeting the green creature twice is illegal.
         val castResult = driver.castSpell(activePlayer, wickedPact, listOf(greenCreature, greenCreature))
-        castResult.isSuccess shouldBe true
+        castResult.error shouldNotBe null
 
-        // Let the spell resolve
-        driver.bothPass()
-
-        // Green creature should be destroyed (first destroy succeeds, second has no effect)
-        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
-        // Black creature should still be there (cannot be targeted)
-        driver.findPermanent(opponent, "Serpent Assassin") shouldBe opponent.let {
-            driver.findPermanent(it, "Serpent Assassin")
-        }
-
-        // Active player should have lost 5 life
-        driver.getLifeTotal(activePlayer) shouldBe 15
+        // The cast was rejected: nothing is destroyed and no life is lost.
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe greenCreature
+        driver.getLifeTotal(activePlayer) shouldBe 20
     }
 
     test("Wicked Pact costs 1BB to cast and causes life loss") {

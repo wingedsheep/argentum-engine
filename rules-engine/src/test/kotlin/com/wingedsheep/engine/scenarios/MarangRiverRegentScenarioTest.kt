@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Scenario tests for Marang River Regent // Coil and Catch (TDM #51).
@@ -52,6 +53,30 @@ class MarangRiverRegentScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Marang River Regent (the source) is still on the battlefield — \"other\"") {
                     game.isOnBattlefield("Marang River Regent") shouldBe true
+                }
+            }
+
+            test("the same permanent can't be chosen for both of the two targets") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Marang River Regent")
+                    .withLandsOnBattlefield(1, "Island", 6)
+                    .withCardOnBattlefield(2, "Phantom Warrior")
+                    .withCardOnBattlefield(2, "Centaur Courser")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Marang River Regent").error shouldBe null
+                game.resolveStack() // creature enters → ETB asks for up to two targets
+
+                // "up to two other target nonland permanents" is one instance of "target"
+                // (CR 601.2c), so the two chosen permanents must be different — picking the same
+                // one twice is rejected.
+                val warrior = game.findPermanent("Phantom Warrior")!!
+                val result = game.selectTargets(listOf(warrior, warrior))
+                withClue("Choosing the same permanent twice is illegal: ${result.error}") {
+                    result.error shouldNotBe null
                 }
             }
         }

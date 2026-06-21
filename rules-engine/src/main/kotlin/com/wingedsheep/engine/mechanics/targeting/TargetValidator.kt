@@ -116,6 +116,14 @@ class TargetValidator {
                 if (error != null) return error
             }
 
+            // "Two/X target ..." — the same object or player can't be chosen more than once for a
+            // single instance of the word "target" (CR 601.2c; applies to abilities via 602.2b).
+            // Cross-requirement duplicates are a different "target" instance and stay legal by
+            // default — that distinctness is opt-in via TargetOther below.
+            if (targetsForReq.size > 1 && targetsForReq.distinct().size != targetsForReq.size) {
+                return "The same target can't be chosen more than once for ${requirement.description}"
+            }
+
             // "Another target" — must differ from any earlier target chosen for this same cast
             if (requirement is TargetOther) {
                 val priorTargets = targets.subList(0, startIdx.coerceAtMost(targets.size))

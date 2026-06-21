@@ -188,6 +188,12 @@ object DecisionValidators {
                 }
             }
 
+            // The same object/player can't be chosen more than once for a single targeting
+            // requirement (CR 601.2c — "two target creatures" needs two different creatures).
+            if (selectedIds.size != selectedIds.toSet().size) {
+                return "The same target can't be chosen more than once for requirement $reqIndex"
+            }
+
             val req = decision.targetRequirements.find { it.index == reqIndex }
             if (req != null) {
                 if (selectedIds.size < req.minTargets) {
