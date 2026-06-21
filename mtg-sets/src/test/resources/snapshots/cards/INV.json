@@ -8453,51 +8453,9 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "GatherCards",
-                    "source": {
-                        "type": "TopOfLibrary",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 1
-                        }
-                    },
-                    "storeAs": "scried"
+                    "type": "Scry",
+                    "count": 1
                 },
-                {
-                    "type": "SelectFromCollection",
-                    "from": "scried",
-                    "selection": {
-                        "type": "ChooseUpTo",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 1
-                        }
-                    },
-                    "storeSelected": "toBottom",
-                    "storeRemainder": "toTop",
-                    "selectedLabel": "Put on bottom",
-                    "remainderLabel": "Put on top"
-                },
-                {
-                    "type": "MoveCollection",
-                    "from": "toBottom",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Library",
-                        "placement": "Bottom"
-                    }
-                },
-                {
-                    "type": "MoveCollection",
-                    "from": "toTop",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Library",
-                        "placement": "Top"
-                    },
-                    "order": "ControllerChooses"
-                },
-                "EmitScriedEvent",
                 {
                     "type": "DrawCards",
                     "count": {

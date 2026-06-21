@@ -1265,50 +1265,9 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "GatherCards",
-                    "source": {
-                        "type": "TopOfLibrary",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 2
-                        }
-                    },
-                    "storeAs": "surveiled"
+                    "type": "Surveil",
+                    "count": 2
                 },
-                {
-                    "type": "SelectFromCollection",
-                    "from": "surveiled",
-                    "selection": {
-                        "type": "ChooseUpTo",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 2
-                        }
-                    },
-                    "storeSelected": "toGraveyard",
-                    "storeRemainder": "toTop",
-                    "selectedLabel": "Put in graveyard",
-                    "remainderLabel": "Put on top"
-                },
-                {
-                    "type": "MoveCollection",
-                    "from": "toGraveyard",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Graveyard"
-                    }
-                },
-                {
-                    "type": "MoveCollection",
-                    "from": "toTop",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Library",
-                        "placement": "Top"
-                    },
-                    "order": "ControllerChooses"
-                },
-                "EmitSurveiledEvent",
                 {
                     "type": "DrawCards",
                     "count": {

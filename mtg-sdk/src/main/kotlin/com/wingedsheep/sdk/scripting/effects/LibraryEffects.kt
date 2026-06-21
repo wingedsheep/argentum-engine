@@ -62,9 +62,9 @@ data class EmitScriedEventEffect(
  *
  * The count is the size of the named gather collection (`"surveiled"` by default) at resolution
  * time — the cards `GatherCardsEffect` actually pulled, which equals the surveil N parameter unless
- * the library held fewer (CR 701.25a). The count can be zero when the library was empty; the event
- * still fires, because CR 701.25d triggers "whenever you surveil" abilities "even if some or all of
- * those actions were impossible." Suppression of a literal "surveil 0" (CR 701.25c) is handled by
+ * the library held fewer (CR 701.42a). The count can be zero when the library was empty; the event
+ * still fires, because CR 701.42d triggers "whenever you surveil" abilities "even if some or all of
+ * those actions were impossible." Suppression of a literal "surveil 0" (CR 701.42c) is handled by
  * `surveil()` omitting this tail entirely, not here.
  *
  * Card authors should not use this directly; it is wired into the surveil primitive.
@@ -78,6 +78,43 @@ data class EmitSurveiledEventEffect(
     override val description: String = ""
 }
 
+
+/**
+ * "Scry [count]" (CR 701.18) as a single compact node.
+ *
+ * This is a *macro effect*: a serializable marker that, at execution time, expands into the
+ * shared Gather → Select → Move → Move → emit pipeline built by
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.scryPipeline]. The expansion reuses every atomic
+ * library executor (and its choose-pause / continuation plumbing), so this node adds no new
+ * gather/select/move logic — it only collapses the representation.
+ *
+ * Why a marker instead of the unrolled composite: a card whose effect *is* "scry 2" should
+ * serialize as `{"type":"Scry","count":2}` and read in the SDK as `Effects.Scry(2)`, rather than
+ * the full five-step pipeline. That keeps the `CardDefinitionSnapshotTest` goldens one line per
+ * scry and stops them churning whenever the shared pipeline internals change.
+ *
+ * Use the [com.wingedsheep.sdk.dsl.Effects.Scry] / [com.wingedsheep.sdk.dsl.LibraryPatterns.scry]
+ * facade, not this constructor.
+ */
+@SerialName("Scry")
+@Serializable
+data class ScryEffect(val count: Int) : Effect {
+    override val description: String = "Scry $count"
+}
+
+/**
+ * "Surveil [count]" (CR 701.42) as a single compact node — the surveil twin of [ScryEffect].
+ *
+ * Expands at execution time into the shared pipeline built by
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.surveilPipeline]; see [ScryEffect] for the macro-effect
+ * rationale. Use the [com.wingedsheep.sdk.dsl.Effects.Surveil] /
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.surveil] facade, not this constructor.
+ */
+@SerialName("Surveil")
+@Serializable
+data class SurveilEffect(val count: Int) : Effect {
+    override val description: String = "Surveil $count"
+}
 
 /**
  * Destination for searched cards.

@@ -346,11 +346,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever a player surveils (CR 701.25). Fires once per surveil, after the kept/graveyard
+     * Whenever a player surveils (CR 701.42). Fires once per surveil, after the kept/graveyard
      * moves have all resolved. Carries the number of cards actually looked at (equals the surveil
      * N parameter unless the library had fewer cards). Read this count via
      * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT] ("the number of
-     * cards looked at"). A literal "surveil 0" produces no event (CR 701.25c).
+     * cards looked at"). A literal "surveil 0" produces no event (CR 701.42c).
      */
     @SerialName("SurveiledEvent")
     @Serializable
@@ -361,7 +361,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever a player scries **or** surveils (CR 701.22 / 701.25) — the combined look-at-top
+     * Whenever a player scries **or** surveils (CR 701.18 / 701.42) — the combined look-at-top
      * trigger used by "Whenever you scry or surveil, …" (Matoya, Archon Elder). Matches either a
      * scry or a surveil event from [player]; the cards-looked-at count is exposed the same way as
      * the individual triggers (TRIGGER_SCRY_COUNT).

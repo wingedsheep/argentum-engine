@@ -21,9 +21,11 @@ import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
+import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -235,7 +237,40 @@ object LibraryPatterns {
         )
     )
 
-    fun scry(count: Int): CompositeEffect = CompositeEffect(
+    /**
+     * "Scry [count]" (CR 701.18). Returns the compact [ScryEffect] macro node; the engine expands
+     * it to [scryPipeline] at execution time. A card whose effect *is* scry therefore serializes as
+     * a single `{"type":"Scry"}` node rather than the unrolled pipeline (see [ScryEffect]).
+     */
+    fun scry(count: Int): ScryEffect = ScryEffect(count)
+
+    /**
+     * "Surveil [count]" (CR 701.42). Returns the compact [SurveilEffect] macro node; the engine
+     * expands it to [surveilPipeline] at execution time (see [SurveilEffect]).
+     */
+    fun surveil(count: Int): SurveilEffect = SurveilEffect(count)
+
+    /**
+     * Expand a library *macro effect* ([ScryEffect] / [SurveilEffect]) to its underlying
+     * Gather → Select → Move pipeline, or return `null` if [effect] is not a library macro.
+     *
+     * Single source of truth for the macro → pipeline mapping. The engine's `ScryExecutor` /
+     * `SurveilExecutor` use it to execute the macro, and any effect-tree walker that needs to see
+     * the inner gather/select nodes (e.g. `TriggerProcessor`'s selection-amount probe) expands
+     * through here rather than re-deriving the pipeline.
+     */
+    fun expandMacro(effect: Effect): CompositeEffect? = when (effect) {
+        is ScryEffect -> scryPipeline(effect.count)
+        is SurveilEffect -> surveilPipeline(effect.count)
+        else -> null
+    }
+
+    /**
+     * The expanded scry pipeline (Gather → Select → Move top/bottom → emit `ScriedEvent`). Public
+     * so the engine's scry macro executor can build and delegate to it; card definitions should use
+     * [scry] / [com.wingedsheep.sdk.dsl.Effects.Scry] instead.
+     */
+    fun scryPipeline(count: Int): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
@@ -268,7 +303,12 @@ object LibraryPatterns {
         )
     )
 
-    fun surveil(count: Int): CompositeEffect = CompositeEffect(
+    /**
+     * The expanded surveil pipeline (Gather → Select → Move graveyard/top → emit `SurveiledEvent`).
+     * Public so the engine's surveil macro executor can build and delegate to it; card definitions
+     * should use [surveil] / [com.wingedsheep.sdk.dsl.Effects.Surveil] instead.
+     */
+    fun surveilPipeline(count: Int): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
@@ -291,12 +331,12 @@ object LibraryPatterns {
                 destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
                 order = CardOrder.ControllerChooses
             ),
-            // Fire "Whenever you surveil" / "scry or surveil" triggers (CR 701.25) after the
+            // Fire "Whenever you surveil" / "scry or surveil" triggers (CR 701.42) after the
             // pipeline finishes. The event count is the actual size of the "surveiled" gather
             // collection at resolution time, not the literal N (handles library-smaller-than-N).
-            // Per CR 701.25d the trigger still fires when the library was empty and zero cards
+            // Per CR 701.42d the trigger still fires when the library was empty and zero cards
             // were looked at, so the tail emits unconditionally — it is only omitted for a literal
-            // "surveil 0" (CR 701.25c: no surveil event occurs).
+            // "surveil 0" (CR 701.42c: no surveil event occurs).
             if (count > 0) EmitSurveiledEventEffect() else null
         )
     )

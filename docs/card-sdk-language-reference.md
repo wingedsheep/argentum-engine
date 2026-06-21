@@ -1129,8 +1129,17 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 
 **Top-deck manipulation**
 
-- `scry(count)` — look at top N, bottom any, rest on top.
-- `surveil(count)` — look at top N, any to graveyard, rest on top.
+- `scry(count)` — look at top N, bottom any, rest on top. Also `Effects.Scry(count)`.
+- `surveil(count)` — look at top N, any to graveyard, rest on top. Also `Effects.Surveil(count)`.
+  - **Compact macro effect.** `scry`/`surveil` return a single `ScryEffect`/`SurveilEffect` *marker*
+    node (`{"type":"Scry","count":N}`), not the unrolled pipeline. The engine's `ScryExecutor` /
+    `SurveilExecutor` expand it to the shared `LibraryPatterns.scryPipeline(N)` /
+    `surveilPipeline(N)` (Gather → Select → Move → Move → emit `ScriedEvent`/`SurveiledEvent`) at
+    resolution and delegate to `CompositeEffectExecutor` — so the SelectCardsDecision pause and the
+    "Whenever you scry/surveil" triggers behave exactly as the expanded pipeline. Collapsing to one
+    node keeps the per-card snapshot goldens one line and stops them churning when the shared
+    pipeline internals change. Any effect-tree walker that needs the inner nodes expands through the
+    single `LibraryPatterns.expandMacro(effect)` helper.
 - `mill(count)` — top N cards into graveyard.
 - `lookAtTopAndKeep(count, keepCount)` — Ancestral Memories — keep exactly K to hand.
 - `lookAtTopRevealMatchingToHand(count, filter, prompt, restDestination?, restOrder?)` — Radagast the
@@ -2327,18 +2336,18 @@ Triggers.youCastSpell(
 
 ### Scry / Surveil
 
-- `WheneverYouScry` — fires once per scry resolution (CR 701.22), after the cards have
+- `WheneverYouScry` — fires once per scry resolution (CR 701.18), after the cards have
   been placed on top/bottom. Pair with `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)`
   for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
   Automatically emitted by `Patterns.Library.scry(N)`; no card has to opt in.
-- `WheneverYouSurveil` — the surveil twin (CR 701.25), fired once per surveil resolution.
+- `WheneverYouSurveil` — the surveil twin (CR 701.42), fired once per surveil resolution.
   Automatically emitted by `Patterns.Library.surveil(N)`. Reads the same `TRIGGER_SCRY_COUNT`
   ("cards looked at"). Used by Golbez.
 - `WheneverYouScryOrSurveil` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
-- A literal "scry 0" / "surveil 0" produces no event and fires no trigger (CR 701.22b / 701.25c);
-  the trigger still fires when the library was empty and zero cards were looked at (CR 701.22d /
-  701.25d).
+- A literal "scry 0" / "surveil 0" produces no event and fires no trigger (CR 701.18b / 701.42c);
+  the trigger still fires when the library was empty and zero cards were looked at (CR 701.18d /
+  701.42d).
 
 ### Saga chapter resolution (CR 714)
 

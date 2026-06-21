@@ -753,54 +753,8 @@
                                 "destination": "Hand"
                             },
                             {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "TopOfLibrary",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeAs": "surveiled"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "surveiled",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "toGraveyard",
-                                        "storeRemainder": "toTop",
-                                        "selectedLabel": "Put in graveyard",
-                                        "remainderLabel": "Put on top"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "toGraveyard",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Graveyard"
-                                        }
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "toTop",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Library",
-                                            "placement": "Top"
-                                        },
-                                        "order": "ControllerChooses"
-                                    },
-                                    "EmitSurveiledEvent"
-                                ]
+                                "type": "Surveil",
+                                "count": 1
                             }
                         ]
                     },
@@ -4132,54 +4086,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeAs": "surveiled"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "surveiled",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "toGraveyard",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put in graveyard",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toGraveyard",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitSurveiledEvent"
-                    ]
+                    "type": "Surveil",
+                    "count": 1
                 }
             }
         ],
@@ -4328,54 +4236,8 @@
                         }
                     },
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "TopOfLibrary",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 2
-                                    }
-                                },
-                                "storeAs": "surveiled"
-                            },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "surveiled",
-                                "selection": {
-                                    "type": "ChooseUpTo",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 2
-                                    }
-                                },
-                                "storeSelected": "toGraveyard",
-                                "storeRemainder": "toTop",
-                                "selectedLabel": "Put in graveyard",
-                                "remainderLabel": "Put on top"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "toGraveyard",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                }
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "toTop",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Library",
-                                    "placement": "Top"
-                                },
-                                "order": "ControllerChooses"
-                            },
-                            "EmitSurveiledEvent"
-                        ]
+                        "type": "Surveil",
+                        "count": 2
                     }
                 }
             ]
@@ -5586,54 +5448,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeAs": "surveiled"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "surveiled",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "toGraveyard",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put in graveyard",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toGraveyard",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitSurveiledEvent"
-                    ]
+                    "type": "Surveil",
+                    "count": 1
                 },
                 "descriptionOverride": "{2}{U}: Surveil 1."
             }
@@ -6045,54 +5861,8 @@
                         }
                     },
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "TopOfLibrary",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 1
-                                    }
-                                },
-                                "storeAs": "surveiled"
-                            },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "surveiled",
-                                "selection": {
-                                    "type": "ChooseUpTo",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 1
-                                    }
-                                },
-                                "storeSelected": "toGraveyard",
-                                "storeRemainder": "toTop",
-                                "selectedLabel": "Put in graveyard",
-                                "remainderLabel": "Put on top"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "toGraveyard",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                }
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "toTop",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Library",
-                                    "placement": "Top"
-                                },
-                                "order": "ControllerChooses"
-                            },
-                            "EmitSurveiledEvent"
-                        ]
+                        "type": "Surveil",
+                        "count": 1
                     }
                 }
             ]
@@ -6779,55 +6549,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeAs": "scried"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "scried",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeSelected": "toBottom",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put on bottom",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toBottom",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Bottom"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitScriedEvent"
-                    ]
+                    "type": "Scry",
+                    "count": 2
                 }
             },
             {
@@ -8959,55 +8682,8 @@
                             }
                         },
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "GatherCards",
-                                    "source": {
-                                        "type": "TopOfLibrary",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeAs": "scried"
-                                },
-                                {
-                                    "type": "SelectFromCollection",
-                                    "from": "scried",
-                                    "selection": {
-                                        "type": "ChooseUpTo",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeSelected": "toBottom",
-                                    "storeRemainder": "toTop",
-                                    "selectedLabel": "Put on bottom",
-                                    "remainderLabel": "Put on top"
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toBottom",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Bottom"
-                                    }
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toTop",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Top"
-                                    },
-                                    "order": "ControllerChooses"
-                                },
-                                "EmitScriedEvent"
-                            ]
+                            "type": "Scry",
+                            "count": 1
                         }
                     ]
                 },
@@ -9596,55 +9272,8 @@
                             }
                         },
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "GatherCards",
-                                    "source": {
-                                        "type": "TopOfLibrary",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeAs": "scried"
-                                },
-                                {
-                                    "type": "SelectFromCollection",
-                                    "from": "scried",
-                                    "selection": {
-                                        "type": "ChooseUpTo",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeSelected": "toBottom",
-                                    "storeRemainder": "toTop",
-                                    "selectedLabel": "Put on bottom",
-                                    "remainderLabel": "Put on top"
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toBottom",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Bottom"
-                                    }
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toTop",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Top"
-                                    },
-                                    "order": "ControllerChooses"
-                                },
-                                "EmitScriedEvent"
-                            ]
+                            "type": "Scry",
+                            "count": 1
                         }
                     ]
                 },
@@ -11987,54 +11616,8 @@
                 "trigger": "CommitCrimeEvent",
                 "binding": "ANY",
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeAs": "surveiled"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "surveiled",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeSelected": "toGraveyard",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put in graveyard",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toGraveyard",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitSurveiledEvent"
-                    ]
+                    "type": "Surveil",
+                    "count": 2
                 },
                 "oncePerTurn": true,
                 "descriptionOverride": "Whenever you commit a crime, surveil 2. This ability triggers only once each turn."
@@ -12720,54 +12303,8 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeAs": "surveiled"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "surveiled",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeSelected": "toGraveyard",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put in graveyard",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toGraveyard",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitSurveiledEvent"
-                    ]
+                    "type": "Surveil",
+                    "count": 2
                 }
             ]
         },
@@ -14402,54 +13939,8 @@
                         }
                     },
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "TopOfLibrary",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 3
-                                    }
-                                },
-                                "storeAs": "surveiled"
-                            },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "surveiled",
-                                "selection": {
-                                    "type": "ChooseUpTo",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 3
-                                    }
-                                },
-                                "storeSelected": "toGraveyard",
-                                "storeRemainder": "toTop",
-                                "selectedLabel": "Put in graveyard",
-                                "remainderLabel": "Put on top"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "toGraveyard",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                }
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "toTop",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Library",
-                                    "placement": "Top"
-                                },
-                                "order": "ControllerChooses"
-                            },
-                            "EmitSurveiledEvent"
-                        ]
+                        "type": "Surveil",
+                        "count": 3
                     }
                 },
                 {
@@ -18842,54 +18333,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeAs": "surveiled"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "surveiled",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                }
-                            },
-                            "storeSelected": "toGraveyard",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put in graveyard",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toGraveyard",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitSurveiledEvent"
-                    ]
+                    "type": "Surveil",
+                    "count": 2
                 }
             }
         ]
@@ -20556,55 +20001,8 @@
                             "target": "Self"
                         },
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "GatherCards",
-                                    "source": {
-                                        "type": "TopOfLibrary",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeAs": "scried"
-                                },
-                                {
-                                    "type": "SelectFromCollection",
-                                    "from": "scried",
-                                    "selection": {
-                                        "type": "ChooseUpTo",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeSelected": "toBottom",
-                                    "storeRemainder": "toTop",
-                                    "selectedLabel": "Put on bottom",
-                                    "remainderLabel": "Put on top"
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toBottom",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Bottom"
-                                    }
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toTop",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Top"
-                                    },
-                                    "order": "ControllerChooses"
-                                },
-                                "EmitScriedEvent"
-                            ]
+                            "type": "Scry",
+                            "count": 1
                         }
                     ]
                 },

@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.abilityIdentityOf
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.dsl.LibraryPatterns
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -841,7 +842,8 @@ class TriggerProcessor(
             else -> null
         }
         is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findSelectionAmount(it) }
-        else -> null
+        // Library macros (scry/surveil) are opaque nodes — expand to their pipeline before walking.
+        else -> LibraryPatterns.expandMacro(effect)?.let { findSelectionAmount(it) }
     }
 
     /**
@@ -851,7 +853,7 @@ class TriggerProcessor(
     private fun findStoreNumberAmount(effect: Effect, name: String): DynamicAmount? = when (effect) {
         is StoreNumberEffect -> if (effect.name == name) effect.amount else null
         is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findStoreNumberAmount(it, name) }
-        else -> null
+        else -> LibraryPatterns.expandMacro(effect)?.let { findStoreNumberAmount(it, name) }
     }
 
     /**

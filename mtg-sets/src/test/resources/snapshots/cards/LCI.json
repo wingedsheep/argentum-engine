@@ -353,55 +353,8 @@
                 "id": "ability_1",
                 "trigger": "TapEvent",
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeAs": "scried"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "scried",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "toBottom",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put on bottom",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toBottom",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Bottom"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitScriedEvent"
-                    ]
+                    "type": "Scry",
+                    "count": 1
                 }
             }
         ]
@@ -1752,55 +1705,8 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "GatherCards",
-                                    "source": {
-                                        "type": "TopOfLibrary",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeAs": "scried"
-                                },
-                                {
-                                    "type": "SelectFromCollection",
-                                    "from": "scried",
-                                    "selection": {
-                                        "type": "ChooseUpTo",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeSelected": "toBottom",
-                                    "storeRemainder": "toTop",
-                                    "selectedLabel": "Put on bottom",
-                                    "remainderLabel": "Put on top"
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toBottom",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Bottom"
-                                    }
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "toTop",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Library",
-                                        "placement": "Top"
-                                    },
-                                    "order": "ControllerChooses"
-                                },
-                                "EmitScriedEvent"
-                            ]
+                            "type": "Scry",
+                            "count": 1
                         },
                         {
                             "type": "CreatePredefinedToken",
@@ -2774,55 +2680,8 @@
                         },
                         {
                             "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "TopOfLibrary",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 3
-                                            }
-                                        },
-                                        "storeAs": "scried"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "scried",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 3
-                                            }
-                                        },
-                                        "storeSelected": "toBottom",
-                                        "storeRemainder": "toTop",
-                                        "selectedLabel": "Put on bottom",
-                                        "remainderLabel": "Put on top"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "toBottom",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Library",
-                                            "placement": "Bottom"
-                                        }
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "toTop",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Library",
-                                            "placement": "Top"
-                                        },
-                                        "order": "ControllerChooses"
-                                    },
-                                    "EmitScriedEvent"
-                                ]
+                                "type": "Scry",
+                                "count": 3
                             },
                             "description": "Scry 3. (Look at the top three cards of your library, then put any number of them on the bottom and the rest on top in any order.)"
                         }
@@ -3394,55 +3253,8 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "TopOfLibrary",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeAs": "scried"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "scried",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "toBottom",
-                            "storeRemainder": "toTop",
-                            "selectedLabel": "Put on bottom",
-                            "remainderLabel": "Put on top"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toBottom",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Bottom"
-                            }
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "toTop",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Library",
-                                "placement": "Top"
-                            },
-                            "order": "ControllerChooses"
-                        },
-                        "EmitScriedEvent"
-                    ]
+                    "type": "Scry",
+                    "count": 1
                 },
                 "triggerCondition": {
                     "type": "Compare",

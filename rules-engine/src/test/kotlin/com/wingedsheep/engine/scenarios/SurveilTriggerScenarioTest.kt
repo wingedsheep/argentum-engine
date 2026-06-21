@@ -27,8 +27,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Substrate tests for the "Whenever you surveil" (CR 701.25) and combined "Whenever you scry or
- * surveil" (CR 701.22 / 701.25) triggers: `Patterns.Library.surveil(N)` ends by emitting
+ * Substrate tests for the "Whenever you surveil" (CR 701.42) and combined "Whenever you scry or
+ * surveil" (CR 701.18 / 701.42) triggers: `Patterns.Library.surveil(N)` ends by emitting
  * [SurveiledEvent], which drives `Triggers.WheneverYouSurveil` /
  * `Triggers.WheneverYouScryOrSurveil` and surfaces "the number of cards looked at" via
  * [ContextPropertyKey.TRIGGER_SCRY_COUNT]. The event is distinct from the scry event, so a scry
@@ -116,7 +116,7 @@ class SurveilTriggerScenarioTest : FunSpec({
         state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 
     // Truncate a player's library to exactly [size] cards so surveil can be exercised against a
-    // library shorter than N (CR 701.25a) or empty (701.25d).
+    // library shorter than N (CR 701.42a) or empty (701.42d).
     fun GameTestDriver.truncateLibrary(player: EntityId, size: Int) {
         val key = ZoneKey(player, Zone.LIBRARY)
         replaceState(state.copy(zones = state.zones + (key to state.getZone(key).take(size))))
@@ -232,7 +232,7 @@ class SurveilTriggerScenarioTest : FunSpec({
         driver.plusOneCounters(scryWatcher) shouldBe 1 // unchanged
     }
 
-    test("surveil counts only the cards actually looked at when the library is shorter than N (CR 701.25a)") {
+    test("surveil counts only the cards actually looked at when the library is shorter than N (CR 701.42a)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         val active = driver.activePlayer!!
@@ -250,7 +250,7 @@ class SurveilTriggerScenarioTest : FunSpec({
         driver.plusOneCounters(counter) shouldBe 2
     }
 
-    test("surveil with an empty library still fires the trigger with count 0 (CR 701.25d)") {
+    test("surveil with an empty library still fires the trigger with count 0 (CR 701.42d)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         val active = driver.activePlayer!!
@@ -266,11 +266,11 @@ class SurveilTriggerScenarioTest : FunSpec({
 
         val surveiled = driver.events.drop(before).filterIsInstance<SurveiledEvent>().single()
         surveiled.count shouldBe 0
-        driver.plusOneCounters(watcher) shouldBe 1 // trigger fired (701.25d)
+        driver.plusOneCounters(watcher) shouldBe 1 // trigger fired (701.42d)
         driver.plusOneCounters(counter) shouldBe 0 // ... but scaled to 0 cards looked at
     }
 
-    test("surveil 0 fires no trigger and emits no event (CR 701.25c)") {
+    test("surveil 0 fires no trigger and emits no event (CR 701.42c)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         val active = driver.activePlayer!!

@@ -60,6 +60,9 @@ class EffectExecutorRegistry(
         registerModule(PermanentExecutors(decisionHandler, amountEvaluator, cardRegistry))
         registerModule(ManaExecutors(amountEvaluator, cardRegistry))
         registerModule(TokenExecutors(amountEvaluator, StaticAbilityHandler(cardRegistry), cardRegistry))
+        // The scry/surveil macro executors expand to a composite pipeline and delegate back through
+        // [recurse]; wire it in before registering (the ref is read lazily, so order is not load-bearing).
+        libraryExecutors.initializeRecursion(::recurse)
         registerModule(libraryExecutors)
         registerModule(StackExecutors(amountEvaluator, cardRegistry))
         registerModule(InformationExecutors())

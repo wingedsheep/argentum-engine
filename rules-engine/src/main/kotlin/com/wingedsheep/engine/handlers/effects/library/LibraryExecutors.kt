@@ -1,11 +1,15 @@
 package com.wingedsheep.engine.handlers.effects.library
 
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.EngineServices
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.scripting.effects.Effect
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -24,12 +28,37 @@ class LibraryExecutors(
 
     private val castSpellHandlerRef = AtomicReference<CastSpellHandler?>(null)
 
+    /**
+     * The registry's recursive effect executor, used by the scry/surveil macro executors to run
+     * their expanded pipelines. Late-bound via [initializeRecursion] because the recursion entry
+     * point doesn't exist until the registry is wiring its deferred (recursive) modules. Read
+     * through the ref at execution time (like [castSpellHandlerRef]) so constructing this module
+     * before initialization — as some unit tests do — never trips over an uninitialized property;
+     * only an actual scry/surveil with no recursion wired errors.
+     */
+    private val recursionRef =
+        AtomicReference<((GameState, Effect, EffectContext) -> EffectResult)?>(null)
+
+    private val recursion: (GameState, Effect, EffectContext) -> EffectResult =
+        { state, effect, context ->
+            val executor = recursionRef.get()
+                ?: error("LibraryExecutors.initializeRecursion(...) was not called before the scry/surveil macro ran")
+            executor(state, effect, context)
+        }
+
     /** Late-bind the cast machinery once [EngineServices] is fully constructed. */
     fun initialize(services: EngineServices) {
         castSpellHandlerRef.set(CastSpellHandler.create(services))
     }
 
+    /** Late-bind the registry's recursive executor so the scry/surveil macros can delegate. */
+    fun initializeRecursion(executor: (GameState, Effect, EffectContext) -> EffectResult) {
+        recursionRef.set(executor)
+    }
+
     override fun executors(): List<EffectExecutor<*>> = listOf(
+        ScryExecutor(recursion),
+        SurveilExecutor(recursion),
         ShuffleLibraryExecutor(),
         GrantMayPlayFromExileExecutor(),
         MakePlottedExecutor(),
