@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.EntityReference
@@ -27,12 +28,16 @@ val FriendlyRivalry = card("Friendly Rivalry") {
     spell {
         // Target 0: creature you control
         val myCreature = target("creature you control", Targets.CreatureYouControl)
-        // Target 1: up to one other legendary creature you control
+        // Target 1: up to one *other* legendary creature you control. Wrapped in TargetOther so
+        // "other" means "other than the index-0 creature" (CR 601.2c) — the same permanent can't
+        // fill both slots and deal its power twice.
         val legendary = target(
             "up to one other legendary creature you control",
-            TargetCreature(
-                optional = true,
-                filter = TargetFilter.CreatureYouControl.legendary().other()
+            TargetOther(
+                baseRequirement = TargetCreature(
+                    optional = true,
+                    filter = TargetFilter.CreatureYouControl.legendary()
+                )
             )
         )
         // Target 2: creature you don't control

@@ -6149,17 +6149,19 @@
                 "id": "creature you control"
             },
             {
-                "type": "TargetObject",
-                "optional": true,
-                "filter": {
-                    "baseFilter": {
-                        "cardPredicates": [
-                            "IsCreature",
-                            "IsLegendary"
-                        ],
-                        "controllerPredicate": "ControlledByYou"
-                    },
-                    "excludeSelf": true
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
                 },
                 "id": "up to one other legendary creature you control"
             },
