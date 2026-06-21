@@ -74,6 +74,7 @@ enum class TriggerCategory {
     DISCARD,
     RING_TEMPTED,
     SCRIED,
+    SURVEILED,
     BECAME_SADDLED,
     BECOMES_ATTACHED,
     SAGA_CHAPTER_RESOLVED,
@@ -241,6 +242,10 @@ class TriggerIndex(
                 is SdkGameEvent.DiscardEvent -> listOf(TriggerCategory.DISCARD)
                 is SdkGameEvent.RingTemptedEvent -> RING_TEMPTED_LIST
                 is SdkGameEvent.ScriedEvent -> SCRIED_LIST
+                is SdkGameEvent.SurveiledEvent -> SURVEILED_LIST
+                // "Whenever you scry or surveil" indexes under both buckets so either engine event
+                // finds it; the matcher confirms the event is a scry or a surveil.
+                is SdkGameEvent.ScriedOrSurveiledEvent -> SCRIED_OR_SURVEILED_LIST
                 is SdkGameEvent.BecameSaddledEvent -> BECAME_SADDLED_LIST
                 is SdkGameEvent.BecomesAttachedEvent -> BECOMES_ATTACHED_LIST
                 is SdkGameEvent.SagaChapterResolvedEvent -> SAGA_CHAPTER_RESOLVED_LIST
@@ -280,6 +285,7 @@ class TriggerIndex(
             is CardsDiscardedEvent -> DISCARD_LIST
             is com.wingedsheep.engine.core.RingTemptedEvent -> RING_TEMPTED_LIST
             is com.wingedsheep.engine.core.ScriedEvent -> SCRIED_LIST
+            is com.wingedsheep.engine.core.SurveiledEvent -> SURVEILED_LIST
             is com.wingedsheep.engine.core.BecameSaddledEvent -> BECAME_SADDLED_LIST
             is com.wingedsheep.engine.core.PermanentAttachedEvent -> BECOMES_ATTACHED_LIST
             is com.wingedsheep.engine.core.SagaChapterResolvedEvent -> SAGA_CHAPTER_RESOLVED_LIST
@@ -311,6 +317,8 @@ class TriggerIndex(
         private val DISCARD_LIST = listOf(TriggerCategory.DISCARD)
         private val RING_TEMPTED_LIST = listOf(TriggerCategory.RING_TEMPTED)
         private val SCRIED_LIST = listOf(TriggerCategory.SCRIED)
+        private val SURVEILED_LIST = listOf(TriggerCategory.SURVEILED)
+        private val SCRIED_OR_SURVEILED_LIST = listOf(TriggerCategory.SCRIED, TriggerCategory.SURVEILED)
         private val BECAME_SADDLED_LIST = listOf(TriggerCategory.BECAME_SADDLED)
         private val BECOMES_ATTACHED_LIST = listOf(TriggerCategory.BECOMES_ATTACHED)
         private val SAGA_CHAPTER_RESOLVED_LIST = listOf(TriggerCategory.SAGA_CHAPTER_RESOLVED)

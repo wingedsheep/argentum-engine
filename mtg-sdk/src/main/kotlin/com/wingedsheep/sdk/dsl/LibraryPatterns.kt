@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.effects.EmitScriedEventEffect
+import com.wingedsheep.sdk.scripting.effects.EmitSurveiledEventEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
@@ -268,7 +269,7 @@ object LibraryPatterns {
     )
 
     fun surveil(count: Int): CompositeEffect = CompositeEffect(
-        listOf(
+        listOfNotNull(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
                 storeAs = "surveiled"
@@ -289,7 +290,14 @@ object LibraryPatterns {
                 from = "toTop",
                 destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
                 order = CardOrder.ControllerChooses
-            )
+            ),
+            // Fire "Whenever you surveil" / "scry or surveil" triggers (CR 701.25) after the
+            // pipeline finishes. The event count is the actual size of the "surveiled" gather
+            // collection at resolution time, not the literal N (handles library-smaller-than-N).
+            // Per CR 701.25d the trigger still fires when the library was empty and zero cards
+            // were looked at, so the tail emits unconditionally — it is only omitted for a literal
+            // "surveil 0" (CR 701.25c: no surveil event occurs).
+            if (count > 0) EmitSurveiledEventEffect() else null
         )
     )
 

@@ -150,6 +150,14 @@ object DynamicAmounts {
     fun colorsSpentOnTriggeringSpell(): DynamicAmount =
         DynamicAmount.ContextProperty(ContextPropertyKey.COLORS_SPENT_ON_TRIGGERING_SPELL)
 
+    /**
+     * Your devotion to [colors] (CR 700.5) — the number of mana symbols of those colors among
+     * the mana costs of permanents you control. Pass one color for "devotion to red", or several
+     * for a colored combination ("devotion to white and black"). See [DynamicAmount.DevotionTo].
+     */
+    fun devotionTo(vararg colors: Color): DynamicAmount =
+        DynamicAmount.DevotionTo(colors.toList())
+
     fun creaturesYouControl(): DynamicAmount =
         battlefield(Player.You, GameObjectFilter.Creature).count()
 
@@ -203,6 +211,28 @@ object DynamicAmounts {
 
     fun landsWithSubtype(subtype: Subtype): DynamicAmount =
         battlefield(Player.You, GameObjectFilter.Land.withSubtype(subtype)).count()
+
+    // =========================================================================
+    // Equipment counting (convenience shortcuts)
+    // =========================================================================
+
+    /**
+     * The number of Equipment [player] controls — "for each Equipment you control"
+     * (Adelbert Steiner, Barret Wallace). Equipment is an artifact subtype (CR 301.5c),
+     * so this counts permanents whose projected subtypes include Equipment, picking up
+     * permanents turned into Equipment by a continuous effect as well.
+     */
+    fun equipmentYouControl(player: Player = Player.You): DynamicAmount =
+        battlefield(player, GameObjectFilter.Any.withSubtype(Subtype.EQUIPMENT)).count()
+
+    /**
+     * The number of equipped creatures [player] controls — creatures with at least one
+     * Equipment attached (CR 301.5). Reads the attachment state, so a creature equipped
+     * by several Equipment still counts once. Used by "for each equipped creature you
+     * control" payoffs.
+     */
+    fun equippedCreaturesYouControl(player: Player = Player.You): DynamicAmount =
+        battlefield(player, GameObjectFilter.Creature.equipped()).count()
 
     // =========================================================================
     // "Other" counting (subtract 1 for self)

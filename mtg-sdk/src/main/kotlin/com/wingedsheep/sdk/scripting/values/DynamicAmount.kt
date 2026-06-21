@@ -442,6 +442,36 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * A player's **devotion** to one or more colors (CR 700.5): the number of mana symbols of
+     * [colors] among the mana costs of permanents that [player] controls. A single-element list
+     * is devotion to one color ("your devotion to red"); several colors give devotion to that
+     * combination ("your devotion to white and black"), where a symbol that is any of the listed
+     * colors is counted once.
+     *
+     * Every kind of mana symbol that carries a color contributes: a plain colored symbol, both
+     * halves of a two-color hybrid ({W/U} adds to both white and blue devotion), a monocolored
+     * "twobrid" ({2/B} is a black symbol), and a Phyrexian symbol ({B/P} is a black symbol).
+     * Generic, colorless ({C}), and {X} symbols never contribute. Face-down permanents have no
+     * mana cost and contribute 0 (CR 711.4). Reads the controller via projected state so
+     * control-changing effects are honored.
+     *
+     * Used by "draw cards equal to your devotion to red" / "gain life equal to your devotion to
+     * white" payoffs (Clive, Ifrit's Dominant).
+     */
+    @SerialName("DevotionTo")
+    @Serializable
+    data class DevotionTo(
+        val colors: List<Color>,
+        val player: Player = Player.You
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append(if (player == Player.You) "your" else player.possessive)
+            append(" devotion to ")
+            append(colors.joinToString(" and ") { it.displayName.lowercase() })
+        }
+    }
+
+    /**
      * Reference to a stored variable by name.
      * Used for effects that need to reference a previously computed/stored value.
      * Example: Scapeshift stores "sacrificedCount" and SearchLibrary reads it.

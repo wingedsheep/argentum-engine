@@ -122,6 +122,7 @@ val engineSerializersModule = SerializersModule {
         subclass(MaximumHandSizeRemovedEvent::class)
         subclass(RingTemptedEvent::class)
         subclass(ScriedEvent::class)
+        subclass(SurveiledEvent::class)
         subclass(LibraryReorderedEvent::class)
         subclass(LookedAtCardsEvent::class)
         subclass(LoyaltyChangedEvent::class)

@@ -52,6 +52,32 @@ data class EmitScriedEventEffect(
     override val description: String = ""
 }
 
+/**
+ * Emit a `SurveiledEvent` after a surveil pipeline finishes resolving — the surveil twin of
+ * [EmitScriedEventEffect]. Appended internally by [com.wingedsheep.sdk.dsl.LibraryPatterns.surveil]
+ * so "Whenever you surveil" / "Whenever you scry or surveil" triggers
+ * ([com.wingedsheep.sdk.dsl.Triggers.WheneverYouSurveil],
+ * [com.wingedsheep.sdk.dsl.Triggers.WheneverYouScryOrSurveil]) fire exactly once per surveil,
+ * carrying the actual number of cards looked at.
+ *
+ * The count is the size of the named gather collection (`"surveiled"` by default) at resolution
+ * time — the cards `GatherCardsEffect` actually pulled, which equals the surveil N parameter unless
+ * the library held fewer (CR 701.25a). The count can be zero when the library was empty; the event
+ * still fires, because CR 701.25d triggers "whenever you surveil" abilities "even if some or all of
+ * those actions were impossible." Suppression of a literal "surveil 0" (CR 701.25c) is handled by
+ * `surveil()` omitting this tail entirely, not here.
+ *
+ * Card authors should not use this directly; it is wired into the surveil primitive.
+ */
+@SerialName("EmitSurveiledEvent")
+@Serializable
+data class EmitSurveiledEventEffect(
+    val gatherCollection: String = "surveiled"
+) : Effect {
+    // Intentionally blank: this is an internal pipeline tail with no player-facing text.
+    override val description: String = ""
+}
+
 
 /**
  * Destination for searched cards.

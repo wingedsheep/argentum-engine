@@ -1665,6 +1665,25 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever you surveil (CR 701.25). The surveil twin of [WheneverYouScry] — fires once per
+     * surveil resolution, after the kept/graveyard moves resolve. Pair with TRIGGER_SCRY_COUNT to
+     * scale by "the number of cards looked at." Used by Golbez and similar surveil payoffs.
+     */
+    val WheneverYouSurveil: TriggerSpec = TriggerSpec(
+        event = SurveiledEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you scry **or** surveil (CR 701.22 / 701.25) — the combined look-at-top trigger
+     * (Matoya, Archon Elder). Fires once per scry and once per surveil.
+     */
+    val WheneverYouScryOrSurveil: TriggerSpec = TriggerSpec(
+        event = ScriedOrSurveiledEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Saga Chapter Resolution Triggers (CR 714)
     // =========================================================================

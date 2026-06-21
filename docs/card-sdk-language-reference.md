@@ -2314,12 +2314,20 @@ Triggers.youCastSpell(
   actually designates a creature (the event's `bearerId` is non-null) — not when you control none to
   choose. Used by Call of the Ring.
 
-### Scry
+### Scry / Surveil
 
-- `WheneverYouScry` — fires once per scry resolution (CR 701.18), after the cards have
+- `WheneverYouScry` — fires once per scry resolution (CR 701.22), after the cards have
   been placed on top/bottom. Pair with `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)`
   for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
   Automatically emitted by `Patterns.Library.scry(N)`; no card has to opt in.
+- `WheneverYouSurveil` — the surveil twin (CR 701.25), fired once per surveil resolution.
+  Automatically emitted by `Patterns.Library.surveil(N)`. Reads the same `TRIGGER_SCRY_COUNT`
+  ("cards looked at"). Used by Golbez.
+- `WheneverYouScryOrSurveil` — the combined look-at-top trigger; fires once per scry **and**
+  once per surveil (Matoya, Archon Elder).
+- A literal "scry 0" / "surveil 0" produces no event and fires no trigger (CR 701.22b / 701.25c);
+  the trigger still fires when the library was empty and zero cards were looked at (CR 701.22d /
+  701.25d).
 
 ### Saga chapter resolution (CR 714)
 
@@ -3845,6 +3853,15 @@ Numbers computed at resolution time.
   `CastRecordComponent` afterward), so it reads correctly both at resolution and as the permanent enters
   (the common use: feeding `EntersWithDynamicCounters`). Facade: `DynamicAmounts.colorsOfManaSpent()`.
   A permanent put onto the battlefield without being cast spent no mana, so this is 0 for it.
+- `DevotionTo(colors, player = You)` — a player's **devotion** to one or more colors (CR 700.5):
+  the number of mana symbols of those colors among the mana costs of permanents the player controls.
+  One color = "devotion to red"; several = devotion to that combination ("white and black"), where a
+  symbol matching more than one listed color is counted once. Every colored symbol contributes —
+  plain colored, both halves of a two-color hybrid ({W/U} counts for white *and* blue), monocolored
+  twobrid ({2/B} is black), and Phyrexian ({B/P} is black); generic/colorless/{X} never count.
+  Face-down permanents have no mana cost and contribute 0. Controller read via projected state.
+  Facade: `DynamicAmounts.devotionTo(color, …)`. Used by "draw cards equal to your devotion to red"
+  (Clive, Ifrit's Dominant).
 - `UnlockedDoors(player = You, distinctNames = false)` — the number of unlocked doors among Rooms
   `player` controls (CR 709.5). Reads per-face door state, so a single Room with **both** doors
   unlocked counts as **two** — an entity-level `AggregateBattlefield`/`Count` cannot see this. With
@@ -3892,6 +3909,10 @@ Numbers computed at resolution time.
 - `AggregateZone(player, zone, filter?, aggregation?)` — count cards in a zone.
 - `CountPermanentsOfType(player, subtype)` — count by creature type.
 - `CountCreaturesYouControl` — shorthand for "your creatures".
+- Facades: `DynamicAmounts.equipmentYouControl(player = You)` — Equipment you control (counts
+  permanents whose projected subtypes include Equipment), and `equippedCreaturesYouControl(player = You)`
+  — creatures with at least one Equipment attached (`GameObjectFilter.Creature.equipped()`). Used by
+  Adelbert Steiner (+1/+1 per Equipment), Barret Wallace.
 - Facades: `DynamicAmounts.cardsInYourGraveyard()` / `creatureCardsInYourGraveyard()`
   (graveyard counts), and `DynamicAmounts.cardsInYourHand()` — cards in your hand,
   e.g. Stingerback Terror's "-1/-1 for each card in your hand" (multiply by `-1` and feed
@@ -4125,8 +4146,9 @@ Army just amassed by a sibling/action effect, or any cost-chosen entity. The plu
     mana value, where {X} counts as 0). Populated from `SpellCastEvent.xValue`; `0` for non-cast /
     no-{X} triggers. Pair with `SpellCastPredicate.HasXInCost`. Facade:
     `DynamicAmounts.xValueOfTriggeringSpell()`.
-  - `TRIGGER_SCRY_COUNT` — cards looked at by the scry that fired the trigger (Celeborn the
-    Wise, Elrond Master of Healing). Equals the scry N parameter.
+  - `TRIGGER_SCRY_COUNT` — cards looked at by the scry **or surveil** that fired the trigger
+    (Celeborn the Wise, Elrond Master of Healing). Equals the scry/surveil N parameter unless the
+    library held fewer cards.
   - `TRIGGER_EXCESS_DAMAGE_AMOUNT` — damage past lethal in the trigger payload (CR 120.4a).
     Set from `DamageDealtEvent.excessAmount`; non-zero only for `DealsDamageEvent(requireExcess = true)`
     triggers — Fall of Cair Andros' "amass Orcs X, where X is the excess damage."

@@ -328,6 +328,24 @@ data class ScriedEvent(
 ) : GameEvent
 
 /**
+ * A player just finished a `surveil N` (CR 701.25). Fires once per surveil, after the
+ * kept/graveyard moves have all resolved. Drives "Whenever you surveil" and "Whenever you
+ * scry or surveil" triggers; see [com.wingedsheep.sdk.scripting.EventPattern.SurveiledEvent].
+ *
+ * @property playerId The player who surveiled.
+ * @property count Number of cards actually looked at (equals surveil N unless the library held
+ *   fewer cards). Surfaced via `TRIGGER_SCRY_COUNT` ("the number of cards looked at").
+ * @property sourceName The card/ability that caused the surveil (for display).
+ */
+@Serializable
+@SerialName("SurveiledEvent")
+data class SurveiledEvent(
+    val playerId: EntityId,
+    val count: Int,
+    val sourceName: String
+) : GameEvent
+
+/**
  * A player chose a creature type (e.g., "Choose a creature type" for Walking Desecration).
  * This is a public announcement visible to all players.
  */

@@ -345,6 +345,35 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         override val description: String = "${player.description} scries"
     }
 
+    /**
+     * Whenever a player surveils (CR 701.25). Fires once per surveil, after the kept/graveyard
+     * moves have all resolved. Carries the number of cards actually looked at (equals the surveil
+     * N parameter unless the library had fewer cards). Read this count via
+     * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT] ("the number of
+     * cards looked at"). A literal "surveil 0" produces no event (CR 701.25c).
+     */
+    @SerialName("SurveiledEvent")
+    @Serializable
+    data class SurveiledEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} surveils"
+    }
+
+    /**
+     * Whenever a player scries **or** surveils (CR 701.22 / 701.25) — the combined look-at-top
+     * trigger used by "Whenever you scry or surveil, …" (Matoya, Archon Elder). Matches either a
+     * scry or a surveil event from [player]; the cards-looked-at count is exposed the same way as
+     * the individual triggers (TRIGGER_SCRY_COUNT).
+     */
+    @SerialName("ScriedOrSurveiledEvent")
+    @Serializable
+    data class ScriedOrSurveiledEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} scries or surveils"
+    }
+
     // =========================================================================
     // Extra Turn Events
     // =========================================================================

@@ -168,14 +168,14 @@ structural template; needs a sibling layout + loader so the land becomes the pla
 
 ## Tier 2 — Small recurring primitives (cheap, scattered unlocks)
 
-6. **Equipment / equipped-creature count as a `DynamicAmount`** — ❌ GAP. No `equipmentYouControl()` /
-   `equippedCreaturesYouControl()` dynamic amount; the `Filters.EquippedCreature` *filter* exists but not a count.
-   Add `DynamicAmounts.equipmentYouControl()` (a `battlefield(...).count()` over an Equipment filter) and an
-   equipped-creature count. → Adelbert Steiner (+1/+1 per Equipment), Barret Wallace, Slash of Light, Judgment Bolt.
+6. **Equipment / equipped-creature count as a `DynamicAmount`** — ✅ DONE. Added
+   `DynamicAmounts.equipmentYouControl()` (count over `Any.withSubtype(Equipment)`) and
+   `equippedCreaturesYouControl()` (count over `Creature.equipped()`) — pure composition, no new SDK type.
+   → Adelbert Steiner (+1/+1 per Equipment), Barret Wallace, Slash of Light, Judgment Bolt.
 
-7. **Devotion as a `DynamicAmount`** — 🟡 PARTIAL. A devotion *predicate* exists (`CardPredicate`) but there is no
-   `DynamicAmount.DevotionTo(color)` to feed "draw cards equal to your devotion to red." → Clive, Ifrit's Dominant
-   (ETB). Small surface-it task.
+7. **Devotion as a `DynamicAmount`** — ✅ DONE. Added `DynamicAmount.DevotionTo(colors, player)` (CR 700.5) +
+   `DynamicAmounts.devotionTo(vararg colors)`; the evaluator counts colored mana symbols (incl. hybrid / monocolored
+   hybrid / Phyrexian) on controlled permanents, read via projected controller. → Clive, Ifrit's Dominant (ETB).
 
 8. **"First combat phase of the turn" condition + additional-combat rider** — ❌ GAP. `AddCombatPhaseEffect` exists,
    but nothing tests *"if it's the first combat phase of the turn"* to gate the extra phase (and untap-the-attacker
@@ -191,9 +191,10 @@ structural template; needs a sibling layout + loader so the land becomes the pla
     more coins each turn, those coins come up heads and you win those flips"); The Gold Saucer is a plain flip (no
     replacement). New coin-flip replacement keyed once-per-turn.
 
-11. **"Whenever you scry or surveil" trigger** — verify/extend. The Strixhaven/TLA passes flagged a missing combined
-    scry-or-surveil trigger. → Matoya, Archon Elder; Golbez (surveil trigger). Confirm `WheneverYouSurveil` /
-    combined trigger exists before building.
+11. **"Whenever you scry or surveil" trigger** — ✅ DONE. Added `SurveiledEvent` (mirroring `ScriedEvent`) emitted by
+    `Patterns.Library.surveil(N)` via `EmitSurveiledEventEffect`, plus `Triggers.WheneverYouSurveil` and the combined
+    `Triggers.WheneverYouScryOrSurveil` (indexed under both categories). Surveil reuses `TRIGGER_SCRY_COUNT` for
+    "cards looked at." → Matoya, Archon Elder; Golbez (surveil trigger).
 
 12. **`SubtypeCount` on a single creature with a cap** — verify. "+2/+2 for each of its creature types" patterns and
     self-type counts use `EntityNumericProperty.SubtypeCount` (`EntityNumericProperty.kt:93`); confirm it's reusable
@@ -238,7 +239,7 @@ structural template; needs a sibling layout + loader so the land becomes the pla
 
 ## Recommended build order
 
-1. **Warm-ups (Tier 2, cheap):** Equipment/equipped-creature count `DynamicAmount` (§6), devotion dynamic amount
+1. ✅ **Warm-ups (Tier 2, cheap) — DONE:** Equipment/equipped-creature count `DynamicAmount` (§6), devotion dynamic amount
    (§7), scry-or-surveil trigger (§11). These unlock ~10 scattered cards with trivial engine work, and the bulk of
    the standard cycling/flashback/kicker/affinity/crew cards are already buildable today via the `add-card` skill.
 2. **Job select (§3)** — publish the created-token id into the pipeline, then `jobSelect()` shell. Unlocks all 16

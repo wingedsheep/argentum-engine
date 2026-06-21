@@ -1182,6 +1182,7 @@ is PermanentsSacrificedEvent -> {
             is MaximumHandSizeRemovedEvent,
             is RingTemptedEvent,
             is ScriedEvent,
+            is SurveiledEvent,
             is TurnedFaceDownEvent,
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,
