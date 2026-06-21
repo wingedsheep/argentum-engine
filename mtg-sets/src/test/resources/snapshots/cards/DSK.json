@@ -763,6 +763,57 @@
     ]
 }
 
+// Bleeding Woods
+{
+    "name": "Bleeding Woods",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless a player has 13 or less life.\n{T}: Add {R} or {G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "APlayerLifeAtMost",
+                    "threshold": 13
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "artist": "Henry Peters",
+        "flavorText": "They say if someone lies down to sleep beneath the trees, in the morning nothing will remain but a few scattered bones and a bed of blood-red lilies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb224874-aff5-461f-82ee-89b06663231a.jpg?1726286833"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Boilerbilges Ripper
 {
     "name": "Boilerbilges Ripper",
@@ -1995,6 +2046,57 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Etched Cornfield
+{
+    "name": "Etched Cornfield",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless a player has 13 or less life.\n{T}: Add {G} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "APlayerLifeAtMost",
+                    "threshold": 13
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "artist": "Randy Gallegos",
+        "flavorText": "They say those who lose their way in the fields gradually wither and grow brittle, until at last they put down roots and anchor into the soil as a whispering stalk.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8900b89-0e10-4602-bba2-da8d60ea5885.jpg?1726286836"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -4882,6 +4984,57 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Murky Sewer
+{
+    "name": "Murky Sewer",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless a player has 13 or less life.\n{T}: Add {U} or {B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "APlayerLifeAtMost",
+                    "threshold": 13
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "263",
+        "artist": "Martin de Diego Sádaba",
+        "flavorText": "They say dripping, hungry things writhe beyond the edge of the light, waiting to drag the unwary into the darkness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/6098d8be-4e3f-455d-8799-91435bf45a1c.jpg?1726286856"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

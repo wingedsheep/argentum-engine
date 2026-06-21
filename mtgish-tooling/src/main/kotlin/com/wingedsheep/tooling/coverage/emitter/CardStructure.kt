@@ -697,6 +697,39 @@ private fun EmitCtx.slowLandEntersTappedConditionDsl(rep: JsonObject): String? {
 }
 
 /**
+ * The Duskmourn (DSK) common dual-land enters-tapped gate (Bleeding Woods, Etched Cornfield,
+ * Murky Sewer, Razortrap Gorge, …): "This land enters tapped unless a player has N or less life."
+ * The IR wraps the tapped replacement in an `Unless{<condition>}[EntersTapped]` whose condition is
+ * `APlayerPassesFilter(AnyPlayer, LifeTotalIs(<= N))` — an existential life threshold over ALL
+ * players. Renders the `unlessCondition` argument for `EntersTapped(...)` as
+ * `Conditions.APlayerLifeAtMost(N)` (true when any player is at N life or below).
+ *
+ * Conservative by design — returns null (-> SCAFFOLD) unless the shape is exactly: the `Unless`
+ * action is a single `EntersTapped`, the condition is `APlayerPassesFilter` over the `AnyPlayer`
+ * subject with a `LifeTotalIs`/`LessThanOrEqualTo`/Integer threshold. Any other subject or
+ * comparison (`GreaterThanOrEqualTo`, an opponent-only subject, …) declines rather than miscount.
+ */
+private fun EmitCtx.aPlayerLifeAtMostEntersTappedConditionDsl(rep: JsonObject): String? {
+    val args = rep["args"].asArr ?: return null
+    // Second arg is the list of replacement actions the Unless gates — must be a lone EntersTapped.
+    val gated = (args.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return null
+    if (gated.singleOrNull()?.strField("_ReplacementActionWouldEnter") != "EntersTapped") return null
+
+    val cond = args.getOrNull(0) as? JsonObject ?: return null
+    if (cond.strField("_Condition") != "APlayerPassesFilter") return null
+    val condArgs = cond["args"].asArr ?: return null
+    // Subject must be the existential "AnyPlayer" (maps to the engine's any-player threshold).
+    if ((condArgs.getOrNull(0) as? JsonObject)?.strField("_Players") != "AnyPlayer") return null
+    val lifeFilter = condArgs.getOrNull(1) as? JsonObject ?: return null
+    if (lifeFilter.strField("_Players") != "LifeTotalIs") return null
+    val comparison = lifeFilter["args"] as? JsonObject ?: return null
+    if (comparison.strField("_Comparison") != "LessThanOrEqualTo") return null
+    val n = (comparison["args"] as? JsonObject)?.takeIf { it.strField("_GameNumber") == "Integer" }
+        ?.get("args").asInt() ?: return null
+    return render(call("Conditions.APlayerLifeAtMost", arg("$n")))
+}
+
+/**
  * A `FlashForCasters { Condition }` rule -> the card-level `conditionalFlash = <condition>`
  * assignment ("<this> has flash as long as <condition>", CR 702.8 / Colossal Rattlewurm). Only the
  * "you control a [filter]" condition the shared [youControlConditionDsl] renders exactly produces a
@@ -3200,7 +3233,12 @@ internal fun EmitCtx.asEntersBlock(rule: JsonObject, condition: String? = null):
             // deliberately doesn't render — the at-least condition facade only models `>=`.
             "Unless" -> {
                 if (!onSelf) { reasons.add("AsPermanentEnters"); return null }
+                // Two conservative enters-tapped gates render exactly: the "slow land"
+                // control-N-other-lands threshold, and the DSK common dual-land
+                // "unless a player has N or less life" existential life threshold. Any other
+                // Unless condition declines (-> SCAFFOLD) rather than guess the gate.
                 val cond = slowLandEntersTappedConditionDsl(rep)
+                    ?: aPlayerLifeAtMostEntersTappedConditionDsl(rep)
                     ?: run { reasons.add("AsPermanentEnters"); return null }
                 call("EntersTapped", arg("unlessCondition", Lit(cond)))
             }
