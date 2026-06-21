@@ -41,10 +41,9 @@ val TheBathSong = card("The Bath Song") {
 
     sagaChapter(3) {
         target(
-            "any number of target cards from your graveyard",
+            "target cards from your graveyard",
             TargetObject(
-                count = 99,
-                optional = true,
+                unlimited = true,
                 filter = TargetFilter(GameObjectFilter.Any.ownedByYou(), zone = Zone.GRAVEYARD)
             )
         )

@@ -99,13 +99,23 @@ export function GraveyardTargetingUI({
   const title = isOptionalTarget ? `Resolve ${sourceName}` : `Choose from ${pileNoun}`
 
   // Derive the action verb from effectHint so the button/text matches the actual effect
-  // (e.g., "Exile card in a graveyard" → "Exile"; "Return … to its owner's hand" → "Return to Hand").
-  // Effects can be wrapped (ForEachTargetEffect, CompositeEffect, etc.) so the keyword may not be
-  // at the start — match anywhere in the hint.
+  // (e.g., "Exile card in a graveyard" → "Exile"; "Shuffle … into its owner's library" → "Shuffle
+  // into Library"; "Return … to its owner's hand" → "Return to Hand"). Effects can be wrapped
+  // (ForEachTargetEffect, CompositeEffect, etc.) so the keyword may not be at the start — match
+  // anywhere in the hint.
   const effectHint = decision.context.effectHint?.toLowerCase() ?? ''
   const isExile = effectHint.includes('exile')
-  const optionalConfirmText = isExile ? 'Exile' : 'Return to Hand'
-  const actionVerb = isExile ? 'exile' : 'return to your hand'
+  const isShuffleIntoLibrary = effectHint.includes('shuffle') && effectHint.includes('library')
+  const optionalConfirmText = isShuffleIntoLibrary
+    ? 'Shuffle into Library'
+    : isExile
+      ? 'Exile'
+      : 'Return to Hand'
+  const actionVerb = isShuffleIntoLibrary
+    ? 'shuffle into your library'
+    : isExile
+      ? 'exile'
+      : 'return to your hand'
 
   const numWord = (n: number): string =>
     ({ 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five' } as Record<number, string>)[n] ?? String(n)

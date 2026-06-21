@@ -18625,13 +18625,12 @@
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
-                    "count": 99,
-                    "optional": true,
+                    "unlimited": true,
                     "filter": {
                         "baseFilter": "own:you",
                         "zone": "Graveyard"
                     },
-                    "id": "any number of target cards from your graveyard"
+                    "id": "target cards from your graveyard"
                 }
             }
         ]
