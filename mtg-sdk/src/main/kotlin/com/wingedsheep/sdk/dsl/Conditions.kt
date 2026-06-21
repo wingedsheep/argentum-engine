@@ -1093,6 +1093,18 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.DESCENDED, atLeast = atLeast)
 
     /**
+     * If you've sacrificed [atLeast] or more permanents this turn (controller-scoped, any
+     * permanent type). Backed by the per-player `PermanentsSacrificedThisTurnComponent` —
+     * distinct from the game-wide cost-reduction counter. Used by Sawblade Skinripper's
+     * intervening-if ("if you sacrificed one or more permanents this turn").
+     */
+    fun YouSacrificedPermanentsThisTurn(atLeast: Int = 1): ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.PERMANENTS_SACRIFICED,
+            atLeast = atLeast,
+        )
+
+    /**
      * If a permanent of the given card type entered the battlefield under the given player's
      * control this turn. The permanent need not still be on the battlefield, still be of that
      * type, or still be under that player's control — only the entry event matters.

@@ -120,6 +120,17 @@ class EmitCtx(val keywords: Set<String>, val oracleText: String? = null) {
      * Lost Isle Calling.
      */
     var sourceSacrificedByCost: Boolean = false
+
+    /**
+     * The mtgish `_GameNumber` node bound by a leading `CreateValueX` action, so any later
+     * `ValueX` reference in the same action list inlines the *bound* derived amount rather than
+     * `DynamicAmount.XValue`. The engine has no separate "set X" step for a triggered ability, so a
+     * `CreateValueX(<amount>)` that's reused by N later actions is folded by inlining `<amount>` into
+     * each `ValueX` consumer (Arabella, Abandoned Doll: "deals X damage to each opponent and you gain
+     * X life, where X is the number of creatures you control with power 2 or less"). Set/cleared only
+     * by [createValueXReusedEffect]; default null (so `ValueX` keeps meaning the cast-time X).
+     */
+    var boundValueX: JsonElement? = null
 }
 
 internal val SELF_REFS = setOf(
@@ -199,7 +210,7 @@ internal fun EmitCtx.renderEffectList(actions: List<JsonObject>, tvar: String?):
     impulseExileTopMayPlay(actions)?.let { return it }
     lookExileCastFree(actions)?.let { return it }
     improvisationExileUntilCastFreeEffect(actions)?.let { return it }
-    createValueXDealsDamageEffect(actions, tvar)?.let { return it }
+    createValueXReusedEffect(actions, tvar)?.let { return it }
     val rendered = mutableListOf<Dsl>()
     var i = 0
     while (i < actions.size) {
@@ -241,6 +252,17 @@ internal fun EmitCtx.amount(node: JsonElement?): String? = amountExpr(node)?.let
 
 /** The [Dsl] node behind [amount] — a bare int literal or `DynamicAmount.XValue`. */
 internal fun EmitCtx.amountExpr(node: JsonElement?): Dsl? {
+    // Inside a CreateValueX-bound action list, an X reference is the derived bound amount, not the
+    // cast-time X — route it through the dynamic path so the bound DynamicAmount inlines. mtgish is
+    // inconsistent about which token the consumers use (`ValueX` for Arabella's gain-life arm but the
+    // bare `X` symbol for her deal-damage arm), so inline all three spellings here; the dynamic path
+    // falls back to cast-time X only when nothing is bound.
+    if (boundValueX != null && findInteger(node) == "X") {
+        return boundValueX?.let { dynamicAmountExpr(it) } ?: Lit("DynamicAmount.XValue")
+    }
+    if (boundValueX != null && (node as? JsonObject)?.strField("_GameNumber") == "ValueX") {
+        return dynamicAmountExpr(node)
+    }
     val n = findInteger(node) ?: return null
     if (n == "X") return Lit("DynamicAmount.XValue")
     return Lit(n.toString())
@@ -308,7 +330,11 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
     val gn = node.strField("_GameNumber")
     when (gn) {
         "Integer" -> return call("DynamicAmount.Fixed", arg("${node["args"].asInt()}"))
-        "XValue", "X", "ValueX" -> return Lit("DynamicAmount.XValue")
+        "XValue", "X" -> return Lit("DynamicAmount.XValue")
+        // `ValueX` is the cast-time X by default, but inside a `CreateValueX`-bound action list it
+        // refers to the derived amount that CreateValueX computed — inline that bound amount so the
+        // reuse renders exactly (Arabella reuses one power<=2 creature count in both damage and life).
+        "ValueX" -> return boundValueX?.let { dynamicAmountExpr(it) } ?: Lit("DynamicAmount.XValue")
         // "that much" in a damage trigger — the amount of damage the trigger fired on (Doubtless One's
         // "gain that much life", Thrashing Mudspawn's "lose that much life").
         "Trigger_AmountOfDamageDealt" ->
@@ -447,6 +473,19 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // -> the scope, and an optional cardtype/noncreature clause -> the spell filter. Any other clause
         // (or a non-And single clause we don't model) declines (-> SCAFFOLD) rather than miscount.
         "NumSpellsCastThisTurn" -> return spellsCastThisTurnAmount(node["args"] as? JsonObject)
+        // "the number of permanents you sacrificed this turn" — NumberOfPermanentsSacrificedByPlayerThisTurn(
+        // [IsPermanent], You) -> DynamicAmounts.permanentsSacrificedThisTurn() ("that much damage", Sawblade
+        // Skinripper). Only the You scope over a *bare* IsPermanent filter (any permanent, no narrower
+        // type/subtype clause) renders — the per-player tracker is any-permanent, so a narrower count would
+        // be wrong; decline -> SCAFFOLD.
+        "NumberOfPermanentsSacrificedByPlayerThisTurn" -> {
+            val arr = node["args"].asArr
+            val filt = arr?.firstOrNull { (it as? JsonObject)?.strField("_Permanents") != null } as? JsonObject
+            val bareAnyPermanent = filt?.strField("_Permanents") == "IsPermanent" && filt.size == 1
+            return if (bareAnyPermanent && jsonContains(node["args"], "_Player", "You"))
+                call("DynamicAmounts.permanentsSacrificedThisTurn")
+            else null
+        }
         // "twice the number of …" (Pillage the Bog) — a unary doubling wrapper. Render the inner amount
         // multiplied by 2; decline if the inner amount doesn't render exactly rather than dropping the
         // doubling.
@@ -605,6 +644,15 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         // land/type filter above has no untapped path). The tapped case is already handled inside
         // landSearchFilterExpr via the oracle "tapped creature" cue (Theft of Dreams), so don't re-apply it.
         if ("IsUntapped" in compact(node)) filter = filter.dot("untapped")
+        // "creatures you control with power 2 or less" — a `PowerIs <= N` clause on the counted group
+        // (Arabella, Abandoned Doll). landSearchFilterExpr doesn't carry power bounds, so compose
+        // `.powerAtMost(N)` here. If a `PowerIs` clause is present but it isn't the `<=` form we can
+        // compose (e.g. `>=`, or `>` ranges), decline (-> SCAFFOLD) rather than silently drop it and
+        // over-count.
+        if ("PowerIs" in countBlob) {
+            val link = FilterPredicates.powerAtMost(node) ?: return null
+            filter = filter.dot(link)
+        }
         return call("DynamicAmount.AggregateBattlefield", arg(player), arg(filter))
     }
     return null
@@ -1205,27 +1253,53 @@ internal fun EmitCtx.lookExileCastFree(actions: List<JsonObject>): Dsl? {
 }
 
 /**
- * `[CreateValueX(<amount>), SpellDealsDamage(ThisSpell, ValueX, <recipient>)]` -> a single
- * `Effects.DealDamage(<amount>, <recipient>)` (Thunder Salvo: "deals X damage to target creature,
- * where X is 2 plus the number of other spells you've cast this turn").
+ * `[CreateValueX(<amount>), <consumer…>]` where each consumer spends `ValueX` -> render the consumers
+ * with the bound derived `<amount>` inlined into every `ValueX` reference.
  *
- * mtgish models the X as a separate `CreateValueX` action that binds X, then a `SpellDealsDamage` that
- * spends `ValueX`. The engine has no separate "set X" step for a one-shot spell — it inlines the
- * computed [DynamicAmount] straight into the damage. So fold the pair: render the `CreateValueX`
- * amount via [dynamicAmountExpr] and emit it as the damage amount. The amount must render exactly
- * (Plus / NumSpellsCastThisTurn / …) and the only spending action must be the single
- * `SpellDealsDamage` to a recoverable recipient — anything else declines (-> SCAFFOLD) rather than
- * dropping the X derivation or mis-spending it.
+ * mtgish models a derived X as a separate `CreateValueX` action that binds X, then later actions that
+ * spend `ValueX`. The engine has no separate "set X" step for a triggered/one-shot ability — it inlines
+ * the computed [DynamicAmount] straight into each consumer. So fold the list: bind `<amount>` on the
+ * context ([EmitCtx.boundValueX]) and render the remaining actions, so each `ValueX` resolves to that
+ * amount via [dynamicAmountExpr]. Two shapes this unlocks:
+ *  - one consumer — Thunder Salvo's "deals X damage to target creature, where X is 2 plus the number of
+ *    other spells you've cast this turn" ([SpellDealsDamage]);
+ *  - multiple consumers reusing the SAME X — Arabella, Abandoned Doll's "it deals X damage to each
+ *    opponent and you gain X life, where X is the number of creatures you control with power 2 or less"
+ *    ([PermanentDealsDamage] + [GainLife], both spending the one derived count).
+ *
+ * The bound amount must render exactly via [dynamicAmountExpr], every consumer must render, and at least
+ * one consumer must actually spend `ValueX` — otherwise decline (-> SCAFFOLD) rather than drop the X
+ * derivation or emit a CreateValueX with no consumer.
  */
-internal fun EmitCtx.createValueXDealsDamageEffect(actions: List<JsonObject>, tvar: String?): Dsl? {
-    if (actions.size != 2) return null
-    val (a0, a1) = actions
-    if (a0.strField("_Action") != "CreateValueX" || a1.strField("_Action") != "SpellDealsDamage") return null
-    // The damage must spend ValueX — not a fixed amount that would ignore the X we computed.
-    if (!jsonContains(a1["args"], "_GameNumber", "ValueX")) return null
-    val amount = dynamicAmountExpr(a0["args"]) ?: return null
-    val tgt = damageRecipientTarget(a1["args"], tvar) ?: return null
-    return call("Effects.DealDamage", arg(amount), arg(Lit(tgt)))
+internal fun EmitCtx.createValueXReusedEffect(actions: List<JsonObject>, tvar: String?): Dsl? {
+    if (actions.size < 2) return null
+    val bind = actions.first()
+    if (bind.strField("_Action") != "CreateValueX") return null
+    val consumers = actions.drop(1)
+    // The bound amount must render exactly; a bare DynamicAmount.XValue would mean we failed to
+    // recover the derivation, so decline rather than inline a meaningless self-reference.
+    val boundExpr = dynamicAmountExpr(bind["args"]) ?: return null
+    if (render(boundExpr) == "DynamicAmount.XValue") return null
+    // At least one consumer must spend ValueX (else the CreateValueX was pointless / mis-parsed).
+    if (consumers.none { "ValueX" in compact(it) }) return null
+    val saved = boundValueX
+    boundValueX = bind["args"]
+    val rendered: List<Dsl>? = try {
+        val out = ArrayList<Dsl>(consumers.size)
+        for (c in consumers) {
+            val r = renderAction(c, tvar) ?: return null  // finally restores boundValueX
+            // Inside a CreateValueX-bound fold there is no real cast-time X. A residual
+            // `DynamicAmount.XValue` means a consumer referenced the derived value through a token we
+            // failed to inline (e.g. Graveborn Muse's draw arm), so the render would silently swap the
+            // derived count for a meaningless cast-time X. Decline (-> SCAFFOLD) rather than misrender.
+            if ("DynamicAmount.XValue" in render(r)) return null
+            out.add(r)
+        }
+        out
+    } finally {
+        boundValueX = saved
+    }
+    return if (rendered!!.size == 1) rendered.single() else Composite(rendered)
 }
 
 /**

@@ -363,6 +363,13 @@ data class CreateTokenCopyOfTargetEffect(
      */
     val overrideColors: Set<Color>? = null,
     /**
+     * Colors unioned onto the token copy's colors *in addition* to those copied (e.g. red for
+     * The Jolly Balloon Man's "a 1/1 red Balloon creature in addition to its other colors and
+     * types"). Distinct from [overrideColors] (which replaces). Ignored when [overrideColors] is
+     * set.
+     */
+    val addedColors: Set<Color> = emptySet(),
+    /**
      * Replaces the token copy's subtypes outright (e.g., Demon for Ardyn, the Usurper).
      * Null leaves the copied card's subtypes untouched.
      */

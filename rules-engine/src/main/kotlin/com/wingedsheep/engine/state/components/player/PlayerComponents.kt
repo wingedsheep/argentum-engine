@@ -822,6 +822,20 @@ data class CardsPutIntoExileThisTurnComponent(val count: Int = 0) : Component
 data object SacrificedFoodThisTurnComponent : Component
 
 /**
+ * Tracks the number of permanents this player has sacrificed this turn (controller-scoped,
+ * any permanent type). Incremented by `ZoneTransitionService.trackPermanentSacrifice` on the
+ * sacrificing player and cleared at end of turn by `CleanupPhaseManager`.
+ *
+ * Distinct from the game-wide turn-scoped `GameState.permanentsSacrificedThisTurn` counter
+ * (which sums every player's sacrifices for "for each permanent sacrificed this turn" cost
+ * reductions): this is per-player, so it backs "if you sacrificed one or more permanents this
+ * turn, ... deals that much damage" (Sawblade Skinripper) via
+ * `TurnTracker.PERMANENTS_SACRIFICED`.
+ */
+@Serializable
+data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
+
+/**
  * Tracks the number of permanent (nontoken) cards put into this player's graveyard from
  * any zone during the current turn — i.e. the number of times this player has
  * "descended" per CR 700.11. Cleared at end of turn by CleanupPhaseManager.

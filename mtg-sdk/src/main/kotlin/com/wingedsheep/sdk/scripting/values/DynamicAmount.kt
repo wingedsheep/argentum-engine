@@ -78,7 +78,15 @@ enum class TurnTracker {
      * each turn. Tokens are excluded — a token briefly placed in exile isn't a card. Powers
      * "if one or more cards were put into exile this turn" (Ennis, Debate Moderator).
      */
-    CARDS_PUT_INTO_EXILE;
+    CARDS_PUT_INTO_EXILE,
+    /**
+     * Number of permanents the player has sacrificed this turn (any permanent type,
+     * controller-scoped). Backed by `PermanentsSacrificedThisTurnComponent`, reset to 0 for
+     * every player at the start of each turn. Distinct from the game-wide
+     * `GameState.permanentsSacrificedThisTurn` cost-reduction counter. Powers "if you sacrificed
+     * one or more permanents this turn, ... deals that much damage" (Sawblade Skinripper).
+     */
+    PERMANENTS_SACRIFICED;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -98,6 +106,7 @@ enum class TurnTracker {
         DESCENDED -> "the number of times ${player.description} descended this turn"
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
+        PERMANENTS_SACRIFICED -> "the number of permanents ${player.description} sacrificed this turn"
     }
 }
 

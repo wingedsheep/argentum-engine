@@ -108,7 +108,9 @@ class CreateTokenCopyOfTargetExecutor(
                 typeLine = tokenTypeLine,
                 baseStats = overrideStats ?: targetCard.baseStats,
                 baseKeywords = targetCard.baseKeywords + effect.addedKeywords,
-                colors = effect.overrideColors ?: targetCard.colors
+                // overrideColors replaces outright; addedColors unions onto the copied colors
+                // ("red ... in addition to its other colors"). overrideColors wins if both set.
+                colors = effect.overrideColors ?: (targetCard.colors + effect.addedColors)
             )
 
             val components = mutableListOf<Component>(

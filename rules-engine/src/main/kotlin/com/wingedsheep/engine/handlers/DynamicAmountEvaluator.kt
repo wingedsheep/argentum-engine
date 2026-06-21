@@ -492,6 +492,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    TurnTracker.PERMANENTS_SACRIFICED -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                 }
             }
 

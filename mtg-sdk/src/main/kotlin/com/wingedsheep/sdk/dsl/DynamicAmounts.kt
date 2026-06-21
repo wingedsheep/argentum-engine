@@ -416,6 +416,14 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.DESCENDED)
 
     /**
+     * "The number of permanents [player] sacrificed this turn" (controller-scoped, any permanent
+     * type). Reads the per-player `PermanentsSacrificedThisTurnComponent`, distinct from the
+     * game-wide cost-reduction counter. Used by Sawblade Skinripper ("deals that much damage").
+     */
+    fun permanentsSacrificedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.PERMANENTS_SACRIFICED)
+
+    /**
      * "The number of [filter] spells [player] has cast this turn", optionally excluding the
      * resolving spell itself. Reads the per-player cast history, so the triggering spell counts
      * unless [excludeSelf].

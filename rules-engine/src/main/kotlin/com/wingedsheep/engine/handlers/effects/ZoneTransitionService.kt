@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnCompo
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentLeftBattlefieldThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
@@ -660,6 +661,9 @@ object ZoneTransitionService {
      *  - Increments the turn-scoped [GameState.permanentsSacrificedThisTurn] counter by the
      *    number of permanents sacrificed (feeds [CostReductionSource.PermanentsSacrificedThisTurn]
      *    on The Balrog, Durin's Bane). Not controller-scoped: it counts every sacrifice this turn.
+     *  - Increments the controller's per-player [PermanentsSacrificedThisTurnComponent] by the
+     *    same count (controller-scoped, backs `TurnTracker.PERMANENTS_SACRIFICED` —
+     *    Sawblade Skinripper).
      *  - Marks the controller with [SacrificedFoodThisTurnComponent] if any sacrificed permanent
      *    was a Food (Food-sacrifice triggers, e.g. Ygra).
      */
@@ -668,6 +672,10 @@ object ZoneTransitionService {
         var newState = state.copy(
             permanentsSacrificedThisTurn = state.permanentsSacrificedThisTurn + permanentIds.size,
         )
+        newState = newState.updateEntity(controllerId) { container ->
+            val prior = container.get<PermanentsSacrificedThisTurnComponent>()?.count ?: 0
+            container.with(PermanentsSacrificedThisTurnComponent(prior + permanentIds.size))
+        }
         val projected = state.projectedState
         for (permId in permanentIds) {
             newState.getEntity(permId)?.get<CardComponent>() ?: continue

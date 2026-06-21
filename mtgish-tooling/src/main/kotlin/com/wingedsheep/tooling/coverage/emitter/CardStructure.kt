@@ -2364,6 +2364,27 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
     ) {
         return "Conditions.Not(Conditions.YouCastSpellsThisTurn(1, fromZone = Zone.HAND))"
     }
+    // "if you sacrificed N or more permanents this turn" — PlayerPassesFilter(You,
+    // SacrificedNumPermanentsThisTurn(>= N, IsPermanent)) -> Conditions.YouSacrificedPermanentsThisTurn(N)
+    // (Sawblade Skinripper's end-step damage gate). Only the You scope, GTE comparison, and a *bare*
+    // IsPermanent filter (any permanent type, no extra type/subtype clause) render — anything narrower
+    // would over-gate against the controller-scoped any-permanent tracker, so it declines -> SCAFFOLD.
+    if (cond.strField("_Condition") == "PlayerPassesFilter" &&
+        jsonContains(cond, "_Player", "You")
+    ) {
+        val condArgs = cond["args"].asArr
+        val pred = condArgs?.getOrNull(1) as? JsonObject
+        if (pred?.strField("_Players") == "SacrificedNumPermanentsThisTurn") {
+            val predArgs = pred["args"].asArr
+            val cmp = predArgs?.getOrNull(0) as? JsonObject
+            val filt = predArgs?.getOrNull(1) as? JsonObject
+            val bareAnyPermanent = filt?.strField("_Permanents") == "IsPermanent" && filt.size == 1
+            if (cmp?.strField("_Comparison") == "GreaterThanOrEqualTo" && bareAnyPermanent) {
+                val n = findInteger(cmp["args"])
+                if (n is Int) return "Conditions.YouSacrificedPermanentsThisTurn($n)"
+            }
+        }
+    }
     // "if it's tapped" — PermanentPassesFilter(<subject>, IsTapped) over a bare IsTapped filter (no
     // other clause). Two subjects render:
     //  - Ref_TargetPermanent (the ability's first targeted permanent) -> Conditions.TargetIsTapped()

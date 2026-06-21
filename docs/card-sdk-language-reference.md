@@ -654,12 +654,15 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `CreateChosenTokenEffect`; under the hood it sets `CreateTokenEffect.colorsFromChoice` /
   `creatureTypesFromChoice`.)
 - `CreateTokenCopyOfSelf(count?, tapped?)` — token copies of source.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
   `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
   outright for "a token that's a copy … except it's a 5/5 black Demon" wording (Ardyn, the Usurper).
+  `addedColors` *unions* extra colors onto the copy (vs `overrideColors` which replaces; ignored when
+  `overrideColors` is set) — e.g. The Jolly Balloon Man's "a 1/1 red Balloon creature in addition to its
+  other colors and types".
   `addedSubtypes` *unions* extra subtypes onto the copy (vs `overrideSubtypes` which replaces) — e.g.
   Nexus of Becoming's "a 3/3 Golem … in addition to its other types".
   `addCardTypes` (e.g. `setOf("ARTIFACT")`) *unions* extra card types onto the copy's type line for the
@@ -3763,6 +3766,15 @@ default to "you" so card authors don't need to pass it explicitly.
   `PlayerDescendedThisTurnComponent`, incremented in `ZoneTransitionService` whenever a
   permanent (nontoken) card lands in a player's graveyard, and cleared by
   `CleanupPhaseManager` at end of turn.
+- `YouSacrificedPermanentsThisTurn(atLeast = 1)` — at least `atLeast` permanents (any type) were
+  sacrificed by you this turn. Composes through `Compare(DynamicAmount.TurnTracking(Player.You,
+  TurnTracker.PERMANENTS_SACRIFICED), GTE, Fixed(atLeast))`. Backed by the per-player
+  `PermanentsSacrificedThisTurnComponent` (controller-scoped; distinct from the game-wide
+  `GameState.permanentsSacrificedThisTurn` cost-reduction counter), incremented in
+  `ZoneTransitionService.trackPermanentSacrifice` and cleared by `CleanupPhaseManager`. Pair with the
+  `DynamicAmounts.permanentsSacrificedThisTurn()` amount for "that much" damage (Sawblade Skinripper:
+  "At the beginning of your end step, if you sacrificed one or more permanents this turn, this creature
+  deals that much damage to any target").
 - `GraveyardContains(filter)` — "there is at least one card matching `filter` in your graveyard"
   (`Exists(Player.You, Zone.GRAVEYARD, filter)`). Compose with `Conditions.All`/`Any` for multi-type
   checks, e.g. `All(GraveyardContains(Filters.Instant), GraveyardContains(Filters.Sorcery))` =
@@ -4347,6 +4359,13 @@ of `AddMana`. The engine empties pools at end of turn, so:
   Summed across all players (via `Player.Each`) it gives the game-wide count of cards put into
   exile this turn. Powers Ennis, Debate Moderator's "if one or more cards were put into exile this
   turn" — see the `Conditions.CardsPutIntoExileThisTurn(atLeast)` wrapper.
+- `PERMANENTS_SACRIFICED` — number of permanents a player has sacrificed this turn (controller-scoped,
+  any permanent type). Backed by the per-player `PermanentsSacrificedThisTurnComponent`, incremented at
+  the central sacrifice hook (`ZoneTransitionService.trackPermanentSacrifice`) and reset to 0 for every
+  player at turn start. Distinct from the game-wide `GameState.permanentsSacrificedThisTurn` cost-reduction
+  counter (which sums every player's sacrifices). Backs `Conditions.YouSacrificedPermanentsThisTurn(atLeast)`
+  and `DynamicAmounts.permanentsSacrificedThisTurn(player)` — e.g. Sawblade Skinripper's "if you sacrificed
+  one or more permanents this turn, ... deals that much damage".
 
 `SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity?)` /
 `DynamicAmounts.subtypeEnteredUnderControlThisTurn(subtype, player?, excludeTriggeringEntity?)` —
