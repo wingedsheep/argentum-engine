@@ -23,6 +23,46 @@ data class TransformEffect(
 }
 
 /**
+ * Which face a permanent re-enters on after an [ExileAndReturnTransformedEffect].
+ *
+ * - [TRANSFORMED] — the opposite of the face it had on the battlefield (oracle: "return it to
+ *   the battlefield transformed"). A front-face creature comes back as its back face; a back-face
+ *   Saga comes back as its front face.
+ * - [FRONT] — its front face, regardless of the face it left on (oracle: "return it to the
+ *   battlefield front face up"). Used by the eikon Saga backs on their final chapter.
+ * - [BACK] — its back face, regardless of the face it left on.
+ */
+enum class ReturnFace { TRANSFORMED, FRONT, BACK }
+
+/**
+ * Exile a double-faced permanent, then return it to the battlefield as a **new object** on the
+ * chosen face under its owner's control (FIN "Dominant" / eikon transform).
+ *
+ * Unlike [TransformEffect] (CR 701.27 — turning a permanent already on the battlefield over in
+ * place, preserving counters/damage/attachments and firing transform triggers), this models the
+ * "Exile [this], then return it to the battlefield transformed" templating: the permanent leaves
+ * and a brand-new object enters. Counters/damage/auras do **not** carry over, leaves-the-battlefield
+ * and enters-the-battlefield triggers fire (not transform triggers), and a Saga face re-enters with
+ * a fresh lore counter (CR 714.2b). The exile and return happen atomically in one resolution — no
+ * priority or state-based actions in between.
+ *
+ * Used by both directions of the cycle: the front face's activated/triggered ability returns it
+ * [TRANSFORMED] (front → back Saga), and the back Saga's final chapter returns it [FRONT].
+ */
+@SerialName("ExileAndReturnTransformed")
+@Serializable
+data class ExileAndReturnTransformedEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val returnAs: ReturnFace = ReturnFace.TRANSFORMED
+) : Effect {
+    override val description: String = when (returnAs) {
+        ReturnFace.TRANSFORMED -> "Exile ${target.description}, then return it to the battlefield transformed"
+        ReturnFace.FRONT -> "Exile ${target.description}, then return it to the battlefield front face up"
+        ReturnFace.BACK -> "Exile ${target.description}, then return it to the battlefield back face up"
+    }
+}
+
+/**
  * Return the source of a Craft activated ability (CR 702.167a) from exile to the battlefield
  * transformed under its owner's control.
  *

@@ -119,6 +119,8 @@ import com.wingedsheep.sdk.scripting.effects.ExileAndGrantOwnerPlayPermissionEff
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
+import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnFace
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
@@ -647,6 +649,18 @@ object Effects {
      * as the activated ability's effect; see CR 702.167a.
      */
     val ReturnSelfFromExileTransformed: Effect = ReturnSelfFromExileTransformedEffect
+
+    /**
+     * Exile a double-faced permanent, then return it to the battlefield as a new object on the
+     * chosen face (FIN "Dominant" / eikon transform — "Exile this, then return it transformed").
+     * Distinct from [Transform], which flips a permanent in place; this re-enters a fresh object,
+     * so counters/auras drop, ETB/LTB triggers fire, and a Saga face re-enters with one lore
+     * counter. Defaults to the source returning [ReturnFace.TRANSFORMED] (opposite face).
+     */
+    fun ExileAndReturnTransformed(
+        target: EffectTarget = EffectTarget.Self,
+        returnAs: ReturnFace = ReturnFace.TRANSFORMED
+    ): Effect = ExileAndReturnTransformedEffect(target, returnAs)
 
     /**
      * Return to hand all creature cards in a player's graveyard that were put there this turn.

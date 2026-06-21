@@ -110,7 +110,7 @@ Two sub-gaps surface inside this cycle:
   Cerberus II/III copy-next-spell) — the "next spell you cast" one-shot rider pattern exists (next-spell-uncounterable,
   pending copy); verify the copy-next-instant variant composes, else extend.
 
-### 2. Dominant / Eikon transform — creature front → **Saga-creature** back via exile-and-return (≈8) — ❌ **GAP**
+### 2. Dominant / Eikon transform — creature front → **Saga-creature** back via exile-and-return (≈8) — ✅ **ENGINE DONE** (cards in progress)
 
 The Dominants (Clive→Ifrit, Jill→Shiva, Dion→Bahamut, Joshua→Phoenix, Terra→Esper Terra, Jecht, Crystal Fragments,
 Esper Origins) are double-faced cards whose **back face is a Summon Saga (§1)** and whose front transforms via an
@@ -119,12 +119,30 @@ a **leave-and-re-enter** transform (a new object), not an in-place `TransformEff
 ticks its chapters as a creature and, on its final chapter, *"exile it, then return it to the battlefield (front face
 up)"* — re-entering as the original front-face legend.
 
-**Needs:** (a) §1 (saga-creature back faces) as a hard prerequisite; (b) an **exile-and-return-transformed** effect
-that re-enters the permanent as a *new object* on the chosen face (resetting the saga), as opposed to the in-place
-`TransformEffect`. No `ExileAndReturnTransformed` effect exists today (grep: none). Compose from
-exile + return-to-battlefield-transformed, or add a dedicated effect.
-→ Clive, Jill, Dion, Joshua (5-color dominants); Terra, Magical Adept; Jecht; Crystal Fragments (Equipment→Saga);
-  Esper Origins (sorcery cast-from-graveyard → enters transformed as a Saga).
+**Shipped:** the engine gap is closed by `Effects.ExileAndReturnTransformed(target, returnAs)` +
+`ExileAndReturnTransformedExecutor` (`ReturnFace.TRANSFORMED` for front→back, `FRONT` for the eikon final
+chapter's "front face up"). It exiles a DFC and re-enters it as a *new object* via the standard
+`ZoneTransitionService.moveToZone` path, so a Saga back re-enters with one lore counter (CR 714.2b) and ETB/LTB
+triggers fire (not transform triggers) — distinct from in-place `TransformEffect`. The Craft return
+(`ReturnSelfFromExileTransformed`) was refactored to share the same flip-and-return-from-exile helper. The eikon
+backs need **no** sacrifice opt-out flag: their final chapter exile-returns them front face up *before* the
+CR 714.4 sacrifice SBA applies (chapter on the stack → no sac; resolves → no longer a Saga). Covered by
+`DominantEikonTransformScenarioTest` (front→back new object + fresh lore, eikon final-chapter return-to-front
+instead of sacrifice, sorcery-speed gating, second card).
+→ ✅ Clive // Ifrit, Jill // Shiva, Jecht // Braska's Final Aeon (front = "may" combat-damage trigger; back = a
+  plain sacrifice-after-III Summon Saga, no return). The remaining cards reuse the **same** transform effect; they
+  are blocked only on **unrelated chapter/effect primitives**, not on §2:
+  - Dion // Bahamut — needs the "during your turn, Knights you control have flying" conditional static grant.
+  - Joshua // Phoenix — needs "return any number of target creature cards with total mana value ≤ 6 from your
+    graveyard to the battlefield" (any-number-with-total-MV-budget reanimation).
+  - Terra // Esper Terra — needs "create a token copy of target nonlegendary enchantment, if it's a Saga put up
+    to three lore counters on it, sacrifice at the next end step".
+  - Crystal Fragments // Summon: Alexander — Equipment front works via `CardDefinition.doubleFacedPermanent`, but
+    the Alexander back needs a **group damage-prevention shield** ("prevent all damage that would be dealt to
+    creatures you control this turn" — `PreventDamageEffect` only targets a single entity today).
+  - Esper Origins — a different template (a *sorcery* that, when cast from a graveyard, exiles itself off the stack
+    and *puts itself onto the battlefield transformed with a finality counter*) — a spell-becomes-permanent shape,
+    not the permanent exile-and-return this effect models.
 
 ### 3. Job select (≈16 Equipment) — ❌ **GAP** (create-token-then-attach-self)
 
@@ -258,7 +276,10 @@ so a land // spell Adventure offers *both* "play the land" (PlayLandEnumerator) 
    the only engine change was enumerating the Adventure spell face for a land-primary card. 5 lands shipped.
 5. **Summon Sagas (§1)** — the headline `add-feature`: make Sagas co-exist with creatures + an opt-out-of-sacrifice
    flag + self-referential chapter resolution. Largest lift; gates ~15 cards.
-6. **Dominant / Eikon transform (§2)** — depends on §1; add exile-and-return-transformed (new object). ~8 cards.
+6. ✅ **Dominant / Eikon transform (§2) — ENGINE DONE:** `Effects.ExileAndReturnTransformed(target, returnAs)`
+   (new object, both directions) + shared flip-and-return helper with the Craft return. Clive//Ifrit, Jill//Shiva,
+   Jecht//Braska shipped; the remaining ~5 reuse the same effect and are blocked only on unrelated chapter
+   primitives (see §2).
 7. **Tier-2 turn-structure + Tier-3 one-offs** (additional end step §9, first-combat condition §8, coin-flip-win §10,
    meld, ×2 replacements, ability-copy) as the relevant legendaries/rares come up.
 
