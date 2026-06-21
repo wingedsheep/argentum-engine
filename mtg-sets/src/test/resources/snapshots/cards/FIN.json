@@ -2000,6 +2000,93 @@
     ]
 }
 
+// Fire Magic
+{
+    "name": "Fire Magic",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Tiered (Choose one additional cost.)\n• Fire — {0} — Fire Magic deals 1 damage to each creature.\n• Fira — {2} — Fire Magic deals 2 damage to each creature.\n• Firaga — {5} — Fire Magic deals 3 damage to each creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Fire — Fire Magic deals 1 damage to each creature.",
+                    "additionalManaCost": "{0}"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Fira — Fire Magic deals 2 damage to each creature.",
+                    "additionalManaCost": "{2}"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Firaga — Fire Magic deals 3 damage to each creature.",
+                    "additionalManaCost": "{5}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Toni Infante",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/415ff6a5-61ef-4b37-ae08-e44476300d4a.jpg?1748706272"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gladiolus Amicitia
 {
     "name": "Gladiolus Amicitia",
@@ -2416,6 +2503,89 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Ice Magic
+{
+    "name": "Ice Magic",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tiered (Choose one additional cost.)\n• Blizzard — {0} — Return target creature to its owner's hand.\n• Blizzara — {2} — Target creature's owner puts it on their choice of the top or bottom of their library.\n• Blizzaga — {5}{U} — Target creature's owner shuffles it into their library.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Blizzard — Return target creature to its owner's hand.",
+                    "additionalManaCost": "{0}"
+                },
+                {
+                    "effect": {
+                        "type": "PutOnLibraryPositionOfChoice",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Blizzara — Target creature's owner puts it on their choice of the top or bottom of their library.",
+                    "additionalManaCost": "{2}"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Library",
+                        "placement": "Shuffled"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Blizzaga — Target creature's owner shuffles it into their library.",
+                    "additionalManaCost": "{5}{U}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Masateru Ikeda",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dabd626-7ec3-4913-babb-d5d3fd5e32d5.jpg?1748705962"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3521,6 +3691,147 @@
     ]
 }
 
+// Restoration Magic
+{
+    "name": "Restoration Magic",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tiered (Choose one additional cost.)\n• Cure — {0} — Target permanent gains hexproof and indestructible until end of turn.\n• Cura — {1} — Target permanent gains hexproof and indestructible until end of turn. You gain 3 life.\n• Curaga — {3}{W} — Permanents you control gain hexproof and indestructible until end of turn. You gain 6 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent"
+                            }
+                        }
+                    ],
+                    "description": "Cure — Target permanent gains hexproof and indestructible until end of turn.",
+                    "additionalManaCost": "{0}"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent"
+                            }
+                        }
+                    ],
+                    "description": "Cura — Target permanent gains hexproof and indestructible until end of turn. You gain 3 life.",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "permanent ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HEXPROOF",
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "permanent ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "INDESTRUCTIBLE",
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Curaga — Permanents you control gain hexproof and indestructible until end of turn. You gain 6 life.",
+                    "additionalManaCost": "{3}{W}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Yumi Yaoshida",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/494e68e9-ecba-4482-82bc-207ad59144c1.jpg?1748705864"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ring of the Lucii
 {
     "name": "Ring of the Lucii",
@@ -4022,6 +4333,98 @@
     ]
 }
 
+// Thunder Magic
+{
+    "name": "Thunder Magic",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Tiered (Choose one additional cost.)\n• Thunder — {0} — Thunder Magic deals 2 damage to target creature.\n• Thundara — {3} — Thunder Magic deals 4 damage to target creature.\n• Thundaga — {5}{R} — Thunder Magic deals 8 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Thunder — Thunder Magic deals 2 damage to target creature.",
+                    "additionalManaCost": "{0}"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Thundara — Thunder Magic deals 4 damage to target creature.",
+                    "additionalManaCost": "{3}"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 8
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Thundaga — Thunder Magic deals 8 damage to target creature.",
+                    "additionalManaCost": "{5}{R}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "artist": "Josephine Chang",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f2b202c-91da-40ec-8324-6b6be7cb3bc8.jpg?1748706380"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tidus, Blitzball Star
 {
     "name": "Tidus, Blitzball Star",
@@ -4128,6 +4531,123 @@
         "artist": "Laurel Austin",
         "flavorText": "\"I'm pretty good at taking care of myself, you know.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb781323-2746-405d-a9b2-e778c037a6e9.jpg?1748706535"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tifa's Limit Break
+{
+    "name": "Tifa's Limit Break",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Tiered (Choose one additional cost.)\n• Somersault — {0} — Target creature gets +2/+2 until end of turn.\n• Meteor Strikes — {2} — Double target creature's power and toughness until end of turn.\n• Final Heaven — {6}{G} — Triple target creature's power and toughness until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Somersault — Target creature gets +2/+2 until end of turn.",
+                    "additionalManaCost": "{0}"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "Power"
+                        },
+                        "toughnessModifier": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "Toughness"
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Meteor Strikes — Double target creature's power and toughness until end of turn.",
+                    "additionalManaCost": "{2}"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "Power"
+                            },
+                            "multiplier": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "Toughness"
+                            },
+                            "multiplier": 2
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Final Heaven — Triple target creature's power and toughness until end of turn.",
+                    "additionalManaCost": "{6}{G}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Mikio Masuda",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24d6eab7-22bd-494f-8cbe-204446f24be9.jpg?1748706536"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -4652,6 +5172,179 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Vincent's Limit Break
+{
+    "name": "Vincent's Limit Break",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Tiered (Choose one additional cost.)\nUntil end of turn, target creature you control gains \"When this creature dies, return it to the battlefield tapped under its owner's control\" and has the chosen base power and toughness.\n• Galian Beast — {0} — 3/2.\n• Death Gigas — {1} — 5/2.\n• Hellmasker — {3} — 7/2.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetBasePowerToughness",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": 3,
+                                "toughness": 2,
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "ability_1",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    },
+                                    "effect": {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Battlefield",
+                                        "placement": "Tapped",
+                                        "fromZone": "Graveyard"
+                                    },
+                                    "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ],
+                    "description": "Galian Beast — 3/2.",
+                    "additionalManaCost": "{0}"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetBasePowerToughness",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": 5,
+                                "toughness": 2,
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "ability_2",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    },
+                                    "effect": {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Battlefield",
+                                        "placement": "Tapped",
+                                        "fromZone": "Graveyard"
+                                    },
+                                    "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ],
+                    "description": "Death Gigas — 5/2.",
+                    "additionalManaCost": "{1}"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetBasePowerToughness",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": 7,
+                                "toughness": 2,
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "ability_3",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    },
+                                    "effect": {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Battlefield",
+                                        "placement": "Tapped",
+                                        "fromZone": "Graveyard"
+                                    },
+                                    "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ],
+                    "description": "Hellmasker — 7/2.",
+                    "additionalManaCost": "{3}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "Ryuichi Sakuma",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0502c426-5271-4989-8598-5bc159afe79c.jpg?1748718952"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

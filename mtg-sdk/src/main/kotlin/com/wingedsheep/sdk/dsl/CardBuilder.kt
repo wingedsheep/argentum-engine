@@ -1060,6 +1060,43 @@ class SpellBuilder {
         builder.init()
         effect = builder.build()
     }
+
+    /**
+     * Define a **Tiered** spell (CR 702.183) — "Tiered (Choose one additional cost.)".
+     *
+     * Tiered is a choose-one modal spell where each tier carries its own additional mana cost,
+     * paid as you cast the spell (CR 702.183a: "Choose one. As an additional cost to cast this
+     * spell, pay the cost associated with that mode."). Exactly one tier is chosen and only that
+     * tier's effect resolves. Mechanically this is a [ModalEffect] with `chooseCount = 1` and
+     * per-tier [Mode.additionalManaCost] — the same cast-time cost machinery as Spree, constrained
+     * to a single mode (the enumerator folds the chosen tier's cost into the spell's effective cost
+     * and the cast handler charges it).
+     *
+     * Example (Fire Magic, {R}):
+     * ```kotlin
+     * spell {
+     *     tiered {
+     *         tier("Fire", "{0}", "Fire Magic deals 1 damage to each creature.") {
+     *             effect = Patterns.Group.dealDamageToAll(1, GroupFilter.AllCreatures)
+     *         }
+     *         tier("Fira", "{2}", "Fire Magic deals 2 damage to each creature.") {
+     *             effect = Patterns.Group.dealDamageToAll(2, GroupFilter.AllCreatures)
+     *         }
+     *         tier("Firaga", "{5}", "Fire Magic deals 3 damage to each creature.") {
+     *             effect = Patterns.Group.dealDamageToAll(3, GroupFilter.AllCreatures)
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * The card's printed reminder line is [TIERED_REMINDER]; set it in the card's `oracleText`
+     * along with the per-tier text (this builder does not synthesize oracle text).
+     */
+    fun tiered(init: TieredBuilder.() -> Unit) {
+        val builder = TieredBuilder()
+        builder.init()
+        effect = builder.build()
+    }
 }
 
 // =============================================================================
@@ -1132,6 +1169,44 @@ class ModeBuilder(private val description: String) {
         }
         return Mode(effect!!, allTargets, description)
     }
+}
+
+// =============================================================================
+// Tiered Builder (CR 702.183)
+// =============================================================================
+
+/** Reminder text printed under the Tiered keyword (CR 702.183a). */
+const val TIERED_REMINDER: String = "Tiered (Choose one additional cost.)"
+
+/**
+ * Builder for [SpellBuilder.tiered] spells. Each [tier] becomes a [Mode] of a choose-one
+ * [ModalEffect] carrying that tier's [Mode.additionalManaCost].
+ */
+@CardDsl
+class TieredBuilder {
+    private val modes: MutableList<Mode> = mutableListOf()
+
+    /**
+     * Add a tier.
+     *
+     * @param name The tier's flavor name (e.g. "Fira") — shown first in the cast-time button label.
+     * @param cost The additional mana cost paid as you cast the spell when this tier is chosen
+     *   (e.g. "{2}", or "{0}" for the free base tier). Stacked onto the spell's mana cost at cast.
+     * @param text Human-readable description of this tier's effect; the button label is
+     *   "<name> — <text>".
+     */
+    fun tier(name: String, cost: String, text: String, init: ModeBuilder.() -> Unit) {
+        val builder = ModeBuilder("$name — $text")
+        builder.init()
+        modes.add(builder.build().copy(additionalManaCost = cost))
+    }
+
+    internal fun build(): ModalEffect =
+        ModalEffect(
+            modes = modes.toList(),
+            chooseCount = 1,
+            minChooseCount = 1
+        )
 }
 
 // =============================================================================

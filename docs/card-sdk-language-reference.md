@@ -4405,6 +4405,41 @@ mode-selection pause; choose-1 modal spells remain client-local `CastSpellMode` 
 change is needed to author a Spree card — it is a plain `ModalEffect` with per-mode
 `additionalManaCost` (see Trash the Town).
 
+**Tiered (CR 702.183) — `spell { tiered { } }`.** *"Tiered (Choose one additional cost.)"* is a
+choose-**one** modal spell where each tier carries its own additional mana cost, paid as you cast
+the spell (702.183a: *"Choose one. As an additional cost to cast this spell, pay the cost associated
+with that mode."*). Exactly one tier is chosen and only that tier's (usually scaled) effect resolves.
+Mechanically it is Spree constrained to a single mode: a `ModalEffect` with `chooseCount = 1`,
+`minChooseCount = 1`, and per-mode `additionalManaCost` — **no engine change** beyond Spree, because
+the choose-1 enumerator path (`CastSpellEnumerator.computeModeEnumeration`) already folds the chosen
+tier's cost into each `CastSpellMode` action's effective cost, and `CastSpellHandler` already adds it
+on execute. So the cast surface is the standard choose-1 modal flow: one `CastSpellMode` legal action
+per *affordable* tier (unpayable tiers aren't offered), each showing its full mana cost. The
+`tiered { }` builder is authoring sugar only:
+
+```kotlin
+spell {
+    tiered {
+        tier("Fire", "{0}", "Fire Magic deals 1 damage to each creature.") {
+            effect = Patterns.Group.dealDamageToAll(1, GroupFilter.AllCreatures)
+        }
+        tier("Fira", "{2}", "Fire Magic deals 2 damage to each creature.") {
+            effect = Patterns.Group.dealDamageToAll(2, GroupFilter.AllCreatures)
+        }
+        tier("Firaga", "{5}", "Fire Magic deals 3 damage to each creature.") {
+            effect = Patterns.Group.dealDamageToAll(3, GroupFilter.AllCreatures)
+        }
+    }
+}
+```
+
+`tier(name, cost, text) { … }` builds one `Mode` with `additionalManaCost = cost` and a button label
+of `"<name> — <text>"`; inside the block, set `effect` and (for targeted tiers) `target`, exactly
+like `mode { }`. Use `"{0}"` for a free base tier. Tiered grants no behavior of its own beyond the
+modal-with-additional-cost shape, so there is **no `Keyword.TIERED`** (mirroring Spree); print the
+reminder via the card's `oracleText` (the `TIERED_REMINDER` constant holds the canonical string). See
+Fire / Ice / Thunder / Restoration Magic, Tifa's / Vincent's Limit Break (FIN).
+
 **Cast-time conditional choose count** — for modal *spells* the same `dynamicChooseCount`
 field is evaluated against the battlefield **at cast time** (in `CastSpellHandler`,
 `effectiveModalChooseCounts`), and — unlike `chooseUpToDynamic` — it keeps the `minChooseCount`

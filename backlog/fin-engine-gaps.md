@@ -140,16 +140,19 @@ reminder text. Once built, all 16 are pure authoring.
   Arsenal, Monk's Fist, Ninja's Blades, Paladin's Arms, Red Mage's Rapier, Sage's Nouliths, Samurai's Katana,
   Summoner's Grimoire, Thief's Knife, Warrior's Sword, White Mage's Staff.
 
-### 4. Tiered (6 spells) — ❌ **GAP** (choose-one escalating additional cost)
+### 4. Tiered (6 spells) — ✅ **DONE** (choose-one escalating additional cost)
 
 *"Tiered (Choose one additional cost.)"* then 2-3 modes, **each with its own additional mana cost** paid at cast and
 its own (usually scaled) effect — e.g. Fire Magic: `Fire — {0} — 1 dmg to each creature / Fira — {2} — 2 dmg / Firaga
-— {5} — 3 dmg`. `ModalEffect.Mode` already carries an `additionalManaCost: String?` and supports `chooseCount = 1,
-allowRepeat = false` (`CompositeEffects.kt:79`), so the *shape* is close — but there is **no cast-time flow that
-charges the chosen mode's additional cost** the way Spree charges per-mode costs. Verify whether the existing
-modal/Spree cast pipeline already collects a single chosen mode's `additionalManaCost`; if not, this is a narrow
-extension of that pipeline plus a `tiered { }` builder + reminder text. *(Closest precedent: Spree single-panel
-selector, [SOS notes].)*
+— {5} — 3 dmg`. Verified against CR 702.183a (*"Choose one. As an additional cost to cast this spell, pay the cost
+associated with that mode."*) that **no engine change was needed**: the modal/Spree cast pipeline already charges a
+single chosen mode's `additionalManaCost` on the choose-1 path — `CastSpellEnumerator.computeModeEnumeration` folds
+the chosen tier's cost into each `CastSpellMode` legal action (only affordable tiers are offered) and
+`CastSpellHandler` adds it on execute. Shipped a `spell { tiered { } }` authoring builder (`CardBuilder.kt`,
+`TieredBuilder` → a `ModalEffect` with `chooseCount = 1` and per-tier `additionalManaCost`) + a `TIERED_REMINDER`
+constant; no `Keyword.TIERED` (Tiered adds no behavior beyond the modal-with-additional-cost shape, mirroring Spree).
+All six cards implemented and covered by `TieredScenarioTest` (per-tier cost charging, choose-one rejection,
+affordability gating, scaled effects, targeting, double/triple P/T, Vincent's dies→return-tapped).
 → Fire Magic, Ice Magic, Thunder Magic, Restoration Magic, Tifa's Limit Break, Vincent's Limit Break.
 
 ### 5. Town land // spell DFC — "play the land from exile later" (≈6) — ❌ **GAP** (new layout)
@@ -244,8 +247,8 @@ structural template; needs a sibling layout + loader so the land becomes the pla
    the standard cycling/flashback/kicker/affinity/crew cards are already buildable today via the `add-card` skill.
 2. ✅ **Job select (§3)** — publish the created-token id into the pipeline, then `jobSelect()` shell. Unlocks all 16
    Equipment at once; isolated and high-yield.
-3. **Tiered (§4)** — extend the modal/Spree cast pipeline to charge the chosen mode's additional cost + `tiered { }`
-   builder. 6 spells, contained.
+3. ✅ **Tiered (§4) — DONE:** the modal/Spree cast pipeline already charged the chosen mode's additional cost on the
+   choose-1 path (no engine change); shipped the `tiered { }` builder + all 6 spells.
 4. **Town land // spell DFC (§5)** — new inverse-Adventure layout. ~6 lands.
 5. **Summon Sagas (§1)** — the headline `add-feature`: make Sagas co-exist with creatures + an opt-out-of-sacrifice
    flag + self-referential chapter resolution. Largest lift; gates ~15 cards.
