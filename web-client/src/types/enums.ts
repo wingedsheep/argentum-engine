@@ -209,6 +209,8 @@ export enum Keyword {
   ASCEND = 'ASCEND',
   // Token decay (Innistrad: Midnight Hunt / TDM decayed counter)
   DECAYED = 'DECAYED',
+  // Equipment that makes its own bearer (Final Fantasy)
+  JOB_SELECT = 'JOB_SELECT',
   // Ability words
   EERIE = 'EERIE',
 }
@@ -270,6 +272,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.PERSIST]: 'Persist',
   [Keyword.ASCEND]: 'Ascend',
   [Keyword.DECAYED]: 'Decayed',
+  [Keyword.JOB_SELECT]: 'Job select',
   [Keyword.EERIE]: 'Eerie',
 }
 

@@ -3107,7 +3107,7 @@ activatedAbility {
 > mechanics — `leyline()`, `flurry { }`, `mobilize(…)`, `firebending(n)`, `sneak(cost)`, `decayed()`,
 > `vividEtb { }` / `vividCostReduction()`, `convergeEntersWithCounters(counterType?)`,
 > `impending(time, cost)`, `renew(cost) { }`,
-> `craft(filter, cost)`, `station()` — are `CardBuilder` **extension functions** in
+> `craft(filter, cost)`, `station()`, `jobSelect()` — are `CardBuilder` **extension functions** in
 > `mtg-sdk/.../dsl/mechanics/` (one file per mechanic), not methods on the core `CardBuilder`. They
 > stay in package `com.wingedsheep.sdk.dsl`, so the call syntax is unchanged, but a card file that
 > uses one needs the matching import (e.g. `import com.wingedsheep.sdk.dsl.station`). Evergreen /
@@ -3269,6 +3269,15 @@ composite abilities).
   counter directly: `StateProjector` projects the `DECAYED` keyword + `cantBlock = true`, and `TriggerDetector`
   schedules the end-of-combat self-sacrifice when a decayed-countered creature is declared as an attacker — no
   per-card static/trigger needed for the counter form.
+- `Job select` — "Job select (When this Equipment enters, create a 1/1 colorless Hero creature token, then attach
+  this to it.)" (Final Fantasy). Equipment keyword; display-only. Wire it with the `card { jobSelect() }` builder
+  helper, which adds the keyword plus an `EntersBattlefield` triggered ability composing two existing primitives
+  through the token pipeline: `Effects.CreateToken(power = 1, toughness = 1, creatureTypes = setOf("Hero"))` (no
+  colors → colorless) publishes the new token's id to the `createdTokens` slot, then
+  `Effects.AttachEquipment(EffectTarget.PipelineTarget(CREATED_TOKENS, 0))` attaches the source Equipment to that
+  freshly-made token. No new effect/executor — it reuses the same create-then-attach-on-ETB chain as Auxiliary
+  Boosters. Author the per-card equip cost and equipped-creature bonus alongside the `jobSelect()` call (e.g. Monk's
+  Fist: `jobSelect()` + `ModifyStats(1, 0)` + `GrantSubtype("Monk", Filters.EquippedCreature)` + `equipAbility("{2}")`).
 - `Toxic(n)` — adds poison counters on combat damage.
 - `Cycling(cost)` — pay cost, discard, draw a card.
 - `BasicLandcycling(cost)` — cycling that fetches a basic land type.

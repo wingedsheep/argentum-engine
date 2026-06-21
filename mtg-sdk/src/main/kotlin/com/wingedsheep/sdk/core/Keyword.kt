@@ -299,6 +299,21 @@ enum class Keyword(val displayName: String) {
      */
     FIREBENDING("Firebending"),
 
+    /**
+     * Job select (Final Fantasy). A keyword ability on Equipment:
+     * "When this Equipment enters, create a 1/1 colorless Hero creature token, then
+     * attach this to it."
+     *
+     * Display-only on the keyword; the behavior is the enters-the-battlefield triggered
+     * ability wired by the `jobSelect()` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder] — a
+     * [com.wingedsheep.sdk.scripting.effects.CreateTokenEffect] that publishes the new
+     * token's id to the `createdTokens` pipeline slot, followed by an
+     * [com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect] that attaches the
+     * source Equipment to that token.
+     */
+    JOB_SELECT("Job select"),
+
     // ── Ability words (display prefix, no uniform mechanic) ──
     /**
      * Eerie (Duskmourn: House of Horror).
