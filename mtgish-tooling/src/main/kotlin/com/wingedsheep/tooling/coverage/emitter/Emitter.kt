@@ -205,6 +205,14 @@ object Emitter {
                 rname == "AbilitiesTriggerAnAdditionalTime" -> block = ctx.additionalSourceTriggersBlock(rule)
                 rname == "FromAnyZone" -> block = ctx.fromAnyZoneBlock(rule)
                 rname == "FromGraveyard" -> block = ctx.fromGraveyardBlock(rule)
+                // "You may cast this from your graveyard if [condition]. If you do, it enters with a +1/+1
+                // counter." (Undead Sprinter) — a conditional self-cast permission + cast-this-way counter
+                // rider. Only the exact MayCastGraveyardCardWithEnterActions(self, [+1/+1]) shape gated by a
+                // nameable died-this-turn condition renders; anything else scaffolds with `FromGraveyardIf`.
+                rname == "FromGraveyardIf" -> {
+                    block = ctx.fromGraveyardIfBlock(rule)
+                    if (block == null) { gap(rname)?.let { return it }; continue }
+                }
                 rname == "FromHand" -> block = ctx.fromHandBlock(rule)
                 // A `FromStack` rule wraps a cast trigger that fires while the spell is still on the
                 // stack (Infusion copy — Lumaret's Favor). Only the exact Infusion-copy shape renders;

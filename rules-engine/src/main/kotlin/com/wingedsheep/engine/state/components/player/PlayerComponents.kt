@@ -714,6 +714,25 @@ data class CreaturesDiedThisTurnComponent(
 ) : Component
 
 /**
+ * Records the last-known subtypes of each creature that died under this player's control during
+ * the current turn — one [diedSubtypeSets] entry per death, in death order. Subtypes are stored
+ * as their raw strings (e.g. "Zombie"), captured from the dying creature's projected type line at
+ * the moment it left the battlefield (CR 603.10 / last-known information), so a creature that loses
+ * its types after death is still recorded with the subtypes it had as it died.
+ *
+ * Cleared at end of turn by CleanupPhaseManager alongside [CreaturesDiedThisTurnComponent].
+ *
+ * Backs the subtype-filtered death conditions
+ * ([com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn]): "a Goblin died this
+ * turn" / "a non-Zombie creature died this turn" (Undead Sprinter, DSK). Summed across all players
+ * this gives the game-wide record, since the condition is global.
+ */
+@Serializable
+data class CreatureSubtypesDiedThisTurnComponent(
+    val diedSubtypeSets: List<Set<String>> = emptyList()
+) : Component
+
+/**
  * Tracks the number of permanents — of any type, token or nontoken — that left the
  * battlefield this turn while under this player's control. Credited to the last-known
  * controller at the moment of departure (so a Threaten-style steal-and-sacrifice

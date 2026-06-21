@@ -2937,7 +2937,20 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `filter` from your graveyard following normal timing, optionally paying `lifeCost` life. Free for
   Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1, duringYourTurnOnly = true` for
   Festival of Embers. Pair with `MayPlayLandsFromGraveyard` for "play lands and cast spells from
-  your graveyard". Lands are *played*, not cast, so they need the lands permission separately.
+  your graveyard". Lands are *played*, not cast, so they need the lands permission separately. This
+  grants permission over *other* cards in your graveyard from a battlefield permanent — for a card
+  that grants permission to cast *itself* from a zone, use `MayCastSelfFromZones`.
+- `MayCastSelfFromZones(zones, condition = null)` — intrinsic *self* permission: this card may be
+  cast from any of `zones` (graveyard/exile) following normal timing and for its normal mana cost.
+  Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD, EXILE))`. When `condition` is
+  non-null the permission is **gated**: it is available only while the condition holds, evaluated in
+  the casting player's context at cast-legality time *and* re-checked when the cast is authorized
+  (so it can't outlive the permission). Undead Sprinter (DSK) = `MayCastSelfFromZones(listOf(GRAVEYARD),
+  condition = Conditions.NonSubtypeCreatureDiedThisTurn(Subtype.ZOMBIE))` for "You may cast this card
+  from your graveyard if a non-Zombie creature died this turn." Pair with an
+  `EntersWithCounters(selfOnly = true, condition = Conditions.WasCastFromGraveyard)` rider to model
+  "if you do, this creature enters with a +1/+1 counter on it" — the counter is tied to the
+  graveyard cast (`CastFromGraveyardComponent` stamped on resolution), not to the gate condition.
 - `GrantWarpToCardsInHand(filter, cost)` — cards in the controller's hand matching `filter` gain
   warp (CR 702.185) with mana cost `cost`. Behaves identically to a printed warp keyword: surfaces a
   "Cast (Warp)" legal action, marks `wasWarped` on resolution, and the post-resolution permanent is
@@ -3721,6 +3734,16 @@ default to "you" so card authors don't need to pass it explicitly.
 - `ControlledCreatureDiedThisTurn` — intervening-if "if a creature died **under your control** this
   turn", scoped to the source's controller (reads only that player's `CreaturesDiedThisTurnComponent`).
   Used by Barrensteppe Siege (Mardu). Dual-mode.
+- `SubtypeCreatureDiedThisTurn(subtype)` / `NonSubtypeCreatureDiedThisTurn(subtype)` — **global**,
+  subtype-filtered death gates. Backed by `CreatureSubtypesDiedThisTurnComponent`, which records one
+  entry per death holding the dying creature's **last-known subtypes** (captured from projected state
+  at the moment it left the battlefield, CR 603.10), so a creature whose types change after death is
+  still recorded by the subtypes it had as it died. `SubtypeCreatureDiedThisTurn(Subtype.GOBLIN)` is
+  true iff some dead creature *had* Goblin; `NonSubtypeCreatureDiedThisTurn(Subtype.ZOMBIE)` is true
+  iff some dead creature *lacked* Zombie (note the asymmetry — a turn in which only Zombies died does
+  not satisfy the non-Zombie form; a Zombie + a Human both dying satisfies both forms). Used by Undead
+  Sprinter (DSK): "if a non-Zombie creature died this turn". Dual-mode. The underlying SDK condition
+  is `CreatureWithSubtypeDiedThisTurn(subtype, present)`. Cleared at end of turn by `CleanupPhaseManager`.
 - `YouHadPermanentLeaveBattlefieldThisTurn` — intervening-if "if a permanent you controlled left
   the battlefield this turn". Per-player, scoped to the source's controller. Counts every permanent
   type (creatures, lands, artifacts, enchantments, planeswalkers) and includes tokens — broader

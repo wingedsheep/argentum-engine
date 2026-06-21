@@ -43,6 +43,115 @@
     ]
 }
 
+// Anthropede
+{
+    "name": "Anthropede",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Reach\nWhen this creature enters, you may discard a card or pay {2}. When you do, destroy target Room.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Discard a card",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        }
+                                    ]
+                                },
+                                "feasibilityCheck": {
+                                    "type": "HasCardsInZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "label": "Pay {2}",
+                                "effect": {
+                                    "type": "PayManaCost",
+                                    "cost": "{2}"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent Room"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Loïc Canavaggia",
+        "flavorText": "The touch of its many hands is almost gentle, at first. But then the grip tightens, and the mandibles dig in.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51216ab0-9806-4faa-afbd-143e95dc255b.jpg?1726286480"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Appendage Amalgam
 {
     "name": "Appendage Amalgam",
@@ -365,6 +474,87 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "GREEN"
+    ]
+}
+
+// Bashful Beastie
+{
+    "name": "Bashful Beastie",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature dies, manifest dread. (Look at the top two cards of your library. Put one onto the battlefield face down as a 2/2 creature and the other into your graveyard. Turn it face up any time for its mana cost if it's a creature card.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "manifestDreadLooked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "manifestDreadLooked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "manifestDreadManifested",
+                            "storeRemainder": "manifestDreadGraveyard",
+                            "selectedLabel": "Manifest (put onto the battlefield face down)",
+                            "remainderLabel": "Put into your graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifestDreadManifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifestDreadGraveyard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "artist": "Aaron Miller",
+        "flavorText": "No one knows what hides beneath the beasties' masks.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c20fa7ee-a4c2-4eb0-9467-195f3b894fa0.jpg?1726286489"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -3447,6 +3637,86 @@
     ]
 }
 
+// Innocuous Rat
+{
+    "name": "Innocuous Rat",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "When this creature dies, manifest dread. (Look at the top two cards of your library. Put one onto the battlefield face down as a 2/2 creature and the other into your graveyard. Turn it face up any time for its mana cost if it's a creature card.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "manifestDreadLooked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "manifestDreadLooked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "manifestDreadManifested",
+                            "storeRemainder": "manifestDreadGraveyard",
+                            "selectedLabel": "Manifest (put onto the battlefield face down)",
+                            "remainderLabel": "Put into your graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifestDreadManifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifestDreadGraveyard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Maxime Minard",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94edbbc5-5673-4753-bfad-4432c4b7dca4.jpg?1726286232"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Inquisitive Glimmer
 {
     "name": "Inquisitive Glimmer",
@@ -6502,6 +6772,59 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Undead Sprinter
+{
+    "name": "Undead Sprinter",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Trample, haste\nYou may cast this card from your graveyard if a non-Zombie creature died this turn. If you do, this creature enters with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "condition": {
+                    "type": "CreatureWithSubtypeDiedThisTurn",
+                    "subtype": "Zombie",
+                    "present": false
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "WasCastFromZone",
+                    "zone": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Nino Vecia",
+        "flavorText": "Farley had always been the fastest on the track team. But no one was cheering anymore.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6b96951-4884-4df7-bdf0-94be2bc044f0.jpg?1726286754"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 

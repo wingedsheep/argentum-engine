@@ -841,9 +841,21 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 if (zone == Zone.EXILE && cardId in linkedExileCardIds) continue
                 val cardComponent = container.get<CardComponent>() ?: continue
                 val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+                // The card grants its own cast-from-zone permission only if some MayCastSelfFromZones
+                // names this zone AND its optional condition (e.g. Undead Sprinter's "a non-Zombie
+                // creature died this turn") currently holds in the casting player's context.
                 val hasCastFromZone = cardDef.script.staticAbilities
                     .filterIsInstance<MayCastSelfFromZones>()
-                    .any { zone in it.zones }
+                    .any { ability ->
+                        zone in ability.zones && (ability.condition == null ||
+                            context.conditionEvaluator.evaluate(
+                                state,
+                                ability.condition!!,
+                                com.wingedsheep.engine.handlers.EffectContext(
+                                    sourceId = cardId, controllerId = playerId
+                                )
+                            ))
+                    }
                 if (!hasCastFromZone) continue
 
                 // Only non-land spells (Squee is a creature)

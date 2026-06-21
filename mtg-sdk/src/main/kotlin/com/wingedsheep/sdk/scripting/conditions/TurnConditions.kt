@@ -350,6 +350,43 @@ data object ControlledCreatureDiedThisTurnCondition : Condition {
 }
 
 /**
+ * Condition: "if a creature with (or without) the subtype [subtype] died this turn".
+ *
+ * A filtered, subtype-scoped sibling of [CreatureDiedThisTurnCondition]. Global — satisfied by a
+ * matching creature dying under any player's control. Evaluated against each dying creature's
+ * **last-known subtypes** (the subtypes it had as it died, per CR 603.10 / last-known information),
+ * not any creature's current state, so a Zombie that loses its types after death still counts as a
+ * Zombie death.
+ *
+ *  - [present] = true  → "a [subtype] creature died this turn" (some dead creature *had* the subtype).
+ *  - [present] = false → "a non-[subtype] creature died this turn" (some dead creature *lacked* it).
+ *
+ * Note the asymmetry that makes the [present] = false form correct for negated wording: it is true
+ * iff *at least one* creature that died this turn did not have [subtype]. A turn in which only
+ * Zombies died does not satisfy `present = false`, while a turn in which a Zombie and a Human both
+ * died satisfies both forms.
+ *
+ * Backed by the per-player [com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent]
+ * (one entry per death, the dying creature's last-known subtype set), cleared at end of turn.
+ *
+ *  - Undead Sprinter (DSK): `CreatureWithSubtypeDiedThisTurn(Subtype.ZOMBIE.value, present = false)`
+ *    gates its conditional cast-from-graveyard permission ("if a non-Zombie creature died this turn").
+ *
+ * @property subtype The creature subtype to test for, stored as its raw string (e.g. "Zombie").
+ * @property present Whether a creature *with* the subtype (true) or *without* it (false) must have died.
+ */
+@SerialName("CreatureWithSubtypeDiedThisTurn")
+@Serializable
+data class CreatureWithSubtypeDiedThisTurn(
+    val subtype: String,
+    val present: Boolean = true
+) : Condition {
+    override val description: String =
+        if (present) "if a $subtype creature died this turn"
+        else "if a non-$subtype creature died this turn"
+}
+
+/**
  * Intervening-if condition: "if a permanent [player] controlled left the battlefield this turn".
  *
  * True when [player]'s `PermanentLeftBattlefieldThisTurnComponent` has count > 0. Counts

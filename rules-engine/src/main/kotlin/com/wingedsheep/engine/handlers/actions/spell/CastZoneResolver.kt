@@ -133,16 +133,23 @@ class CastZoneResolver(
     ): Boolean {
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
-        val mayCastAbility = cardDef.script.staticAbilities
-            .filterIsInstance<MayCastSelfFromZones>()
-            .firstOrNull() ?: return false
 
-        // Find what zone the card is in for this player
-        for (zone in mayCastAbility.zones) {
-            val zoneKey = ZoneKey(playerId, zone)
-            if (cardId in state.getZone(zoneKey)) return true
-        }
-        return false
+        // A permission applies if the card is currently in one of its named zones for this player
+        // AND its optional condition (e.g. Undead Sprinter's "a non-Zombie creature died this turn")
+        // holds — mirroring the enumerator gate so the authorization can't outlive the permission.
+        return cardDef.script.staticAbilities
+            .filterIsInstance<MayCastSelfFromZones>()
+            .any { ability ->
+                val inNamedZone = ability.zones.any { zone ->
+                    cardId in state.getZone(ZoneKey(playerId, zone))
+                }
+                inNamedZone && (ability.condition == null ||
+                    conditionEvaluator.evaluate(
+                        state,
+                        ability.condition!!,
+                        EffectContext(sourceId = cardId, controllerId = playerId)
+                    ))
+            }
     }
 
     /**

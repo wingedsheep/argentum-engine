@@ -117,6 +117,8 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerHasCitysBlessing
 import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCondition
+import com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn
+import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
 import com.wingedsheep.engine.handlers.triggers.CreatureDiedThisTurnConditionEvaluator
 import com.wingedsheep.engine.state.components.identity.PlottedComponent
@@ -302,6 +304,16 @@ class ConditionEvaluator(
             // Global facts (no controller/source needed).
             is VoidCondition ->
                 state.nonlandPermanentLeftBattlefieldThisTurn || state.spellWarpedThisTurn
+
+            // Global, subtype-filtered death tracker — matched against each dying creature's
+            // last-known subtypes recorded across every player. present=true: some dead creature
+            // had the subtype; present=false: some dead creature lacked it ("a non-Zombie died").
+            is CreatureWithSubtypeDiedThisTurn -> state.turnOrder.any { playerId ->
+                val died = state.getEntity(playerId)
+                    ?.get<CreatureSubtypesDiedThisTurnComponent>()
+                    ?.diedSubtypeSets.orEmpty()
+                died.any { subtypes -> (condition.subtype in subtypes) == condition.present }
+            }
 
             // Existential over all players: some player has at most [threshold] life.
             // Reads each player's LifeTotalComponent from state.turnOrder.

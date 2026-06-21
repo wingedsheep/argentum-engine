@@ -1134,6 +1134,21 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCondition
 
     /**
+     * "if a [subtype] creature died this turn" — global, matched against each dying creature's
+     * last-known subtypes. Used for "a Goblin died this turn"-style gates.
+     */
+    fun SubtypeCreatureDiedThisTurn(subtype: Subtype): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn(subtype.value, present = true)
+
+    /**
+     * "if a non-[subtype] creature died this turn" — global, satisfied when at least one creature
+     * that died this turn did *not* have [subtype] among its last-known subtypes. Used by Undead
+     * Sprinter (DSK): "if a non-Zombie creature died this turn".
+     */
+    fun NonSubtypeCreatureDiedThisTurn(subtype: Subtype): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn(subtype.value, present = false)
+
+    /**
      * Intervening-if: "if a permanent you controlled left the battlefield this turn".
      * Per-player (scoped to the source's controller), counts every permanent type
      * including lands and tokens — broader than [CreatureDiedThisTurn]/[ControlledCreatureDiedThisTurn].

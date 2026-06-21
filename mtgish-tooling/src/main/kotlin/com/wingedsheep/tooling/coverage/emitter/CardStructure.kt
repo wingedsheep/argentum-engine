@@ -2376,7 +2376,7 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
         val bareCreature = filter?.strField("_Permanents") == "IsCardtype" &&
             filter.field("args").asStr() == "Creature"
         if (bareCreature) return "Conditions.CreatureDiedThisTurn"
-        // And(IsCardtype Creature, ControlledByAPlayer You) — "a creature died under your control".
+        // And(IsCardtype Creature, …) — a creature death narrowed by a second clause.
         if (filter?.strField("_Permanents") == "And") {
             val arms = filter["args"].asArr?.filterIsInstance<JsonObject>().orEmpty()
             val hasCreature = arms.any {
@@ -2387,6 +2387,17 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
             }
             if (arms.size == 2 && hasCreature && controlledByYou) {
                 return "Conditions.ControlledCreatureDiedThisTurn"
+            }
+            // "a non-<subtype> creature died this turn" — And(IsNonCreatureType <sub>, IsCardtype Creature)
+            // (Undead Sprinter: "if a non-Zombie creature died this turn"). The negated creature subtype
+            // maps to Conditions.NonSubtypeCreatureDiedThisTurn(Subtype.<SUB>); the positive form
+            // (IsCreatureType) maps to SubtypeCreatureDiedThisTurn. Only the bare two-arm shape (the
+            // subtype clause + the Creature cardtype, nothing else) renders; any extra clause declines.
+            if (arms.size == 2 && hasCreature) {
+                val negSub = arms.firstOrNull { it.strField("_Permanents") == "IsNonCreatureType" }?.field("args").asStr()
+                if (negSub != null) return "Conditions.NonSubtypeCreatureDiedThisTurn(${subtypeArg(negSub)})"
+                val posSub = arms.firstOrNull { it.strField("_Permanents") == "IsCreatureType" }?.field("args").asStr()
+                if (posSub != null) return "Conditions.SubtypeCreatureDiedThisTurn(${subtypeArg(posSub)})"
             }
         }
         return null
@@ -3351,6 +3362,78 @@ internal fun EmitCtx.fromGraveyardBlock(rule: JsonObject): List<Stmt>? {
         "Activated", "ActivatedWithModifiers" -> activatedBlock(inner, activateFromZone = "Zone.GRAVEYARD")
         else -> { reasons.add("FromGraveyard"); return null }
     }
+}
+
+/**
+ * `FromGraveyardIf(condition, PlayerEffect(You, [MayCastGraveyardCardWithEnterActions(ThisGraveyardCard,
+ *   [EntersWithACounter PTCounter[1,1]])]))` -> the conditional self-cast-from-graveyard static ability
+ * plus the cast-this-way +1/+1-counter rider (Undead Sprinter, DSK).
+ *
+ * `FromGraveyardIf(ACreatureOrPlaneswalkerDiedThisTurn(And[IsNonCreatureType Zombie, IsCardtype Creature]),
+ *   PlayerEffect(You, [MayCastGraveyardCardWithEnterActions(ThisGraveyardCard,
+ *     [EntersWithACounter PTCounter[1,1]])]))`
+ * →
+ * ```
+ * staticAbility {
+ *     ability = MayCastSelfFromZones(
+ *         zones = listOf(Zone.GRAVEYARD),
+ *         condition = Conditions.NonSubtypeCreatureDiedThisTurn(Subtype.ZOMBIE))
+ * }
+ * replacementEffect(EntersWithCounters(count = 1, selfOnly = true, condition = Conditions.WasCastFromGraveyard))
+ * ```
+ *
+ * "You may cast this card from your graveyard if [condition]. If you do, it enters with a +1/+1 counter."
+ * The graveyard-cast permission is a gated [MayCastSelfFromZones] over `Zone.GRAVEYARD`; the "enter with a
+ * counter" is the *cast-this-way* rider, modeled as a self-only [EntersWithCounters] gated on
+ * `Conditions.WasCastFromGraveyard` (it applies only when this creature was cast from the graveyard, not
+ * when cast normally from hand). Renders ONLY this exact shape — a `FromGraveyardIf` whose body is the
+ * You-scoped `MayCastGraveyardCardWithEnterActions(ThisGraveyardCard, [+1/+1 enter counter])`, gated by a
+ * died-this-turn condition the intervening-if recovery can name — and only when the +1/+1 counter is the
+ * lone enter flag; anything else (a different enter action, a non-self graveyard card, an unrecoverable
+ * condition) declines (-> SCAFFOLD).
+ */
+internal fun EmitCtx.fromGraveyardIfBlock(rule: JsonObject): List<Stmt>? {
+    fun bail(): List<Stmt>? { reasons.add("FromGraveyardIf"); return null }
+    val args = rule["args"].asArr ?: return bail()
+    if (args.size != 2) return bail()
+    // 1. The gate condition (e.g. "a non-Zombie creature died this turn"), via the shared intervening-if
+    //    recovery — declines if the condition can't be named exactly (never a dropped/guessed gate).
+    val condNode = args.getOrNull(0) as? JsonObject ?: return bail()
+    val condition = singleInterveningIfDsl(condNode) ?: return bail()
+    // 2. The body: PlayerEffect(You, [ MayCastGraveyardCardWithEnterActions(ThisGraveyardCard, [...]) ]).
+    val player = args.getOrNull(1) as? JsonObject ?: return bail()
+    if (player.strField("_Rule") != "PlayerEffect") return bail()
+    val peArgs = player["args"].asArr ?: return bail()
+    if (!jsonContains(peArgs.getOrNull(0), "_Player", "You")) return bail()
+    val effects = (peArgs.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return bail()
+    val cast = effects.singleOrNull()
+        ?.takeIf { it.strField("_PlayerEffect") == "MayCastGraveyardCardWithEnterActions" } ?: return bail()
+    val castArgs = cast["args"].asArr ?: return bail()
+    // The card cast must be THIS card from its own graveyard (a self-recursion permission).
+    if (!jsonContains(castArgs.getOrNull(0), "_GraveyardCard", "ThisGraveyardCard")) return bail()
+    // 3. The enter actions must be exactly one EntersWithACounter PTCounter[1,1] (+1/+1).
+    val enterActions = (castArgs.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>() ?: return bail()
+    val enterCounter = enterActions.singleOrNull()
+        ?.takeIf { it.strField("_EnterFlag") == "EntersWithACounter" } ?: return bail()
+    val ptCounter = enterCounter["args"] as? JsonObject
+    val pt = ptCounter?.takeIf { it.strField("_CounterType") == "PTCounter" }?.get("args").asArr
+    if (pt?.getOrNull(0).asInt() != 1 || pt?.getOrNull(1).asInt() != 1) return bail()
+
+    val static = staticAbilityStmt(call(
+        "MayCastSelfFromZones",
+        arg("zones", call("listOf", arg("Zone.GRAVEYARD"))),
+        arg("condition", Lit(condition)),
+    ))
+    val replacement = Eval(call(
+        "replacementEffect",
+        arg(call(
+            "EntersWithCounters",
+            arg("count", "1"),
+            arg("selfOnly", "true"),
+            arg("condition", Lit("Conditions.WasCastFromGraveyard")),
+        )),
+    ))
+    return listOf(static, replacement)
 }
 
 /**

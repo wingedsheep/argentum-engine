@@ -357,16 +357,35 @@ data object OpponentsPlayWithHandsRevealed : StaticAbility {
  * This is an intrinsic property of the card, checked when the card is in a matching zone.
  * Used for Squee, the Immortal (graveyard + exile).
  *
- * @property zones The zones from which this card may be cast
+ * When [condition] is non-null the self-cast permission is *gated*: the card may be cast from a
+ * matching zone only while the condition holds. The condition is evaluated in the casting player's
+ * context at cast-legality time (and re-checked when the cast is authorized), so a condition that
+ * stops holding immediately revokes the permission. Used by Undead Sprinter (DSK): "You may cast
+ * this card from your graveyard if a non-Zombie creature died this turn" —
+ * `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), condition = Conditions.NonSubtypeCreatureDiedThisTurn(Subtype.ZOMBIE))`.
+ *
+ * Normal timing rules still apply — a creature with no flash is castable this way only at sorcery
+ * speed, on the player's turn with an empty stack. The card is cast for its normal mana cost.
+ *
+ * @property zones The zones from which this card may be cast.
+ * @property condition Optional gate; null = always available (the Squee shape).
  */
 @SerialName("MayCastSelfFromZones")
 @Serializable
 data class MayCastSelfFromZones(
-    val zones: List<Zone>
+    val zones: List<Zone>,
+    val condition: Condition? = null
 ) : StaticAbility {
-    override val description: String = "You may cast this card from ${
-        zones.joinToString(" or ") { it.displayName }
-    }."
+    override val description: String = buildString {
+        append("You may cast this card from ${zones.joinToString(" or ") { it.displayName }}")
+        if (condition != null) append(" ${condition.description}")
+        append(".")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newCondition !== condition) copy(condition = newCondition) else this
+    }
 }
 
 /**

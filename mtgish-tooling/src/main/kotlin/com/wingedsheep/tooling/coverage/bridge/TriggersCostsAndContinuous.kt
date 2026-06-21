@@ -77,6 +77,13 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // graveyard trigger (Reach for the Sky's "draw a card"). Maps to Triggers.PutIntoGraveyardFromBattlefield;
     // only the SELF (ThisPermanent), any-player shape renders (anything else scaffolds).
     supported("WhenAPermanentIsPutIntoAPlayersGraveyard", "trigger: this permanent put into a graveyard from the battlefield (Triggers.PutIntoGraveyardFromBattlefield)")
+    // "You may cast this card from your graveyard if [condition]. If you do, it enters with a +1/+1
+    // counter." (Undead Sprinter, DSK) — a conditional self-cast-from-graveyard permission with a
+    // cast-this-way counter rider. Maps to staticAbility { ability = MayCastSelfFromZones(Zone.GRAVEYARD,
+    // condition) } + replacementEffect(EntersWithCounters(selfOnly = true, condition = WasCastFromGraveyard)).
+    // The emitter renders ONLY the exact MayCastGraveyardCardWithEnterActions(self, [+1/+1]) body gated by a
+    // nameable died-this-turn condition; any other body/condition scaffolds, so this is the gate.
+    supported("FromGraveyardIf", "rule: conditional self-cast from graveyard + cast-this-way +1/+1 rider (MayCastSelfFromZones(condition) + EntersWithCounters(WasCastFromGraveyard))")
 
     // Intervening-if conditions (CR 603.4) gating a TriggerI, plus the Mount "while saddled" gate. The
     // emitter renders the recognised shapes to `triggerCondition = Conditions.*`; an unrenderable

@@ -10,10 +10,12 @@ import com.wingedsheep.tooling.coverage.RawLine
 import com.wingedsheep.tooling.coverage.Stmt
 import com.wingedsheep.tooling.coverage.Sub
 import com.wingedsheep.tooling.coverage.arg
+import com.wingedsheep.tooling.coverage.argWordsTagged
 import com.wingedsheep.tooling.coverage.asArr
 import com.wingedsheep.tooling.coverage.asStr
 import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
+import com.wingedsheep.tooling.coverage.dot
 import com.wingedsheep.tooling.coverage.findInteger
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.strField
@@ -635,6 +637,120 @@ internal fun EmitCtx.mayCostReflexiveDamageEffect(actions: List<JsonObject>): Ds
         )),
         arg("reflexiveTargetRequirements", call("listOf", arg(reflexiveTarget))),
     )
+}
+
+/**
+ * Anthropede — the "you may [discard a card or pay {N}]. When you do, [reflexive effect targeting]"
+ * idiom, the two-way-cost sibling of [mayCostReflexiveDamageEffect]. mtgish models it as two sibling
+ * actions inside the ETB triggered ability, where the optional cost is an `Or` of two payment options:
+ *
+ * `[ MayCost(Or[ DiscardACard, PayMana {N} ]),
+ *    If(CostWasPaid)[ ReflexiveTrigger(Targeted([TargetPermanent IsEnchantmentType:Room],
+ *        ActionList[ DestroyPermanent Ref_TargetPermanent ])) ] ]`
+ * →
+ * ```
+ * ReflexiveTriggerEffect(
+ *     action = ChooseActionEffect(choices = listOf(
+ *         EffectChoice("Discard a card", Patterns.Hand.discardCards(1),
+ *             feasibilityCheck = FeasibilityCheck.HasCardsInZone(Zone.HAND)),
+ *         EffectChoice("Pay {N}", PayManaCostEffect(ManaCost.parse("{N}"))))),
+ *     optional = true,
+ *     reflexiveEffect = Effects.Destroy(EffectTarget.ContextTarget(0)),
+ *     reflexiveTargetRequirements = listOf(<reflexive Room target>))
+ * ```
+ *
+ * The "you may [discard / pay]" is a resolution-time CHOICE between two payments (not a target), so it's a
+ * `ChooseActionEffect` with one [EffectChoice] per arm; the discard arm carries the `HasCardsInZone(HAND)`
+ * feasibility check (you can't choose to discard with an empty hand). The "When you do" reflexive trigger
+ * then chooses its own target as it goes on the stack (`ContextTarget(0)`). Renders ONLY this exact shape —
+ * a two-arm `Or[DiscardACard, PayMana]` optional cost, a `CostWasPaid`-gated single reflexive trigger whose
+ * sole action is destroying its chosen Room target — and only when the reflexive Room target round-trips;
+ * anything else declines (-> SCAFFOLD).
+ */
+internal fun EmitCtx.mayCostReflexiveDestroyRoomEffect(actions: List<JsonObject>): Dsl? {
+    if (actions.size != 2) return null
+    val (mayCost, ifPaid) = actions
+    if (mayCost.strField("_Action") != "MayCost") return null
+    // The optional cost must be exactly Or[ DiscardACard, PayMana {N} ] — a two-arm choice between
+    // discarding a card and paying a fixed mana amount (no filter on the discard, no other arm).
+    val cost = mayCost["args"] as? JsonObject ?: return null
+    if (cost.strField("_Cost") != "Or") return null
+    val arms = cost["args"].asArr?.filterIsInstance<JsonObject>() ?: return null
+    if (arms.size != 2) return null
+    val discardArm = arms.firstOrNull { it.strField("_Cost") == "DiscardACard" } ?: return null
+    // The bare "discard a card" cost carries no filter/count args — anything richer declines.
+    if (discardArm["args"] != null) return null
+    val payArm = arms.firstOrNull { it.strField("_Cost") == "PayMana" } ?: return null
+    val mana = renderMana(payArm["args"])
+    if (mana.isBlank() || "{?}" in mana) return null
+
+    // The gate must be exactly If(CostWasPaid)[ ReflexiveTrigger(...) ] — no else-branch.
+    if (ifPaid.strField("_Action") != "If") return null
+    val ifArgs = ifPaid["args"].asArr ?: return null
+    if (!jsonContains(ifArgs.getOrNull(0), "_Condition", "CostWasPaid") || ifArgs.getOrNull(2) != null) return null
+    val reflexive = (ifArgs.getOrNull(1) as? JsonArray)?.filterIsInstance<JsonObject>()
+        ?.singleOrNull()?.takeIf { it.strField("_Action") == "ReflexiveTrigger" } ?: return null
+
+    // The reflexive trigger's Targeted envelope: a single Room target, one DestroyPermanent action.
+    val (rTargets, rActions) = extractEnvelope(reflexive)
+    val reflexiveTargetNode = rTargets?.singleOrNull() ?: return null
+    val reflexiveTarget = enchantmentSubtypeTargetExpr(reflexiveTargetNode) ?: return null
+    val destroy = rActions?.singleOrNull()?.takeIf { it.strField("_Action") == "DestroyPermanent" } ?: return null
+    // The destroyed permanent is the reflexive trigger's chosen target (Ref_TargetPermanent).
+    if (!jsonContains(destroy["args"], "_Permanent", "Ref_TargetPermanent")) return null
+
+    val action = call(
+        "ChooseActionEffect",
+        arg("choices", call(
+            "listOf",
+            arg(call(
+                "EffectChoice",
+                arg(Lit("\"Discard a card\"")),
+                arg(call("Patterns.Hand.discardCards", arg("1"))),
+                arg("feasibilityCheck", Lit("FeasibilityCheck.HasCardsInZone(Zone.HAND)")),
+            )),
+            arg(call(
+                "EffectChoice",
+                arg(Lit("\"Pay $mana\"")),
+                arg(call("PayManaCostEffect", arg(Lit("ManaCost.parse(\"$mana\")")))),
+            )),
+        )),
+    )
+    return call(
+        "ReflexiveTriggerEffect",
+        arg("action", action),
+        arg("optional", Lit("true")),
+        arg("reflexiveEffect", call("Effects.Destroy", arg(Lit("EffectTarget.ContextTarget(0)")))),
+        arg("reflexiveTargetRequirements", call("listOf", arg(reflexiveTarget))),
+    )
+}
+
+/**
+ * A `TargetPermanent` whose only restriction is a single enchantment subtype (`IsEnchantmentType:<sub>`,
+ * e.g. "target Room") -> `TargetPermanent(filter = TargetFilter(GameObjectFilter.Permanent.withSubtype(
+ * <sub>)))`. The generic [targetExpr] declines a bare enchantment-subtype permanent target (it has no
+ * single GameObjectFilter for it and refuses to widen to "any enchantment"); this narrow helper recovers
+ * exactly the permanent-with-subtype shape the hand-authored card uses. Only the lone subtype renders — a
+ * count, controller clause, self-exclusion, or any other predicate declines (-> SCAFFOLD).
+ */
+private fun EmitCtx.enchantmentSubtypeTargetExpr(tnode: JsonObject): Dsl? {
+    if (tnode.strField("_Target") != "TargetPermanent") return null
+    val args = tnode["args"]
+    val subs = args.argWordsTagged("IsEnchantmentType")
+    if (subs.size != 1) return null
+    val blob = compact(args)
+    // Reject anything beyond the bare enchantment-subtype clause so a dropped restriction never widens
+    // the target (no controller scope, no count, no self-exclusion, no other type/predicate).
+    val extras = listOf(
+        "ControlledByAPlayer", "Other", "IsTapped", "IsUntapped", "IsAttacking", "IsBlocking",
+        "PowerIs", "ToughnessIs", "ManaValueIs", "ManaValueAtMost", "ManaValueAtLeast", "IsColor",
+        "IsNonColor", "HasAbility", "DoesntHaveAbility", "IsNonToken", "IsToken", "IsSupertype",
+        "IsNonSupertype", "IsCardtype", "IsNonCardtype", "IsCreatureType", "IsNonCreatureType",
+        "IsArtifactType", "IsLandType", "HasACounterOfType",
+    )
+    if (extras.any { it in blob }) return null
+    val base = Lit("GameObjectFilter.Permanent").dot("withSubtype", arg(subtypeArg(subs[0])))
+    return call("TargetPermanent", arg("filter", call("TargetFilter", arg(base))))
 }
 
 /**
