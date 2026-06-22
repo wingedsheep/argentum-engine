@@ -274,7 +274,7 @@ so a land // spell Adventure offers *both* "play the land" (PlayLandEnumerator) 
    choose-1 path (no engine change); shipped the `tiered { }` builder + all 6 spells.
 4. ✅ **Town land // spell DFC (§5) — DONE:** reused `CardLayout.ADVENTURE` (these cards are typed `— Adventure`);
    the only engine change was enumerating the Adventure spell face for a land-primary card. 5 lands shipped.
-5. **Summon Sagas (§1)** — the headline `add-feature`: make Sagas co-exist with creatures + an opt-out-of-sacrifice
+5. ✅ **Summon Sagas (§1)** — the headline `add-feature`: make Sagas co-exist with creatures + an opt-out-of-sacrifice
    flag + self-referential chapter resolution. Largest lift; gates ~15 cards.
 6. ✅ **Dominant / Eikon transform (§2) — ENGINE DONE:** `Effects.ExileAndReturnTransformed(target, returnAs)`
    (new object, both directions) + shared flip-and-return helper with the Craft return. Clive//Ifrit, Jill//Shiva,
