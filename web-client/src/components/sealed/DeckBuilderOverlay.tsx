@@ -10,6 +10,7 @@ import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay'
 import { DeckbuilderChatPanel } from './DeckbuilderChatPanel'
 import { fetchAdvisors, type AdvisorInfo } from '@/api/aiAssist'
+import { buildArenaDeckList } from './arenaExport'
 import type { AutoBuildResult } from '@/store/slices/types'
 import {
   detectProducedColors,
@@ -148,6 +149,8 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
+  // Arena export modal: holds the rendered deck list while open, null when closed.
+  const [arenaExport, setArenaExport] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'color' | 'cmc' | 'rarity'>('rarity')
   const [colorFilter, setColorFilter] = useState<Set<string>>(new Set())
   const [colorMode, setColorMode] = useState<ColorOp>('<=')
@@ -643,6 +646,35 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               }}
             >
               Submit Deck
+            </button>
+          )}
+
+          {totalCount > 0 && (
+            <button
+              onClick={() =>
+                setArenaExport(
+                  buildArenaDeckList({
+                    deck: state.deck,
+                    cardPool: state.cardPool,
+                    basicLands: state.basicLands,
+                    landCounts: state.landCounts,
+                    commander: state.commander,
+                  })
+                )
+              }
+              title="Copy this deck in MTG Arena format"
+              style={{
+                padding: responsive.isMobile ? '6px 14px' : '8px 20px',
+                fontSize: responsive.fontSize.normal,
+                backgroundColor: '#2c5aa0',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              Export
             </button>
           )}
 
@@ -1378,7 +1410,165 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         </div>
       )}
 
+      {arenaExport !== null && (
+        <ArenaExportModal
+          text={arenaExport}
+          filename={`${state.setCodes.join('-') || 'sealed'}-deck.txt`}
+          responsive={responsive}
+          onClose={() => setArenaExport(null)}
+        />
+      )}
+
       <DeckbuilderChatPanel state={state} />
+    </div>
+  )
+}
+
+/**
+ * Modal showing the deck rendered as an MTG Arena deck list. The text sits in a
+ * read-only textarea so the user can hand-select it even where the Clipboard API is
+ * unavailable; "Copy" tries `navigator.clipboard` and flashes "Copied!" on success.
+ */
+function ArenaExportModal({
+  text,
+  filename,
+  responsive,
+  onClose,
+}: {
+  text: string
+  filename: string
+  responsive: ReturnType<typeof useResponsive>
+  onClose: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = useCallback(() => {
+    void navigator.clipboard?.writeText(text).then(
+      () => setCopied(true),
+      () => setCopied(false)
+    )
+  }, [text])
+
+  // Download the list as a .txt via a transient object URL — no server round-trip.
+  const download = useCallback(() => {
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    // Revoke after the click has been dispatched — revoking synchronously can cancel
+    // the download in some browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+  }, [text, filename])
+
+  // Close on Escape, matching the backdrop/× affordances.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: '#1e1e1e',
+          border: '1px solid #444',
+          borderRadius: 10,
+          padding: 20,
+          width: 'min(560px, 90vw)',
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ color: 'white', fontWeight: 600, fontSize: responsive.fontSize.large }}>
+            Export — MTG Arena format
+          </span>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#aaa',
+              fontSize: 22,
+              lineHeight: 1,
+              cursor: 'pointer',
+            }}
+          >
+            ×
+          </button>
+        </div>
+        <textarea
+          readOnly
+          value={text}
+          onFocus={(e) => e.currentTarget.select()}
+          style={{
+            width: '100%',
+            minHeight: 240,
+            resize: 'vertical',
+            backgroundColor: '#0f0f0f',
+            color: '#ddd',
+            border: '1px solid #333',
+            borderRadius: 6,
+            padding: 10,
+            fontFamily: 'monospace',
+            fontSize: responsive.fontSize.small,
+            whiteSpace: 'pre',
+            overflow: 'auto',
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <button
+            onClick={download}
+            style={{
+              padding: '8px 20px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#3a3a3a',
+              color: 'white',
+              border: '1px solid #555',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Download .txt
+          </button>
+          <button
+            onClick={copy}
+            style={{
+              padding: '8px 20px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: copied ? '#4caf50' : '#2c5aa0',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy to clipboard'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
