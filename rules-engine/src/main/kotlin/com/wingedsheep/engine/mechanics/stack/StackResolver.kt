@@ -2534,8 +2534,9 @@ class StackResolver(
                     }
 
                     // Artifact Ward family: can't be the target of abilities from sources of a
-                    // given card type (CR 109.5). Not controller-gated — applies even to the warded
-                    // creature's own controller's sources. Spells bypass (abilities-only).
+                    // given card type. Keys off the ability's source (CR 113.7) by card type, not
+                    // controller — applies even to the warded creature's own controller's sources.
+                    // Spells bypass (abilities-only).
                     if (SourceTypeTargeting.cantBeTargetedBySourceTypeAbility(
                             state, target.entityId, sourceId, targetingSourceType
                         )

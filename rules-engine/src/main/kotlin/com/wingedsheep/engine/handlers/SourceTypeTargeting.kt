@@ -14,9 +14,9 @@ import com.wingedsheep.sdk.model.EntityId
  * [TargetFinder] (legal-target enumeration) and `StackResolver` (resolution-time fizzle check);
  * keeping the keyword name and source-type resolution here avoids the two drifting apart.
  *
- * Unlike the opponent-ability restriction this is NOT controller-gated (CR 109.5 source typing): a
- * matching source can't target the warded creature even if the same player controls both. It only
- * blocks abilities, never spells.
+ * Unlike the opponent-ability restriction this is NOT controller-gated — it keys off the ability's
+ * source (CR 113.7) by card type, not its controller: a matching source can't target the warded
+ * creature even if the same player controls both. It only blocks abilities, never spells.
  */
 object SourceTypeTargeting {
 

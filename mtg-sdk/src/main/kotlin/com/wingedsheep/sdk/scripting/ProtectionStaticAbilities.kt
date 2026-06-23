@@ -225,7 +225,7 @@ data object CantBeTargetedByOpponentAbilities : StaticAbility {
  * Creatures matching [filter] can't be the target of *abilities from sources of a given card type*
  * ([sourceType]) — hexproof keyed to a source *category* (the source's card type) rather than a
  * controller or color. This blocks only abilities (activated/triggered), not spells, and applies
- * regardless of who controls the source (CR 109.5 source typing).
+ * regardless of who controls the source (the ability's source per CR 113.7).
  *
  * Projected as the keyword `CANT_BE_TARGETED_BY_CARDTYPE_<TYPE>_SOURCE_ABILITIES`; enforced at
  * targeting by the engine (`TargetFinder`/`StackResolver`), which checks the targeting source's
