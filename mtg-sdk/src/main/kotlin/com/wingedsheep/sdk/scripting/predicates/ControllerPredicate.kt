@@ -96,6 +96,23 @@ sealed interface ControllerPredicate {
         override val description: String = "an opponent owns"
     }
 
+    /**
+     * Owned by the targeted player (the spell/ability's "target player").
+     *
+     * The owner sibling of [ControlledByTargetPlayer]. Use this for the "all artifacts target
+     * player **owns**" wording (Hurkyl's Recall, Drafna's Restoration): once control of a
+     * permanent has changed, "owns" ≠ "controls", and the spell may target either player, so
+     * neither [OwnedByYou]/[OwnedByOpponent] (fixed relative to the caster) nor
+     * [ControlledByTargetPlayer] (control, not ownership) captures it. Matches against the
+     * card's immutable `ownerId`, so it works for permanents on the battlefield regardless of
+     * who controls them, and for cards in other zones (graveyard/exile) that have no controller.
+     */
+    @SerialName("OwnedByTargetPlayer")
+    @Serializable
+    data object OwnedByTargetPlayer : ControllerPredicate {
+        override val description: String = "target player owns"
+    }
+
     // =============================================================================
     // Composite / Logical Combinators
     // =============================================================================

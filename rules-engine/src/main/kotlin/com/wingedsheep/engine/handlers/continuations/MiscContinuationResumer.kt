@@ -30,6 +30,7 @@ class MiscContinuationResumer(
         resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
+        resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
         resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
@@ -478,6 +479,57 @@ class MiscContinuationResumer(
                 events.add(CountersAddedEvent(targetId, continuation.counterType, modifiedAmount, targetName, firstThisTurn))
             }
         }
+
+        return checkForMore(newState, events)
+    }
+
+    private fun resumeConvertCountersToTokens(
+        state: GameState,
+        continuation: ConvertCountersToTokensContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for convert-counters-to-tokens")
+        }
+
+        val counterType = com.wingedsheep.engine.handlers.effects.EntersWithCountersHelper
+            .resolveCounterType(continuation.counterType)
+        val available = state.getEntity(continuation.sourceId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+            ?.getCount(counterType) ?: 0
+        val chosen = response.number.coerceIn(0, available)
+        if (chosen <= 0) return checkForMore(state, emptyList())
+
+        // Remove the chosen counters from the source...
+        val current = state.getEntity(continuation.sourceId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+            ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+        var newState = state.updateEntity(continuation.sourceId) { container ->
+            container.with(current.withRemoved(counterType, chosen))
+        }
+        val events = mutableListOf<GameEvent>(
+            com.wingedsheep.engine.core.CountersRemovedEvent(
+                continuation.sourceId,
+                continuation.counterType.description,
+                chosen,
+                state.getEntity(continuation.sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
+            )
+        )
+
+        // ...then mint exactly that many tokens from the factory (count overridden to the number removed).
+        val tokenEffect = continuation.tokenFactory.copy(
+            count = com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(chosen)
+        )
+        val tokenContext = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId
+        )
+        val tokenResult = effectRunner.executeRemainingEffects(newState, listOf(tokenEffect), tokenContext)
+        if (tokenResult.isPaused) return tokenResult.toExecutionResult()
+        newState = tokenResult.state
+        events.addAll(tokenResult.events)
 
         return checkForMore(newState, events)
     }

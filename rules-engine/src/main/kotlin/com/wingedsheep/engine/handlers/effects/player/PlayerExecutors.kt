@@ -45,6 +45,7 @@ class PlayerExecutors(
         CantActivateLoyaltyAbilitiesExecutor(),
         CantCastSpellsExecutor(),
         CantPlayCardsFromHandExecutor(),
+        ChooseNumberForSourceExecutor(decisionHandler),
         CreateGlobalTriggeredAbilityExecutor(),
         CreatePermanentEmblemExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),

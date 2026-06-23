@@ -138,13 +138,20 @@ suppression, or untap-count restriction primitive exists.
   tapped* (tap-locked buff).
 - **Damping Field** — players can't untap more than one artifact per untap step (untap-count restriction).
 
-### Characteristic-defining / counter↔token state
-- **Primal Clay** — choose 3/3, 2/2 flying, or 1/6 defender Wall as it enters (P/T+keyword
-  chosen at ETB). No "choose P/T at entry" mechanism.
-- **Shapeshifter** — choose a number 0–7 at ETB and each upkeep; power = chosen, toughness =
-  7 − chosen. No "choose-a-number stored, P/T derived" mechanism.
-- **Tetravus** — convert +1/+1 counters ↔ Tetravite tokens both ways; "exile any number of
-  tokens *created with this creature*" needs provenance tracking of its own tokens.
+### Characteristic-defining / counter↔token state ✅ DONE
+- [x] **Primal Clay** — choose 3/3, 2/2 flying, or 1/6 defender Wall as it enters. Composed from
+  existing primitives: `EntersWithChoice(ChoiceType.MODE)` + mode-gated (`SourceChosenModeIs`)
+  `SetBasePowerToughnessStatic` / `GrantKeyword` / `GrantSubtype` static abilities. No engine work.
+- [x] **Shapeshifter** — choose a number 0–7 as it enters and each upkeep; power = chosen, toughness
+  = 7 − chosen. Added the **choose-a-number-stored-on-permanent** primitive: `ChoiceSlot.CHOSEN_NUMBER`
+  + `Effects.ChooseNumberForSource` (writes a durable `NumberChoice`) read by a
+  `SetBasePowerToughnessDynamicStatic` CDA via `DynamicAmount.CastChoice` (now generic over numeric
+  slots). The "you may" re-choice is an optional `YourUpkeep` trigger.
+- [x] **Tetravus** — convert +1/+1 counters ↔ Tetravite tokens both ways. Added **token provenance**
+  (`CreateTokenEffect.stampCreator` → `CreatedByComponent`; `StatePredicate.CreatedBySource` /
+  `.createdBySource()`) so "tokens created with this creature" is recognized, and
+  `ConvertCountersToTokensEffect` (counters→tokens). The tokens→counters half composes from a
+  gather(`createdBySource`)→chooseAnyNumber→exile→`AddDynamicCounters` pipeline.
 
 ### Other one-off engine features (one PR each, or batch small ones)
 - **Power Artifact** — enchanted artifact's activated abilities cost `{2}` less (floor 1 mana):

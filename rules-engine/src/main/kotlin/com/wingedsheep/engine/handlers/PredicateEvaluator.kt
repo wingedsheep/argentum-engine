@@ -654,6 +654,11 @@ class PredicateEvaluator {
                 val card = container.get<CardComponent>()
                 card?.ownerId != null && card.ownerId != context.controllerId
             }
+            ControllerPredicate.OwnedByTargetPlayer -> {
+                val card = container.get<CardComponent>()
+                val targetPlayer = context.targetPlayerId
+                card?.ownerId != null && targetPlayer != null && card.ownerId == targetPlayer
+            }
             else -> {
                 // Use projected controller if available; otherwise fall back to the base
                 // ControllerComponent or, for stack objects (spells and abilities), the
@@ -819,6 +824,16 @@ class PredicateEvaluator {
                 val sourceId = context?.sourceId
                 sourceId != null &&
                     container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true
+            }
+
+            // Token created by the effect's source permanent (CR 111). Source-relative: the
+            // candidate's stamped CreatedByComponent.creatorId equals context.sourceId. Inert with
+            // no source context or for tokens with no recorded creator.
+            StatePredicate.CreatedBySource -> {
+                val sourceId = context?.sourceId
+                sourceId != null &&
+                    container.get<com.wingedsheep.engine.state.components.identity.CreatedByComponent>()
+                        ?.creatorId == sourceId
             }
 
             // Crewed/saddled the effect's source permanent this turn (CR 702.122 / 702.171).

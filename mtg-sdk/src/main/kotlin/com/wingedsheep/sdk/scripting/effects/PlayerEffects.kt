@@ -663,3 +663,47 @@ data class ChooseNumberThenEffect(
         return if (newThen !== then) copy(then = newThen) else this
     }
 }
+
+/**
+ * "Choose a number between [minValue] and [maxValue]" and store it **durably on the source
+ * permanent** in its cast-choices bag under [slot], replacing any prior value for that slot.
+ *
+ * Unlike [ChooseNumberThenEffect] (which stamps the number transiently into the resolution
+ * context as the X value and runs an inner effect once), this records the number on the
+ * permanent so a continuous characteristic-defining ability can read it for the rest of the
+ * permanent's life via [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice]. The
+ * **last** chosen value is what the CDA reads, matching "the last chosen number" wording.
+ *
+ * This is the *on-resolution* form, run from a triggered/activated ability (e.g. an upkeep
+ * re-choice). For the *as-enters* "As ~ enters, choose a number" choice, prefer the replacement
+ * effect [com.wingedsheep.sdk.scripting.EntersWithChoice]`(ChoiceType.NUMBER, minValue, maxValue)`
+ * — it writes the same [com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER] slot *before* the
+ * permanent is on the battlefield (CR 614.1c), so the CDA never reads a default while the permanent
+ * briefly sits at its printed P/T. Wrapping this effect in an
+ * [com.wingedsheep.sdk.scripting.OnEnterRunEffect] also works but runs *after* placement, so avoid
+ * it when the entry choice feeds a P/T-defining CDA.
+ *
+ * Shapeshifter: "As this enters and at the beginning of your upkeep, choose a number between 0
+ * and 7. Its power is the last chosen number and its toughness is 7 minus that number." The P/T
+ * is a `SetBasePowerToughnessDynamicStatic(CastChoice(CHOSEN_NUMBER), Subtract(7, CastChoice(...)))`.
+ *
+ * For an optional "you **may** choose a number" clause, mark the *triggered ability* that runs
+ * this effect `optional = true` (declining the trigger keeps the prior value) rather than baking
+ * a decline path into this effect — the choice itself is always a real number when reached.
+ *
+ * @property minValue Lowest number the controller may choose (inclusive).
+ * @property maxValue Highest number the controller may choose (inclusive).
+ * @property slot Which durable cast-choices slot to write (default
+ *   [com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER]).
+ * @property prompt Player-facing prompt text.
+ */
+@SerialName("ChooseNumberForSource")
+@Serializable
+data class ChooseNumberForSourceEffect(
+    val minValue: Int = 0,
+    val maxValue: Int = 7,
+    val slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER,
+    val prompt: String = "Choose a number"
+) : Effect {
+    override val description: String = "choose a number between $minValue and $maxValue"
+}

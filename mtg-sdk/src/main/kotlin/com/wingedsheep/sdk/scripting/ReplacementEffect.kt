@@ -991,7 +991,20 @@ enum class ChoiceType {
      * back at static-projection / activation-legality time by
      * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosenComponent].
      */
-    CARD_NAME
+    CARD_NAME,
+    /**
+     * Choose a number in `[minValue, maxValue]` as the permanent enters (CR 614.1c), e.g.
+     * Shapeshifter: "As this creature enters, choose a number between 0 and 7." The chosen number
+     * is stored on the permanent in a
+     * [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER] as a
+     * [com.wingedsheep.engine.state.components.battlefield.ChoiceValue.NumberChoice], read back by a
+     * characteristic-defining ability via [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice].
+     * This is the *as-enters replacement* analogue of the on-resolution
+     * [com.wingedsheep.sdk.scripting.effects.ChooseNumberForSourceEffect] (used for a later upkeep
+     * re-choice into the same slot). Set [EntersWithChoice.minValue] / [EntersWithChoice.maxValue].
+     */
+    NUMBER
 }
 
 /**
@@ -1047,6 +1060,13 @@ data class EntersWithChoice(
      * options the player picks between. Required for MODE; ignored otherwise.
      */
     val modeOptions: List<ModeOption> = emptyList(),
+    /**
+     * When [choiceType] is [ChoiceType.NUMBER], the inclusive bounds of the number the chooser may
+     * pick (e.g. `0`/`7` for Shapeshifter). Ignored for every other choice type. The chosen number
+     * is written to [ChoiceSlot.CHOSEN_NUMBER].
+     */
+    val minValue: Int = 0,
+    val maxValue: Int = 0,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -1086,6 +1106,11 @@ data class EntersWithChoice(
             "As this permanent enters, an opponent chooses a land card name"
         } else {
             "As this permanent enters, choose a land card name"
+        }
+        ChoiceType.NUMBER -> if (chooser == Player.AnOpponent) {
+            "As this permanent enters, an opponent chooses a number between $minValue and $maxValue"
+        } else {
+            "As this permanent enters, choose a number between $minValue and $maxValue"
         }
     }
 

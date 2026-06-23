@@ -122,6 +122,10 @@ fun ComponentContainer.wasKickedChoice(): Boolean =
 fun ComponentContainer.blightAmountChoice(): Int? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.BLIGHT_AMOUNT) as? ChoiceValue.NumberChoice)?.amount
 
+/** The number chosen and stored under [slot] (e.g. [ChoiceSlot.CHOSEN_NUMBER]), or null. */
+fun ComponentContainer.numberChoice(slot: ChoiceSlot): Int? =
+    (get<CastChoicesComponent>()?.chosen?.get(slot) as? ChoiceValue.NumberChoice)?.amount
+
 /** Return a container with [slot] set to [value] in its (possibly new) [CastChoicesComponent]. */
 fun ComponentContainer.withCastChoice(slot: ChoiceSlot, value: ChoiceValue): ComponentContainer {
     val bag = get<CastChoicesComponent>() ?: CastChoicesComponent()

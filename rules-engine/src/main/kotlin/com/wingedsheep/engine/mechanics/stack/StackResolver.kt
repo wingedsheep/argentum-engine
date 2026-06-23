@@ -3062,6 +3062,35 @@ class StackResolver(
                     .withPendingDecision(decision)
                 ExecutionResult.paused(pausedState, decision)
             }
+
+            ChoiceType.NUMBER -> {
+                // "As this creature enters, choose a number between [min] and [max]" (Shapeshifter).
+                // The chosen number is stored durably under [ChoiceSlot.CHOSEN_NUMBER] by the resumer.
+                val decisionId = "choose-number-enters-${spellId.value}"
+                val decision = ChooseNumberDecision(
+                    id = decisionId,
+                    playerId = chooserId,
+                    prompt = "Choose a number between ${choice.minValue} and ${choice.maxValue}",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    minValue = choice.minValue,
+                    maxValue = choice.maxValue
+                )
+                val continuation = EntersWithChoiceSpellContinuation(
+                    decisionId = decisionId,
+                    spellId = spellId,
+                    controllerId = controllerId,
+                    ownerId = ownerId,
+                    choiceType = ChoiceType.NUMBER
+                )
+                val pausedState = state
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+                ExecutionResult.paused(pausedState, decision)
+            }
         }
     }
 

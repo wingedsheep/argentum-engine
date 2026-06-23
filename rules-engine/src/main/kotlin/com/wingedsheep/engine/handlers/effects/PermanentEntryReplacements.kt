@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.ChooseColorDecision
+import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ContinuationFrame
 import com.wingedsheep.engine.core.DecisionContext
@@ -251,6 +252,29 @@ object PermanentEntryReplacements {
                         controllerId = controllerId,
                         choiceType = ChoiceType.CARD_NAME,
                         cardNames = options,
+                        fromZone = fromZone
+                    )
+                )
+            }
+
+            ChoiceType.NUMBER -> {
+                // "As this enters, choose a number between [min] and [max]" for a permanent already
+                // on the battlefield (token / blink). Stored under [ChoiceSlot.CHOSEN_NUMBER].
+                val id = "choose-number-enters-${entityId.value}"
+                pause(
+                    ChooseNumberDecision(
+                        id = id,
+                        playerId = chooserId,
+                        prompt = "Choose a number between ${choice.minValue} and ${choice.maxValue}",
+                        context = context(id),
+                        minValue = choice.minValue,
+                        maxValue = choice.maxValue
+                    ),
+                    EntersWithChoiceOnBattlefieldContinuation(
+                        decisionId = id,
+                        entityId = entityId,
+                        controllerId = controllerId,
+                        choiceType = ChoiceType.NUMBER,
                         fromZone = fromZone
                     )
                 )

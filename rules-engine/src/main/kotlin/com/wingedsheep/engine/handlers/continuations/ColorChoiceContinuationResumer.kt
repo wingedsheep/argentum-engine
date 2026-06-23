@@ -18,6 +18,7 @@ class ColorChoiceContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ChooseColorThenContinuation::class, ::resumeChooseColorThen),
         resumer(ChooseNumberThenContinuation::class, ::resumeChooseNumberThen),
+        resumer(ChooseNumberForSourceContinuation::class, ::resumeChooseNumberForSource),
         resumer(ChooseManaColorContinuation::class, ::resumeChooseManaColor),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget),
         resumer(ChooseAnyColorTapBonusContinuation::class, ::resumeChooseAnyColorTapBonus)
@@ -71,6 +72,26 @@ class ColorChoiceContinuationResumer(
 
         if (effectResult.isPaused) return effectResult.toExecutionResult()
         return checkForMore(effectResult.state, effectResult.events.toList())
+    }
+
+    fun resumeChooseNumberForSource(
+        state: GameState,
+        continuation: ChooseNumberForSourceContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number choice response for ChooseNumberForSource effect")
+        }
+        // Record the chosen number durably on the source permanent (replacing any prior value
+        // for the slot), so the source's characteristic-defining ability reads the latest choice.
+        if (state.getEntity(continuation.sourceId) == null) {
+            return checkForMore(state, emptyList())
+        }
+        val newState = state.updateEntity(continuation.sourceId) { container ->
+            container.withCastChoice(continuation.slot, ChoiceValue.NumberChoice(response.number))
+        }
+        return checkForMore(newState, emptyList())
     }
 
     fun resumeChooseManaColor(

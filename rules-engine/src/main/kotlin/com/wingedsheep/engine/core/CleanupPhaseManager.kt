@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.SaddledComponent
 import com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent
@@ -346,7 +347,7 @@ class CleanupPhaseManager(
             val context = EffectContext(sourceId = permanentId, controllerId = controllerId)
             for (raw in cardDef.script.staticAbilities) {
                 val setAbility = activeSetMaximumHandSize(state, raw, context) ?: continue
-                if (!playerScopeIncludes(setAbility.player, playerId, controllerId)) continue
+                if (!playerScopeIncludes(setAbility.player, playerId, controllerId, state, permanentId)) continue
                 val value = dynamicAmountEvaluator.evaluate(state, setAbility.amount, context)
                     .coerceAtLeast(0)
                 max = minOf(max, value)
@@ -377,11 +378,20 @@ class CleanupPhaseManager(
      * source's controller), includes [playerId]. Mirrors the player-scope switch in
      * [com.wingedsheep.engine.handlers.effects.DamageUtils.isLifeGainPrevented].
      */
-    private fun playerScopeIncludes(scope: Player, playerId: EntityId, controllerId: EntityId): Boolean =
+    private fun playerScopeIncludes(
+        scope: Player,
+        playerId: EntityId,
+        controllerId: EntityId,
+        state: GameState,
+        sourceId: EntityId
+    ): Boolean =
         when (scope) {
             Player.You -> playerId == controllerId
             Player.EachOpponent -> playerId != controllerId
             Player.Each, Player.Any, Player.ActivePlayerFirst -> true
+            // The opponent durably chosen as the source entered (Cursed Rack), read from the
+            // source's CastChoicesComponent[OPPONENT].
+            Player.ChosenOpponent -> state.getEntity(sourceId)?.chosenOpponent() == playerId
             else -> false
         }
 

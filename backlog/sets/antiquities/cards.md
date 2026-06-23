@@ -2,7 +2,7 @@
 
 **Set Size:** 85 cards
 **Release Date:** March 4, 1994
-**Implemented:** 51 / 85
+**Implemented:** 57 / 85
 | Color       | Count |
 |-------------|-------|
 | White       | 7     |
@@ -32,7 +32,7 @@
 ### Blue
 - [ ] Drafna's Restoration
 - [ ] Energy Flux
-- [ ] Hurkyl's Recall
+- [x] Hurkyl's Recall
 - [ ] Power Artifact
 - [x] Reconstruction
 - [x] Sage of Lat-Nam
@@ -43,7 +43,7 @@
 - [x] Gate to Phyrexia
 - [x] Haunting Wind
 - [ ] Phyrexian Gremlins
-- [ ] Priest of Yawgmoth
+- [x] Priest of Yawgmoth
 - [ ] Xenic Poltergeist
 - [x] Yawgmoth Demon
 
@@ -78,7 +78,7 @@
 - [ ] Clockwork Avian
 - [ ] Colossus of Sardia
 - [x] Coral Helm
-- [ ] Cursed Rack
+- [x] Cursed Rack
 - [x] Dragon Engine
 - [x] Feldon's Cane
 - [ ] Golgothian Sylex
@@ -91,17 +91,17 @@
 - [x] Obelisk of Undoing
 - [x] Onulet
 - [x] Ornithopter
-- [ ] Primal Clay
+- [x] Primal Clay
 - [x] Rakalite
 - [ ] Rocket Launcher
-- [ ] Shapeshifter
+- [x] Shapeshifter
 - [x] Staff of Zegon
 - [x] Su-Chi
 - [x] Tablet of Epityr
 - [ ] Tawnos's Coffin
 - [x] Tawnos's Wand
 - [ ] Tawnos's Weaponry
-- [ ] Tetravus
+- [x] Tetravus
 - [ ] The Rack
 - [x] Triskelion
 - [ ] Urza's Avenger

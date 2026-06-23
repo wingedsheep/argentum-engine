@@ -874,6 +874,40 @@
     ]
 }
 
+// Cursed Rack
+{
+    "name": "Cursed Rack",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose an opponent.\nThe chosen player's maximum hand size is four.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetMaximumHandSize",
+                "player": "ChosenOpponent",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 4
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "OPPONENT"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "flavorText": "Ashnod invented several torture techniques that could make victims even miles away beg for mercy as if the End had come.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/720d871d-1e7b-482e-bd1e-8ec79519fb86.jpg?1562918942"
+    },
+    "colorIdentityOverride": []
+}
+
 // Damping Field
 {
     "name": "Damping Field",
@@ -1338,6 +1372,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Hurkyl's Recall
+{
+    "name": "Hurkyl's Recall",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return all artifacts target player owns to their hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact own:target-player"
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "NéNé Thomas",
+        "flavorText": "This spell, attributed to Drafna, was actually the work of his wife Hurkyl.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f32373dd-06d8-45d1-8777-3b1411bcb30a.jpg?1562946376"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1915,6 +1996,188 @@
     ]
 }
 
+// Priest of Yawgmoth
+{
+    "name": "Priest of Yawgmoth",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Human Cleric",
+    "oracleText": "{T}, Sacrifice an artifact: Add an amount of {B} equal to the sacrificed artifact's mana value.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Sacrificed",
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                "descriptionOverride": "{T}, Sacrifice an artifact: Add an amount of {B} equal to the sacrificed artifact's mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9fd4054-42fc-4f95-a6f7-369a5da43dd5.jpg?1562937643"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Primal Clay
+{
+    "name": "Primal Clay",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "As this creature enters, it becomes your choice of a 3/3 artifact creature, a 2/2 artifact creature with flying, or a 1/6 Wall artifact creature with defender in addition to its other types. (A creature with defender can't attack.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetBasePowerToughnessStatic",
+                    "power": 3,
+                    "toughness": 3,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "3/3"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetBasePowerToughnessStatic",
+                    "power": 2,
+                    "toughness": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "2/2 flying"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "2/2 flying"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetBasePowerToughnessStatic",
+                    "power": 1,
+                    "toughness": 6,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "1/6 defender"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantSubtype",
+                    "subtype": "Wall"
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "1/6 defender"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEFENDER",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "1/6 defender"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "3/3",
+                        "label": "3/3 artifact creature"
+                    },
+                    {
+                        "id": "2/2 flying",
+                        "label": "2/2 artifact creature with flying"
+                    },
+                    {
+                        "id": "1/6 defender",
+                        "label": "1/6 Wall artifact creature with defender"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab9d0e3f-cf7c-41f8-bcd7-bb08ea8cc2f8.jpg?1562931210"
+    },
+    "colorIdentityOverride": []
+}
+
 // Rakalite
 {
     "name": "Rakalite",
@@ -2059,6 +2322,70 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Shapeshifter
+{
+    "name": "Shapeshifter",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "As this creature enters, choose a number between 0 and 7.\nAt the beginning of your upkeep, you may choose a number between 0 and 7.\nShapeshifter's power is equal to the last chosen number and its toughness is equal to 7 minus that number.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseNumberForSource",
+                    "prompt": "Choose a number between 0 and 7"
+                },
+                "optional": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessDynamicStatic",
+                "power": {
+                    "type": "CastChoice",
+                    "slot": "CHOSEN_NUMBER"
+                },
+                "toughness": {
+                    "type": "Subtract",
+                    "left": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "right": {
+                        "type": "CastChoice",
+                        "slot": "CHOSEN_NUMBER"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "NUMBER",
+                "maxValue": 7
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "flavorText": "Born like a Phoenix from the Flame, / But neither Bulk nor Shape the same.\n—Jonathan Swift, \"Vanbrug's House\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc278af4-b60d-41b7-b9d7-36c8aefca1a7.jpg?1592364284"
+    },
+    "colorIdentityOverride": []
 }
 
 // Shatterstorm
@@ -2429,6 +2756,125 @@
         "artist": "Dan Frazier",
         "flavorText": "When Urza's war machines became too costly, Tawnos's weaponry replaced them.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/0/3035cead-a501-4204-9154-5fd648577d32.jpg?1562905158"
+    },
+    "colorIdentityOverride": []
+}
+
+// Tetravus
+{
+    "name": "Tetravus",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Flying\nThis creature enters with three +1/+1 counters on it.\nAt the beginning of your upkeep, you may remove any number of +1/+1 counters from this creature. If you do, create that many 1/1 colorless Tetravite artifact creature tokens. They each have flying and \"This token can't be enchanted.\"\nAt the beginning of your upkeep, you may exile any number of tokens created with this creature. If you do, put that many +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ConvertCountersToTokens",
+                    "tokenFactory": {
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Tetravite"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "name": "Tetravite",
+                        "artifactToken": true,
+                        "staticAbilities": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "CANT_BE_ENCHANTED",
+                                "filter": {
+                                    "baseFilter": "permanent",
+                                    "scope": "Self"
+                                }
+                            }
+                        ],
+                        "stampCreator": true
+                    }
+                },
+                "optional": true
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "statePredicates": [
+                                        "CreatedBySource"
+                                    ]
+                                }
+                            },
+                            "storeAs": "tetraviteTokens"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "tetraviteTokens",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "exiledTokens",
+                            "prompt": "Exile any number of Tetravite tokens created with this creature"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiledTokens",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "+1/+1",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "exiledTokens_count"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "optional": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23eb19f9-2e8f-4bf0-9bf8-868e6da70e2d.jpg?1562902619"
     },
     "colorIdentityOverride": []
 }

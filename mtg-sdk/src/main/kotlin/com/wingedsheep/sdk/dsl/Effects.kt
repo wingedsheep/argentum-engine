@@ -1966,6 +1966,23 @@ object Effects {
     ): Effect = ChooseNumberThenEffect(then, minValue, maxValue, prompt)
 
     /**
+     * Choose a number in [[minValue], [maxValue]] and store it durably on the source permanent
+     * under [slot], to be read by a characteristic-defining ability (or any later ability)
+     * through [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice]. Re-callable: the
+     * last chosen value wins. Use at entry (wrapped in `OnEnterRunEffect`) and/or from an
+     * upkeep trigger. For a "you may choose" clause, mark the running triggered ability
+     * `optional = true`. Powers Shapeshifter's repeatable 0–7 P/T choice.
+     */
+    fun ChooseNumberForSource(
+        minValue: Int = 0,
+        maxValue: Int = 7,
+        slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.CHOSEN_NUMBER,
+        prompt: String = "Choose a number"
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ChooseNumberForSourceEffect(
+        minValue, maxValue, slot, prompt
+    )
+
+    /**
      * Grant Toxic N to a target until end of turn. Resolves to a `TOXIC_<n>`
      * keyword grant; combat damage reads granted toxic amounts from projected keywords.
      */

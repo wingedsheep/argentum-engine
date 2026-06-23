@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.blightAmountChoice
+import com.wingedsheep.engine.state.components.battlefield.numberChoice
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
@@ -129,7 +130,9 @@ class DynamicAmountEvaluator(
                 when (amount.slot) {
                     com.wingedsheep.sdk.scripting.ChoiceSlot.BLIGHT_AMOUNT ->
                         source?.blightAmountChoice() ?: context.additionalCostBlightAmount
-                    else -> 0
+                    // Any other numeric slot (e.g. CHOSEN_NUMBER for Shapeshifter) is read
+                    // generically off the durable cast-choices bag as a NumberChoice.
+                    else -> source?.numberChoice(amount.slot) ?: 0
                 }
             }
 

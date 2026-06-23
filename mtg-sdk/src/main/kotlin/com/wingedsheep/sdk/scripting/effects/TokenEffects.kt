@@ -95,7 +95,15 @@ data class CreateTokenEffect(
      * (rather than the fixed [creatureTypes]) — e.g. Riptide Replicator "of the chosen type".
      * Read from the source's cast-choices bag at resolution; null means use [creatureTypes].
      */
-    val creatureTypesFromChoice: com.wingedsheep.sdk.scripting.ChoiceSlot? = null
+    val creatureTypesFromChoice: com.wingedsheep.sdk.scripting.ChoiceSlot? = null,
+    /**
+     * When true, stamp each created token with a provenance record of the creating permanent (the
+     * effect's source). Later abilities can then recognize "tokens created with this creature" via
+     * the [com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource] filter. Used by
+     * Tetravus, which converts its +1/+1 counters into Tetravite tokens and reabsorbs *those same*
+     * tokens. Off by default (most token-makers don't need provenance).
+     */
+    val stampCreator: Boolean = false
 ) : Effect {
     constructor(
         count: Int,

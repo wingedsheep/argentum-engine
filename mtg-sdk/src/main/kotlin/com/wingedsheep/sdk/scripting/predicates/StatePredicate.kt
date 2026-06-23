@@ -101,6 +101,22 @@ sealed interface StatePredicate {
         override val description: String = "blocking this creature"
     }
 
+    /**
+     * A token that was *created by the effect's source permanent* — its provenance creator id (the
+     * `CreatedByComponent` stamped when a `CreateTokenEffect` with `stampCreator = true` made it)
+     * equals the source entity supplied in the evaluation context. Source-relative; yields false
+     * for non-tokens, tokens with no recorded creator, and with no source context.
+     *
+     * Backs "tokens created with this creature" provenance (Tetravus: "exile any number of tokens
+     * created with this creature"), which "{filter} tokens you control" cannot express when several
+     * sources mint the same-named token.
+     */
+    @SerialName("CreatedBySource")
+    @Serializable
+    data object CreatedBySource : Entity {
+        override val description: String = "created with this creature"
+    }
+
     // =============================================================================
     // Summoning Sickness (Entity)
     // =============================================================================

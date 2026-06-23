@@ -178,6 +178,15 @@ class CreateTokenExecutor(
             if (effect.tapped) {
                 components.add(TappedComponent)
             }
+            // Provenance: record the creating permanent so "tokens created with this creature"
+            // (StatePredicate.CreatedBySource) can recognize them later (Tetravus).
+            if (effect.stampCreator) {
+                context.sourceId?.let { creatorId ->
+                    components.add(
+                        com.wingedsheep.engine.state.components.identity.CreatedByComponent(creatorId)
+                    )
+                }
+            }
             if (effect.attacking) {
                 // Token enters attacking — it joins the attack of the source creature
                 // (CR 802.2a: defender per attacking creature), falling back to the sole

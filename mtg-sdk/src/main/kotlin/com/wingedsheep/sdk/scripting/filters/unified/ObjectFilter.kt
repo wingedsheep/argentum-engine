@@ -572,6 +572,14 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.IsBlockingSource
     )
 
+    /**
+     * Must be a token created by the effect's source permanent (CR 111 provenance), recognized via
+     * the source's stamped `CreatedByComponent`. "Tokens created with this creature" (Tetravus).
+     */
+    fun createdBySource() = copy(
+        statePredicates = statePredicates + StatePredicate.CreatedBySource
+    )
+
     /** Must be attacking or blocking */
     fun attackingOrBlocking() = copy(
         statePredicates = statePredicates + StatePredicate.Or(
@@ -730,6 +738,13 @@ data class GameObjectFilter(
 
     /** Must be owned by an opponent (for cards in graveyards/exile that don't have controllers) */
     fun ownedByOpponent() = copy(controllerPredicate = ControllerPredicate.OwnedByOpponent)
+
+    /**
+     * Must be owned by the target player (Hurkyl's Recall — "all artifacts target player owns").
+     * Matches the card's immutable owner, so it captures battlefield permanents the target owns
+     * even when another player controls them.
+     */
+    fun ownedByTargetPlayer() = copy(controllerPredicate = ControllerPredicate.OwnedByTargetPlayer)
 
     /**
      * Must match [predicate] on the controller/owner axis. The entry point for *composed*

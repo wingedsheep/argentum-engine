@@ -55,6 +55,18 @@ data class CardComponent(
 data object TokenComponent : Component
 
 /**
+ * Provenance record stamped on a token created by a [CreateTokenEffect] with `stampCreator = true`:
+ * the entity id of the permanent that created it. Lets later abilities recognize "tokens created
+ * with this [permanent]" (CR 111 — a token's creator), read by the
+ * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource] filter against the
+ * effect's source. Tetravus uses it to reabsorb only the Tetravite tokens it minted.
+ *
+ * @property creatorId The entity id of the permanent that created this token.
+ */
+@Serializable
+data class CreatedByComponent(val creatorId: com.wingedsheep.sdk.model.EntityId) : Component
+
+/**
  * Tracks that an entity is a copy of another card.
  * The originalCardDefinitionId preserves what the card originally was (e.g., Clone),
  * while copiedCardDefinitionId tracks what it's currently copying.

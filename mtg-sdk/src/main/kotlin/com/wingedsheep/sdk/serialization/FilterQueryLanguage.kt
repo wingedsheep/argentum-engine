@@ -88,6 +88,7 @@ object FilterQueryLanguage {
         "ctrl:target-player" to "ControlledByTargetPlayer",
         "own:you" to "OwnedByYou",
         "own:opponent" to "OwnedByOpponent",
+        "own:target-player" to "OwnedByTargetPlayer",
     )
     private val CONTROLLER_PREDICATE_NAMES = CONTROLLER_PREDICATES.entries.associate { (k, v) -> v to k }
 

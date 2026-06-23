@@ -604,6 +604,14 @@ class ModalAndCloneContinuationResumer(
                     c.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice(chosenName))
                 }
             }
+            com.wingedsheep.sdk.scripting.ChoiceType.NUMBER -> {
+                if (response !is NumberChosenResponse) {
+                    return ExecutionResult.error(state, "Expected number chosen response for number choice")
+                }
+                state.updateEntity(spellId) { c ->
+                    c.withCastChoice(ChoiceSlot.CHOSEN_NUMBER, ChoiceValue.NumberChoice(response.number))
+                }
+            }
         }
 
         // Check if the card has remaining choices to chain to
@@ -729,6 +737,14 @@ class ModalAndCloneContinuationResumer(
                     ?: return ExecutionResult.error(state, "Invalid card name index: ${response.optionIndex}")
                 state.updateEntity(entityId) { c ->
                     c.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice(chosenName))
+                }
+            }
+            com.wingedsheep.sdk.scripting.ChoiceType.NUMBER -> {
+                if (response !is NumberChosenResponse) {
+                    return ExecutionResult.error(state, "Expected number chosen response for number choice")
+                }
+                state.updateEntity(entityId) { c ->
+                    c.withCastChoice(ChoiceSlot.CHOSEN_NUMBER, ChoiceValue.NumberChoice(response.number))
                 }
             }
         }

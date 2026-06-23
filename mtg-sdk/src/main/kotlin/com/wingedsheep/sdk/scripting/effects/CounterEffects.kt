@@ -119,6 +119,39 @@ data class RemoveAnyNumberOfCountersEffect(
 }
 
 /**
+ * "Remove any number of [counterType] counters from [the source]. For each counter removed this
+ * way, create one token described by [tokenFactory]." The controller is prompted for a number in
+ * `0..(count of [counterType] on the source)`; that many counters are removed from the source and
+ * that many tokens are minted (the [tokenFactory]'s own `count` is ignored — one token per counter
+ * removed). Set [tokenFactory].stampCreator to recognize the minted tokens later (Tetravus reabsorbs
+ * them via [com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource]).
+ *
+ * The counters-to-tokens half of Tetravus's upkeep. The reverse half — exile any number of those
+ * tokens, add that many counters back — composes from existing atoms (gather
+ * `CardSource.BattlefieldMatching(CreatedBySource)` → `SelectFromCollection(ChooseAnyNumber)` →
+ * `MoveCollection` to exile → `AddDynamicCounters(VariableReference("<collection>_count"))`), so no
+ * dedicated token-to-counters effect is needed.
+ *
+ * @property counterType Which counter kind to remove from the source.
+ * @property tokenFactory Template for each minted token (its `count` is overridden to the number removed).
+ */
+@SerialName("ConvertCountersToTokens")
+@Serializable
+data class ConvertCountersToTokensEffect(
+    val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
+    val tokenFactory: CreateTokenEffect
+) : Effect {
+    override val description: String =
+        "Remove any number of ${counterType.description} counters from this permanent. " +
+            "For each counter removed this way, ${tokenFactory.description.replaceFirstChar { it.lowercase() }}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFactory = tokenFactory.applyTextReplacement(replacer) as CreateTokenEffect
+        return if (newFactory !== tokenFactory) copy(tokenFactory = newFactory) else this
+    }
+}
+
+/**
  * Remove every counter (of any kind) from a target permanent.
  *
  * "Remove all counters from target creature."

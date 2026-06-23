@@ -551,6 +551,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   that many plus one +1/+1 counters on it instead." → `GrantCounterPlacementModifier()` with all defaults.
 - `RemoveCounters(type, count, target)` — remove N counters.
 - `RemoveAnyNumberOfCounters(target)` — player removes 0 or more.
+- `ConvertCountersToTokensEffect(counterType = +1/+1, tokenFactory)` — "remove any number of `counterType`
+  counters from this permanent; for each removed, create one token." Prompts for `0..(count on source)`,
+  removes that many, then mints exactly that many tokens from `tokenFactory` (its own `count` is ignored).
+  Set `tokenFactory.stampCreator = true` to make the minted tokens recognizable later. The
+  counters→tokens half of Tetravus; the reverse (exile any number of those tokens, add that many counters
+  back) **composes** from a pipeline — `gather(CardSource.BattlefieldMatching(filter = ….createdBySource(),
+  player = You))` → `chooseAnyNumber` → `exile` → `run(AddDynamicCounters("+1/+1",
+  VariableReference("<slot>_count"), Self))` — so no dedicated token→counters effect exists.
 - `RemoveAllCounters(target)` — wipe every counter.
 - `RemoveAllCountersOfType(type, target)` — wipe one kind.
 - `MoveAllLastKnownCounters(target)` — Hooded Hydra / Essence Channeler — move every counter kind from source's
@@ -666,7 +674,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   gets +1/+0 until end of turn. Activate only as a sorcery.\"" passes a single
   `ActivatedAbility(cost = AbilityCost.Tap, effect = Effects.ModifyStats(1, 0), targetRequirements =
   listOf(Targets.CreatureYouControl), timing = TimingRule.SorcerySpeed)`. (Remember a token is a
-  creature, so a `{T}` ability is summoning-sick the turn the token enters.)
+  creature, so a `{T}` ability is summoning-sick the turn the token enters.) The raw constructor also
+  exposes `stampCreator: Boolean` — when true each minted token records the creating permanent (the
+  effect's source) so later abilities can recognize "tokens created with this permanent" via the
+  `StatePredicate.CreatedBySource` filter (`.createdBySource()`). Tetravus uses it to reabsorb only the
+  Tetravite tokens it minted; off by default.
 - `CreateDynamicToken(dynamicPower, dynamicToughness, colors?, creatureTypes, keywords?, count?, controller?, imageUri?)` —
   tokens whose P/T is computed at resolution (e.g. Pure Reflection's X/X Reflection where X = the cast spell's mana
   value, via `DynamicAmounts.triggeringManaValue()`). `controller` directs who gets the token (e.g.
@@ -1144,6 +1156,18 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   under `then` read it through `ManaValueEqualsX` (`.manaValueEqualsX()`). Compose with `CompositeEffect` for
   multi-step cards (Void: destroy all artifacts/creatures with that mana value, then a target player reveals their
   hand and discards all nonland cards with that mana value).
+- `Effects.ChooseNumberForSource(minValue=0, maxValue=7, slot=ChoiceSlot.CHOSEN_NUMBER, prompt)` — pick a number in
+  `[minValue, maxValue]` and **store it durably on the source permanent** under `slot` (a `ChoiceValue.NumberChoice`
+  in its `CastChoicesComponent`, replacing any prior value). Unlike `ChooseNumberThen` (transient X for one inner
+  effect), the number persists so a characteristic-defining ability can read it for the permanent's whole life via
+  `DynamicAmount.CastChoice(slot)`. Re-callable — the **last** chosen value wins. This is the *on-resolution* form
+  (run from a triggered/activated ability, e.g. an upkeep re-choice); for the *as-enters* "As ~ enters, choose a
+  number" choice use the replacement `EntersWithChoice(ChoiceType.NUMBER, minValue, maxValue)` (§ replacement effects),
+  which writes the same `CHOSEN_NUMBER` slot before the permanent is on the battlefield. For a "you **may** choose"
+  clause mark the running triggered ability `optional = true` (declining keeps the prior value). Powers Shapeshifter
+  (replacement at entry + this effect each upkeep), whose P/T is a
+  `SetBasePowerToughnessDynamicStatic(power = CastChoice(CHOSEN_NUMBER), toughness = Subtract(Fixed(7),
+  CastChoice(CHOSEN_NUMBER)))` CDA — power = last chosen number, toughness = 7 − it.
 - `GrantHexproofFromChosenColorEffect(target)` — hexproof from chosen color.
 - `GrantProtectionFromChosenColorEffect(target)` — protection from chosen color. Must run inside `ChooseColorThen`; wrap in `ForEachInGroup` for the group case (Akroma's Blessing: "Creatures you control gain protection from the chosen color").
 - `Effects.GrantProtectionFromChosenCardType(target, duration)` — "gains protection from the card type of your choice" (Pippin, Guard of the Citadel). The card-type analogue of `GrantProtectionFromChosenColor`, but **self-contained**: its executor owns the choice — it presents a `ChooseOptionDecision` over the fixed protectable card-type set (Artifact, Creature, Enchantment, Instant, Land, Planeswalker, Sorcery, Battle) and, on response, grants a floating `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword for `duration`. The targeting validator, `StackResolver` spell-targeting, `DamageUtils`, the combat-damage pipeline/manager, and a `ProtectionFromCardTypeRule` block-evasion rule all match the protected keyword against the source's projected card types. (The "can't be enchanted/equipped by that type" clause is reminder text and unenforced at attach time, mirroring color/subtype protection.)
@@ -1639,6 +1663,15 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   entity that fired the trigger — e.g. Tectonic Instability "tap all lands its controller controls").
 - `.ownedByYou()` / `.ownedByOpponent()` — owner predicates (for graveyard/exile cards without a
   controller, and "you own" battlefield wordings).
+- `.ownedByTargetPlayer()` (`ControllerPredicate.OwnedByTargetPlayer`, FQL `own:target-player`) —
+  owned by the spell/ability's **target player**, the owner-axis sibling of `.targetPlayerControls()`.
+  Matches the card's immutable owner against `context.targetPlayerId`, so it captures battlefield
+  permanents the target owns even when another player controls them (after a control change) and
+  cards in other zones with no controller. Use for "all artifacts **target player owns**" wordings
+  (Hurkyl's Recall) where the spell may target either player, so a fixed owned-by-you/opponent
+  predicate can't express it. Gather with `Patterns.Group.returnAllToHand(GroupFilter(
+  GameObjectFilter.Artifact.ownedByTargetPlayer()))` — its `BattlefieldMatching(player = Player.Each)`
+  adds no `youControl` constraint, so the filter matches purely on ownership across the battlefield.
 - `.withControllerPredicate(p)` — set any `ControllerPredicate` directly; the entry point for the
   **composed** predicates `ControllerPredicate.And(list)` / `Or(list)` / `Not(p)`, which express
   heterogeneous controller/owner relationships in one filter — e.g. "creatures you own but don't
@@ -1836,6 +1869,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   for "Whenever this becomes blocked, it deals N damage to each creature blocking it" (Battle-Scarred
   Goblin). Resolves in resolution-time effect contexts (where the source is carried); inert in
   group/projection, untap, and trigger-gating contexts.
+- `CreatedBySource` (filter builder `createdBySource()`) — source-relative (CR 111 provenance): matches a
+  token whose stamped `CreatedByComponent.creatorId` equals the effect's `PredicateContext.sourceId` — a
+  token *created by the source permanent*. Stamped at creation by a `CreateTokenEffect` with
+  `stampCreator = true`. Backs "tokens created with this creature" (Tetravus reabsorbing its own Tetravite
+  tokens), which `"{filter} tokens you control"` can't express when several sources mint the same token.
+  Yields false for non-tokens / unstamped tokens / no source context.
 - `CrewedOrSaddledSourceThisTurn` (filter builder `crewedOrSaddledSourceThisTurn()`) —
   source-relative (CR 702.122 / 702.171): matches a creature that crewed or saddled the effect's
   source permanent this turn (i.e. one tapped to pay that permanent's Crew/Saddle cost). Resolves
@@ -4010,11 +4049,15 @@ Other gates available in both contexts:
   ```
 
 **Cast-choice slots (`ChoiceSlot`).** The choices an object locks in *as it is cast / as it enters*
-(CR 601.2b) — color, creature type, land type, mode, chosen creature, kicked-ness, blight amount — all
-ride one durable `CastChoicesComponent` on the stable entity (the immutable-ECS analogue of Forge's
-SVar bag). `{X}` has its own dedicated reader (`DynamicAmount.CastX`); the other slots are read
-generically via `DynamicAmount.CastChoice(slot)` (numeric), `CastChoiceMade(slot)` / `CastChoiceIs(slot,
-value)` (conditions), or consumed directly by effects (e.g. `Effects.CreateTokenOfChosenColorAndType`).
+(CR 601.2b) — color, creature type, land type, mode, chosen creature, kicked-ness, blight amount,
+`CHOSEN_NUMBER` — all ride one durable `CastChoicesComponent` on the stable entity (the immutable-ECS
+analogue of Forge's SVar bag). `{X}` has its own dedicated reader (`DynamicAmount.CastX`); the other
+slots are read generically via `DynamicAmount.CastChoice(slot)` (numeric), `CastChoiceMade(slot)` /
+`CastChoiceIs(slot, value)` (conditions), or consumed directly by effects (e.g.
+`Effects.CreateTokenOfChosenColorAndType`). `ChoiceSlot.CHOSEN_NUMBER` is the general-purpose,
+re-settable numeric slot written by `Effects.ChooseNumberForSource` and read by `DynamicAmount.CastChoice`
+— distinct from `BLIGHT_AMOUNT` (a one-time cast additional-cost X); it backs a free-standing repeatable
+number choice not tied to casting (Shapeshifter's 0–7 P/T choice).
 
 ---
 
@@ -4678,7 +4721,16 @@ a searchable option list) into the `CastChoicesComponent` under `ChoiceSlot.CARD
 filters, `GameObjectFilter.namedFromChosenComponent()` (→ `CardPredicate.NameEqualsChosenComponent`,
 see §7). Used by Petrified Hamlet ("When this land enters, choose a land card name", then two
 statics — `PreventActivatedAbilities(nonManaAbilitiesOnly = true)` and `GrantActivatedAbility` of a
-`{T}: Add {C}` mana ability — both filtered by `namedFromChosenComponent()`). Example — Phantasmal Terrain
+`{T}: Add {C}` mana ability — both filtered by `namedFromChosenComponent()`), and
+`ChoiceType.NUMBER` (set `minValue` / `maxValue`) writes a chosen number into the
+`CastChoicesComponent` under `ChoiceSlot.CHOSEN_NUMBER` as a `ChoiceValue.NumberChoice` — read back
+by a CDA via `DynamicAmount.CastChoice(CHOSEN_NUMBER)`. This is the *as-enters replacement* (CR
+614.1c) form of a number choice — chosen before the permanent is on the battlefield, no priority
+window at the default — versus `Effects.ChooseNumberForSource` (on resolution, e.g. from an upkeep
+trigger) writing the same slot. Shapeshifter uses the replacement at entry and the effect each
+upkeep: `replacementEffect(EntersWithChoice(ChoiceType.NUMBER, minValue = 0, maxValue = 7))` +
+`SetBasePowerToughnessDynamicStatic(power = CastChoice(CHOSEN_NUMBER), toughness = Subtract(Fixed(7),
+CastChoice(CHOSEN_NUMBER)))`. Example — Phantasmal Terrain
 ("As this Aura enters, choose a basic land type. Enchanted land is the chosen type."):
 
 ```kotlin
@@ -5205,8 +5257,9 @@ levels, saga chapters, faces — is covered automatically. What it checks:
   `targetRequirement`; granted/token abilities against their own requirements only.
 - **Choice slots** — a `ChoiceSlot` read (`CastChoiceMade`, `DynamicAmount.CastChoice`,
   `HasChosenColor`, `SourceChosenModeIs`, …) needs a declarer on the card (`EntersWithChoice`,
-  kicker, blight, sneak, `ChooseColorThen`/`ChooseColorForTarget`); `SourceChosenModeIs` ids
-  must match a declared `modeOptions` id.
+  kicker, blight, sneak, `ChooseColorThen`/`ChooseColorForTarget`, or `ChooseNumberForSource`,
+  which declares the slot named in its `slot` field); `SourceChosenModeIs` ids must match a
+  declared `modeOptions` id.
 - **Registry hygiene** — a string field whose name follows the dataflow conventions (`store*`,
   `from`, `collectionName`, `variableName`, …) on a node type the linter doesn't know is itself
   an error: **when you add an SDK type that reads or writes a named pipeline variable, classify
