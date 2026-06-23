@@ -185,3 +185,7 @@ gradle-app.setting
 
 # Claude Code per-agent git worktrees (transient — never commit)
 .claude/worktrees/
+
+# Claude Code local-only files (auto-loaded, machine/contributor-specific — never commit)
+CLAUDE.local.md
+.claude/settings.local.json
