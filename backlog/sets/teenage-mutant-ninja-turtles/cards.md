@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 157 / 190
+**Implemented:** 158 / 190
 ---
 
 - [x] Action News Crew
@@ -70,7 +70,7 @@
 - [x] Karai's Technique
 - [x] Karai, Future of the Foot
 - [x] Kitsune's Technique
-- [ ] Kitsune, Dragon's Daughter
+- [x] Kitsune, Dragon's Daughter
 - [ ] Koya, Death from Above
 - [ ] Krang & Shredder
 - [x] Krang, Master Mind

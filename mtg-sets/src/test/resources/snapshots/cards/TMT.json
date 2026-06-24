@@ -4007,6 +4007,116 @@
     ]
 }
 
+// Kitsune, Dragon's Daughter
+{
+    "name": "Kitsune, Dragon's Daughter",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Fox Warlock Avatar",
+    "oracleText": "Vigilance\nWhenever Kitsune enters or deals combat damage to a player, you may exchange control of two other target creatures controlled by different players.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeControl",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "target creature an opponent controls"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "target creature you control"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "target creature an opponent controls"
+                    }
+                ],
+                "descriptionOverride": "When Kitsune enters, you may exchange control of two other target creatures controlled by different players."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeControl",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "target creature an opponent controls"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "target creature you control"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "target creature an opponent controls"
+                    }
+                ],
+                "descriptionOverride": "Whenever Kitsune deals combat damage to a player, you may exchange control of two other target creatures controlled by different players."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Robin Har",
+        "flavorText": "\"You hunger for retribution, I know. And so I come to you with an offering . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a87a9257-4535-4286-8b59-a842ac45d05e.jpg?1769005699"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Krang, Master Mind
 {
     "name": "Krang, Master Mind",
