@@ -126,7 +126,7 @@ object LibraryPatterns {
      * the library the gather simply yields what's there (one card → manifest it, nothing to the
      * graveyard; empty library → nothing happens).
      */
-    fun manifestDread(): CompositeEffect = CompositeEffect(
+    fun manifestDread(markEntered: Boolean = false): CompositeEffect = CompositeEffect(
         listOf(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2)),
@@ -144,7 +144,13 @@ object LibraryPatterns {
             MoveCollectionEffect(
                 from = "manifestDreadManifested",
                 destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                faceDown = FaceDownMode.MANIFEST
+                faceDown = FaceDownMode.MANIFEST,
+                // Stamp the manifested permanent with EnteredViaAbilityComponent(this source) so a
+                // later CardSource.EnteredViaThisResolution gather can collect every creature this
+                // spell manifested — even across the manifest-dread pick pauses and a
+                // RepeatDynamicTimes body — backing "manifest dread X times, then put X +1/+1
+                // counters on each of those creatures" (Valgavoth's Onslaught).
+                markEnteredViaSourceAbility = markEntered
             ),
             MoveCollectionEffect(
                 from = "manifestDreadGraveyard",

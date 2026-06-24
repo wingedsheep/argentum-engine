@@ -922,7 +922,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   in `from` matching it (the rest stay), letting one revealed pile be split by type in successive
   steps — e.g. revealed lands → battlefield tapped, the rest → graveyard/library (Sméagol, Galadriel
   of Lothlórien, The Ring Goes South). (Equivalent to a `FilterCollection` partition; the inline
-  filter just avoids naming an intermediate collection.)
+  filter just avoids naming an intermediate collection.) `storeMovedAs = "<key>"` captures the
+  resulting entity ids under a pipeline collection; `markEnteredViaSourceAbility = true` stamps each
+  card that lands on the battlefield with `EnteredViaAbilityComponent(this source)` so a later
+  `GatherCards(CardSource.EnteredViaThisResolution)` can re-collect them from live battlefield state.
 - `ChangeTargetEffect(spell, newTarget)` — change a spell's target.
 - `ChangeSpellTargetEffect(spell, filter)` — same, filtered.
 - `ReselectTargetRandomlyEffect(spell)` — re-choose targets at random.
@@ -1244,9 +1247,16 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `manifest(count = 1)` — manifest the top N cards (CR 701.40): each is put onto the battlefield
   face down as a 2/2 creature (one at a time). A manifested creature card can be turned face up for
   its mana cost; a manifested non-creature can't.
-- `manifestDread()` — "Manifest dread" (CR 701.62, Duskmourn): look at the top two cards of your
-  library, manifest one of them (your choice), and put the other into your graveyard. Composes
-  gather → select → move-face-down(MANIFEST) → move-to-graveyard.
+- `manifestDread(markEntered = false)` — "Manifest dread" (CR 701.62, Duskmourn): look at the top
+  two cards of your library, manifest one of them (your choice), and put the other into your
+  graveyard. Composes gather → select → move-face-down(MANIFEST) → move-to-graveyard. Pass
+  `markEntered = true` to stamp each manifested permanent with `EnteredViaAbilityComponent(this
+  source)`, so wrapping it in `RepeatDynamicTimes(X, manifestDread(markEntered = true))` lets a later
+  `GatherCards(CardSource.EnteredViaThisResolution)` re-collect every creature this spell manifested
+  (across all X iterations and the per-iteration manifest-dread pick pauses) and reference "each of
+  those creatures" — e.g. **Valgavoth's Onslaught**: `RepeatDynamicTimes(XValue, manifestDread(true))`
+  → `GatherCards(EnteredViaThisResolution, "manifested")` → `AddCountersToCollection("manifested",
+  +1/+1, XValue)`.
 
 **Reveal patterns**
 
@@ -1436,6 +1446,14 @@ effect = Effects.Pipeline {
   those cards" (Fortune, Loyal Steed): `gather(CreaturesThatSaddledSource)` → `chooseUpTo(1)` →
   exile linked to the Mount alongside `CardSource.Self` → `gather(FromLinkedExile())` → return
   under owners' control.
+- `CardSource.EnteredViaThisResolution` — every permanent this resolving spell/ability put onto the
+  battlefield, found by the `EnteredViaAbilityComponent(this source)` stamp that a
+  `MoveCollection(markEnteredViaSourceAbility = true)` leaves (restricted to permanents still on the
+  battlefield). Reads live battlefield state rather than a pipeline collection, so it survives the
+  pauses of a multi-step resolution and the per-iteration contexts of a `RepeatDynamicTimes` body.
+  Backs "manifest dread X times, then put X +1/+1 counters on each of those creatures" (Valgavoth's
+  Onslaught): `RepeatDynamicTimes(XValue, manifestDread(markEntered = true))` →
+  `gather(EnteredViaThisResolution)` → `AddCountersToCollection(+1/+1, XValue)`.
 
 A card needing a genuinely **new step semantic** (a new capture kind, a new decision shape) still
 adds the `Effect` + executor first (`add-feature`); the builder only composes the existing

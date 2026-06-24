@@ -231,6 +231,25 @@ sealed interface CardSource {
     data object CreaturesThatSaddledSource : CardSource {
         override val description: String = "creatures that saddled it this turn"
     }
+
+    /**
+     * Every permanent that was put onto the battlefield by *this* resolving spell or ability, read
+     * off the `EnteredViaAbilityComponent(sourceId == context.sourceId)` stamp left by a
+     * [MoveCollectionEffect] with `markEnteredViaSourceAbility = true`. Restricted to permanents
+     * still on the battlefield.
+     *
+     * Unlike accumulating into a pipeline collection, this reads *live battlefield state*, so it
+     * survives the pauses a multi-step resolution makes (e.g. a manifest-dread pick) and a
+     * `RepeatDynamicTimes` body — every iteration's permanent carries the same stamp. Backs
+     * "manifest dread X times, then put X +1/+1 counters on each of *those* creatures"
+     * (Valgavoth's Onslaught): `RepeatDynamicTimes(X, manifestDread(markEntered = true))` →
+     * `GatherCards(EnteredViaThisResolution)` → `AddCountersToCollection(...)`.
+     */
+    @SerialName("EnteredViaThisResolution")
+    @Serializable
+    data object EnteredViaThisResolution : CardSource {
+        override val description: String = "permanents put onto the battlefield this way"
+    }
 }
 
 /**

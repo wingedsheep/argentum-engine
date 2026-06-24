@@ -6596,6 +6596,75 @@
     ]
 }
 
+// Jump Scare
+{
+    "name": "Jump Scare",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +2/+2, gains flying, and becomes a Horror enchantment creature in addition to its other types.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                {
+                    "type": "AddCreatureType",
+                    "subtype": "Horror",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "AddCardType",
+                    "cardType": "ENCHANTMENT",
+                    "duration": "EndOfTurn"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "John Tedrick",
+        "flavorText": "\"Boo!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2dd8903-31ca-470d-b2ff-280f6d40c794.jpg?1726285919"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Killer's Mask
 {
     "name": "Killer's Mask",
@@ -11333,6 +11402,84 @@
     ]
 }
 
+// Trial of Agony
+{
+    "name": "Trial of Agony",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. Trial of Agony deals 5 damage to that creature, and the other can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "trialCreatures"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "trialCreatures",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "ControllerOfSelection",
+                    "storeSelected": "trialChosen",
+                    "storeRemainder": "trialOther",
+                    "prompt": "Choose one of the two creatures to take 5 damage",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "trialChosen"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "trialOther"
+                    },
+                    "body": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "sameController": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Sass",
+        "flavorText": "All it took to shatter their lifelong bond was a scrap of hope.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa62f67a-d20f-4d99-b0a2-327634299c9f.jpg?1726286448"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tunnel Surveyor
 {
     "name": "Tunnel Surveyor",
@@ -12528,6 +12675,95 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/5/65ff914e-3f3e-4b7a-b69d-73575b68fb8e.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Valgavoth's Onslaught
+{
+    "name": "Valgavoth's Onslaught",
+    "manaCost": "{X}{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Manifest dread X times, then put X +1/+1 counters on each of those creatures. (To manifest dread, look at the top two cards of your library, then put one onto the battlefield face down as a 2/2 creature and the other into your graveyard. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RepeatDynamicTimes",
+                    "amount": "XValue",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeAs": "manifestDreadLooked"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "manifestDreadLooked",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "manifestDreadManifested",
+                                "storeRemainder": "manifestDreadGraveyard",
+                                "selectedLabel": "Manifest (put onto the battlefield face down)",
+                                "remainderLabel": "Put into your graveyard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "manifestDreadManifested",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "faceDown": "MANIFEST",
+                                "markEnteredViaSourceAbility": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "manifestDreadGraveyard",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": "EnteredViaThisResolution",
+                    "storeAs": "valgavothManifested"
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "valgavothManifested",
+                    "counterType": "+1/+1",
+                    "amount": "XValue"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "flavorText": "Tyvar and the Wanderer were done running.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d4ba274-3c6f-4e12-ba2c-a81c3da3f7e2.jpg?1726286630"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Vanish from Sight

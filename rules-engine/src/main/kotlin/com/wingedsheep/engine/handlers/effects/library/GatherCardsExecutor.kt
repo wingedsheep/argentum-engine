@@ -217,6 +217,20 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                     ?.filter { it in battlefield }
                     ?: emptyList()
             }
+
+            is CardSource.EnteredViaThisResolution -> {
+                // Permanents this resolving spell/ability put onto the battlefield, identified by the
+                // EnteredViaAbilityComponent stamp (markEnteredViaSourceAbility) referencing this
+                // source. Reads live battlefield state, so it survives the pauses of a multi-step
+                // resolution and a RepeatDynamicTimes body (Valgavoth's Onslaught).
+                val sourceId = context.sourceId
+                    ?: return EffectResult.error(state, "No source entity for EnteredViaThisResolution")
+                state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.EnteredViaAbilityComponent>()
+                        ?.sourceId == sourceId
+                }
+            }
         }
 
         if (cards.isEmpty()) {
