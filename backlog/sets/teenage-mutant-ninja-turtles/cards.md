@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 161 / 190
+**Implemented:** 162 / 190
 ---
 
 - [x] Action News Crew
@@ -140,7 +140,7 @@
 - [x] Raphael, Tough Turtle
 - [ ] Rat King, Verminister
 - [x] Ravenous Robots
-- [ ] Ray Fillet, Man Ray
+- [x] Ray Fillet, Man Ray
 - [x] Renet, Temporal Apprentice
 - [x] Retro-Mutation
 - [x] Return to the Sewers
