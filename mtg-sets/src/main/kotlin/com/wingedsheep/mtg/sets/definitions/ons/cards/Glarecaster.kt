@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect
+import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
@@ -32,7 +33,11 @@ val Glarecaster = card("Glarecaster") {
         val t = target("target", AnyTarget())
         effect = RedirectNextDamageEffect(
             protectedTargets = listOf(EffectTarget.Self, EffectTarget.Controller),
-            redirectTo = t
+            redirectTo = t,
+            // "The next TIME damage would be dealt" — combat damage is dealt simultaneously
+            // (CR 510.2), so this redirects every instance dealt to Glarecaster and/or you in
+            // that one step, then is used up.
+            scope = RedirectScope.NEXT_BATCH
         )
     }
 

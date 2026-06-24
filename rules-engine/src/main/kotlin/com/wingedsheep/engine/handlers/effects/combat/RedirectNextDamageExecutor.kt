@@ -41,7 +41,7 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.RedirectNextDamage(redirectToId, effect.amount),
+            modification = SerializableModification.RedirectNextDamage(redirectToId, effect.amount, effect.scope),
             affectedEntities = protectedIds,
             duration = Duration.EndOfTurn,
             context = context

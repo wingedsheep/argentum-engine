@@ -315,4 +315,62 @@ class GlarecasterTest : FunSpec({
         val p2Life = driver.state.getEntity(p2)?.get<LifeTotalComponent>()?.life ?: 0
         p2Life shouldBe 15 // 20 - 5 redirected combat damage
     }
+
+    test("redirect ALL simultaneous combat damage from multiple attackers (CR 510.2)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Plains" to 40),
+            startingLife = 20
+        )
+
+        val p1 = driver.activePlayer!!
+        val p2 = driver.getOpponent(p1)
+
+        // Advance to P2's precombat main (P2 will attack into P1's Glarecaster).
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.activePlayer shouldBe p2
+
+        val glarecaster = driver.putCreatureOnBattlefield(p1, "Glarecaster")
+        driver.removeSummoningSickness(glarecaster)
+
+        // P2 fields two attackers: Big Creature (5/5) and Hill Giant (3/3).
+        val bigCreature = driver.putCreatureOnBattlefield(p2, "Big Creature")
+        driver.removeSummoningSickness(bigCreature)
+        val hillGiant = driver.putCreatureOnBattlefield(p2, "Hill Giant")
+        driver.removeSummoningSickness(hillGiant)
+
+        driver.passPriority(p2)
+
+        // P1 activates Glarecaster targeting P2 (the attacking player).
+        driver.giveMana(p1, Color.WHITE, 6)
+        driver.submit(
+            ActivateAbility(
+                playerId = p1,
+                sourceId = glarecaster,
+                abilityId = abilityId,
+                targets = listOf(ChosenTarget.Player(p2))
+            )
+        ).isSuccess shouldBe true
+        driver.bothPass()
+
+        // Both attackers swing at P1 unblocked.
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(p2, listOf(bigCreature, hillGiant), p1)
+        driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        // All 8 combat damage is dealt simultaneously, so the single shield redirects BOTH
+        // attackers' damage to P2 — not just the first attacker processed.
+        val p1Life = driver.state.getEntity(p1)?.get<LifeTotalComponent>()?.life ?: 0
+        p1Life shouldBe 20 // No damage to P1
+
+        val p2Life = driver.state.getEntity(p2)?.get<LifeTotalComponent>()?.life ?: 0
+        p2Life shouldBe 12 // 20 - (5 + 3) redirected combat damage
+
+        // The shield is used up after the batch.
+        driver.state.floatingEffects.any {
+            it.effect.modification is SerializableModification.RedirectNextDamage
+        } shouldBe false
+    }
 })

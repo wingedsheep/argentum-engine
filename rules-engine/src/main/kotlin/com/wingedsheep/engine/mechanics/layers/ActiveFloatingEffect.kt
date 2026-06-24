@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -365,16 +366,20 @@ sealed interface SerializableModification {
     data object PreventAllDamageDealtBy : SerializableModification
 
     /**
-     * Damage redirection shield: the next time damage would be dealt to any of the
-     * affected entities this turn, redirect that damage to the specified target instead.
-     * Used by Glarecaster and similar effects.
-     * The shield is consumed after the first redirection and removed.
+     * Damage redirection shield: while active, damage that would be dealt to any of the affected
+     * entities this turn is redirected to the specified target instead. Used by Glarecaster and
+     * similar effects. When the shield is used up depends on [amount] and [scope]:
+     * - `amount != null` — a capacity shield (CR 615.7); decremented as it redirects, removed at 0.
+     * - `amount == null` — removal is governed by [scope]: after one instance ([RedirectScope.NEXT_INSTANCE]),
+     *   after a whole simultaneous batch like a combat damage step ([RedirectScope.NEXT_BATCH], CR 510.2),
+     *   or never until its duration expires ([RedirectScope.CONTINUOUS]).
      */
     @Serializable
     data class RedirectNextDamage(
         val redirectToId: EntityId,
         /** If set, only redirect up to this many damage. Null = redirect all (Glarecaster). */
-        val amount: Int? = null
+        val amount: Int? = null,
+        val scope: RedirectScope = RedirectScope.NEXT_INSTANCE
     ) : SerializableModification
 
     /**

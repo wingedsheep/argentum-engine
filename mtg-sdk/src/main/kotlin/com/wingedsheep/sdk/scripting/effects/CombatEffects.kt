@@ -529,24 +529,53 @@ data class CanAttackDespiteDefenderThisTurnEffect(
 }
 
 /**
- * Redirect the next time damage would be dealt to the protected targets this turn.
+ * Controls when a [RedirectNextDamageEffect] shield is used up. Only meaningful when [amount] is
+ * `null`; a capacity-limited shield (`amount != null`) is always used up once its capacity reaches 0.
+ * See CR 510.2 (combat damage is dealt simultaneously) and CR 614.9 (redirection effects).
+ */
+@Serializable
+enum class RedirectScope {
+    /**
+     * Used up after redirecting the next single instance of damage (one source → one recipient).
+     * "The next time a source of your choice would deal damage to you…" (Beacon of Destiny).
+     */
+    NEXT_INSTANCE,
+
+    /**
+     * Used up after redirecting every instance of damage dealt in the next *simultaneous moment* —
+     * e.g. all combat damage dealt in one combat damage step (CR 510.2). The shield catches the whole
+     * batch, then is consumed once. "The next time damage would be dealt to X and/or you…" (Glarecaster).
+     */
+    NEXT_BATCH,
+
+    /**
+     * Never self-consumed; redirects every applicable instance until the shield's [Duration] expires.
+     * "All damage that would be dealt to it this turn…" (Karona's Zealot).
+     */
+    CONTINUOUS,
+}
+
+/**
+ * Redirect damage that would be dealt to the protected targets this turn.
  * "The next time damage would be dealt to [protected targets] this turn,
  *  that damage is dealt to [redirectTo] instead."
  * Used for Glarecaster and similar redirection effects.
  *
  * @property protectedTargets The entities protected by this redirection shield (e.g., Self + Controller)
  * @property redirectTo The target that will receive the redirected damage (chosen at activation)
+ * @property amount If set, only redirect up to this many damage (e.g., "the next 1 damage"). Null = redirect all.
+ * @property scope When the shield is used up (only meaningful when [amount] is null). See [RedirectScope].
  */
 @SerialName("RedirectNextDamage")
 @Serializable
 data class RedirectNextDamageEffect(
     val protectedTargets: List<EffectTarget>,
     val redirectTo: EffectTarget,
-    /** If set, only redirect up to this many damage (e.g., "the next 1 damage"). Null = redirect all. */
-    val amount: Int? = null
+    val amount: Int? = null,
+    val scope: RedirectScope = RedirectScope.NEXT_INSTANCE
 ) : Effect {
     override val description: String = buildString {
-        append("The next ")
+        append(if (scope == RedirectScope.CONTINUOUS) "All " else "The next ")
         if (amount != null) append("$amount ")
         append("damage that would be dealt to ${protectedTargets.joinToString(" and/or ") { it.description }} this turn")
         append(" is dealt to ${redirectTo.description} instead")

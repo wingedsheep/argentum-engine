@@ -4242,7 +4242,8 @@
                     "redirectTo": {
                         "type": "BoundVariable",
                         "name": "target creature"
-                    }
+                    },
+                    "scope": "CONTINUOUS"
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

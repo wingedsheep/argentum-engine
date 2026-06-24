@@ -50,6 +50,7 @@ import com.wingedsheep.sdk.scripting.ModifyLifeLoss
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 import com.wingedsheep.sdk.scripting.RedirectDamage
+import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.conditions.Condition
@@ -854,7 +855,12 @@ object DamageUtils {
      * @param damageAmount The amount of damage about to be dealt
      * @return Triple of (updated state with consumed/decremented shield, redirect target ID or null, amount to redirect)
      */
-    fun checkDamageRedirection(state: GameState, targetId: EntityId, damageAmount: Int): Triple<GameState, EntityId?, Int> {
+    fun checkDamageRedirection(
+        state: GameState,
+        targetId: EntityId,
+        damageAmount: Int,
+        inBatch: Boolean = false
+    ): Triple<GameState, EntityId?, Int> {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
             effect.effect.modification is SerializableModification.RedirectNextDamage &&
                 targetId in effect.effect.affectedEntities
@@ -868,21 +874,28 @@ object DamageUtils {
 
         val updatedEffects = state.floatingEffects.toMutableList()
         if (mod.amount != null) {
+            // Capacity shield (CR 615.7) — decrement; remove once the capacity is used up.
             val remaining = mod.amount - redirectAmount
             if (remaining <= 0) {
-                // Shield fully consumed
                 updatedEffects.removeAt(shieldIndex)
             } else {
-                // Decrement the shield
                 updatedEffects[shieldIndex] = shield.copy(
-                    effect = shield.effect.copy(
-                        modification = mod.copy(amount = remaining)
-                    )
+                    effect = shield.effect.copy(modification = mod.copy(amount = remaining))
                 )
             }
         } else {
-            // No amount limit — consume the whole shield
-            updatedEffects.removeAt(shieldIndex)
+            // Unlimited shield — when it is used up depends on its scope.
+            when (mod.scope) {
+                // One source's instance, then gone.
+                RedirectScope.NEXT_INSTANCE -> updatedEffects.removeAt(shieldIndex)
+                // All damage in one simultaneous moment (e.g. a whole combat damage step, CR 510.2).
+                // Inside such a batch the shield must survive so it redirects every instance; the
+                // caller consumes it once after the batch (see CombatDamageManager.consumeBatchRedirectShields).
+                // Outside a batch a single instance *is* the whole moment, so consume it now.
+                RedirectScope.NEXT_BATCH -> if (!inBatch) updatedEffects.removeAt(shieldIndex)
+                // "All damage this turn" — never self-consumed; expires only with its duration.
+                RedirectScope.CONTINUOUS -> { /* keep the shield */ }
+            }
         }
 
         return Triple(state.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount)

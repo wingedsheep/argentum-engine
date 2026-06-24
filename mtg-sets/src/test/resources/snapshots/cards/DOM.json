@@ -4500,12 +4500,13 @@
                     "left": {
                         "type": "AggregateBattlefield",
                         "player": "You",
-                        "filter": "creature Wizard"
+                        "filter": "creature Wizard",
+                        "excludeSelf": true
                     },
                     "operator": "GTE",
                     "right": {
                         "type": "Fixed",
-                        "amount": 2
+                        "amount": 1
                     }
                 }
             }

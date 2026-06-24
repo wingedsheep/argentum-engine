@@ -381,10 +381,14 @@ class CastPaymentProcessor(
                 currentState = currentState.updateEntity(playerId) { container ->
                     var pool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
                     for (entry in solution.remainingBonusMana) {
-                        pool = if (entry.restriction != null) {
-                            pool.addRestricted(entry.color, entry.amount, entry.restriction)
-                        } else {
-                            pool.add(entry.color, entry.amount)
+                        pool = when {
+                            // Colorless excess (e.g. Sol Ring's unused second {C}) floats as colorless.
+                            entry.colorless && entry.restriction != null ->
+                                pool.addRestricted(null, entry.amount, entry.restriction)
+                            entry.colorless -> pool.addColorless(entry.amount)
+                            entry.restriction != null ->
+                                pool.addRestricted(entry.color, entry.amount, entry.restriction)
+                            else -> pool.add(entry.color, entry.amount)
                         }
                     }
                     container.with(pool)

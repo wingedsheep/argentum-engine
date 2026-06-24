@@ -29,10 +29,18 @@ val GhituJourneymage = card("Ghitu Journeymage") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
+        // "If you control another Wizard" — count Wizards OTHER than Ghitu Journeymage itself and
+        // require at least one. Counting all Wizards (including self) >= 2 would be wrong whenever
+        // Ghitu Journeymage is not a Wizard when the intervening-if is checked (CR 603.4) — e.g. a
+        // type-changing effect strips its subtypes, or it entered as a non-Wizard.
         triggerCondition = Compare(
-            DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Wizard")),
+            DynamicAmount.AggregateBattlefield(
+                Player.You,
+                GameObjectFilter.Creature.withSubtype("Wizard"),
+                excludeSelf = true
+            ),
             ComparisonOperator.GTE,
-            DynamicAmount.Fixed(2)
+            DynamicAmount.Fixed(1)
         )
         effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent))
     }

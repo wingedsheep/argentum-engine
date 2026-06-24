@@ -214,6 +214,12 @@ data class BonusManaEntry(
      * unspent and lands in the pool.
      */
     val anyColor: Boolean = false,
+    /**
+     * When true this entry is colorless excess from a multi-mana colorless source (e.g. the
+     * second {C} of Sol Ring's "{T}: Add {C}{C}"). It can pay generic and {C} costs but never
+     * a colored pip; [color] is an unused placeholder and the entry floats back as colorless.
+     */
+    val colorless: Boolean = false,
 )
 
 /**
@@ -346,9 +352,18 @@ class ManaSolver(
             // Track excess mana from multi-mana sources (e.g., Elvish Aberration produces 3 green).
             // Inherit the source's restriction for that color so leftover restricted mana
             // remains restricted in the pool.
-            if (source.manaAmount > 1 && colorUsed != null) {
-                val restrictionForExcess = source.colorRestrictions[colorUsed] ?: source.restriction
-                bonusManaPool.add(BonusManaEntry(colorUsed, source.manaAmount - 1, restrictionForExcess))
+            if (source.manaAmount > 1) {
+                if (colorUsed != null) {
+                    val restrictionForExcess = source.colorRestrictions[colorUsed] ?: source.restriction
+                    bonusManaPool.add(BonusManaEntry(colorUsed, source.manaAmount - 1, restrictionForExcess))
+                } else if (source.producesColorless) {
+                    // Colorless excess (e.g. the second {C} of Sol Ring's "{T}: Add {C}{C}").
+                    // Float it as colorless so a later generic/{C} pip can consume it, or it
+                    // lands in the pool — instead of being silently dropped.
+                    bonusManaPool.add(
+                        BonusManaEntry(Color.WHITE, source.manaAmount - 1, source.restriction, colorless = true)
+                    )
+                }
             }
             // Collect bonus mana from auras attached to this source (no restriction —
             // the aura grants extra mana on top of the source's printed ability).
@@ -374,8 +389,9 @@ class ManaSolver(
         // restrictions land back in [ManaSolution.remainingBonusMana] for the caller.
         fun spendBonusMana(color: Color): Boolean {
             // An any-color bonus entry (Fertile Ground) can pay a cost of any color; prefer an exact
-            // color match first so fixed-color bonuses aren't wasted on flexible demand.
-            val idx = bonusManaPool.indexOfFirst { it.color == color && it.amount > 0 }
+            // color match first so fixed-color bonuses aren't wasted on flexible demand. Colorless
+            // excess is excluded — it can never satisfy a colored pip.
+            val idx = bonusManaPool.indexOfFirst { it.color == color && !it.colorless && it.amount > 0 }
                 .takeIf { it >= 0 }
                 ?: bonusManaPool.indexOfFirst { it.anyColor && it.amount > 0 }
             if (idx < 0) return false
@@ -388,6 +404,16 @@ class ManaSolver(
         // policy as [spendBonusMana].
         fun spendAnyBonusMana(): Boolean {
             val idx = bonusManaPool.indexOfFirst { it.amount > 0 }
+            if (idx < 0) return false
+            val entry = bonusManaPool[idx]
+            bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
+            return true
+        }
+
+        // Helper to spend one colorless bonus mana for a {C} pip — only colorless excess
+        // (e.g. Sol Ring's second {C}) qualifies; colored bonus mana can't pay {C}.
+        fun spendColorlessBonusMana(): Boolean {
+            val idx = bonusManaPool.indexOfFirst { it.colorless && it.amount > 0 }
             if (idx < 0) return false
             val entry = bonusManaPool[idx]
             bonusManaPool[idx] = entry.copy(amount = entry.amount - 1)
@@ -501,6 +527,10 @@ class ManaSolver(
                     useSource(source, symbol.color)
                 }
                 is ManaSymbol.Colorless -> {
+                    // A floated colorless bonus (e.g. the second {C} from a Sol Ring already
+                    // tapped for an earlier pip) pays this {C} without tapping another source.
+                    if (spendColorlessBonusMana()) continue
+
                     // Must pay with actual colorless mana (from Wastes, etc.)
                     // Sort colorless sources by priority
                     val source = remainingSources

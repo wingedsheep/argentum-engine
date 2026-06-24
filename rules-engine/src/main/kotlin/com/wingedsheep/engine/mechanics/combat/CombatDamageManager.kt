@@ -32,6 +32,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
+import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import java.util.UUID
 
 /**
@@ -253,6 +254,11 @@ internal class CombatDamageManager(
 
         // Consume one-shot redirect effects for creatures that dealt damage
         newState = consumeUsedRedirectEffects(newState, finalAssignments)
+
+        // Consume "next moment" redirect shields (Glarecaster) now that the whole simultaneous
+        // combat-damage batch has been dealt (CR 510.2). They were kept alive during the apply
+        // loop so they redirected every instance, not just the first.
+        newState = consumeBatchRedirectShields(newState, finalAssignments)
 
         // Lifelink
         val lifelinkResult = applyLifelinkFromDamageEvents(newState, events, projected)
@@ -849,9 +855,12 @@ internal class CombatDamageManager(
         newState = shieldState
         if (effectiveAmount <= 0) return newState
 
-        // Damage redirection (Glarecaster, Zealous Inquisitor)
+        // Damage redirection (Glarecaster, Zealous Inquisitor). inBatch=true so a one-shot
+        // "next moment" shield (Glarecaster) survives to redirect every instance of this
+        // simultaneous combat-damage step (CR 510.2); it is consumed once afterwards by
+        // consumeBatchRedirectShields.
         val (redirectState, redirectTargetId, redirectAmount) = DamageUtils.checkDamageRedirection(
-            newState, targetId, effectiveAmount
+            newState, targetId, effectiveAmount, inBatch = true
         )
         newState = redirectState
         if (redirectTargetId != null && redirectAmount > 0) {
@@ -977,9 +986,11 @@ internal class CombatDamageManager(
         newState = shieldState
         if (effectiveAmount <= 0) return newState
 
-        // Damage redirection (Glarecaster, Zealous Inquisitor)
+        // Damage redirection (Glarecaster, Zealous Inquisitor). See applyDamageToPlayer for why
+        // inBatch=true — a Glarecaster shield protects its controller's creatures too, so a blocked
+        // attacker's damage to a protected blocker is redirected as part of the same batch.
         val (redirectState, redirectTargetId, redirectAmount) = DamageUtils.checkDamageRedirection(
-            newState, targetId, effectiveAmount
+            newState, targetId, effectiveAmount, inBatch = true
         )
         newState = redirectState
         if (redirectTargetId != null && redirectAmount > 0) {
@@ -1212,6 +1223,31 @@ internal class CombatDamageManager(
             newState = consumeRedirectCombatDamageToController(newState, creatureId)
         }
         return newState
+    }
+
+    /**
+     * Remove [RedirectScope.NEXT_BATCH] redirection shields (Glarecaster) that redirected damage
+     * during this combat damage step. Because all combat damage is dealt simultaneously (CR 510.2),
+     * such a one-shot shield catches every instance dealt to its protected entities this step and is
+     * then used up once — so it is consumed here, after the whole batch, rather than after the first
+     * assignment (which is why [DamageUtils.checkDamageRedirection] is called with inBatch=true above).
+     *
+     * [RedirectScope.CONTINUOUS] shields (Karona's Zealot) are intentionally left intact — they keep
+     * redirecting for the rest of the turn. A shield is treated as used if any assigned damage this
+     * step targeted one of its protected entities.
+     */
+    private fun consumeBatchRedirectShields(state: GameState, assignments: List<CombatDamageAssignment>): GameState {
+        val damagedTargets = assignments.filter { it.amount > 0 }.map { it.targetId }.toSet()
+        if (damagedTargets.isEmpty()) return state
+
+        val remaining = state.floatingEffects.filterNot { fe ->
+            val mod = fe.effect.modification
+            mod is SerializableModification.RedirectNextDamage &&
+                mod.amount == null &&
+                mod.scope == RedirectScope.NEXT_BATCH &&
+                fe.effect.affectedEntities.any { it in damagedTargets }
+        }
+        return if (remaining.size == state.floatingEffects.size) state else state.copy(floatingEffects = remaining)
     }
 
     // =========================================================================

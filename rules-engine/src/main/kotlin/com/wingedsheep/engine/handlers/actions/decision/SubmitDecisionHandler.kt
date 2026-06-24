@@ -87,7 +87,13 @@ class SubmitDecisionHandler(
                 val untapAdvanceResult = turnManager.advanceStep(result.state)
                 return advanceWithTriggerDetection(
                     untapAdvanceResult,
-                    listOf(submittedEvent) + result.events
+                    listOf(submittedEvent) + result.events,
+                    // The resumed untap choice emits the UntappedEvents (one per permanent that
+                    // actually untapped). Those must be run through event-based trigger detection
+                    // or "becomes untapped" triggers (Tawnos's Coffin) are lost — the non-paused
+                    // untap path carries these forward to PassPriorityHandler's detection, so this
+                    // paused-resume path has to do the same.
+                    detectPrecedingEvents = true
                 )
             }
 
@@ -198,7 +204,12 @@ class SubmitDecisionHandler(
      */
     private fun advanceWithTriggerDetection(
         advanceResult: ExecutionResult,
-        precedingEvents: List<GameEvent>
+        precedingEvents: List<GameEvent>,
+        // When true, run event-based trigger detection over [precedingEvents] as well as the
+        // step-advance events. The untap-resume path sets this so the UntappedEvents emitted by
+        // the resolved untap choice fire "becomes untapped" triggers; other callers (cleanup)
+        // keep the historical behaviour of detecting only on the advance events.
+        detectPrecedingEvents: Boolean = false
     ): ExecutionResult {
         if (!advanceResult.isSuccess || advanceResult.events.isEmpty()) {
             return ExecutionResult(
@@ -210,7 +221,12 @@ class SubmitDecisionHandler(
         }
 
         var currentState = advanceResult.newState
-        val triggers = triggerDetector.detectTriggers(currentState, advanceResult.events).toMutableList()
+        val eventsForDetection = if (detectPrecedingEvents) {
+            precedingEvents + advanceResult.events
+        } else {
+            advanceResult.events
+        }
+        val triggers = triggerDetector.detectTriggers(currentState, eventsForDetection).toMutableList()
 
         val stepChangedEvent = advanceResult.events.filterIsInstance<StepChangedEvent>().lastOrNull()
         if (stepChangedEvent != null) {

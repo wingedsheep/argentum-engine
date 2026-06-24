@@ -7106,7 +7106,8 @@
                     "redirectTo": {
                         "type": "BoundVariable",
                         "name": "target"
-                    }
+                    },
+                    "scope": "NEXT_BATCH"
                 },
                 "targetRequirements": [
                     {

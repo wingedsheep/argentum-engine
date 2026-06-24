@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect
+import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -30,7 +31,10 @@ val KaronasZealot = card("Karona's Zealot") {
         effect = RedirectNextDamageEffect(
             protectedTargets = listOf(EffectTarget.Self),
             redirectTo = creature,
-            amount = null
+            amount = null,
+            // "ALL damage that would be dealt to it this turn" — a continuous shield that redirects
+            // every instance for the rest of the turn, never used up by a single redirection.
+            scope = RedirectScope.CONTINUOUS
         )
     }
 
