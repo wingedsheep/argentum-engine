@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.tmt.cards
 
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.sneak
 import com.wingedsheep.sdk.model.Rarity
@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Each player may discard their hand and draw seven cards.
  *
  * A per-player optional wheel, in APNAP order: [ForEachPlayerEffect] over [Player.Each] iterates
- * every player and rebinds the body's controller to the current player, so [HandPatterns.discardHand]
+ * every player and rebinds the body's controller to the current player, so `Patterns.Hand.discardHand`
  * (of `EffectTarget.Controller`) and [Effects.DrawCards] act on them. Each player's body is wrapped
  * in [MayEffect] with `decisionMaker = Controller`, so every player independently chooses yes/no;
  * declining means no discard and no draw, honoring "may … and …" as one combined optional action.
@@ -41,7 +41,7 @@ val RaphaelsTechnique = card("Raphael's Technique") {
                 MayEffect(
                     decisionMaker = EffectTarget.Controller,
                     effect = Effects.Composite(
-                        HandPatterns.discardHand(EffectTarget.Controller),
+                        Patterns.Hand.discardHand(EffectTarget.Controller),
                         Effects.DrawCards(7)
                     )
                 )

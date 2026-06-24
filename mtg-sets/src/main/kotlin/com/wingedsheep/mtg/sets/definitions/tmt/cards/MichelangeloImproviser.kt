@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.tmt.cards
 
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.HandPatterns
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.sneak
@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * land card from your hand onto the battlefield.
  *
  * "A creature card and/or a land card" is two independent up-to-one selections — one over
- * creature cards in hand, one over land cards — composed in sequence ([HandPatterns.putFromHand]
+ * creature cards in hand, one over land cards — composed in sequence (`Patterns.Hand.putFromHand`
  * with `count = 1`, which uses a `ChooseUpTo(1)` selection). Because each selection allows
  * picking zero, every combination the "and/or … you may" wording permits is reachable: a
  * creature only, a land only, both, or neither (declining outright).
@@ -39,8 +39,8 @@ val MichelangeloImproviser = card("Michelangelo, Improviser") {
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
         effect = Effects.Composite(
-            HandPatterns.putFromHand(GameObjectFilter.Creature, count = 1),
-            HandPatterns.putFromHand(GameObjectFilter.Land, count = 1)
+            Patterns.Hand.putFromHand(GameObjectFilter.Creature, count = 1),
+            Patterns.Hand.putFromHand(GameObjectFilter.Land, count = 1)
         )
     }
 

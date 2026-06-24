@@ -2,12 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.tmt.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.sneak
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -26,9 +26,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * attacking that player.
  *
  * The trigger targets up to one creature card in the damaged player's graveyard ([TargetObject]
- * with `optional = true`, scoped to [Zone.GRAVEYARD]) and reanimates it via a [MoveToZoneEffect]
+ * with `optional = true`, scoped to [Zone.GRAVEYARD]) and reanimates it via `Effects.Move`
  * to the battlefield with `controllerOverride = Controller` (under your control) and
- * [ZonePlacement.TappedAndAttacking] (tapped and attacking the defending player) — the same
+ * `ZonePlacement.TappedAndAttacking` (tapped and attacking the defending player) — the same
  * tapped-and-attacking placement Raph & Mikey and the Sneak pipeline use.
  *
  * Scoping caveat: the engine has no "owned by the triggering player" target predicate, so
@@ -57,7 +57,7 @@ val SharkShredderKillerClone = card("Shark Shredder, Killer Clone") {
                 filter = TargetFilter(GameObjectFilter.Creature.ownedByOpponent(), zone = Zone.GRAVEYARD)
             )
         )
-        effect = MoveToZoneEffect(
+        effect = Effects.Move(
             target = creatureCard,
             destination = Zone.BATTLEFIELD,
             placement = ZonePlacement.TappedAndAttacking,
