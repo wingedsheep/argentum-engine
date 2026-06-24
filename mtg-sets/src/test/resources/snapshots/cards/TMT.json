@@ -1405,6 +1405,100 @@
     ]
 }
 
+// Don & Leo, Problem Solvers
+{
+    "name": "Don & Leo, Problem Solvers",
+    "manaCost": "{3}{W/U}{W/U}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Vigilance\nAt the beginning of your end step, exile up to one target artifact you control and up to one target creature you control. Then return them to the battlefield under their owners' control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target artifact you control"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target creature you control"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target artifact you control"
+                            },
+                            "destination": "Battlefield"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target creature you control"
+                            },
+                            "destination": "Battlefield"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "artifact ctrl:you"
+                    },
+                    "id": "up to one target artifact you control"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "up to one target creature you control"
+                    }
+                ],
+                "descriptionOverride": "At the beginning of your end step, exile up to one target artifact you control and up to one target creature you control. Then return them to the battlefield under their owners' control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "Technician. Tactician.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d239beaf-4f5b-494e-be5c-ffa8b6e28bde.jpg?1769006269"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Donatello's Technique
 {
     "name": "Donatello's Technique",
