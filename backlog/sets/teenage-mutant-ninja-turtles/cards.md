@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 135 / 190
+**Implemented:** 136 / 190
 ---
 
 - [x] Action News Crew
@@ -169,7 +169,7 @@
 - [x] Super Shredder
 - [x] Tainted Treats
 - [x] TCRI Building
-- [ ] Technodrome
+- [x] Technodrome
 - [x] Tenderize
 - [ ] The Cloning of Shredder
 - [ ] The Last Ronin

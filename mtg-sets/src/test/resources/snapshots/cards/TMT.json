@@ -7824,6 +7824,102 @@
     ]
 }
 
+// Technodrome
+{
+    "name": "Technodrome",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Reach, trample\nThis creature can't attack or block unless its power is 6 or greater.\n{T}, Sacrifice another artifact: Draw a card. Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "MYTHIC",
+        "artist": "Greg Staples",
+        "flavorText": "Even unfinished, the Technodrome was magnificent, a wonder of alien technology.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/287f5ab0-b15b-4507-8a24-585f9a9841ad.jpg?1769006421"
+    }
+}
+
 // Tenderize
 {
     "name": "Tenderize",
