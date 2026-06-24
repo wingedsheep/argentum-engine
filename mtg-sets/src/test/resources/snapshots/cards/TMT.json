@@ -4135,6 +4135,73 @@
     ]
 }
 
+// Mutant Chain Reaction
+{
+    "name": "Mutant Chain Reaction",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy up to one target artifact, enchantment, or creature with flying. Create a Mutagen token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Put a +1/+1 counter on target creature. Activate only as a sorcery.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one target artifact, enchantment, or creature with flying"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Mutagen"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    "IsEnchantment",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "FLYING"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "up to one target artifact, enchantment, or creature with flying"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Dominik Mayer",
+        "flavorText": "\"We live together, we train together, we fight together, we stand together . . . We are ninjas.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/8763e0ee-a48e-424f-8bce-132582d5944b.jpg?1771342410"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Mutant Town
 {
     "name": "Mutant Town",
