@@ -1080,6 +1080,95 @@
     ]
 }
 
+// Chocobo Kick
+{
+    "name": "Chocobo Kick",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker—Return a land you control to its owner's hand. (You may return a land you control to its owner's hand in addition to any other costs as you cast this spell.)\nTarget creature you control deals damage equal to its power to target creature an opponent controls. If this spell was kicked, the creature you control deals twice that much damage instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomReturnToHand",
+                    "filter": "land"
+                }
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "Power"
+                    },
+                    "multiplier": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "creature an opponent controls"
+                },
+                "damageSource": {
+                    "type": "BoundVariable",
+                    "name": "creature you control"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": "Target",
+                    "numericProperty": "Power"
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "creature an opponent controls"
+                },
+                "damageSource": {
+                    "type": "BoundVariable",
+                    "name": "creature you control"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "creature you control"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "creature an opponent controls"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Ben Wootten",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff8c8be0-8223-499c-8704-cb68e0a42ce2.jpg?1748706427"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Chocobo Racetrack
 {
     "name": "Chocobo Racetrack",
@@ -2066,6 +2155,121 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Elixir
+{
+    "name": "Elixir",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{5}, {T}, Exile this artifact: Shuffle all nonland cards from your graveyard into your library. You gain life equal to the number of cards shuffled into your library this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "nonland"
+                            },
+                            "storeAs": "shuffled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "shuffled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "shuffled_count"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{5}, {T}, Exile this artifact: Shuffle all nonland cards from your graveyard into your library. You gain life equal to the number of cards shuffled into your library this way."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "UNCOMMON",
+        "artist": "Takeuchi Moto",
+        "flavorText": "Fully recovers HP and MP.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4b05d37-df62-475c-8371-735ed2fa1b05.jpg?1748706750"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ether
+{
+    "name": "Ether",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Exile this artifact: Add {U}. When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        "CopyNextSpellCast"
+                    ]
+                },
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Exile this artifact: Add {U}. When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "flavorText": "Restores 20 MP.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/896ee6e9-15a9-4974-b576-50f4759fac38.jpg?1748705952"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4957,6 +5161,77 @@
     ]
 }
 
+// Self-Destruct
+{
+    "name": "Self-Destruct",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals X damage to any other target and X damage to itself, where X is its power.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "any other target"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Target",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "creature you control"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": "AnyTarget",
+                "id": "any other target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "\"Hah! If I'd just left you in the lurch, I'd look like a jerk for all of history!\"\n—Gilgamesh",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/7661003c-bf83-46bb-bcc0-8fbf5819ffa8.jpg?1748706346"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sephiroth's Intervention
 {
     "name": "Sephiroth's Intervention",
@@ -5116,6 +5391,59 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sleep Magic
+{
+    "name": "Sleep Magic",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.\nWhen enchanted creature is dealt damage, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "DamageReceivedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Le Vuong",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c96cae63-7625-48e3-aaba-5b1632a8642d.jpg?1748706038"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
