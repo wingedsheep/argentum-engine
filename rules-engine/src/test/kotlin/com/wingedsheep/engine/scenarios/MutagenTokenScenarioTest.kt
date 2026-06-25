@@ -30,7 +30,7 @@ import io.kotest.matchers.shouldBe
  *  1. Activating the ability puts a +1/+1 counter on the target creature and the cost
  *     sacrifices the token (it leaves the battlefield) and pays {1} + {T}.
  *  2. "Activate only as a sorcery" — the ability is illegal outside the controller's main
- *     phase with an empty stack (here: during upkeep), per CR 302.6.
+ *     phase with an empty stack (here: during upkeep), per CR 307.5.
  *  3. The [Effects.CreateMutagenToken] facade actually produces a registered "Mutagen"
  *     artifact token (noncreature) end to end.
  */
