@@ -1783,6 +1783,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   NEST: { bg: 'rgba(25, 55, 25, 0.95)', border: 'rgba(120, 200, 110, 0.65)', color: '#a8e090', glow: 'rgba(120, 200, 110, 0.55)' },
   PAGE: { bg: 'rgba(35, 30, 55, 0.95)', border: 'rgba(160, 150, 220, 0.65)', color: '#bcb4e8', glow: 'rgba(160, 150, 220, 0.5)' },
   REV: { bg: 'rgba(60, 30, 15, 0.95)', border: 'rgba(230, 140, 70, 0.7)', color: '#f0b070', glow: 'rgba(230, 140, 70, 0.55)' },
+  POSSESSION: { bg: 'rgba(45, 20, 60, 0.95)', border: 'rgba(180, 110, 220, 0.7)', color: '#cda0e8', glow: 'rgba(180, 110, 220, 0.55)' },
   PLUS_ONE_PLUS_ZERO: { bg: 'rgba(20, 60, 25, 0.95)', border: 'rgba(120, 220, 130, 0.7)', color: '#9ce0a8' },
   PLUS_ZERO_PLUS_ONE: { bg: 'rgba(20, 60, 25, 0.95)', border: 'rgba(120, 220, 130, 0.7)', color: '#9ce0a8' },
   MINUS_ONE_MINUS_ZERO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },

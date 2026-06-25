@@ -7751,6 +7751,74 @@
     ]
 }
 
+// Orphans of the Wheat
+{
+    "name": "Orphans of the Wheat",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Whenever this creature attacks, tap any number of untapped creatures you control. This creature gets +1/+1 until end of turn for each creature tapped this way.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature untapped ctrl:you"
+                            },
+                            "storeAs": "candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "candidates",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "tapped",
+                            "prompt": "Tap any number of untapped creatures you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "tapped"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "VariableReference",
+                                "variableName": "tapped_count"
+                            },
+                            "toughnessModifier": {
+                                "type": "VariableReference",
+                                "variableName": "tapped_count"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, tap any number of untapped creatures you control. This creature gets +1/+1 until end of turn for each creature tapped this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Julie Dillon",
+        "flavorText": "Their only family is each other, and their only toys are those who wander too far into the fields.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ef4aab1-8bc0-4652-91d7-3e8b20b411ad.jpg?1726285941"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Osseous Sticktwister
 {
     "name": "Osseous Sticktwister",
@@ -9322,6 +9390,119 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Reluctant Role Model
+{
+    "name": "Reluctant Role Model",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Survivor",
+    "oracleText": "Survival — At the beginning of your second main phase, if this creature is tapped, put a flying, lifelink, or +1/+1 counter on it.\nWhenever this creature or another creature you control dies, if it had counters on it, put those counters on up to one target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Flying counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "flying",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Lifelink counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "lifelink",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "+1/+1 counter",
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "tapped"
+                },
+                "descriptionOverride": "Survival — At the beginning of your second main phase, if this creature is tapped, put a flying, lifelink, or +1/+1 counter on it."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": "MoveAllLastKnownCounters",
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "triggerCondition": "TriggeringEntityHadCounters",
+                "descriptionOverride": "Whenever this creature or another creature you control dies, if it had counters on it, put those counters on up to one target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dde86d6-34a0-4b3b-a46a-d9941501d08c.jpg?1726285956",
+        "rulings": [
+            {
+                "date": "2024-09-20",
+                "text": "If Reluctant Role Model dies at the same time as one or more other creatures with counters on them, its last ability will trigger for each of those creatures."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "Reluctant Role Model's last ability doesn't cause you to move counters from the creature that died onto the target creature. Rather, you put the same number of each kind of counter the creature that died had when it died onto the target creature."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If the creature that died had -1/-1 counters on it when it died, Reluctant Role Model's last ability will include those as well. This may result in the target creature also dying."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If a creature with a survival ability isn't tapped when your second main phase begins, the ability won't trigger at all."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If a creature's survival ability triggers but that creature is untapped when the ability begins to resolve, that ability won't do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -12572,6 +12753,109 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Unwilling Vessel
+{
+    "name": "Unwilling Vessel",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Vigilance\nEerie — Whenever an enchantment you control enters and whenever you fully unlock a Room, put a possession counter on this creature.\nWhen this creature dies, create an X/X blue Spirit creature token with flying, where X is the number of counters on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "EERIE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "possession",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Eerie — Whenever an enchantment you control enters, put a possession counter on this creature."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "RoomFullyUnlockedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "possession",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Eerie — Whenever you fully unlock a Room, put a possession counter on this creature."
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/0/90f6d606-55ca-4431-ae61-5d4f05259403.jpg?1726236595",
+                    "dynamicPower": {
+                        "type": "ContextProperty",
+                        "key": "LAST_KNOWN_TOTAL_COUNTER_COUNT"
+                    },
+                    "dynamicToughness": {
+                        "type": "ContextProperty",
+                        "key": "LAST_KNOWN_TOTAL_COUNTER_COUNT"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, create an X/X blue Spirit creature token with flying, where X is the number of counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d1758ed-fe33-4ead-8c83-e54fabcb4cfe.jpg?1726286151",
+        "rulings": [
+            {
+                "date": "2024-09-20",
+                "text": "If a permanent with an eerie ability enters at the same time as one or more enchantments, its ability will trigger for each of those enchantments."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "An ability that triggers \"whenever you fully unlock a Room\" triggers when a door becomes unlocked and the other door of that Room is already unlocked, or when both doors of that Room become unlocked simultaneously."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "Use the total number of counters that were on Unwilling Vessel when it died, including all of the +1/+1 and -1/-1 counters, to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

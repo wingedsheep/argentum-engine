@@ -376,6 +376,7 @@ export enum CounterType {
   NEST = 'NEST',
   PAGE = 'PAGE',
   REV = 'REV',
+  POSSESSION = 'POSSESSION',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -428,6 +429,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.NEST]: 'Nest',
   [CounterType.PAGE]: 'Page',
   [CounterType.REV]: 'Rev',
+  [CounterType.POSSESSION]: 'Possession',
 }
 
 /**

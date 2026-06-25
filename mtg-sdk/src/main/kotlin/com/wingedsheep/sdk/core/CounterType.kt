@@ -58,7 +58,8 @@ enum class CounterType {
     NEST,
     PAGE,
     REV,
-    DOOM
+    DOOM,
+    POSSESSION
 }
 
 /**
@@ -182,6 +183,14 @@ object Counters {
      * activated ability removes one. No inherent rule.
      */
     const val DOOM = "doom"
+
+    /**
+     * Possession counter (DSK — Unwilling Vessel). Passive storage counter with no inherent rule;
+     * Eerie triggers accumulate it (an enchantment you control entering / fully unlocking a Room
+     * each add one) and the card's dies trigger reads the count to size the X/X Spirit token it
+     * leaves behind. No inherent rule.
+     */
+    const val POSSESSION = "possession"
 
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.

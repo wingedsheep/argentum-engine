@@ -5111,7 +5111,11 @@ substitution.
   self-sacrifice/exile cost wipes them first, `DynamicAmounts.lastKnownSourceCounters(...)` (CR 112.7a; see §13).
   `rev` (`Counters.REV`): DSK — Chainsaw, whose "whenever one or more creatures die" batched trigger accumulates one
   per death batch and whose `+X/+0` static reads the count via `DynamicAmounts.countersOnSelf(...)` applied to the
-  equipped creature — another pure passive counter with no inherent rule.)
+  equipped creature — another pure passive counter with no inherent rule.
+  `possession` (`Counters.POSSESSION`): DSK — Unwilling Vessel, whose Eerie triggers (an enchantment you control
+  entering / fully unlocking a Room) each accumulate one and whose dies trigger reads the total counter count via
+  `DynamicAmount.ContextProperty(ContextPropertyKey.LAST_KNOWN_TOTAL_COUNTER_COUNT)` to size the X/X Spirit token it
+  leaves behind — another pure passive counter with no inherent rule.)
 - `stun` — CR 122.1d, a built-in replacement: "If a permanent with a stun counter on it would become untapped,
   instead remove a stun counter from it." Engine-wired through `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`),
   which is invoked from the untap step (`BeginningPhaseManager`), from `TapUntapExecutor`'s untap branch, and from the
