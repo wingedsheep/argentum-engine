@@ -457,6 +457,10 @@ class TriggerMatcher(
                     matchesPlayer(trigger.player, event.playerId, controllerId)
                 else -> false
             }
+            is EventPattern.ManifestedDreadEvent -> {
+                event is com.wingedsheep.engine.core.ManifestedDreadEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
             is EventPattern.BecomesTargetEvent -> {
                 event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
             }

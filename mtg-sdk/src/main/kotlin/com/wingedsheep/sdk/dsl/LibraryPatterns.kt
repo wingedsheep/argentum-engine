@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
+import com.wingedsheep.sdk.scripting.effects.EmitManifestedDreadEventEffect
 import com.wingedsheep.sdk.scripting.effects.EmitScriedEventEffect
 import com.wingedsheep.sdk.scripting.effects.EmitSurveiledEventEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -155,7 +156,12 @@ object LibraryPatterns {
             MoveCollectionEffect(
                 from = "manifestDreadGraveyard",
                 destination = CardDestination.ToZone(Zone.GRAVEYARD)
-            )
+            ),
+            // Fire "Whenever you manifest dread" triggers (CR 701.60) after the pick resolves,
+            // carrying the cards put into the graveyard this way so a payoff can pull one back out
+            // (Paranormal Analyst). Per CR 701.60b the trigger fires even when the library held
+            // fewer than two cards (the graveyard collection is then empty).
+            EmitManifestedDreadEventEffect()
         )
     )
 

@@ -381,6 +381,26 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         override val description: String = "${player.description} scries or surveils"
     }
 
+    /**
+     * Whenever a player manifests dread (CR 701.60). Fires once per manifest-dread, after the
+     * chosen card has been manifested and the other card(s) put into the graveyard. Per CR
+     * 701.60b the trigger fires "even if some or all of those actions were impossible" (an empty
+     * or one-card library), exactly like scry/surveil.
+     *
+     * The card(s) put into the graveyard this way are exposed to the payoff as the pipeline
+     * collection [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION],
+     * so a payoff that references "a card you put into your graveyard this way" (Paranormal
+     * Analyst) can move it out of the graveyard. The collection is empty when the library held
+     * fewer than two cards.
+     */
+    @SerialName("ManifestedDreadEvent")
+    @Serializable
+    data class ManifestedDreadEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} manifest dread"
+    }
+
     // =========================================================================
     // Extra Turn Events
     // =========================================================================

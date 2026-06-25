@@ -1183,6 +1183,7 @@ is PermanentsSacrificedEvent -> {
             is RingTemptedEvent,
             is ScriedEvent,
             is SurveiledEvent,
+            is ManifestedDreadEvent,
             is TurnedFaceDownEvent,
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,

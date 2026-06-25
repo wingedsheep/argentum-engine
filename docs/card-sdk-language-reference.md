@@ -1268,16 +1268,20 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `manifest(count = 1)` — manifest the top N cards (CR 701.40): each is put onto the battlefield
   face down as a 2/2 creature (one at a time). A manifested creature card can be turned face up for
   its mana cost; a manifested non-creature can't.
-- `manifestDread(markEntered = false)` — "Manifest dread" (CR 701.62, Duskmourn): look at the top
+- `manifestDread(markEntered = false)` — "Manifest dread" (CR 701.60, Duskmourn): look at the top
   two cards of your library, manifest one of them (your choice), and put the other into your
-  graveyard. Composes gather → select → move-face-down(MANIFEST) → move-to-graveyard. Pass
-  `markEntered = true` to stamp each manifested permanent with `EnteredViaAbilityComponent(this
-  source)`, so wrapping it in `RepeatDynamicTimes(X, manifestDread(markEntered = true))` lets a later
+  graveyard. Composes gather → select → move-face-down(MANIFEST) → move-to-graveyard →
+  emit-`ManifestedDreadEvent`. Pass `markEntered = true` to stamp each manifested permanent with
+  `EnteredViaAbilityComponent(this source)`, so wrapping it in
+  `RepeatDynamicTimes(X, manifestDread(markEntered = true))` lets a later
   `GatherCards(CardSource.EnteredViaThisResolution)` re-collect every creature this spell manifested
   (across all X iterations and the per-iteration manifest-dread pick pauses) and reference "each of
   those creatures" — e.g. **Valgavoth's Onslaught**: `RepeatDynamicTimes(XValue, manifestDread(true))`
   → `GatherCards(EnteredViaThisResolution, "manifested")` → `AddCountersToCollection("manifested",
-  +1/+1, XValue)`.
+  +1/+1, XValue)`. The trailing `EmitManifestedDreadEventEffect` tail (internal — not for card
+  authors) fires `Triggers.WheneverYouManifestDread` (see Triggers) once per manifest-dread,
+  carrying the card put into the graveyard this way so a "this way" payoff can pull it back out
+  (**Paranormal Analyst**).
 
 **Reveal patterns**
 
@@ -2580,6 +2584,18 @@ Triggers.youCastSpell(
   ("cards looked at"). Used by Golbez.
 - `WheneverYouScryOrSurveil` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
+
+### Manifest Dread
+
+- `WheneverYouManifestDread` — fires once per manifest-dread resolution (CR 701.60), after the
+  chosen card is manifested face down and the other put into your graveyard. Automatically emitted
+  by `Patterns.Library.manifestDread()`; no card has to opt in. Per CR 701.60b it fires even when
+  the library held fewer than two cards. The card(s) put into the graveyard this way are seeded into
+  the payoff's pipeline under `IterationSpace.TRIGGER_CAPTURED_COLLECTION` (the same engine-seeded
+  slot batch ETB payoffs read), so a payoff that references "a card you put into your graveyard this
+  way" can move it out of the graveyard — e.g. **Paranormal Analyst**:
+  `MoveCollection(from = TRIGGER_CAPTURED_COLLECTION, destination = ToZone(HAND))`. The collection is
+  empty when nothing was binned, making the payoff a safe no-op.
 - A literal "scry 0" / "surveil 0" produces no event and fires no trigger (CR 701.18b / 701.42c);
   the trigger still fires when the library was empty and zero cards were looked at (CR 701.18d /
   701.42d).

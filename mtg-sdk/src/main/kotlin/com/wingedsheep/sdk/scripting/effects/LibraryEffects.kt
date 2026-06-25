@@ -78,6 +78,31 @@ data class EmitSurveiledEventEffect(
     override val description: String = ""
 }
 
+/**
+ * Emit a `ManifestedDreadEvent` after a manifest-dread pipeline finishes resolving — the
+ * manifest-dread twin of [EmitScriedEventEffect]. Appended internally by
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.manifestDread] so "Whenever you manifest dread"
+ * triggers ([com.wingedsheep.sdk.dsl.Triggers.WheneverYouManifestDread]) fire exactly once per
+ * manifest-dread (CR 701.60), after the chosen card has been manifested and the other put into
+ * the graveyard.
+ *
+ * The executor reads [graveyardCollection] — the named pipeline collection of cards put into the
+ * graveyard this way — and carries those entity ids on the event so the resolving trigger can
+ * pull "a card you put into your graveyard this way" back out (Paranormal Analyst). The collection
+ * is empty when the library held fewer than two cards; the event still fires (CR 701.60b), the
+ * payoff simply finds nothing to return.
+ *
+ * Card authors should not use this directly; it is wired into the manifest-dread primitive.
+ */
+@SerialName("EmitManifestedDreadEvent")
+@Serializable
+data class EmitManifestedDreadEventEffect(
+    val graveyardCollection: String = "manifestDreadGraveyard"
+) : Effect {
+    // Intentionally blank: this is an internal pipeline tail with no player-facing text.
+    override val description: String = ""
+}
+
 
 /**
  * "Scry [count]" (CR 701.18) as a single compact node.

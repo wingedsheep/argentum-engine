@@ -207,6 +207,15 @@ data class TriggerContext(
                     triggeringPlayerId = event.playerId,
                     scryCount = event.count
                 )
+                // Manifest dread (CR 701.60): the cards put into the graveyard this way are
+                // carried as capturedEntityIds, seeded into the resolving trigger's pipeline under
+                // TRIGGER_CAPTURED_COLLECTION so "a card you put into your graveyard this way"
+                // payoffs (Paranormal Analyst) can move it out. Empty when the library held fewer
+                // than two cards (the trigger still fires per CR 701.60b).
+                is com.wingedsheep.engine.core.ManifestedDreadEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId,
+                    capturedEntityIds = event.graveyardCardIds.takeIf { it.isNotEmpty() }
+                )
                 is CardsDiscardedEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 is CardRevealedFromDrawEvent -> TriggerContext(
                     triggeringEntityId = event.cardEntityId,

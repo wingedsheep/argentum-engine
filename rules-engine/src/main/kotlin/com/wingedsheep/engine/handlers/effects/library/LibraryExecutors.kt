@@ -97,6 +97,7 @@ class LibraryExecutors(
         StoreNumberExecutor(),
         StoreCardNameExecutor(),
         EmitScriedEventExecutor(),
-        EmitSurveiledEventExecutor()
+        EmitSurveiledEventExecutor(),
+        EmitManifestedDreadEventExecutor()
     )
 }

@@ -1766,6 +1766,25 @@ object Triggers {
     )
 
     // =========================================================================
+    // Manifest Dread Triggers (CR 701.60)
+    // =========================================================================
+
+    /**
+     * Whenever you manifest dread (CR 701.60). Fires once per manifest-dread, after the chosen
+     * card has been manifested and the other put into your graveyard. Per CR 701.60b it fires even
+     * when the library held fewer than two cards.
+     *
+     * The card(s) put into the graveyard this way are seeded into the payoff's pipeline under
+     * [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION], so a
+     * payoff can move "a card you put into your graveyard this way" out of the graveyard
+     * (Paranormal Analyst).
+     */
+    val WheneverYouManifestDread: TriggerSpec = TriggerSpec(
+        event = ManifestedDreadEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Saga Chapter Resolution Triggers (CR 714)
     // =========================================================================
 

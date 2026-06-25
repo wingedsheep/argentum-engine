@@ -353,6 +353,29 @@ data class SurveiledEvent(
 ) : GameEvent
 
 /**
+ * A player just finished a `manifest dread` (CR 701.60). Fires once per manifest-dread, after the
+ * chosen card has been manifested face down and the other card(s) put into the graveyard. Drives
+ * "Whenever you manifest dread" triggers; see
+ * [com.wingedsheep.sdk.scripting.EventPattern.ManifestedDreadEvent]. Per CR 701.60b it fires even
+ * when the library held fewer than two cards.
+ *
+ * @property playerId The player who manifested dread.
+ * @property graveyardCardIds The card(s) put into the graveyard this way (the looked-at cards that
+ *   were not manifested). Carried so a payoff that references "a card you put into your graveyard
+ *   this way" (Paranormal Analyst) can move it out — seeded into the trigger's pipeline under
+ *   `PipelineState.TRIGGER_CAPTURED_COLLECTION` via [TriggerContext.capturedEntityIds]. Empty when
+ *   the library held fewer than two cards.
+ * @property sourceName The card/ability that caused the manifest dread (for display).
+ */
+@Serializable
+@SerialName("ManifestedDreadEvent")
+data class ManifestedDreadEvent(
+    val playerId: EntityId,
+    val graveyardCardIds: List<EntityId>,
+    val sourceName: String
+) : GameEvent
+
+/**
  * A player chose a creature type (e.g., "Choose a creature type" for Walking Desecration).
  * This is a public announcement visible to all players.
  */
