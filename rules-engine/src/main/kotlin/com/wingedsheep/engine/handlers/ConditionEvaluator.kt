@@ -49,6 +49,8 @@ import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.NumberMatches
+import com.wingedsheep.sdk.scripting.conditions.NumberProperty
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
@@ -176,6 +178,7 @@ class ConditionEvaluator(
             // Dual-mode primitives (work in both resolution and projection)
             // ============================================================
             is Compare -> evaluateCompareCtx(state, condition, ctx)
+            is NumberMatches -> evaluateNumberMatchesCtx(state, condition, ctx)
             is Exists -> evaluateExistsCtx(state, condition, ctx)
 
             // CR 805 — "your turn" is the active team's turn for every member of that team.
@@ -451,6 +454,43 @@ class ConditionEvaluator(
             ComparisonOperator.GT -> left > right
             ComparisonOperator.GTE -> left >= right
         }
+    }
+
+    /**
+     * Evaluates [NumberMatches] in both resolution and projection: resolves the amount via the
+     * same effect-context plumbing as [evaluateCompareCtx], then applies the unary numeric
+     * predicate. The arithmetic lives here (not on the SDK type) so [NumberProperty] stays pure
+     * data, mirroring how [ComparisonOperator]'s comparison logic lives in [evaluateCompareCtx].
+     */
+    private fun evaluateNumberMatchesCtx(
+        state: GameState,
+        condition: NumberMatches,
+        ctx: ConditionEvaluationContext
+    ): Boolean {
+        val effectCtx = when (ctx) {
+            is Resolution -> ctx.effectContext
+            is Projection -> syntheticEffectContext(state, ctx) ?: return false
+        }
+        val value = dynamicAmountEvaluator.evaluate(state, condition.amount, effectCtx)
+        return when (val property = condition.property) {
+            NumberProperty.Prime -> isPrime(value)
+            NumberProperty.Even -> value % 2 == 0
+            NumberProperty.Odd -> value % 2 != 0
+            is NumberProperty.MultipleOf -> property.divisor != 0 && value % property.divisor == 0
+        }
+    }
+
+    /** Standard primality test: 0 and 1 are not prime; 2 is the only even prime (CR-agnostic). */
+    private fun isPrime(n: Int): Boolean {
+        if (n < 2) return false
+        if (n < 4) return true
+        if (n % 2 == 0) return false
+        var d = 3
+        while (d.toLong() * d <= n) {
+            if (n % d == 0) return false
+            d += 2
+        }
+        return true
     }
 
     /**

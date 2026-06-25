@@ -105,6 +105,78 @@ data class Compare(
 }
 
 /**
+ * A unary arithmetic property a single number can satisfy, tested by [NumberMatches].
+ *
+ * Distinct from [ComparisonOperator], which is *binary* (compares two amounts). These are
+ * *unary* predicates over one evaluated [DynamicAmount] — "is the count prime / even / odd /
+ * a multiple of N" — shapes a threshold comparison can't express. The arithmetic itself lives
+ * in the engine's `ConditionEvaluator` (these stay pure data, mirroring how `ComparisonOperator`
+ * carries no comparison logic), so this type only names the property and supplies its wording.
+ */
+@Serializable
+sealed interface NumberProperty {
+    /** Adjective phrase for condition descriptions, e.g. "prime", "even", "a multiple of 3". */
+    val description: String
+
+    /** A prime number (CR has no notion of this — it's a card-defined property; 0 and 1 are not prime). */
+    @SerialName("Prime")
+    @Serializable
+    data object Prime : NumberProperty {
+        override val description: String get() = "prime"
+    }
+
+    /** An even number (0 is even). */
+    @SerialName("Even")
+    @Serializable
+    data object Even : NumberProperty {
+        override val description: String get() = "even"
+    }
+
+    /** An odd number. */
+    @SerialName("Odd")
+    @Serializable
+    data object Odd : NumberProperty {
+        override val description: String get() = "odd"
+    }
+
+    /** A multiple of [divisor] (0 counts as a multiple of every nonzero divisor). */
+    @SerialName("MultipleOf")
+    @Serializable
+    data class MultipleOf(val divisor: Int) : NumberProperty {
+        init { require(divisor != 0) { "MultipleOf divisor must be non-zero" } }
+        override val description: String get() = "a multiple of $divisor"
+    }
+}
+
+/**
+ * Unary numeric-predicate condition: evaluates [amount] and tests whether the resulting number
+ * satisfies [property].
+ *
+ * The counterpart to [Compare] for properties that aren't a two-sided threshold — primality,
+ * parity, divisibility. Like [Compare] it evaluates identically at resolution and under
+ * projection, so it can gate either a triggered ability's intervening-if or an "as long as"
+ * static ability.
+ *
+ * Example:
+ * ```kotlin
+ * // "you control a prime number of lands" (Zimone, All-Questioning)
+ * NumberMatches(AggregateBattlefield(Player.You, GameObjectFilter.Land), NumberProperty.Prime)
+ * ```
+ */
+@SerialName("NumberMatches")
+@Serializable
+data class NumberMatches(
+    val amount: DynamicAmount,
+    val property: NumberProperty
+) : Condition {
+    override val description: String = "${amount.description} is ${property.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
  * Generic zone-presence condition.
  * Checks whether any matching object exists in a player's zone.
  *

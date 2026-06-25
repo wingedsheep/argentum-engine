@@ -3783,6 +3783,15 @@ answer it and would silently return `false`.
   entry point for any "if amount X (relation) amount Y" intervening-if or static gate. Used by Taii
   Wakeen, Perfect Shot's intervening-if: `CompareAmounts(ContextProperty(TRIGGER_DAMAGE_AMOUNT), EQ,
   ContextProperty(TRIGGER_RECIPIENT_TOUGHNESS))`.
+- `AmountIsPrime(amount)` / `AmountIsEven(amount)` / `AmountIsOdd(amount)` /
+  `AmountIsMultipleOf(amount, divisor)` — the **unary** numeric-predicate family, the counterpart to
+  `CompareAmounts` for properties a two-sided threshold can't express (primality, parity,
+  divisibility). Each desugars to `NumberMatches(amount, NumberProperty.{Prime,Even,Odd,MultipleOf})`;
+  the arithmetic lives in the engine's `ConditionEvaluator` (the SDK `NumberProperty` is pure data,
+  exactly like `ComparisonOperator`). Dual-mode (resolution + projection), so it gates either a
+  triggered ability's intervening-if or an "as long as" static. `0` and `1` are not prime; `0` is
+  even and a multiple of every nonzero divisor. Used by Zimone, All-Questioning ("if … you control a
+  prime number of lands": `AmountIsPrime(AggregateBattlefield(You, Land))`).
 - `DifferentCounterKindsAtLeast(count, filter = Creature)` — true when `count` or more *different
   kinds* of counters are among permanents you control matching `filter` (default: creatures). A
   +1/+1 and a finality counter is two kinds; the same kind on several permanents counts once.
@@ -4154,6 +4163,8 @@ default to "you" so card authors don't need to pass it explicitly.
 - `Any(c1, c2, ...)` — OR.
 - `Not(c)` — negate.
 - `Compare(v1, op, v2)` — numeric comparison between `DynamicAmount`s.
+- `NumberMatches(amount, NumberProperty.{Prime,Even,Odd,MultipleOf(n)})` — unary numeric predicate
+  over one `DynamicAmount` (primality/parity/divisibility); facades `AmountIsPrime/Even/Odd/MultipleOf`.
 - `Exists(player, zone, filter)` — at least one matching object exists.
 
 To gate a spell-cost reduction on a condition, use `CostGating.OnlyIf(condition)` on the

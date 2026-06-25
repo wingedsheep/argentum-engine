@@ -177,11 +177,14 @@ to a **player** that have no home yet.
     → **Toby, Beastie Befriender** (its Beast token "can't attack or block alone" — the attack half
       already maps to `CantAttackUnlessCoAttacker`).
 
-12. **Prime-number count condition.** All count conditions are threshold comparisons
-    (`AtLeast`/`AtMost`/`Exactly`). Needs a numeric-predicate condition (e.g. `CountIsPrime(filter)`
-    or a general `NumericPredicate` over a count). The "make a Fractal with X +1/+1 counters where
-    X = land count" half is already buildable.
-    → **Zimone, All-Questioning**.
+12. **Prime-number count condition.** ✅ **Done.** Added the unary numeric-predicate condition
+    `NumberMatches(amount, NumberProperty.{Prime,Even,Odd,MultipleOf})` (facades
+    `Conditions.AmountIsPrime/Even/Odd/MultipleOf`) — the counterpart to the threshold-only `Compare`
+    family. The arithmetic lives in `ConditionEvaluator` so `NumberProperty` stays pure data
+    (mirroring `ComparisonOperator`); dual-mode (resolution + projection). The "make a Fractal with X
+    +1/+1 counters where X = land count" half composes the existing `CREATED_TOKENS` +
+    `AddDynamicCounters(PipelineTarget)` shape.
+    → **Zimone, All-Questioning** (implemented).
 
 13. **Opponent routes the caster's chosen targets.** The caster targets two creatures one opponent
     controls; *that opponent* then chooses which takes 5 damage and which can't block. This differs

@@ -14,6 +14,8 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.conditions.NumberMatches
+import com.wingedsheep.sdk.scripting.conditions.NumberProperty
 import com.wingedsheep.sdk.scripting.conditions.WasCast as WasCastCondition
 import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCast as NoManaSpentToCastCondition
 import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCastEntered as NoManaSpentToCastEnteredCondition
@@ -111,6 +113,28 @@ object Conditions {
         operator: ComparisonOperator,
         right: DynamicAmount,
     ): ConditionInterface = Compare(left, operator, right)
+
+    /**
+     * If [amount] is a prime number (2, 3, 5, 7, …). 0 and 1 are not prime.
+     *
+     * The unary counterpart to [CompareAmounts] — used for "if you control a prime number of
+     * lands" (Zimone, All-Questioning). Compose the count with any [DynamicAmount], e.g.
+     * `Conditions.AmountIsPrime(DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land))`.
+     */
+    fun AmountIsPrime(amount: DynamicAmount): ConditionInterface =
+        NumberMatches(amount, NumberProperty.Prime)
+
+    /** If [amount] is even (0 counts as even). */
+    fun AmountIsEven(amount: DynamicAmount): ConditionInterface =
+        NumberMatches(amount, NumberProperty.Even)
+
+    /** If [amount] is odd. */
+    fun AmountIsOdd(amount: DynamicAmount): ConditionInterface =
+        NumberMatches(amount, NumberProperty.Odd)
+
+    /** If [amount] is a multiple of [divisor] (must be non-zero). */
+    fun AmountIsMultipleOf(amount: DynamicAmount, divisor: Int): ConditionInterface =
+        NumberMatches(amount, NumberProperty.MultipleOf(divisor))
 
     /**
      * If an opponent controls more lands than you.
