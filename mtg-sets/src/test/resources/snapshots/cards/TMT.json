@@ -3033,6 +3033,87 @@
     ]
 }
 
+// Fugitive Droid
+{
+    "name": "Fugitive Droid",
+    "manaCost": "{U}",
+    "typeLine": "Artifact Creature — Robot Scientist",
+    "oracleText": "This creature can't be blocked if an artifact entered the battlefield under your control this turn.\n{U}, Sacrifice this creature: Counter target spell that targets an artifact or creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "TargetsMatching",
+                                        "subfilter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        "IsArtifact"
+                                                    ]
+                                                }
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        }
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "target spell that targets an artifact or creature you control"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "PermanentTypeEnteredBattlefieldThisTurn",
+                    "cardType": "ARTIFACT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Narendra Bintara Adi",
+        "flavorText": "\"A freak accident transferred Professor Honeycutt's mind into his robot assistant. Blamed for his own death, he fled . . . as the FUGITOID!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50c4e65f-00dc-4fc5-bd5c-8482c2848f4c.jpg?1771586801"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // General Traag, Heart of Stone
 {
     "name": "General Traag, Heart of Stone",
