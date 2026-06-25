@@ -146,9 +146,15 @@ object EntersWithCountersHelper {
                         if (effect.selfOnly) continue
                         if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, sourceControllerId, newState)) continue
                         if (effect.condition != null) {
+                            // A non-self "enters with counters" condition describes the ENTERING
+                            // creature ("it was cast from your graveyard", Leonardo), not the
+                            // replacement source — evaluate it against the entering entity, mirroring
+                            // the EntersWithDynamicCounters path below. controllerId stays the source's
+                            // controller so "you control" resolves to the effect's controller.
                             val condContext = EffectContext(
-                                sourceId = sourceId,
+                                sourceId = enteringEntityId,
                                 controllerId = sourceControllerId,
+                                affectedEntityId = enteringEntityId,
                             )
                             if (!conditionEvaluator.evaluate(newState, effect.condition!!, condContext)) continue
                         }
