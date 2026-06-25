@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 185 / 190
+**Implemented:** 186 / 190
 ---
 
 - [x] Action News Crew
@@ -33,7 +33,7 @@
 - [x] Dimensional Exile
 - [x] Does Machines
 - [x] Don & Leo, Problem Solvers
-- [ ] Don & Raph, Hard Science
+- [x] Don & Raph, Hard Science
 - [x] Donatello's Technique
 - [x] Donatello, Gadget Master
 - [x] Donatello, Mutant Mechanic
