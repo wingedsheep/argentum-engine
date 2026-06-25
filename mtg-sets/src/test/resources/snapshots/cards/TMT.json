@@ -4987,6 +4987,69 @@
     ]
 }
 
+// Madame Null, Power Broker
+{
+    "name": "Madame Null, Power Broker",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Demon Advisor",
+    "oracleText": "Deathtouch\nWhenever another creature you control enters, you may pay life equal to its power. If you do, put that many +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Triggering",
+                                "numericProperty": "Power"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "+1/+1",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Triggering",
+                            "numericProperty": "Power"
+                        },
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever another creature you control enters, you may pay life equal to its power. If you do, put that many +1/+1 counters on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"We suffered a bit of a setback tonight, but rest assured: We'll have the planet purged and primed for you right on schedule.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e712d5c-d6fe-40bb-b8e5-5f50c6ea8d4f.jpg?1769005736"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Make Your Move
 {
     "name": "Make Your Move",
