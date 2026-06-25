@@ -10,9 +10,42 @@ Verify status anytime with: `scripts/card-status --set TMT` (and `--list --set T
 
 ## Status
 
-167 / 190 implemented (basics excluded — handled by `basicLandsFallback`). See
+171 / 190 implemented (basics excluded — handled by `basicLandsFallback`). See
 `cards.md` for the full checklist (the authoritative status); the per-card
 commits all carry `flavorText` in metadata.
+
+> **2026-06-25 sweep — six more "feature-gated" cards were actually composable.**
+> Re-verifying each supposed gap against real primitives debunked: **Turtle Van**
+> (`crewedOrSaddledSourceThisTurn()` filter + `DoubleCounters`), **Michelangelo's
+> Technique** (`SelectionRestriction.TotalManaValueAtMost`), **Fugitive Droid**
+> (`CardPredicate.TargetsMatching` — counter target spell that targets your stuff,
+> the Teferi's Response idiom), **Northampton Farm** + **Raphael, Most Attitude** +
+> **Koya, Death from Above** (the `CardSource.FromLinkedExile` / `MoveCollection(linkToSource)`
+> / `GrantMayPlayFromExile` / `PayOrSuffer` linked-exile family — all already built).
+>
+> **The genuinely-remaining 19 each need a real new engine primitive** (oracle text
+> re-read 2026-06-25; none is "just authoring"):
+> - **Leatherhead, Swamp Stalker** — remove *one counter of any kind* (chooser picks) +
+>   reflexive "when you do" (HEXPROOF counter + entersWith already exist).
+> - **Purple Dragon Punks** — *any*-ability mana ("artifact spell or activate an ability";
+>   `CardTypeSpellsOrAbilitiesOnly` ties abilities to the card type, too narrow).
+> - **The Last Ronin** — a Saga chapter that installs a *this-turn* triggered ability
+>   ("whenever a creature attacks alone this turn …"; the attacks-alone trigger exists).
+> - **Tokka & Rahzar** — "mana spent to cast it was less than its mana value" trigger condition.
+> - **Lita, Little Orphan Amphibian** — modal where each mode is once-per-turn ("hasn't been chosen this turn").
+> - **Mondo Gecko** — become-chosen-color + "draw a card for each color among permanents you control" dynamic.
+> - **Donatello, Mutant Mechanic** — move a dying artifact's last-known counters to a target.
+> - **Krang & Shredder** — each opponent exiles from top until a nonland (reveal-until).
+> - **Party Dude** — "your opponents are attacked" trigger (+ each-player Food).
+> - **Raphael, Ninja Destroyer** — Enrage mana that persists past step/phase cleanup.
+> - **Rat King** — return target creature card + all same-named cards from your graveyard.
+> - **Leonardo, Sewer Samurai** — cast creatures from GY (static), entering with a finality counter.
+> - **Ninja Teen L3** — grant Sneak to graveyard creature cards + cast them from GY via Sneak.
+> - **Mikey & Don** — cast from top of library; creatures cast this way enter with a +1/+1 counter.
+> - **The Cloning of Shredder** — token copy of a card in this Saga's linked exile.
+> - **Don & Raph** — grant the next noncreature spell you cast affinity for artifacts.
+> - **North Wind Avatar** + **Turtles Forever** — wishboard (cards from outside the game).
+> - **Turtles in Time** — each-player-MAY Timetwister (per-player shuffle-hand+gy / draw 7).
 
 > **2026-06-24 run — the gap list below was badly overestimated.** A sweep added
 > 38 cards by discovering that most "blocking gaps" were *already supported* and
