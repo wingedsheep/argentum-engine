@@ -2285,6 +2285,121 @@
     ]
 }
 
+// Donatello, Mutant Mechanic
+{
+    "name": "Donatello, Mutant Mechanic",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "{T}: Put three +1/+1 counters on target artifact you control. If it isn't a creature, it becomes a 0/0 Robot creature in addition to its other types. Activate only as a sorcery.\nWhenever an artifact you control is put into a graveyard from the battlefield, if it had counters on it, put those counters on up to one target artifact or creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one target artifact or creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:you"
+                    },
+                    "id": "up to one target artifact or creature you control"
+                },
+                "triggerCondition": "TriggeringEntityHadCounters",
+                "descriptionOverride": "Whenever an artifact you control is put into a graveyard from the battlefield, if it had counters on it, put those counters on up to one target artifact or creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 3,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target artifact you control"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "filter": "noncreature"
+                                }
+                            },
+                            "then": {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "creatureTypes": [
+                                    "Robot"
+                                ],
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:you"
+                        },
+                        "id": "target artifact you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{T}: Put three +1/+1 counters on target artifact you control. If it isn't a creature, it becomes a 0/0 Robot creature in addition to its other types. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3271b821-8efc-49e2-96fd-c48e2b2585c6.jpg?1769005688"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Donatello, Turtle Techie
 {
     "name": "Donatello, Turtle Techie",

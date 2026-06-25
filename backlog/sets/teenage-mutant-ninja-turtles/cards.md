@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 173 / 190
+**Implemented:** 174 / 190
 ---
 
 - [x] Action News Crew
@@ -36,7 +36,7 @@
 - [ ] Don & Raph, Hard Science
 - [x] Donatello's Technique
 - [x] Donatello, Gadget Master
-- [ ] Donatello, Mutant Mechanic
+- [x] Donatello, Mutant Mechanic
 - [x] Donatello, Turtle Techie
 - [x] Donatello, Way with Machines
 - [x] Dream Beavers
