@@ -16,6 +16,7 @@ class LifeExecutors(
         LoseLifeExecutor(amountEvaluator),
         OwnerGainsLifeExecutor(),
         PayLifeEffectExecutor(),
+        PayDynamicLifeEffectExecutor(amountEvaluator),
         SetLifeTotalExecutor(amountEvaluator)
     )
 }

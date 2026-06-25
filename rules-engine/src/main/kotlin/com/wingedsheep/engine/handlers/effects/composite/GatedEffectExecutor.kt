@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
@@ -370,6 +371,11 @@ class GatedEffectExecutor(
                 val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
                 "Pay ${PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)}"
             }
+            is PayLifeEffect -> "Pay ${cost.amount} life"
+            is PayDynamicLifeEffect -> {
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context).coerceAtLeast(0)
+                "Pay $amount life"
+            }
             else -> null
         }
 
@@ -391,6 +397,14 @@ class GatedEffectExecutor(
             is PayLifeEffect -> {
                 val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
                 life >= cost.amount
+            }
+            is PayDynamicLifeEffect -> {
+                // Resolve the cost's own payer; a computed amount of <= 0 is free (CR 119.4).
+                val amount = dynamicAmountEvaluator.evaluate(state, cost.amount, context)
+                val payerId = TargetResolutionUtils
+                    .resolvePlayerTarget(EffectTarget.PlayerRef(cost.payer), context, state)
+                    ?: playerId
+                amount <= 0 || state.lifeTotal(payerId) >= amount
             }
             is CompositeEffect -> cost.effects.all { canAfford(state, playerId, it, context) }
             // "You may sacrifice [filter]" — payable only if the player controls enough matching

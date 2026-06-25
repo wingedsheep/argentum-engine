@@ -285,6 +285,17 @@ object Effects {
         GainLifeEffect(amount, target)
 
     /**
+     * Pay life equal to a [DynamicAmount] (e.g. "pay life equal to its power"). Used as the
+     * `cost` effect inside a [com.wingedsheep.sdk.scripting.effects.Gate.MayPay] gate — pair with
+     * `Effects.OptionalCost` / `MayPayManaEffect`-style gating so the same dynamic amount can
+     * also feed the `ifPaid` effect. A non-positive evaluated amount pays nothing (still "paid").
+     */
+    fun PayDynamicLife(
+        amount: DynamicAmount,
+        payer: Player = Player.You
+    ): Effect = com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect(amount, payer)
+
+    /**
      * Lose life. Default target is target opponent.
      */
     fun LoseLife(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =

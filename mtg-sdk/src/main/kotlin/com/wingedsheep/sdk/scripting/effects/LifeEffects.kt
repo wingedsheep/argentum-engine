@@ -73,6 +73,25 @@ data class PayLifeEffect(
 }
 
 /**
+ * Pay life equal to a [DynamicAmount], evaluated at payment/resolution time (e.g. "pay life
+ * equal to its power"). The dynamic, payer-parametric twin of [PayLifeEffect]; mirrors
+ * [PayDynamicManaCostEffect]. A non-positive evaluated amount pays nothing and still succeeds,
+ * so a gating [Gate.MayPay] proceeds to its `then`.
+ */
+@SerialName("PayDynamicLife")
+@Serializable
+data class PayDynamicLifeEffect(
+    val amount: DynamicAmount,
+    val payer: Player = Player.You
+) : Effect {
+    override val description: String = "pay ${amount.description} life"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
  * Target player's owner gains life equal to a fixed amount.
  * Used for effects like "Its owner gains 4 life" (Path of Peace).
  * This targets the owner of the previously targeted permanent.

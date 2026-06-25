@@ -341,6 +341,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Life
 
 - `GainLife(amount, target?)` — target gains life (default: controller).
+- `PayDynamicLife(amount: DynamicAmount, payer?)` — pay life equal to a `DynamicAmount` (e.g.
+  "pay life equal to its power" via `EntityProperty(Triggering, Power)`), evaluated at resolution.
+  The dynamic, payer-parametric twin of the fixed `PayLifeEffect`; use it as the `cost` of an
+  `OptionalCostEffect` (`Gate.MayPay`) so the same amount can also feed the `ifPaid` effect. A
+  non-positive evaluated amount pays nothing and still counts as paid (CR 119.4).
 - `LoseLife(amount, target)` — target loses life.
 - `SetLifeTotal(amount, target)` — set target's life total to N.
 - `ExchangeLifeAndPower(target)` — swap target's power with controller's life total.
