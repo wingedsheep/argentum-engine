@@ -3669,6 +3669,52 @@
     ]
 }
 
+// G'raha Tia
+{
+    "name": "G'raha Tia",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Cat Archer",
+    "oracleText": "Reach\nThe Allagan Eye — Whenever one or more other creatures and/or artifacts you control die, draw a card. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "CreaturesYouControlDiedEvent",
+                    "filter": "creature|artifact",
+                    "excludeSelf": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "oncePerTurn": true,
+                "descriptionOverride": "The Allagan Eye — Whenever one or more other creatures and/or artifacts you control die, draw a card. This ability triggers only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Narendra Bintara Adi",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/076a8eca-ed73-4ee9-aab4-d9d43d394ee6.jpg?1748705832"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gaelicat
 {
     "name": "Gaelicat",
@@ -4445,6 +4491,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Hope Estheim
+{
+    "name": "Hope Estheim",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Lifelink\nAt the beginning of your end step, each opponent mills X cards, where X is the amount of life you gained this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "TurnTracking",
+                                    "player": "You",
+                                    "tracker": "LIFE_GAINED"
+                                },
+                                "player": "EachOpponent"
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, each opponent mills X cards, where X is the amount of life you gained this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Fariba Khamseh",
+        "flavorText": "\"If we have the power to destroy Cocoon, then we have the power to save it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbdb68cc-5516-481a-94c5-59f6c69b8a17.jpg?1748706615"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
