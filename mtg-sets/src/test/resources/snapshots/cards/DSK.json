@@ -3822,6 +3822,40 @@
     ]
 }
 
+// Duskmourn's Domination
+{
+    "name": "Duskmourn's Domination",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou control enchanted creature.\nEnchanted creature gets -3/-0 and loses all abilities.",
+    "script": {
+        "staticAbilities": [
+            "ControlEnchantedPermanent",
+            "LoseAllAbilities",
+            {
+                "type": "ModifyStats",
+                "powerBonus": -3,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Eli Minaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d96dbc9-c2fd-42c1-9d55-5c14fa1c1c6f.jpg?1726286043"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Emerge from the Cocoon
 {
     "name": "Emerge from the Cocoon",
@@ -10787,6 +10821,62 @@
     ]
 }
 
+// Peer Past the Veil
+{
+    "name": "Peer Past the Veil",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Discard your hand. Then draw X cards, where X is the number of card types among cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/874eadb6-602e-47dc-8094-82e37ac89c94.jpg?1726286712"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Piggy Bank
 {
     "name": "Piggy Bank",
@@ -11914,6 +12004,147 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Say Its Name
+{
+    "name": "Say Its Name",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Mill three cards. Then you may return a creature or land card from your graveyard to your hand.\nExile this card and two other cards named Say Its Name from your graveyard: Search your graveyard, hand, and/or library for a card named Altanak, the Thrice-Called and put it onto the battlefield. If you search your library this way, shuffle. Activate only as a sorcery.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "creature|land"
+                    },
+                    "storeAs": "sayItsNameReturn"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "sayItsNameReturn",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "sayItsNameChosen",
+                    "prompt": "You may return a creature or land card from your graveyard to your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "sayItsNameChosen",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "filter": "name:Say Its Name",
+                        "count": 3
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Hand",
+                                    "Library"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEquals",
+                                            "name": "Altanak, the Thrice-Called"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "altanak"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "altanak",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "altanakChosen",
+                            "prompt": "Search for Altanak, the Thrice-Called to put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "altanakChosen",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Exile this card and two other cards named Say Its Name from your graveyard: Search your graveyard, hand, and/or library for a card named Altanak, the Thrice-Called and put it onto the battlefield. If you search your library this way, shuffle. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "artist": "Sam Wolfe Connelly",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94c58683-b5f2-4863-9562-6f6be1ec21fe.jpg?1726286600"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -15580,6 +15811,107 @@
         "artist": "Mirko Failoni",
         "flavorText": "Rage can be a potent antidote to fear.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/4/a47c968b-1edd-45ac-a67c-311647e7e2fc.jpg?1726286465"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Waltz of Rage
+{
+    "name": "Waltz of Rage",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to each other creature. Until end of turn, whenever a creature you control dies, exile the top card of your library. You may play it until the end of your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Target",
+                            "numericProperty": "Power"
+                        },
+                        "target": "Self",
+                        "damageSource": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        }
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "waltzExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "waltzExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "waltzExiled",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "CLEANUP",
+                                    "includeCurrentTurn": false
+                                }
+                            }
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature ctrl:you",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "target creature you control"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abf17d8b-12bc-4122-865d-50cf91f04f67.jpg?1726286472"
     },
     "colorIdentityOverride": [
         "RED"
