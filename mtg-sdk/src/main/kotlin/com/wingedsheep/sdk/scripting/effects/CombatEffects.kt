@@ -86,7 +86,16 @@ sealed interface PreventionSourceFilter {
  * - "Prevent combat damage to and by target" → `PreventDamageEffect(target, scope=CombatOnly, direction=Both)`
  * - "Choose a source, prevent it, then react" → `PreventDamageEffect(sourceFilter=ChosenSource, onPrevented=…)`
  *
- * @property target The entity the shield is attached to (protected or silenced, depending on direction)
+ * @property target The entity the shield is attached to (protected or silenced, depending on direction).
+ *   Ignored when [recipientGroup] is set.
+ * @property recipientGroup When non-null, the shield protects **every** permanent matching this group
+ *   (evaluated against projected state at the moment damage would be dealt, with the shield's
+ *   controller as the "you" reference) rather than a single [target] entity — "prevent all damage that
+ *   would be dealt to creatures you control this turn". This is the recipient-side analogue of
+ *   [PreventionSourceFilter.FromGroup] (which filters the *source* of damage): one new field, so the
+ *   next "prevent all damage to artifacts / to each opponent's creatures" card needs only a
+ *   [GroupFilter], not a new effect. Only meaningful with [PreventionDirection.ToTarget]; honours
+ *   [scope] (all damage vs combat-only) and [duration].
  * @property amount Amount of damage to prevent; null means prevent all
  * @property scope Whether to prevent all damage or only combat damage
  * @property direction Whether to prevent damage TO the target, FROM the target, or BOTH
@@ -106,6 +115,7 @@ sealed interface PreventionSourceFilter {
 @Serializable
 data class PreventDamageEffect(
     val target: EffectTarget = EffectTarget.Controller,
+    val recipientGroup: GroupFilter? = null,
     val amount: DynamicAmount? = null,
     val scope: PreventionScope = PreventionScope.AllDamage,
     val direction: PreventionDirection = PreventionDirection.ToTarget,
@@ -142,10 +152,12 @@ data class PreventDamageEffect(
             PreventionScope.CombatOnly -> append("combat damage ")
             PreventionScope.AllDamage -> append("damage ")
         }
-        when (direction) {
-            PreventionDirection.ToTarget -> append("that would be dealt to ${target.description}")
-            PreventionDirection.FromTarget -> append("${target.description} would deal")
-            PreventionDirection.Both -> append("that would be dealt to and dealt by ${target.description}")
+        when {
+            recipientGroup != null ->
+                append("that would be dealt to ${recipientGroup.description.replaceFirstChar { it.lowercase() }}")
+            direction == PreventionDirection.ToTarget -> append("that would be dealt to ${target.description}")
+            direction == PreventionDirection.FromTarget -> append("${target.description} would deal")
+            else -> append("that would be dealt to and dealt by ${target.description}")
         }
         when (sourceFilter) {
             PreventionSourceFilter.AnySource -> {}
@@ -190,8 +202,16 @@ data class PreventDamageEffect(
             else -> sourceFilter
         }
         val newOnPrevented = onPrevented?.applyTextReplacement(replacer)
-        return if (newAmount !== amount || newFilter !== sourceFilter || newOnPrevented !== onPrevented) {
-            copy(amount = newAmount, sourceFilter = newFilter, onPrevented = newOnPrevented)
+        val newRecipientGroup = recipientGroup?.applyTextReplacement(replacer)
+        return if (newAmount !== amount || newFilter !== sourceFilter || newOnPrevented !== onPrevented ||
+            newRecipientGroup !== recipientGroup
+        ) {
+            copy(
+                amount = newAmount,
+                sourceFilter = newFilter,
+                onPrevented = newOnPrevented,
+                recipientGroup = newRecipientGroup,
+            )
         } else {
             this
         }

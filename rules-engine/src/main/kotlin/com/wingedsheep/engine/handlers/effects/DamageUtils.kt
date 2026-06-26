@@ -755,6 +755,26 @@ object DamageUtils {
             return state to 0
         }
 
+        // Recipient-group shields ("prevent all damage that would be dealt to creatures you control
+        // this turn"): the filter is re-evaluated now against projected state, with the shield's
+        // controller as the "you" reference, so permanents that came under control later this turn
+        // are protected too. Honours the combat-only variant.
+        val groupShieldEvaluator = PredicateEvaluator()
+        if (updatedEffects.any { fe ->
+                val mod = fe.effect.modification
+                mod is SerializableModification.PreventAllDamageToGroup &&
+                    (!mod.combatOnly || isCombatDamage) &&
+                    groupShieldEvaluator.matches(
+                        state,
+                        state.projectedState,
+                        targetId,
+                        mod.filter,
+                        PredicateContext(controllerId = fe.controllerId)
+                    )
+            }) {
+            return state to 0
+        }
+
         for (i in updatedEffects.indices) {
             if (remainingDamage <= 0) break
             val effect = updatedEffects[i]

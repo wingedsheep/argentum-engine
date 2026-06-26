@@ -445,6 +445,20 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
+     * Damage prevention: prevent **all** damage that would be dealt to every permanent matching
+     * [filter] this turn ("prevent all damage that would be dealt to creatures you control this
+     * turn", Summon: Alexander). The recipient-side counterpart of [PreventCombatDamageFromGroup]:
+     * the filter is stored and re-evaluated at the moment damage would be dealt, with the floating
+     * effect's controller as the "you" reference, so newly-controlled permanents are protected too.
+     * When [combatOnly] is true only combat damage is prevented.
+     */
+    @Serializable
+    data class PreventAllDamageToGroup(
+        val filter: GameObjectFilter,
+        val combatOnly: Boolean = false
+    ) : SerializableModification
+
+    /**
      * Damage prevention: prevent all combat damage that would be dealt to and dealt by
      * the affected creature this turn.
      * Used by Deftblade Elite and similar effects.
@@ -633,6 +647,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ExileControllerGraveyardOnDeath -> Modification.NoOp
     // PreventCombatDamageFromGroup doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventCombatDamageFromGroup -> Modification.NoOp
+    // PreventAllDamageToGroup doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.PreventAllDamageToGroup -> Modification.NoOp
     // PreventCombatDamageToAndBy doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventCombatDamageToAndBy -> Modification.NoOp
     // RedirectCombatDamageToController doesn't map to a layer modification - it's checked by CombatManager directly

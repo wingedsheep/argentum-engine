@@ -3162,6 +3162,135 @@
     "colorIdentityOverride": []
 }
 
+// Crystal Fragments
+{
+    "name": "Crystal Fragments",
+    "manaCost": "{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\n{5}{W}{W}: Exile this Equipment, then return it to the battlefield transformed under its owner's control. Activate only as a sorcery.\nEquip {1}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{W}{W}"
+                    }
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed"
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "backFace": {
+        "name": "Summon: Alexander",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Saga Construct",
+        "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Prevent all damage that would be dealt to creatures you control this turn.\nIII — Tap all creatures your opponents control.\nFlying",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 3
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "sagaChapters": [
+                {
+                    "chapter": 1,
+                    "effect": {
+                        "type": "PreventDamageShield",
+                        "recipientGroup": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                },
+                {
+                    "chapter": 2,
+                    "effect": {
+                        "type": "PreventDamageShield",
+                        "recipientGroup": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                },
+                {
+                    "chapter": 3,
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        },
+                        "body": {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "13",
+            "rarity": "UNCOMMON",
+            "artist": "Bachzim",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/f/5f51c853-949d-44e9-a3a2-02e1ce69a147.jpg?1748707800"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Bachzim",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f51c853-949d-44e9-a3a2-02e1ce69a147.jpg?1748707800"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Delivery Moogle
 {
     "name": "Delivery Moogle",

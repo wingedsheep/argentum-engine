@@ -188,6 +188,17 @@ class PreventDamageExecutor(
         val modification: SerializableModification
 
         when {
+            // Recipient-group prevention: "prevent all damage that would be dealt to creatures you
+            // control this turn". No specific affected entity is stored; the recipient filter is
+            // evaluated against projected state at damage time with the shield controller as "you".
+            effect.recipientGroup != null -> {
+                affectedEntities = emptySet()
+                modification = SerializableModification.PreventAllDamageToGroup(
+                    filter = effect.recipientGroup!!.baseFilter,
+                    combatOnly = effect.scope == PreventionScope.CombatOnly
+                )
+            }
+
             // Global combat damage prevention (no specific target)
             effect.scope == PreventionScope.CombatOnly &&
             effect.direction == PreventionDirection.ToTarget &&

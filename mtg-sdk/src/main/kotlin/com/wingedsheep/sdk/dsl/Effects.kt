@@ -3082,6 +3082,25 @@ object Effects {
         )
 
     /**
+     * Prevent all damage that would be dealt to every permanent matching [group] for [duration]
+     * (default this turn) — "prevent all damage that would be dealt to creatures you control this
+     * turn" (Summon: Alexander). The group is re-evaluated against projected state when each damage
+     * instance would be dealt, with the shield's controller as the "you" reference, so permanents
+     * that come under your control later in the turn are protected too. Pass [PreventionScope.CombatOnly]
+     * for a combat-only variant ("prevent all combat damage to creatures you control").
+     */
+    fun PreventAllDamageToGroup(
+        group: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
+        scope: PreventionScope = PreventionScope.AllDamage,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        PreventDamageEffect(
+            recipientGroup = group,
+            scope = scope,
+            duration = duration
+        )
+
+    /**
      * Prevent all damage that would be dealt to controller this turn by attacking creatures.
      */
     fun PreventDamageFromAttackingCreatures(): Effect =
