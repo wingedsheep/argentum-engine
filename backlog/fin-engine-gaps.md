@@ -288,3 +288,33 @@ so a land // spell Adventure offers *both* "play the land" (PlayLandEnumerator) 
 
 The four headline mechanics (Summon Sagas + their eikon backs, Job select, Tiered, the Town DFC) cover the bulk of
 the genuinely-blocked cards; once they land, the remaining ~120 are standard material built on today's SDK.
+
+---
+
+## Implementation pass — 2026-06-26 (add-card batch)
+
+Implemented:
+- **Sage's Nouliths** (#70) — Job-select Equipment; +1/+0, grants the equipped creature
+  "Whenever this creature attacks, untap target attacking creature" (Web-Shooters–style
+  `GrantTriggeredAbility` with an attacking-creature target), Cleric subtype, `Hagneia — Equip {3}`
+  ("Hagneia" is a rules-inert ability word). Pure authoring, no engine change.
+
+Deferred (need `add-feature`, not pure authoring):
+- **Crystal Fragments** (#13) — transforming Equipment // `Summon: Alexander` Saga creature DFC.
+  Falls under the headline §1/§2 work: the back is an Enchantment Creature — Saga whose chapters need
+  "prevent all damage to creatures you control this turn" (a damage-prevention chapter primitive the
+  engine lacks), and the front is an *Equipment* that exiles-and-returns-transformed (the
+  `ExileAndReturnTransformed` helper today targets creature // creature flips). Not straightforward.
+- **Stolen Uniform** (#75) — "Gain control of target Equipment until end of turn, attach it to a
+  chosen creature you control; when you lose control of it this turn, unattach it." Needs a
+  *temporary control change of an Equipment* + a forced *attach* effect + a brand-new
+  "**when you lose control of …**" delayed trigger (no such trigger exists today).
+- **Blazing Bomb** (#130) — the cast trigger ("noncreature spell, ≥4 mana spent → +1/+1 counter") is
+  fully buildable today via `Conditions.TriggeringSpellManaSpentAtLeast(4)`. The **Blow Up** half
+  ("{T}, Sacrifice this creature: it deals damage equal to its power") is blocked: `AbilityCost.SacrificeSelf`
+  does **not** populate `EffectContext.sacrificedPermanents`, so `DynamicAmounts.sacrificedPower()`
+  (and `sourcePower()`) resolve to **0** at resolution — the self-sacrificed source's last-known
+  power is never snapshotted. Fix is a small reusable engine addition mirroring the existing
+  `lastKnownSourceCounters` capture (snapshot the self-sacrificed source's P/T, or add a
+  `DynamicAmount.LastKnownSourcePower`). Note: **Cinder Shade (INV)** and **Ghitu Fire-Eater (ULG)**
+  share this latent gap.
