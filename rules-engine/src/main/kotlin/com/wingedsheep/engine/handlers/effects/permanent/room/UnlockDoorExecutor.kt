@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.actions.room.RoomDoorUnlocker
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
@@ -25,7 +26,9 @@ import kotlin.reflect.KClass
  * which this models deterministically since the single-locked-door case (a normally-cast Room)
  * carries no real choice.
  */
-class UnlockDoorExecutor : EffectExecutor<UnlockDoorEffect> {
+class UnlockDoorExecutor(
+    private val staticAbilityHandler: StaticAbilityHandler,
+) : EffectExecutor<UnlockDoorEffect> {
 
     override val effectType: KClass<UnlockDoorEffect> = UnlockDoorEffect::class
 
@@ -49,7 +52,7 @@ class UnlockDoorExecutor : EffectExecutor<UnlockDoorEffect> {
             ?: return EffectResult.success(state, emptyList())
 
         val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
-        val (newState, events) = RoomDoorUnlocker.unlock(state, roomId, lockedFace.id, controllerId)
+        val (newState, events) = RoomDoorUnlocker.unlock(state, roomId, lockedFace.id, controllerId, staticAbilityHandler)
         return EffectResult.success(newState, events)
     }
 }

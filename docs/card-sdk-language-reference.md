@@ -84,6 +84,16 @@ section; do not let SDK additions land without a corresponding doc update.
   cast independently via `CastSpell.faceIndex`; only the chosen half goes on the stack (CR 709.4). A non-permanent half
   carries its effect in a `face("Name") { spell { … } }` block (with its own `target(...)` requirements); a permanent
   half (Room) carries triggered/activated/static abilities instead.
+  - **Room face abilities are door-gated (CR 709.5).** A Room face's abilities function only while that door is
+    unlocked. Triggered abilities are scoped to the unlocked face in `TriggerDetector`; **static** abilities —
+    continuous effects, `GrantActivatedAbility` (incl. granted mana abilities), and `NoMaximumHandSize` — are folded
+    in by the engine helper `RoomFaceStatics.activeStaticAbilities(container, cardDef)`, the single source of truth
+    every battlefield static-ability scan reads (continuous-effect projection, clickable granted abilities, the mana
+    auto-payer, no-maximum-hand-size). So a static printed on a Room face (e.g. Greenhouse's "Lands you control have
+    '{T}: Add one mana of any color.'") works exactly like the same static on a normal permanent, but only once its
+    door is unlocked. The baked continuous-effect component is refreshed when a door unlocks (via `RoomDoorUnlocker`),
+    the same way a transform re-bakes it. (Replacement effects on a Room face are not yet door-gated — no current card
+    needs one.)
 - `ADVENTURE` — primary face is a permanent (usually a creature; **may also be a land** — FIN Towns), `cardFaces[0]`
   is an instant/sorcery Adventure (CR 715). Resolving the Adventure exiles the card and grants permission to play
   the primary face from exile — *cast* the creature, or *play* the land for a **land // spell** Adventure

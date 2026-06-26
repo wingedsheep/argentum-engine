@@ -867,8 +867,9 @@ class CastPermissionUtils(
             if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
-            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+            // Include unlocked Room face statics (CR 709.5) so a Room that grants activated
+            // abilities (e.g. Greenhouse) only hands them out once its door is unlocked.
+            for (ability in com.wingedsheep.engine.state.components.identity.RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
                 // "This permanent has all activated abilities of the exiled card" (Territory Forge):
                 // pull every activated ability off each linked-exiled card and grant it to the source.
                 if (ability is com.wingedsheep.sdk.scripting.HasAllActivatedAbilitiesOfLinkedExiledCard) {

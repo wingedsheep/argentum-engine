@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSour
 import com.wingedsheep.engine.state.components.battlefield.SuppressesHexproofForGroupComponent
 import com.wingedsheep.engine.state.components.battlefield.SuppressesWardForGroupComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.ModifyDamageAmount
@@ -205,9 +206,11 @@ class StaticAbilityHandler(
     ): ComponentContainer {
         var result = container
 
-        // Use effective static abilities which includes class level abilities
-        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-        val allStaticAbilities = cardDefinition.script.effectiveStaticAbilities(classLevel)
+        // Effective static abilities, including class-level abilities and — for a Room permanent —
+        // the static abilities of every currently-unlocked face (CR 709.5). Routing through
+        // RoomFaceStatics is what lets a Room face's continuous statics project once its door is
+        // unlocked; the component is re-baked on later unlocks by RoomDoorUnlocker.
+        val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
 
         // Convert static abilities to continuous effect data
         val effectsData = allStaticAbilities.flatMap { ability ->

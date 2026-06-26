@@ -1559,8 +1559,10 @@ class ManaSolver(
             if (container.has<FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
-            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+            // Include unlocked Room face statics (CR 709.5) so a Room granting a mana ability
+            // (e.g. Greenhouse's "Lands you control have '{T}: Add one mana of any color.'") feeds
+            // the auto-payer only while its door is unlocked.
+            for (ability in com.wingedsheep.engine.state.components.identity.RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
                 if (ability is GrantActivatedAbility &&
                     ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield) {
                     if (ability.filter.excludeSelf && permanentId == entityId) continue

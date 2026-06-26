@@ -15,6 +15,7 @@ import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.UnlockCostReducer
@@ -55,6 +56,9 @@ class UnlockRoomDoorHandler(
     // Lets restricted mana tagged "spend only to ... unlock a door" (Creeping Peeper) be
     // recognized when paying an unlock cost.
     private val unlockContext = SpellPaymentContext(isUnlockDoorAction = true)
+
+    // Re-bakes the Room's continuous-effect component when a door unlocks a continuous static.
+    private val staticAbilityHandler = StaticAbilityHandler(cardRegistry)
 
     override fun validate(state: GameState, action: UnlockRoomDoor): String? {
         if (state.priorityPlayerId != action.playerId) {
@@ -276,7 +280,7 @@ class UnlockRoomDoorHandler(
         // Apply the unlock to the RoomComponent via the shared primitive, so the unlock-cost
         // special action and the resolution-time "unlock a door" effect emit identical events.
         val (stateAfterUnlock, unlockEvents) = RoomDoorUnlocker.unlock(
-            currentState, action.roomId, action.faceId, action.playerId
+            currentState, action.roomId, action.faceId, action.playerId, staticAbilityHandler
         )
         currentState = stateAfterUnlock
         events.addAll(unlockEvents)

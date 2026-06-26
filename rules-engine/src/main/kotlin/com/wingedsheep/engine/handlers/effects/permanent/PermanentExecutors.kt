@@ -193,7 +193,7 @@ class PermanentExecutors(
         TapUntapExecutor(),
         TapUntapCollectionExecutor(),
         // rooms / doors
-        UnlockDoorExecutor(),
+        UnlockDoorExecutor(staticAbilityHandler),
         // phasing
         PhaseOutExecutor(),
         PhaseOutUntilLeavesExecutor(),

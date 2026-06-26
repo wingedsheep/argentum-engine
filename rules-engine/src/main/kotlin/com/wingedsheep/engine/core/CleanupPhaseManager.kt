@@ -445,9 +445,14 @@ class CleanupPhaseManager(
         val registry = cardRegistry
         val projected = state.projectedState
         for (permanentId in projected.getBattlefieldControlledBy(playerId)) {
-            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any { it is NoMaximumHandSize }) {
+            // Routed through RoomFaceStatics so a Room face's "You have no maximum hand size"
+            // (e.g. Steaming Sauna) counts only while that door is unlocked (CR 709.5).
+            if (com.wingedsheep.engine.state.components.identity.RoomFaceStatics
+                    .activeStaticAbilities(container, cardDef).any { it is NoMaximumHandSize }
+            ) {
                 return true
             }
         }
