@@ -13,7 +13,7 @@ val ShockReprint = Printing(
     collectorNumber = "227",
     scryfallId = "83c92b5d-103c-4719-a850-690a7010291a",
     artist = "Edward P. Beard, Jr.",
-    imageUri = "https://cards.scryfall.io/normal/front/8/3/83c92b5d-103c-4719-a850-690a7010291a.jpg",
+    imageUri = "https://cards.scryfall.io/normal/front/8/3/83c92b5d-103c-4719-a850-690a7010291a.jpg?1562926054",
     releaseDate = "2002-10-07",
     rarity = Rarity.COMMON,
 )

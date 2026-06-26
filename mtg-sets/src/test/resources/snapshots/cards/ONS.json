@@ -13590,42 +13590,6 @@
     ]
 }
 
-// Shock
-{
-    "name": "Shock",
-    "manaCost": "{R}",
-    "typeLine": "Instant",
-    "oracleText": "Shock deals 2 damage to any target.",
-    "script": {
-        "spellEffect": {
-            "type": "DealDamage",
-            "amount": {
-                "type": "Fixed",
-                "amount": 2
-            },
-            "target": {
-                "type": "BoundVariable",
-                "name": "target"
-            }
-        },
-        "targetRequirements": [
-            {
-                "type": "AnyTarget",
-                "id": "target"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "227",
-        "artist": "Edward P. Beard, Jr.",
-        "flavorText": "\"I love lightning! It's my best invention since the rock.\"\n—Toggo, goblin weaponsmith",
-        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83c92b5d-103c-4719-a850-690a7010291a.jpg"
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
-}
-
 // Sigil of the New Dawn
 {
     "name": "Sigil of the New Dawn",
