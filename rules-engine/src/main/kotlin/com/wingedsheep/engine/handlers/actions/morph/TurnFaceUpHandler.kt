@@ -384,6 +384,10 @@ class TurnFaceUpHandler(
             updated = staticAbilityHandler.addReplacementEffectComponent(updated)
             updated
         }
+        // Track "you turned a permanent face up this turn" (Oblivious Bookworm). The non-mana
+        // morph-cost path flips via TurnFaceUpExecutor (which tracks there); this mana path
+        // flips inline, so record it here. Exactly one bump per turn-face-up.
+        currentState = com.wingedsheep.engine.handlers.effects.FaceUpTracker.record(currentState, action.playerId)
 
         // Execute face-up replacement effect (e.g., "put five +1/+1 counters on it")
         if (morphData.faceUpEffect != null) {

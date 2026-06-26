@@ -4254,6 +4254,18 @@ default to "you" so card authors don't need to pass it explicitly.
   `DynamicAmounts.permanentsSacrificedThisTurn()` amount for "that much" damage (Sawblade Skinripper:
   "At the beginning of your end step, if you sacrificed one or more permanents this turn, this creature
   deals that much damage to any target").
+- `PermanentEnteredFaceDownThisTurn` — a permanent entered the battlefield face down under your
+  control this turn (morph / disguise / manifest / cloak). Composes through
+  `Compare(DynamicAmount.TurnTracking(Player.You, TurnTracker.PERMANENTS_ENTERED_FACE_DOWN), GTE,
+  Fixed(1))`. Backed by the per-player `FaceDownPermanentsEnteredThisTurnComponent`, bumped once per
+  face-down ETB in `PermanentEntryTracker.record` and cleared by `CleanupPhaseManager`.
+- `YouTurnedPermanentFaceUpThisTurn` — you turned a permanent face up this turn, via the turn-face-up
+  special action (CR 116.2b) or an effect (`TurnFaceUpEffect`). Composes through
+  `Compare(DynamicAmount.TurnTracking(Player.You, TurnTracker.PERMANENTS_TURNED_FACE_UP), GTE,
+  Fixed(1))`. Backed by the per-player `PermanentsTurnedFaceUpThisTurnComponent`, bumped at every
+  `TurnFaceUpEvent` emission point (`FaceUpTracker.record`); merely revealing a face-down permanent as
+  it changes zones (CR 708.9) does not count. Pair the two with `Conditions.Any(...)` for the
+  "entered face down … or … turned a permanent face up this turn" gate (Oblivious Bookworm).
 - `GraveyardContains(filter)` — "there is at least one card matching `filter` in your graveyard"
   (`Exists(Player.You, Zone.GRAVEYARD, filter)`). Compose with `Conditions.All`/`Any` for multi-type
   checks, e.g. `All(GraveyardContains(Filters.Instant), GraveyardContains(Filters.Sorcery))` =
@@ -4872,6 +4884,16 @@ of `AddMana`. The engine empties pools at end of turn, so:
   counter (which sums every player's sacrifices). Backs `Conditions.YouSacrificedPermanentsThisTurn(atLeast)`
   and `DynamicAmounts.permanentsSacrificedThisTurn(player)` — e.g. Sawblade Skinripper's "if you sacrificed
   one or more permanents this turn, ... deals that much damage".
+- `PERMANENTS_ENTERED_FACE_DOWN` — number of permanents that entered the battlefield face down under the
+  player's control this turn (morph / disguise / manifest / cloak). Backed by the per-player
+  `FaceDownPermanentsEnteredThisTurnComponent`, bumped once per face-down ETB in
+  `PermanentEntryTracker.record` and reset at turn start. Backs `Conditions.PermanentEnteredFaceDownThisTurn`
+  (Oblivious Bookworm).
+- `PERMANENTS_TURNED_FACE_UP` — number of permanents the player turned face up this turn, via the
+  turn-face-up special action (CR 116.2b) or `TurnFaceUpEffect`. Backed by the per-player
+  `PermanentsTurnedFaceUpThisTurnComponent`, bumped at every `TurnFaceUpEvent` emission point
+  (`FaceUpTracker.record`); revealing a face-down permanent as it leaves the battlefield (CR 708.9) does
+  not count. Backs `Conditions.YouTurnedPermanentFaceUpThisTurn` (Oblivious Bookworm).
 
 `SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity?)` /
 `DynamicAmounts.subtypeEnteredUnderControlThisTurn(subtype, player?, excludeTriggeringEntity?)` —

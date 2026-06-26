@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
+import com.wingedsheep.engine.state.components.player.FaceDownPermanentsEnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentTypesEnteredBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
@@ -43,16 +45,30 @@ object PermanentEntryTracker {
      * battlefield with its identity components in place).
      */
     fun record(state: GameState, controllerId: EntityId, entityId: EntityId): GameState {
+        // Face-down entry is tracked independently of visible card types: it's the *manner* of
+        // entry that matters ("a permanent entered the battlefield face down under your control
+        // this turn"), so it must hold even for a hypothetical entry with no projected types.
+        val enteredFaceDown = state.getEntity(entityId)?.has<FaceDownComponent>() == true
         val cardTypes = projectedCardTypes(state, entityId)
-        if (cardTypes.isEmpty()) return state
+        if (cardTypes.isEmpty() && !enteredFaceDown) return state
         val subtypes = state.projectedState.getSubtypes(entityId)
         return state.updateEntity(controllerId) { container ->
+            // Bump the per-player face-down entry count once for this ETB. Counts (not a marker)
+            // so future "for each permanent that entered face down this turn" cards compose.
+            val faceDownTracked = if (enteredFaceDown) {
+                val existing = container.get<FaceDownPermanentsEnteredThisTurnComponent>()
+                    ?: FaceDownPermanentsEnteredThisTurnComponent()
+                container.with(FaceDownPermanentsEnteredThisTurnComponent(existing.count + 1))
+            } else {
+                container
+            }
+            if (cardTypes.isEmpty()) return@updateEntity faceDownTracked
             val typeMerged = run {
-                val existing = container.get<PermanentTypesEnteredBattlefieldThisTurnComponent>()
+                val existing = faceDownTracked.get<PermanentTypesEnteredBattlefieldThisTurnComponent>()
                     ?: PermanentTypesEnteredBattlefieldThisTurnComponent()
                 val merged = existing.cardTypes + cardTypes
-                if (merged == existing.cardTypes) container
-                else container.with(PermanentTypesEnteredBattlefieldThisTurnComponent(merged))
+                if (merged == existing.cardTypes) faceDownTracked
+                else faceDownTracked.with(PermanentTypesEnteredBattlefieldThisTurnComponent(merged))
             }
             // Per-permanent entry list, keyed by entityId so a (theoretical) double-record is
             // idempotent. Backs subtype-keyed "for each [type] that entered this turn" counts.

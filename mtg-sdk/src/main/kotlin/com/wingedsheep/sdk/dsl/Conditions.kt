@@ -1171,6 +1171,22 @@ object Conditions {
         )
 
     /**
+     * If a permanent entered the battlefield face down under your control this turn (morph,
+     * disguise, manifest, cloak). Backed by the per-player `FaceDownPermanentsEnteredThisTurnComponent`.
+     * Used by Oblivious Bookworm.
+     */
+    val PermanentEnteredFaceDownThisTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.PERMANENTS_ENTERED_FACE_DOWN)
+
+    /**
+     * If you turned a permanent face up this turn — via the turn-face-up special action (paying a
+     * morph/disguise cost) or an effect. Backed by the per-player
+     * `PermanentsTurnedFaceUpThisTurnComponent`. Used by Oblivious Bookworm.
+     */
+    val YouTurnedPermanentFaceUpThisTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.PERMANENTS_TURNED_FACE_UP)
+
+    /**
      * If a permanent of the given card type entered the battlefield under the given player's
      * control this turn. The permanent need not still be on the battlefield, still be of that
      * type, or still be under that player's control — only the entry event matters.

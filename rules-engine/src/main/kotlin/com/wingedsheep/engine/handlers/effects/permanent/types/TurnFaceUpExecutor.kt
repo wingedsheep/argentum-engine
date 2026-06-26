@@ -48,12 +48,14 @@ class TurnFaceUpExecutor(
         val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
         val cardName = container.get<CardComponent>()?.name ?: "Unknown"
 
-        val newState = state.updateEntity(targetId) { c ->
+        var newState = state.updateEntity(targetId) { c ->
             var updated = c.without<FaceDownComponent>()
             updated = staticAbilityHandler.addContinuousEffectComponent(updated)
             updated = staticAbilityHandler.addReplacementEffectComponent(updated)
             updated
         }
+        // Track "you turned a permanent face up this turn" (Oblivious Bookworm).
+        newState = com.wingedsheep.engine.handlers.effects.FaceUpTracker.record(newState, controllerId)
 
         return EffectResult.success(
             newState,

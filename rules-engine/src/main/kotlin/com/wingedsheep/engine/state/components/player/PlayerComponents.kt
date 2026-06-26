@@ -981,6 +981,31 @@ data class PermanentsEnteredUnderControlThisTurnComponent(
 ) : Component
 
 /**
+ * Number of permanents that entered the battlefield face down under this player's control this
+ * turn (morph / disguise / manifest / cloak). Bumped once per face-down ETB by
+ * `PermanentEntryTracker.record` (the single sanctioned battlefield-entry point); cleared at end of
+ * turn by [com.wingedsheep.engine.core.CleanupPhaseManager].
+ *
+ * Backs `DynamicAmount.TurnTracking(player, TurnTracker.PERMANENTS_ENTERED_FACE_DOWN)` — e.g.
+ * Oblivious Bookworm's "a permanent entered the battlefield face down under your control this turn".
+ */
+@Serializable
+data class FaceDownPermanentsEnteredThisTurnComponent(val count: Int = 0) : Component
+
+/**
+ * Number of permanents this player turned face up this turn — via the turn-face-up special action
+ * (CR 116.2b) or an effect that turns a permanent face up. Bumped at every `TurnFaceUpEvent`
+ * emission point (`FaceUpTracker.record`); merely revealing a face-down permanent as it changes
+ * zones (CR 708.9) does not count. Cleared at end of turn by
+ * [com.wingedsheep.engine.core.CleanupPhaseManager].
+ *
+ * Backs `DynamicAmount.TurnTracking(player, TurnTracker.PERMANENTS_TURNED_FACE_UP)` — e.g.
+ * Oblivious Bookworm's "you turned a permanent face up this turn".
+ */
+@Serializable
+data class PermanentsTurnedFaceUpThisTurnComponent(val count: Int = 0) : Component
+
+/**
  * Marker component indicating that this player has put a counter on a creature this turn.
  * Cleared at end of turn by CleanupPhaseManager.
  *

@@ -8689,6 +8689,134 @@
     ]
 }
 
+// Oblivious Bookworm
+{
+    "name": "Oblivious Bookworm",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "At the beginning of your end step, you may draw a card. If you do, discard a card unless a permanent entered the battlefield face down under your control this turn or you turned a permanent face up this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "Any",
+                                        "conditions": [
+                                            {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "TurnTracking",
+                                                    "player": "You",
+                                                    "tracker": "PERMANENTS_ENTERED_FACE_DOWN"
+                                                },
+                                                "operator": "GTE",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "TurnTracking",
+                                                    "player": "You",
+                                                    "tracker": "PERMANENTS_TURNED_FACE_UP"
+                                                },
+                                                "operator": "GTE",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may draw a card. If you do, discard a card unless a permanent entered the battlefield face down under your control this turn or you turned a permanent face up this turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Newton",
+        "flavorText": "\"Huh, the detector won't stop beeping. Must be on the fritz again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7b4c50b-fe76-430d-8f96-208f15ca4cd7.jpg?1726286707"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Omnivorous Flytrap
 {
     "name": "Omnivorous Flytrap",

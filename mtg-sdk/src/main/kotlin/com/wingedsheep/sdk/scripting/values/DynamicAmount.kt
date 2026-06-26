@@ -88,7 +88,24 @@ enum class TurnTracker {
      * `GameState.permanentsSacrificedThisTurn` cost-reduction counter. Powers "if you sacrificed
      * one or more permanents this turn, ... deals that much damage" (Sawblade Skinripper).
      */
-    PERMANENTS_SACRIFICED;
+    PERMANENTS_SACRIFICED,
+    /**
+     * Number of permanents that entered the battlefield face down under the player's control this
+     * turn (morph, disguise, manifest, cloak, …). Backed by
+     * `FaceDownPermanentsEnteredThisTurnComponent`, populated once per face-down ETB by
+     * `PermanentEntryTracker.record` and reset to 0 for every player at the start of each turn.
+     * Powers "a permanent entered the battlefield face down under your control this turn"
+     * (Oblivious Bookworm).
+     */
+    PERMANENTS_ENTERED_FACE_DOWN,
+    /**
+     * Number of permanents the player turned face up this turn — via the turn-face-up special
+     * action (paying a morph/disguise cost, CR 116.2b) or an effect that turns a permanent face up.
+     * Merely revealing a face-down permanent as it changes zones (CR 708.9) does **not** count.
+     * Backed by `PermanentsTurnedFaceUpThisTurnComponent`, reset to 0 for every player at the start
+     * of each turn. Powers "you turned a permanent face up this turn" (Oblivious Bookworm).
+     */
+    PERMANENTS_TURNED_FACE_UP;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -110,6 +127,8 @@ enum class TurnTracker {
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
         PERMANENTS_SACRIFICED -> "the number of permanents ${player.description} sacrificed this turn"
+        PERMANENTS_ENTERED_FACE_DOWN -> "the number of permanents that entered the battlefield face down under ${player.possessive} control this turn"
+        PERMANENTS_TURNED_FACE_UP -> "the number of permanents ${player.description} turned face up this turn"
     }
 }
 
