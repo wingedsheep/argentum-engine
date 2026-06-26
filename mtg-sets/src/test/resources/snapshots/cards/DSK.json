@@ -13700,6 +13700,125 @@
     ]
 }
 
+// Stay Hidden, Stay Silent
+{
+    "name": "Stay Hidden, Stay Silent",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.\n{4}{U}{U}: Shuffle enchanted creature into its owner's library, then manifest dread. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "EnchantedCreature",
+                            "destination": "Library",
+                            "placement": "Shuffled"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "manifestDreadLooked"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "manifestDreadLooked",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "manifestDreadManifested",
+                                    "storeRemainder": "manifestDreadGraveyard",
+                                    "selectedLabel": "Manifest (put onto the battlefield face down)",
+                                    "remainderLabel": "Put into your graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "manifestDreadManifested",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    },
+                                    "faceDown": "MANIFEST"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "manifestDreadGraveyard",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                },
+                                "EmitManifestedDreadEvent"
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{4}{U}{U}: Shuffle enchanted creature into its owner's library, then manifest dread. Activate only as a sorcery."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b661ffe7-4f58-43fe-a1f1-dd7a6d4d28a7.jpg?1726286129"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Strangled Cemetery
 {
     "name": "Strangled Cemetery",
