@@ -2797,6 +2797,76 @@
     ]
 }
 
+// Commune with Beavers
+{
+    "name": "Commune with Beavers",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top three cards of your library. You may reveal an artifact, creature, or land card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "artifact|creature|land",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal an artifact, creature, or land card and put it into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "artist": "hippo",
+        "flavorText": "\"Guy speak beaver.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/784287c2-43c5-4210-93ae-cdd33b9acb1b.jpg?1748706441"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Coral Sword
 {
     "name": "Coral Sword",
@@ -6638,6 +6708,65 @@
     "colorIdentityOverride": []
 }
 
+// Moogles' Valor
+{
+    "name": "Moogles' Valor",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "For each creature you control, create a 1/2 white Moogle creature token with lifelink. Then creatures you control gain indestructible until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "power": 1,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Moogle"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/9/295b78dc-b26d-4e92-8f75-916566c4db14.jpg?1748704063"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "Self"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Kotakan",
+        "flavorText": "\"Thanks, moogles! We're in your debt!\"\n—Locke Cole",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/caa838a7-60a9-4791-af5b-194f7574c4c8.jpg?1748705854"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mysidian Elder
 {
     "name": "Mysidian Elder",
@@ -6914,6 +7043,117 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Poison the Waters
+{
+    "name": "Poison the Waters",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• All creatures get -1/-1 until end of turn.\n• Target player reveals their hand. You choose an artifact or creature card from it. That player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "All creatures get -1/-1 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    }
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "artifact|creature",
+                                "storeSelected": "toDiscard",
+                                "prompt": "Choose an artifact or creature card to discard",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toDiscard",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Target player reveals their hand; discard an artifact or creature card"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Arif Wijaya",
+        "flavorText": "\"Hee-hee... Nothing beats the sweet music of hundreds of voices screaming in unison! Uwee-hee-hee!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff2bafe7-4d0f-464d-b7ba-55a54366fc68.jpg?1748706178"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
