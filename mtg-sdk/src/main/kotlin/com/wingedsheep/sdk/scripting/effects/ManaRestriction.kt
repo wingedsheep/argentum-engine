@@ -168,6 +168,18 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to activate an ability." Any activated ability of any source
+     * qualifies — unlike [CardTypeSpellsOrAbilitiesOnly], which ties abilities to a card type.
+     * Compose with [AnyOf] for "... or to activate an ability" clauses (Purple Dragon Punks:
+     * "Spend this mana only to cast an artifact spell or to activate an ability").
+     */
+    @SerialName("AbilityActivationOnly")
+    @Serializable
+    data object AbilityActivationOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to activate an ability"
+    }
+
+    /**
      * "Spend this mana only to cast a spell from anywhere other than your hand."
      *
      * Used by Mm'menon, the Right Hand's granted artifact ability. Generalizes

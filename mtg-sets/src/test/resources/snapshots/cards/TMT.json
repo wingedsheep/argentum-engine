@@ -2285,6 +2285,121 @@
     ]
 }
 
+// Donatello, Mutant Mechanic
+{
+    "name": "Donatello, Mutant Mechanic",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "{T}: Put three +1/+1 counters on target artifact you control. If it isn't a creature, it becomes a 0/0 Robot creature in addition to its other types. Activate only as a sorcery.\nWhenever an artifact you control is put into a graveyard from the battlefield, if it had counters on it, put those counters on up to one target artifact or creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one target artifact or creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:you"
+                    },
+                    "id": "up to one target artifact or creature you control"
+                },
+                "triggerCondition": "TriggeringEntityHadCounters",
+                "descriptionOverride": "Whenever an artifact you control is put into a graveyard from the battlefield, if it had counters on it, put those counters on up to one target artifact or creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 3,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target artifact you control"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "filter": "noncreature"
+                                }
+                            },
+                            "then": {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "creatureTypes": [
+                                    "Robot"
+                                ],
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:you"
+                        },
+                        "id": "target artifact you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{T}: Put three +1/+1 counters on target artifact you control. If it isn't a creature, it becomes a 0/0 Robot creature in addition to its other types. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3271b821-8efc-49e2-96fd-c48e2b2585c6.jpg?1769005688"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Donatello, Turtle Techie
 {
     "name": "Donatello, Turtle Techie",
@@ -3323,19 +3438,11 @@
         "TRAMPLE"
     ],
     "script": {
-        "triggeredAbilities": [
+        "staticAbilities": [
             {
-                "id": "ability_1",
-                "trigger": {
-                    "type": "LandTappedForMana",
-                    "player": "You"
-                },
-                "binding": "ANY",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "GREEN"
-                },
-                "descriptionOverride": "Whenever you tap a land for mana, add {G}."
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land ctrl:you",
+                "color": "GREEN"
             }
         ]
     },
@@ -4573,6 +4680,140 @@
     ]
 }
 
+// Krang & Shredder
+{
+    "name": "Krang & Shredder",
+    "manaCost": "{4}{U/B}{U/B}",
+    "typeLine": "Legendary Creature — Utrom Human Ninja",
+    "oracleText": "Whenever Krang & Shredder enter or attack, each opponent exiles cards from the top of their library until they exile a nonland card.\nDisappear — At the beginning of your end step, if a permanent left the battlefield under your control this turn, you may cast a card exiled with Krang & Shredder without paying its mana cost.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherUntilMatch",
+                                "filter": "nonland",
+                                "storeMatch": "krangMatch",
+                                "storeRevealed": "krangRevealed"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "krangRevealed",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever Krang & Shredder enter or attack, each opponent exiles cards from the top of their library until they exile a nonland card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherUntilMatch",
+                                "filter": "nonland",
+                                "storeMatch": "krangMatch",
+                                "storeRevealed": "krangRevealed"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "krangRevealed",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever Krang & Shredder enter or attack, each opponent exiles cards from the top of their library until they exile a nonland card."
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "krangCastable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "krangCastable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "krangChosen",
+                                "prompt": "Choose a card exiled with Krang & Shredder to cast without paying its mana cost"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "krangChosen"
+                            }
+                        ]
+                    }
+                },
+                "triggerCondition": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Disappear — At the beginning of your end step, if a permanent left the battlefield under your control this turn, you may cast a card exiled with Krang & Shredder without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b5437e2-e3f4-4c19-a2aa-a75f65a001bb.jpg?1769006256"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Krang, Master Mind
 {
     "name": "Krang, Master Mind",
@@ -4821,6 +5062,80 @@
     ]
 }
 
+// Leatherhead, Swamp Stalker
+{
+    "name": "Leatherhead, Swamp Stalker",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Crocodile Mutant Rogue",
+    "oracleText": "Trample\nLeatherhead enters with a hexproof counter on her.\nWhenever Leatherhead deals combat damage to a player, you may remove a counter from her. When you do, destroy target artifact or enchantment that player controls.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "RemoveCounters",
+                        "counterType": "hexproof",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment ctrl:opponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Leatherhead deals combat damage to a player, you may remove a counter from her. When you do, destroy target artifact or enchantment that player controls."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": {
+                    "type": "Named",
+                    "name": "hexproof"
+                },
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1f6b5b5-12ca-468d-bc53-dd0cde60e7b6.jpg?1769006176"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Leonardo's Technique
 {
     "name": "Leonardo's Technique",
@@ -5051,6 +5366,68 @@
     ]
 }
 
+// Leonardo, Sewer Samurai
+{
+    "name": "Leonardo, Sewer Samurai",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle Samurai",
+    "oracleText": "Sneak {2}{W}{W} (You may cast this spell for {2}{W}{W} if you also return an unblocked attacker you control to hand during the declare blockers step.)\nDouble strike\nDuring your turn, you may cast creature spells with power or toughness 1 or less from your graveyard. If you cast a spell this way, that creature enters with a finality counter on it. (If a creature with a finality counter on it would die, exile it instead.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "SNEAK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Sneak",
+            "cost": "{2}{W}{W}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerOrToughnessAtMost",
+                            "max": 1
+                        }
+                    ]
+                },
+                "duringYourTurnOnly": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": {
+                    "type": "Named",
+                    "name": "finality"
+                },
+                "count": 1,
+                "condition": {
+                    "type": "WasCastFromZone",
+                    "zone": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e3a0a26-c163-4f31-bed8-1be52a35feea.jpg?1764512256"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lessons from Life
 {
     "name": "Lessons from Life",
@@ -5116,6 +5493,68 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Lita, Little Orphan Amphibian
+{
+    "name": "Lita, Little Orphan Amphibian",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Alliance — Whenever another creature you control enters, choose one that hasn't been chosen this turn.\n• Put a +1/+1 counter on Lita.\n• Create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\n• Scry 1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Food"
+                            }
+                        },
+                        {
+                            "effect": {
+                                "type": "Scry",
+                                "count": 1
+                            }
+                        }
+                    ],
+                    "excludePreviouslyChosenModes": true,
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "Alliance — Whenever another creature you control enters, choose one that hasn't been chosen this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Pavleeva",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fbaabb5-e981-4cbf-888c-46449412711f.jpg?1771424706"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6094,6 +6533,88 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Mondo Gecko
+{
+    "name": "Mondo Gecko",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Lizard Mutant",
+    "oracleText": "{1}, Discard a card: Until end of turn, Mondo Gecko becomes the color of your choice and gains hexproof from that color.\nWhenever Mondo Gecko deals combat damage to a player, draw a card for each color among permanents you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "DISTINCT_COLORS"
+                    }
+                },
+                "descriptionOverride": "Whenever Mondo Gecko deals combat damage to a player, draw a card for each color among permanents you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChangeColorToChosen",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantHexproofFromChosenColor",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "{1}, Discard a card: Until end of turn, Mondo Gecko becomes the color of your choice and gains hexproof from that color."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "MYTHIC",
+        "artist": "Maël Ollivier-Henry",
+        "flavorText": "\"Stealth-o-rama, huh? Righteous.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/665e44f9-bc0d-40aa-83a4-f7fe64f2506d.jpg?1769005708"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7706,6 +8227,51 @@
     ]
 }
 
+// Purple Dragon Punks
+{
+    "name": "Purple Dragon Punks",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{T}: Add {R}. Spend this mana only to cast an artifact spell or to activate an ability.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            {
+                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                "cardType": "ARTIFACT"
+                            },
+                            "AbilityActivationOnly"
+                        ]
+                    }
+                },
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {R}. Spend this mana only to cast an artifact spell or to activate an ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Rose Benjamin",
+        "flavorText": "\"These guys are young, but no rookies. They've fought and beat everything on two legs in this area . . . except us.\"\n—Leonardo",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbe1d7e5-68e2-4458-aa3f-5e97fa8e7cae.jpg?1771586948"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Putrid Pals
 {
     "name": "Putrid Pals",
@@ -8193,6 +8759,47 @@
         "rarity": "UNCOMMON",
         "artist": "Thomas Chamberlain-Keen",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/88385a87-f931-409f-8a21-250f0866d63d.jpg?1771502673"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Raphael, Ninja Destroyer
+{
+    "name": "Raphael, Ninja Destroyer",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Mutant Ninja Turtle",
+    "oracleText": "Raphael must be blocked if able.\nEnrage — Whenever Raphael is dealt damage, add that much {R}. Until end of turn, you don't lose this mana as steps and phases end.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                },
+                "descriptionOverride": "Enrage — Whenever Raphael is dealt damage, add that much {R}. Until end of turn, you don't lose this mana as steps and phases end."
+            }
+        ],
+        "staticAbilities": [
+            "MustBeBlockedStatic"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "MYTHIC",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeffadda-cb71-4434-89bf-36db1a36da0b.jpg?1769006156"
     },
     "colorIdentityOverride": [
         "RED"
@@ -10754,6 +11361,70 @@
     }
 }
 
+// Tokka & Rahzar, Terrible Twos
+{
+    "name": "Tokka & Rahzar, Terrible Twos",
+    "manaCost": "{B/R}{B/R}",
+    "typeLine": "Legendary Creature — Turtle Wolf Mutant",
+    "oracleText": "This spell can't be countered.\nMenace\nWhenever a player casts a spell, if the amount of mana spent to cast it was less than its mana value, Tokka & Rahzar deal 3 damage to that player.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Triggering",
+                        "numericProperty": "ManaSpent"
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Triggering",
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts a spell, if the amount of mana spent to cast it was less than its mana value, Tokka & Rahzar deal 3 damage to that player."
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Yuhong Ding",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/284f9012-a58d-41da-be7c-962dca052711.jpg?1769006390"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Transdimensional Bovine
 {
     "name": "Transdimensional Bovine",
@@ -11291,6 +11962,96 @@
         "artist": "Jakob Eirich",
         "imageUri": "https://cards.scryfall.io/normal/front/f/c/fce6a8b6-b43c-4045-9378-97b2463f9b4d.jpg?1769006474"
     }
+}
+
+// Turtles in Time
+{
+    "name": "Turtles in Time",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all creatures to their owners' hands. Each player may shuffle their hand and graveyard into their library, then each player who does draws seven cards.\nExile Turtles in Time.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "returnAllToHand_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "returnAllToHand_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromMultipleZones",
+                                        "zones": [
+                                            "Hand",
+                                            "Graveyard"
+                                        ]
+                                    },
+                                    "storeAs": "turtlesInTimeShuffle"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "turtlesInTimeShuffle",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Shuffled"
+                                    }
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "MYTHIC",
+        "artist": "Inkognit",
+        "flavorText": "\"When are we now?\"\n—Donatello",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdb3efe7-7b12-4503-83e9-7977eb099db5.jpg?1769005754"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Uneasy Alliance

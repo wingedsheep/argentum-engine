@@ -80,6 +80,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CastFromNonHandOnly -> !context.isAbilityActivation && !context.isFromHand
     is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction
     is ManaRestriction.UnlockDoorOnly -> context.isUnlockDoorAction
+    is ManaRestriction.AbilityActivationOnly -> context.isAbilityActivation
     is ManaRestriction.AnyOf -> restrictions.any { it.isSatisfiedBy(context) }
     is ManaRestriction.SubtypeSpellsOnly ->
         !context.isAbilityActivation &&

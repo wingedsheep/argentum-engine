@@ -4970,6 +4970,12 @@ restriction matches the spell context.
 - `ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType, allowSpells?, allowAbilities?)` —
   Steelswarm Operator shape. Use `cardType = CardType.ENCHANTMENT, allowSpells = true` for
   "spend only to cast an enchantment spell."
+- `ManaRestriction.AbilityActivationOnly` — only ability activations (any activated ability of
+  any source). Satisfied by `SpellPaymentContext.isAbilityActivation`; unlike
+  `CardTypeSpellsOrAbilitiesOnly`, the ability's source card type doesn't matter. Compose with
+  `AnyOf` for "... or to activate an ability" clauses — Purple Dragon Punks:
+  `AnyOf(CardTypeSpellsOrAbilitiesOnly(ARTIFACT, allowSpells = true, allowAbilities = false), AbilityActivationOnly)`
+  ("spend only to cast an artifact spell or to activate an ability").
 - `ManaRestriction.TurnPermanentsFaceUpOnly` — only the turn-face-up special action (disguise/
   morph face-up). Satisfied by `SpellPaymentContext.isTurnFaceUpAction`; the turn-face-up handler/
   enumerator pass that context so restricted mana in the pool is consumed. Overgrown Zealot,

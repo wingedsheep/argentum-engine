@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 171 / 190
+**Implemented:** 181 / 190
 ---
 
 - [x] Action News Crew
@@ -36,7 +36,7 @@
 - [ ] Don & Raph, Hard Science
 - [x] Donatello's Technique
 - [x] Donatello, Gadget Master
-- [ ] Donatello, Mutant Mechanic
+- [x] Donatello, Mutant Mechanic
 - [x] Donatello, Turtle Techie
 - [x] Donatello, Way with Machines
 - [x] Dream Beavers
@@ -72,18 +72,18 @@
 - [x] Kitsune's Technique
 - [x] Kitsune, Dragon's Daughter
 - [x] Koya, Death from Above
-- [ ] Krang & Shredder
+- [x] Krang & Shredder
 - [x] Krang, Master Mind
 - [x] Krang, Utrom Warlord
 - [x] Leader's Talent
-- [ ] Leatherhead, Swamp Stalker
+- [x] Leatherhead, Swamp Stalker
 - [x] Leonardo's Technique
 - [x] Leonardo, Big Brother
 - [x] Leonardo, Cutting Edge
 - [x] Leonardo, Leader in Blue
-- [ ] Leonardo, Sewer Samurai
+- [x] Leonardo, Sewer Samurai
 - [x] Lessons from Life
-- [ ] Lita, Little Orphan Amphibian
+- [x] Lita, Little Orphan Amphibian
 - [x] Lord Dregg, Insect Invader
 - [x] Madame Null, Power Broker
 - [x] Make Your Move
@@ -100,7 +100,7 @@
 - [x] Mikey & Leo, Chaos & Order
 - [x] Mind Transfer Protocol
 - [x] Mona Lisa, Science Geek
-- [ ] Mondo Gecko
+- [x] Mondo Gecko
 - [x] Mouser Attack!
 - [x] Mouser Foundry
 - [x] Mouser Mark III
@@ -127,7 +127,7 @@
 - [x] Prehistoric Pet
 - [x] Primordial Pachyderm
 - [x] Punk Frogs
-- [ ] Purple Dragon Punks
+- [x] Purple Dragon Punks
 - [x] Putrid Pals
 - [x] Quintessential Katana
 - [x] Ragamuffin Raptor
@@ -135,7 +135,7 @@
 - [x] Raph & Mikey, Troublemakers
 - [x] Raphael's Technique
 - [x] Raphael, Most Attitude
-- [ ] Raphael, Ninja Destroyer
+- [x] Raphael, Ninja Destroyer
 - [x] Raphael, the Nightwatcher
 - [x] Raphael, Tough Turtle
 - [ ] Rat King, Verminister
@@ -176,7 +176,7 @@
 - [x] The Last Ronin's Technique
 - [x] The Neutrinos
 - [x] The Ooze
-- [ ] Tokka & Rahzar, Terrible Twos
+- [x] Tokka & Rahzar, Terrible Twos
 - [x] Transdimensional Bovine
 - [x] Triceraton Commander
 - [x] Tunnel Rats
@@ -186,7 +186,7 @@
 - [x] Turtle Power!
 - [x] Turtle Van
 - [ ] Turtles Forever
-- [ ] Turtles in Time
+- [x] Turtles in Time
 - [x] Uneasy Alliance
 - [x] Utrom Scientists
 - [x] Venus, Torn Between Worlds

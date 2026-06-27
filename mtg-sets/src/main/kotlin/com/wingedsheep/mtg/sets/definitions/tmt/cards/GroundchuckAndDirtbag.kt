@@ -2,11 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.tmt.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Groundchuck & Dirtbag
@@ -27,10 +26,18 @@ val GroundchuckAndDirtbag = card("Groundchuck & Dirtbag") {
 
     keywords(Keyword.TRAMPLE)
 
-    triggeredAbility {
-        trigger = Triggers.landTappedForMana(player = Player.You)
-        effect = Effects.AddMana(Color.GREEN, 1)
-        description = "Whenever you tap a land for mana, add {G}."
+    // "Whenever you tap a land for mana, add {G}." is a triggered MANA ability (CR 605.1b): it
+    // resolves immediately without using the stack, so the {G} is available for the same payment.
+    // AdditionalManaOnSourceTap is the engine's immediate off-stack resolver for exactly this
+    // shape (see Badgermole Cub, "...tap a creature for mana..."). The generic landTappedForMana
+    // triggered-ability path is NOT wired to off-stack mana resolution, so it adds no mana.
+    // The "you tap" wording is the filter's youControl predicate: only the static's controller can
+    // activate a land they control as a mana ability.
+    staticAbility {
+        ability = AdditionalManaOnSourceTap(
+            sourceFilter = GameObjectFilter.Land.youControl(),
+            color = Color.GREEN
+        )
     }
 
     metadata {

@@ -10,9 +10,50 @@ Verify status anytime with: `scripts/card-status --set TMT` (and `--list --set T
 
 ## Status
 
-171 / 190 implemented (basics excluded — handled by `basicLandsFallback`). See
+179 / 190 implemented (basics excluded — handled by `basicLandsFallback`). See
 `cards.md` for the full checklist (the authoritative status); the per-card
 commits all carry `flavorText` in metadata.
+
+> **2026-06-25 second sweep — eight more "feature-gated" cards were composable.**
+> Debunked: **Leatherhead** (Slumbering Walker's reflexive remove-a-counter +
+> Dawning Purist's combat target; HEXPROOF counter already exists), **Lita**
+> (`ModalEffect.chooseOneNotYetChosen`), **Donatello, Mutant Mechanic**
+> (`MoveAllLastKnownCounters` + `TriggeringEntityHadCounters` + `BecomeCreature`),
+> **Mondo Gecko** (`ChooseColorThen` feeding both `ChangeColorToChosen` and
+> `GrantHexproofFromChosenColor` + `colorsAmongPermanents`), **Tokka & Rahzar**
+> (`CompareAmounts(ManaSpent < ManaValue)` over `AnyPlayerCastsSpell` — Pyrostatic
+> Pillar idiom), **Raphael, Ninja Destroyer** (persistent mana is the engine default —
+> pools empty only at end of turn — so Enrage is a plain dynamic `AddMana`),
+> **Turtles in Time** (`ForEachPlayer(Player.Each)` per-player shuffle+draw + `selfExile`),
+> and **Krang & Shredder** (`GatherUntilMatch(Nonland)` → linked exile + Disappear
+> `GrantMayPlayFromExile`/`GrantPlayWithoutPayingCost`).
+>
+> **The genuinely-remaining 11 each need a NEW engine feature** (all re-verified
+> 2026-06-25 — none is composable):
+> - **The Last Ronin** — delayed *attack* trigger must bind the attacker (root-caused
+>   above: `fromEvent(AttackersDeclaredEvent)` is empty + no per-attacker fan-out). Card
+>   .kt + combat test ready to restore once fixed.
+> - **Leonardo, Sewer Samurai** — needs an engine fix (verified). `MayCastFromGraveyard` +
+>   double strike + sneak all compose, BUT "creatures you cast from your graveyard enter with a
+>   finality counter" does not: a `selfOnly = false` `EntersWithCounters(FINALITY, condition =
+>   WasCastFromGraveyard)` (and the `TriggeringEntityEnteredOrWasCastFromGraveyard` variant) on
+>   Leonardo leaves the cast creature with 0 counters — the condition is evaluated against the
+>   replacement's source (Leonardo), not the entering creature, so the finality idiom only works
+>   `selfOnly = true` (a card's own replacement, Hundred-Battle Veteran). Fix: make non-self
+>   `EntersWithCounters` evaluate its `condition` against the affected/entering entity, OR add an
+>   `entersWithCounter` field to `MayCastFromGraveyard` wired through the graveyard-cast path.
+> - **Ninja Teen L3** — grant Sneak to graveyard creature cards + cast them from GY via Sneak.
+> - **Mikey & Don** — cast Mutant/Ninja/Turtle from top of library; creatures cast this way
+>   enter with a +1/+1 counter (no cast-from-top counter rider).
+> - **Party Dude L3** — "whenever one or more of your opponents are attacked" trigger
+>   (L1 each-player Food is now composable via `Player.Each`; L3 is the blocker).
+> - **Rat King** — return target creature card + all same-named cards from your graveyard.
+> - **The Cloning of Shredder** — create a token that's a copy of a card in this Saga's
+>   linked exile (no token-copy-of-linked-exile effect).
+> - **Don & Raph** — grant the next noncreature spell you cast affinity for artifacts.
+> - **Purple Dragon Punks** — "spend only to cast an artifact spell or activate **any**
+>   ability" mana (`CardTypeSpellsOrAbilitiesOnly` ties abilities to the card type).
+> - **North Wind Avatar** + **Turtles Forever** — wishboard (cards from outside the game).
 
 > **2026-06-25 sweep — six more "feature-gated" cards were actually composable.**
 > Re-verifying each supposed gap against real primitives debunked: **Turtle Van**
@@ -29,8 +70,20 @@ commits all carry `flavorText` in metadata.
 >   reflexive "when you do" (HEXPROOF counter + entersWith already exist).
 > - **Purple Dragon Punks** — *any*-ability mana ("artifact spell or activate an ability";
 >   `CardTypeSpellsOrAbilitiesOnly` ties abilities to the card type, too narrow).
-> - **The Last Ronin** — a Saga chapter that installs a *this-turn* triggered ability
->   ("whenever a creature attacks alone this turn …"; the attacks-alone trigger exists).
+> - **The Last Ronin** — needs a small **engine fix** (add-feature), root-caused: chapters I
+>   (`DestroyAll`) and II (`mill` + `ReflexiveTrigger` return) compose cleanly, and chapter III's
+>   spec is correct (`CreateDelayedTriggerEffect(trigger = attacks(filter=youControl,
+>   requires=Alone, binding=ANY), …)` + `EffectTarget.TriggeringEntity` — the proven Thoughtweft
+>   Imbuer / Doran "a creature you control attacks → do X to it" shape). But a combat scenario
+>   test left the lone attacker with 0 counters because **`TriggerContext.fromEvent` maps
+>   `AttackersDeclaredEvent -> TriggerContext()` (empty)** and `TriggerDetector.detectEventBasedDelayedTriggers`
+>   doesn't iterate the declared attackers — so a *delayed* attack trigger never binds the
+>   attacking creature to `TriggeringEntity` (regular attack triggers bind it per-attacker in the
+>   non-delayed path). Fix: in `detectEventBasedDelayedTriggers`, when the event is
+>   `AttackersDeclaredEvent`, fan out one PendingTrigger per attacker matching the spec's filter,
+>   each with `triggeringEntityId = that attacker`. Reusable for any "this turn, whenever a
+>   creature attacks, do X to it" delayed trigger. The card .kt and a combat scenario test are
+>   ready to restore once the engine binds the attacker.
 > - **Tokka & Rahzar** — "mana spent to cast it was less than its mana value" trigger condition.
 > - **Lita, Little Orphan Amphibian** — modal where each mode is once-per-turn ("hasn't been chosen this turn").
 > - **Mondo Gecko** — become-chosen-color + "draw a card for each color among permanents you control" dynamic.
