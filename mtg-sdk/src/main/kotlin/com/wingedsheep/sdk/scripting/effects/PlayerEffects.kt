@@ -377,45 +377,32 @@ data class WinGameEffect(
 }
 
 /**
- * Grant shroud to a target entity for the specified duration.
- * Works for players, creatures, and planeswalkers.
+ * Grant a protection-style evasion keyword (shroud or hexproof) to a target entity for
+ * the specified duration. Works for players, creatures, and planeswalkers.
  *
- * Used for cards like Gilded Light: "You gain shroud until end of turn."
+ * This is the player-aware counterpart to [GrantKeywordEffect]: a player can't carry a
+ * keyword via the normal projection layer, so player targets get the matching player
+ * protection component instead, while permanent targets get a Layer-6 floating keyword
+ * (identical to what `GrantKeyword` would produce).
  *
- * - For player targets: adds PlayerShroudComponent with appropriate removal timing
- * - For permanent targets: creates a floating effect granting the Shroud keyword
+ * Used for cards like Gilded Light ("You gain shroud until end of turn") and Dawn's Truce
+ * ("You and permanents you control gain hexproof until end of turn"). Reach it through the
+ * [com.wingedsheep.sdk.dsl.Effects.GrantShroud] / [com.wingedsheep.sdk.dsl.Effects.GrantHexproof]
+ * facades rather than constructing it directly.
  *
- * @param target The entity to grant shroud to (player, creature, or planeswalker)
- * @param duration How long the shroud lasts
+ * @param keyword The protection keyword to grant — [Keyword.SHROUD] or [Keyword.HEXPROOF].
+ * @param target The entity to grant the keyword to (player, creature, or planeswalker).
+ * @param duration How long the grant lasts.
  */
-@SerialName("GrantShroud")
+@SerialName("GrantEvasionKeyword")
 @Serializable
-data class GrantShroudEffect(
+data class GrantEvasionKeywordEffect(
+    val keyword: Keyword,
     val target: EffectTarget = EffectTarget.Controller,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains shroud ${duration.description}"
-}
-
-/**
- * Grants hexproof to a target entity for the specified duration.
- * "You gain hexproof until end of turn."
- *
- * Used for cards like Dawn's Truce: "You and permanents you control gain hexproof until end of turn."
- *
- * - For player targets: adds PlayerHexproofComponent with appropriate removal timing
- * - For permanent targets: creates a floating effect granting the Hexproof keyword
- *
- * @param target The entity to grant hexproof to (player, creature, or planeswalker)
- * @param duration How long the hexproof lasts
- */
-@SerialName("GrantHexproof")
-@Serializable
-data class GrantHexproofEffect(
-    val target: EffectTarget = EffectTarget.Controller,
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains hexproof ${duration.description}"
+    override val description: String =
+        "${target.description.replaceFirstChar { it.uppercase() }} gains ${keyword.displayName.lowercase()} ${duration.description}"
 }
 
 /**

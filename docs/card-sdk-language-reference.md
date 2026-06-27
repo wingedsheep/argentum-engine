@@ -556,7 +556,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   (Layer 5; default duration Permanent). Ability-applied counterpart of the `GrantColor` static.
   Pair with `AddCreatureType`/`AddCardType` for "becomes a [color] [type] in addition to its other
   colors and types" (Possessed Goat).
-- `GrantHexproof(target, duration)` — temporary hexproof.
+- `GrantHexproof(target, duration)` / `GrantShroud(target, duration)` — temporary hexproof / shroud.
+  Both are facades lowering onto the player-aware `GrantEvasionKeywordEffect(keyword, target, duration)`:
+  for player targets it attaches the matching player protection component; for permanents it grants the
+  keyword via a Layer-6 floating effect (like `GrantKeyword`).
 - `GrantExileOnLeave(target)` — "if it would leave, exile instead".
 - `GrantKeywordToAttackersBlockedBy(keyword, target)` — grant keyword to creatures this blocks.
 

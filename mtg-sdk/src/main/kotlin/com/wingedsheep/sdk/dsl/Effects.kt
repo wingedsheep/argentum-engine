@@ -94,7 +94,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantSpellsCantBeCounteredEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantExileOnLeaveEffect
-import com.wingedsheep.sdk.scripting.effects.GrantHexproofEffect
+import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
@@ -1065,7 +1065,15 @@ object Effects {
      * For permanents: creates a floating effect granting the Hexproof keyword.
      */
     fun GrantHexproof(target: EffectTarget = EffectTarget.Controller, duration: Duration = Duration.EndOfTurn): Effect =
-        GrantHexproofEffect(target, duration)
+        GrantEvasionKeywordEffect(Keyword.HEXPROOF, target, duration)
+
+    /**
+     * Grant shroud to a target (player or permanent) until end of turn.
+     * For players: adds PlayerShroudComponent.
+     * For permanents: creates a floating effect granting the Shroud keyword.
+     */
+    fun GrantShroud(target: EffectTarget = EffectTarget.Controller, duration: Duration = Duration.EndOfTurn): Effect =
+        GrantEvasionKeywordEffect(Keyword.SHROUD, target, duration)
 
     /**
      * Grant a keyword to a target.

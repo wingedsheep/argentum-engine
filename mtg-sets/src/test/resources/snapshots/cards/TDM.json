@@ -11259,7 +11259,8 @@
                             }
                         },
                         {
-                            "type": "GrantHexproof",
+                            "type": "GrantEvasionKeyword",
+                            "keyword": "HEXPROOF",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "creature"

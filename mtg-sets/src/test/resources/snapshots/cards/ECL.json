@@ -329,7 +329,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "GrantHexproof",
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF",
                     "target": "EnchantedCreature"
                 }
             }

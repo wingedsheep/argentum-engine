@@ -6255,7 +6255,8 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "GrantHexproof",
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF",
                     "target": {
                         "type": "ContextTarget",
                         "index": 0
@@ -12666,7 +12667,8 @@
                             "affected": "Self"
                         },
                         {
-                            "type": "GrantHexproof",
+                            "type": "GrantEvasionKeyword",
+                            "keyword": "HEXPROOF",
                             "target": "Self"
                         }
                     ]

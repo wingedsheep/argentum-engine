@@ -3905,7 +3905,10 @@
         }
     ],
     "script": {
-        "spellEffect": "GrantShroud"
+        "spellEffect": {
+            "type": "GrantEvasionKeyword",
+            "keyword": "SHROUD"
+        }
     },
     "metadata": {
         "collectorNumber": "16",

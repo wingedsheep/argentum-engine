@@ -83,8 +83,12 @@ The duplication isn't random — it falls into five repeating patterns.
 - **Control:** `GainControlByActivePlayer`, `GainControlByMost`, `GiveControlToTargetPlayer`
   → one `GainControl(recipient: ControlRecipient)` (preserve the good `PlayerRankMetric` sealed
   type as a `ControlRecipient.PlayerWithMost`).
-- **Grants:** `GrantShroud`/`GrantHexproof`, `GrantHexproofFromChosenColor`/`GrantProtectionFromChosenColor`,
+- **Grants:** `GrantHexproofFromChosenColor`/`GrantProtectionFromChosenColor`,
   `GrantFlashToSpells`/`GrantSpellsCantBeCountered` → keyword/quality parameter.
+- ✅ `GrantShroud`/`GrantHexproof` → one player-aware `GrantEvasionKeyword(keyword, target, duration)`;
+  the `Effects.GrantShroud`/`Effects.GrantHexproof` facades are unchanged. A pure `GrantKeyword` facade
+  won't do here — players can't carry a keyword via projection, so the unified effect keeps the
+  player-component branch. DONE.
 - ✅ `GrantToxic` → `GrantKeyword("TOXIC_$n")` facade (the codebase already does exactly this for
   `GrantProtectionFromColor`) — DONE in PR #1025.
 
@@ -168,10 +172,13 @@ than more flags.
    (source × destination × kind-selector × amount) — folds ~6 single-card types into one.
 3. **`ControlRecipient` parameter on `GainControl`** — kills 3 effect types; preserves
    `PlayerRankMetric`.
-4. **Single-keyword grants → `GrantKeyword` facades** (`GrantToxic`, `GrantShroud`,
-   `GrantHexproof`) — removes Effect *and* executor with zero card-author churn.
+4. **Single-keyword grants → facades** (`GrantToxic`, `GrantShroud`, `GrantHexproof`) —
+   removes Effect *and* executor with zero card-author churn.
    - ✅ `GrantToxic` collapsed into a `GrantKeyword("TOXIC_$n")` facade — effect type +
-     executor deleted (PR #1025). `GrantShroud` / `GrantHexproof` remain.
+     executor deleted (PR #1025).
+   - ✅ `GrantShroud` + `GrantHexproof` collapsed into one player-aware
+     `GrantEvasionKeyword(keyword, target, duration)` (facades unchanged); the two effect
+     types + two executors became one of each.
 5. **Adopt the project's own `ForEachInGroup`+`Self` rule** for all `*Group` filter-variants.
 6. **Finish the stalled merges** — spell-copy family, retarget quartet, the named pairs in
    smell #4.
@@ -458,7 +465,7 @@ tagged *(ReplacementEffect)* implement `ReplacementEffect`, not `Effect`.
 | `ForceExileMultiZoneEffect` | C | Lich's Mastery multi-zone monolith; flag as one-off. |
 | `SkipCombatPhasesEffect` / `SkipUntapEffect` / `SkipNextDrawStepEffect` / `SkipNextTurnEffect` | C | Fragmented "skip X" family → one `SkipStep(kind, target, count)`. |
 | `CantCastSpellsEffect` / `CantPlayCardsFromHandEffect` / `CantActivateLoyaltyAbilitiesEffect` | C | Identical `(target, duration)` shape → `RestrictPlayer(action, target, duration)`. |
-| `GrantShroudEffect` / `GrantHexproofEffect` | C | Identical but for keyword → `GrantEvasionKeyword(keyword, target, duration)`. |
+| ~~`GrantShroudEffect` / `GrantHexproofEffect`~~ | ✅ DONE | Unified into one player-aware `GrantEvasionKeywordEffect(keyword, target, duration)`; both effect types + both executors collapsed to one each (facades `Effects.GrantShroud`/`GrantHexproof` unchanged). |
 | `GrantFlashToSpellsEffect` / `GrantSpellsCantBeCounteredEffect` | C | Both player-scoped spell-property grants → `GrantSpellProperty(property, spellFilter, …)`. |
 | `GrantHexproofFromChosenColorEffect` / `GrantProtectionFromChosenColorEffect` | C | Differ only by keyword under `ChooseColorThen` → `GrantFromChosenColor(quality)`. |
 | `ExileWithAurasNotingCountersEffect` / `ReturnNotedExileTappedWithAurasEffect` | C | Bespoke Tawnos's Coffin pair; revisit if a 2nd "note state, restore" card appears. |

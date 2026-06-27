@@ -4482,7 +4482,10 @@
                     "effect": {
                         "type": "Composite",
                         "effects": [
-                            "GrantHexproof",
+                            {
+                                "type": "GrantEvasionKeyword",
+                                "keyword": "HEXPROOF"
+                            },
                             {
                                 "type": "ForEach",
                                 "space": {
@@ -4519,7 +4522,10 @@
                             {
                                 "type": "Composite",
                                 "effects": [
-                                    "GrantHexproof",
+                                    {
+                                        "type": "GrantEvasionKeyword",
+                                        "keyword": "HEXPROOF"
+                                    },
                                     {
                                         "type": "ForEach",
                                         "space": {
@@ -13613,7 +13619,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "GrantHexproof",
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF",
                     "target": {
                         "type": "BoundVariable",
                         "name": "creature you control"
