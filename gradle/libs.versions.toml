@@ -3,13 +3,13 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 kotlinxDatetime = "0.8.0"
 kotlinxSerializationJSON = "1.11.0"
 kotlinxCoroutines = "1.11.0"
-kotest = "6.1.11"
+kotest = "6.2.1"
 mockk = "1.14.11"
-springBoot = "4.0.6"
+springBoot = "4.1.0"
 springdocOpenapi = "3.0.3"
 kover = "0.9.8"
 classgraph = "4.8.184"
