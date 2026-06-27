@@ -10185,6 +10185,158 @@
     ]
 }
 
+// Moldering Gym // Weight Room
+{
+    "name": "Moldering Gym // Weight Room",
+    "manaCost": "",
+    "typeLine": "Enchantment — Room",
+    "oracleText": "When you unlock this door, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\n//\nWhen you unlock this door, manifest dread, then put three +1/+1 counters on that creature.",
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Helge C. Balzer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/245d5a61-c40c-4039-aea8-3ad61415b8f0.jpg?1726780702"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Moldering Gym",
+            "manaCost": "{2}{G}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "When you unlock this door, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "ability_1",
+                        "trigger": "DoorUnlockedEvent",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "basicland"
+                                    },
+                                    "storeAs": "searchable"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                },
+                                "ShuffleLibrary"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Weight Room",
+            "manaCost": "{5}{G}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "When you unlock this door, manifest dread, then put three +1/+1 counters on that creature.",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "ability_2",
+                        "trigger": "DoorUnlockedEvent",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "TopOfLibrary",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 2
+                                                }
+                                            },
+                                            "storeAs": "manifestDreadLooked"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "manifestDreadLooked",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "manifestDreadManifested",
+                                            "storeRemainder": "manifestDreadGraveyard",
+                                            "selectedLabel": "Manifest (put onto the battlefield face down)",
+                                            "remainderLabel": "Put into your graveyard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "manifestDreadManifested",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Battlefield"
+                                            },
+                                            "faceDown": "MANIFEST",
+                                            "markEnteredViaSourceAbility": true
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "manifestDreadGraveyard",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            }
+                                        },
+                                        "EmitManifestedDreadEvent"
+                                    ]
+                                },
+                                {
+                                    "type": "GatherCards",
+                                    "source": "EnteredViaThisResolution",
+                                    "storeAs": "weightRoomManifested"
+                                },
+                                {
+                                    "type": "AddCountersToCollection",
+                                    "collectionName": "weightRoomManifested",
+                                    "counterType": "+1/+1",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Monstrous Emergence
 {
     "name": "Monstrous Emergence",
@@ -10358,6 +10510,57 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "BLACK"
+    ]
+}
+
+// Neglected Manor
+{
+    "name": "Neglected Manor",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless a player has 13 or less life.\n{T}: Add {W} or {B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "APlayerLifeAtMost",
+                    "threshold": 13
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "264",
+        "artist": "Carlos Palma Cruchaga",
+        "flavorText": "They say every family who resided there met a grisly end, and once in a while you'll hear their screams echoing through the moldering halls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11cf1531-8a3c-4e28-a114-d3a342b33bb6.jpg?1726286859"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLACK"
     ]
 }
@@ -12274,6 +12477,57 @@
     ]
 }
 
+// Peculiar Lighthouse
+{
+    "name": "Peculiar Lighthouse",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless a player has 13 or less life.\n{T}: Add {U} or {R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "APlayerLifeAtMost",
+                    "threshold": 13
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "artist": "Raymond Bonilla",
+        "flavorText": "They say its beckoning beacon leads not to safe harbor but into the arms of the drowned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a6e40c0-e70e-4353-a920-9851cfac71dd.jpg?1726286864"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Peer Past the Veil
 {
     "name": "Peer Past the Veil",
@@ -12668,6 +12922,57 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Raucous Carnival
+{
+    "name": "Raucous Carnival",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless a player has 13 or less life.\n{T}: Add {R} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "APlayerLifeAtMost",
+                    "threshold": 13
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "266",
+        "artist": "Josu Solano",
+        "flavorText": "They say that those who enter the amusement park never come back, and their disembodied laughter joins the others on the wind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3604a211-9bf7-474e-bd78-32a862f4259c.jpg?1726286867"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -15717,6 +16022,119 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ticket Booth // Tunnel of Hate
+{
+    "name": "Ticket Booth // Tunnel of Hate",
+    "manaCost": "",
+    "typeLine": "Enchantment — Room",
+    "oracleText": "When you unlock this door, manifest dread.\n//\nWhenever you attack, target attacking creature gains double strike until end of turn.",
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Marco Gorlei",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/058ffe36-ed2d-4b67-83cd-162db8383a32.jpg?1726780790"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Ticket Booth",
+            "manaCost": "{2}{R}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "When you unlock this door, manifest dread.",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "ability_1",
+                        "trigger": "DoorUnlockedEvent",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "manifestDreadLooked"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "manifestDreadLooked",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "manifestDreadManifested",
+                                    "storeRemainder": "manifestDreadGraveyard",
+                                    "selectedLabel": "Manifest (put onto the battlefield face down)",
+                                    "remainderLabel": "Put into your graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "manifestDreadManifested",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    },
+                                    "faceDown": "MANIFEST"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "manifestDreadGraveyard",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                },
+                                "EmitManifestedDreadEvent"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Tunnel of Hate",
+            "manaCost": "{4}{R}{R}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "Whenever you attack, target attacking creature gains double strike until end of turn.",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "ability_2",
+                        "trigger": "YouAttackEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "GrantKeyword",
+                            "keyword": "DOUBLE_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target attacking creature"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "target attacking creature"
+                        },
+                        "descriptionOverride": "Whenever you attack, target attacking creature gains double strike until end of turn."
+                    }
+                ]
+            }
+        }
     ]
 }
 
