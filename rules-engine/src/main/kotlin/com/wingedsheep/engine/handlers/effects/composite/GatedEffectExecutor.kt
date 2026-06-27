@@ -575,7 +575,22 @@ class GatedEffectExecutor(
             is SuccessCriterion.CollectionNonEmpty ->
                 (effectContext.pipeline.storedCollections[criterion.name]?.size ?: 0) >= criterion.min
             is SuccessCriterion.DamageDealt -> evaluateDamageDealt(criterion, effectContext, priorEvents)
+            is SuccessCriterion.ControlChanged -> evaluateControlChanged(priorEvents)
         }
+
+        /**
+         * Did the gated action actually change control of a permanent? Scans the action's events for
+         * a [ControlChangedEvent] whose old and new controllers differ. The events scanned are only
+         * the gated action's own (the executor passes the action result's events), so a bare presence
+         * check is correctly scoped to this ability; the old/new comparison rejects the no-op case
+         * where the control-change effect ran against a permanent already controlled by the intended
+         * new controller, and a control change that never happened (illegal/missing permanent target
+         * at resolution) emits no such event at all.
+         */
+        private fun evaluateControlChanged(priorEvents: List<GameEvent>): Boolean =
+            priorEvents.any { event ->
+                event is ControlChangedEvent && event.oldControllerId != event.newControllerId
+            }
 
         /**
          * Did the gated action actually deal damage from this ability's source? Scans the action's

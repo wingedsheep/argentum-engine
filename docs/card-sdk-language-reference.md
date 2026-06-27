@@ -1151,6 +1151,13 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
     accepts any recipient. Mishra's War Machine: "deals 3 damage to you unless you discard a card. If
     it deals damage to you this way, tap it" → `IfYouDoEffect(PayOrSuffer(discard, DealDamage(3,
     Controller, source=Self)), Tap(Self), successCriterion = DamageDealt(Controller))`.
+    `SuccessCriterion.ControlChanged` gates on whether the action **actually changed control** of a
+    permanent (a `ControlChangedEvent` whose old and new controllers differ) — a control change that
+    never happened (the targeted permanent left the battlefield / is no longer controlled by the donor
+    at resolution) emits no such event and counts as "didn't happen". Stiltzkin, Moogle Merchant:
+    "{2}, {T}: Target opponent gains control of another target permanent you control. If they do, you
+    draw a card" → `IfYouDoEffect(GiveControlToTargetPlayer(permanent, opponent), DrawCards(1),
+    successCriterion = ControlChanged)`.
     `CollectionNonEmpty` gates on the action's actual pipeline collection
     (`storedCollections[name].size >= min` after the action runs) — the collections propagate onto
     the gate frame via `exposeCollectionsToNextFrame`, in both the synchronous and the

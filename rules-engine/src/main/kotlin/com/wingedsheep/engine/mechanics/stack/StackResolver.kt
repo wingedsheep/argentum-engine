@@ -2051,6 +2051,16 @@ class StackResolver(
         val sourceCard = state.getEntity(abilityComponent.sourceId)?.get<CardComponent>()
         val sourceColors = sourceCard?.colors ?: emptySet()
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
+        val activatedReqs = targetsComponent?.targetRequirements ?: emptyList()
+        // Resolution-time legality (CR 608.2b): drop individually-illegal targets, not just the
+        // all-invalid fizzle. `activatedTargets` is the compacted list every executor reads as
+        // `context.targets`; `alignedActivatedTargets` keeps a `null` in each dropped slot so a
+        // sub-effect referencing a now-illegal target through its [EffectTarget.BoundVariable]
+        // resolves to `null` and fizzles (mirrors resolveSpell) instead of silently consuming a
+        // still-legal later target whose position shifted forward in the compacted list — e.g.
+        // Stiltzkin's "If they do, you draw" when the donated permanent left in response.
+        val activatedTargets: List<ChosenTarget>
+        val alignedActivatedTargets: List<ChosenTarget?>
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
             val validTargets = validateTargets(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
@@ -2071,23 +2081,27 @@ class StackResolver(
                     )
                 )
             }
+            activatedTargets = validTargets
+            alignedActivatedTargets = buildAlignedValidated(targetsComponent.targets, validTargets)
+        } else {
+            activatedTargets = targetsComponent?.targets ?: emptyList()
+            alignedActivatedTargets = activatedTargets
         }
 
         // Execute the effect
-        val activatedTargets = targetsComponent?.targets ?: emptyList()
-        val activatedReqs = targetsComponent?.targetRequirements ?: emptyList()
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
             abilityIdentity = abilityComponent.abilityIdentity,
             targets = activatedTargets,
+            alignedTargets = alignedActivatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
             xValue = abilityComponent.xValue,
             tappedPermanents = abilityComponent.tappedPermanents,
             tappedPermanentSnapshots = abilityComponent.tappedPermanentSnapshots,
             lastKnownSourceCounters = abilityComponent.lastKnownSourceCounters,
             lastKnownSourceSnapshot = abilityComponent.lastKnownSourceSnapshot,
-            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, activatedTargets))
+            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, alignedActivatedTargets))
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)

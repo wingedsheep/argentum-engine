@@ -7,6 +7,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
+import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -20,11 +22,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetPermanent
  * {2}, {T}: Target opponent gains control of another target permanent you control. If they do, you
  * draw a card.
  *
- * The donation always succeeds when both targets are still legal at resolution, so the "if they do"
- * rider is modeled as a sequenced draw. The only case the printed text would withhold the draw is the
- * rare one where the donated permanent has left the battlefield (or you've lost control of it) before
- * resolution while the opponent target stays legal; the engine has no control-change success
- * criterion to gate on, so the draw still happens in that narrow corner.
+ * The "if they do" rider is gated on the control change actually happening via
+ * [SuccessCriterion.ControlChanged]: you draw only when a permanent really moves controller. If the
+ * donated permanent has left the battlefield (or you've lost control of it) before resolution while
+ * the opponent target stays legal, no control moves and the draw is withheld, per the printed text.
  */
 val StiltzkinMoogleMerchant = card("Stiltzkin, Moogle Merchant") {
     manaCost = "{W}"
@@ -45,12 +46,13 @@ val StiltzkinMoogleMerchant = card("Stiltzkin, Moogle Merchant") {
                 filter = TargetFilter(GameObjectFilter.Permanent.youControl(), excludeSelf = true),
             ),
         )
-        effect = Effects.Composite(
-            GiveControlToTargetPlayerEffect(
+        effect = IfYouDoEffect(
+            action = GiveControlToTargetPlayerEffect(
                 permanent = permanent,
                 newController = opponent,
             ),
-            Effects.DrawCards(1),
+            ifYouDo = Effects.DrawCards(1),
+            successCriterion = SuccessCriterion.ControlChanged,
         )
     }
 

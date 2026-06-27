@@ -428,6 +428,23 @@ sealed interface SuccessCriterion {
     data class DamageDealt(
         val recipient: DamageRecipient = DamageRecipient.Controller
     ) : SuccessCriterion
+
+    /**
+     * Action succeeded iff the gated action actually *changed control* of a permanent — at least one
+     * permanent moved from one controller to a different controller during the action (a
+     * `ControlChangedEvent` whose old and new controllers differ). Use for "[a player] gains control
+     * of [a permanent]. If they do, …" riders where the control change can silently fail to happen —
+     * e.g. the donated permanent has already left the battlefield (or is no longer controlled by the
+     * intended donor) by the time the ability resolves, so no control actually moves and the rider
+     * must not fire.
+     *
+     * Stiltzkin, Moogle Merchant: "{2}, {T}: Target opponent gains control of another target
+     * permanent you control. If they do, you draw a card." The control change is not a zone move, so
+     * `Auto` can't infer it; this criterion gates the draw on the control actually moving.
+     */
+    @SerialName("SuccessCriterion.ControlChanged")
+    @Serializable
+    data object ControlChanged : SuccessCriterion
 }
 
 /**

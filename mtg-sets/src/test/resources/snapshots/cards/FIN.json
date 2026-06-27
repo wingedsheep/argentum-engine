@@ -10631,9 +10631,10 @@
                     ]
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
                             "type": "GiveControlToTargetPlayer",
                             "permanent": {
                                 "type": "BoundVariable",
@@ -10644,14 +10645,15 @@
                                 "name": "target opponent"
                             }
                         },
-                        {
-                            "type": "DrawCards",
-                            "count": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
+                        "successCriterion": "SuccessCriterion.ControlChanged"
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
                         }
-                    ]
+                    }
                 },
                 "targetRequirements": [
                     {
